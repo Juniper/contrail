@@ -1,0 +1,91 @@
+description: has_status
+id: has_status
+parent: ""
+plural: has_status
+prefix: /
+schema:
+  properties:
+    provisioning_log:
+      default: ""
+      description: Provisioning Log
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: text
+      title: Provisioning Log
+      type: string
+      view:
+      - list
+      - detail
+    provisioning_progress:
+      default: 0
+      description: Provisioning progress 0 - 100%
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: int
+      title: Provisioning Progress
+      type: integer
+      view:
+      - list
+      - detail
+    provisioning_progress_stage:
+      default: ""
+      description: Provisioning Progress Stage
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Provisioning Progress Stage
+      type: string
+      view:
+      - list
+      - detail
+    provisioning_start_time:
+      default: ""
+      description: Time provisioning started
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Time provisioning started
+      type: string
+      view:
+      - list
+      - detail
+    provisioning_state:
+      default: CREATED
+      description: Provisioning Status
+      enum:
+      - CREATED
+      - IN_CREATE_PROGRESS
+      - UPDATED
+      - IN_UPDATE_PROGRESS
+      - DELETED
+      - IN_DELETE_PROGRESS
+      - ERROR
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Provisioning Status
+      type: string
+      view:
+      - list
+      - detail
+  propertiesOrder:
+  - provisioning_state
+  - provisioning_progress_stage
+  - provisioning_progress
+  - provisioning_log
+  - provisioning_start_time
+  required: []
+  type: object
+singular: has_status
+title: has_status
+type: abstract

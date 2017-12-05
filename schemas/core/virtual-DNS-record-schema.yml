@@ -1,0 +1,24 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    virtual_DNS: 
+      operation: "CRUD"
+      description: "Static DNS records in virtual DNS server."
+      presence: "optional"
+  plural: "virtual_DNS_records"
+  id: "virtual_DNS_record"
+  schema: 
+    required: 
+      - "virtual_DNS_record_data"
+    type: "object"
+    properties: 
+      virtual_DNS_record_data: 
+        operations: "CRUD"
+        presence: "required"
+        description: "DNS record data has configuration like type, name, ip address, loadbalancing etc."
+        $ref: "types.json#/definitions/VirtualDnsRecordType"
+

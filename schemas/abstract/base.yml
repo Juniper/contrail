@@ -1,0 +1,47 @@
+---
+  plural: "base"
+  prefix: "/"
+  references:
+    tag:
+      operation: "CRUD"
+      description: "Tag attached to an object - has a type and value"
+      presence: "optional"
+  parents: {}
+  type: "abstract"
+  id: "base"
+  schema:
+    required: []
+    type: "object"
+    properties:
+      uuid:
+          presence: "true"
+          description: "UUID of the object, system automatically allocates one if not provided"
+          type: "string"
+      fq_name:
+          presence: "true"
+          description: "FQ Name of the object"
+          type: "array"
+          item:
+            type: "string"
+      id_perms:
+        operations: "R"
+        presence: "system-only"
+        description: "System maintained identity, time  and permissions data."
+        $ref: "types.json#/definitions/IdPermsType"
+      display_name:
+        operations: "CRUD"
+        type: "string"
+        description: "Display name user configured string(name) that can be updated any time. Used as openstack name."
+        presence: "optional"
+      annotations:
+        operations: "CRUD"
+        collectionType: "map"
+        presence: "optional"
+        description: "Dictionary of arbitrary (key, value) on a resource."
+        $ref: "types.json#/definitions/KeyValuePairs"
+      perms2:
+        operations: "R"
+        presence: "system-only"
+        description: "Permissions data for role based access."
+        $ref: "types.json#/definitions/PermType2"
+

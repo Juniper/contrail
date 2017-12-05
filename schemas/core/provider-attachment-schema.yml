@@ -1,0 +1,18 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    virtual_router: 
+      operation: "CRUD"
+      description: "Not in Use."
+      presence: "optional"
+  parents: {}
+  plural: "provider_attachments"
+  id: "provider_attachment"
+  schema: 
+    required: []
+    type: "object"
+    properties: {}
+

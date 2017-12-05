@@ -1,0 +1,29 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    project: 
+      operation: "CRUD"
+      description: "Project level service Group object"
+      presence: "optional"
+    policy_management: 
+      operation: "CRUD"
+      description: "Service Group object"
+      presence: "optional"
+  plural: "service_groups"
+  id: "service_group"
+  schema: 
+    required: 
+      - "service_group_firewall_service_list"
+    type: "object"
+    properties: 
+      service_group_firewall_service_list: 
+        operations: "CRUD"
+        collectionType: "list"
+        presence: "required"
+        description: "list of service objects (protocol, source port and destination port"
+        $ref: "types.json#/definitions/FirewallServiceGroupType"
+

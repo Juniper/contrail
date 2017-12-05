@@ -1,0 +1,10 @@
+package models
+
+{% if type.Type == "object" %}
+import ("fmt"
+        "testing")
+func Test{{ name }}(t *testing.T) {
+    model := Make{{name}}()
+    fmt.Println(model)
+}
+{% endif %}

@@ -1,0 +1,23 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    service_instance: 
+      operation: "CRUD"
+      $ref: "types.json#definitions/ServiceInterfaceTag"
+      description: "Reference to route-aggregate policy attached to (service instance, interface)."
+      presence: "optional"
+  parents: 
+    project: 
+      operation: "CRUD"
+      description: "List of references of child routing route aggregate objects. automatically maintained by system."
+      presence: "optional"
+  plural: "route_aggregates"
+  id: "route_aggregate"
+  schema: 
+    required: []
+    type: "object"
+    properties: {}
+

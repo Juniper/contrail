@@ -1,0 +1,38 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    virtual_DNS: 
+      operation: "CRUD"
+      description: "Reference to virtual DNS used by this IPAM."
+      presence: "optional"
+  parents: 
+    project: 
+      operation: "CRUD"
+      description: "IP Address Management object that controls, ip allocation, DNS and DHCP"
+      presence: "optional"
+  plural: "network_ipams"
+  id: "network_ipam"
+  schema: 
+    required: []
+    type: "object"
+    properties: 
+      network_ipam_mgmt: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Network IP Address Management configuration."
+        $ref: "types.json#/definitions/IpamType"
+      ipam_subnets: 
+        operations: "CRD"
+        collectionType: "list"
+        presence: "optional"
+        description: "List of subnets for this ipam."
+        $ref: "types.json#/definitions/IpamSubnets"
+      ipam_subnet_method: 
+        operations: "CRD"
+        presence: "optional"
+        description: "Subnet method configuration for ipam, user can configure user-defined, flat or auto."
+        $ref: "types.json#/definitions/SubnetMethodType"
+

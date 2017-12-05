@@ -1,0 +1,217 @@
+description: Node Resource
+extends:
+- base
+id: node
+parent: ""
+plural: nodes
+prefix: /
+schema:
+  properties:
+    hostname:
+      default: ""
+      description: Fully qualified host name
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Hostname
+      type: string
+      view:
+      - create
+      - detail
+    ip_address:
+      default: ""
+      description: IP Address
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: IP Address
+      type: string
+      view:
+      - create
+      - detail
+    mac_address:
+      default: ""
+      description: Provisioning Interface MAC Address
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Interface MAC Address
+      type: string
+      view:
+      - create
+      - detail
+    type:
+      default: private
+      description: Type of machine resource
+      enum:
+      - private
+      - virtual
+      - aws
+      - container
+      - gcp
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Machine Type
+      type: string
+      view:
+      - create
+      - detail
+    password:
+      default: ADMIN
+      description: UserPassword
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: UserPassword
+      type: string
+      view:
+      - create
+      - detail
+    ssh_key:
+      description: SSH Public Key
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: SSH public key
+      type: string
+      view:
+      - detail
+    username:
+      default: ADMIN
+      description: User Name
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: User Name
+      type: string
+      view:
+      - create
+      - detail
+    aws_ami:
+      default: ami-73f7da13
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: AMI
+      type: string
+    aws_instance_type:
+      default: t2.micro
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Instance Type
+      type: string
+    gcp_image:
+      default: ubuntu-os-cloud/ubuntu-1604-lts
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Image
+      type: string
+    gcp_machine_type:
+      default: n1-standard-1
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Machine Type
+      type: string
+    private_machine_properties:
+      default: ""
+      description: Machine Properties from ironic
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Machine Properties
+      type: string
+      view:
+      - detail
+    private_machine_state:
+      default: enroll
+      description: Machine State
+      enum:
+      - enroll
+      - manageable
+      - available
+      - assigned
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Machine State
+      type: string
+      view:
+      - detail
+    private_power_management_ip:
+      default: ""
+      description: IP address used for power management (IPMI)
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Power Management IP
+      type: string
+      view:
+      - create
+      - detail
+    private_power_management_password:
+      default: ADMIN
+      description: UserPassword for PowerManagement
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Power Management UserPassword
+      type: string
+      view:
+      - create
+      - detail
+    private_power_management_username:
+      default: ADMIN
+      description: User Name for PowerManagement
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Power Management User Name
+      type: string
+      view:
+      - create
+      - detail
+  required: []
+  type: object
+singular: node
+title: Node
+type: ""

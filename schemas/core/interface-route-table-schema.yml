@@ -1,0 +1,30 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    service_instance: 
+      operation: "CRUD"
+      $ref: "types.json#definitions/ServiceInterfaceTag"
+      derived: true
+      description: "Reference to interface route table attached to (service instance, interface), This is used to add interface static routes to service instance interface."
+      presence: "optional"
+  parents: 
+    project: 
+      operation: "CRUD"
+      description: "Interface route table is mechanism to add static routes pointing to this interface."
+      presence: "optional"
+  plural: "interface_route_tables"
+  id: "interface_route_table"
+  schema: 
+    required: 
+      - "interface_route_table_routes"
+    type: "object"
+    properties: 
+      interface_route_table_routes: 
+        operations: "CRUD"
+        presence: "required"
+        description: "Interface route table used same structure as route table, however the next hop field is irrelevant."
+        $ref: "types.json#/definitions/RouteTableType"
+

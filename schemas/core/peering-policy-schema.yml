@@ -1,0 +1,20 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: {}
+  plural: "peering_policys"
+  id: "peering_policy"
+  schema: 
+    required: 
+      - "peering_service"
+    type: "object"
+    properties: 
+      peering_service: 
+        operations: "CRUD"
+        presence: "required"
+        description: "Peering policy service type."
+        $ref: "types.json#/definitions/PeeringServiceType"
+

@@ -1,0 +1,38 @@
+description: Kubernetes Cluster
+extends:
+- base
+id: kubernetes_cluster
+metadata:
+  category: cluster
+parent: ""
+plural: kubernetes_clusters
+prefix: /
+schema:
+  properties:
+    contrail_cluster_id:
+      default: ""
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      relation: contrail_cluster
+      relation_property: contrail_cluster
+      sql: ""
+      title: Contrail Cluster ID
+      type: string
+    kuberunetes_dashboard:
+      default: ""
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: kubernetes Dashboard
+      type: string
+  required: []
+  type: object
+singular: kubernetes_cluster
+title: kubernetes Cluster
+type: ""

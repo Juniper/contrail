@@ -1,0 +1,28 @@
+description: Dashboard instance configuration
+extends:
+- base
+id: dashboard
+parent: ""
+plural: dashboards
+prefix: /
+schema:
+  properties:
+    container_config:
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Container Config
+      type: string
+      view:
+      - create
+      - detail
+  propertiesOrder:
+  - container_config
+  required: []
+  type: object
+singular: dashboard
+title: Dashboard
+type: ""

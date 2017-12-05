@@ -1,0 +1,73 @@
+description: Openstack Compute Node Role
+extends:
+- base
+- has_node
+- has_status
+id: openstack_compute_node_role
+metadata:
+  category: cluster
+parent: openstack_cluster
+plural: openstack_compute_node_roles
+prefix: /contrail
+schema:
+  properties:
+    default_gateway:
+      default: ""
+      description: Default Gateway
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Default Gateway
+      type: string
+      view:
+      - detail
+    vrouter_bond_interface:
+      default: bond0
+      description: vRouter Bond Interface
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: vRouter Bond Interface
+      type: string
+      view:
+      - create
+      - detail
+    vrouter_bond_interface_members:
+      default: ens7f0,ens7f1
+      description: vRouter Bond Interface Members
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: vRouter Bond Interface Members
+      type: string
+      view:
+      - create
+      - detail
+    vrouter_type:
+      default: kernel
+      description: ""
+      enum:
+      - kernel
+      - dpdk
+      - smartNiC
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: vRouter Type
+      type: string
+      view:
+      - create
+      - detail
+  required: []
+  type: object
+singular: openstack_compute_node_role
+title: Openstack Compute Node Role
+type: ""

@@ -1,0 +1,73 @@
+description: Controller Node Role
+extends:
+- base
+- has_node
+- has_status
+id: controller_node_role
+metadata:
+  category: cluster
+parent: openstack_cluster
+plural: controller_node_roles
+prefix: /
+schema:
+  properties:
+    capacity_drives:
+      default: sdc,sdd,sde
+      description: Drives for capacity oriented applications such as logging
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Capacity Drives
+      type: string
+      view:
+      - create
+      - detail
+    internalapi_bond_interface_members:
+      default: ens7f0,ens7f1
+      description: Internal API Bond Interface Members
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Internal API Bond Interface Members
+      type: string
+      view:
+      - detail
+    performance_drives:
+      default: sdf
+      description: Drives for performance oriented application such as journaling
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Performance Drive
+      type: string
+      view:
+      - create
+      - detail
+    storage_management_bond_interface_members:
+      default: ens8f0,ens8f1
+      description: Storage Management  Bond Interface Members
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Storage Management  Bond Interface Members
+      type: string
+      view:
+      - detail
+  propertiesOrder:
+  - internalapi_bond_interface_members
+  - storage_management_bond_interface_members
+  - capacity_drives
+  - performance_drives
+  required: []
+  type: object
+singular: controller_node_role
+title: Controller Node Role
+type: ""

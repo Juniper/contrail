@@ -1,0 +1,26 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    service_connection_module: 
+      operation: "CRUD"
+      description: "Link the service endpoint to service connection node"
+      presence: "optional"
+    physical_router: 
+      operation: "CRUD"
+      description: "Reference to Router for a given service."
+      presence: "optional"
+    service_object: 
+      operation: "CRUD"
+      description: "Links the service-endpoints to a service object."
+      presence: "optional"
+  parents: {}
+  plural: "service_endpoints"
+  id: "service_endpoint"
+  schema: 
+    required: []
+    type: "object"
+    properties: {}
+

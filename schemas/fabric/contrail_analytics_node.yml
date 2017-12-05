@@ -1,0 +1,19 @@
+description: Contrail Analytics Node
+extends:
+- base
+- has_node
+- has_status
+id: contrail_analytics_node
+metadata:
+  category: cluster
+parent: contrail_cluster
+plural: contrail_analytics_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: contrail_analytics_node
+title: Contrail Analytics Node
+type: ""

@@ -1,0 +1,22 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    virtual_machine_interface: 
+      operation: "CRUD"
+      description: "Not in Use."
+      presence: "optional"
+    floating_ip: 
+      operation: "CRUD"
+      description: "Not in Use."
+      presence: "optional"
+  parents: {}
+  plural: "customer_attachments"
+  id: "customer_attachment"
+  schema: 
+    required: []
+    type: "object"
+    properties: {}
+

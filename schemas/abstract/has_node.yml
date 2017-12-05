@@ -1,0 +1,15 @@
+description: Resource has node reference
+id: has_node
+plural: has_nodes
+prefix: /
+parents: 
+  node: 
+    operation: "CRUD"
+    description: "Node role"
+    presence: "optional"
+schema:
+  properties: {}
+  required: []
+  type: object
+title: has_nodes
+type: abstract

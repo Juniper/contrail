@@ -1,0 +1,121 @@
+package models
+// {{ name }}
+
+{% if type.Type == "object" %}
+
+import "encoding/json"
+
+type {{ name }} struct {
+{% for propertyName, property in type.Properties %}
+    {{ property.GoName }} {% if property.Type == "object" and property.Properties %}*{% endif %}{{ property.GoType }} `json:"{{propertyName}}"`{% endfor %}
+{% for linkTo, reference in references %}
+    // {{linkTo}} {{reference}}
+    {{ reference.GoName }}Refs []*{{ type.GoName }}{{ reference.GoName }}Ref{% endfor %}
+{% for linkTo, reference in parents %}
+    {{ reference.GoName }}s []*{{ type.GoName }}{{ reference.GoName }}{% endfor %}
+}
+
+{% for linkTo, reference in references %}
+// {{ reference }}
+type {{ type.GoName }}{{ reference.GoName }}Ref struct {
+    UUID string `json:"uuid"`
+    To   []string `json:"to"`//FQDN
+    {% if reference.RefType %}
+    Attr *{{ reference.RefType }}
+    {% endif %}
+}
+{% endfor %}
+
+{% for linkTo, reference in parents %}
+type {{ type.GoName }}{{ reference.GoName }} struct {
+    UUID string `json:"uuid"`
+    To   []string `json:"to"`//FQDN
+    {% if reference.RefType %}
+    Attr *referenceRefType
+    {% endif %}
+}
+{% endfor %}
+
+
+func (model *{{ name }}) String() string {
+    b, _ := json.Marshal(model)
+    return string(b)
+}
+
+func Make{{ name }}() *{{name}}{
+    return &{{name}}{
+    //TODO(nati): Apply default
+    {% for name, property in type.Properties %}{% if property.GoType == "string" %}{{ property.GoName }}: "",
+        {% elif property.GoType == "[]string" %}{{ property.GoName }}: []string{},
+        {% elif property.GoType == "map[string]string" %}{{ property.GoName }}: map[string]string{},
+        {% elif property.GoType == "map[string]interface{}" %}{{ property.GoName }}: map[string]interface{}{},
+        {% elif property.GoType == "bool" %}{{ property.GoName }}: false,
+        {% elif property.GoType == "int" %}{{ property.GoName }}: 0,
+        {% elif property.GoType == "float" %}{{ property.GoName }}: 0,
+        {% elif property.Type == "array"%}
+            {% if property.Item.Type == "string" %}
+                {{ property.GoName }}: []string{},
+            {% elif property.Item.Type == "integer"%}
+                {{ property.GoName }}: []int{},
+            {% elif property.Item.GoType %}
+                {{ property.GoName }}:  Make{{ property.Item.GoType }}Slice(),
+            {% else %}
+                {{ property.GoName }}:  Make{{ property.GoType }}(),
+            {% endif %}
+        {% else %}{{ property.GoName }}: Make{{ property.GoType }}(),
+        {% endif %}{% endfor %}
+    }
+}
+
+func InterfaceTo{{ name }}(iData interface{}) *{{ name }} {
+    data := iData.(map[string]interface{})
+    return &{{name}}{
+    {% for name, property in type.Properties %}{% if property.GoType == "string" %}{{ property.GoName }}: data["{{ name }}"].(string),
+        {% elif property.GoType == "[]string" %}{{ property.GoName }}: data["{{ name }}"].([]string),
+        {% elif property.GoType == "map[string]string" %}{{ property.GoName }}: data["{{ name }}"].(map[string]string),
+        {% elif property.GoType == "map[string]interface{}" %}{{ property.GoName }}: data["{{ name }}"].(map[string]interface{}),
+        {% elif property.GoType == "bool" %}{{ property.GoName }}: data["{{ name }}"].(bool),
+        {% elif property.GoType == "int" %}{{ property.GoName }}: data["{{ name }}"].(int),
+        {% elif property.GoType == "float" %}{{ property.GoName }}: data["{{ name }}"].(float),
+        {% elif property.Type == "array"%}
+            {% if property.Item.Type == "string" %}
+                {{ property.GoName }}: data["{{ name }}"].([]string),
+            {% elif property.Item.Type == "integer"%}
+                {{ property.GoName }}: data["{{ name }}"].([]int),
+            {% elif property.Item.GoType %}
+                {{ property.GoName }}:  InterfaceTo{{ property.Item.GoType }}Slice(data["{{ name }}"]),
+            {% else %}
+                {{ property.GoName }}: InterfaceTo{{ property.GoType }}(data["{{name}}"]),
+            {% endif %}
+        {% else %}{{ property.GoName }}: InterfaceTo{{ property.GoType }}(data["{{name}}"]),
+        {% endif %}
+        //{{ property }}
+        {% endfor %}
+    }
+}
+{% else %}
+type {{ name }} {{ type.GoType }}
+
+func Make{{ name }}() {{ name }} {
+    var data {{name}}
+    return data
+}
+
+func InterfaceTo{{ name }}(data interface{}) {{ name }} {
+    return data.({{ name }})
+}
+
+{% endif %}
+
+func InterfaceTo{{ name }}Slice(data interface{}) []{% if type.Type == "object" and type.Properties %}*{% endif %}{{ name }} {
+    list := data.([]interface{})
+    result := Make{{ name }}Slice()
+    for _, item := range list {
+        result = append(result, InterfaceTo{{ name }}(item))
+    }
+    return result
+}
+
+func Make{{ name }}Slice() []{% if type.Type == "object" and type.Properties %}*{% endif %}{{ name }} {
+    return []{% if type.Type == "object" and type.Properties %}*{% endif %}{{ name }}{}
+}

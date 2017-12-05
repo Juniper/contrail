@@ -1,0 +1,18 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    virtual_network: 
+      operation: "CRUD"
+      description: "List of references of routing instances for this virtual network, routing instances are internal to the system."
+      presence: "system-only"
+  plural: "routing_instances"
+  id: "routing_instance"
+  schema: 
+    required: []
+    type: "object"
+    properties: {}
+

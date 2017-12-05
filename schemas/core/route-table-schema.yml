@@ -1,0 +1,24 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    project: 
+      operation: "CRUD"
+      description: "Network route table is mechanism of adding static routes in the virtual network"
+      presence: "optional"
+  plural: "route_tables"
+  id: "route_table"
+  schema: 
+    required: 
+      - "routes"
+    type: "object"
+    properties: 
+      routes: 
+        operations: "CRUD"
+        presence: "required"
+        description: "Routes in the route table are configured in following way."
+        $ref: "types.json#/definitions/RouteTableType"
+

@@ -1,0 +1,19 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    service_instance: 
+      operation: "CRUD"
+      derived: true
+      description: "Reference to the service instance of this virtual machine."
+      presence: "system-only"
+  parents: {}
+  plural: "virtual_machines"
+  id: "virtual_machine"
+  schema: 
+    required: []
+    type: "object"
+    properties: {}
+

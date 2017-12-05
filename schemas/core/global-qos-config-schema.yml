@@ -1,0 +1,24 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    global_system_config: 
+      operation: "R"
+      description: "Global QoS system config is object where all global system QoS configuration is present."
+      presence: "required"
+  plural: "global_qos_configs"
+  id: "global_qos_config"
+  schema: 
+    required: 
+      - "control_traffic_dscp"
+    type: "object"
+    properties: 
+      control_traffic_dscp: 
+        operations: "CRUD"
+        presence: "required"
+        description: "DSCP value of IP header for control traffic"
+        $ref: "types.json#/definitions/ControlTrafficDscpType"
+

@@ -1,0 +1,19 @@
+description: Contrail Analytics Database Node Role
+extends:
+- base
+- has_node
+- has_status
+id: contrail_analytics_database_node_role
+metadata:
+  category: cluster
+parent: contrail_cluster
+plural: contrail_analytics_database_node_roles
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: contrail_analytics_database_node_role
+title: Contrail Analytics Database Node Role
+type: ""

@@ -1,0 +1,43 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    tag_type: 
+      operation: "CRUD"
+      description: "Tag type reference which is limited to one"
+      presence: "optional"
+  parents: 
+    project: 
+      operation: "CRUD"
+      description: "Attribute attached to objects - has a type and value"
+      presence: "optional"
+    config_root: 
+      operation: "CRUD"
+      description: "Attribute attached to objects - has a type and value"
+      presence: "optional"
+  plural: "tags"
+  id: "tag"
+  schema: 
+    required: 
+      - "tag_type_name"
+      - "tag_value"
+    type: "object"
+    properties: 
+      tag_type_name: 
+        operations: "CR"
+        type: "string"
+        description: "Tag type string representation"
+        presence: "required"
+      tag_id: 
+        operations: "R"
+        presence: "optional"
+        description: "Internal Tag ID encapsulating tag type and value in                  hexadecimal fomat: 0xTTTTVVVV (T: type, V: value)"
+        $ref: "types.json#/definitions/U32BitHexInt"
+      tag_value: 
+        operations: "CR"
+        type: "string"
+        description: "Tag value string representation"
+        presence: "required"
+

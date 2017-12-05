@@ -1,0 +1,32 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    loadbalancer_pool: 
+      operation: "CRUD"
+      description: "Reference to the load balancer pool that this virtual ip represent. Applicable only to LBaaS V1"
+      presence: "optional"
+    virtual_machine_interface: 
+      operation: "CRUD"
+      description: "Reference to the virtual machine interface for virtual ip. Applicable only to LBaaS V1"
+      presence: "optional"
+  parents: 
+    project: 
+      operation: "CRUD"
+      description: "Virtual ip object application(protocol, port). Applicable only to LBaaS V1"
+      presence: "optional"
+  plural: "virtual_ips"
+  id: "virtual_ip"
+  schema: 
+    required: 
+      - "virtual_ip_properties"
+    type: "object"
+    properties: 
+      virtual_ip_properties: 
+        operations: "CRUD"
+        presence: "required"
+        description: "Virtual ip configuration like port, protocol, subnet etc."
+        $ref: "types.json#/definitions/VirtualIpType"
+

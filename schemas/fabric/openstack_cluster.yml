@@ -1,0 +1,197 @@
+description: Openstack Cluster
+extends:
+- base
+- has_status
+id: openstack_cluster
+metadata:
+  category: cluster
+parent: ""
+plural: openstack_clusters
+prefix: /
+schema:
+  properties:
+    admin_password:
+      default: ""
+      description: Password for admin openstack account
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Admin Password
+      type: string
+      view:
+      - create
+      - detail
+    contrail_cluster_id:
+      default: ""
+      description: contrial cluster ID
+      nullable: false
+      permission:
+      - create
+      relation: contrail_cluster
+      relation_property: contrail_cluster
+      sql: ""
+      title: Contrail Cluster ID
+      type: string
+      view:
+      - create
+      - detail
+    default_capacity_drives:
+      default: sdc,sdd,sde
+      description: Drives for capacity oriented applications such as logging for Controller
+        Node Role
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Default Capacity Drives  for Controller Node Role
+      type: string
+      view:
+      - create
+      - detail
+    default_journal_drives:
+      default: sdf
+      description: SSD Drives to use for journals
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Journal Drives  for Storage Node Role
+      type: string
+      view:
+      - create
+      - detail
+    default_osd_drives:
+      default: sdc,sdd,sde
+      description: Drives to use for cloud storage
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Stoage Drives for Storage Node Role
+      type: string
+      view:
+      - create
+      - detail
+    default_performance_drives:
+      default: sdf
+      description: Drives for performance oriented application such as journaling  for
+        Controller Node Role
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Default Performance Drive  for Controller Node Role
+      type: string
+      view:
+      - create
+      - detail
+    default_storage_access_bond_interface_members:
+      default: ens8f0,ens8f1
+      description: Storage Management  Bond Interface Members
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Default Storage Access  Bond Interface Members
+      type: string
+      view:
+      - detail
+    default_storage_backend_bond_interface_members:
+      default: ens9f0,ens9f1
+      description: Storage Backend Bond Interface Members
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Default Storage Backend Bond Interface Members
+      type: string
+      view:
+      - detail
+    external_allocation_pool_end:
+      default: ""
+      description: End of the allocation pool range
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: External Allocation pool end
+      type: string
+      view:
+      - create
+      - detail
+    external_allocation_pool_start:
+      default: ""
+      description: Start of the allocation pool range
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: External Allocation pool start
+      type: string
+      view:
+      - create
+      - detail
+    external_net_cidr:
+      default: ""
+      description: Subnet to use for external network
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: External Network CIDR
+      type: string
+      view:
+      - create
+      - detail
+    openstack_webui:
+      default: ""
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: OpenStack WebUI
+      type: string
+    public_gateway:
+      default: ""
+      description: Gateway for public VIP
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Public Gateway
+      type: string
+      view:
+      - create
+      - detail
+    public_ip:
+      default: ""
+      description: Public Virtual IP (VIP)
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Public IP
+      type: string
+      view:
+      - create
+      - detail
+  required: []
+  type: object
+singular: openstack_cluster
+title: Openstack Cluster
+type: ""
