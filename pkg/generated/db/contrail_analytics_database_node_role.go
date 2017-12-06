@@ -1,228 +1,368 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertContrailAnalyticsDatabaseNodeRoleQuery = "insert into `contrail_analytics_database_node_role` (`provisioning_start_time`,`fq_name`,`display_name`,`global_access`,`share`,`owner`,`owner_access`,`uuid`,`provisioning_progress`,`provisioning_progress_stage`,`created`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`enable`,`description`,`key_value_pair`,`provisioning_state`,`provisioning_log`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateContrailAnalyticsDatabaseNodeRoleQuery = "update `contrail_analytics_database_node_role` set `provisioning_start_time` = ?,`fq_name` = ?,`display_name` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`uuid` = ?,`provisioning_progress` = ?,`provisioning_progress_stage` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`enable` = ?,`description` = ?,`key_value_pair` = ?,`provisioning_state` = ?,`provisioning_log` = ?;"
+const insertContrailAnalyticsDatabaseNodeRoleQuery = "insert into `contrail_analytics_database_node_role` (`share`,`owner`,`owner_access`,`global_access`,`provisioning_progress`,`provisioning_state`,`provisioning_start_time`,`uuid`,`fq_name`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`display_name`,`key_value_pair`,`provisioning_log`,`provisioning_progress_stage`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateContrailAnalyticsDatabaseNodeRoleQuery = "update `contrail_analytics_database_node_role` set `share` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`provisioning_progress` = ?,`provisioning_state` = ?,`provisioning_start_time` = ?,`uuid` = ?,`fq_name` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`display_name` = ?,`key_value_pair` = ?,`provisioning_log` = ?,`provisioning_progress_stage` = ?;"
 const deleteContrailAnalyticsDatabaseNodeRoleQuery = "delete from `contrail_analytics_database_node_role` where uuid = ?"
-const listContrailAnalyticsDatabaseNodeRoleQuery = "select `contrail_analytics_database_node_role`.`provisioning_start_time`,`contrail_analytics_database_node_role`.`fq_name`,`contrail_analytics_database_node_role`.`display_name`,`contrail_analytics_database_node_role`.`global_access`,`contrail_analytics_database_node_role`.`share`,`contrail_analytics_database_node_role`.`owner`,`contrail_analytics_database_node_role`.`owner_access`,`contrail_analytics_database_node_role`.`uuid`,`contrail_analytics_database_node_role`.`provisioning_progress`,`contrail_analytics_database_node_role`.`provisioning_progress_stage`,`contrail_analytics_database_node_role`.`created`,`contrail_analytics_database_node_role`.`creator`,`contrail_analytics_database_node_role`.`user_visible`,`contrail_analytics_database_node_role`.`last_modified`,`contrail_analytics_database_node_role`.`other_access`,`contrail_analytics_database_node_role`.`group`,`contrail_analytics_database_node_role`.`group_access`,`contrail_analytics_database_node_role`.`permissions_owner`,`contrail_analytics_database_node_role`.`permissions_owner_access`,`contrail_analytics_database_node_role`.`enable`,`contrail_analytics_database_node_role`.`description`,`contrail_analytics_database_node_role`.`key_value_pair`,`contrail_analytics_database_node_role`.`provisioning_state`,`contrail_analytics_database_node_role`.`provisioning_log` from `contrail_analytics_database_node_role`"
-const showContrailAnalyticsDatabaseNodeRoleQuery = "select `contrail_analytics_database_node_role`.`provisioning_start_time`,`contrail_analytics_database_node_role`.`fq_name`,`contrail_analytics_database_node_role`.`display_name`,`contrail_analytics_database_node_role`.`global_access`,`contrail_analytics_database_node_role`.`share`,`contrail_analytics_database_node_role`.`owner`,`contrail_analytics_database_node_role`.`owner_access`,`contrail_analytics_database_node_role`.`uuid`,`contrail_analytics_database_node_role`.`provisioning_progress`,`contrail_analytics_database_node_role`.`provisioning_progress_stage`,`contrail_analytics_database_node_role`.`created`,`contrail_analytics_database_node_role`.`creator`,`contrail_analytics_database_node_role`.`user_visible`,`contrail_analytics_database_node_role`.`last_modified`,`contrail_analytics_database_node_role`.`other_access`,`contrail_analytics_database_node_role`.`group`,`contrail_analytics_database_node_role`.`group_access`,`contrail_analytics_database_node_role`.`permissions_owner`,`contrail_analytics_database_node_role`.`permissions_owner_access`,`contrail_analytics_database_node_role`.`enable`,`contrail_analytics_database_node_role`.`description`,`contrail_analytics_database_node_role`.`key_value_pair`,`contrail_analytics_database_node_role`.`provisioning_state`,`contrail_analytics_database_node_role`.`provisioning_log` from `contrail_analytics_database_node_role` where uuid = ?"
 
+// ContrailAnalyticsDatabaseNodeRoleFields is db columns for ContrailAnalyticsDatabaseNodeRole
+var ContrailAnalyticsDatabaseNodeRoleFields = []string{
+	"share",
+	"owner",
+	"owner_access",
+	"global_access",
+	"provisioning_progress",
+	"provisioning_state",
+	"provisioning_start_time",
+	"uuid",
+	"fq_name",
+	"group_access",
+	"permissions_owner",
+	"permissions_owner_access",
+	"other_access",
+	"group",
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"display_name",
+	"key_value_pair",
+	"provisioning_log",
+	"provisioning_progress_stage",
+}
+
+// ContrailAnalyticsDatabaseNodeRoleRefFields is db reference fields for ContrailAnalyticsDatabaseNodeRole
+var ContrailAnalyticsDatabaseNodeRoleRefFields = map[string][]string{}
+
+// CreateContrailAnalyticsDatabaseNodeRole inserts ContrailAnalyticsDatabaseNodeRole to DB
 func CreateContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, model *models.ContrailAnalyticsDatabaseNodeRole) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertContrailAnalyticsDatabaseNodeRoleQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(string(model.ProvisioningStartTime),
-		utils.MustJSON(model.FQName),
-		string(model.DisplayName),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertContrailAnalyticsDatabaseNodeRoleQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(utils.MustJSON(model.Perms2.Share),
 		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
-		string(model.UUID),
+		int(model.Perms2.GlobalAccess),
 		int(model.ProvisioningProgress),
-		string(model.ProvisioningProgressStage),
+		string(model.ProvisioningState),
+		string(model.ProvisioningStartTime),
+		string(model.UUID),
+		utils.MustJSON(model.FQName),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		int(model.IDPerms.Permissions.OtherAccess),
+		string(model.IDPerms.Permissions.Group),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
+		string(model.DisplayName),
 		utils.MustJSON(model.Annotations.KeyValuePair),
-		string(model.ProvisioningState),
-		string(model.ProvisioningLog))
+		string(model.ProvisioningLog),
+		string(model.ProvisioningProgressStage))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanContrailAnalyticsDatabaseNodeRole(rows *sql.Rows) (*models.ContrailAnalyticsDatabaseNodeRole, error) {
+func scanContrailAnalyticsDatabaseNodeRole(values map[string]interface{}) (*models.ContrailAnalyticsDatabaseNodeRole, error) {
 	m := models.MakeContrailAnalyticsDatabaseNodeRole()
 
-	var jsonFQName string
+	if value, ok := values["share"]; ok {
 
-	var jsonPerms2Share string
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
-	var jsonAnnotationsKeyValuePair string
-
-	if err := rows.Scan(&m.ProvisioningStartTime,
-		&jsonFQName,
-		&m.DisplayName,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.UUID,
-		&m.ProvisioningProgress,
-		&m.ProvisioningProgressStage,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&jsonAnnotationsKeyValuePair,
-		&m.ProvisioningState,
-		&m.ProvisioningLog); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+	if value, ok := values["owner"]; ok {
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["provisioning_progress"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.ProvisioningProgress = castedValue
+
+	}
+
+	if value, ok := values["provisioning_state"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ProvisioningState = castedValue
+
+	}
+
+	if value, ok := values["provisioning_start_time"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ProvisioningStartTime = castedValue
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["provisioning_log"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ProvisioningLog = castedValue
+
+	}
+
+	if value, ok := values["provisioning_progress_stage"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ProvisioningProgressStage = castedValue
+
+	}
 
 	return m, nil
 }
 
-func buildContrailAnalyticsDatabaseNodeRoleWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["provisioning_start_time"]; ok {
-		results = append(results, "provisioning_start_time = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["provisioning_progress_stage"]; ok {
-		results = append(results, "provisioning_progress_stage = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["permissions_owner"]; ok {
-		results = append(results, "permissions_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["provisioning_state"]; ok {
-		results = append(results, "provisioning_state = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["provisioning_log"]; ok {
-		results = append(results, "provisioning_log = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.ContrailAnalyticsDatabaseNodeRole, error) {
-	result := models.MakeContrailAnalyticsDatabaseNodeRoleSlice()
-	whereQuery, values := buildContrailAnalyticsDatabaseNodeRoleWhereQuery(where)
+// ListContrailAnalyticsDatabaseNodeRole lists ContrailAnalyticsDatabaseNodeRole with list spec.
+func ListContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, spec *db.ListSpec) ([]*models.ContrailAnalyticsDatabaseNodeRole, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listContrailAnalyticsDatabaseNodeRoleQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "contrail_analytics_database_node_role"
+	spec.Fields = ContrailAnalyticsDatabaseNodeRoleFields
+	spec.RefFields = ContrailAnalyticsDatabaseNodeRoleRefFields
+	result := models.MakeContrailAnalyticsDatabaseNodeRoleSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanContrailAnalyticsDatabaseNodeRole(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanContrailAnalyticsDatabaseNodeRole(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowContrailAnalyticsDatabaseNodeRole shows ContrailAnalyticsDatabaseNodeRole resource
 func ShowContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, uuid string) (*models.ContrailAnalyticsDatabaseNodeRole, error) {
-	rows, err := tx.Query(showContrailAnalyticsDatabaseNodeRoleQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListContrailAnalyticsDatabaseNodeRole(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanContrailAnalyticsDatabaseNodeRole(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateContrailAnalyticsDatabaseNodeRole updates a resource
 func UpdateContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, uuid string, model *models.ContrailAnalyticsDatabaseNodeRole) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteContrailAnalyticsDatabaseNodeRole deletes a resource
 func DeleteContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteContrailAnalyticsDatabaseNodeRoleQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

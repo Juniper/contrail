@@ -2,11 +2,11 @@ package utils
 
 import (
 	"database/sql"
-	"fmt"
-	"strings"
 
+	//loading mysql for testing
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -24,72 +24,27 @@ func connectDB(databaseConnection string) (*sql.DB, error) {
 	return db, nil
 }
 
-func ensureDB(db *sql.DB, dbName string) error {
-	_, err := db.Exec("drop database if exists " + dbName)
-	if err != nil {
-		return errors.Wrap(err, "drop db if exists failed")
-	}
-	_, err = db.Exec("create database " + dbName)
-	if err != nil {
-		return errors.Wrap(err, "create database failed")
-	}
-	return nil
-}
-
-func initDB(db *sql.DB, initSQL []string) error {
-	for _, query := range initSQL {
-		_, err := db.Exec(query)
-		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("init DB failed for %s", query))
-		}
-	}
-
-	return nil
-}
-
-func dropDB(db *sql.DB, dbName string) error {
-	_, err := db.Exec("drop database " + dbName)
-	if err != nil {
-		return errors.Wrap(err, "drop database failed")
-	}
-	return nil
-}
-
 //NewTestServer makes new test server based on test id.
-//In a test process, we will create database and initialize it.
 //You should call close() method to destroy test environment.
-func NewTestServer(testID string, initSQL []string) (*TestServer, error) {
+func NewTestServer() *TestServer {
 	err := InitConfig()
-	if err != nil {
-		return nil, err
-	}
+	log.SetLevel(log.DebugLevel)
+	log.Debug("Test server started")
 	databaseConnection := viper.GetString("database.connection")
-	connectionParts := strings.Split(databaseConnection, "/")
 	db, err := connectDB(databaseConnection)
 	if err != nil {
-		return nil, err
-	}
-	err = ensureDB(db, testID)
-	if err != nil {
-		return nil, err
-	}
-	connectionString := connectionParts[0] + "/" + testID
-	db, err = connectDB(connectionString)
-	if err != nil {
-		return nil, err
-	}
-	err = initDB(db, initSQL)
-	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 	return &TestServer{
-		DB:     db,
-		DBName: testID,
-	}, err
+		DB: db,
+	}
 }
 
 //Close stops test server and clean env.
 func (s *TestServer) Close() {
-	defer s.DB.Close()
-	dropDB(s.DB, s.DBName)
+	err := s.DB.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Debug("Closing test server")
 }

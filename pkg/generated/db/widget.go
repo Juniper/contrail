@@ -1,219 +1,348 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertWidgetQuery = "insert into `widget` (`fq_name`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`display_name`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`,`content_config`,`layout_config`,`uuid`,`container_config`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateWidgetQuery = "update `widget` set `fq_name` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`display_name` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`content_config` = ?,`layout_config` = ?,`uuid` = ?,`container_config` = ?,`key_value_pair` = ?;"
+const insertWidgetQuery = "insert into `widget` (`created`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`owner`,`owner_access`,`enable`,`description`,`display_name`,`content_config`,`uuid`,`key_value_pair`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`,`fq_name`,`container_config`,`layout_config`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateWidgetQuery = "update `widget` set `created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`enable` = ?,`description` = ?,`display_name` = ?,`content_config` = ?,`uuid` = ?,`key_value_pair` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`fq_name` = ?,`container_config` = ?,`layout_config` = ?;"
 const deleteWidgetQuery = "delete from `widget` where uuid = ?"
-const listWidgetQuery = "select `widget`.`fq_name`,`widget`.`last_modified`,`widget`.`owner`,`widget`.`owner_access`,`widget`.`other_access`,`widget`.`group`,`widget`.`group_access`,`widget`.`enable`,`widget`.`description`,`widget`.`created`,`widget`.`creator`,`widget`.`user_visible`,`widget`.`display_name`,`widget`.`share`,`widget`.`perms2_owner`,`widget`.`perms2_owner_access`,`widget`.`global_access`,`widget`.`content_config`,`widget`.`layout_config`,`widget`.`uuid`,`widget`.`container_config`,`widget`.`key_value_pair` from `widget`"
-const showWidgetQuery = "select `widget`.`fq_name`,`widget`.`last_modified`,`widget`.`owner`,`widget`.`owner_access`,`widget`.`other_access`,`widget`.`group`,`widget`.`group_access`,`widget`.`enable`,`widget`.`description`,`widget`.`created`,`widget`.`creator`,`widget`.`user_visible`,`widget`.`display_name`,`widget`.`share`,`widget`.`perms2_owner`,`widget`.`perms2_owner_access`,`widget`.`global_access`,`widget`.`content_config`,`widget`.`layout_config`,`widget`.`uuid`,`widget`.`container_config`,`widget`.`key_value_pair` from `widget` where uuid = ?"
 
+// WidgetFields is db columns for Widget
+var WidgetFields = []string{
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"other_access",
+	"group",
+	"group_access",
+	"owner",
+	"owner_access",
+	"enable",
+	"description",
+	"display_name",
+	"content_config",
+	"uuid",
+	"key_value_pair",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+	"fq_name",
+	"container_config",
+	"layout_config",
+}
+
+// WidgetRefFields is db reference fields for Widget
+var WidgetRefFields = map[string][]string{}
+
+// CreateWidget inserts Widget to DB
 func CreateWidget(tx *sql.Tx, model *models.Widget) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertWidgetQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(utils.MustJSON(model.FQName),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertWidgetQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(string(model.IDPerms.Created),
+		string(model.IDPerms.Creator),
+		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
 		string(model.DisplayName),
-		utils.MustJSON(model.Perms2.Share),
+		string(model.ContentConfig),
+		string(model.UUID),
+		utils.MustJSON(model.Annotations.KeyValuePair),
 		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
 		int(model.Perms2.GlobalAccess),
-		string(model.ContentConfig),
-		string(model.LayoutConfig),
-		string(model.UUID),
+		utils.MustJSON(model.Perms2.Share),
+		utils.MustJSON(model.FQName),
 		string(model.ContainerConfig),
-		utils.MustJSON(model.Annotations.KeyValuePair))
+		string(model.LayoutConfig))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanWidget(rows *sql.Rows) (*models.Widget, error) {
+func scanWidget(values map[string]interface{}) (*models.Widget, error) {
 	m := models.MakeWidget()
 
-	var jsonFQName string
+	if value, ok := values["created"]; ok {
 
-	var jsonPerms2Share string
+		castedValue := utils.InterfaceToString(value)
 
-	var jsonAnnotationsKeyValuePair string
+		m.IDPerms.Created = castedValue
 
-	if err := rows.Scan(&jsonFQName,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.DisplayName,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&m.ContentConfig,
-		&m.LayoutConfig,
-		&m.UUID,
-		&m.ContainerConfig,
-		&jsonAnnotationsKeyValuePair); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+	if value, ok := values["creator"]; ok {
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["content_config"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ContentConfig = castedValue
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["container_config"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ContainerConfig = castedValue
+
+	}
+
+	if value, ok := values["layout_config"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.LayoutConfig = castedValue
+
+	}
 
 	return m, nil
 }
 
-func buildWidgetWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["perms2_owner"]; ok {
-		results = append(results, "perms2_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["content_config"]; ok {
-		results = append(results, "content_config = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["layout_config"]; ok {
-		results = append(results, "layout_config = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["container_config"]; ok {
-		results = append(results, "container_config = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListWidget(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.Widget, error) {
-	result := models.MakeWidgetSlice()
-	whereQuery, values := buildWidgetWhereQuery(where)
+// ListWidget lists Widget with list spec.
+func ListWidget(tx *sql.Tx, spec *db.ListSpec) ([]*models.Widget, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listWidgetQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "widget"
+	spec.Fields = WidgetFields
+	spec.RefFields = WidgetRefFields
+	result := models.MakeWidgetSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanWidget(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanWidget(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowWidget shows Widget resource
 func ShowWidget(tx *sql.Tx, uuid string) (*models.Widget, error) {
-	rows, err := tx.Query(showWidgetQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListWidget(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanWidget(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateWidget updates a resource
 func UpdateWidget(tx *sql.Tx, uuid string, model *models.Widget) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteWidget deletes a resource
 func DeleteWidget(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteWidgetQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

@@ -1,212 +1,344 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertAccessControlListQuery = "insert into `access_control_list` (`display_name`,`key_value_pair`,`owner_access`,`global_access`,`share`,`owner`,`uuid`,`fq_name`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`access_control_list_hash`,`dynamic`,`acl_rule`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateAccessControlListQuery = "update `access_control_list` set `display_name` = ?,`key_value_pair` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`uuid` = ?,`fq_name` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`access_control_list_hash` = ?,`dynamic` = ?,`acl_rule` = ?;"
+const insertAccessControlListQuery = "insert into `access_control_list` (`fq_name`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`group`,`group_access`,`owner`,`owner_access`,`other_access`,`access_control_list_hash`,`acl_rule`,`dynamic`,`display_name`,`key_value_pair`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateAccessControlListQuery = "update `access_control_list` set `fq_name` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`access_control_list_hash` = ?,`acl_rule` = ?,`dynamic` = ?,`display_name` = ?,`key_value_pair` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`uuid` = ?;"
 const deleteAccessControlListQuery = "delete from `access_control_list` where uuid = ?"
-const listAccessControlListQuery = "select `access_control_list`.`display_name`,`access_control_list`.`key_value_pair`,`access_control_list`.`owner_access`,`access_control_list`.`global_access`,`access_control_list`.`share`,`access_control_list`.`owner`,`access_control_list`.`uuid`,`access_control_list`.`fq_name`,`access_control_list`.`group`,`access_control_list`.`group_access`,`access_control_list`.`permissions_owner`,`access_control_list`.`permissions_owner_access`,`access_control_list`.`other_access`,`access_control_list`.`enable`,`access_control_list`.`description`,`access_control_list`.`created`,`access_control_list`.`creator`,`access_control_list`.`user_visible`,`access_control_list`.`last_modified`,`access_control_list`.`access_control_list_hash`,`access_control_list`.`dynamic`,`access_control_list`.`acl_rule` from `access_control_list`"
-const showAccessControlListQuery = "select `access_control_list`.`display_name`,`access_control_list`.`key_value_pair`,`access_control_list`.`owner_access`,`access_control_list`.`global_access`,`access_control_list`.`share`,`access_control_list`.`owner`,`access_control_list`.`uuid`,`access_control_list`.`fq_name`,`access_control_list`.`group`,`access_control_list`.`group_access`,`access_control_list`.`permissions_owner`,`access_control_list`.`permissions_owner_access`,`access_control_list`.`other_access`,`access_control_list`.`enable`,`access_control_list`.`description`,`access_control_list`.`created`,`access_control_list`.`creator`,`access_control_list`.`user_visible`,`access_control_list`.`last_modified`,`access_control_list`.`access_control_list_hash`,`access_control_list`.`dynamic`,`access_control_list`.`acl_rule` from `access_control_list` where uuid = ?"
 
+// AccessControlListFields is db columns for AccessControlList
+var AccessControlListFields = []string{
+	"fq_name",
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"group",
+	"group_access",
+	"owner",
+	"owner_access",
+	"other_access",
+	"access_control_list_hash",
+	"acl_rule",
+	"dynamic",
+	"display_name",
+	"key_value_pair",
+	"share",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"uuid",
+}
+
+// AccessControlListRefFields is db reference fields for AccessControlList
+var AccessControlListRefFields = map[string][]string{}
+
+// CreateAccessControlList inserts AccessControlList to DB
 func CreateAccessControlList(tx *sql.Tx, model *models.AccessControlList) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertAccessControlListQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		string(model.UUID),
-		utils.MustJSON(model.FQName),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertAccessControlListQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(utils.MustJSON(model.FQName),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
+		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		int(model.IDPerms.Permissions.OtherAccess),
 		utils.MustJSON(model.AccessControlListHash),
+		utils.MustJSON(model.AccessControlListEntries.ACLRule),
 		bool(model.AccessControlListEntries.Dynamic),
-		utils.MustJSON(model.AccessControlListEntries.ACLRule))
+		string(model.DisplayName),
+		utils.MustJSON(model.Annotations.KeyValuePair),
+		utils.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		string(model.UUID))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanAccessControlList(rows *sql.Rows) (*models.AccessControlList, error) {
+func scanAccessControlList(values map[string]interface{}) (*models.AccessControlList, error) {
 	m := models.MakeAccessControlList()
 
-	var jsonAnnotationsKeyValuePair string
+	if value, ok := values["fq_name"]; ok {
 
-	var jsonPerms2Share string
+		json.Unmarshal(value.([]byte), &m.FQName)
 
-	var jsonFQName string
-
-	var jsonAccessControlListHash string
-
-	var jsonAccessControlListEntriesACLRule string
-
-	if err := rows.Scan(&m.DisplayName,
-		&jsonAnnotationsKeyValuePair,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.UUID,
-		&jsonFQName,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&jsonAccessControlListHash,
-		&m.AccessControlListEntries.Dynamic,
-		&jsonAccessControlListEntriesACLRule); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+	if value, ok := values["enable"]; ok {
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		castedValue := utils.InterfaceToBool(value)
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+		m.IDPerms.Enable = castedValue
 
-	json.Unmarshal([]byte(jsonAccessControlListHash), &m.AccessControlListHash)
+	}
 
-	json.Unmarshal([]byte(jsonAccessControlListEntriesACLRule), &m.AccessControlListEntries.ACLRule)
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["access_control_list_hash"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.AccessControlListHash)
+
+	}
+
+	if value, ok := values["acl_rule"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.AccessControlListEntries.ACLRule)
+
+	}
+
+	if value, ok := values["dynamic"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.AccessControlListEntries.Dynamic = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
 
 	return m, nil
 }
 
-func buildAccessControlListWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["permissions_owner"]; ok {
-		results = append(results, "permissions_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListAccessControlList(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.AccessControlList, error) {
-	result := models.MakeAccessControlListSlice()
-	whereQuery, values := buildAccessControlListWhereQuery(where)
+// ListAccessControlList lists AccessControlList with list spec.
+func ListAccessControlList(tx *sql.Tx, spec *db.ListSpec) ([]*models.AccessControlList, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listAccessControlListQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "access_control_list"
+	spec.Fields = AccessControlListFields
+	spec.RefFields = AccessControlListRefFields
+	result := models.MakeAccessControlListSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanAccessControlList(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanAccessControlList(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowAccessControlList shows AccessControlList resource
 func ShowAccessControlList(tx *sql.Tx, uuid string) (*models.AccessControlList, error) {
-	rows, err := tx.Query(showAccessControlListQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListAccessControlList(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanAccessControlList(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateAccessControlList updates a resource
 func UpdateAccessControlList(tx *sql.Tx, uuid string, model *models.AccessControlList) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteAccessControlList deletes a resource
 func DeleteAccessControlList(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteAccessControlListQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

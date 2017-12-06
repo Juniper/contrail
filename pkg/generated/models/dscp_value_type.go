@@ -4,15 +4,18 @@ package models
 
 type DscpValueType int
 
+// MakeDscpValueType makes DscpValueType
 func MakeDscpValueType() DscpValueType {
 	var data DscpValueType
 	return data
 }
 
+// InterfaceToDscpValueType makes DscpValueType from interface
 func InterfaceToDscpValueType(data interface{}) DscpValueType {
 	return data.(DscpValueType)
 }
 
+// InterfaceToDscpValueTypeSlice makes a slice of DscpValueType from interface
 func InterfaceToDscpValueTypeSlice(data interface{}) []DscpValueType {
 	list := data.([]interface{})
 	result := MakeDscpValueTypeSlice()
@@ -22,6 +25,7 @@ func InterfaceToDscpValueTypeSlice(data interface{}) []DscpValueType {
 	return result
 }
 
+// MakeDscpValueTypeSlice() makes a slice of DscpValueType
 func MakeDscpValueTypeSlice() []DscpValueType {
 	return []DscpValueType{}
 }

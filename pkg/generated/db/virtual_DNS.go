@@ -1,36 +1,78 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertVirtualDNSQuery = "insert into `virtual_DNS` (`next_virtual_DNS`,`dynamic_records_from_client`,`reverse_resolution`,`default_ttl_seconds`,`record_order`,`floating_ip_record`,`domain_name`,`external_visible`,`created`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`owner`,`owner_access`,`enable`,`description`,`display_name`,`key_value_pair`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateVirtualDNSQuery = "update `virtual_DNS` set `next_virtual_DNS` = ?,`dynamic_records_from_client` = ?,`reverse_resolution` = ?,`default_ttl_seconds` = ?,`record_order` = ?,`floating_ip_record` = ?,`domain_name` = ?,`external_visible` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`enable` = ?,`description` = ?,`display_name` = ?,`key_value_pair` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`uuid` = ?,`fq_name` = ?;"
+const insertVirtualDNSQuery = "insert into `virtual_DNS` (`external_visible`,`next_virtual_DNS`,`dynamic_records_from_client`,`reverse_resolution`,`default_ttl_seconds`,`record_order`,`floating_ip_record`,`domain_name`,`uuid`,`fq_name`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`owner`,`owner_access`,`enable`,`display_name`,`key_value_pair`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateVirtualDNSQuery = "update `virtual_DNS` set `external_visible` = ?,`next_virtual_DNS` = ?,`dynamic_records_from_client` = ?,`reverse_resolution` = ?,`default_ttl_seconds` = ?,`record_order` = ?,`floating_ip_record` = ?,`domain_name` = ?,`uuid` = ?,`fq_name` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`enable` = ?,`display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?;"
 const deleteVirtualDNSQuery = "delete from `virtual_DNS` where uuid = ?"
-const listVirtualDNSQuery = "select `virtual_DNS`.`next_virtual_DNS`,`virtual_DNS`.`dynamic_records_from_client`,`virtual_DNS`.`reverse_resolution`,`virtual_DNS`.`default_ttl_seconds`,`virtual_DNS`.`record_order`,`virtual_DNS`.`floating_ip_record`,`virtual_DNS`.`domain_name`,`virtual_DNS`.`external_visible`,`virtual_DNS`.`created`,`virtual_DNS`.`creator`,`virtual_DNS`.`user_visible`,`virtual_DNS`.`last_modified`,`virtual_DNS`.`other_access`,`virtual_DNS`.`group`,`virtual_DNS`.`group_access`,`virtual_DNS`.`owner`,`virtual_DNS`.`owner_access`,`virtual_DNS`.`enable`,`virtual_DNS`.`description`,`virtual_DNS`.`display_name`,`virtual_DNS`.`key_value_pair`,`virtual_DNS`.`share`,`virtual_DNS`.`perms2_owner`,`virtual_DNS`.`perms2_owner_access`,`virtual_DNS`.`global_access`,`virtual_DNS`.`uuid`,`virtual_DNS`.`fq_name` from `virtual_DNS`"
-const showVirtualDNSQuery = "select `virtual_DNS`.`next_virtual_DNS`,`virtual_DNS`.`dynamic_records_from_client`,`virtual_DNS`.`reverse_resolution`,`virtual_DNS`.`default_ttl_seconds`,`virtual_DNS`.`record_order`,`virtual_DNS`.`floating_ip_record`,`virtual_DNS`.`domain_name`,`virtual_DNS`.`external_visible`,`virtual_DNS`.`created`,`virtual_DNS`.`creator`,`virtual_DNS`.`user_visible`,`virtual_DNS`.`last_modified`,`virtual_DNS`.`other_access`,`virtual_DNS`.`group`,`virtual_DNS`.`group_access`,`virtual_DNS`.`owner`,`virtual_DNS`.`owner_access`,`virtual_DNS`.`enable`,`virtual_DNS`.`description`,`virtual_DNS`.`display_name`,`virtual_DNS`.`key_value_pair`,`virtual_DNS`.`share`,`virtual_DNS`.`perms2_owner`,`virtual_DNS`.`perms2_owner_access`,`virtual_DNS`.`global_access`,`virtual_DNS`.`uuid`,`virtual_DNS`.`fq_name` from `virtual_DNS` where uuid = ?"
 
+// VirtualDNSFields is db columns for VirtualDNS
+var VirtualDNSFields = []string{
+	"external_visible",
+	"next_virtual_DNS",
+	"dynamic_records_from_client",
+	"reverse_resolution",
+	"default_ttl_seconds",
+	"record_order",
+	"floating_ip_record",
+	"domain_name",
+	"uuid",
+	"fq_name",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"other_access",
+	"group",
+	"group_access",
+	"owner",
+	"owner_access",
+	"enable",
+	"display_name",
+	"key_value_pair",
+	"global_access",
+	"share",
+	"perms2_owner",
+	"perms2_owner_access",
+}
+
+// VirtualDNSRefFields is db reference fields for VirtualDNS
+var VirtualDNSRefFields = map[string][]string{}
+
+// CreateVirtualDNS inserts VirtualDNS to DB
 func CreateVirtualDNS(tx *sql.Tx, model *models.VirtualDNS) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertVirtualDNSQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(string(model.VirtualDNSData.NextVirtualDNS),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertVirtualDNSQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(bool(model.VirtualDNSData.ExternalVisible),
+		string(model.VirtualDNSData.NextVirtualDNS),
 		bool(model.VirtualDNSData.DynamicRecordsFromClient),
 		bool(model.VirtualDNSData.ReverseResolution),
 		int(model.VirtualDNSData.DefaultTTLSeconds),
 		string(model.VirtualDNSData.RecordOrder),
 		string(model.VirtualDNSData.FloatingIPRecord),
 		string(model.VirtualDNSData.DomainName),
-		bool(model.VirtualDNSData.ExternalVisible),
+		string(model.UUID),
+		utils.MustJSON(model.FQName),
+		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
@@ -41,194 +83,316 @@ func CreateVirtualDNS(tx *sql.Tx, model *models.VirtualDNS) error {
 		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
 		string(model.DisplayName),
 		utils.MustJSON(model.Annotations.KeyValuePair),
+		int(model.Perms2.GlobalAccess),
 		utils.MustJSON(model.Perms2.Share),
 		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		string(model.UUID),
-		utils.MustJSON(model.FQName))
+		int(model.Perms2.OwnerAccess))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanVirtualDNS(rows *sql.Rows) (*models.VirtualDNS, error) {
+func scanVirtualDNS(values map[string]interface{}) (*models.VirtualDNS, error) {
 	m := models.MakeVirtualDNS()
 
-	var jsonAnnotationsKeyValuePair string
+	if value, ok := values["external_visible"]; ok {
 
-	var jsonPerms2Share string
+		castedValue := utils.InterfaceToBool(value)
 
-	var jsonFQName string
+		m.VirtualDNSData.ExternalVisible = castedValue
 
-	if err := rows.Scan(&m.VirtualDNSData.NextVirtualDNS,
-		&m.VirtualDNSData.DynamicRecordsFromClient,
-		&m.VirtualDNSData.ReverseResolution,
-		&m.VirtualDNSData.DefaultTTLSeconds,
-		&m.VirtualDNSData.RecordOrder,
-		&m.VirtualDNSData.FloatingIPRecord,
-		&m.VirtualDNSData.DomainName,
-		&m.VirtualDNSData.ExternalVisible,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.DisplayName,
-		&jsonAnnotationsKeyValuePair,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&m.UUID,
-		&jsonFQName); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+	if value, ok := values["next_virtual_DNS"]; ok {
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+		m.VirtualDNSData.NextVirtualDNS = castedValue
+
+	}
+
+	if value, ok := values["dynamic_records_from_client"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.VirtualDNSData.DynamicRecordsFromClient = castedValue
+
+	}
+
+	if value, ok := values["reverse_resolution"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.VirtualDNSData.ReverseResolution = castedValue
+
+	}
+
+	if value, ok := values["default_ttl_seconds"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.VirtualDNSData.DefaultTTLSeconds = castedValue
+
+	}
+
+	if value, ok := values["record_order"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.VirtualDNSData.RecordOrder = models.DnsRecordOrderType(castedValue)
+
+	}
+
+	if value, ok := values["floating_ip_record"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.VirtualDNSData.FloatingIPRecord = models.FloatingIpDnsNotation(castedValue)
+
+	}
+
+	if value, ok := values["domain_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.VirtualDNSData.DomainName = castedValue
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
 
 	return m, nil
 }
 
-func buildVirtualDNSWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["next_virtual_DNS"]; ok {
-		results = append(results, "next_virtual_DNS = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["record_order"]; ok {
-		results = append(results, "record_order = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["floating_ip_record"]; ok {
-		results = append(results, "floating_ip_record = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["domain_name"]; ok {
-		results = append(results, "domain_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["perms2_owner"]; ok {
-		results = append(results, "perms2_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListVirtualDNS(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.VirtualDNS, error) {
-	result := models.MakeVirtualDNSSlice()
-	whereQuery, values := buildVirtualDNSWhereQuery(where)
+// ListVirtualDNS lists VirtualDNS with list spec.
+func ListVirtualDNS(tx *sql.Tx, spec *db.ListSpec) ([]*models.VirtualDNS, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listVirtualDNSQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "virtual_DNS"
+	spec.Fields = VirtualDNSFields
+	spec.RefFields = VirtualDNSRefFields
+	result := models.MakeVirtualDNSSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanVirtualDNS(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanVirtualDNS(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowVirtualDNS shows VirtualDNS resource
 func ShowVirtualDNS(tx *sql.Tx, uuid string) (*models.VirtualDNS, error) {
-	rows, err := tx.Query(showVirtualDNSQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListVirtualDNS(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanVirtualDNS(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateVirtualDNS updates a resource
 func UpdateVirtualDNS(tx *sql.Tx, uuid string, model *models.VirtualDNS) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteVirtualDNS deletes a resource
 func DeleteVirtualDNS(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteVirtualDNSQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

@@ -1,235 +1,409 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertLoadbalancerListenerQuery = "insert into `loadbalancer_listener` (`key_value_pair`,`default_tls_container`,`protocol`,`connection_limit`,`admin_state`,`sni_containers`,`protocol_port`,`owner_access`,`global_access`,`share`,`owner`,`uuid`,`fq_name`,`created`,`creator`,`user_visible`,`last_modified`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`enable`,`description`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateLoadbalancerListenerQuery = "update `loadbalancer_listener` set `key_value_pair` = ?,`default_tls_container` = ?,`protocol` = ?,`connection_limit` = ?,`admin_state` = ?,`sni_containers` = ?,`protocol_port` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`uuid` = ?,`fq_name` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`description` = ?,`display_name` = ?;"
+const insertLoadbalancerListenerQuery = "insert into `loadbalancer_listener` (`uuid`,`protocol`,`connection_limit`,`admin_state`,`sni_containers`,`protocol_port`,`default_tls_container`,`fq_name`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`display_name`,`key_value_pair`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateLoadbalancerListenerQuery = "update `loadbalancer_listener` set `uuid` = ?,`protocol` = ?,`connection_limit` = ?,`admin_state` = ?,`sni_containers` = ?,`protocol_port` = ?,`default_tls_container` = ?,`fq_name` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?;"
 const deleteLoadbalancerListenerQuery = "delete from `loadbalancer_listener` where uuid = ?"
-const listLoadbalancerListenerQuery = "select `loadbalancer_listener`.`key_value_pair`,`loadbalancer_listener`.`default_tls_container`,`loadbalancer_listener`.`protocol`,`loadbalancer_listener`.`connection_limit`,`loadbalancer_listener`.`admin_state`,`loadbalancer_listener`.`sni_containers`,`loadbalancer_listener`.`protocol_port`,`loadbalancer_listener`.`owner_access`,`loadbalancer_listener`.`global_access`,`loadbalancer_listener`.`share`,`loadbalancer_listener`.`owner`,`loadbalancer_listener`.`uuid`,`loadbalancer_listener`.`fq_name`,`loadbalancer_listener`.`created`,`loadbalancer_listener`.`creator`,`loadbalancer_listener`.`user_visible`,`loadbalancer_listener`.`last_modified`,`loadbalancer_listener`.`group_access`,`loadbalancer_listener`.`permissions_owner`,`loadbalancer_listener`.`permissions_owner_access`,`loadbalancer_listener`.`other_access`,`loadbalancer_listener`.`group`,`loadbalancer_listener`.`enable`,`loadbalancer_listener`.`description`,`loadbalancer_listener`.`display_name` from `loadbalancer_listener`"
-const showLoadbalancerListenerQuery = "select `loadbalancer_listener`.`key_value_pair`,`loadbalancer_listener`.`default_tls_container`,`loadbalancer_listener`.`protocol`,`loadbalancer_listener`.`connection_limit`,`loadbalancer_listener`.`admin_state`,`loadbalancer_listener`.`sni_containers`,`loadbalancer_listener`.`protocol_port`,`loadbalancer_listener`.`owner_access`,`loadbalancer_listener`.`global_access`,`loadbalancer_listener`.`share`,`loadbalancer_listener`.`owner`,`loadbalancer_listener`.`uuid`,`loadbalancer_listener`.`fq_name`,`loadbalancer_listener`.`created`,`loadbalancer_listener`.`creator`,`loadbalancer_listener`.`user_visible`,`loadbalancer_listener`.`last_modified`,`loadbalancer_listener`.`group_access`,`loadbalancer_listener`.`permissions_owner`,`loadbalancer_listener`.`permissions_owner_access`,`loadbalancer_listener`.`other_access`,`loadbalancer_listener`.`group`,`loadbalancer_listener`.`enable`,`loadbalancer_listener`.`description`,`loadbalancer_listener`.`display_name` from `loadbalancer_listener` where uuid = ?"
+
+// LoadbalancerListenerFields is db columns for LoadbalancerListener
+var LoadbalancerListenerFields = []string{
+	"uuid",
+	"protocol",
+	"connection_limit",
+	"admin_state",
+	"sni_containers",
+	"protocol_port",
+	"default_tls_container",
+	"fq_name",
+	"owner",
+	"owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"display_name",
+	"key_value_pair",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+}
+
+// LoadbalancerListenerRefFields is db reference fields for LoadbalancerListener
+var LoadbalancerListenerRefFields = map[string][]string{
+
+	"loadbalancer": {
+	// <utils.Schema Value>
+
+	},
+}
 
 const insertLoadbalancerListenerLoadbalancerQuery = "insert into `ref_loadbalancer_listener_loadbalancer` (`from`, `to` ) values (?, ?);"
 
+// CreateLoadbalancerListener inserts LoadbalancerListener to DB
 func CreateLoadbalancerListener(tx *sql.Tx, model *models.LoadbalancerListener) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertLoadbalancerListenerQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(utils.MustJSON(model.Annotations.KeyValuePair),
-		string(model.LoadbalancerListenerProperties.DefaultTLSContainer),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertLoadbalancerListenerQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(string(model.UUID),
 		string(model.LoadbalancerListenerProperties.Protocol),
 		int(model.LoadbalancerListenerProperties.ConnectionLimit),
 		bool(model.LoadbalancerListenerProperties.AdminState),
 		utils.MustJSON(model.LoadbalancerListenerProperties.SniContainers),
 		int(model.LoadbalancerListenerProperties.ProtocolPort),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		string(model.UUID),
+		string(model.LoadbalancerListenerProperties.DefaultTLSContainer),
 		utils.MustJSON(model.FQName),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.DisplayName))
+		string(model.IDPerms.Created),
+		string(model.IDPerms.Creator),
+		bool(model.IDPerms.UserVisible),
+		string(model.IDPerms.LastModified),
+		string(model.DisplayName),
+		utils.MustJSON(model.Annotations.KeyValuePair),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		utils.MustJSON(model.Perms2.Share))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
 	stmtLoadbalancerRef, err := tx.Prepare(insertLoadbalancerListenerLoadbalancerQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing LoadbalancerRefs create statement failed")
 	}
 	defer stmtLoadbalancerRef.Close()
 	for _, ref := range model.LoadbalancerRefs {
 		_, err = stmtLoadbalancerRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "LoadbalancerRefs create failed")
+		}
 	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanLoadbalancerListener(rows *sql.Rows) (*models.LoadbalancerListener, error) {
+func scanLoadbalancerListener(values map[string]interface{}) (*models.LoadbalancerListener, error) {
 	m := models.MakeLoadbalancerListener()
 
-	var jsonAnnotationsKeyValuePair string
+	if value, ok := values["uuid"]; ok {
 
-	var jsonLoadbalancerListenerPropertiesSniContainers string
+		castedValue := utils.InterfaceToString(value)
 
-	var jsonPerms2Share string
+		m.UUID = castedValue
 
-	var jsonFQName string
-
-	if err := rows.Scan(&jsonAnnotationsKeyValuePair,
-		&m.LoadbalancerListenerProperties.DefaultTLSContainer,
-		&m.LoadbalancerListenerProperties.Protocol,
-		&m.LoadbalancerListenerProperties.ConnectionLimit,
-		&m.LoadbalancerListenerProperties.AdminState,
-		&jsonLoadbalancerListenerPropertiesSniContainers,
-		&m.LoadbalancerListenerProperties.ProtocolPort,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.UUID,
-		&jsonFQName,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.DisplayName); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+	if value, ok := values["protocol"]; ok {
 
-	json.Unmarshal([]byte(jsonLoadbalancerListenerPropertiesSniContainers), &m.LoadbalancerListenerProperties.SniContainers)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		m.LoadbalancerListenerProperties.Protocol = models.LoadbalancerProtocolType(castedValue)
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+	}
+
+	if value, ok := values["connection_limit"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.LoadbalancerListenerProperties.ConnectionLimit = castedValue
+
+	}
+
+	if value, ok := values["admin_state"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.LoadbalancerListenerProperties.AdminState = castedValue
+
+	}
+
+	if value, ok := values["sni_containers"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.LoadbalancerListenerProperties.SniContainers)
+
+	}
+
+	if value, ok := values["protocol_port"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.LoadbalancerListenerProperties.ProtocolPort = castedValue
+
+	}
+
+	if value, ok := values["default_tls_container"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.LoadbalancerListenerProperties.DefaultTLSContainer = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["ref_loadbalancer"]; ok {
+		var references []interface{}
+		stringValue := utils.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap := reference.(map[string]interface{})
+			referenceModel := &models.LoadbalancerListenerLoadbalancerRef{}
+			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			m.LoadbalancerRefs = append(m.LoadbalancerRefs, referenceModel)
+
+		}
+	}
 
 	return m, nil
 }
 
-func buildLoadbalancerListenerWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["default_tls_container"]; ok {
-		results = append(results, "default_tls_container = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["protocol"]; ok {
-		results = append(results, "protocol = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["permissions_owner"]; ok {
-		results = append(results, "permissions_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListLoadbalancerListener(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.LoadbalancerListener, error) {
-	result := models.MakeLoadbalancerListenerSlice()
-	whereQuery, values := buildLoadbalancerListenerWhereQuery(where)
+// ListLoadbalancerListener lists LoadbalancerListener with list spec.
+func ListLoadbalancerListener(tx *sql.Tx, spec *db.ListSpec) ([]*models.LoadbalancerListener, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listLoadbalancerListenerQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "loadbalancer_listener"
+	spec.Fields = LoadbalancerListenerFields
+	spec.RefFields = LoadbalancerListenerRefFields
+	result := models.MakeLoadbalancerListenerSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanLoadbalancerListener(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanLoadbalancerListener(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowLoadbalancerListener shows LoadbalancerListener resource
 func ShowLoadbalancerListener(tx *sql.Tx, uuid string) (*models.LoadbalancerListener, error) {
-	rows, err := tx.Query(showLoadbalancerListenerQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListLoadbalancerListener(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanLoadbalancerListener(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateLoadbalancerListener updates a resource
 func UpdateLoadbalancerListener(tx *sql.Tx, uuid string, model *models.LoadbalancerListener) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteLoadbalancerListener deletes a resource
 func DeleteLoadbalancerListener(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteLoadbalancerListenerQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

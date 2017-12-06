@@ -1,294 +1,512 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertServiceInstanceQuery = "insert into `service_instance` (`fq_name`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`group`,`group_access`,`owner`,`owner_access`,`other_access`,`display_name`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`,`service_instance_bindings`,`auto_policy`,`management_virtual_network`,`virtual_router_id`,`right_ip_address`,`availability_zone`,`left_virtual_network`,`auto_scale`,`max_instances`,`left_ip_address`,`ha_mode`,`interface_list`,`right_virtual_network`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateServiceInstanceQuery = "update `service_instance` set `fq_name` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`service_instance_bindings` = ?,`auto_policy` = ?,`management_virtual_network` = ?,`virtual_router_id` = ?,`right_ip_address` = ?,`availability_zone` = ?,`left_virtual_network` = ?,`auto_scale` = ?,`max_instances` = ?,`left_ip_address` = ?,`ha_mode` = ?,`interface_list` = ?,`right_virtual_network` = ?,`uuid` = ?;"
+const insertServiceInstanceQuery = "insert into `service_instance` (`auto_policy`,`left_ip_address`,`right_virtual_network`,`max_instances`,`auto_scale`,`interface_list`,`left_virtual_network`,`availability_zone`,`right_ip_address`,`management_virtual_network`,`ha_mode`,`virtual_router_id`,`uuid`,`fq_name`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`display_name`,`key_value_pair`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`,`service_instance_bindings`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateServiceInstanceQuery = "update `service_instance` set `auto_policy` = ?,`left_ip_address` = ?,`right_virtual_network` = ?,`max_instances` = ?,`auto_scale` = ?,`interface_list` = ?,`left_virtual_network` = ?,`availability_zone` = ?,`right_ip_address` = ?,`management_virtual_network` = ?,`ha_mode` = ?,`virtual_router_id` = ?,`uuid` = ?,`fq_name` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`service_instance_bindings` = ?;"
 const deleteServiceInstanceQuery = "delete from `service_instance` where uuid = ?"
-const listServiceInstanceQuery = "select `service_instance`.`fq_name`,`service_instance`.`enable`,`service_instance`.`description`,`service_instance`.`created`,`service_instance`.`creator`,`service_instance`.`user_visible`,`service_instance`.`last_modified`,`service_instance`.`group`,`service_instance`.`group_access`,`service_instance`.`owner`,`service_instance`.`owner_access`,`service_instance`.`other_access`,`service_instance`.`display_name`,`service_instance`.`key_value_pair`,`service_instance`.`perms2_owner_access`,`service_instance`.`global_access`,`service_instance`.`share`,`service_instance`.`perms2_owner`,`service_instance`.`service_instance_bindings`,`service_instance`.`auto_policy`,`service_instance`.`management_virtual_network`,`service_instance`.`virtual_router_id`,`service_instance`.`right_ip_address`,`service_instance`.`availability_zone`,`service_instance`.`left_virtual_network`,`service_instance`.`auto_scale`,`service_instance`.`max_instances`,`service_instance`.`left_ip_address`,`service_instance`.`ha_mode`,`service_instance`.`interface_list`,`service_instance`.`right_virtual_network`,`service_instance`.`uuid` from `service_instance`"
-const showServiceInstanceQuery = "select `service_instance`.`fq_name`,`service_instance`.`enable`,`service_instance`.`description`,`service_instance`.`created`,`service_instance`.`creator`,`service_instance`.`user_visible`,`service_instance`.`last_modified`,`service_instance`.`group`,`service_instance`.`group_access`,`service_instance`.`owner`,`service_instance`.`owner_access`,`service_instance`.`other_access`,`service_instance`.`display_name`,`service_instance`.`key_value_pair`,`service_instance`.`perms2_owner_access`,`service_instance`.`global_access`,`service_instance`.`share`,`service_instance`.`perms2_owner`,`service_instance`.`service_instance_bindings`,`service_instance`.`auto_policy`,`service_instance`.`management_virtual_network`,`service_instance`.`virtual_router_id`,`service_instance`.`right_ip_address`,`service_instance`.`availability_zone`,`service_instance`.`left_virtual_network`,`service_instance`.`auto_scale`,`service_instance`.`max_instances`,`service_instance`.`left_ip_address`,`service_instance`.`ha_mode`,`service_instance`.`interface_list`,`service_instance`.`right_virtual_network`,`service_instance`.`uuid` from `service_instance` where uuid = ?"
+
+// ServiceInstanceFields is db columns for ServiceInstance
+var ServiceInstanceFields = []string{
+	"auto_policy",
+	"left_ip_address",
+	"right_virtual_network",
+	"max_instances",
+	"auto_scale",
+	"interface_list",
+	"left_virtual_network",
+	"availability_zone",
+	"right_ip_address",
+	"management_virtual_network",
+	"ha_mode",
+	"virtual_router_id",
+	"uuid",
+	"fq_name",
+	"owner",
+	"owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"display_name",
+	"key_value_pair",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+	"service_instance_bindings",
+}
+
+// ServiceInstanceRefFields is db reference fields for ServiceInstance
+var ServiceInstanceRefFields = map[string][]string{
+
+	"service_template": {
+	// <utils.Schema Value>
+
+	},
+
+	"instance_ip": {
+	// <utils.Schema Value>
+
+	},
+}
 
 const insertServiceInstanceServiceTemplateQuery = "insert into `ref_service_instance_service_template` (`from`, `to` ) values (?, ?);"
 
 const insertServiceInstanceInstanceIPQuery = "insert into `ref_service_instance_instance_ip` (`from`, `to` ) values (?, ?);"
 
+// CreateServiceInstance inserts ServiceInstance to DB
 func CreateServiceInstance(tx *sql.Tx, model *models.ServiceInstance) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceInstanceQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(utils.MustJSON(model.FQName),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertServiceInstanceQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(bool(model.ServiceInstanceProperties.AutoPolicy),
+		string(model.ServiceInstanceProperties.LeftIPAddress),
+		string(model.ServiceInstanceProperties.RightVirtualNetwork),
+		int(model.ServiceInstanceProperties.ScaleOut.MaxInstances),
+		bool(model.ServiceInstanceProperties.ScaleOut.AutoScale),
+		utils.MustJSON(model.ServiceInstanceProperties.InterfaceList),
+		string(model.ServiceInstanceProperties.LeftVirtualNetwork),
+		string(model.ServiceInstanceProperties.AvailabilityZone),
+		string(model.ServiceInstanceProperties.RightIPAddress),
+		string(model.ServiceInstanceProperties.ManagementVirtualNetwork),
+		string(model.ServiceInstanceProperties.HaMode),
+		string(model.ServiceInstanceProperties.VirtualRouterID),
+		string(model.UUID),
+		utils.MustJSON(model.FQName),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		int(model.IDPerms.Permissions.OtherAccess),
+		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.DisplayName),
 		utils.MustJSON(model.Annotations.KeyValuePair),
+		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
 		int(model.Perms2.GlobalAccess),
 		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		utils.MustJSON(model.ServiceInstanceBindings),
-		bool(model.ServiceInstanceProperties.AutoPolicy),
-		string(model.ServiceInstanceProperties.ManagementVirtualNetwork),
-		string(model.ServiceInstanceProperties.VirtualRouterID),
-		string(model.ServiceInstanceProperties.RightIPAddress),
-		string(model.ServiceInstanceProperties.AvailabilityZone),
-		string(model.ServiceInstanceProperties.LeftVirtualNetwork),
-		bool(model.ServiceInstanceProperties.ScaleOut.AutoScale),
-		int(model.ServiceInstanceProperties.ScaleOut.MaxInstances),
-		string(model.ServiceInstanceProperties.LeftIPAddress),
-		string(model.ServiceInstanceProperties.HaMode),
-		utils.MustJSON(model.ServiceInstanceProperties.InterfaceList),
-		string(model.ServiceInstanceProperties.RightVirtualNetwork),
-		string(model.UUID))
-
-	stmtServiceTemplateRef, err := tx.Prepare(insertServiceInstanceServiceTemplateQuery)
+		utils.MustJSON(model.ServiceInstanceBindings))
 	if err != nil {
-		return err
-	}
-	defer stmtServiceTemplateRef.Close()
-	for _, ref := range model.ServiceTemplateRefs {
-		_, err = stmtServiceTemplateRef.Exec(model.UUID, ref.UUID)
+		return errors.Wrap(err, "create failed")
 	}
 
 	stmtInstanceIPRef, err := tx.Prepare(insertServiceInstanceInstanceIPQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing InstanceIPRefs create statement failed")
 	}
 	defer stmtInstanceIPRef.Close()
 	for _, ref := range model.InstanceIPRefs {
 		_, err = stmtInstanceIPRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "InstanceIPRefs create failed")
+		}
 	}
 
+	stmtServiceTemplateRef, err := tx.Prepare(insertServiceInstanceServiceTemplateQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceTemplateRefs create statement failed")
+	}
+	defer stmtServiceTemplateRef.Close()
+	for _, ref := range model.ServiceTemplateRefs {
+		_, err = stmtServiceTemplateRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceTemplateRefs create failed")
+		}
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanServiceInstance(rows *sql.Rows) (*models.ServiceInstance, error) {
+func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance, error) {
 	m := models.MakeServiceInstance()
 
-	var jsonFQName string
+	if value, ok := values["auto_policy"]; ok {
 
-	var jsonAnnotationsKeyValuePair string
+		castedValue := utils.InterfaceToBool(value)
 
-	var jsonPerms2Share string
+		m.ServiceInstanceProperties.AutoPolicy = castedValue
 
-	var jsonServiceInstanceBindings string
-
-	var jsonServiceInstancePropertiesInterfaceList string
-
-	if err := rows.Scan(&jsonFQName,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.DisplayName,
-		&jsonAnnotationsKeyValuePair,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&jsonServiceInstanceBindings,
-		&m.ServiceInstanceProperties.AutoPolicy,
-		&m.ServiceInstanceProperties.ManagementVirtualNetwork,
-		&m.ServiceInstanceProperties.VirtualRouterID,
-		&m.ServiceInstanceProperties.RightIPAddress,
-		&m.ServiceInstanceProperties.AvailabilityZone,
-		&m.ServiceInstanceProperties.LeftVirtualNetwork,
-		&m.ServiceInstanceProperties.ScaleOut.AutoScale,
-		&m.ServiceInstanceProperties.ScaleOut.MaxInstances,
-		&m.ServiceInstanceProperties.LeftIPAddress,
-		&m.ServiceInstanceProperties.HaMode,
-		&jsonServiceInstancePropertiesInterfaceList,
-		&m.ServiceInstanceProperties.RightVirtualNetwork,
-		&m.UUID); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+	if value, ok := values["left_ip_address"]; ok {
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		m.ServiceInstanceProperties.LeftIPAddress = models.IpAddressType(castedValue)
 
-	json.Unmarshal([]byte(jsonServiceInstanceBindings), &m.ServiceInstanceBindings)
+	}
 
-	json.Unmarshal([]byte(jsonServiceInstancePropertiesInterfaceList), &m.ServiceInstanceProperties.InterfaceList)
+	if value, ok := values["right_virtual_network"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceInstanceProperties.RightVirtualNetwork = castedValue
+
+	}
+
+	if value, ok := values["max_instances"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.ServiceInstanceProperties.ScaleOut.MaxInstances = castedValue
+
+	}
+
+	if value, ok := values["auto_scale"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.ServiceInstanceProperties.ScaleOut.AutoScale = castedValue
+
+	}
+
+	if value, ok := values["interface_list"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.ServiceInstanceProperties.InterfaceList)
+
+	}
+
+	if value, ok := values["left_virtual_network"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceInstanceProperties.LeftVirtualNetwork = castedValue
+
+	}
+
+	if value, ok := values["availability_zone"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceInstanceProperties.AvailabilityZone = castedValue
+
+	}
+
+	if value, ok := values["right_ip_address"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceInstanceProperties.RightIPAddress = models.IpAddressType(castedValue)
+
+	}
+
+	if value, ok := values["management_virtual_network"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceInstanceProperties.ManagementVirtualNetwork = castedValue
+
+	}
+
+	if value, ok := values["ha_mode"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceInstanceProperties.HaMode = models.AddressMode(castedValue)
+
+	}
+
+	if value, ok := values["virtual_router_id"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceInstanceProperties.VirtualRouterID = castedValue
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["service_instance_bindings"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.ServiceInstanceBindings)
+
+	}
+
+	if value, ok := values["ref_service_template"]; ok {
+		var references []interface{}
+		stringValue := utils.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap := reference.(map[string]interface{})
+			referenceModel := &models.ServiceInstanceServiceTemplateRef{}
+			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			m.ServiceTemplateRefs = append(m.ServiceTemplateRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_instance_ip"]; ok {
+		var references []interface{}
+		stringValue := utils.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap := reference.(map[string]interface{})
+			referenceModel := &models.ServiceInstanceInstanceIPRef{}
+			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			m.InstanceIPRefs = append(m.InstanceIPRefs, referenceModel)
+
+			attr := models.MakeServiceInterfaceTag()
+			referenceModel.Attr = attr
+
+		}
+	}
 
 	return m, nil
 }
 
-func buildServiceInstanceWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["perms2_owner"]; ok {
-		results = append(results, "perms2_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["management_virtual_network"]; ok {
-		results = append(results, "management_virtual_network = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["virtual_router_id"]; ok {
-		results = append(results, "virtual_router_id = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["right_ip_address"]; ok {
-		results = append(results, "right_ip_address = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["availability_zone"]; ok {
-		results = append(results, "availability_zone = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["left_virtual_network"]; ok {
-		results = append(results, "left_virtual_network = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["left_ip_address"]; ok {
-		results = append(results, "left_ip_address = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["ha_mode"]; ok {
-		results = append(results, "ha_mode = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["right_virtual_network"]; ok {
-		results = append(results, "right_virtual_network = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListServiceInstance(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.ServiceInstance, error) {
-	result := models.MakeServiceInstanceSlice()
-	whereQuery, values := buildServiceInstanceWhereQuery(where)
+// ListServiceInstance lists ServiceInstance with list spec.
+func ListServiceInstance(tx *sql.Tx, spec *db.ListSpec) ([]*models.ServiceInstance, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listServiceInstanceQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "service_instance"
+	spec.Fields = ServiceInstanceFields
+	spec.RefFields = ServiceInstanceRefFields
+	result := models.MakeServiceInstanceSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanServiceInstance(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanServiceInstance(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowServiceInstance shows ServiceInstance resource
 func ShowServiceInstance(tx *sql.Tx, uuid string) (*models.ServiceInstance, error) {
-	rows, err := tx.Query(showServiceInstanceQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListServiceInstance(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanServiceInstance(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateServiceInstance updates a resource
 func UpdateServiceInstance(tx *sql.Tx, uuid string, model *models.ServiceInstance) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteServiceInstance deletes a resource
 func DeleteServiceInstance(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteServiceInstanceQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

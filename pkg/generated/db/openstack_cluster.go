@@ -1,326 +1,508 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertOpenstackClusterQuery = "insert into `openstack_cluster` (`contrail_cluster_id`,`external_allocation_pool_end`,`external_net_cidr`,`provisioning_state`,`provisioning_progress`,`provisioning_progress_stage`,`default_performance_drives`,`external_allocation_pool_start`,`owner`,`owner_access`,`global_access`,`share`,`fq_name`,`display_name`,`admin_password`,`default_storage_backend_bond_interface_members`,`key_value_pair`,`created`,`creator`,`user_visible`,`last_modified`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`enable`,`description`,`provisioning_log`,`public_gateway`,`public_ip`,`uuid`,`default_capacity_drives`,`default_journal_drives`,`default_osd_drives`,`default_storage_access_bond_interface_members`,`openstack_webui`,`provisioning_start_time`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateOpenstackClusterQuery = "update `openstack_cluster` set `contrail_cluster_id` = ?,`external_allocation_pool_end` = ?,`external_net_cidr` = ?,`provisioning_state` = ?,`provisioning_progress` = ?,`provisioning_progress_stage` = ?,`default_performance_drives` = ?,`external_allocation_pool_start` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`fq_name` = ?,`display_name` = ?,`admin_password` = ?,`default_storage_backend_bond_interface_members` = ?,`key_value_pair` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`enable` = ?,`description` = ?,`provisioning_log` = ?,`public_gateway` = ?,`public_ip` = ?,`uuid` = ?,`default_capacity_drives` = ?,`default_journal_drives` = ?,`default_osd_drives` = ?,`default_storage_access_bond_interface_members` = ?,`openstack_webui` = ?,`provisioning_start_time` = ?;"
+const insertOpenstackClusterQuery = "insert into `openstack_cluster` (`fq_name`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`group_access`,`owner`,`owner_access`,`other_access`,`group`,`contrail_cluster_id`,`default_capacity_drives`,`default_storage_backend_bond_interface_members`,`external_allocation_pool_start`,`public_gateway`,`public_ip`,`uuid`,`display_name`,`admin_password`,`default_osd_drives`,`default_performance_drives`,`provisioning_log`,`provisioning_progress`,`provisioning_progress_stage`,`key_value_pair`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`provisioning_start_time`,`provisioning_state`,`default_journal_drives`,`default_storage_access_bond_interface_members`,`openstack_webui`,`external_allocation_pool_end`,`external_net_cidr`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateOpenstackClusterQuery = "update `openstack_cluster` set `fq_name` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`contrail_cluster_id` = ?,`default_capacity_drives` = ?,`default_storage_backend_bond_interface_members` = ?,`external_allocation_pool_start` = ?,`public_gateway` = ?,`public_ip` = ?,`uuid` = ?,`display_name` = ?,`admin_password` = ?,`default_osd_drives` = ?,`default_performance_drives` = ?,`provisioning_log` = ?,`provisioning_progress` = ?,`provisioning_progress_stage` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`provisioning_start_time` = ?,`provisioning_state` = ?,`default_journal_drives` = ?,`default_storage_access_bond_interface_members` = ?,`openstack_webui` = ?,`external_allocation_pool_end` = ?,`external_net_cidr` = ?;"
 const deleteOpenstackClusterQuery = "delete from `openstack_cluster` where uuid = ?"
-const listOpenstackClusterQuery = "select `openstack_cluster`.`contrail_cluster_id`,`openstack_cluster`.`external_allocation_pool_end`,`openstack_cluster`.`external_net_cidr`,`openstack_cluster`.`provisioning_state`,`openstack_cluster`.`provisioning_progress`,`openstack_cluster`.`provisioning_progress_stage`,`openstack_cluster`.`default_performance_drives`,`openstack_cluster`.`external_allocation_pool_start`,`openstack_cluster`.`owner`,`openstack_cluster`.`owner_access`,`openstack_cluster`.`global_access`,`openstack_cluster`.`share`,`openstack_cluster`.`fq_name`,`openstack_cluster`.`display_name`,`openstack_cluster`.`admin_password`,`openstack_cluster`.`default_storage_backend_bond_interface_members`,`openstack_cluster`.`key_value_pair`,`openstack_cluster`.`created`,`openstack_cluster`.`creator`,`openstack_cluster`.`user_visible`,`openstack_cluster`.`last_modified`,`openstack_cluster`.`group`,`openstack_cluster`.`group_access`,`openstack_cluster`.`permissions_owner`,`openstack_cluster`.`permissions_owner_access`,`openstack_cluster`.`other_access`,`openstack_cluster`.`enable`,`openstack_cluster`.`description`,`openstack_cluster`.`provisioning_log`,`openstack_cluster`.`public_gateway`,`openstack_cluster`.`public_ip`,`openstack_cluster`.`uuid`,`openstack_cluster`.`default_capacity_drives`,`openstack_cluster`.`default_journal_drives`,`openstack_cluster`.`default_osd_drives`,`openstack_cluster`.`default_storage_access_bond_interface_members`,`openstack_cluster`.`openstack_webui`,`openstack_cluster`.`provisioning_start_time` from `openstack_cluster`"
-const showOpenstackClusterQuery = "select `openstack_cluster`.`contrail_cluster_id`,`openstack_cluster`.`external_allocation_pool_end`,`openstack_cluster`.`external_net_cidr`,`openstack_cluster`.`provisioning_state`,`openstack_cluster`.`provisioning_progress`,`openstack_cluster`.`provisioning_progress_stage`,`openstack_cluster`.`default_performance_drives`,`openstack_cluster`.`external_allocation_pool_start`,`openstack_cluster`.`owner`,`openstack_cluster`.`owner_access`,`openstack_cluster`.`global_access`,`openstack_cluster`.`share`,`openstack_cluster`.`fq_name`,`openstack_cluster`.`display_name`,`openstack_cluster`.`admin_password`,`openstack_cluster`.`default_storage_backend_bond_interface_members`,`openstack_cluster`.`key_value_pair`,`openstack_cluster`.`created`,`openstack_cluster`.`creator`,`openstack_cluster`.`user_visible`,`openstack_cluster`.`last_modified`,`openstack_cluster`.`group`,`openstack_cluster`.`group_access`,`openstack_cluster`.`permissions_owner`,`openstack_cluster`.`permissions_owner_access`,`openstack_cluster`.`other_access`,`openstack_cluster`.`enable`,`openstack_cluster`.`description`,`openstack_cluster`.`provisioning_log`,`openstack_cluster`.`public_gateway`,`openstack_cluster`.`public_ip`,`openstack_cluster`.`uuid`,`openstack_cluster`.`default_capacity_drives`,`openstack_cluster`.`default_journal_drives`,`openstack_cluster`.`default_osd_drives`,`openstack_cluster`.`default_storage_access_bond_interface_members`,`openstack_cluster`.`openstack_webui`,`openstack_cluster`.`provisioning_start_time` from `openstack_cluster` where uuid = ?"
 
+// OpenstackClusterFields is db columns for OpenstackCluster
+var OpenstackClusterFields = []string{
+	"fq_name",
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"group_access",
+	"owner",
+	"owner_access",
+	"other_access",
+	"group",
+	"contrail_cluster_id",
+	"default_capacity_drives",
+	"default_storage_backend_bond_interface_members",
+	"external_allocation_pool_start",
+	"public_gateway",
+	"public_ip",
+	"uuid",
+	"display_name",
+	"admin_password",
+	"default_osd_drives",
+	"default_performance_drives",
+	"provisioning_log",
+	"provisioning_progress",
+	"provisioning_progress_stage",
+	"key_value_pair",
+	"global_access",
+	"share",
+	"perms2_owner",
+	"perms2_owner_access",
+	"provisioning_start_time",
+	"provisioning_state",
+	"default_journal_drives",
+	"default_storage_access_bond_interface_members",
+	"openstack_webui",
+	"external_allocation_pool_end",
+	"external_net_cidr",
+}
+
+// OpenstackClusterRefFields is db reference fields for OpenstackCluster
+var OpenstackClusterRefFields = map[string][]string{}
+
+// CreateOpenstackCluster inserts OpenstackCluster to DB
 func CreateOpenstackCluster(tx *sql.Tx, model *models.OpenstackCluster) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertOpenstackClusterQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(string(model.ContrailClusterID),
-		string(model.ExternalAllocationPoolEnd),
-		string(model.ExternalNetCidr),
-		string(model.ProvisioningState),
-		int(model.ProvisioningProgress),
-		string(model.ProvisioningProgressStage),
-		string(model.DefaultPerformanceDrives),
-		string(model.ExternalAllocationPoolStart),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		utils.MustJSON(model.FQName),
-		string(model.DisplayName),
-		string(model.AdminPassword),
-		string(model.DefaultStorageBackendBondInterfaceMembers),
-		utils.MustJSON(model.Annotations.KeyValuePair),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertOpenstackClusterQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(utils.MustJSON(model.FQName),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.ProvisioningLog),
+		string(model.IDPerms.Permissions.Group),
+		string(model.ContrailClusterID),
+		string(model.DefaultCapacityDrives),
+		string(model.DefaultStorageBackendBondInterfaceMembers),
+		string(model.ExternalAllocationPoolStart),
 		string(model.PublicGateway),
 		string(model.PublicIP),
 		string(model.UUID),
-		string(model.DefaultCapacityDrives),
-		string(model.DefaultJournalDrives),
+		string(model.DisplayName),
+		string(model.AdminPassword),
 		string(model.DefaultOsdDrives),
+		string(model.DefaultPerformanceDrives),
+		string(model.ProvisioningLog),
+		int(model.ProvisioningProgress),
+		string(model.ProvisioningProgressStage),
+		utils.MustJSON(model.Annotations.KeyValuePair),
+		int(model.Perms2.GlobalAccess),
+		utils.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		string(model.ProvisioningStartTime),
+		string(model.ProvisioningState),
+		string(model.DefaultJournalDrives),
 		string(model.DefaultStorageAccessBondInterfaceMembers),
 		string(model.OpenstackWebui),
-		string(model.ProvisioningStartTime))
+		string(model.ExternalAllocationPoolEnd),
+		string(model.ExternalNetCidr))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanOpenstackCluster(rows *sql.Rows) (*models.OpenstackCluster, error) {
+func scanOpenstackCluster(values map[string]interface{}) (*models.OpenstackCluster, error) {
 	m := models.MakeOpenstackCluster()
 
-	var jsonPerms2Share string
+	if value, ok := values["fq_name"]; ok {
 
-	var jsonFQName string
+		json.Unmarshal(value.([]byte), &m.FQName)
 
-	var jsonAnnotationsKeyValuePair string
-
-	if err := rows.Scan(&m.ContrailClusterID,
-		&m.ExternalAllocationPoolEnd,
-		&m.ExternalNetCidr,
-		&m.ProvisioningState,
-		&m.ProvisioningProgress,
-		&m.ProvisioningProgressStage,
-		&m.DefaultPerformanceDrives,
-		&m.ExternalAllocationPoolStart,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&jsonFQName,
-		&m.DisplayName,
-		&m.AdminPassword,
-		&m.DefaultStorageBackendBondInterfaceMembers,
-		&jsonAnnotationsKeyValuePair,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.ProvisioningLog,
-		&m.PublicGateway,
-		&m.PublicIP,
-		&m.UUID,
-		&m.DefaultCapacityDrives,
-		&m.DefaultJournalDrives,
-		&m.DefaultOsdDrives,
-		&m.DefaultStorageAccessBondInterfaceMembers,
-		&m.OpenstackWebui,
-		&m.ProvisioningStartTime); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+	if value, ok := values["enable"]; ok {
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+		castedValue := utils.InterfaceToBool(value)
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["contrail_cluster_id"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ContrailClusterID = castedValue
+
+	}
+
+	if value, ok := values["default_capacity_drives"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DefaultCapacityDrives = castedValue
+
+	}
+
+	if value, ok := values["default_storage_backend_bond_interface_members"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DefaultStorageBackendBondInterfaceMembers = castedValue
+
+	}
+
+	if value, ok := values["external_allocation_pool_start"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ExternalAllocationPoolStart = castedValue
+
+	}
+
+	if value, ok := values["public_gateway"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.PublicGateway = castedValue
+
+	}
+
+	if value, ok := values["public_ip"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.PublicIP = castedValue
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["admin_password"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.AdminPassword = castedValue
+
+	}
+
+	if value, ok := values["default_osd_drives"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DefaultOsdDrives = castedValue
+
+	}
+
+	if value, ok := values["default_performance_drives"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DefaultPerformanceDrives = castedValue
+
+	}
+
+	if value, ok := values["provisioning_log"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ProvisioningLog = castedValue
+
+	}
+
+	if value, ok := values["provisioning_progress"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.ProvisioningProgress = castedValue
+
+	}
+
+	if value, ok := values["provisioning_progress_stage"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ProvisioningProgressStage = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["provisioning_start_time"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ProvisioningStartTime = castedValue
+
+	}
+
+	if value, ok := values["provisioning_state"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ProvisioningState = castedValue
+
+	}
+
+	if value, ok := values["default_journal_drives"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DefaultJournalDrives = castedValue
+
+	}
+
+	if value, ok := values["default_storage_access_bond_interface_members"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DefaultStorageAccessBondInterfaceMembers = castedValue
+
+	}
+
+	if value, ok := values["openstack_webui"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.OpenstackWebui = castedValue
+
+	}
+
+	if value, ok := values["external_allocation_pool_end"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ExternalAllocationPoolEnd = castedValue
+
+	}
+
+	if value, ok := values["external_net_cidr"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ExternalNetCidr = castedValue
+
+	}
 
 	return m, nil
 }
 
-func buildOpenstackClusterWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["contrail_cluster_id"]; ok {
-		results = append(results, "contrail_cluster_id = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["external_allocation_pool_end"]; ok {
-		results = append(results, "external_allocation_pool_end = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["external_net_cidr"]; ok {
-		results = append(results, "external_net_cidr = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["provisioning_state"]; ok {
-		results = append(results, "provisioning_state = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["provisioning_progress_stage"]; ok {
-		results = append(results, "provisioning_progress_stage = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["default_performance_drives"]; ok {
-		results = append(results, "default_performance_drives = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["external_allocation_pool_start"]; ok {
-		results = append(results, "external_allocation_pool_start = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["admin_password"]; ok {
-		results = append(results, "admin_password = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["default_storage_backend_bond_interface_members"]; ok {
-		results = append(results, "default_storage_backend_bond_interface_members = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["permissions_owner"]; ok {
-		results = append(results, "permissions_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["provisioning_log"]; ok {
-		results = append(results, "provisioning_log = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["public_gateway"]; ok {
-		results = append(results, "public_gateway = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["public_ip"]; ok {
-		results = append(results, "public_ip = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["default_capacity_drives"]; ok {
-		results = append(results, "default_capacity_drives = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["default_journal_drives"]; ok {
-		results = append(results, "default_journal_drives = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["default_osd_drives"]; ok {
-		results = append(results, "default_osd_drives = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["default_storage_access_bond_interface_members"]; ok {
-		results = append(results, "default_storage_access_bond_interface_members = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["openstack_webui"]; ok {
-		results = append(results, "openstack_webui = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["provisioning_start_time"]; ok {
-		results = append(results, "provisioning_start_time = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListOpenstackCluster(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.OpenstackCluster, error) {
-	result := models.MakeOpenstackClusterSlice()
-	whereQuery, values := buildOpenstackClusterWhereQuery(where)
+// ListOpenstackCluster lists OpenstackCluster with list spec.
+func ListOpenstackCluster(tx *sql.Tx, spec *db.ListSpec) ([]*models.OpenstackCluster, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listOpenstackClusterQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "openstack_cluster"
+	spec.Fields = OpenstackClusterFields
+	spec.RefFields = OpenstackClusterRefFields
+	result := models.MakeOpenstackClusterSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanOpenstackCluster(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanOpenstackCluster(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowOpenstackCluster shows OpenstackCluster resource
 func ShowOpenstackCluster(tx *sql.Tx, uuid string) (*models.OpenstackCluster, error) {
-	rows, err := tx.Query(showOpenstackClusterQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListOpenstackCluster(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanOpenstackCluster(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateOpenstackCluster updates a resource
 func UpdateOpenstackCluster(tx *sql.Tx, uuid string, model *models.OpenstackCluster) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteOpenstackCluster deletes a resource
 func DeleteOpenstackCluster(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteOpenstackClusterQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

@@ -4,15 +4,18 @@ package models
 
 type RouteNextHopType string
 
+// MakeRouteNextHopType makes RouteNextHopType
 func MakeRouteNextHopType() RouteNextHopType {
 	var data RouteNextHopType
 	return data
 }
 
+// InterfaceToRouteNextHopType makes RouteNextHopType from interface
 func InterfaceToRouteNextHopType(data interface{}) RouteNextHopType {
 	return data.(RouteNextHopType)
 }
 
+// InterfaceToRouteNextHopTypeSlice makes a slice of RouteNextHopType from interface
 func InterfaceToRouteNextHopTypeSlice(data interface{}) []RouteNextHopType {
 	list := data.([]interface{})
 	result := MakeRouteNextHopTypeSlice()
@@ -22,6 +25,7 @@ func InterfaceToRouteNextHopTypeSlice(data interface{}) []RouteNextHopType {
 	return result
 }
 
+// MakeRouteNextHopTypeSlice() makes a slice of RouteNextHopType
 func MakeRouteNextHopTypeSlice() []RouteNextHopType {
 	return []RouteNextHopType{}
 }

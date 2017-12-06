@@ -1,272 +1,469 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertServiceTemplateQuery = "insert into `service_template` (`ordered_interfaces`,`service_virtualization_type`,`interface_type`,`flavor`,`service_scaling`,`vrouter_instance_type`,`instance_data`,`image_name`,`service_mode`,`availability_zone_enable`,`version`,`service_type`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`display_name`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateServiceTemplateQuery = "update `service_template` set `ordered_interfaces` = ?,`service_virtualization_type` = ?,`interface_type` = ?,`flavor` = ?,`service_scaling` = ?,`vrouter_instance_type` = ?,`instance_data` = ?,`image_name` = ?,`service_mode` = ?,`availability_zone_enable` = ?,`version` = ?,`service_type` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`uuid` = ?,`fq_name` = ?;"
+const insertServiceTemplateQuery = "insert into `service_template` (`last_modified`,`group`,`group_access`,`owner`,`owner_access`,`other_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`display_name`,`key_value_pair`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`,`version`,`instance_data`,`interface_type`,`flavor`,`image_name`,`service_mode`,`service_scaling`,`availability_zone_enable`,`ordered_interfaces`,`service_virtualization_type`,`service_type`,`vrouter_instance_type`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateServiceTemplateQuery = "update `service_template` set `last_modified` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`version` = ?,`instance_data` = ?,`interface_type` = ?,`flavor` = ?,`image_name` = ?,`service_mode` = ?,`service_scaling` = ?,`availability_zone_enable` = ?,`ordered_interfaces` = ?,`service_virtualization_type` = ?,`service_type` = ?,`vrouter_instance_type` = ?,`uuid` = ?,`fq_name` = ?;"
 const deleteServiceTemplateQuery = "delete from `service_template` where uuid = ?"
-const listServiceTemplateQuery = "select `service_template`.`ordered_interfaces`,`service_template`.`service_virtualization_type`,`service_template`.`interface_type`,`service_template`.`flavor`,`service_template`.`service_scaling`,`service_template`.`vrouter_instance_type`,`service_template`.`instance_data`,`service_template`.`image_name`,`service_template`.`service_mode`,`service_template`.`availability_zone_enable`,`service_template`.`version`,`service_template`.`service_type`,`service_template`.`user_visible`,`service_template`.`last_modified`,`service_template`.`owner`,`service_template`.`owner_access`,`service_template`.`other_access`,`service_template`.`group`,`service_template`.`group_access`,`service_template`.`enable`,`service_template`.`description`,`service_template`.`created`,`service_template`.`creator`,`service_template`.`display_name`,`service_template`.`key_value_pair`,`service_template`.`perms2_owner_access`,`service_template`.`global_access`,`service_template`.`share`,`service_template`.`perms2_owner`,`service_template`.`uuid`,`service_template`.`fq_name` from `service_template`"
-const showServiceTemplateQuery = "select `service_template`.`ordered_interfaces`,`service_template`.`service_virtualization_type`,`service_template`.`interface_type`,`service_template`.`flavor`,`service_template`.`service_scaling`,`service_template`.`vrouter_instance_type`,`service_template`.`instance_data`,`service_template`.`image_name`,`service_template`.`service_mode`,`service_template`.`availability_zone_enable`,`service_template`.`version`,`service_template`.`service_type`,`service_template`.`user_visible`,`service_template`.`last_modified`,`service_template`.`owner`,`service_template`.`owner_access`,`service_template`.`other_access`,`service_template`.`group`,`service_template`.`group_access`,`service_template`.`enable`,`service_template`.`description`,`service_template`.`created`,`service_template`.`creator`,`service_template`.`display_name`,`service_template`.`key_value_pair`,`service_template`.`perms2_owner_access`,`service_template`.`global_access`,`service_template`.`share`,`service_template`.`perms2_owner`,`service_template`.`uuid`,`service_template`.`fq_name` from `service_template` where uuid = ?"
+
+// ServiceTemplateFields is db columns for ServiceTemplate
+var ServiceTemplateFields = []string{
+	"last_modified",
+	"group",
+	"group_access",
+	"owner",
+	"owner_access",
+	"other_access",
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"display_name",
+	"key_value_pair",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+	"version",
+	"instance_data",
+	"interface_type",
+	"flavor",
+	"image_name",
+	"service_mode",
+	"service_scaling",
+	"availability_zone_enable",
+	"ordered_interfaces",
+	"service_virtualization_type",
+	"service_type",
+	"vrouter_instance_type",
+	"uuid",
+	"fq_name",
+}
+
+// ServiceTemplateRefFields is db reference fields for ServiceTemplate
+var ServiceTemplateRefFields = map[string][]string{
+
+	"service_appliance_set": {
+	// <utils.Schema Value>
+
+	},
+}
 
 const insertServiceTemplateServiceApplianceSetQuery = "insert into `ref_service_template_service_appliance_set` (`from`, `to` ) values (?, ?);"
 
+// CreateServiceTemplate inserts ServiceTemplate to DB
 func CreateServiceTemplate(tx *sql.Tx, model *models.ServiceTemplate) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceTemplateQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(bool(model.ServiceTemplateProperties.OrderedInterfaces),
-		string(model.ServiceTemplateProperties.ServiceVirtualizationType),
-		utils.MustJSON(model.ServiceTemplateProperties.InterfaceType),
-		string(model.ServiceTemplateProperties.Flavor),
-		bool(model.ServiceTemplateProperties.ServiceScaling),
-		string(model.ServiceTemplateProperties.VrouterInstanceType),
-		string(model.ServiceTemplateProperties.InstanceData),
-		string(model.ServiceTemplateProperties.ImageName),
-		string(model.ServiceTemplateProperties.ServiceMode),
-		bool(model.ServiceTemplateProperties.AvailabilityZoneEnable),
-		int(model.ServiceTemplateProperties.Version),
-		string(model.ServiceTemplateProperties.ServiceType),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertServiceTemplateQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(string(model.IDPerms.LastModified),
+		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
+		bool(model.IDPerms.UserVisible),
 		string(model.DisplayName),
 		utils.MustJSON(model.Annotations.KeyValuePair),
+		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
 		int(model.Perms2.GlobalAccess),
 		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
+		int(model.ServiceTemplateProperties.Version),
+		string(model.ServiceTemplateProperties.InstanceData),
+		utils.MustJSON(model.ServiceTemplateProperties.InterfaceType),
+		string(model.ServiceTemplateProperties.Flavor),
+		string(model.ServiceTemplateProperties.ImageName),
+		string(model.ServiceTemplateProperties.ServiceMode),
+		bool(model.ServiceTemplateProperties.ServiceScaling),
+		bool(model.ServiceTemplateProperties.AvailabilityZoneEnable),
+		bool(model.ServiceTemplateProperties.OrderedInterfaces),
+		string(model.ServiceTemplateProperties.ServiceVirtualizationType),
+		string(model.ServiceTemplateProperties.ServiceType),
+		string(model.ServiceTemplateProperties.VrouterInstanceType),
 		string(model.UUID),
 		utils.MustJSON(model.FQName))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
 	stmtServiceApplianceSetRef, err := tx.Prepare(insertServiceTemplateServiceApplianceSetQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing ServiceApplianceSetRefs create statement failed")
 	}
 	defer stmtServiceApplianceSetRef.Close()
 	for _, ref := range model.ServiceApplianceSetRefs {
 		_, err = stmtServiceApplianceSetRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
+		}
 	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanServiceTemplate(rows *sql.Rows) (*models.ServiceTemplate, error) {
+func scanServiceTemplate(values map[string]interface{}) (*models.ServiceTemplate, error) {
 	m := models.MakeServiceTemplate()
 
-	var jsonServiceTemplatePropertiesInterfaceType string
+	if value, ok := values["last_modified"]; ok {
 
-	var jsonAnnotationsKeyValuePair string
+		castedValue := utils.InterfaceToString(value)
 
-	var jsonPerms2Share string
+		m.IDPerms.LastModified = castedValue
 
-	var jsonFQName string
-
-	if err := rows.Scan(&m.ServiceTemplateProperties.OrderedInterfaces,
-		&m.ServiceTemplateProperties.ServiceVirtualizationType,
-		&jsonServiceTemplatePropertiesInterfaceType,
-		&m.ServiceTemplateProperties.Flavor,
-		&m.ServiceTemplateProperties.ServiceScaling,
-		&m.ServiceTemplateProperties.VrouterInstanceType,
-		&m.ServiceTemplateProperties.InstanceData,
-		&m.ServiceTemplateProperties.ImageName,
-		&m.ServiceTemplateProperties.ServiceMode,
-		&m.ServiceTemplateProperties.AvailabilityZoneEnable,
-		&m.ServiceTemplateProperties.Version,
-		&m.ServiceTemplateProperties.ServiceType,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.DisplayName,
-		&jsonAnnotationsKeyValuePair,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.UUID,
-		&jsonFQName); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonServiceTemplatePropertiesInterfaceType), &m.ServiceTemplateProperties.InterfaceType)
+	if value, ok := values["group"]; ok {
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		m.IDPerms.Permissions.Group = castedValue
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["version"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.ServiceTemplateProperties.Version = castedValue
+
+	}
+
+	if value, ok := values["instance_data"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceTemplateProperties.InstanceData = castedValue
+
+	}
+
+	if value, ok := values["interface_type"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.ServiceTemplateProperties.InterfaceType)
+
+	}
+
+	if value, ok := values["flavor"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceTemplateProperties.Flavor = castedValue
+
+	}
+
+	if value, ok := values["image_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceTemplateProperties.ImageName = castedValue
+
+	}
+
+	if value, ok := values["service_mode"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceTemplateProperties.ServiceMode = models.ServiceModeType(castedValue)
+
+	}
+
+	if value, ok := values["service_scaling"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.ServiceTemplateProperties.ServiceScaling = castedValue
+
+	}
+
+	if value, ok := values["availability_zone_enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.ServiceTemplateProperties.AvailabilityZoneEnable = castedValue
+
+	}
+
+	if value, ok := values["ordered_interfaces"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.ServiceTemplateProperties.OrderedInterfaces = castedValue
+
+	}
+
+	if value, ok := values["service_virtualization_type"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceTemplateProperties.ServiceVirtualizationType = models.ServiceVirtualizationType(castedValue)
+
+	}
+
+	if value, ok := values["service_type"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceTemplateProperties.ServiceType = models.ServiceType(castedValue)
+
+	}
+
+	if value, ok := values["vrouter_instance_type"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceTemplateProperties.VrouterInstanceType = models.VRouterInstanceType(castedValue)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["ref_service_appliance_set"]; ok {
+		var references []interface{}
+		stringValue := utils.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap := reference.(map[string]interface{})
+			referenceModel := &models.ServiceTemplateServiceApplianceSetRef{}
+			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			m.ServiceApplianceSetRefs = append(m.ServiceApplianceSetRefs, referenceModel)
+
+		}
+	}
 
 	return m, nil
 }
 
-func buildServiceTemplateWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["service_virtualization_type"]; ok {
-		results = append(results, "service_virtualization_type = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["flavor"]; ok {
-		results = append(results, "flavor = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["vrouter_instance_type"]; ok {
-		results = append(results, "vrouter_instance_type = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["instance_data"]; ok {
-		results = append(results, "instance_data = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["image_name"]; ok {
-		results = append(results, "image_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["service_mode"]; ok {
-		results = append(results, "service_mode = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["service_type"]; ok {
-		results = append(results, "service_type = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["perms2_owner"]; ok {
-		results = append(results, "perms2_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListServiceTemplate(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.ServiceTemplate, error) {
-	result := models.MakeServiceTemplateSlice()
-	whereQuery, values := buildServiceTemplateWhereQuery(where)
+// ListServiceTemplate lists ServiceTemplate with list spec.
+func ListServiceTemplate(tx *sql.Tx, spec *db.ListSpec) ([]*models.ServiceTemplate, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listServiceTemplateQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "service_template"
+	spec.Fields = ServiceTemplateFields
+	spec.RefFields = ServiceTemplateRefFields
+	result := models.MakeServiceTemplateSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanServiceTemplate(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanServiceTemplate(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowServiceTemplate shows ServiceTemplate resource
 func ShowServiceTemplate(tx *sql.Tx, uuid string) (*models.ServiceTemplate, error) {
-	rows, err := tx.Query(showServiceTemplateQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListServiceTemplate(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanServiceTemplate(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateServiceTemplate updates a resource
 func UpdateServiceTemplate(tx *sql.Tx, uuid string, model *models.ServiceTemplate) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteServiceTemplate deletes a resource
 func DeleteServiceTemplate(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteServiceTemplateQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

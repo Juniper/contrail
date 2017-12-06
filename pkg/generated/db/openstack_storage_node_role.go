@@ -1,256 +1,408 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertOpenstackStorageNodeRoleQuery = "insert into `openstack_storage_node_role` (`key_value_pair`,`provisioning_log`,`provisioning_progress`,`provisioning_progress_stage`,`provisioning_start_time`,`provisioning_state`,`journal_drives`,`storage_backend_bond_interface_members`,`uuid`,`fq_name`,`osd_drives`,`storage_access_bond_interface_members`,`display_name`,`global_access`,`share`,`owner`,`owner_access`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`enable`,`description`,`created`,`creator`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateOpenstackStorageNodeRoleQuery = "update `openstack_storage_node_role` set `key_value_pair` = ?,`provisioning_log` = ?,`provisioning_progress` = ?,`provisioning_progress_stage` = ?,`provisioning_start_time` = ?,`provisioning_state` = ?,`journal_drives` = ?,`storage_backend_bond_interface_members` = ?,`uuid` = ?,`fq_name` = ?,`osd_drives` = ?,`storage_access_bond_interface_members` = ?,`display_name` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?;"
+const insertOpenstackStorageNodeRoleQuery = "insert into `openstack_storage_node_role` (`storage_backend_bond_interface_members`,`uuid`,`provisioning_progress_stage`,`provisioning_start_time`,`provisioning_state`,`provisioning_progress`,`fq_name`,`display_name`,`key_value_pair`,`provisioning_log`,`journal_drives`,`osd_drives`,`storage_access_bond_interface_members`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateOpenstackStorageNodeRoleQuery = "update `openstack_storage_node_role` set `storage_backend_bond_interface_members` = ?,`uuid` = ?,`provisioning_progress_stage` = ?,`provisioning_start_time` = ?,`provisioning_state` = ?,`provisioning_progress` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?,`provisioning_log` = ?,`journal_drives` = ?,`osd_drives` = ?,`storage_access_bond_interface_members` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?;"
 const deleteOpenstackStorageNodeRoleQuery = "delete from `openstack_storage_node_role` where uuid = ?"
-const listOpenstackStorageNodeRoleQuery = "select `openstack_storage_node_role`.`key_value_pair`,`openstack_storage_node_role`.`provisioning_log`,`openstack_storage_node_role`.`provisioning_progress`,`openstack_storage_node_role`.`provisioning_progress_stage`,`openstack_storage_node_role`.`provisioning_start_time`,`openstack_storage_node_role`.`provisioning_state`,`openstack_storage_node_role`.`journal_drives`,`openstack_storage_node_role`.`storage_backend_bond_interface_members`,`openstack_storage_node_role`.`uuid`,`openstack_storage_node_role`.`fq_name`,`openstack_storage_node_role`.`osd_drives`,`openstack_storage_node_role`.`storage_access_bond_interface_members`,`openstack_storage_node_role`.`display_name`,`openstack_storage_node_role`.`global_access`,`openstack_storage_node_role`.`share`,`openstack_storage_node_role`.`owner`,`openstack_storage_node_role`.`owner_access`,`openstack_storage_node_role`.`user_visible`,`openstack_storage_node_role`.`last_modified`,`openstack_storage_node_role`.`other_access`,`openstack_storage_node_role`.`group`,`openstack_storage_node_role`.`group_access`,`openstack_storage_node_role`.`permissions_owner`,`openstack_storage_node_role`.`permissions_owner_access`,`openstack_storage_node_role`.`enable`,`openstack_storage_node_role`.`description`,`openstack_storage_node_role`.`created`,`openstack_storage_node_role`.`creator` from `openstack_storage_node_role`"
-const showOpenstackStorageNodeRoleQuery = "select `openstack_storage_node_role`.`key_value_pair`,`openstack_storage_node_role`.`provisioning_log`,`openstack_storage_node_role`.`provisioning_progress`,`openstack_storage_node_role`.`provisioning_progress_stage`,`openstack_storage_node_role`.`provisioning_start_time`,`openstack_storage_node_role`.`provisioning_state`,`openstack_storage_node_role`.`journal_drives`,`openstack_storage_node_role`.`storage_backend_bond_interface_members`,`openstack_storage_node_role`.`uuid`,`openstack_storage_node_role`.`fq_name`,`openstack_storage_node_role`.`osd_drives`,`openstack_storage_node_role`.`storage_access_bond_interface_members`,`openstack_storage_node_role`.`display_name`,`openstack_storage_node_role`.`global_access`,`openstack_storage_node_role`.`share`,`openstack_storage_node_role`.`owner`,`openstack_storage_node_role`.`owner_access`,`openstack_storage_node_role`.`user_visible`,`openstack_storage_node_role`.`last_modified`,`openstack_storage_node_role`.`other_access`,`openstack_storage_node_role`.`group`,`openstack_storage_node_role`.`group_access`,`openstack_storage_node_role`.`permissions_owner`,`openstack_storage_node_role`.`permissions_owner_access`,`openstack_storage_node_role`.`enable`,`openstack_storage_node_role`.`description`,`openstack_storage_node_role`.`created`,`openstack_storage_node_role`.`creator` from `openstack_storage_node_role` where uuid = ?"
 
+// OpenstackStorageNodeRoleFields is db columns for OpenstackStorageNodeRole
+var OpenstackStorageNodeRoleFields = []string{
+	"storage_backend_bond_interface_members",
+	"uuid",
+	"provisioning_progress_stage",
+	"provisioning_start_time",
+	"provisioning_state",
+	"provisioning_progress",
+	"fq_name",
+	"display_name",
+	"key_value_pair",
+	"provisioning_log",
+	"journal_drives",
+	"osd_drives",
+	"storage_access_bond_interface_members",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"owner",
+	"owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"enable",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+}
+
+// OpenstackStorageNodeRoleRefFields is db reference fields for OpenstackStorageNodeRole
+var OpenstackStorageNodeRoleRefFields = map[string][]string{}
+
+// CreateOpenstackStorageNodeRole inserts OpenstackStorageNodeRole to DB
 func CreateOpenstackStorageNodeRole(tx *sql.Tx, model *models.OpenstackStorageNodeRole) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertOpenstackStorageNodeRoleQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(utils.MustJSON(model.Annotations.KeyValuePair),
-		string(model.ProvisioningLog),
-		int(model.ProvisioningProgress),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertOpenstackStorageNodeRoleQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(string(model.StorageBackendBondInterfaceMembers),
+		string(model.UUID),
 		string(model.ProvisioningProgressStage),
 		string(model.ProvisioningStartTime),
 		string(model.ProvisioningState),
-		string(model.JournalDrives),
-		string(model.StorageBackendBondInterfaceMembers),
-		string(model.UUID),
+		int(model.ProvisioningProgress),
 		utils.MustJSON(model.FQName),
+		string(model.DisplayName),
+		utils.MustJSON(model.Annotations.KeyValuePair),
+		string(model.ProvisioningLog),
+		string(model.JournalDrives),
 		string(model.OsdDrives),
 		string(model.StorageAccessBondInterfaceMembers),
-		string(model.DisplayName),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Created),
+		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
 		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator))
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		utils.MustJSON(model.Perms2.Share))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanOpenstackStorageNodeRole(rows *sql.Rows) (*models.OpenstackStorageNodeRole, error) {
+func scanOpenstackStorageNodeRole(values map[string]interface{}) (*models.OpenstackStorageNodeRole, error) {
 	m := models.MakeOpenstackStorageNodeRole()
 
-	var jsonAnnotationsKeyValuePair string
+	if value, ok := values["storage_backend_bond_interface_members"]; ok {
 
-	var jsonFQName string
+		castedValue := utils.InterfaceToString(value)
 
-	var jsonPerms2Share string
+		m.StorageBackendBondInterfaceMembers = castedValue
 
-	if err := rows.Scan(&jsonAnnotationsKeyValuePair,
-		&m.ProvisioningLog,
-		&m.ProvisioningProgress,
-		&m.ProvisioningProgressStage,
-		&m.ProvisioningStartTime,
-		&m.ProvisioningState,
-		&m.JournalDrives,
-		&m.StorageBackendBondInterfaceMembers,
-		&m.UUID,
-		&jsonFQName,
-		&m.OsdDrives,
-		&m.StorageAccessBondInterfaceMembers,
-		&m.DisplayName,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+	if value, ok := values["uuid"]; ok {
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["provisioning_progress_stage"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ProvisioningProgressStage = castedValue
+
+	}
+
+	if value, ok := values["provisioning_start_time"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ProvisioningStartTime = castedValue
+
+	}
+
+	if value, ok := values["provisioning_state"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ProvisioningState = castedValue
+
+	}
+
+	if value, ok := values["provisioning_progress"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.ProvisioningProgress = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["provisioning_log"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ProvisioningLog = castedValue
+
+	}
+
+	if value, ok := values["journal_drives"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.JournalDrives = castedValue
+
+	}
+
+	if value, ok := values["osd_drives"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.OsdDrives = castedValue
+
+	}
+
+	if value, ok := values["storage_access_bond_interface_members"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.StorageAccessBondInterfaceMembers = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
 
 	return m, nil
 }
 
-func buildOpenstackStorageNodeRoleWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["provisioning_log"]; ok {
-		results = append(results, "provisioning_log = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["provisioning_progress_stage"]; ok {
-		results = append(results, "provisioning_progress_stage = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["provisioning_start_time"]; ok {
-		results = append(results, "provisioning_start_time = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["provisioning_state"]; ok {
-		results = append(results, "provisioning_state = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["journal_drives"]; ok {
-		results = append(results, "journal_drives = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["storage_backend_bond_interface_members"]; ok {
-		results = append(results, "storage_backend_bond_interface_members = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["osd_drives"]; ok {
-		results = append(results, "osd_drives = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["storage_access_bond_interface_members"]; ok {
-		results = append(results, "storage_access_bond_interface_members = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["permissions_owner"]; ok {
-		results = append(results, "permissions_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListOpenstackStorageNodeRole(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.OpenstackStorageNodeRole, error) {
-	result := models.MakeOpenstackStorageNodeRoleSlice()
-	whereQuery, values := buildOpenstackStorageNodeRoleWhereQuery(where)
+// ListOpenstackStorageNodeRole lists OpenstackStorageNodeRole with list spec.
+func ListOpenstackStorageNodeRole(tx *sql.Tx, spec *db.ListSpec) ([]*models.OpenstackStorageNodeRole, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listOpenstackStorageNodeRoleQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "openstack_storage_node_role"
+	spec.Fields = OpenstackStorageNodeRoleFields
+	spec.RefFields = OpenstackStorageNodeRoleRefFields
+	result := models.MakeOpenstackStorageNodeRoleSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanOpenstackStorageNodeRole(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanOpenstackStorageNodeRole(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowOpenstackStorageNodeRole shows OpenstackStorageNodeRole resource
 func ShowOpenstackStorageNodeRole(tx *sql.Tx, uuid string) (*models.OpenstackStorageNodeRole, error) {
-	rows, err := tx.Query(showOpenstackStorageNodeRoleQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListOpenstackStorageNodeRole(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanOpenstackStorageNodeRole(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateOpenstackStorageNodeRole updates a resource
 func UpdateOpenstackStorageNodeRole(tx *sql.Tx, uuid string, model *models.OpenstackStorageNodeRole) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteOpenstackStorageNodeRole deletes a resource
 func DeleteOpenstackStorageNodeRole(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteOpenstackStorageNodeRoleQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

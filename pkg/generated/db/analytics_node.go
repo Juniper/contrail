@@ -1,205 +1,328 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertAnalyticsNodeQuery = "insert into `analytics_node` (`key_value_pair`,`analytics_node_ip_address`,`owner`,`owner_access`,`global_access`,`share`,`uuid`,`fq_name`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateAnalyticsNodeQuery = "update `analytics_node` set `key_value_pair` = ?,`analytics_node_ip_address` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`fq_name` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`display_name` = ?;"
+const insertAnalyticsNodeQuery = "insert into `analytics_node` (`key_value_pair`,`owner`,`owner_access`,`global_access`,`share`,`analytics_node_ip_address`,`uuid`,`fq_name`,`creator`,`user_visible`,`last_modified`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`enable`,`description`,`created`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateAnalyticsNodeQuery = "update `analytics_node` set `key_value_pair` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`analytics_node_ip_address` = ?,`uuid` = ?,`fq_name` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`display_name` = ?;"
 const deleteAnalyticsNodeQuery = "delete from `analytics_node` where uuid = ?"
-const listAnalyticsNodeQuery = "select `analytics_node`.`key_value_pair`,`analytics_node`.`analytics_node_ip_address`,`analytics_node`.`owner`,`analytics_node`.`owner_access`,`analytics_node`.`global_access`,`analytics_node`.`share`,`analytics_node`.`uuid`,`analytics_node`.`fq_name`,`analytics_node`.`enable`,`analytics_node`.`description`,`analytics_node`.`created`,`analytics_node`.`creator`,`analytics_node`.`user_visible`,`analytics_node`.`last_modified`,`analytics_node`.`permissions_owner`,`analytics_node`.`permissions_owner_access`,`analytics_node`.`other_access`,`analytics_node`.`group`,`analytics_node`.`group_access`,`analytics_node`.`display_name` from `analytics_node`"
-const showAnalyticsNodeQuery = "select `analytics_node`.`key_value_pair`,`analytics_node`.`analytics_node_ip_address`,`analytics_node`.`owner`,`analytics_node`.`owner_access`,`analytics_node`.`global_access`,`analytics_node`.`share`,`analytics_node`.`uuid`,`analytics_node`.`fq_name`,`analytics_node`.`enable`,`analytics_node`.`description`,`analytics_node`.`created`,`analytics_node`.`creator`,`analytics_node`.`user_visible`,`analytics_node`.`last_modified`,`analytics_node`.`permissions_owner`,`analytics_node`.`permissions_owner_access`,`analytics_node`.`other_access`,`analytics_node`.`group`,`analytics_node`.`group_access`,`analytics_node`.`display_name` from `analytics_node` where uuid = ?"
 
+// AnalyticsNodeFields is db columns for AnalyticsNode
+var AnalyticsNodeFields = []string{
+	"key_value_pair",
+	"owner",
+	"owner_access",
+	"global_access",
+	"share",
+	"analytics_node_ip_address",
+	"uuid",
+	"fq_name",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"group",
+	"group_access",
+	"permissions_owner",
+	"permissions_owner_access",
+	"other_access",
+	"enable",
+	"description",
+	"created",
+	"display_name",
+}
+
+// AnalyticsNodeRefFields is db reference fields for AnalyticsNode
+var AnalyticsNodeRefFields = map[string][]string{}
+
+// CreateAnalyticsNode inserts AnalyticsNode to DB
 func CreateAnalyticsNode(tx *sql.Tx, model *models.AnalyticsNode) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertAnalyticsNodeQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertAnalyticsNodeQuery,
+	}).Debug("create query")
 	_, err = stmt.Exec(utils.MustJSON(model.Annotations.KeyValuePair),
-		string(model.AnalyticsNodeIPAddress),
 		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
 		int(model.Perms2.GlobalAccess),
 		utils.MustJSON(model.Perms2.Share),
+		string(model.AnalyticsNodeIPAddress),
 		string(model.UUID),
 		utils.MustJSON(model.FQName),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
+		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Created),
 		string(model.DisplayName))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanAnalyticsNode(rows *sql.Rows) (*models.AnalyticsNode, error) {
+func scanAnalyticsNode(values map[string]interface{}) (*models.AnalyticsNode, error) {
 	m := models.MakeAnalyticsNode()
 
-	var jsonAnnotationsKeyValuePair string
+	if value, ok := values["key_value_pair"]; ok {
 
-	var jsonPerms2Share string
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
-	var jsonFQName string
-
-	if err := rows.Scan(&jsonAnnotationsKeyValuePair,
-		&m.AnalyticsNodeIPAddress,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.UUID,
-		&jsonFQName,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.DisplayName); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+	if value, ok := values["owner"]; ok {
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["analytics_node_ip_address"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.AnalyticsNodeIPAddress = models.IpAddressType(castedValue)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
 
 	return m, nil
 }
 
-func buildAnalyticsNodeWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["analytics_node_ip_address"]; ok {
-		results = append(results, "analytics_node_ip_address = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["permissions_owner"]; ok {
-		results = append(results, "permissions_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListAnalyticsNode(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.AnalyticsNode, error) {
-	result := models.MakeAnalyticsNodeSlice()
-	whereQuery, values := buildAnalyticsNodeWhereQuery(where)
+// ListAnalyticsNode lists AnalyticsNode with list spec.
+func ListAnalyticsNode(tx *sql.Tx, spec *db.ListSpec) ([]*models.AnalyticsNode, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listAnalyticsNodeQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "analytics_node"
+	spec.Fields = AnalyticsNodeFields
+	spec.RefFields = AnalyticsNodeRefFields
+	result := models.MakeAnalyticsNodeSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanAnalyticsNode(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanAnalyticsNode(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowAnalyticsNode shows AnalyticsNode resource
 func ShowAnalyticsNode(tx *sql.Tx, uuid string) (*models.AnalyticsNode, error) {
-	rows, err := tx.Query(showAnalyticsNodeQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListAnalyticsNode(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanAnalyticsNode(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateAnalyticsNode updates a resource
 func UpdateAnalyticsNode(tx *sql.Tx, uuid string, model *models.AnalyticsNode) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteAnalyticsNode deletes a resource
 func DeleteAnalyticsNode(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteAnalyticsNodeQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

@@ -1,275 +1,483 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertVirtualIPQuery = "insert into `virtual_ip` (`key_value_pair`,`owner`,`owner_access`,`global_access`,`share`,`persistence_cookie_name`,`admin_state`,`status`,`connection_limit`,`persistence_type`,`address`,`protocol_port`,`protocol`,`subnet_id`,`status_description`,`uuid`,`fq_name`,`last_modified`,`other_access`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateVirtualIPQuery = "update `virtual_ip` set `key_value_pair` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`persistence_cookie_name` = ?,`admin_state` = ?,`status` = ?,`connection_limit` = ?,`persistence_type` = ?,`address` = ?,`protocol_port` = ?,`protocol` = ?,`subnet_id` = ?,`status_description` = ?,`uuid` = ?,`fq_name` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`display_name` = ?;"
+const insertVirtualIPQuery = "insert into `virtual_ip` (`fq_name`,`user_visible`,`last_modified`,`group_access`,`owner`,`owner_access`,`other_access`,`group`,`enable`,`description`,`created`,`creator`,`protocol_port`,`status`,`protocol`,`address`,`subnet_id`,`persistence_cookie_name`,`persistence_type`,`connection_limit`,`admin_state`,`status_description`,`display_name`,`key_value_pair`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateVirtualIPQuery = "update `virtual_ip` set `fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`protocol_port` = ?,`status` = ?,`protocol` = ?,`address` = ?,`subnet_id` = ?,`persistence_cookie_name` = ?,`persistence_type` = ?,`connection_limit` = ?,`admin_state` = ?,`status_description` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?;"
 const deleteVirtualIPQuery = "delete from `virtual_ip` where uuid = ?"
-const listVirtualIPQuery = "select `virtual_ip`.`key_value_pair`,`virtual_ip`.`owner`,`virtual_ip`.`owner_access`,`virtual_ip`.`global_access`,`virtual_ip`.`share`,`virtual_ip`.`persistence_cookie_name`,`virtual_ip`.`admin_state`,`virtual_ip`.`status`,`virtual_ip`.`connection_limit`,`virtual_ip`.`persistence_type`,`virtual_ip`.`address`,`virtual_ip`.`protocol_port`,`virtual_ip`.`protocol`,`virtual_ip`.`subnet_id`,`virtual_ip`.`status_description`,`virtual_ip`.`uuid`,`virtual_ip`.`fq_name`,`virtual_ip`.`last_modified`,`virtual_ip`.`other_access`,`virtual_ip`.`group`,`virtual_ip`.`group_access`,`virtual_ip`.`permissions_owner`,`virtual_ip`.`permissions_owner_access`,`virtual_ip`.`enable`,`virtual_ip`.`description`,`virtual_ip`.`created`,`virtual_ip`.`creator`,`virtual_ip`.`user_visible`,`virtual_ip`.`display_name` from `virtual_ip`"
-const showVirtualIPQuery = "select `virtual_ip`.`key_value_pair`,`virtual_ip`.`owner`,`virtual_ip`.`owner_access`,`virtual_ip`.`global_access`,`virtual_ip`.`share`,`virtual_ip`.`persistence_cookie_name`,`virtual_ip`.`admin_state`,`virtual_ip`.`status`,`virtual_ip`.`connection_limit`,`virtual_ip`.`persistence_type`,`virtual_ip`.`address`,`virtual_ip`.`protocol_port`,`virtual_ip`.`protocol`,`virtual_ip`.`subnet_id`,`virtual_ip`.`status_description`,`virtual_ip`.`uuid`,`virtual_ip`.`fq_name`,`virtual_ip`.`last_modified`,`virtual_ip`.`other_access`,`virtual_ip`.`group`,`virtual_ip`.`group_access`,`virtual_ip`.`permissions_owner`,`virtual_ip`.`permissions_owner_access`,`virtual_ip`.`enable`,`virtual_ip`.`description`,`virtual_ip`.`created`,`virtual_ip`.`creator`,`virtual_ip`.`user_visible`,`virtual_ip`.`display_name` from `virtual_ip` where uuid = ?"
 
-const insertVirtualIPVirtualMachineInterfaceQuery = "insert into `ref_virtual_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
+// VirtualIPFields is db columns for VirtualIP
+var VirtualIPFields = []string{
+	"fq_name",
+	"user_visible",
+	"last_modified",
+	"group_access",
+	"owner",
+	"owner_access",
+	"other_access",
+	"group",
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"protocol_port",
+	"status",
+	"protocol",
+	"address",
+	"subnet_id",
+	"persistence_cookie_name",
+	"persistence_type",
+	"connection_limit",
+	"admin_state",
+	"status_description",
+	"display_name",
+	"key_value_pair",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+	"uuid",
+}
+
+// VirtualIPRefFields is db reference fields for VirtualIP
+var VirtualIPRefFields = map[string][]string{
+
+	"loadbalancer_pool": {
+	// <utils.Schema Value>
+
+	},
+
+	"virtual_machine_interface": {
+	// <utils.Schema Value>
+
+	},
+}
 
 const insertVirtualIPLoadbalancerPoolQuery = "insert into `ref_virtual_ip_loadbalancer_pool` (`from`, `to` ) values (?, ?);"
 
+const insertVirtualIPVirtualMachineInterfaceQuery = "insert into `ref_virtual_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
+
+// CreateVirtualIP inserts VirtualIP to DB
 func CreateVirtualIP(tx *sql.Tx, model *models.VirtualIP) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertVirtualIPQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(utils.MustJSON(model.Annotations.KeyValuePair),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.VirtualIPProperties.PersistenceCookieName),
-		bool(model.VirtualIPProperties.AdminState),
-		string(model.VirtualIPProperties.Status),
-		int(model.VirtualIPProperties.ConnectionLimit),
-		string(model.VirtualIPProperties.PersistenceType),
-		string(model.VirtualIPProperties.Address),
-		int(model.VirtualIPProperties.ProtocolPort),
-		string(model.VirtualIPProperties.Protocol),
-		string(model.VirtualIPProperties.SubnetID),
-		string(model.VirtualIPProperties.StatusDescription),
-		string(model.UUID),
-		utils.MustJSON(model.FQName),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertVirtualIPQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(utils.MustJSON(model.FQName),
+		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		int(model.IDPerms.Permissions.OtherAccess),
+		string(model.IDPerms.Permissions.Group),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.DisplayName))
+		int(model.VirtualIPProperties.ProtocolPort),
+		string(model.VirtualIPProperties.Status),
+		string(model.VirtualIPProperties.Protocol),
+		string(model.VirtualIPProperties.Address),
+		string(model.VirtualIPProperties.SubnetID),
+		string(model.VirtualIPProperties.PersistenceCookieName),
+		string(model.VirtualIPProperties.PersistenceType),
+		int(model.VirtualIPProperties.ConnectionLimit),
+		bool(model.VirtualIPProperties.AdminState),
+		string(model.VirtualIPProperties.StatusDescription),
+		string(model.DisplayName),
+		utils.MustJSON(model.Annotations.KeyValuePair),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		utils.MustJSON(model.Perms2.Share),
+		string(model.UUID))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
 	stmtLoadbalancerPoolRef, err := tx.Prepare(insertVirtualIPLoadbalancerPoolQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing LoadbalancerPoolRefs create statement failed")
 	}
 	defer stmtLoadbalancerPoolRef.Close()
 	for _, ref := range model.LoadbalancerPoolRefs {
 		_, err = stmtLoadbalancerPoolRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "LoadbalancerPoolRefs create failed")
+		}
 	}
 
 	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertVirtualIPVirtualMachineInterfaceQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
 	}
 	defer stmtVirtualMachineInterfaceRef.Close()
 	for _, ref := range model.VirtualMachineInterfaceRefs {
 		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
 	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanVirtualIP(rows *sql.Rows) (*models.VirtualIP, error) {
+func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 	m := models.MakeVirtualIP()
 
-	var jsonAnnotationsKeyValuePair string
+	if value, ok := values["fq_name"]; ok {
 
-	var jsonPerms2Share string
+		json.Unmarshal(value.([]byte), &m.FQName)
 
-	var jsonFQName string
-
-	if err := rows.Scan(&jsonAnnotationsKeyValuePair,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.VirtualIPProperties.PersistenceCookieName,
-		&m.VirtualIPProperties.AdminState,
-		&m.VirtualIPProperties.Status,
-		&m.VirtualIPProperties.ConnectionLimit,
-		&m.VirtualIPProperties.PersistenceType,
-		&m.VirtualIPProperties.Address,
-		&m.VirtualIPProperties.ProtocolPort,
-		&m.VirtualIPProperties.Protocol,
-		&m.VirtualIPProperties.SubnetID,
-		&m.VirtualIPProperties.StatusDescription,
-		&m.UUID,
-		&jsonFQName,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.DisplayName); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+	if value, ok := values["user_visible"]; ok {
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		castedValue := utils.InterfaceToBool(value)
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["protocol_port"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.VirtualIPProperties.ProtocolPort = castedValue
+
+	}
+
+	if value, ok := values["status"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.VirtualIPProperties.Status = castedValue
+
+	}
+
+	if value, ok := values["protocol"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.VirtualIPProperties.Protocol = models.LoadbalancerProtocolType(castedValue)
+
+	}
+
+	if value, ok := values["address"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.VirtualIPProperties.Address = models.IpAddressType(castedValue)
+
+	}
+
+	if value, ok := values["subnet_id"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.VirtualIPProperties.SubnetID = models.UuidStringType(castedValue)
+
+	}
+
+	if value, ok := values["persistence_cookie_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.VirtualIPProperties.PersistenceCookieName = castedValue
+
+	}
+
+	if value, ok := values["persistence_type"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.VirtualIPProperties.PersistenceType = models.SessionPersistenceType(castedValue)
+
+	}
+
+	if value, ok := values["connection_limit"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.VirtualIPProperties.ConnectionLimit = castedValue
+
+	}
+
+	if value, ok := values["admin_state"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.VirtualIPProperties.AdminState = castedValue
+
+	}
+
+	if value, ok := values["status_description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.VirtualIPProperties.StatusDescription = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["ref_loadbalancer_pool"]; ok {
+		var references []interface{}
+		stringValue := utils.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap := reference.(map[string]interface{})
+			referenceModel := &models.VirtualIPLoadbalancerPoolRef{}
+			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			m.LoadbalancerPoolRefs = append(m.LoadbalancerPoolRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_machine_interface"]; ok {
+		var references []interface{}
+		stringValue := utils.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap := reference.(map[string]interface{})
+			referenceModel := &models.VirtualIPVirtualMachineInterfaceRef{}
+			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
 
 	return m, nil
 }
 
-func buildVirtualIPWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["persistence_cookie_name"]; ok {
-		results = append(results, "persistence_cookie_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["status"]; ok {
-		results = append(results, "status = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["persistence_type"]; ok {
-		results = append(results, "persistence_type = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["address"]; ok {
-		results = append(results, "address = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["protocol"]; ok {
-		results = append(results, "protocol = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["subnet_id"]; ok {
-		results = append(results, "subnet_id = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["status_description"]; ok {
-		results = append(results, "status_description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["permissions_owner"]; ok {
-		results = append(results, "permissions_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListVirtualIP(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.VirtualIP, error) {
-	result := models.MakeVirtualIPSlice()
-	whereQuery, values := buildVirtualIPWhereQuery(where)
+// ListVirtualIP lists VirtualIP with list spec.
+func ListVirtualIP(tx *sql.Tx, spec *db.ListSpec) ([]*models.VirtualIP, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listVirtualIPQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "virtual_ip"
+	spec.Fields = VirtualIPFields
+	spec.RefFields = VirtualIPRefFields
+	result := models.MakeVirtualIPSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanVirtualIP(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanVirtualIP(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowVirtualIP shows VirtualIP resource
 func ShowVirtualIP(tx *sql.Tx, uuid string) (*models.VirtualIP, error) {
-	rows, err := tx.Query(showVirtualIPQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListVirtualIP(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanVirtualIP(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateVirtualIP updates a resource
 func UpdateVirtualIP(tx *sql.Tx, uuid string, model *models.VirtualIP) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteVirtualIP deletes a resource
 func DeleteVirtualIP(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteVirtualIPQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

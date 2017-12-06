@@ -1,39 +1,70 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertBGPRouterQuery = "insert into `bgp_router` (`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`display_name`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateBGPRouterQuery = "update `bgp_router` set `last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`uuid` = ?,`fq_name` = ?;"
+const insertBGPRouterQuery = "insert into `bgp_router` (`created`,`creator`,`user_visible`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`description`,`display_name`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateBGPRouterQuery = "update `bgp_router` set `created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`description` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`uuid` = ?,`fq_name` = ?;"
 const deleteBGPRouterQuery = "delete from `bgp_router` where uuid = ?"
-const listBGPRouterQuery = "select `bgp_router`.`last_modified`,`bgp_router`.`owner`,`bgp_router`.`owner_access`,`bgp_router`.`other_access`,`bgp_router`.`group`,`bgp_router`.`group_access`,`bgp_router`.`enable`,`bgp_router`.`description`,`bgp_router`.`created`,`bgp_router`.`creator`,`bgp_router`.`user_visible`,`bgp_router`.`display_name`,`bgp_router`.`key_value_pair`,`bgp_router`.`perms2_owner_access`,`bgp_router`.`global_access`,`bgp_router`.`share`,`bgp_router`.`perms2_owner`,`bgp_router`.`uuid`,`bgp_router`.`fq_name` from `bgp_router`"
-const showBGPRouterQuery = "select `bgp_router`.`last_modified`,`bgp_router`.`owner`,`bgp_router`.`owner_access`,`bgp_router`.`other_access`,`bgp_router`.`group`,`bgp_router`.`group_access`,`bgp_router`.`enable`,`bgp_router`.`description`,`bgp_router`.`created`,`bgp_router`.`creator`,`bgp_router`.`user_visible`,`bgp_router`.`display_name`,`bgp_router`.`key_value_pair`,`bgp_router`.`perms2_owner_access`,`bgp_router`.`global_access`,`bgp_router`.`share`,`bgp_router`.`perms2_owner`,`bgp_router`.`uuid`,`bgp_router`.`fq_name` from `bgp_router` where uuid = ?"
 
+// BGPRouterFields is db columns for BGPRouter
+var BGPRouterFields = []string{
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"owner",
+	"enable",
+	"description",
+	"display_name",
+	"key_value_pair",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+	"perms2_owner",
+	"uuid",
+	"fq_name",
+}
+
+// BGPRouterRefFields is db reference fields for BGPRouter
+var BGPRouterRefFields = map[string][]string{}
+
+// CreateBGPRouter inserts BGPRouter to DB
 func CreateBGPRouter(tx *sql.Tx, model *models.BGPRouter) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertBGPRouterQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertBGPRouterQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(string(model.IDPerms.Created),
+		string(model.IDPerms.Creator),
+		bool(model.IDPerms.UserVisible),
+		string(model.IDPerms.LastModified),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
 		string(model.DisplayName),
 		utils.MustJSON(model.Annotations.KeyValuePair),
 		int(model.Perms2.OwnerAccess),
@@ -42,157 +73,246 @@ func CreateBGPRouter(tx *sql.Tx, model *models.BGPRouter) error {
 		string(model.Perms2.Owner),
 		string(model.UUID),
 		utils.MustJSON(model.FQName))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanBGPRouter(rows *sql.Rows) (*models.BGPRouter, error) {
+func scanBGPRouter(values map[string]interface{}) (*models.BGPRouter, error) {
 	m := models.MakeBGPRouter()
 
-	var jsonAnnotationsKeyValuePair string
+	if value, ok := values["created"]; ok {
 
-	var jsonPerms2Share string
+		castedValue := utils.InterfaceToString(value)
 
-	var jsonFQName string
+		m.IDPerms.Created = castedValue
 
-	if err := rows.Scan(&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.DisplayName,
-		&jsonAnnotationsKeyValuePair,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.UUID,
-		&jsonFQName); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+	if value, ok := values["creator"]; ok {
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
 
 	return m, nil
 }
 
-func buildBGPRouterWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["perms2_owner"]; ok {
-		results = append(results, "perms2_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListBGPRouter(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.BGPRouter, error) {
-	result := models.MakeBGPRouterSlice()
-	whereQuery, values := buildBGPRouterWhereQuery(where)
+// ListBGPRouter lists BGPRouter with list spec.
+func ListBGPRouter(tx *sql.Tx, spec *db.ListSpec) ([]*models.BGPRouter, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listBGPRouterQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "bgp_router"
+	spec.Fields = BGPRouterFields
+	spec.RefFields = BGPRouterRefFields
+	result := models.MakeBGPRouterSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanBGPRouter(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanBGPRouter(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowBGPRouter shows BGPRouter resource
 func ShowBGPRouter(tx *sql.Tx, uuid string) (*models.BGPRouter, error) {
-	rows, err := tx.Query(showBGPRouterQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListBGPRouter(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanBGPRouter(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateBGPRouter updates a resource
 func UpdateBGPRouter(tx *sql.Tx, uuid string, model *models.BGPRouter) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteBGPRouter deletes a resource
 func DeleteBGPRouter(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteBGPRouterQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

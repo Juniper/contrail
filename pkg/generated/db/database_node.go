@@ -1,205 +1,328 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertDatabaseNodeQuery = "insert into `database_node` (`key_value_pair`,`owner`,`owner_access`,`global_access`,`share`,`database_node_ip_address`,`uuid`,`fq_name`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`enable`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateDatabaseNodeQuery = "update `database_node` set `key_value_pair` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`database_node_ip_address` = ?,`uuid` = ?,`fq_name` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`enable` = ?,`display_name` = ?;"
+const insertDatabaseNodeQuery = "insert into `database_node` (`uuid`,`database_node_ip_address`,`fq_name`,`created`,`creator`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`display_name`,`key_value_pair`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateDatabaseNodeQuery = "update `database_node` set `uuid` = ?,`database_node_ip_address` = ?,`fq_name` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?;"
 const deleteDatabaseNodeQuery = "delete from `database_node` where uuid = ?"
-const listDatabaseNodeQuery = "select `database_node`.`key_value_pair`,`database_node`.`owner`,`database_node`.`owner_access`,`database_node`.`global_access`,`database_node`.`share`,`database_node`.`database_node_ip_address`,`database_node`.`uuid`,`database_node`.`fq_name`,`database_node`.`description`,`database_node`.`created`,`database_node`.`creator`,`database_node`.`user_visible`,`database_node`.`last_modified`,`database_node`.`other_access`,`database_node`.`group`,`database_node`.`group_access`,`database_node`.`permissions_owner`,`database_node`.`permissions_owner_access`,`database_node`.`enable`,`database_node`.`display_name` from `database_node`"
-const showDatabaseNodeQuery = "select `database_node`.`key_value_pair`,`database_node`.`owner`,`database_node`.`owner_access`,`database_node`.`global_access`,`database_node`.`share`,`database_node`.`database_node_ip_address`,`database_node`.`uuid`,`database_node`.`fq_name`,`database_node`.`description`,`database_node`.`created`,`database_node`.`creator`,`database_node`.`user_visible`,`database_node`.`last_modified`,`database_node`.`other_access`,`database_node`.`group`,`database_node`.`group_access`,`database_node`.`permissions_owner`,`database_node`.`permissions_owner_access`,`database_node`.`enable`,`database_node`.`display_name` from `database_node` where uuid = ?"
 
+// DatabaseNodeFields is db columns for DatabaseNode
+var DatabaseNodeFields = []string{
+	"uuid",
+	"database_node_ip_address",
+	"fq_name",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"owner",
+	"owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"enable",
+	"description",
+	"display_name",
+	"key_value_pair",
+	"global_access",
+	"share",
+	"perms2_owner",
+	"perms2_owner_access",
+}
+
+// DatabaseNodeRefFields is db reference fields for DatabaseNode
+var DatabaseNodeRefFields = map[string][]string{}
+
+// CreateDatabaseNode inserts DatabaseNode to DB
 func CreateDatabaseNode(tx *sql.Tx, model *models.DatabaseNode) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertDatabaseNodeQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(utils.MustJSON(model.Annotations.KeyValuePair),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertDatabaseNodeQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(string(model.UUID),
 		string(model.DatabaseNodeIPAddress),
-		string(model.UUID),
 		utils.MustJSON(model.FQName),
-		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
 		bool(model.IDPerms.Enable),
-		string(model.DisplayName))
+		string(model.IDPerms.Description),
+		string(model.DisplayName),
+		utils.MustJSON(model.Annotations.KeyValuePair),
+		int(model.Perms2.GlobalAccess),
+		utils.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanDatabaseNode(rows *sql.Rows) (*models.DatabaseNode, error) {
+func scanDatabaseNode(values map[string]interface{}) (*models.DatabaseNode, error) {
 	m := models.MakeDatabaseNode()
 
-	var jsonAnnotationsKeyValuePair string
+	if value, ok := values["uuid"]; ok {
 
-	var jsonPerms2Share string
+		castedValue := utils.InterfaceToString(value)
 
-	var jsonFQName string
+		m.UUID = castedValue
 
-	if err := rows.Scan(&jsonAnnotationsKeyValuePair,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.DatabaseNodeIPAddress,
-		&m.UUID,
-		&jsonFQName,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Enable,
-		&m.DisplayName); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+	if value, ok := values["database_node_ip_address"]; ok {
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+		m.DatabaseNodeIPAddress = models.IpAddressType(castedValue)
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
 
 	return m, nil
 }
 
-func buildDatabaseNodeWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["database_node_ip_address"]; ok {
-		results = append(results, "database_node_ip_address = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["permissions_owner"]; ok {
-		results = append(results, "permissions_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListDatabaseNode(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.DatabaseNode, error) {
-	result := models.MakeDatabaseNodeSlice()
-	whereQuery, values := buildDatabaseNodeWhereQuery(where)
+// ListDatabaseNode lists DatabaseNode with list spec.
+func ListDatabaseNode(tx *sql.Tx, spec *db.ListSpec) ([]*models.DatabaseNode, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listDatabaseNodeQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "database_node"
+	spec.Fields = DatabaseNodeFields
+	spec.RefFields = DatabaseNodeRefFields
+	result := models.MakeDatabaseNodeSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanDatabaseNode(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanDatabaseNode(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowDatabaseNode shows DatabaseNode resource
 func ShowDatabaseNode(tx *sql.Tx, uuid string) (*models.DatabaseNode, error) {
-	rows, err := tx.Query(showDatabaseNodeQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListDatabaseNode(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanDatabaseNode(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateDatabaseNode updates a resource
 func UpdateDatabaseNode(tx *sql.Tx, uuid string, model *models.DatabaseNode) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteDatabaseNode deletes a resource
 func DeleteDatabaseNode(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteDatabaseNodeQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

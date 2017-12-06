@@ -4,15 +4,18 @@ package models
 
 type TrafficDirectionType string
 
+// MakeTrafficDirectionType makes TrafficDirectionType
 func MakeTrafficDirectionType() TrafficDirectionType {
 	var data TrafficDirectionType
 	return data
 }
 
+// InterfaceToTrafficDirectionType makes TrafficDirectionType from interface
 func InterfaceToTrafficDirectionType(data interface{}) TrafficDirectionType {
 	return data.(TrafficDirectionType)
 }
 
+// InterfaceToTrafficDirectionTypeSlice makes a slice of TrafficDirectionType from interface
 func InterfaceToTrafficDirectionTypeSlice(data interface{}) []TrafficDirectionType {
 	list := data.([]interface{})
 	result := MakeTrafficDirectionTypeSlice()
@@ -22,6 +25,7 @@ func InterfaceToTrafficDirectionTypeSlice(data interface{}) []TrafficDirectionTy
 	return result
 }
 
+// MakeTrafficDirectionTypeSlice() makes a slice of TrafficDirectionType
 func MakeTrafficDirectionTypeSlice() []TrafficDirectionType {
 	return []TrafficDirectionType{}
 }

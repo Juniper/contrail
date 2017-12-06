@@ -1,223 +1,371 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertServiceConnectionModuleQuery = "insert into `service_connection_module` (`fq_name`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`description`,`created`,`creator`,`user_visible`,`display_name`,`service_type`,`e2_service`,`key_value_pair`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateServiceConnectionModuleQuery = "update `service_connection_module` set `fq_name` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`display_name` = ?,`service_type` = ?,`e2_service` = ?,`key_value_pair` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?;"
+const insertServiceConnectionModuleQuery = "insert into `service_connection_module` (`service_type`,`e2_service`,`uuid`,`fq_name`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`display_name`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateServiceConnectionModuleQuery = "update `service_connection_module` set `service_type` = ?,`e2_service` = ?,`uuid` = ?,`fq_name` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?;"
 const deleteServiceConnectionModuleQuery = "delete from `service_connection_module` where uuid = ?"
-const listServiceConnectionModuleQuery = "select `service_connection_module`.`fq_name`,`service_connection_module`.`last_modified`,`service_connection_module`.`owner_access`,`service_connection_module`.`other_access`,`service_connection_module`.`group`,`service_connection_module`.`group_access`,`service_connection_module`.`owner`,`service_connection_module`.`enable`,`service_connection_module`.`description`,`service_connection_module`.`created`,`service_connection_module`.`creator`,`service_connection_module`.`user_visible`,`service_connection_module`.`display_name`,`service_connection_module`.`service_type`,`service_connection_module`.`e2_service`,`service_connection_module`.`key_value_pair`,`service_connection_module`.`perms2_owner`,`service_connection_module`.`perms2_owner_access`,`service_connection_module`.`global_access`,`service_connection_module`.`share`,`service_connection_module`.`uuid` from `service_connection_module`"
-const showServiceConnectionModuleQuery = "select `service_connection_module`.`fq_name`,`service_connection_module`.`last_modified`,`service_connection_module`.`owner_access`,`service_connection_module`.`other_access`,`service_connection_module`.`group`,`service_connection_module`.`group_access`,`service_connection_module`.`owner`,`service_connection_module`.`enable`,`service_connection_module`.`description`,`service_connection_module`.`created`,`service_connection_module`.`creator`,`service_connection_module`.`user_visible`,`service_connection_module`.`display_name`,`service_connection_module`.`service_type`,`service_connection_module`.`e2_service`,`service_connection_module`.`key_value_pair`,`service_connection_module`.`perms2_owner`,`service_connection_module`.`perms2_owner_access`,`service_connection_module`.`global_access`,`service_connection_module`.`share`,`service_connection_module`.`uuid` from `service_connection_module` where uuid = ?"
+
+// ServiceConnectionModuleFields is db columns for ServiceConnectionModule
+var ServiceConnectionModuleFields = []string{
+	"service_type",
+	"e2_service",
+	"uuid",
+	"fq_name",
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"owner",
+	"display_name",
+	"key_value_pair",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+	"perms2_owner",
+}
+
+// ServiceConnectionModuleRefFields is db reference fields for ServiceConnectionModule
+var ServiceConnectionModuleRefFields = map[string][]string{
+
+	"service_object": {
+	// <utils.Schema Value>
+
+	},
+}
 
 const insertServiceConnectionModuleServiceObjectQuery = "insert into `ref_service_connection_module_service_object` (`from`, `to` ) values (?, ?);"
 
+// CreateServiceConnectionModule inserts ServiceConnectionModule to DB
 func CreateServiceConnectionModule(tx *sql.Tx, model *models.ServiceConnectionModule) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceConnectionModuleQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(utils.MustJSON(model.FQName),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertServiceConnectionModuleQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(string(model.ServiceType),
+		string(model.E2Service),
+		string(model.UUID),
+		utils.MustJSON(model.FQName),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Created),
+		string(model.IDPerms.Creator),
+		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
 		string(model.DisplayName),
-		string(model.ServiceType),
-		string(model.E2Service),
 		utils.MustJSON(model.Annotations.KeyValuePair),
-		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
 		int(model.Perms2.GlobalAccess),
 		utils.MustJSON(model.Perms2.Share),
-		string(model.UUID))
+		string(model.Perms2.Owner))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
 	stmtServiceObjectRef, err := tx.Prepare(insertServiceConnectionModuleServiceObjectQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing ServiceObjectRefs create statement failed")
 	}
 	defer stmtServiceObjectRef.Close()
 	for _, ref := range model.ServiceObjectRefs {
 		_, err = stmtServiceObjectRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceObjectRefs create failed")
+		}
 	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanServiceConnectionModule(rows *sql.Rows) (*models.ServiceConnectionModule, error) {
+func scanServiceConnectionModule(values map[string]interface{}) (*models.ServiceConnectionModule, error) {
 	m := models.MakeServiceConnectionModule()
 
-	var jsonFQName string
+	if value, ok := values["service_type"]; ok {
 
-	var jsonAnnotationsKeyValuePair string
+		castedValue := utils.InterfaceToString(value)
 
-	var jsonPerms2Share string
+		m.ServiceType = models.ServiceConnectionType(castedValue)
 
-	if err := rows.Scan(&jsonFQName,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.DisplayName,
-		&m.ServiceType,
-		&m.E2Service,
-		&jsonAnnotationsKeyValuePair,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.UUID); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+	if value, ok := values["e2_service"]; ok {
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		m.E2Service = models.E2servicetype(castedValue)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["ref_service_object"]; ok {
+		var references []interface{}
+		stringValue := utils.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap := reference.(map[string]interface{})
+			referenceModel := &models.ServiceConnectionModuleServiceObjectRef{}
+			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			m.ServiceObjectRefs = append(m.ServiceObjectRefs, referenceModel)
+
+		}
+	}
 
 	return m, nil
 }
 
-func buildServiceConnectionModuleWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["service_type"]; ok {
-		results = append(results, "service_type = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["e2_service"]; ok {
-		results = append(results, "e2_service = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["perms2_owner"]; ok {
-		results = append(results, "perms2_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListServiceConnectionModule(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.ServiceConnectionModule, error) {
-	result := models.MakeServiceConnectionModuleSlice()
-	whereQuery, values := buildServiceConnectionModuleWhereQuery(where)
+// ListServiceConnectionModule lists ServiceConnectionModule with list spec.
+func ListServiceConnectionModule(tx *sql.Tx, spec *db.ListSpec) ([]*models.ServiceConnectionModule, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listServiceConnectionModuleQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "service_connection_module"
+	spec.Fields = ServiceConnectionModuleFields
+	spec.RefFields = ServiceConnectionModuleRefFields
+	result := models.MakeServiceConnectionModuleSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanServiceConnectionModule(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanServiceConnectionModule(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowServiceConnectionModule shows ServiceConnectionModule resource
 func ShowServiceConnectionModule(tx *sql.Tx, uuid string) (*models.ServiceConnectionModule, error) {
-	rows, err := tx.Query(showServiceConnectionModuleQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListServiceConnectionModule(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanServiceConnectionModule(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateServiceConnectionModule updates a resource
 func UpdateServiceConnectionModule(tx *sql.Tx, uuid string, model *models.ServiceConnectionModule) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteServiceConnectionModule deletes a resource
 func DeleteServiceConnectionModule(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteServiceConnectionModuleQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

@@ -1,44 +1,77 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertGlobalVrouterConfigQuery = "insert into `global_vrouter_config` (`forwarding_mode`,`vxlan_network_identifier_mode`,`owner`,`owner_access`,`global_access`,`share`,`ip_protocol`,`source_ip`,`hashing_configured`,`source_port`,`destination_port`,`destination_ip`,`flow_aging_timeout`,`linklocal_service_entry`,`uuid`,`flow_export_rate`,`creator`,`user_visible`,`last_modified`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`permissions_owner`,`enable`,`description`,`created`,`display_name`,`encapsulation`,`enable_security_logging`,`fq_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateGlobalVrouterConfigQuery = "update `global_vrouter_config` set `forwarding_mode` = ?,`vxlan_network_identifier_mode` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`ip_protocol` = ?,`source_ip` = ?,`hashing_configured` = ?,`source_port` = ?,`destination_port` = ?,`destination_ip` = ?,`flow_aging_timeout` = ?,`linklocal_service_entry` = ?,`uuid` = ?,`flow_export_rate` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`display_name` = ?,`encapsulation` = ?,`enable_security_logging` = ?,`fq_name` = ?,`key_value_pair` = ?;"
+const insertGlobalVrouterConfigQuery = "insert into `global_vrouter_config` (`encapsulation`,`uuid`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`display_name`,`key_value_pair`,`flow_aging_timeout`,`forwarding_mode`,`flow_export_rate`,`vxlan_network_identifier_mode`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`,`fq_name`,`source_port`,`destination_port`,`destination_ip`,`ip_protocol`,`source_ip`,`hashing_configured`,`linklocal_service_entry`,`enable_security_logging`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateGlobalVrouterConfigQuery = "update `global_vrouter_config` set `encapsulation` = ?,`uuid` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`display_name` = ?,`key_value_pair` = ?,`flow_aging_timeout` = ?,`forwarding_mode` = ?,`flow_export_rate` = ?,`vxlan_network_identifier_mode` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`fq_name` = ?,`source_port` = ?,`destination_port` = ?,`destination_ip` = ?,`ip_protocol` = ?,`source_ip` = ?,`hashing_configured` = ?,`linklocal_service_entry` = ?,`enable_security_logging` = ?;"
 const deleteGlobalVrouterConfigQuery = "delete from `global_vrouter_config` where uuid = ?"
-const listGlobalVrouterConfigQuery = "select `global_vrouter_config`.`forwarding_mode`,`global_vrouter_config`.`vxlan_network_identifier_mode`,`global_vrouter_config`.`owner`,`global_vrouter_config`.`owner_access`,`global_vrouter_config`.`global_access`,`global_vrouter_config`.`share`,`global_vrouter_config`.`ip_protocol`,`global_vrouter_config`.`source_ip`,`global_vrouter_config`.`hashing_configured`,`global_vrouter_config`.`source_port`,`global_vrouter_config`.`destination_port`,`global_vrouter_config`.`destination_ip`,`global_vrouter_config`.`flow_aging_timeout`,`global_vrouter_config`.`linklocal_service_entry`,`global_vrouter_config`.`uuid`,`global_vrouter_config`.`flow_export_rate`,`global_vrouter_config`.`creator`,`global_vrouter_config`.`user_visible`,`global_vrouter_config`.`last_modified`,`global_vrouter_config`.`permissions_owner_access`,`global_vrouter_config`.`other_access`,`global_vrouter_config`.`group`,`global_vrouter_config`.`group_access`,`global_vrouter_config`.`permissions_owner`,`global_vrouter_config`.`enable`,`global_vrouter_config`.`description`,`global_vrouter_config`.`created`,`global_vrouter_config`.`display_name`,`global_vrouter_config`.`encapsulation`,`global_vrouter_config`.`enable_security_logging`,`global_vrouter_config`.`fq_name`,`global_vrouter_config`.`key_value_pair` from `global_vrouter_config`"
-const showGlobalVrouterConfigQuery = "select `global_vrouter_config`.`forwarding_mode`,`global_vrouter_config`.`vxlan_network_identifier_mode`,`global_vrouter_config`.`owner`,`global_vrouter_config`.`owner_access`,`global_vrouter_config`.`global_access`,`global_vrouter_config`.`share`,`global_vrouter_config`.`ip_protocol`,`global_vrouter_config`.`source_ip`,`global_vrouter_config`.`hashing_configured`,`global_vrouter_config`.`source_port`,`global_vrouter_config`.`destination_port`,`global_vrouter_config`.`destination_ip`,`global_vrouter_config`.`flow_aging_timeout`,`global_vrouter_config`.`linklocal_service_entry`,`global_vrouter_config`.`uuid`,`global_vrouter_config`.`flow_export_rate`,`global_vrouter_config`.`creator`,`global_vrouter_config`.`user_visible`,`global_vrouter_config`.`last_modified`,`global_vrouter_config`.`permissions_owner_access`,`global_vrouter_config`.`other_access`,`global_vrouter_config`.`group`,`global_vrouter_config`.`group_access`,`global_vrouter_config`.`permissions_owner`,`global_vrouter_config`.`enable`,`global_vrouter_config`.`description`,`global_vrouter_config`.`created`,`global_vrouter_config`.`display_name`,`global_vrouter_config`.`encapsulation`,`global_vrouter_config`.`enable_security_logging`,`global_vrouter_config`.`fq_name`,`global_vrouter_config`.`key_value_pair` from `global_vrouter_config` where uuid = ?"
 
+// GlobalVrouterConfigFields is db columns for GlobalVrouterConfig
+var GlobalVrouterConfigFields = []string{
+	"encapsulation",
+	"uuid",
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"owner",
+	"display_name",
+	"key_value_pair",
+	"flow_aging_timeout",
+	"forwarding_mode",
+	"flow_export_rate",
+	"vxlan_network_identifier_mode",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+	"fq_name",
+	"source_port",
+	"destination_port",
+	"destination_ip",
+	"ip_protocol",
+	"source_ip",
+	"hashing_configured",
+	"linklocal_service_entry",
+	"enable_security_logging",
+}
+
+// GlobalVrouterConfigRefFields is db reference fields for GlobalVrouterConfig
+var GlobalVrouterConfigRefFields = map[string][]string{}
+
+// CreateGlobalVrouterConfig inserts GlobalVrouterConfig to DB
 func CreateGlobalVrouterConfig(tx *sql.Tx, model *models.GlobalVrouterConfig) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertGlobalVrouterConfigQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(string(model.ForwardingMode),
-		string(model.VxlanNetworkIdentifierMode),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		bool(model.EcmpHashingIncludeFields.IPProtocol),
-		bool(model.EcmpHashingIncludeFields.SourceIP),
-		bool(model.EcmpHashingIncludeFields.HashingConfigured),
-		bool(model.EcmpHashingIncludeFields.SourcePort),
-		bool(model.EcmpHashingIncludeFields.DestinationPort),
-		bool(model.EcmpHashingIncludeFields.DestinationIP),
-		utils.MustJSON(model.FlowAgingTimeoutList.FlowAgingTimeout),
-		utils.MustJSON(model.LinklocalServices.LinklocalServiceEntry),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertGlobalVrouterConfigQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(utils.MustJSON(model.EncapsulationPriorities.Encapsulation),
 		string(model.UUID),
-		int(model.FlowExportRate),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
@@ -47,200 +80,363 @@ func CreateGlobalVrouterConfig(tx *sql.Tx, model *models.GlobalVrouterConfig) er
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.DisplayName),
-		utils.MustJSON(model.EncapsulationPriorities.Encapsulation),
-		bool(model.EnableSecurityLogging),
+		utils.MustJSON(model.Annotations.KeyValuePair),
+		utils.MustJSON(model.FlowAgingTimeoutList.FlowAgingTimeout),
+		string(model.ForwardingMode),
+		int(model.FlowExportRate),
+		string(model.VxlanNetworkIdentifierMode),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		utils.MustJSON(model.Perms2.Share),
 		utils.MustJSON(model.FQName),
-		utils.MustJSON(model.Annotations.KeyValuePair))
+		bool(model.EcmpHashingIncludeFields.SourcePort),
+		bool(model.EcmpHashingIncludeFields.DestinationPort),
+		bool(model.EcmpHashingIncludeFields.DestinationIP),
+		bool(model.EcmpHashingIncludeFields.IPProtocol),
+		bool(model.EcmpHashingIncludeFields.SourceIP),
+		bool(model.EcmpHashingIncludeFields.HashingConfigured),
+		utils.MustJSON(model.LinklocalServices.LinklocalServiceEntry),
+		bool(model.EnableSecurityLogging))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanGlobalVrouterConfig(rows *sql.Rows) (*models.GlobalVrouterConfig, error) {
+func scanGlobalVrouterConfig(values map[string]interface{}) (*models.GlobalVrouterConfig, error) {
 	m := models.MakeGlobalVrouterConfig()
 
-	var jsonPerms2Share string
+	if value, ok := values["encapsulation"]; ok {
 
-	var jsonFlowAgingTimeoutListFlowAgingTimeout string
+		json.Unmarshal(value.([]byte), &m.EncapsulationPriorities.Encapsulation)
 
-	var jsonLinklocalServicesLinklocalServiceEntry string
-
-	var jsonEncapsulationPrioritiesEncapsulation string
-
-	var jsonFQName string
-
-	var jsonAnnotationsKeyValuePair string
-
-	if err := rows.Scan(&m.ForwardingMode,
-		&m.VxlanNetworkIdentifierMode,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.EcmpHashingIncludeFields.IPProtocol,
-		&m.EcmpHashingIncludeFields.SourceIP,
-		&m.EcmpHashingIncludeFields.HashingConfigured,
-		&m.EcmpHashingIncludeFields.SourcePort,
-		&m.EcmpHashingIncludeFields.DestinationPort,
-		&m.EcmpHashingIncludeFields.DestinationIP,
-		&jsonFlowAgingTimeoutListFlowAgingTimeout,
-		&jsonLinklocalServicesLinklocalServiceEntry,
-		&m.UUID,
-		&m.FlowExportRate,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.DisplayName,
-		&jsonEncapsulationPrioritiesEncapsulation,
-		&m.EnableSecurityLogging,
-		&jsonFQName,
-		&jsonAnnotationsKeyValuePair); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+	if value, ok := values["uuid"]; ok {
 
-	json.Unmarshal([]byte(jsonFlowAgingTimeoutListFlowAgingTimeout), &m.FlowAgingTimeoutList.FlowAgingTimeout)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonLinklocalServicesLinklocalServiceEntry), &m.LinklocalServices.LinklocalServiceEntry)
+		m.UUID = castedValue
 
-	json.Unmarshal([]byte(jsonEncapsulationPrioritiesEncapsulation), &m.EncapsulationPriorities.Encapsulation)
+	}
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+	if value, ok := values["enable"]; ok {
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["flow_aging_timeout"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FlowAgingTimeoutList.FlowAgingTimeout)
+
+	}
+
+	if value, ok := values["forwarding_mode"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ForwardingMode = models.ForwardingModeType(castedValue)
+
+	}
+
+	if value, ok := values["flow_export_rate"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.FlowExportRate = castedValue
+
+	}
+
+	if value, ok := values["vxlan_network_identifier_mode"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.VxlanNetworkIdentifierMode = models.VxlanNetworkIdentifierModeType(castedValue)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["source_port"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.EcmpHashingIncludeFields.SourcePort = castedValue
+
+	}
+
+	if value, ok := values["destination_port"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.EcmpHashingIncludeFields.DestinationPort = castedValue
+
+	}
+
+	if value, ok := values["destination_ip"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.EcmpHashingIncludeFields.DestinationIP = castedValue
+
+	}
+
+	if value, ok := values["ip_protocol"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.EcmpHashingIncludeFields.IPProtocol = castedValue
+
+	}
+
+	if value, ok := values["source_ip"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.EcmpHashingIncludeFields.SourceIP = castedValue
+
+	}
+
+	if value, ok := values["hashing_configured"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.EcmpHashingIncludeFields.HashingConfigured = castedValue
+
+	}
+
+	if value, ok := values["linklocal_service_entry"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.LinklocalServices.LinklocalServiceEntry)
+
+	}
+
+	if value, ok := values["enable_security_logging"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.EnableSecurityLogging = castedValue
+
+	}
 
 	return m, nil
 }
 
-func buildGlobalVrouterConfigWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["forwarding_mode"]; ok {
-		results = append(results, "forwarding_mode = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["vxlan_network_identifier_mode"]; ok {
-		results = append(results, "vxlan_network_identifier_mode = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["permissions_owner"]; ok {
-		results = append(results, "permissions_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListGlobalVrouterConfig(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.GlobalVrouterConfig, error) {
-	result := models.MakeGlobalVrouterConfigSlice()
-	whereQuery, values := buildGlobalVrouterConfigWhereQuery(where)
+// ListGlobalVrouterConfig lists GlobalVrouterConfig with list spec.
+func ListGlobalVrouterConfig(tx *sql.Tx, spec *db.ListSpec) ([]*models.GlobalVrouterConfig, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listGlobalVrouterConfigQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "global_vrouter_config"
+	spec.Fields = GlobalVrouterConfigFields
+	spec.RefFields = GlobalVrouterConfigRefFields
+	result := models.MakeGlobalVrouterConfigSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanGlobalVrouterConfig(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanGlobalVrouterConfig(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowGlobalVrouterConfig shows GlobalVrouterConfig resource
 func ShowGlobalVrouterConfig(tx *sql.Tx, uuid string) (*models.GlobalVrouterConfig, error) {
-	rows, err := tx.Query(showGlobalVrouterConfigQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListGlobalVrouterConfig(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanGlobalVrouterConfig(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateGlobalVrouterConfig updates a resource
 func UpdateGlobalVrouterConfig(tx *sql.Tx, uuid string, model *models.GlobalVrouterConfig) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteGlobalVrouterConfig deletes a resource
 func DeleteGlobalVrouterConfig(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteGlobalVrouterConfigQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

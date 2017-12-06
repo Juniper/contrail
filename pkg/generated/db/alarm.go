@@ -1,38 +1,65 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertAlarmQuery = "insert into `alarm` (`uve_key`,`alarm_severity`,`global_access`,`share`,`owner`,`owner_access`,`uuid`,`created`,`creator`,`user_visible`,`last_modified`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`key_value_pair`,`alarm_rules`,`fq_name`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateAlarmQuery = "update `alarm` set `uve_key` = ?,`alarm_severity` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`uuid` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`key_value_pair` = ?,`alarm_rules` = ?,`fq_name` = ?,`display_name` = ?;"
+const insertAlarmQuery = "insert into `alarm` (`uve_key`,`display_name`,`fq_name`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`alarm_rules`,`alarm_severity`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateAlarmQuery = "update `alarm` set `uve_key` = ?,`display_name` = ?,`fq_name` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`alarm_rules` = ?,`alarm_severity` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`uuid` = ?;"
 const deleteAlarmQuery = "delete from `alarm` where uuid = ?"
-const listAlarmQuery = "select `alarm`.`uve_key`,`alarm`.`alarm_severity`,`alarm`.`global_access`,`alarm`.`share`,`alarm`.`owner`,`alarm`.`owner_access`,`alarm`.`uuid`,`alarm`.`created`,`alarm`.`creator`,`alarm`.`user_visible`,`alarm`.`last_modified`,`alarm`.`permissions_owner`,`alarm`.`permissions_owner_access`,`alarm`.`other_access`,`alarm`.`group`,`alarm`.`group_access`,`alarm`.`enable`,`alarm`.`description`,`alarm`.`key_value_pair`,`alarm`.`alarm_rules`,`alarm`.`fq_name`,`alarm`.`display_name` from `alarm`"
-const showAlarmQuery = "select `alarm`.`uve_key`,`alarm`.`alarm_severity`,`alarm`.`global_access`,`alarm`.`share`,`alarm`.`owner`,`alarm`.`owner_access`,`alarm`.`uuid`,`alarm`.`created`,`alarm`.`creator`,`alarm`.`user_visible`,`alarm`.`last_modified`,`alarm`.`permissions_owner`,`alarm`.`permissions_owner_access`,`alarm`.`other_access`,`alarm`.`group`,`alarm`.`group_access`,`alarm`.`enable`,`alarm`.`description`,`alarm`.`key_value_pair`,`alarm`.`alarm_rules`,`alarm`.`fq_name`,`alarm`.`display_name` from `alarm` where uuid = ?"
 
+// AlarmFields is db columns for Alarm
+var AlarmFields = []string{
+	"uve_key",
+	"display_name",
+	"fq_name",
+	"last_modified",
+	"owner",
+	"owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"alarm_rules",
+	"alarm_severity",
+	"key_value_pair",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+	"perms2_owner",
+	"uuid",
+}
+
+// AlarmRefFields is db reference fields for Alarm
+var AlarmRefFields = map[string][]string{}
+
+// CreateAlarm inserts Alarm to DB
 func CreateAlarm(tx *sql.Tx, model *models.Alarm) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertAlarmQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertAlarmQuery,
+	}).Debug("create query")
 	_, err = stmt.Exec(utils.MustJSON(model.UveKeys.UveKey),
-		int(model.AlarmSeverity),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		string(model.UUID),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
+		string(model.DisplayName),
+		utils.MustJSON(model.FQName),
 		string(model.IDPerms.LastModified),
 		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
@@ -41,172 +68,277 @@ func CreateAlarm(tx *sql.Tx, model *models.Alarm) error {
 		int(model.IDPerms.Permissions.GroupAccess),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		utils.MustJSON(model.Annotations.KeyValuePair),
+		string(model.IDPerms.Created),
+		string(model.IDPerms.Creator),
+		bool(model.IDPerms.UserVisible),
 		utils.MustJSON(model.AlarmRules),
-		utils.MustJSON(model.FQName),
-		string(model.DisplayName))
+		int(model.AlarmSeverity),
+		utils.MustJSON(model.Annotations.KeyValuePair),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		utils.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		string(model.UUID))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanAlarm(rows *sql.Rows) (*models.Alarm, error) {
+func scanAlarm(values map[string]interface{}) (*models.Alarm, error) {
 	m := models.MakeAlarm()
 
-	var jsonUveKeysUveKey string
+	if value, ok := values["uve_key"]; ok {
 
-	var jsonPerms2Share string
+		json.Unmarshal(value.([]byte), &m.UveKeys.UveKey)
 
-	var jsonAnnotationsKeyValuePair string
-
-	var jsonAlarmRules string
-
-	var jsonFQName string
-
-	if err := rows.Scan(&jsonUveKeysUveKey,
-		&m.AlarmSeverity,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.UUID,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&jsonAnnotationsKeyValuePair,
-		&jsonAlarmRules,
-		&jsonFQName,
-		&m.DisplayName); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonUveKeysUveKey), &m.UveKeys.UveKey)
+	if value, ok := values["display_name"]; ok {
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+		m.DisplayName = castedValue
 
-	json.Unmarshal([]byte(jsonAlarmRules), &m.AlarmRules)
+	}
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["alarm_rules"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.AlarmRules)
+
+	}
+
+	if value, ok := values["alarm_severity"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.AlarmSeverity = models.AlarmSeverity(castedValue)
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
 
 	return m, nil
 }
 
-func buildAlarmWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["permissions_owner"]; ok {
-		results = append(results, "permissions_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListAlarm(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.Alarm, error) {
-	result := models.MakeAlarmSlice()
-	whereQuery, values := buildAlarmWhereQuery(where)
+// ListAlarm lists Alarm with list spec.
+func ListAlarm(tx *sql.Tx, spec *db.ListSpec) ([]*models.Alarm, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listAlarmQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "alarm"
+	spec.Fields = AlarmFields
+	spec.RefFields = AlarmRefFields
+	result := models.MakeAlarmSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanAlarm(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanAlarm(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowAlarm shows Alarm resource
 func ShowAlarm(tx *sql.Tx, uuid string) (*models.Alarm, error) {
-	rows, err := tx.Query(showAlarmQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListAlarm(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanAlarm(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateAlarm updates a resource
 func UpdateAlarm(tx *sql.Tx, uuid string, model *models.Alarm) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteAlarm deletes a resource
 func DeleteAlarm(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteAlarmQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

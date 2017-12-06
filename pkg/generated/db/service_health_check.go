@@ -1,256 +1,464 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertServiceHealthCheckQuery = "insert into `service_health_check` (`enabled`,`max_retries`,`health_check_type`,`monitor_type`,`timeoutUsecs`,`http_method`,`timeout`,`delay`,`delayUsecs`,`expected_codes`,`url_path`,`uuid`,`fq_name`,`creator`,`user_visible`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`description`,`created`,`display_name`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateServiceHealthCheckQuery = "update `service_health_check` set `enabled` = ?,`max_retries` = ?,`health_check_type` = ?,`monitor_type` = ?,`timeoutUsecs` = ?,`http_method` = ?,`timeout` = ?,`delay` = ?,`delayUsecs` = ?,`expected_codes` = ?,`url_path` = ?,`uuid` = ?,`fq_name` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?;"
+const insertServiceHealthCheckQuery = "insert into `service_health_check` (`delayUsecs`,`enabled`,`max_retries`,`timeout`,`url_path`,`timeoutUsecs`,`delay`,`health_check_type`,`http_method`,`expected_codes`,`monitor_type`,`display_name`,`key_value_pair`,`owner`,`owner_access`,`global_access`,`share`,`uuid`,`fq_name`,`last_modified`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`enable`,`description`,`created`,`creator`,`user_visible`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateServiceHealthCheckQuery = "update `service_health_check` set `delayUsecs` = ?,`enabled` = ?,`max_retries` = ?,`timeout` = ?,`url_path` = ?,`timeoutUsecs` = ?,`delay` = ?,`health_check_type` = ?,`http_method` = ?,`expected_codes` = ?,`monitor_type` = ?,`display_name` = ?,`key_value_pair` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`fq_name` = ?,`last_modified` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?;"
 const deleteServiceHealthCheckQuery = "delete from `service_health_check` where uuid = ?"
-const listServiceHealthCheckQuery = "select `service_health_check`.`enabled`,`service_health_check`.`max_retries`,`service_health_check`.`health_check_type`,`service_health_check`.`monitor_type`,`service_health_check`.`timeoutUsecs`,`service_health_check`.`http_method`,`service_health_check`.`timeout`,`service_health_check`.`delay`,`service_health_check`.`delayUsecs`,`service_health_check`.`expected_codes`,`service_health_check`.`url_path`,`service_health_check`.`uuid`,`service_health_check`.`fq_name`,`service_health_check`.`creator`,`service_health_check`.`user_visible`,`service_health_check`.`last_modified`,`service_health_check`.`owner_access`,`service_health_check`.`other_access`,`service_health_check`.`group`,`service_health_check`.`group_access`,`service_health_check`.`owner`,`service_health_check`.`enable`,`service_health_check`.`description`,`service_health_check`.`created`,`service_health_check`.`display_name`,`service_health_check`.`key_value_pair`,`service_health_check`.`perms2_owner_access`,`service_health_check`.`global_access`,`service_health_check`.`share`,`service_health_check`.`perms2_owner` from `service_health_check`"
-const showServiceHealthCheckQuery = "select `service_health_check`.`enabled`,`service_health_check`.`max_retries`,`service_health_check`.`health_check_type`,`service_health_check`.`monitor_type`,`service_health_check`.`timeoutUsecs`,`service_health_check`.`http_method`,`service_health_check`.`timeout`,`service_health_check`.`delay`,`service_health_check`.`delayUsecs`,`service_health_check`.`expected_codes`,`service_health_check`.`url_path`,`service_health_check`.`uuid`,`service_health_check`.`fq_name`,`service_health_check`.`creator`,`service_health_check`.`user_visible`,`service_health_check`.`last_modified`,`service_health_check`.`owner_access`,`service_health_check`.`other_access`,`service_health_check`.`group`,`service_health_check`.`group_access`,`service_health_check`.`owner`,`service_health_check`.`enable`,`service_health_check`.`description`,`service_health_check`.`created`,`service_health_check`.`display_name`,`service_health_check`.`key_value_pair`,`service_health_check`.`perms2_owner_access`,`service_health_check`.`global_access`,`service_health_check`.`share`,`service_health_check`.`perms2_owner` from `service_health_check` where uuid = ?"
+
+// ServiceHealthCheckFields is db columns for ServiceHealthCheck
+var ServiceHealthCheckFields = []string{
+	"delayUsecs",
+	"enabled",
+	"max_retries",
+	"timeout",
+	"url_path",
+	"timeoutUsecs",
+	"delay",
+	"health_check_type",
+	"http_method",
+	"expected_codes",
+	"monitor_type",
+	"display_name",
+	"key_value_pair",
+	"owner",
+	"owner_access",
+	"global_access",
+	"share",
+	"uuid",
+	"fq_name",
+	"last_modified",
+	"group_access",
+	"permissions_owner",
+	"permissions_owner_access",
+	"other_access",
+	"group",
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+}
+
+// ServiceHealthCheckRefFields is db reference fields for ServiceHealthCheck
+var ServiceHealthCheckRefFields = map[string][]string{
+
+	"service_instance": {
+	// <utils.Schema Value>
+
+	},
+}
 
 const insertServiceHealthCheckServiceInstanceQuery = "insert into `ref_service_health_check_service_instance` (`from`, `to` ) values (?, ?);"
 
+// CreateServiceHealthCheck inserts ServiceHealthCheck to DB
 func CreateServiceHealthCheck(tx *sql.Tx, model *models.ServiceHealthCheck) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceHealthCheckQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(bool(model.ServiceHealthCheckProperties.Enabled),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertServiceHealthCheckQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(int(model.ServiceHealthCheckProperties.DelayUsecs),
+		bool(model.ServiceHealthCheckProperties.Enabled),
 		int(model.ServiceHealthCheckProperties.MaxRetries),
-		string(model.ServiceHealthCheckProperties.HealthCheckType),
-		string(model.ServiceHealthCheckProperties.MonitorType),
-		int(model.ServiceHealthCheckProperties.TimeoutUsecs),
-		string(model.ServiceHealthCheckProperties.HTTPMethod),
 		int(model.ServiceHealthCheckProperties.Timeout),
-		int(model.ServiceHealthCheckProperties.Delay),
-		int(model.ServiceHealthCheckProperties.DelayUsecs),
-		string(model.ServiceHealthCheckProperties.ExpectedCodes),
 		string(model.ServiceHealthCheckProperties.URLPath),
-		string(model.UUID),
-		utils.MustJSON(model.FQName),
-		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
+		int(model.ServiceHealthCheckProperties.TimeoutUsecs),
+		int(model.ServiceHealthCheckProperties.Delay),
+		string(model.ServiceHealthCheckProperties.HealthCheckType),
+		string(model.ServiceHealthCheckProperties.HTTPMethod),
+		string(model.ServiceHealthCheckProperties.ExpectedCodes),
+		string(model.ServiceHealthCheckProperties.MonitorType),
 		string(model.DisplayName),
 		utils.MustJSON(model.Annotations.KeyValuePair),
+		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
 		int(model.Perms2.GlobalAccess),
 		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner))
+		string(model.UUID),
+		utils.MustJSON(model.FQName),
+		string(model.IDPerms.LastModified),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		int(model.IDPerms.Permissions.OtherAccess),
+		string(model.IDPerms.Permissions.Group),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Created),
+		string(model.IDPerms.Creator),
+		bool(model.IDPerms.UserVisible))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
 	stmtServiceInstanceRef, err := tx.Prepare(insertServiceHealthCheckServiceInstanceQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing ServiceInstanceRefs create statement failed")
 	}
 	defer stmtServiceInstanceRef.Close()
 	for _, ref := range model.ServiceInstanceRefs {
 		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceInstanceRefs create failed")
+		}
 	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanServiceHealthCheck(rows *sql.Rows) (*models.ServiceHealthCheck, error) {
+func scanServiceHealthCheck(values map[string]interface{}) (*models.ServiceHealthCheck, error) {
 	m := models.MakeServiceHealthCheck()
 
-	var jsonFQName string
+	if value, ok := values["delayUsecs"]; ok {
 
-	var jsonAnnotationsKeyValuePair string
+		castedValue := utils.InterfaceToInt(value)
 
-	var jsonPerms2Share string
+		m.ServiceHealthCheckProperties.DelayUsecs = castedValue
 
-	if err := rows.Scan(&m.ServiceHealthCheckProperties.Enabled,
-		&m.ServiceHealthCheckProperties.MaxRetries,
-		&m.ServiceHealthCheckProperties.HealthCheckType,
-		&m.ServiceHealthCheckProperties.MonitorType,
-		&m.ServiceHealthCheckProperties.TimeoutUsecs,
-		&m.ServiceHealthCheckProperties.HTTPMethod,
-		&m.ServiceHealthCheckProperties.Timeout,
-		&m.ServiceHealthCheckProperties.Delay,
-		&m.ServiceHealthCheckProperties.DelayUsecs,
-		&m.ServiceHealthCheckProperties.ExpectedCodes,
-		&m.ServiceHealthCheckProperties.URLPath,
-		&m.UUID,
-		&jsonFQName,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.DisplayName,
-		&jsonAnnotationsKeyValuePair,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+	if value, ok := values["enabled"]; ok {
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+		castedValue := utils.InterfaceToBool(value)
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		m.ServiceHealthCheckProperties.Enabled = castedValue
+
+	}
+
+	if value, ok := values["max_retries"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.ServiceHealthCheckProperties.MaxRetries = castedValue
+
+	}
+
+	if value, ok := values["timeout"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.ServiceHealthCheckProperties.Timeout = castedValue
+
+	}
+
+	if value, ok := values["url_path"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceHealthCheckProperties.URLPath = castedValue
+
+	}
+
+	if value, ok := values["timeoutUsecs"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.ServiceHealthCheckProperties.TimeoutUsecs = castedValue
+
+	}
+
+	if value, ok := values["delay"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.ServiceHealthCheckProperties.Delay = castedValue
+
+	}
+
+	if value, ok := values["health_check_type"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceHealthCheckProperties.HealthCheckType = models.HealthCheckType(castedValue)
+
+	}
+
+	if value, ok := values["http_method"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceHealthCheckProperties.HTTPMethod = castedValue
+
+	}
+
+	if value, ok := values["expected_codes"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceHealthCheckProperties.ExpectedCodes = castedValue
+
+	}
+
+	if value, ok := values["monitor_type"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceHealthCheckProperties.MonitorType = models.HealthCheckProtocolType(castedValue)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["ref_service_instance"]; ok {
+		var references []interface{}
+		stringValue := utils.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap := reference.(map[string]interface{})
+			referenceModel := &models.ServiceHealthCheckServiceInstanceRef{}
+			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
+
+			attr := models.MakeServiceInterfaceTag()
+			referenceModel.Attr = attr
+
+		}
+	}
 
 	return m, nil
 }
 
-func buildServiceHealthCheckWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["health_check_type"]; ok {
-		results = append(results, "health_check_type = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["monitor_type"]; ok {
-		results = append(results, "monitor_type = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["http_method"]; ok {
-		results = append(results, "http_method = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["expected_codes"]; ok {
-		results = append(results, "expected_codes = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["url_path"]; ok {
-		results = append(results, "url_path = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["perms2_owner"]; ok {
-		results = append(results, "perms2_owner = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListServiceHealthCheck(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.ServiceHealthCheck, error) {
-	result := models.MakeServiceHealthCheckSlice()
-	whereQuery, values := buildServiceHealthCheckWhereQuery(where)
+// ListServiceHealthCheck lists ServiceHealthCheck with list spec.
+func ListServiceHealthCheck(tx *sql.Tx, spec *db.ListSpec) ([]*models.ServiceHealthCheck, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listServiceHealthCheckQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "service_health_check"
+	spec.Fields = ServiceHealthCheckFields
+	spec.RefFields = ServiceHealthCheckRefFields
+	result := models.MakeServiceHealthCheckSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanServiceHealthCheck(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanServiceHealthCheck(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowServiceHealthCheck shows ServiceHealthCheck resource
 func ShowServiceHealthCheck(tx *sql.Tx, uuid string) (*models.ServiceHealthCheck, error) {
-	rows, err := tx.Query(showServiceHealthCheckQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListServiceHealthCheck(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanServiceHealthCheck(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateServiceHealthCheck updates a resource
 func UpdateServiceHealthCheck(tx *sql.Tx, uuid string, model *models.ServiceHealthCheck) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteServiceHealthCheck deletes a resource
 func DeleteServiceHealthCheck(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteServiceHealthCheckQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

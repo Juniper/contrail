@@ -1,0 +1,227 @@
+package db
+
+import (
+    "strings"
+    "bytes"
+    "fmt"
+  	"database/sql"
+    "encoding/json"
+    "github.com/Juniper/contrail/pkg/utils"
+    "github.com/Juniper/contrail/pkg/db"
+    "github.com/Juniper/contrail/pkg/generated/models"
+    "github.com/pkg/errors"
+
+    log "github.com/sirupsen/logrus"
+)
+
+const insert{{ schema.JSONSchema.GoName }}Query = "insert into `{{schema.ID}}` ({% for column in schema.Columns %}`{{column.Column }}`{% if not forloop.Last %},{% endif %}{% endfor %}) values ({% for column in schema.Columns %}?{% if not forloop.Last %},{% endif %}{% endfor %});"
+const update{{ schema.JSONSchema.GoName }}Query = "update `{{schema.ID}}` set {% for column in schema.Columns %}`{{column.Column }}` = ?{% if not forloop.Last %},{% endif %}{% endfor %};"
+const delete{{ schema.JSONSchema.GoName }}Query = "delete from `{{schema.ID}}` where uuid = ?"
+
+// {{ schema.JSONSchema.GoName }}Fields is db columns for {{ schema.JSONSchema.GoName }}
+var {{ schema.JSONSchema.GoName }}Fields = []string{
+   {% for column in schema.Columns %}"{{ column.Column }}",
+   {% endfor %} 
+}
+
+// {{ schema.JSONSchema.GoName }}RefFields is db reference fields for {{ schema.JSONSchema.GoName }}
+var {{ schema.JSONSchema.GoName }}RefFields = map[string][]string{
+   {% for linkTo, reference in schema.References %}
+    "{{ linkTo }}": []string{
+        // {{ reference.LinkTo }}
+        {% for column in reference.Columns %}"{{ column.Column }}",
+        {% endfor %}
+    },
+   {% endfor %} 
+}
+
+
+{% for linkTo, reference in schema.References %}
+const insert{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Query = "insert into `ref_{{ schema.ID }}_{{ linkTo }}` (`from`, `to` {% for column in reference.Columns %},`{{column.Column }}`{% endfor %}) values (?, ?{% for column in reference.Columns %},?{% endfor %});" 
+{% endfor %}
+
+// Create{{ schema.JSONSchema.GoName }} inserts {{ schema.JSONSchema.GoName }} to DB
+func Create{{ schema.JSONSchema.GoName }}(tx *sql.Tx, model *models.{{ schema.JSONSchema.GoName }}) error {
+	// Prepare statement for inserting data
+	stmt, err := tx.Prepare(insert{{ schema.JSONSchema.GoName }}Query)
+	if err != nil {
+        return errors.Wrap(err, "preparing create statement failed")
+	}
+	defer stmt.Close()
+    log.WithFields(log.Fields{
+        "model": model,
+        "query": insert{{ schema.JSONSchema.GoName }}Query,
+    }).Debug("create query")
+    _, err = stmt.Exec({% for column in schema.Columns %}{% if column.Bind == "json" %}utils.MustJSON(model{{ column.Path }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.Path }}){% else %}model{{ column.Path }}{% endif %}{% if not forloop.Last %},
+    {% endif %}{% endfor %})
+	if err != nil {
+        return errors.Wrap(err, "create failed")
+	}
+    {% for linkTo, reference in schema.References %}
+    stmt{{ reference.GoName }}Ref, err := tx.Prepare(insert{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Query)
+	if err != nil {
+        return errors.Wrap(err,"preparing {{ reference.GoName }}Refs create statement failed")
+	}
+    defer stmt{{ reference.GoName }}Ref.Close()
+    for _, ref := range model.{{ reference.GoName }}Refs {
+        _, err = stmt{{ reference.GoName }}Ref.Exec(model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}utils.MustJSON(ref.Attr{{ column.Path }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.Path }}){% else %}ref.Attr{{ column.Path }}{% endif %}{% if not forloop.Last %},
+    {% endif %}{% endfor %})
+	    if err != nil {
+            return errors.Wrap(err,"{{ reference.GoName }}Refs create failed")
+        }
+    }
+    {% endfor %}
+    log.WithFields(log.Fields{
+        "model": model,
+    }).Debug("created")
+    return err
+}
+
+func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models.{{ schema.JSONSchema.GoName }}, error) {
+    m := models.Make{{ schema.JSONSchema.GoName }}()
+    {% for column in schema.Columns %}
+    if value, ok := values["{{ column.Column }}"]; ok {
+        {% if column.Bind == "json" %}
+            json.Unmarshal(value.([]byte), &m{{ column.Path }})
+        {% else %}
+            {% if column.Bind == "int" %}
+                castedValue := utils.InterfaceToInt(value)
+            {% elif column.Bind == "bool" %}
+                castedValue := utils.InterfaceToBool(value)
+            {% elif column.Bind == "string" %}
+                castedValue := utils.InterfaceToString(value)
+            {% else %}
+                castedValue, _ := value.({{ column.Bind }})
+            {% endif %}
+            {% if column.GoPremitive %}
+                m{{ column.Path }} = castedValue
+            {% else %}
+                m{{ column.Path }} = models.{{ column.GoType }}(castedValue)
+            {% endif %}
+
+        {% endif %}
+    }
+    {% endfor %}
+    {% for linkTo, reference in schema.References %}
+    if value, ok := values["ref_{{ linkTo }}"]; ok {
+        var references []interface{}
+        stringValue := utils.InterfaceToString(value)
+        json.Unmarshal([]byte("[" + stringValue + "]"), &references )
+        for _, reference := range references {
+            referenceMap := reference.(map[string]interface{})
+            referenceModel := &models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{}
+            referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+            m.{{ reference.GoName }}Refs = append(m.{{ reference.GoName }}Refs, referenceModel)
+            {% if reference.RefType %}
+            attr := models.Make{{reference.RefType}}()
+            referenceModel.Attr = attr 
+            {% for column in reference.Colums %}
+                if refAttrValue, ok := referenceMap[column]; ok {
+                {% if column.Bind == "json" %}
+                    json.Unmarshal(refAttrValue.([]byte), &attr{{ column.Path }})
+                {% else %}
+                    {% if column.Bind == "int" %}
+                        castedValue := utils.InterfaceToInt(refAttrValue)
+                    {% elif column.Bind == "bool" %}
+                        castedValue := utils.InterfaceToBool(refAttrValue)
+                    {% elif column.Bind == "string" %}
+                        castedValue := utils.InterfaceToString(refAttrValue)
+                    {% else %}
+                        castedValue, _ := refAttrValue.({{ column.Bind }})
+                    {% endif %}
+                    {% if column.GoPremitive %}
+                        attr{{ column.Path }} = castedValue
+                    {% else %}
+                        attr{{ column.Path }} = models.{{ column.GoType }}(castedValue)
+                    {% endif %}
+                {% endif %}
+                }
+            {% endfor %}
+            {% endif %}
+        }
+    }
+    {% endfor %}
+    return m, nil
+}
+
+// List{{ schema.JSONSchema.GoName }} lists {{ schema.JSONSchema.GoName }} with list spec.
+func List{{ schema.JSONSchema.GoName }}(tx *sql.Tx, spec *db.ListSpec) ([]*models.{{ schema.JSONSchema.GoName }}, error) {
+    var rows *sql.Rows
+    var err error
+    //TODO (check input)
+    spec.Table = "{{ schema.ID }}"
+    spec.Fields = {{ schema.JSONSchema.GoName }}Fields
+    spec.RefFields = {{ schema.JSONSchema.GoName }}RefFields
+    result := models.Make{{ schema.JSONSchema.GoName }}Slice()
+    query, columns, values := db.BuildListQuery(spec)
+    log.WithFields(log.Fields{
+        "listSpec": spec, 
+        "query": query,
+    }).Debug("select query")
+    rows, err = tx.Query(query, values...)
+    if err != nil {
+        return nil, errors.Wrap(err,"select query failed")
+    }
+    defer rows.Close()
+    if err := rows.Err(); err != nil {
+            return nil, errors.Wrap(err, "row error")
+    }
+    for rows.Next() {
+            valuesMap := map[string]interface{}{}
+            values := make([]interface{}, len(columns)) 
+            valuesPointers := make([]interface{}, len(columns))
+            for _, index := range columns {
+                valuesPointers[index] = &values[index]
+            }
+            if err := rows.Scan(valuesPointers...); err != nil {
+                    return nil, errors.Wrap(err, "scan failed")
+            }
+            for column, index := range columns {
+                val := valuesPointers[index].(*interface{})
+                valuesMap[column] = *val
+            }
+            log.WithFields(log.Fields{
+                "valuesMap": valuesMap, 
+            }).Debug("valueMap")
+            m, err := scan{{ schema.JSONSchema.GoName }}(valuesMap)
+            if err != nil {
+                return nil, errors.Wrap(err, "scan row failed")
+            }
+            result = append(result, m)
+    }
+    return result, nil
+}
+
+// Show{{ schema.JSONSchema.GoName }} shows {{ schema.JSONSchema.GoName }} resource
+func Show{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string) (*models.{{ schema.JSONSchema.GoName }}, error) {
+    list, err := List{{ schema.JSONSchema.GoName }}(tx, &db.ListSpec{
+        Filter: map[string]interface{}{"uuid": uuid}, 
+        Limit: 1})
+    if len(list) == 0 {
+        return nil, errors.Wrap(err, "show query failed")
+    }
+    return list[0], err
+}
+
+// Update{{ schema.JSONSchema.GoName }} updates a resource
+func Update{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string, model *models.{{ schema.JSONSchema.GoName }}) error {
+    //TODO(nati) support update
+    return nil
+}
+
+// Delete{{ schema.JSONSchema.GoName }} deletes a resource 
+func Delete{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string) error {
+	stmt, err := tx.Prepare(delete{{ schema.JSONSchema.GoName }}Query)
+	if err != nil {
+        return errors.Wrap(err, "preparing delete query failed")
+	}
+	defer stmt.Close()
+    _, err = stmt.Exec(uuid)
+    if err != nil {
+        return errors.Wrap(err, "delete failed")
+    }
+    log.WithFields(log.Fields{
+        "uuid": uuid,
+    }).Debug("deleted") 
+    return nil
+}

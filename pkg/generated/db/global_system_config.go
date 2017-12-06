@@ -1,280 +1,565 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertGlobalSystemConfigQuery = "insert into `global_system_config` (`fq_name`,`alarm_enable`,`ibgp_auto_mesh`,`bgp_always_compare_med`,`mac_limit`,`mac_limit_action`,`created`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`owner`,`owner_access`,`enable`,`description`,`config_version`,`mac_move_time_window`,`mac_move_limit`,`mac_move_limit_action`,`user_defined_log_statistics`,`display_name`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`,`plugin_property`,`subnet`,`key_value_pair`,`port_start`,`port_end`,`mac_aging_time`,`xmpp_helper_enable`,`restart_time`,`long_lived_restart_time`,`graceful_restart_parameters_enable`,`end_of_rib_timeout`,`bgp_helper_enable`,`autonomous_system`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateGlobalSystemConfigQuery = "update `global_system_config` set `fq_name` = ?,`alarm_enable` = ?,`ibgp_auto_mesh` = ?,`bgp_always_compare_med` = ?,`mac_limit` = ?,`mac_limit_action` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`enable` = ?,`description` = ?,`config_version` = ?,`mac_move_time_window` = ?,`mac_move_limit` = ?,`mac_move_limit_action` = ?,`user_defined_log_statistics` = ?,`display_name` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`plugin_property` = ?,`subnet` = ?,`key_value_pair` = ?,`port_start` = ?,`port_end` = ?,`mac_aging_time` = ?,`xmpp_helper_enable` = ?,`restart_time` = ?,`long_lived_restart_time` = ?,`graceful_restart_parameters_enable` = ?,`end_of_rib_timeout` = ?,`bgp_helper_enable` = ?,`autonomous_system` = ?,`uuid` = ?;"
+const insertGlobalSystemConfigQuery = "insert into `global_system_config` (`mac_move_time_window`,`mac_move_limit`,`mac_move_limit_action`,`plugin_property`,`user_defined_log_statistics`,`autonomous_system`,`port_start`,`port_end`,`subnet`,`owner`,`owner_access`,`global_access`,`share`,`uuid`,`config_version`,`ibgp_auto_mesh`,`enable`,`end_of_rib_timeout`,`bgp_helper_enable`,`xmpp_helper_enable`,`restart_time`,`long_lived_restart_time`,`fq_name`,`display_name`,`key_value_pair`,`alarm_enable`,`mac_aging_time`,`bgp_always_compare_med`,`mac_limit`,`mac_limit_action`,`last_modified`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`id_perms_enable`,`description`,`created`,`creator`,`user_visible`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateGlobalSystemConfigQuery = "update `global_system_config` set `mac_move_time_window` = ?,`mac_move_limit` = ?,`mac_move_limit_action` = ?,`plugin_property` = ?,`user_defined_log_statistics` = ?,`autonomous_system` = ?,`port_start` = ?,`port_end` = ?,`subnet` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`config_version` = ?,`ibgp_auto_mesh` = ?,`enable` = ?,`end_of_rib_timeout` = ?,`bgp_helper_enable` = ?,`xmpp_helper_enable` = ?,`restart_time` = ?,`long_lived_restart_time` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?,`alarm_enable` = ?,`mac_aging_time` = ?,`bgp_always_compare_med` = ?,`mac_limit` = ?,`mac_limit_action` = ?,`last_modified` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`id_perms_enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?;"
 const deleteGlobalSystemConfigQuery = "delete from `global_system_config` where uuid = ?"
-const listGlobalSystemConfigQuery = "select `global_system_config`.`fq_name`,`global_system_config`.`alarm_enable`,`global_system_config`.`ibgp_auto_mesh`,`global_system_config`.`bgp_always_compare_med`,`global_system_config`.`mac_limit`,`global_system_config`.`mac_limit_action`,`global_system_config`.`created`,`global_system_config`.`creator`,`global_system_config`.`user_visible`,`global_system_config`.`last_modified`,`global_system_config`.`other_access`,`global_system_config`.`group`,`global_system_config`.`group_access`,`global_system_config`.`owner`,`global_system_config`.`owner_access`,`global_system_config`.`enable`,`global_system_config`.`description`,`global_system_config`.`config_version`,`global_system_config`.`mac_move_time_window`,`global_system_config`.`mac_move_limit`,`global_system_config`.`mac_move_limit_action`,`global_system_config`.`user_defined_log_statistics`,`global_system_config`.`display_name`,`global_system_config`.`share`,`global_system_config`.`perms2_owner`,`global_system_config`.`perms2_owner_access`,`global_system_config`.`global_access`,`global_system_config`.`plugin_property`,`global_system_config`.`subnet`,`global_system_config`.`key_value_pair`,`global_system_config`.`port_start`,`global_system_config`.`port_end`,`global_system_config`.`mac_aging_time`,`global_system_config`.`xmpp_helper_enable`,`global_system_config`.`restart_time`,`global_system_config`.`long_lived_restart_time`,`global_system_config`.`graceful_restart_parameters_enable`,`global_system_config`.`end_of_rib_timeout`,`global_system_config`.`bgp_helper_enable`,`global_system_config`.`autonomous_system`,`global_system_config`.`uuid` from `global_system_config`"
-const showGlobalSystemConfigQuery = "select `global_system_config`.`fq_name`,`global_system_config`.`alarm_enable`,`global_system_config`.`ibgp_auto_mesh`,`global_system_config`.`bgp_always_compare_med`,`global_system_config`.`mac_limit`,`global_system_config`.`mac_limit_action`,`global_system_config`.`created`,`global_system_config`.`creator`,`global_system_config`.`user_visible`,`global_system_config`.`last_modified`,`global_system_config`.`other_access`,`global_system_config`.`group`,`global_system_config`.`group_access`,`global_system_config`.`owner`,`global_system_config`.`owner_access`,`global_system_config`.`enable`,`global_system_config`.`description`,`global_system_config`.`config_version`,`global_system_config`.`mac_move_time_window`,`global_system_config`.`mac_move_limit`,`global_system_config`.`mac_move_limit_action`,`global_system_config`.`user_defined_log_statistics`,`global_system_config`.`display_name`,`global_system_config`.`share`,`global_system_config`.`perms2_owner`,`global_system_config`.`perms2_owner_access`,`global_system_config`.`global_access`,`global_system_config`.`plugin_property`,`global_system_config`.`subnet`,`global_system_config`.`key_value_pair`,`global_system_config`.`port_start`,`global_system_config`.`port_end`,`global_system_config`.`mac_aging_time`,`global_system_config`.`xmpp_helper_enable`,`global_system_config`.`restart_time`,`global_system_config`.`long_lived_restart_time`,`global_system_config`.`graceful_restart_parameters_enable`,`global_system_config`.`end_of_rib_timeout`,`global_system_config`.`bgp_helper_enable`,`global_system_config`.`autonomous_system`,`global_system_config`.`uuid` from `global_system_config` where uuid = ?"
+
+// GlobalSystemConfigFields is db columns for GlobalSystemConfig
+var GlobalSystemConfigFields = []string{
+	"mac_move_time_window",
+	"mac_move_limit",
+	"mac_move_limit_action",
+	"plugin_property",
+	"user_defined_log_statistics",
+	"autonomous_system",
+	"port_start",
+	"port_end",
+	"subnet",
+	"owner",
+	"owner_access",
+	"global_access",
+	"share",
+	"uuid",
+	"config_version",
+	"ibgp_auto_mesh",
+	"enable",
+	"end_of_rib_timeout",
+	"bgp_helper_enable",
+	"xmpp_helper_enable",
+	"restart_time",
+	"long_lived_restart_time",
+	"fq_name",
+	"display_name",
+	"key_value_pair",
+	"alarm_enable",
+	"mac_aging_time",
+	"bgp_always_compare_med",
+	"mac_limit",
+	"mac_limit_action",
+	"last_modified",
+	"permissions_owner",
+	"permissions_owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"id_perms_enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+}
+
+// GlobalSystemConfigRefFields is db reference fields for GlobalSystemConfig
+var GlobalSystemConfigRefFields = map[string][]string{
+
+	"bgp_router": {
+	// <utils.Schema Value>
+
+	},
+}
 
 const insertGlobalSystemConfigBGPRouterQuery = "insert into `ref_global_system_config_bgp_router` (`from`, `to` ) values (?, ?);"
 
+// CreateGlobalSystemConfig inserts GlobalSystemConfig to DB
 func CreateGlobalSystemConfig(tx *sql.Tx, model *models.GlobalSystemConfig) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertGlobalSystemConfigQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(utils.MustJSON(model.FQName),
-		bool(model.AlarmEnable),
-		bool(model.IbgpAutoMesh),
-		bool(model.BGPAlwaysCompareMed),
-		int(model.MacLimitControl.MacLimit),
-		string(model.MacLimitControl.MacLimitAction),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.ConfigVersion),
-		int(model.MacMoveControl.MacMoveTimeWindow),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertGlobalSystemConfigQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(int(model.MacMoveControl.MacMoveTimeWindow),
 		int(model.MacMoveControl.MacMoveLimit),
 		string(model.MacMoveControl.MacMoveLimitAction),
+		utils.MustJSON(model.PluginTuning.PluginProperty),
 		utils.MustJSON(model.UserDefinedLogStatistics),
-		string(model.DisplayName),
-		utils.MustJSON(model.Perms2.Share),
+		int(model.AutonomousSystem),
+		int(model.BgpaasParameters.PortStart),
+		int(model.BgpaasParameters.PortEnd),
+		utils.MustJSON(model.IPFabricSubnets.Subnet),
 		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
 		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.PluginTuning.PluginProperty),
-		utils.MustJSON(model.IPFabricSubnets.Subnet),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		int(model.BgpaasParameters.PortStart),
-		int(model.BgpaasParameters.PortEnd),
-		int(model.MacAgingTime),
-		bool(model.GracefulRestartParameters.XMPPHelperEnable),
-		int(model.GracefulRestartParameters.RestartTime),
-		int(model.GracefulRestartParameters.LongLivedRestartTime),
+		utils.MustJSON(model.Perms2.Share),
+		string(model.UUID),
+		string(model.ConfigVersion),
+		bool(model.IbgpAutoMesh),
 		bool(model.GracefulRestartParameters.Enable),
 		int(model.GracefulRestartParameters.EndOfRibTimeout),
 		bool(model.GracefulRestartParameters.BGPHelperEnable),
-		int(model.AutonomousSystem),
-		string(model.UUID))
+		bool(model.GracefulRestartParameters.XMPPHelperEnable),
+		int(model.GracefulRestartParameters.RestartTime),
+		int(model.GracefulRestartParameters.LongLivedRestartTime),
+		utils.MustJSON(model.FQName),
+		string(model.DisplayName),
+		utils.MustJSON(model.Annotations.KeyValuePair),
+		bool(model.AlarmEnable),
+		int(model.MacAgingTime),
+		bool(model.BGPAlwaysCompareMed),
+		int(model.MacLimitControl.MacLimit),
+		string(model.MacLimitControl.MacLimitAction),
+		string(model.IDPerms.LastModified),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		int(model.IDPerms.Permissions.OtherAccess),
+		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Created),
+		string(model.IDPerms.Creator),
+		bool(model.IDPerms.UserVisible))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
 	stmtBGPRouterRef, err := tx.Prepare(insertGlobalSystemConfigBGPRouterQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing BGPRouterRefs create statement failed")
 	}
 	defer stmtBGPRouterRef.Close()
 	for _, ref := range model.BGPRouterRefs {
 		_, err = stmtBGPRouterRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "BGPRouterRefs create failed")
+		}
 	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanGlobalSystemConfig(rows *sql.Rows) (*models.GlobalSystemConfig, error) {
+func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystemConfig, error) {
 	m := models.MakeGlobalSystemConfig()
 
-	var jsonFQName string
+	if value, ok := values["mac_move_time_window"]; ok {
 
-	var jsonUserDefinedLogStatistics string
+		castedValue := utils.InterfaceToInt(value)
 
-	var jsonPerms2Share string
+		m.MacMoveControl.MacMoveTimeWindow = models.MACMoveTimeWindow(castedValue)
 
-	var jsonPluginTuningPluginProperty string
-
-	var jsonIPFabricSubnetsSubnet string
-
-	var jsonAnnotationsKeyValuePair string
-
-	if err := rows.Scan(&jsonFQName,
-		&m.AlarmEnable,
-		&m.IbgpAutoMesh,
-		&m.BGPAlwaysCompareMed,
-		&m.MacLimitControl.MacLimit,
-		&m.MacLimitControl.MacLimitAction,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.ConfigVersion,
-		&m.MacMoveControl.MacMoveTimeWindow,
-		&m.MacMoveControl.MacMoveLimit,
-		&m.MacMoveControl.MacMoveLimitAction,
-		&jsonUserDefinedLogStatistics,
-		&m.DisplayName,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPluginTuningPluginProperty,
-		&jsonIPFabricSubnetsSubnet,
-		&jsonAnnotationsKeyValuePair,
-		&m.BgpaasParameters.PortStart,
-		&m.BgpaasParameters.PortEnd,
-		&m.MacAgingTime,
-		&m.GracefulRestartParameters.XMPPHelperEnable,
-		&m.GracefulRestartParameters.RestartTime,
-		&m.GracefulRestartParameters.LongLivedRestartTime,
-		&m.GracefulRestartParameters.Enable,
-		&m.GracefulRestartParameters.EndOfRibTimeout,
-		&m.GracefulRestartParameters.BGPHelperEnable,
-		&m.AutonomousSystem,
-		&m.UUID); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+	if value, ok := values["mac_move_limit"]; ok {
 
-	json.Unmarshal([]byte(jsonUserDefinedLogStatistics), &m.UserDefinedLogStatistics)
+		castedValue := utils.InterfaceToInt(value)
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		m.MacMoveControl.MacMoveLimit = castedValue
 
-	json.Unmarshal([]byte(jsonPluginTuningPluginProperty), &m.PluginTuning.PluginProperty)
+	}
 
-	json.Unmarshal([]byte(jsonIPFabricSubnetsSubnet), &m.IPFabricSubnets.Subnet)
+	if value, ok := values["mac_move_limit_action"]; ok {
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+		castedValue := utils.InterfaceToString(value)
+
+		m.MacMoveControl.MacMoveLimitAction = models.MACLimitExceedActionType(castedValue)
+
+	}
+
+	if value, ok := values["plugin_property"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.PluginTuning.PluginProperty)
+
+	}
+
+	if value, ok := values["user_defined_log_statistics"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.UserDefinedLogStatistics)
+
+	}
+
+	if value, ok := values["autonomous_system"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.AutonomousSystem = models.AutonomousSystemType(castedValue)
+
+	}
+
+	if value, ok := values["port_start"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.BgpaasParameters.PortStart = models.L4PortType(castedValue)
+
+	}
+
+	if value, ok := values["port_end"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.BgpaasParameters.PortEnd = models.L4PortType(castedValue)
+
+	}
+
+	if value, ok := values["subnet"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.IPFabricSubnets.Subnet)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["config_version"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ConfigVersion = castedValue
+
+	}
+
+	if value, ok := values["ibgp_auto_mesh"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IbgpAutoMesh = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.GracefulRestartParameters.Enable = castedValue
+
+	}
+
+	if value, ok := values["end_of_rib_timeout"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.GracefulRestartParameters.EndOfRibTimeout = models.EndOfRibTimeType(castedValue)
+
+	}
+
+	if value, ok := values["bgp_helper_enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.GracefulRestartParameters.BGPHelperEnable = castedValue
+
+	}
+
+	if value, ok := values["xmpp_helper_enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.GracefulRestartParameters.XMPPHelperEnable = castedValue
+
+	}
+
+	if value, ok := values["restart_time"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.GracefulRestartParameters.RestartTime = models.GracefulRestartTimeType(castedValue)
+
+	}
+
+	if value, ok := values["long_lived_restart_time"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.GracefulRestartParameters.LongLivedRestartTime = models.LongLivedGracefulRestartTimeType(castedValue)
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["alarm_enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.AlarmEnable = castedValue
+
+	}
+
+	if value, ok := values["mac_aging_time"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.MacAgingTime = models.MACAgingTime(castedValue)
+
+	}
+
+	if value, ok := values["bgp_always_compare_med"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.BGPAlwaysCompareMed = castedValue
+
+	}
+
+	if value, ok := values["mac_limit"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.MacLimitControl.MacLimit = castedValue
+
+	}
+
+	if value, ok := values["mac_limit_action"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.MacLimitControl.MacLimitAction = models.MACLimitExceedActionType(castedValue)
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["id_perms_enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["ref_bgp_router"]; ok {
+		var references []interface{}
+		stringValue := utils.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap := reference.(map[string]interface{})
+			referenceModel := &models.GlobalSystemConfigBGPRouterRef{}
+			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			m.BGPRouterRefs = append(m.BGPRouterRefs, referenceModel)
+
+		}
+	}
 
 	return m, nil
 }
 
-func buildGlobalSystemConfigWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["mac_limit_action"]; ok {
-		results = append(results, "mac_limit_action = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["config_version"]; ok {
-		results = append(results, "config_version = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["mac_move_limit_action"]; ok {
-		results = append(results, "mac_move_limit_action = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["perms2_owner"]; ok {
-		results = append(results, "perms2_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListGlobalSystemConfig(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.GlobalSystemConfig, error) {
-	result := models.MakeGlobalSystemConfigSlice()
-	whereQuery, values := buildGlobalSystemConfigWhereQuery(where)
+// ListGlobalSystemConfig lists GlobalSystemConfig with list spec.
+func ListGlobalSystemConfig(tx *sql.Tx, spec *db.ListSpec) ([]*models.GlobalSystemConfig, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listGlobalSystemConfigQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "global_system_config"
+	spec.Fields = GlobalSystemConfigFields
+	spec.RefFields = GlobalSystemConfigRefFields
+	result := models.MakeGlobalSystemConfigSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanGlobalSystemConfig(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanGlobalSystemConfig(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowGlobalSystemConfig shows GlobalSystemConfig resource
 func ShowGlobalSystemConfig(tx *sql.Tx, uuid string) (*models.GlobalSystemConfig, error) {
-	rows, err := tx.Query(showGlobalSystemConfigQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListGlobalSystemConfig(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanGlobalSystemConfig(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateGlobalSystemConfig updates a resource
 func UpdateGlobalSystemConfig(tx *sql.Tx, uuid string, model *models.GlobalSystemConfig) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteGlobalSystemConfig deletes a resource
 func DeleteGlobalSystemConfig(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteGlobalSystemConfigQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

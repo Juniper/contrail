@@ -4,15 +4,18 @@ package models
 
 type SessionPersistenceType string
 
+// MakeSessionPersistenceType makes SessionPersistenceType
 func MakeSessionPersistenceType() SessionPersistenceType {
 	var data SessionPersistenceType
 	return data
 }
 
+// InterfaceToSessionPersistenceType makes SessionPersistenceType from interface
 func InterfaceToSessionPersistenceType(data interface{}) SessionPersistenceType {
 	return data.(SessionPersistenceType)
 }
 
+// InterfaceToSessionPersistenceTypeSlice makes a slice of SessionPersistenceType from interface
 func InterfaceToSessionPersistenceTypeSlice(data interface{}) []SessionPersistenceType {
 	list := data.([]interface{})
 	result := MakeSessionPersistenceTypeSlice()
@@ -22,6 +25,7 @@ func InterfaceToSessionPersistenceTypeSlice(data interface{}) []SessionPersisten
 	return result
 }
 
+// MakeSessionPersistenceTypeSlice() makes a slice of SessionPersistenceType
 func MakeSessionPersistenceTypeSlice() []SessionPersistenceType {
 	return []SessionPersistenceType{}
 }

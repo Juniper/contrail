@@ -1,218 +1,346 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertServiceApplianceSetQuery = "insert into `service_appliance_set` (`key_value_pair`,`service_appliance_driver`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`group`,`group_access`,`owner`,`owner_access`,`other_access`,`annotations_key_value_pair`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`,`service_appliance_ha_mode`,`uuid`,`fq_name`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateServiceApplianceSetQuery = "update `service_appliance_set` set `key_value_pair` = ?,`service_appliance_driver` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`annotations_key_value_pair` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`service_appliance_ha_mode` = ?,`uuid` = ?,`fq_name` = ?,`display_name` = ?;"
+const insertServiceApplianceSetQuery = "insert into `service_appliance_set` (`key_value_pair`,`service_appliance_ha_mode`,`owner`,`owner_access`,`global_access`,`share`,`fq_name`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`enable`,`display_name`,`service_appliance_driver`,`annotations_key_value_pair`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateServiceApplianceSetQuery = "update `service_appliance_set` set `key_value_pair` = ?,`service_appliance_ha_mode` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`fq_name` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`enable` = ?,`display_name` = ?,`service_appliance_driver` = ?,`annotations_key_value_pair` = ?,`uuid` = ?;"
 const deleteServiceApplianceSetQuery = "delete from `service_appliance_set` where uuid = ?"
-const listServiceApplianceSetQuery = "select `service_appliance_set`.`key_value_pair`,`service_appliance_set`.`service_appliance_driver`,`service_appliance_set`.`enable`,`service_appliance_set`.`description`,`service_appliance_set`.`created`,`service_appliance_set`.`creator`,`service_appliance_set`.`user_visible`,`service_appliance_set`.`last_modified`,`service_appliance_set`.`group`,`service_appliance_set`.`group_access`,`service_appliance_set`.`owner`,`service_appliance_set`.`owner_access`,`service_appliance_set`.`other_access`,`service_appliance_set`.`annotations_key_value_pair`,`service_appliance_set`.`share`,`service_appliance_set`.`perms2_owner`,`service_appliance_set`.`perms2_owner_access`,`service_appliance_set`.`global_access`,`service_appliance_set`.`service_appliance_ha_mode`,`service_appliance_set`.`uuid`,`service_appliance_set`.`fq_name`,`service_appliance_set`.`display_name` from `service_appliance_set`"
-const showServiceApplianceSetQuery = "select `service_appliance_set`.`key_value_pair`,`service_appliance_set`.`service_appliance_driver`,`service_appliance_set`.`enable`,`service_appliance_set`.`description`,`service_appliance_set`.`created`,`service_appliance_set`.`creator`,`service_appliance_set`.`user_visible`,`service_appliance_set`.`last_modified`,`service_appliance_set`.`group`,`service_appliance_set`.`group_access`,`service_appliance_set`.`owner`,`service_appliance_set`.`owner_access`,`service_appliance_set`.`other_access`,`service_appliance_set`.`annotations_key_value_pair`,`service_appliance_set`.`share`,`service_appliance_set`.`perms2_owner`,`service_appliance_set`.`perms2_owner_access`,`service_appliance_set`.`global_access`,`service_appliance_set`.`service_appliance_ha_mode`,`service_appliance_set`.`uuid`,`service_appliance_set`.`fq_name`,`service_appliance_set`.`display_name` from `service_appliance_set` where uuid = ?"
 
+// ServiceApplianceSetFields is db columns for ServiceApplianceSet
+var ServiceApplianceSetFields = []string{
+	"key_value_pair",
+	"service_appliance_ha_mode",
+	"owner",
+	"owner_access",
+	"global_access",
+	"share",
+	"fq_name",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"other_access",
+	"group",
+	"group_access",
+	"permissions_owner",
+	"permissions_owner_access",
+	"enable",
+	"display_name",
+	"service_appliance_driver",
+	"annotations_key_value_pair",
+	"uuid",
+}
+
+// ServiceApplianceSetRefFields is db reference fields for ServiceApplianceSet
+var ServiceApplianceSetRefFields = map[string][]string{}
+
+// CreateServiceApplianceSet inserts ServiceApplianceSet to DB
 func CreateServiceApplianceSet(tx *sql.Tx, model *models.ServiceApplianceSet) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceApplianceSetQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertServiceApplianceSetQuery,
+	}).Debug("create query")
 	_, err = stmt.Exec(utils.MustJSON(model.ServiceApplianceSetProperties.KeyValuePair),
-		string(model.ServiceApplianceDriver),
-		bool(model.IDPerms.Enable),
+		string(model.ServiceApplianceHaMode),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		utils.MustJSON(model.Perms2.Share),
+		utils.MustJSON(model.FQName),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
+		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
+		bool(model.IDPerms.Enable),
+		string(model.DisplayName),
+		string(model.ServiceApplianceDriver),
 		utils.MustJSON(model.Annotations.KeyValuePair),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		string(model.ServiceApplianceHaMode),
-		string(model.UUID),
-		utils.MustJSON(model.FQName),
-		string(model.DisplayName))
+		string(model.UUID))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanServiceApplianceSet(rows *sql.Rows) (*models.ServiceApplianceSet, error) {
+func scanServiceApplianceSet(values map[string]interface{}) (*models.ServiceApplianceSet, error) {
 	m := models.MakeServiceApplianceSet()
 
-	var jsonServiceApplianceSetPropertiesKeyValuePair string
+	if value, ok := values["key_value_pair"]; ok {
 
-	var jsonAnnotationsKeyValuePair string
+		json.Unmarshal(value.([]byte), &m.ServiceApplianceSetProperties.KeyValuePair)
 
-	var jsonPerms2Share string
-
-	var jsonFQName string
-
-	if err := rows.Scan(&jsonServiceApplianceSetPropertiesKeyValuePair,
-		&m.ServiceApplianceDriver,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&jsonAnnotationsKeyValuePair,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&m.ServiceApplianceHaMode,
-		&m.UUID,
-		&jsonFQName,
-		&m.DisplayName); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonServiceApplianceSetPropertiesKeyValuePair), &m.ServiceApplianceSetProperties.KeyValuePair)
+	if value, ok := values["service_appliance_ha_mode"]; ok {
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		m.ServiceApplianceHaMode = castedValue
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["service_appliance_driver"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ServiceApplianceDriver = castedValue
+
+	}
+
+	if value, ok := values["annotations_key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
 
 	return m, nil
 }
 
-func buildServiceApplianceSetWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["service_appliance_driver"]; ok {
-		results = append(results, "service_appliance_driver = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["perms2_owner"]; ok {
-		results = append(results, "perms2_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["service_appliance_ha_mode"]; ok {
-		results = append(results, "service_appliance_ha_mode = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListServiceApplianceSet(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.ServiceApplianceSet, error) {
-	result := models.MakeServiceApplianceSetSlice()
-	whereQuery, values := buildServiceApplianceSetWhereQuery(where)
+// ListServiceApplianceSet lists ServiceApplianceSet with list spec.
+func ListServiceApplianceSet(tx *sql.Tx, spec *db.ListSpec) ([]*models.ServiceApplianceSet, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listServiceApplianceSetQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "service_appliance_set"
+	spec.Fields = ServiceApplianceSetFields
+	spec.RefFields = ServiceApplianceSetRefFields
+	result := models.MakeServiceApplianceSetSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanServiceApplianceSet(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanServiceApplianceSet(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowServiceApplianceSet shows ServiceApplianceSet resource
 func ShowServiceApplianceSet(tx *sql.Tx, uuid string) (*models.ServiceApplianceSet, error) {
-	rows, err := tx.Query(showServiceApplianceSetQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListServiceApplianceSet(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanServiceApplianceSet(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateServiceApplianceSet updates a resource
 func UpdateServiceApplianceSet(tx *sql.Tx, uuid string, model *models.ServiceApplianceSet) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteServiceApplianceSet deletes a resource
 func DeleteServiceApplianceSet(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteServiceApplianceSetQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

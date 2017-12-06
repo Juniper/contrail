@@ -4,15 +4,18 @@ package models
 
 type FirewallRuleDirectionType string
 
+// MakeFirewallRuleDirectionType makes FirewallRuleDirectionType
 func MakeFirewallRuleDirectionType() FirewallRuleDirectionType {
 	var data FirewallRuleDirectionType
 	return data
 }
 
+// InterfaceToFirewallRuleDirectionType makes FirewallRuleDirectionType from interface
 func InterfaceToFirewallRuleDirectionType(data interface{}) FirewallRuleDirectionType {
 	return data.(FirewallRuleDirectionType)
 }
 
+// InterfaceToFirewallRuleDirectionTypeSlice makes a slice of FirewallRuleDirectionType from interface
 func InterfaceToFirewallRuleDirectionTypeSlice(data interface{}) []FirewallRuleDirectionType {
 	list := data.([]interface{})
 	result := MakeFirewallRuleDirectionTypeSlice()
@@ -22,6 +25,7 @@ func InterfaceToFirewallRuleDirectionTypeSlice(data interface{}) []FirewallRuleD
 	return result
 }
 
+// MakeFirewallRuleDirectionTypeSlice() makes a slice of FirewallRuleDirectionType
 func MakeFirewallRuleDirectionTypeSlice() []FirewallRuleDirectionType {
 	return []FirewallRuleDirectionType{}
 }

@@ -26,19 +26,24 @@ var sqlBindMap = map[string]string{
 	"string":  "string",
 }
 
+//API object has schemas and types for API definition.
 type API struct {
 	Schemas []*Schema
 	Types   map[string]*JSONSchema
 }
 
+//ColumnConfig is for database configuraion.
 type ColumnConfig struct {
-	Path   string
-	Type   string
-	Bind   string
-	Column string
-	Name   string
+	Path        string
+	Type        string
+	GoType      string
+	Bind        string
+	Column      string
+	Name        string
+	GoPremitive bool
 }
 
+//Schema has JSONSchema plus data model info
 type Schema struct {
 	FileName    string
 	ID          string                 `yaml:"id"`
@@ -55,6 +60,7 @@ type Schema struct {
 	Columns     []*ColumnConfig
 }
 
+//JSONSchema is a standard JSONSchema representation plus data for code generation.
 type JSONSchema struct {
 	Title          string                 `yaml:"title"`
 	Description    string                 `yaml:"description"`
@@ -74,13 +80,16 @@ type JSONSchema struct {
 	Item           *JSONSchema            `yaml:"item"`
 	GoName         string
 	GoType         string
+	GoPremitive    bool
 }
 
+//String makes string format for json schema
 func (s *JSONSchema) String() string {
 	data, _ := json.Marshal(s)
 	return string(data)
 }
 
+//Reference object represents many to many relationships between resources.
 type Reference struct {
 	GoName      string
 	Description string `yaml:"description"`
@@ -102,12 +111,12 @@ func parseRef(ref string) (string, string) {
 	return refs[0], types[len(types)-1]
 }
 
-func (s *JSONSchema) GetRef() (string, string) {
+func (s *JSONSchema) getRef() (string, string) {
 	return parseRef(s.Ref)
 }
 
+//Copy copies a json schema
 func (s *JSONSchema) Copy() *JSONSchema {
-
 	copied := &JSONSchema{
 		Title:      s.Title,
 		SQL:        s.SQL,
@@ -132,6 +141,7 @@ func (s *JSONSchema) Copy() *JSONSchema {
 	return copied
 }
 
+//Update merges two JSONSchema
 func (s *JSONSchema) Update(s2 *JSONSchema) {
 	if s2 == nil {
 		return
@@ -178,6 +188,7 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 	}
 }
 
+//Walk apply one function for json schema recursivly.
 func (s *JSONSchema) Walk(name string, do func(name string, s2 *JSONSchema) error) error {
 	if s == nil {
 		return nil
@@ -198,7 +209,7 @@ func (s *JSONSchema) Walk(name string, do func(name string, s2 *JSONSchema) erro
 	return nil
 }
 
-func (s *JSONSchema) ResolveSQL(column string, goPath string, columns *[]*ColumnConfig, used map[string]bool) error {
+func (s *JSONSchema) resolveSQL(column string, goPath string, columns *[]*ColumnConfig, used map[string]bool) error {
 	if s == nil {
 		return nil
 	}
@@ -215,11 +226,13 @@ func (s *JSONSchema) ResolveSQL(column string, goPath string, columns *[]*Column
 			bind = sqlBindMap[s.Type]
 		}
 		*columns = append(*columns, &ColumnConfig{
-			Path:   goPath,
-			Bind:   bind,
-			Type:   s.SQL,
-			Column: column,
-			Name:   strings.Replace(goPath, ".", "", -1),
+			Path:        goPath,
+			GoType:      s.GoType,
+			Bind:        bind,
+			Type:        s.SQL,
+			Column:      column,
+			GoPremitive: s.GoPremitive,
+			Name:        strings.Replace(goPath, ".", "", -1),
 		})
 		return nil
 	}
@@ -229,7 +242,7 @@ func (s *JSONSchema) ResolveSQL(column string, goPath string, columns *[]*Column
 			columnName = column + "_" + name
 		}
 		used[columnName] = true
-		err := property.ResolveSQL(columnName, goPath+"."+property.GoName, columns, used)
+		err := property.resolveSQL(columnName, goPath+"."+property.GoName, columns, used)
 		if err != nil {
 			return err
 		}
@@ -237,13 +250,14 @@ func (s *JSONSchema) ResolveSQL(column string, goPath string, columns *[]*Column
 	return nil
 }
 
-func (s *JSONSchema) ResolveGoName(name string) error {
+func (s *JSONSchema) resolveGoName(name string) error {
 	if s == nil {
 		return nil
 	}
 	s.GoName = SnakeToCamel(name)
-	_, goType := s.GetRef()
+	_, goType := s.getRef()
 	if goType == "" {
+		s.GoPremitive = true
 		switch s.Type {
 		case "integer":
 			goType = "int"
@@ -258,7 +272,7 @@ func (s *JSONSchema) ResolveGoName(name string) error {
 				goType = "map[string]interface{}"
 			}
 		case "array":
-			s.Item.ResolveGoName(name)
+			s.Item.resolveGoName(name)
 			if s.Item == nil {
 				goType = "[]interface{}"
 			} else if s.Item.Type == "integer" || s.Item.Type == "number" || s.Item.Type == "boolean" || s.Item.Type == "string" {
@@ -276,7 +290,7 @@ func (s *JSONSchema) ResolveGoName(name string) error {
 	// }
 	s.GoType = goType
 	for name, property := range s.Properties {
-		err := property.ResolveGoName(name)
+		err := property.resolveGoName(name)
 		if err != nil {
 			return err
 		}
@@ -315,7 +329,7 @@ func (api *API) loadType(schemaFile, typeName string) (*JSONSchema, error) {
 		return nil, fmt.Errorf("%s isn't defined in %s", typeName, schemaFile)
 	}
 	definition.Walk("", api.resolveRef)
-	definition.ResolveGoName("")
+	definition.resolveGoName("")
 	api.Types[typeName] = definition
 	return definition, nil
 }
@@ -350,7 +364,7 @@ func (api *API) resolveAllRef() error {
 
 func (api *API) resolveAllSQL() error {
 	for _, s := range api.Schemas {
-		err := s.JSONSchema.ResolveSQL("", "", &s.Columns, map[string]bool{})
+		err := s.JSONSchema.resolveSQL("", "", &s.Columns, map[string]bool{})
 		if err != nil {
 			return err
 		}
@@ -360,6 +374,11 @@ func (api *API) resolveAllSQL() error {
 
 func (api *API) resolveRelation(linkTo string, reference *Reference) error {
 	reference.GoName = SnakeToCamel(linkTo)
+	linkToSchema := api.schemaByID(linkTo)
+	if linkToSchema == nil {
+		return fmt.Errorf("Can't find linked schema %s", linkTo)
+	}
+	reference.LinkTo = linkToSchema
 	ref := reference.Ref
 	if ref == "" {
 		return nil
@@ -371,19 +390,14 @@ func (api *API) resolveRelation(linkTo string, reference *Reference) error {
 		return err
 	}
 	reference.Attr = definition
-	err = definition.ResolveGoName("")
+	err = definition.resolveGoName("")
 	if err != nil {
 		return err
 	}
-	err = definition.ResolveSQL("", "", &reference.Columns, map[string]bool{})
+	err = definition.resolveSQL("", "", &reference.Columns, map[string]bool{})
 	if err != nil {
 		return err
 	}
-	linkToSchema := api.schemaByID(linkTo)
-	if linkToSchema == nil {
-		return fmt.Errorf("Can't find linked schema %s", linkTo)
-	}
-	reference.LinkTo = linkToSchema
 	return nil
 }
 
@@ -405,7 +419,7 @@ func (api *API) resolveAllRelation() error {
 
 func (api *API) resolveAllGoName() error {
 	for _, s := range api.Schemas {
-		s.JSONSchema.ResolveGoName(s.ID)
+		s.JSONSchema.resolveGoName(s.ID)
 	}
 	return nil
 }
@@ -423,6 +437,7 @@ func (api *API) resolveExtend() error {
 	return nil
 }
 
+//MakeAPI load directory and generate API definitions.
 func MakeAPI(dir string) (*API, error) {
 	api := &API{
 		Schemas: []*Schema{},
