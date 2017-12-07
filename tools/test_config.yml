@@ -1,3 +1,15 @@
 database:
     connection: "root:contrail123@tcp(mysql:3306)/contrail_test"
     max_open_conn: 100
+
+log_level: debug
+
+server:
+    read_timeout: 10
+    write_timeout: 5
+
+address: ":9091"
+tls:
+    enabled: false
+    key_file: key
+    cert_file: cret

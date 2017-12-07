@@ -4,16 +4,15 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertDomainQuery = "insert into `domain` (`fq_name`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`display_name`,`key_value_pair`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`,`project_limit`,`virtual_network_limit`,`security_group_limit`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateDomainQuery = "update `domain` set `fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`display_name` = ?,`key_value_pair` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`project_limit` = ?,`virtual_network_limit` = ?,`security_group_limit` = ?,`uuid` = ?;"
+const insertDomainQuery = "insert into `domain` (`fq_name`,`user_visible`,`last_modified`,`group`,`group_access`,`owner`,`owner_access`,`other_access`,`enable`,`description`,`created`,`creator`,`display_name`,`key_value_pair`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`,`security_group_limit`,`project_limit`,`virtual_network_limit`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateDomainQuery = "update `domain` set `fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`display_name` = ?,`key_value_pair` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`security_group_limit` = ?,`project_limit` = ?,`virtual_network_limit` = ?,`uuid` = ?;"
 const deleteDomainQuery = "delete from `domain` where uuid = ?"
 
 // DomainFields is db columns for Domain
@@ -21,11 +20,11 @@ var DomainFields = []string{
 	"fq_name",
 	"user_visible",
 	"last_modified",
+	"group",
+	"group_access",
 	"owner",
 	"owner_access",
 	"other_access",
-	"group",
-	"group_access",
 	"enable",
 	"description",
 	"created",
@@ -36,9 +35,9 @@ var DomainFields = []string{
 	"perms2_owner",
 	"perms2_owner_access",
 	"global_access",
+	"security_group_limit",
 	"project_limit",
 	"virtual_network_limit",
-	"security_group_limit",
 	"uuid",
 }
 
@@ -57,27 +56,27 @@ func CreateDomain(tx *sql.Tx, model *models.Domain) error {
 		"model": model,
 		"query": insertDomainQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(utils.MustJSON(model.FQName),
+	_, err = stmt.Exec(common.MustJSON(model.FQName),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
+		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		utils.MustJSON(model.Perms2.Share),
+		common.MustJSON(model.Annotations.KeyValuePair),
+		common.MustJSON(model.Perms2.Share),
 		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
 		int(model.Perms2.GlobalAccess),
+		int(model.DomainLimits.SecurityGroupLimit),
 		int(model.DomainLimits.ProjectLimit),
 		int(model.DomainLimits.VirtualNetworkLimit),
-		int(model.DomainLimits.SecurityGroupLimit),
 		string(model.UUID))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -100,7 +99,7 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.UserVisible = castedValue
 
@@ -108,39 +107,15 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.LastModified = castedValue
 
 	}
 
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
 	if value, ok := values["group"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Group = castedValue
 
@@ -148,15 +123,39 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
 
 	}
 
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["enable"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.Enable = castedValue
 
@@ -164,7 +163,7 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Description = castedValue
 
@@ -172,7 +171,7 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Created = castedValue
 
@@ -180,7 +179,7 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Creator = castedValue
 
@@ -188,7 +187,7 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
 
@@ -208,7 +207,7 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["perms2_owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.Perms2.Owner = castedValue
 
@@ -216,7 +215,7 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["perms2_owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
@@ -224,15 +223,23 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
 	}
 
+	if value, ok := values["security_group_limit"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.DomainLimits.SecurityGroupLimit = castedValue
+
+	}
+
 	if value, ok := values["project_limit"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.DomainLimits.ProjectLimit = castedValue
 
@@ -240,23 +247,15 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["virtual_network_limit"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.DomainLimits.VirtualNetworkLimit = castedValue
 
 	}
 
-	if value, ok := values["security_group_limit"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.DomainLimits.SecurityGroupLimit = castedValue
-
-	}
-
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.UUID = castedValue
 
@@ -266,7 +265,7 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 }
 
 // ListDomain lists Domain with list spec.
-func ListDomain(tx *sql.Tx, spec *db.ListSpec) ([]*models.Domain, error) {
+func ListDomain(tx *sql.Tx, spec *common.ListSpec) ([]*models.Domain, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -274,7 +273,7 @@ func ListDomain(tx *sql.Tx, spec *db.ListSpec) ([]*models.Domain, error) {
 	spec.Fields = DomainFields
 	spec.RefFields = DomainRefFields
 	result := models.MakeDomainSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -315,7 +314,7 @@ func ListDomain(tx *sql.Tx, spec *db.ListSpec) ([]*models.Domain, error) {
 
 // ShowDomain shows Domain resource
 func ShowDomain(tx *sql.Tx, uuid string) (*models.Domain, error) {
-	list, err := ListDomain(tx, &db.ListSpec{
+	list, err := ListDomain(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

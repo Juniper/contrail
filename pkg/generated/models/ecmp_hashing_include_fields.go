@@ -6,12 +6,12 @@ import "encoding/json"
 
 // EcmpHashingIncludeFields
 type EcmpHashingIncludeFields struct {
-	SourceIP          bool `json:"source_ip"`
-	HashingConfigured bool `json:"hashing_configured"`
-	SourcePort        bool `json:"source_port"`
 	DestinationPort   bool `json:"destination_port"`
 	DestinationIP     bool `json:"destination_ip"`
 	IPProtocol        bool `json:"ip_protocol"`
+	SourceIP          bool `json:"source_ip"`
+	HashingConfigured bool `json:"hashing_configured"`
+	SourcePort        bool `json:"source_port"`
 }
 
 //  parents relation object
@@ -26,12 +26,12 @@ func (model *EcmpHashingIncludeFields) String() string {
 func MakeEcmpHashingIncludeFields() *EcmpHashingIncludeFields {
 	return &EcmpHashingIncludeFields{
 		//TODO(nati): Apply default
+		HashingConfigured: false,
 		SourcePort:        false,
 		DestinationPort:   false,
 		DestinationIP:     false,
 		IPProtocol:        false,
 		SourceIP:          false,
-		HashingConfigured: false,
 	}
 }
 

@@ -22,8 +22,8 @@ func (model *ProtocolType) String() string {
 func MakeProtocolType() *ProtocolType {
 	return &ProtocolType{
 		//TODO(nati): Apply default
-		Port:     0,
 		Protocol: "",
+		Port:     0,
 	}
 }
 
@@ -31,12 +31,12 @@ func MakeProtocolType() *ProtocolType {
 func InterfaceToProtocolType(iData interface{}) *ProtocolType {
 	data := iData.(map[string]interface{})
 	return &ProtocolType{
-		Protocol: data["protocol"].(string),
-
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Protocol","GoType":"string","GoPremitive":true}
 		Port: data["port"].(int),
 
 		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Port","GoType":"int","GoPremitive":true}
+		Protocol: data["protocol"].(string),
+
+		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Protocol","GoType":"string","GoPremitive":true}
 
 	}
 }

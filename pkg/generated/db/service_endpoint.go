@@ -4,56 +4,55 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertServiceEndpointQuery = "insert into `service_endpoint` (`owner`,`owner_access`,`global_access`,`share`,`uuid`,`fq_name`,`user_visible`,`last_modified`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`enable`,`description`,`created`,`creator`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateServiceEndpointQuery = "update `service_endpoint` set `owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`display_name` = ?,`key_value_pair` = ?;"
+const insertServiceEndpointQuery = "insert into `service_endpoint` (`uuid`,`fq_name`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`owner`,`owner_access`,`display_name`,`key_value_pair`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateServiceEndpointQuery = "update `service_endpoint` set `uuid` = ?,`fq_name` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?;"
 const deleteServiceEndpointQuery = "delete from `service_endpoint` where uuid = ?"
 
 // ServiceEndpointFields is db columns for ServiceEndpoint
 var ServiceEndpointFields = []string{
-	"owner",
-	"owner_access",
-	"global_access",
-	"share",
 	"uuid",
 	"fq_name",
-	"user_visible",
-	"last_modified",
-	"group_access",
-	"permissions_owner",
-	"permissions_owner_access",
-	"other_access",
-	"group",
 	"enable",
 	"description",
 	"created",
 	"creator",
+	"user_visible",
+	"last_modified",
+	"other_access",
+	"group",
+	"group_access",
+	"owner",
+	"owner_access",
 	"display_name",
 	"key_value_pair",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"share",
 }
 
 // ServiceEndpointRefFields is db reference fields for ServiceEndpoint
 var ServiceEndpointRefFields = map[string][]string{
 
+	"service_object": {
+	// <common.Schema Value>
+
+	},
+
 	"service_connection_module": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 
 	"physical_router": {
-	// <utils.Schema Value>
-
-	},
-
-	"service_object": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 }
@@ -76,27 +75,40 @@ func CreateServiceEndpoint(tx *sql.Tx, model *models.ServiceEndpoint) error {
 		"model": model,
 		"query": insertServiceEndpointQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.UUID),
-		utils.MustJSON(model.FQName),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
+	_, err = stmt.Exec(string(model.UUID),
+		common.MustJSON(model.FQName),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
+		bool(model.IDPerms.UserVisible),
+		string(model.IDPerms.LastModified),
+		int(model.IDPerms.Permissions.OtherAccess),
+		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
 		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair))
+		common.MustJSON(model.Annotations.KeyValuePair),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
+	}
+
+	stmtServiceConnectionModuleRef, err := tx.Prepare(insertServiceEndpointServiceConnectionModuleQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceConnectionModuleRefs create statement failed")
+	}
+	defer stmtServiceConnectionModuleRef.Close()
+	for _, ref := range model.ServiceConnectionModuleRefs {
+
+		_, err = stmtServiceConnectionModuleRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceConnectionModuleRefs create failed")
+		}
 	}
 
 	stmtPhysicalRouterRef, err := tx.Prepare(insertServiceEndpointPhysicalRouterQuery)
@@ -105,6 +117,7 @@ func CreateServiceEndpoint(tx *sql.Tx, model *models.ServiceEndpoint) error {
 	}
 	defer stmtPhysicalRouterRef.Close()
 	for _, ref := range model.PhysicalRouterRefs {
+
 		_, err = stmtPhysicalRouterRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PhysicalRouterRefs create failed")
@@ -117,21 +130,10 @@ func CreateServiceEndpoint(tx *sql.Tx, model *models.ServiceEndpoint) error {
 	}
 	defer stmtServiceObjectRef.Close()
 	for _, ref := range model.ServiceObjectRefs {
+
 		_, err = stmtServiceObjectRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceObjectRefs create failed")
-		}
-	}
-
-	stmtServiceConnectionModuleRef, err := tx.Prepare(insertServiceEndpointServiceConnectionModuleQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceConnectionModuleRefs create statement failed")
-	}
-	defer stmtServiceConnectionModuleRef.Close()
-	for _, ref := range model.ServiceConnectionModuleRefs {
-		_, err = stmtServiceConnectionModuleRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceConnectionModuleRefs create failed")
 		}
 	}
 
@@ -144,39 +146,9 @@ func CreateServiceEndpoint(tx *sql.Tx, model *models.ServiceEndpoint) error {
 func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint, error) {
 	m := models.MakeServiceEndpoint()
 
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.UUID = castedValue
 
@@ -188,65 +160,9 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	}
 
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["permissions_owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["permissions_owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
 	if value, ok := values["enable"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.Enable = castedValue
 
@@ -254,7 +170,7 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Description = castedValue
 
@@ -262,7 +178,7 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Created = castedValue
 
@@ -270,15 +186,71 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Creator = castedValue
 
 	}
 
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
 
@@ -290,27 +262,50 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	}
 
-	if value, ok := values["ref_service_connection_module"]; ok {
-		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
-			referenceModel := &models.ServiceEndpointServiceConnectionModuleRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
-			m.ServiceConnectionModuleRefs = append(m.ServiceConnectionModuleRefs, referenceModel)
+	if value, ok := values["perms2_owner"]; ok {
 
-		}
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
 	}
 
 	if value, ok := values["ref_physical_router"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.ServiceEndpointPhysicalRouterRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
 
 		}
@@ -318,13 +313,38 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	if value, ok := values["ref_service_object"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.ServiceEndpointServiceObjectRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.ServiceObjectRefs = append(m.ServiceObjectRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_service_connection_module"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.ServiceEndpointServiceConnectionModuleRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.ServiceConnectionModuleRefs = append(m.ServiceConnectionModuleRefs, referenceModel)
 
 		}
 	}
@@ -333,7 +353,7 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 }
 
 // ListServiceEndpoint lists ServiceEndpoint with list spec.
-func ListServiceEndpoint(tx *sql.Tx, spec *db.ListSpec) ([]*models.ServiceEndpoint, error) {
+func ListServiceEndpoint(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceEndpoint, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -341,7 +361,7 @@ func ListServiceEndpoint(tx *sql.Tx, spec *db.ListSpec) ([]*models.ServiceEndpoi
 	spec.Fields = ServiceEndpointFields
 	spec.RefFields = ServiceEndpointRefFields
 	result := models.MakeServiceEndpointSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -382,7 +402,7 @@ func ListServiceEndpoint(tx *sql.Tx, spec *db.ListSpec) ([]*models.ServiceEndpoi
 
 // ShowServiceEndpoint shows ServiceEndpoint resource
 func ShowServiceEndpoint(tx *sql.Tx, uuid string) (*models.ServiceEndpoint, error) {
-	list, err := ListServiceEndpoint(tx, &db.ListSpec{
+	list, err := ListServiceEndpoint(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

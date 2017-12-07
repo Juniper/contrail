@@ -4,16 +4,15 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertPolicyManagementQuery = "insert into `policy_management` (`uuid`,`fq_name`,`user_visible`,`last_modified`,`group`,`group_access`,`owner`,`owner_access`,`other_access`,`enable`,`description`,`created`,`creator`,`display_name`,`key_value_pair`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updatePolicyManagementQuery = "update `policy_management` set `uuid` = ?,`fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?;"
+const insertPolicyManagementQuery = "insert into `policy_management` (`uuid`,`fq_name`,`user_visible`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`description`,`created`,`creator`,`display_name`,`key_value_pair`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updatePolicyManagementQuery = "update `policy_management` set `uuid` = ?,`fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?;"
 const deletePolicyManagementQuery = "delete from `policy_management` where uuid = ?"
 
 // PolicyManagementFields is db columns for PolicyManagement
@@ -22,21 +21,21 @@ var PolicyManagementFields = []string{
 	"fq_name",
 	"user_visible",
 	"last_modified",
+	"owner_access",
+	"other_access",
 	"group",
 	"group_access",
 	"owner",
-	"owner_access",
-	"other_access",
 	"enable",
 	"description",
 	"created",
 	"creator",
 	"display_name",
 	"key_value_pair",
-	"perms2_owner",
-	"perms2_owner_access",
 	"global_access",
 	"share",
+	"perms2_owner",
+	"perms2_owner_access",
 }
 
 // PolicyManagementRefFields is db reference fields for PolicyManagement
@@ -55,24 +54,24 @@ func CreatePolicyManagement(tx *sql.Tx, model *models.PolicyManagement) error {
 		"query": insertPolicyManagementQuery,
 	}).Debug("create query")
 	_, err = stmt.Exec(string(model.UUID),
-		utils.MustJSON(model.FQName),
+		common.MustJSON(model.FQName),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
+		common.MustJSON(model.Annotations.KeyValuePair),
 		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share))
+		common.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -88,7 +87,7 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.UUID = castedValue
 
@@ -102,7 +101,7 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.UserVisible = castedValue
 
@@ -110,39 +109,15 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.LastModified = castedValue
 
 	}
 
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
@@ -150,15 +125,39 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
 
 	}
 
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
 	if value, ok := values["enable"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.Enable = castedValue
 
@@ -166,7 +165,7 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Description = castedValue
 
@@ -174,7 +173,7 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Created = castedValue
 
@@ -182,7 +181,7 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Creator = castedValue
 
@@ -190,7 +189,7 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
 
@@ -202,25 +201,9 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 
 	}
 
-	if value, ok := values["perms2_owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
@@ -232,11 +215,27 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 
 	}
 
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
 	return m, nil
 }
 
 // ListPolicyManagement lists PolicyManagement with list spec.
-func ListPolicyManagement(tx *sql.Tx, spec *db.ListSpec) ([]*models.PolicyManagement, error) {
+func ListPolicyManagement(tx *sql.Tx, spec *common.ListSpec) ([]*models.PolicyManagement, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -244,7 +243,7 @@ func ListPolicyManagement(tx *sql.Tx, spec *db.ListSpec) ([]*models.PolicyManage
 	spec.Fields = PolicyManagementFields
 	spec.RefFields = PolicyManagementRefFields
 	result := models.MakePolicyManagementSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -285,7 +284,7 @@ func ListPolicyManagement(tx *sql.Tx, spec *db.ListSpec) ([]*models.PolicyManage
 
 // ShowPolicyManagement shows PolicyManagement resource
 func ShowPolicyManagement(tx *sql.Tx, uuid string) (*models.PolicyManagement, error) {
-	list, err := ListPolicyManagement(tx, &db.ListSpec{
+	list, err := ListPolicyManagement(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

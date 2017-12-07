@@ -39,9 +39,6 @@ func MakeLoadbalancerListenerType() *LoadbalancerListenerType {
 func InterfaceToLoadbalancerListenerType(iData interface{}) *LoadbalancerListenerType {
 	data := iData.(map[string]interface{})
 	return &LoadbalancerListenerType{
-		ProtocolPort: data["protocol_port"].(int),
-
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ProtocolPort","GoType":"int","GoPremitive":true}
 		DefaultTLSContainer: data["default_tls_container"].(string),
 
 		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"DefaultTLSContainer","GoType":"string","GoPremitive":true}
@@ -57,6 +54,9 @@ func InterfaceToLoadbalancerListenerType(iData interface{}) *LoadbalancerListene
 		SniContainers: data["sni_containers"].([]string),
 
 		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"SniContainers","GoType":"string","GoPremitive":true},"GoName":"SniContainers","GoType":"[]string","GoPremitive":true}
+		ProtocolPort: data["protocol_port"].(int),
+
+		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ProtocolPort","GoType":"int","GoPremitive":true}
 
 	}
 }

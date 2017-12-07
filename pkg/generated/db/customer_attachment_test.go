@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	dbPkg "github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
 )
 
@@ -13,17 +13,17 @@ func TestCustomerAttachment(t *testing.T) {
 	t.Parallel()
 	model := models.MakeCustomerAttachment()
 	model.UUID = "dummy_uuid"
-	db := testServer.DB
+	db := testDB
 
-	err := dbPkg.DoInTransaction(db, func(tx *sql.Tx) error {
+	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateCustomerAttachment(tx, model)
 	})
 	if err != nil {
 		t.Fatal("create failed", err)
 	}
 
-	err = dbPkg.DoInTransaction(db, func(tx *sql.Tx) error {
-		models, err := ListCustomerAttachment(tx, &dbPkg.ListSpec{Limit: 1})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		models, err := ListCustomerAttachment(tx, &common.ListSpec{Limit: 1})
 		if err != nil {
 			return err
 		}
@@ -36,7 +36,7 @@ func TestCustomerAttachment(t *testing.T) {
 		t.Fatal("list failed", err)
 	}
 
-	err = dbPkg.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		model, err := ShowCustomerAttachment(tx, model.UUID)
 		if err != nil {
 			return err
@@ -50,15 +50,15 @@ func TestCustomerAttachment(t *testing.T) {
 		t.Fatal("show failed", err)
 	}
 
-	err = dbPkg.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return DeleteCustomerAttachment(tx, model.UUID)
 	})
 	if err != nil {
 		t.Fatal("delete failed", err)
 	}
 
-	err = dbPkg.DoInTransaction(db, func(tx *sql.Tx) error {
-		models, err := ListCustomerAttachment(tx, &dbPkg.ListSpec{Limit: 1})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		models, err := ListCustomerAttachment(tx, &common.ListSpec{Limit: 1})
 		if err != nil {
 			return err
 		}

@@ -6,12 +6,12 @@ import "encoding/json"
 
 // VirtualNetworkType
 type VirtualNetworkType struct {
-	NetworkID              int                        `json:"network_id"`
-	MirrorDestination      bool                       `json:"mirror_destination"`
-	VxlanNetworkIdentifier VxlanNetworkIdentifierType `json:"vxlan_network_identifier"`
 	RPF                    RpfModeType                `json:"rpf"`
 	ForwardingMode         ForwardingModeType         `json:"forwarding_mode"`
 	AllowTransit           bool                       `json:"allow_transit"`
+	NetworkID              int                        `json:"network_id"`
+	MirrorDestination      bool                       `json:"mirror_destination"`
+	VxlanNetworkIdentifier VxlanNetworkIdentifierType `json:"vxlan_network_identifier"`
 }
 
 //  parents relation object
@@ -39,9 +39,6 @@ func MakeVirtualNetworkType() *VirtualNetworkType {
 func InterfaceToVirtualNetworkType(iData interface{}) *VirtualNetworkType {
 	data := iData.(map[string]interface{})
 	return &VirtualNetworkType{
-		RPF: InterfaceToRpfModeType(data["rpf"]),
-
-		//{"Title":"","Description":"Flag used to disable Reverse Path Forwarding(RPF) check for this network","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["enable","disable"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/RpfModeType","CollectionType":"","Column":"","Item":null,"GoName":"RPF","GoType":"RpfModeType","GoPremitive":false}
 		ForwardingMode: InterfaceToForwardingModeType(data["forwarding_mode"]),
 
 		//{"Title":"","Description":"Packet forwarding mode for this virtual network","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["l2_l3","l2","l3"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/ForwardingModeType","CollectionType":"","Column":"","Item":null,"GoName":"ForwardingMode","GoType":"ForwardingModeType","GoPremitive":false}
@@ -57,6 +54,9 @@ func InterfaceToVirtualNetworkType(iData interface{}) *VirtualNetworkType {
 		VxlanNetworkIdentifier: InterfaceToVxlanNetworkIdentifierType(data["vxlan_network_identifier"]),
 
 		//{"Title":"","Description":"VxLAN VNI value for this network","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":1,"Maximum":16777215,"Ref":"types.json#/definitions/VxlanNetworkIdentifierType","CollectionType":"","Column":"","Item":null,"GoName":"VxlanNetworkIdentifier","GoType":"VxlanNetworkIdentifierType","GoPremitive":false}
+		RPF: InterfaceToRpfModeType(data["rpf"]),
+
+		//{"Title":"","Description":"Flag used to disable Reverse Path Forwarding(RPF) check for this network","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["enable","disable"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/RpfModeType","CollectionType":"","Column":"","Item":null,"GoName":"RPF","GoType":"RpfModeType","GoPremitive":false}
 
 	}
 }

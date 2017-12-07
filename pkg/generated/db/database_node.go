@@ -4,34 +4,33 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertDatabaseNodeQuery = "insert into `database_node` (`uuid`,`database_node_ip_address`,`fq_name`,`created`,`creator`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`display_name`,`key_value_pair`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateDatabaseNodeQuery = "update `database_node` set `uuid` = ?,`database_node_ip_address` = ?,`fq_name` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?;"
+const insertDatabaseNodeQuery = "insert into `database_node` (`uuid`,`fq_name`,`user_visible`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`description`,`created`,`creator`,`database_node_ip_address`,`display_name`,`key_value_pair`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateDatabaseNodeQuery = "update `database_node` set `uuid` = ?,`fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`database_node_ip_address` = ?,`display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?;"
 const deleteDatabaseNodeQuery = "delete from `database_node` where uuid = ?"
 
 // DatabaseNodeFields is db columns for DatabaseNode
 var DatabaseNodeFields = []string{
 	"uuid",
-	"database_node_ip_address",
 	"fq_name",
-	"created",
-	"creator",
 	"user_visible",
 	"last_modified",
-	"owner",
 	"owner_access",
 	"other_access",
 	"group",
 	"group_access",
+	"owner",
 	"enable",
 	"description",
+	"created",
+	"creator",
+	"database_node_ip_address",
 	"display_name",
 	"key_value_pair",
 	"global_access",
@@ -56,23 +55,23 @@ func CreateDatabaseNode(tx *sql.Tx, model *models.DatabaseNode) error {
 		"query": insertDatabaseNodeQuery,
 	}).Debug("create query")
 	_, err = stmt.Exec(string(model.UUID),
-		string(model.DatabaseNodeIPAddress),
-		utils.MustJSON(model.FQName),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
+		common.MustJSON(model.FQName),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
+		string(model.IDPerms.Created),
+		string(model.IDPerms.Creator),
+		string(model.DatabaseNodeIPAddress),
 		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
+		common.MustJSON(model.Annotations.KeyValuePair),
 		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
+		common.MustJSON(model.Perms2.Share),
 		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess))
 	if err != nil {
@@ -90,17 +89,9 @@ func scanDatabaseNode(values map[string]interface{}) (*models.DatabaseNode, erro
 
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.UUID = castedValue
-
-	}
-
-	if value, ok := values["database_node_ip_address"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.DatabaseNodeIPAddress = models.IpAddressType(castedValue)
 
 	}
 
@@ -110,25 +101,9 @@ func scanDatabaseNode(values map[string]interface{}) (*models.DatabaseNode, erro
 
 	}
 
-	if value, ok := values["created"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.UserVisible = castedValue
 
@@ -136,23 +111,15 @@ func scanDatabaseNode(values map[string]interface{}) (*models.DatabaseNode, erro
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.LastModified = castedValue
 
 	}
 
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
@@ -160,7 +127,7 @@ func scanDatabaseNode(values map[string]interface{}) (*models.DatabaseNode, erro
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
 
@@ -168,7 +135,7 @@ func scanDatabaseNode(values map[string]interface{}) (*models.DatabaseNode, erro
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Group = castedValue
 
@@ -176,15 +143,23 @@ func scanDatabaseNode(values map[string]interface{}) (*models.DatabaseNode, erro
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
 
 	}
 
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
 	if value, ok := values["enable"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.Enable = castedValue
 
@@ -192,15 +167,39 @@ func scanDatabaseNode(values map[string]interface{}) (*models.DatabaseNode, erro
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Description = castedValue
 
 	}
 
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["database_node_ip_address"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DatabaseNodeIPAddress = models.IpAddressType(castedValue)
+
+	}
+
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
 
@@ -214,7 +213,7 @@ func scanDatabaseNode(values map[string]interface{}) (*models.DatabaseNode, erro
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
@@ -228,7 +227,7 @@ func scanDatabaseNode(values map[string]interface{}) (*models.DatabaseNode, erro
 
 	if value, ok := values["perms2_owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.Perms2.Owner = castedValue
 
@@ -236,7 +235,7 @@ func scanDatabaseNode(values map[string]interface{}) (*models.DatabaseNode, erro
 
 	if value, ok := values["perms2_owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
@@ -246,7 +245,7 @@ func scanDatabaseNode(values map[string]interface{}) (*models.DatabaseNode, erro
 }
 
 // ListDatabaseNode lists DatabaseNode with list spec.
-func ListDatabaseNode(tx *sql.Tx, spec *db.ListSpec) ([]*models.DatabaseNode, error) {
+func ListDatabaseNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.DatabaseNode, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -254,7 +253,7 @@ func ListDatabaseNode(tx *sql.Tx, spec *db.ListSpec) ([]*models.DatabaseNode, er
 	spec.Fields = DatabaseNodeFields
 	spec.RefFields = DatabaseNodeRefFields
 	result := models.MakeDatabaseNodeSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -295,7 +294,7 @@ func ListDatabaseNode(tx *sql.Tx, spec *db.ListSpec) ([]*models.DatabaseNode, er
 
 // ShowDatabaseNode shows DatabaseNode resource
 func ShowDatabaseNode(tx *sql.Tx, uuid string) (*models.DatabaseNode, error) {
-	list, err := ListDatabaseNode(tx, &db.ListSpec{
+	list, err := ListDatabaseNode(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

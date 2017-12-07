@@ -6,12 +6,12 @@ import "encoding/json"
 
 // RoutingInstance
 type RoutingInstance struct {
+	IDPerms     *IdPermsType   `json:"id_perms"`
 	DisplayName string         `json:"display_name"`
 	Annotations *KeyValuePairs `json:"annotations"`
 	Perms2      *PermType2     `json:"perms2"`
 	UUID        string         `json:"uuid"`
 	FQName      []string       `json:"fq_name"`
-	IDPerms     *IdPermsType   `json:"id_perms"`
 
 	VirtualNetworks []*RoutingInstanceVirtualNetwork
 }
@@ -34,12 +34,12 @@ func (model *RoutingInstance) String() string {
 func MakeRoutingInstance() *RoutingInstance {
 	return &RoutingInstance{
 		//TODO(nati): Apply default
-		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
+		FQName:      []string{},
 	}
 }
 

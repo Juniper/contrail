@@ -6,8 +6,8 @@ import "encoding/json"
 
 // UserDefinedLogStat
 type UserDefinedLogStat struct {
-	Name    string `json:"name"`
 	Pattern string `json:"pattern"`
+	Name    string `json:"name"`
 }
 
 //  parents relation object

@@ -24,10 +24,10 @@ func (model *TimerType) String() string {
 func MakeTimerType() *TimerType {
 	return &TimerType{
 		//TODO(nati): Apply default
-		OnInterval:  "",
-		EndTime:     "",
 		StartTime:   "",
 		OffInterval: "",
+		OnInterval:  "",
+		EndTime:     "",
 	}
 }
 

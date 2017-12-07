@@ -6,12 +6,12 @@ import "encoding/json"
 
 // VirtualDnsRecordType
 type VirtualDnsRecordType struct {
-	RecordMXPreference int                `json:"record_mx_preference"`
 	RecordName         string             `json:"record_name"`
 	RecordClass        DnsRecordClassType `json:"record_class"`
 	RecordData         string             `json:"record_data"`
 	RecordType         DnsRecordTypeType  `json:"record_type"`
 	RecordTTLSeconds   int                `json:"record_ttl_seconds"`
+	RecordMXPreference int                `json:"record_mx_preference"`
 }
 
 //  parents relation object
@@ -26,12 +26,12 @@ func (model *VirtualDnsRecordType) String() string {
 func MakeVirtualDnsRecordType() *VirtualDnsRecordType {
 	return &VirtualDnsRecordType{
 		//TODO(nati): Apply default
-		RecordType:         MakeDnsRecordTypeType(),
 		RecordTTLSeconds:   0,
 		RecordMXPreference: 0,
 		RecordName:         "",
 		RecordClass:        MakeDnsRecordClassType(),
 		RecordData:         "",
+		RecordType:         MakeDnsRecordTypeType(),
 	}
 }
 
@@ -39,9 +39,6 @@ func MakeVirtualDnsRecordType() *VirtualDnsRecordType {
 func InterfaceToVirtualDnsRecordType(iData interface{}) *VirtualDnsRecordType {
 	data := iData.(map[string]interface{})
 	return &VirtualDnsRecordType{
-		RecordType: InterfaceToDnsRecordTypeType(data["record_type"]),
-
-		//{"Title":"","Description":"DNS record type can be A, AAAA, CNAME, PTR, NS and MX","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["A","AAAA","CNAME","PTR","NS","MX"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/DnsRecordTypeType","CollectionType":"","Column":"","Item":null,"GoName":"RecordType","GoType":"DnsRecordTypeType","GoPremitive":false}
 		RecordTTLSeconds: data["record_ttl_seconds"].(int),
 
 		//{"Title":"","Description":"Time To Live for this DNS record","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"RecordTTLSeconds","GoType":"int","GoPremitive":true}
@@ -57,6 +54,9 @@ func InterfaceToVirtualDnsRecordType(iData interface{}) *VirtualDnsRecordType {
 		RecordData: data["record_data"].(string),
 
 		//{"Title":"","Description":"DNS record data is either ip address or string depending on type","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"RecordData","GoType":"string","GoPremitive":true}
+		RecordType: InterfaceToDnsRecordTypeType(data["record_type"]),
+
+		//{"Title":"","Description":"DNS record type can be A, AAAA, CNAME, PTR, NS and MX","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["A","AAAA","CNAME","PTR","NS","MX"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/DnsRecordTypeType","CollectionType":"","Column":"","Item":null,"GoName":"RecordType","GoType":"DnsRecordTypeType","GoPremitive":false}
 
 	}
 }

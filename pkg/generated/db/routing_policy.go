@@ -4,46 +4,45 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertRoutingPolicyQuery = "insert into `routing_policy` (`display_name`,`key_value_pair`,`global_access`,`share`,`owner`,`owner_access`,`uuid`,`fq_name`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateRoutingPolicyQuery = "update `routing_policy` set `display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`uuid` = ?,`fq_name` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?;"
+const insertRoutingPolicyQuery = "insert into `routing_policy` (`key_value_pair`,`share`,`owner`,`owner_access`,`global_access`,`uuid`,`fq_name`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`enable`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateRoutingPolicyQuery = "update `routing_policy` set `key_value_pair` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`uuid` = ?,`fq_name` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`display_name` = ?;"
 const deleteRoutingPolicyQuery = "delete from `routing_policy` where uuid = ?"
 
 // RoutingPolicyFields is db columns for RoutingPolicy
 var RoutingPolicyFields = []string{
-	"display_name",
 	"key_value_pair",
-	"global_access",
 	"share",
 	"owner",
 	"owner_access",
+	"global_access",
 	"uuid",
 	"fq_name",
-	"enable",
 	"description",
 	"created",
 	"creator",
 	"user_visible",
 	"last_modified",
-	"other_access",
-	"group",
 	"group_access",
 	"permissions_owner",
 	"permissions_owner_access",
+	"other_access",
+	"group",
+	"enable",
+	"display_name",
 }
 
 // RoutingPolicyRefFields is db reference fields for RoutingPolicy
 var RoutingPolicyRefFields = map[string][]string{
 
 	"service_instance": {
-		// <utils.Schema Value>
+		// <common.Schema Value>
 		"right_sequence",
 		"left_sequence",
 	},
@@ -63,25 +62,25 @@ func CreateRoutingPolicy(tx *sql.Tx, model *models.RoutingPolicy) error {
 		"model": model,
 		"query": insertRoutingPolicyQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
+	_, err = stmt.Exec(common.MustJSON(model.Annotations.KeyValuePair),
+		common.MustJSON(model.Perms2.Share),
 		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
 		string(model.UUID),
-		utils.MustJSON(model.FQName),
-		bool(model.IDPerms.Enable),
+		common.MustJSON(model.FQName),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess))
+		int(model.IDPerms.Permissions.OwnerAccess),
+		int(model.IDPerms.Permissions.OtherAccess),
+		string(model.IDPerms.Permissions.Group),
+		bool(model.IDPerms.Enable),
+		string(model.DisplayName))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -92,6 +91,11 @@ func CreateRoutingPolicy(tx *sql.Tx, model *models.RoutingPolicy) error {
 	}
 	defer stmtServiceInstanceRef.Close()
 	for _, ref := range model.ServiceInstanceRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = models.MakeRoutingPolicyServiceInstanceType()
+		}
+
 		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID, string(ref.Attr.RightSequence),
 			string(ref.Attr.LeftSequence))
 		if err != nil {
@@ -108,25 +112,9 @@ func CreateRoutingPolicy(tx *sql.Tx, model *models.RoutingPolicy) error {
 func scanRoutingPolicy(values map[string]interface{}) (*models.RoutingPolicy, error) {
 	m := models.MakeRoutingPolicy()
 
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.DisplayName = castedValue
-
-	}
-
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
 	}
 
@@ -138,7 +126,7 @@ func scanRoutingPolicy(values map[string]interface{}) (*models.RoutingPolicy, er
 
 	if value, ok := values["owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.Perms2.Owner = castedValue
 
@@ -146,15 +134,23 @@ func scanRoutingPolicy(values map[string]interface{}) (*models.RoutingPolicy, er
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.UUID = castedValue
 
@@ -166,17 +162,9 @@ func scanRoutingPolicy(values map[string]interface{}) (*models.RoutingPolicy, er
 
 	}
 
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
 	if value, ok := values["description"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Description = castedValue
 
@@ -184,7 +172,7 @@ func scanRoutingPolicy(values map[string]interface{}) (*models.RoutingPolicy, er
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Created = castedValue
 
@@ -192,7 +180,7 @@ func scanRoutingPolicy(values map[string]interface{}) (*models.RoutingPolicy, er
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Creator = castedValue
 
@@ -200,7 +188,7 @@ func scanRoutingPolicy(values map[string]interface{}) (*models.RoutingPolicy, er
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.UserVisible = castedValue
 
@@ -208,31 +196,15 @@ func scanRoutingPolicy(values map[string]interface{}) (*models.RoutingPolicy, er
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.LastModified = castedValue
 
 	}
 
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
 
@@ -240,7 +212,7 @@ func scanRoutingPolicy(values map[string]interface{}) (*models.RoutingPolicy, er
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Owner = castedValue
 
@@ -248,20 +220,58 @@ func scanRoutingPolicy(values map[string]interface{}) (*models.RoutingPolicy, er
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
 	if value, ok := values["ref_service_instance"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.RoutingPolicyServiceInstanceRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
 
 			attr := models.MakeRoutingPolicyServiceInstanceType()
@@ -274,7 +284,7 @@ func scanRoutingPolicy(values map[string]interface{}) (*models.RoutingPolicy, er
 }
 
 // ListRoutingPolicy lists RoutingPolicy with list spec.
-func ListRoutingPolicy(tx *sql.Tx, spec *db.ListSpec) ([]*models.RoutingPolicy, error) {
+func ListRoutingPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.RoutingPolicy, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -282,7 +292,7 @@ func ListRoutingPolicy(tx *sql.Tx, spec *db.ListSpec) ([]*models.RoutingPolicy, 
 	spec.Fields = RoutingPolicyFields
 	spec.RefFields = RoutingPolicyRefFields
 	result := models.MakeRoutingPolicySlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -323,7 +333,7 @@ func ListRoutingPolicy(tx *sql.Tx, spec *db.ListSpec) ([]*models.RoutingPolicy, 
 
 // ShowRoutingPolicy shows RoutingPolicy resource
 func ShowRoutingPolicy(tx *sql.Tx, uuid string) (*models.RoutingPolicy, error) {
-	list, err := ListRoutingPolicy(tx, &db.ListSpec{
+	list, err := ListRoutingPolicy(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

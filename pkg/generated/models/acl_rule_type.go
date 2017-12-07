@@ -24,10 +24,10 @@ func (model *AclRuleType) String() string {
 func MakeAclRuleType() *AclRuleType {
 	return &AclRuleType{
 		//TODO(nati): Apply default
-		Direction:      MakeDirectionType(),
-		ActionList:     MakeActionListType(),
 		RuleUUID:       "",
 		MatchCondition: MakeMatchConditionType(),
+		Direction:      MakeDirectionType(),
+		ActionList:     MakeActionListType(),
 	}
 }
 

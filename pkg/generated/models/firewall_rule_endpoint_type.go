@@ -6,12 +6,12 @@ import "encoding/json"
 
 // FirewallRuleEndpointType
 type FirewallRuleEndpointType struct {
+	AddressGroup   string      `json:"address_group"`
 	Subnet         *SubnetType `json:"subnet"`
 	Tags           []string    `json:"tags"`
 	TagIds         []int       `json:"tag_ids"`
 	VirtualNetwork string      `json:"virtual_network"`
 	Any            bool        `json:"any"`
-	AddressGroup   string      `json:"address_group"`
 }
 
 //  parents relation object
@@ -26,14 +26,14 @@ func (model *FirewallRuleEndpointType) String() string {
 func MakeFirewallRuleEndpointType() *FirewallRuleEndpointType {
 	return &FirewallRuleEndpointType{
 		//TODO(nati): Apply default
-		Subnet: MakeSubnetType(),
-		Tags:   []string{},
 
 		TagIds: []int{},
 
 		VirtualNetwork: "",
 		Any:            false,
 		AddressGroup:   "",
+		Subnet:         MakeSubnetType(),
+		Tags:           []string{},
 	}
 }
 
@@ -41,6 +41,9 @@ func MakeFirewallRuleEndpointType() *FirewallRuleEndpointType {
 func InterfaceToFirewallRuleEndpointType(iData interface{}) *FirewallRuleEndpointType {
 	data := iData.(map[string]interface{})
 	return &FirewallRuleEndpointType{
+		Any: data["any"].(bool),
+
+		//{"Title":"","Description":"Match any workload","SQL":"","Default":null,"Operation":"","Presence":"exclusive","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Any","GoType":"bool","GoPremitive":true}
 		AddressGroup: data["address_group"].(string),
 
 		//{"Title":"","Description":"Any workload with interface in this address-group","SQL":"","Default":null,"Operation":"","Presence":"exclusive","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"AddressGroup","GoType":"string","GoPremitive":true}
@@ -57,9 +60,6 @@ func InterfaceToFirewallRuleEndpointType(iData interface{}) *FirewallRuleEndpoin
 		VirtualNetwork: data["virtual_network"].(string),
 
 		//{"Title":"","Description":"Any workload that belongs to this virtual network ","SQL":"","Default":null,"Operation":"","Presence":"exclusive","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"VirtualNetwork","GoType":"string","GoPremitive":true}
-		Any: data["any"].(bool),
-
-		//{"Title":"","Description":"Match any workload","SQL":"","Default":null,"Operation":"","Presence":"exclusive","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Any","GoType":"bool","GoPremitive":true}
 
 	}
 }

@@ -4,16 +4,15 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertContrailAnalyticsNodeQuery = "insert into `contrail_analytics_node` (`provisioning_start_time`,`provisioning_state`,`fq_name`,`user_visible`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`description`,`created`,`creator`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`uuid`,`provisioning_progress_stage`,`display_name`,`key_value_pair`,`provisioning_log`,`provisioning_progress`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateContrailAnalyticsNodeQuery = "update `contrail_analytics_node` set `provisioning_start_time` = ?,`provisioning_state` = ?,`fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`uuid` = ?,`provisioning_progress_stage` = ?,`display_name` = ?,`key_value_pair` = ?,`provisioning_log` = ?,`provisioning_progress` = ?;"
+const insertContrailAnalyticsNodeQuery = "insert into `contrail_analytics_node` (`provisioning_start_time`,`provisioning_state`,`fq_name`,`display_name`,`key_value_pair`,`provisioning_log`,`provisioning_progress`,`provisioning_progress_stage`,`uuid`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`group`,`group_access`,`owner`,`owner_access`,`other_access`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateContrailAnalyticsNodeQuery = "update `contrail_analytics_node` set `provisioning_start_time` = ?,`provisioning_state` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?,`provisioning_log` = ?,`provisioning_progress` = ?,`provisioning_progress_stage` = ?,`uuid` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?;"
 const deleteContrailAnalyticsNodeQuery = "delete from `contrail_analytics_node` where uuid = ?"
 
 // ContrailAnalyticsNodeFields is db columns for ContrailAnalyticsNode
@@ -21,27 +20,27 @@ var ContrailAnalyticsNodeFields = []string{
 	"provisioning_start_time",
 	"provisioning_state",
 	"fq_name",
-	"user_visible",
-	"last_modified",
-	"owner_access",
-	"other_access",
-	"group",
-	"group_access",
-	"owner",
-	"enable",
-	"description",
-	"created",
-	"creator",
-	"global_access",
-	"share",
-	"perms2_owner",
-	"perms2_owner_access",
-	"uuid",
-	"provisioning_progress_stage",
 	"display_name",
 	"key_value_pair",
 	"provisioning_log",
 	"provisioning_progress",
+	"provisioning_progress_stage",
+	"uuid",
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"group",
+	"group_access",
+	"owner",
+	"owner_access",
+	"other_access",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"share",
 }
 
 // ContrailAnalyticsNodeRefFields is db reference fields for ContrailAnalyticsNode
@@ -61,28 +60,28 @@ func CreateContrailAnalyticsNode(tx *sql.Tx, model *models.ContrailAnalyticsNode
 	}).Debug("create query")
 	_, err = stmt.Exec(string(model.ProvisioningStartTime),
 		string(model.ProvisioningState),
-		utils.MustJSON(model.FQName),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair),
+		string(model.ProvisioningLog),
+		int(model.ProvisioningProgress),
+		string(model.ProvisioningProgressStage),
+		string(model.UUID),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
+		bool(model.IDPerms.UserVisible),
+		string(model.IDPerms.LastModified),
+		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
-		string(model.UUID),
-		string(model.ProvisioningProgressStage),
-		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		string(model.ProvisioningLog),
-		int(model.ProvisioningProgress))
+		int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -98,7 +97,7 @@ func scanContrailAnalyticsNode(values map[string]interface{}) (*models.ContrailA
 
 	if value, ok := values["provisioning_start_time"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.ProvisioningStartTime = castedValue
 
@@ -106,7 +105,7 @@ func scanContrailAnalyticsNode(values map[string]interface{}) (*models.ContrailA
 
 	if value, ok := values["provisioning_state"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.ProvisioningState = castedValue
 
@@ -118,143 +117,9 @@ func scanContrailAnalyticsNode(values map[string]interface{}) (*models.ContrailA
 
 	}
 
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.UUID = castedValue
-
-	}
-
-	if value, ok := values["provisioning_progress_stage"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.ProvisioningProgressStage = castedValue
-
-	}
-
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
 
@@ -268,7 +133,7 @@ func scanContrailAnalyticsNode(values map[string]interface{}) (*models.ContrailA
 
 	if value, ok := values["provisioning_log"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.ProvisioningLog = castedValue
 
@@ -276,9 +141,143 @@ func scanContrailAnalyticsNode(values map[string]interface{}) (*models.ContrailA
 
 	if value, ok := values["provisioning_progress"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.ProvisioningProgress = castedValue
+
+	}
+
+	if value, ok := values["provisioning_progress_stage"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ProvisioningProgressStage = castedValue
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
 	}
 
@@ -286,7 +285,7 @@ func scanContrailAnalyticsNode(values map[string]interface{}) (*models.ContrailA
 }
 
 // ListContrailAnalyticsNode lists ContrailAnalyticsNode with list spec.
-func ListContrailAnalyticsNode(tx *sql.Tx, spec *db.ListSpec) ([]*models.ContrailAnalyticsNode, error) {
+func ListContrailAnalyticsNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.ContrailAnalyticsNode, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -294,7 +293,7 @@ func ListContrailAnalyticsNode(tx *sql.Tx, spec *db.ListSpec) ([]*models.Contrai
 	spec.Fields = ContrailAnalyticsNodeFields
 	spec.RefFields = ContrailAnalyticsNodeRefFields
 	result := models.MakeContrailAnalyticsNodeSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -335,7 +334,7 @@ func ListContrailAnalyticsNode(tx *sql.Tx, spec *db.ListSpec) ([]*models.Contrai
 
 // ShowContrailAnalyticsNode shows ContrailAnalyticsNode resource
 func ShowContrailAnalyticsNode(tx *sql.Tx, uuid string) (*models.ContrailAnalyticsNode, error) {
-	list, err := ListContrailAnalyticsNode(tx, &db.ListSpec{
+	list, err := ListContrailAnalyticsNode(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

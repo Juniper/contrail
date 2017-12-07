@@ -6,8 +6,8 @@ import "encoding/json"
 
 // RbacPermType
 type RbacPermType struct {
-	RoleCrud string `json:"role_crud"`
 	RoleName string `json:"role_name"`
+	RoleCrud string `json:"role_crud"`
 }
 
 //  parents relation object

@@ -4,47 +4,46 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertContrailClusterQuery = "insert into `contrail_cluster` (`config_audit_ttl`,`contrail_webui`,`default_vrouter_bond_interface`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`owner`,`owner_access`,`enable`,`data_ttl`,`flow_ttl`,`statistics_ttl`,`uuid`,`default_vrouter_bond_interface_members`,`display_name`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`default_gateway`,`key_value_pair`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateContrailClusterQuery = "update `contrail_cluster` set `config_audit_ttl` = ?,`contrail_webui` = ?,`default_vrouter_bond_interface` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`enable` = ?,`data_ttl` = ?,`flow_ttl` = ?,`statistics_ttl` = ?,`uuid` = ?,`default_vrouter_bond_interface_members` = ?,`display_name` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`default_gateway` = ?,`key_value_pair` = ?,`fq_name` = ?;"
+const insertContrailClusterQuery = "insert into `contrail_cluster` (`fq_name`,`flow_ttl`,`global_access`,`share`,`owner`,`owner_access`,`default_gateway`,`statistics_ttl`,`config_audit_ttl`,`data_ttl`,`default_vrouter_bond_interface_members`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`permissions_owner`,`display_name`,`key_value_pair`,`uuid`,`contrail_webui`,`default_vrouter_bond_interface`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateContrailClusterQuery = "update `contrail_cluster` set `fq_name` = ?,`flow_ttl` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`default_gateway` = ?,`statistics_ttl` = ?,`config_audit_ttl` = ?,`data_ttl` = ?,`default_vrouter_bond_interface_members` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`display_name` = ?,`key_value_pair` = ?,`uuid` = ?,`contrail_webui` = ?,`default_vrouter_bond_interface` = ?;"
 const deleteContrailClusterQuery = "delete from `contrail_cluster` where uuid = ?"
 
 // ContrailClusterFields is db columns for ContrailCluster
 var ContrailClusterFields = []string{
+	"fq_name",
+	"flow_ttl",
+	"global_access",
+	"share",
+	"owner",
+	"owner_access",
+	"default_gateway",
+	"statistics_ttl",
 	"config_audit_ttl",
-	"contrail_webui",
-	"default_vrouter_bond_interface",
+	"data_ttl",
+	"default_vrouter_bond_interface_members",
+	"enable",
 	"description",
 	"created",
 	"creator",
 	"user_visible",
 	"last_modified",
+	"permissions_owner_access",
 	"other_access",
 	"group",
 	"group_access",
-	"owner",
-	"owner_access",
-	"enable",
-	"data_ttl",
-	"flow_ttl",
-	"statistics_ttl",
-	"uuid",
-	"default_vrouter_bond_interface_members",
+	"permissions_owner",
 	"display_name",
-	"global_access",
-	"share",
-	"perms2_owner",
-	"perms2_owner_access",
-	"default_gateway",
 	"key_value_pair",
-	"fq_name",
+	"uuid",
+	"contrail_webui",
+	"default_vrouter_bond_interface",
 }
 
 // ContrailClusterRefFields is db reference fields for ContrailCluster
@@ -62,33 +61,33 @@ func CreateContrailCluster(tx *sql.Tx, model *models.ContrailCluster) error {
 		"model": model,
 		"query": insertContrailClusterQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.ConfigAuditTTL),
-		string(model.ContrailWebui),
-		string(model.DefaultVrouterBondInterface),
+	_, err = stmt.Exec(common.MustJSON(model.FQName),
+		string(model.FlowTTL),
+		int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		string(model.DefaultGateway),
+		string(model.StatisticsTTL),
+		string(model.ConfigAuditTTL),
+		string(model.DataTTL),
+		string(model.DefaultVrouterBondInterfaceMembers),
+		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
+		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		bool(model.IDPerms.Enable),
-		string(model.DataTTL),
-		string(model.FlowTTL),
-		string(model.StatisticsTTL),
-		string(model.UUID),
-		string(model.DefaultVrouterBondInterfaceMembers),
 		string(model.DisplayName),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		string(model.DefaultGateway),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		utils.MustJSON(model.FQName))
+		common.MustJSON(model.Annotations.KeyValuePair),
+		string(model.UUID),
+		string(model.ContrailWebui),
+		string(model.DefaultVrouterBondInterface))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -102,169 +101,23 @@ func CreateContrailCluster(tx *sql.Tx, model *models.ContrailCluster) error {
 func scanContrailCluster(values map[string]interface{}) (*models.ContrailCluster, error) {
 	m := models.MakeContrailCluster()
 
-	if value, ok := values["config_audit_ttl"]; ok {
+	if value, ok := values["fq_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
-
-		m.ConfigAuditTTL = castedValue
-
-	}
-
-	if value, ok := values["contrail_webui"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.ContrailWebui = castedValue
-
-	}
-
-	if value, ok := values["default_vrouter_bond_interface"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.DefaultVrouterBondInterface = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["data_ttl"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.DataTTL = castedValue
+		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
 	if value, ok := values["flow_ttl"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.FlowTTL = castedValue
 
 	}
 
-	if value, ok := values["statistics_ttl"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.StatisticsTTL = castedValue
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.UUID = castedValue
-
-	}
-
-	if value, ok := values["default_vrouter_bond_interface_members"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.DefaultVrouterBondInterfaceMembers = castedValue
-
-	}
-
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.DisplayName = castedValue
-
-	}
-
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
@@ -276,17 +129,17 @@ func scanContrailCluster(values map[string]interface{}) (*models.ContrailCluster
 
 	}
 
-	if value, ok := values["perms2_owner"]; ok {
+	if value, ok := values["owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.Perms2.Owner = castedValue
 
 	}
 
-	if value, ok := values["perms2_owner_access"]; ok {
+	if value, ok := values["owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
@@ -294,9 +147,137 @@ func scanContrailCluster(values map[string]interface{}) (*models.ContrailCluster
 
 	if value, ok := values["default_gateway"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DefaultGateway = castedValue
+
+	}
+
+	if value, ok := values["statistics_ttl"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.StatisticsTTL = castedValue
+
+	}
+
+	if value, ok := values["config_audit_ttl"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ConfigAuditTTL = castedValue
+
+	}
+
+	if value, ok := values["data_ttl"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DataTTL = castedValue
+
+	}
+
+	if value, ok := values["default_vrouter_bond_interface_members"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DefaultVrouterBondInterfaceMembers = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
 
 	}
 
@@ -306,9 +287,27 @@ func scanContrailCluster(values map[string]interface{}) (*models.ContrailCluster
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["uuid"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["contrail_webui"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ContrailWebui = castedValue
+
+	}
+
+	if value, ok := values["default_vrouter_bond_interface"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DefaultVrouterBondInterface = castedValue
 
 	}
 
@@ -316,7 +315,7 @@ func scanContrailCluster(values map[string]interface{}) (*models.ContrailCluster
 }
 
 // ListContrailCluster lists ContrailCluster with list spec.
-func ListContrailCluster(tx *sql.Tx, spec *db.ListSpec) ([]*models.ContrailCluster, error) {
+func ListContrailCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.ContrailCluster, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -324,7 +323,7 @@ func ListContrailCluster(tx *sql.Tx, spec *db.ListSpec) ([]*models.ContrailClust
 	spec.Fields = ContrailClusterFields
 	spec.RefFields = ContrailClusterRefFields
 	result := models.MakeContrailClusterSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -365,7 +364,7 @@ func ListContrailCluster(tx *sql.Tx, spec *db.ListSpec) ([]*models.ContrailClust
 
 // ShowContrailCluster shows ContrailCluster resource
 func ShowContrailCluster(tx *sql.Tx, uuid string) (*models.ContrailCluster, error) {
-	list, err := ListContrailCluster(tx, &db.ListSpec{
+	list, err := ListContrailCluster(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

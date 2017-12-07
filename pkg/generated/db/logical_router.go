@@ -4,81 +4,84 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertLogicalRouterQuery = "insert into `logical_router` (`key_value_pair`,`owner`,`owner_access`,`global_access`,`share`,`uuid`,`fq_name`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`permissions_owner`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`vxlan_network_identifier`,`route_target`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateLogicalRouterQuery = "update `logical_router` set `key_value_pair` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`fq_name` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`vxlan_network_identifier` = ?,`route_target` = ?,`display_name` = ?;"
+const insertLogicalRouterQuery = "insert into `logical_router` (`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`vxlan_network_identifier`,`route_target`,`display_name`,`key_value_pair`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateLogicalRouterQuery = "update `logical_router` set `enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`vxlan_network_identifier` = ?,`route_target` = ?,`display_name` = ?,`key_value_pair` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`uuid` = ?,`fq_name` = ?;"
 const deleteLogicalRouterQuery = "delete from `logical_router` where uuid = ?"
 
 // LogicalRouterFields is db columns for LogicalRouter
 var LogicalRouterFields = []string{
-	"key_value_pair",
-	"owner",
-	"owner_access",
-	"global_access",
-	"share",
-	"uuid",
-	"fq_name",
-	"permissions_owner_access",
-	"other_access",
-	"group",
-	"group_access",
-	"permissions_owner",
 	"enable",
 	"description",
 	"created",
 	"creator",
 	"user_visible",
 	"last_modified",
+	"owner",
+	"owner_access",
+	"other_access",
+	"group",
+	"group_access",
 	"vxlan_network_identifier",
 	"route_target",
 	"display_name",
+	"key_value_pair",
+	"share",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"uuid",
+	"fq_name",
 }
 
 // LogicalRouterRefFields is db reference fields for LogicalRouter
 var LogicalRouterRefFields = map[string][]string{
 
-	"route_target": {
-	// <utils.Schema Value>
-
-	},
-
-	"virtual_machine_interface": {
-	// <utils.Schema Value>
-
-	},
-
-	"service_instance": {
-	// <utils.Schema Value>
-
-	},
-
-	"route_table": {
-	// <utils.Schema Value>
-
-	},
-
-	"virtual_network": {
-	// <utils.Schema Value>
-
-	},
-
 	"physical_router": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 
 	"bgpvpn": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
+
+	},
+
+	"route_target": {
+	// <common.Schema Value>
+
+	},
+
+	"virtual_machine_interface": {
+	// <common.Schema Value>
+
+	},
+
+	"service_instance": {
+	// <common.Schema Value>
+
+	},
+
+	"route_table": {
+	// <common.Schema Value>
+
+	},
+
+	"virtual_network": {
+	// <common.Schema Value>
 
 	},
 }
+
+const insertLogicalRouterRouteTargetQuery = "insert into `ref_logical_router_route_target` (`from`, `to` ) values (?, ?);"
+
+const insertLogicalRouterVirtualMachineInterfaceQuery = "insert into `ref_logical_router_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 const insertLogicalRouterServiceInstanceQuery = "insert into `ref_logical_router_service_instance` (`from`, `to` ) values (?, ?);"
 
@@ -89,10 +92,6 @@ const insertLogicalRouterVirtualNetworkQuery = "insert into `ref_logical_router_
 const insertLogicalRouterPhysicalRouterQuery = "insert into `ref_logical_router_physical_router` (`from`, `to` ) values (?, ?);"
 
 const insertLogicalRouterBGPVPNQuery = "insert into `ref_logical_router_bgpvpn` (`from`, `to` ) values (?, ?);"
-
-const insertLogicalRouterRouteTargetQuery = "insert into `ref_logical_router_route_target` (`from`, `to` ) values (?, ?);"
-
-const insertLogicalRouterVirtualMachineInterfaceQuery = "insert into `ref_logical_router_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateLogicalRouter inserts LogicalRouter to DB
 func CreateLogicalRouter(tx *sql.Tx, model *models.LogicalRouter) error {
@@ -106,29 +105,42 @@ func CreateLogicalRouter(tx *sql.Tx, model *models.LogicalRouter) error {
 		"model": model,
 		"query": insertLogicalRouterQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(utils.MustJSON(model.Annotations.KeyValuePair),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.UUID),
-		utils.MustJSON(model.FQName),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		bool(model.IDPerms.Enable),
+	_, err = stmt.Exec(bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		int(model.IDPerms.Permissions.OtherAccess),
+		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.VxlanNetworkIdentifier),
-		utils.MustJSON(model.ConfiguredRouteTargetList.RouteTarget),
-		string(model.DisplayName))
+		common.MustJSON(model.ConfiguredRouteTargetList.RouteTarget),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair),
+		common.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		string(model.UUID),
+		common.MustJSON(model.FQName))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
+	}
+
+	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertLogicalRouterVirtualMachineInterfaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
+	}
+	defer stmtVirtualMachineInterfaceRef.Close()
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
 	}
 
 	stmtServiceInstanceRef, err := tx.Prepare(insertLogicalRouterServiceInstanceQuery)
@@ -137,6 +149,7 @@ func CreateLogicalRouter(tx *sql.Tx, model *models.LogicalRouter) error {
 	}
 	defer stmtServiceInstanceRef.Close()
 	for _, ref := range model.ServiceInstanceRefs {
+
 		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceInstanceRefs create failed")
@@ -149,6 +162,7 @@ func CreateLogicalRouter(tx *sql.Tx, model *models.LogicalRouter) error {
 	}
 	defer stmtRouteTableRef.Close()
 	for _, ref := range model.RouteTableRefs {
+
 		_, err = stmtRouteTableRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "RouteTableRefs create failed")
@@ -161,6 +175,7 @@ func CreateLogicalRouter(tx *sql.Tx, model *models.LogicalRouter) error {
 	}
 	defer stmtVirtualNetworkRef.Close()
 	for _, ref := range model.VirtualNetworkRefs {
+
 		_, err = stmtVirtualNetworkRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualNetworkRefs create failed")
@@ -173,6 +188,7 @@ func CreateLogicalRouter(tx *sql.Tx, model *models.LogicalRouter) error {
 	}
 	defer stmtPhysicalRouterRef.Close()
 	for _, ref := range model.PhysicalRouterRefs {
+
 		_, err = stmtPhysicalRouterRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PhysicalRouterRefs create failed")
@@ -185,6 +201,7 @@ func CreateLogicalRouter(tx *sql.Tx, model *models.LogicalRouter) error {
 	}
 	defer stmtBGPVPNRef.Close()
 	for _, ref := range model.BGPVPNRefs {
+
 		_, err = stmtBGPVPNRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "BGPVPNRefs create failed")
@@ -197,21 +214,10 @@ func CreateLogicalRouter(tx *sql.Tx, model *models.LogicalRouter) error {
 	}
 	defer stmtRouteTargetRef.Close()
 	for _, ref := range model.RouteTargetRefs {
+
 		_, err = stmtRouteTargetRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "RouteTargetRefs create failed")
-		}
-	}
-
-	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertLogicalRouterVirtualMachineInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
-	}
-	defer stmtVirtualMachineInterfaceRef.Close()
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
 	}
 
@@ -224,99 +230,9 @@ func CreateLogicalRouter(tx *sql.Tx, model *models.LogicalRouter) error {
 func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, error) {
 	m := models.MakeLogicalRouter()
 
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.UUID = castedValue
-
-	}
-
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["permissions_owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["permissions_owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
 	if value, ok := values["enable"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.Enable = castedValue
 
@@ -324,7 +240,7 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Description = castedValue
 
@@ -332,7 +248,7 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Created = castedValue
 
@@ -340,7 +256,7 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Creator = castedValue
 
@@ -348,7 +264,7 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.UserVisible = castedValue
 
@@ -356,15 +272,55 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.LastModified = castedValue
 
 	}
 
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["vxlan_network_identifier"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.VxlanNetworkIdentifier = castedValue
 
@@ -378,85 +334,76 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
 
 	}
 
-	if value, ok := values["ref_route_table"]; ok {
-		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
-			referenceModel := &models.LogicalRouterRouteTableRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
-			m.RouteTableRefs = append(m.RouteTableRefs, referenceModel)
+	if value, ok := values["key_value_pair"]; ok {
 
-		}
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
 	}
 
-	if value, ok := values["ref_virtual_network"]; ok {
-		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
-			referenceModel := &models.LogicalRouterVirtualNetworkRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
-			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
+	if value, ok := values["share"]; ok {
 
-		}
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
 	}
 
-	if value, ok := values["ref_physical_router"]; ok {
-		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
-			referenceModel := &models.LogicalRouterPhysicalRouterRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
-			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
+	if value, ok := values["perms2_owner"]; ok {
 
-		}
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
 	}
 
-	if value, ok := values["ref_bgpvpn"]; ok {
-		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
-			referenceModel := &models.LogicalRouterBGPVPNRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
-			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
+	if value, ok := values["perms2_owner_access"]; ok {
 
-		}
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
 	}
 
-	if value, ok := values["ref_route_target"]; ok {
-		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
-			referenceModel := &models.LogicalRouterRouteTargetRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
-			m.RouteTargetRefs = append(m.RouteTargetRefs, referenceModel)
+	if value, ok := values["global_access"]; ok {
 
-		}
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
 	}
 
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.LogicalRouterVirtualMachineInterfaceRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
 
 		}
@@ -464,13 +411,114 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 
 	if value, ok := values["ref_service_instance"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.LogicalRouterServiceInstanceRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_route_table"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterRouteTableRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.RouteTableRefs = append(m.RouteTableRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_network"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterVirtualNetworkRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_physical_router"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterPhysicalRouterRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_bgpvpn"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterBGPVPNRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_route_target"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterRouteTargetRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.RouteTargetRefs = append(m.RouteTargetRefs, referenceModel)
 
 		}
 	}
@@ -479,7 +527,7 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 }
 
 // ListLogicalRouter lists LogicalRouter with list spec.
-func ListLogicalRouter(tx *sql.Tx, spec *db.ListSpec) ([]*models.LogicalRouter, error) {
+func ListLogicalRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.LogicalRouter, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -487,7 +535,7 @@ func ListLogicalRouter(tx *sql.Tx, spec *db.ListSpec) ([]*models.LogicalRouter, 
 	spec.Fields = LogicalRouterFields
 	spec.RefFields = LogicalRouterRefFields
 	result := models.MakeLogicalRouterSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -528,7 +576,7 @@ func ListLogicalRouter(tx *sql.Tx, spec *db.ListSpec) ([]*models.LogicalRouter, 
 
 // ShowLogicalRouter shows LogicalRouter resource
 func ShowLogicalRouter(tx *sql.Tx, uuid string) (*models.LogicalRouter, error) {
-	list, err := ListLogicalRouter(tx, &db.ListSpec{
+	list, err := ListLogicalRouter(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

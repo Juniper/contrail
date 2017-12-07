@@ -4,21 +4,19 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertRoutingInstanceQuery = "insert into `routing_instance` (`created`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`owner`,`owner_access`,`enable`,`description`,`display_name`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateRoutingInstanceQuery = "update `routing_instance` set `created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`enable` = ?,`description` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`uuid` = ?,`fq_name` = ?;"
+const insertRoutingInstanceQuery = "insert into `routing_instance` (`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`owner`,`owner_access`,`enable`,`description`,`created`,`display_name`,`key_value_pair`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateRoutingInstanceQuery = "update `routing_instance` set `creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`uuid` = ?,`fq_name` = ?;"
 const deleteRoutingInstanceQuery = "delete from `routing_instance` where uuid = ?"
 
 // RoutingInstanceFields is db columns for RoutingInstance
 var RoutingInstanceFields = []string{
-	"created",
 	"creator",
 	"user_visible",
 	"last_modified",
@@ -29,12 +27,13 @@ var RoutingInstanceFields = []string{
 	"owner_access",
 	"enable",
 	"description",
+	"created",
 	"display_name",
 	"key_value_pair",
-	"perms2_owner_access",
 	"global_access",
 	"share",
 	"perms2_owner",
+	"perms2_owner_access",
 	"uuid",
 	"fq_name",
 }
@@ -54,8 +53,7 @@ func CreateRoutingInstance(tx *sql.Tx, model *models.RoutingInstance) error {
 		"model": model,
 		"query": insertRoutingInstanceQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
+	_, err = stmt.Exec(string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
 		int(model.IDPerms.Permissions.OtherAccess),
@@ -65,14 +63,15 @@ func CreateRoutingInstance(tx *sql.Tx, model *models.RoutingInstance) error {
 		int(model.IDPerms.Permissions.OwnerAccess),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
+		string(model.IDPerms.Created),
 		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.OwnerAccess),
+		common.MustJSON(model.Annotations.KeyValuePair),
 		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
+		common.MustJSON(model.Perms2.Share),
 		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
 		string(model.UUID),
-		utils.MustJSON(model.FQName))
+		common.MustJSON(model.FQName))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -86,17 +85,9 @@ func CreateRoutingInstance(tx *sql.Tx, model *models.RoutingInstance) error {
 func scanRoutingInstance(values map[string]interface{}) (*models.RoutingInstance, error) {
 	m := models.MakeRoutingInstance()
 
-	if value, ok := values["created"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
 	if value, ok := values["creator"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Creator = castedValue
 
@@ -104,7 +95,7 @@ func scanRoutingInstance(values map[string]interface{}) (*models.RoutingInstance
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.UserVisible = castedValue
 
@@ -112,7 +103,7 @@ func scanRoutingInstance(values map[string]interface{}) (*models.RoutingInstance
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.LastModified = castedValue
 
@@ -120,7 +111,7 @@ func scanRoutingInstance(values map[string]interface{}) (*models.RoutingInstance
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
 
@@ -128,7 +119,7 @@ func scanRoutingInstance(values map[string]interface{}) (*models.RoutingInstance
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Group = castedValue
 
@@ -136,7 +127,7 @@ func scanRoutingInstance(values map[string]interface{}) (*models.RoutingInstance
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
 
@@ -144,7 +135,7 @@ func scanRoutingInstance(values map[string]interface{}) (*models.RoutingInstance
 
 	if value, ok := values["owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Owner = castedValue
 
@@ -152,7 +143,7 @@ func scanRoutingInstance(values map[string]interface{}) (*models.RoutingInstance
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
@@ -160,7 +151,7 @@ func scanRoutingInstance(values map[string]interface{}) (*models.RoutingInstance
 
 	if value, ok := values["enable"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.Enable = castedValue
 
@@ -168,15 +159,23 @@ func scanRoutingInstance(values map[string]interface{}) (*models.RoutingInstance
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Description = castedValue
 
 	}
 
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
 
@@ -188,17 +187,9 @@ func scanRoutingInstance(values map[string]interface{}) (*models.RoutingInstance
 
 	}
 
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
@@ -212,15 +203,23 @@ func scanRoutingInstance(values map[string]interface{}) (*models.RoutingInstance
 
 	if value, ok := values["perms2_owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.Perms2.Owner = castedValue
 
 	}
 
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.UUID = castedValue
 
@@ -236,7 +235,7 @@ func scanRoutingInstance(values map[string]interface{}) (*models.RoutingInstance
 }
 
 // ListRoutingInstance lists RoutingInstance with list spec.
-func ListRoutingInstance(tx *sql.Tx, spec *db.ListSpec) ([]*models.RoutingInstance, error) {
+func ListRoutingInstance(tx *sql.Tx, spec *common.ListSpec) ([]*models.RoutingInstance, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -244,7 +243,7 @@ func ListRoutingInstance(tx *sql.Tx, spec *db.ListSpec) ([]*models.RoutingInstan
 	spec.Fields = RoutingInstanceFields
 	spec.RefFields = RoutingInstanceRefFields
 	result := models.MakeRoutingInstanceSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -285,7 +284,7 @@ func ListRoutingInstance(tx *sql.Tx, spec *db.ListSpec) ([]*models.RoutingInstan
 
 // ShowRoutingInstance shows RoutingInstance resource
 func ShowRoutingInstance(tx *sql.Tx, uuid string) (*models.RoutingInstance, error) {
-	list, err := ListRoutingInstance(tx, &db.ListSpec{
+	list, err := ListRoutingInstance(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

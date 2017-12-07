@@ -6,10 +6,10 @@ import "encoding/json"
 
 // DiscoveryPubSubEndPointType
 type DiscoveryPubSubEndPointType struct {
-	EpType    string      `json:"ep_type"`
-	EpPrefix  *SubnetType `json:"ep_prefix"`
 	EpVersion string      `json:"ep_version"`
 	EpID      string      `json:"ep_id"`
+	EpType    string      `json:"ep_type"`
+	EpPrefix  *SubnetType `json:"ep_prefix"`
 }
 
 //  parents relation object
@@ -24,10 +24,10 @@ func (model *DiscoveryPubSubEndPointType) String() string {
 func MakeDiscoveryPubSubEndPointType() *DiscoveryPubSubEndPointType {
 	return &DiscoveryPubSubEndPointType{
 		//TODO(nati): Apply default
-		EpID:      "",
-		EpType:    "",
 		EpPrefix:  MakeSubnetType(),
 		EpVersion: "",
+		EpID:      "",
+		EpType:    "",
 	}
 }
 

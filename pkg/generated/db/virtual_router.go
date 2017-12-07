@@ -4,55 +4,54 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertVirtualRouterQuery = "insert into `virtual_router` (`virtual_router_dpdk_enabled`,`virtual_router_ip_address`,`key_value_pair`,`uuid`,`fq_name`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`virtual_router_type`,`display_name`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateVirtualRouterQuery = "update `virtual_router` set `virtual_router_dpdk_enabled` = ?,`virtual_router_ip_address` = ?,`key_value_pair` = ?,`uuid` = ?,`fq_name` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`virtual_router_type` = ?,`display_name` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?;"
+const insertVirtualRouterQuery = "insert into `virtual_router` (`fq_name`,`creator`,`user_visible`,`last_modified`,`group`,`group_access`,`owner`,`owner_access`,`other_access`,`enable`,`description`,`created`,`display_name`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`,`virtual_router_dpdk_enabled`,`virtual_router_ip_address`,`uuid`,`key_value_pair`,`virtual_router_type`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateVirtualRouterQuery = "update `virtual_router` set `fq_name` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`display_name` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`virtual_router_dpdk_enabled` = ?,`virtual_router_ip_address` = ?,`uuid` = ?,`key_value_pair` = ?,`virtual_router_type` = ?;"
 const deleteVirtualRouterQuery = "delete from `virtual_router` where uuid = ?"
 
 // VirtualRouterFields is db columns for VirtualRouter
 var VirtualRouterFields = []string{
-	"virtual_router_dpdk_enabled",
-	"virtual_router_ip_address",
-	"key_value_pair",
-	"uuid",
 	"fq_name",
-	"owner",
-	"owner_access",
-	"other_access",
-	"group",
-	"group_access",
-	"enable",
-	"description",
-	"created",
 	"creator",
 	"user_visible",
 	"last_modified",
-	"virtual_router_type",
+	"group",
+	"group_access",
+	"owner",
+	"owner_access",
+	"other_access",
+	"enable",
+	"description",
+	"created",
 	"display_name",
+	"perms2_owner_access",
 	"global_access",
 	"share",
 	"perms2_owner",
-	"perms2_owner_access",
+	"virtual_router_dpdk_enabled",
+	"virtual_router_ip_address",
+	"uuid",
+	"key_value_pair",
+	"virtual_router_type",
 }
 
 // VirtualRouterRefFields is db reference fields for VirtualRouter
 var VirtualRouterRefFields = map[string][]string{
 
 	"network_ipam": {
-		// <utils.Schema Value>
+		// <common.Schema Value>
 		"subnet",
 		"allocation_pools",
 	},
 
 	"virtual_machine": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 }
@@ -73,43 +72,30 @@ func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
 		"model": model,
 		"query": insertVirtualRouterQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(bool(model.VirtualRouterDPDKEnabled),
-		string(model.VirtualRouterIPAddress),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		string(model.UUID),
-		utils.MustJSON(model.FQName),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
+	_, err = stmt.Exec(common.MustJSON(model.FQName),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		string(model.VirtualRouterType),
+		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		int(model.IDPerms.Permissions.OtherAccess),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Created),
 		string(model.DisplayName),
+		int(model.Perms2.OwnerAccess),
 		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
+		common.MustJSON(model.Perms2.Share),
 		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess))
+		bool(model.VirtualRouterDPDKEnabled),
+		string(model.VirtualRouterIPAddress),
+		string(model.UUID),
+		common.MustJSON(model.Annotations.KeyValuePair),
+		string(model.VirtualRouterType))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
-	}
-
-	stmtNetworkIpamRef, err := tx.Prepare(insertVirtualRouterNetworkIpamQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing NetworkIpamRefs create statement failed")
-	}
-	defer stmtNetworkIpamRef.Close()
-	for _, ref := range model.NetworkIpamRefs {
-		_, err = stmtNetworkIpamRef.Exec(model.UUID, ref.UUID, utils.MustJSON(ref.Attr.Subnet),
-			utils.MustJSON(ref.Attr.AllocationPools))
-		if err != nil {
-			return errors.Wrap(err, "NetworkIpamRefs create failed")
-		}
 	}
 
 	stmtVirtualMachineRef, err := tx.Prepare(insertVirtualRouterVirtualMachineQuery)
@@ -118,9 +104,28 @@ func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
 	}
 	defer stmtVirtualMachineRef.Close()
 	for _, ref := range model.VirtualMachineRefs {
+
 		_, err = stmtVirtualMachineRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineRefs create failed")
+		}
+	}
+
+	stmtNetworkIpamRef, err := tx.Prepare(insertVirtualRouterNetworkIpamQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing NetworkIpamRefs create statement failed")
+	}
+	defer stmtNetworkIpamRef.Close()
+	for _, ref := range model.NetworkIpamRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = models.MakeVirtualRouterNetworkIpamType()
+		}
+
+		_, err = stmtNetworkIpamRef.Exec(model.UUID, ref.UUID, common.MustJSON(ref.Attr.Subnet),
+			common.MustJSON(ref.Attr.AllocationPools))
+		if err != nil {
+			return errors.Wrap(err, "NetworkIpamRefs create failed")
 		}
 	}
 
@@ -133,109 +138,15 @@ func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
 func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, error) {
 	m := models.MakeVirtualRouter()
 
-	if value, ok := values["virtual_router_dpdk_enabled"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.VirtualRouterDPDKEnabled = castedValue
-
-	}
-
-	if value, ok := values["virtual_router_ip_address"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.VirtualRouterIPAddress = models.IpAddressType(castedValue)
-
-	}
-
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.UUID = castedValue
-
-	}
-
 	if value, ok := values["fq_name"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
 	if value, ok := values["creator"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Creator = castedValue
 
@@ -243,7 +154,7 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.UserVisible = castedValue
 
@@ -251,31 +162,95 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.LastModified = castedValue
 
 	}
 
-	if value, ok := values["virtual_router_type"]; ok {
+	if value, ok := values["group"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.VirtualRouterType = models.VirtualRouterType(castedValue)
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
 
 	}
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
 
 	}
 
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
@@ -289,28 +264,64 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 
 	if value, ok := values["perms2_owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.Perms2.Owner = castedValue
 
 	}
 
-	if value, ok := values["perms2_owner_access"]; ok {
+	if value, ok := values["virtual_router_dpdk_enabled"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToBool(value)
 
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.VirtualRouterDPDKEnabled = castedValue
+
+	}
+
+	if value, ok := values["virtual_router_ip_address"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.VirtualRouterIPAddress = models.IpAddressType(castedValue)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["virtual_router_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.VirtualRouterType = models.VirtualRouterType(castedValue)
 
 	}
 
 	if value, ok := values["ref_network_ipam"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.VirtualRouterNetworkIpamRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.NetworkIpamRefs = append(m.NetworkIpamRefs, referenceModel)
 
 			attr := models.MakeVirtualRouterNetworkIpamType()
@@ -321,12 +332,18 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 
 	if value, ok := values["ref_virtual_machine"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.VirtualRouterVirtualMachineRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.VirtualMachineRefs = append(m.VirtualMachineRefs, referenceModel)
 
 		}
@@ -336,7 +353,7 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 }
 
 // ListVirtualRouter lists VirtualRouter with list spec.
-func ListVirtualRouter(tx *sql.Tx, spec *db.ListSpec) ([]*models.VirtualRouter, error) {
+func ListVirtualRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualRouter, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -344,7 +361,7 @@ func ListVirtualRouter(tx *sql.Tx, spec *db.ListSpec) ([]*models.VirtualRouter, 
 	spec.Fields = VirtualRouterFields
 	spec.RefFields = VirtualRouterRefFields
 	result := models.MakeVirtualRouterSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -385,7 +402,7 @@ func ListVirtualRouter(tx *sql.Tx, spec *db.ListSpec) ([]*models.VirtualRouter, 
 
 // ShowVirtualRouter shows VirtualRouter resource
 func ShowVirtualRouter(tx *sql.Tx, uuid string) (*models.VirtualRouter, error) {
-	list, err := ListVirtualRouter(tx, &db.ListSpec{
+	list, err := ListVirtualRouter(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

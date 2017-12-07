@@ -23,9 +23,9 @@ func (model *DhcpOptionType) String() string {
 func MakeDhcpOptionType() *DhcpOptionType {
 	return &DhcpOptionType{
 		//TODO(nati): Apply default
-		DHCPOptionName:       "",
 		DHCPOptionValue:      "",
 		DHCPOptionValueBytes: "",
+		DHCPOptionName:       "",
 	}
 }
 

@@ -22,8 +22,8 @@ func (model *VirtualNetworkPolicyType) String() string {
 func MakeVirtualNetworkPolicyType() *VirtualNetworkPolicyType {
 	return &VirtualNetworkPolicyType{
 		//TODO(nati): Apply default
-		Sequence: MakeSequenceType(),
 		Timer:    MakeTimerType(),
+		Sequence: MakeSequenceType(),
 	}
 }
 

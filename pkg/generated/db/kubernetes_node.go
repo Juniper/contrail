@@ -4,44 +4,43 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertKubernetesNodeQuery = "insert into `kubernetes_node` (`provisioning_progress_stage`,`provisioning_state`,`fq_name`,`created`,`creator`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`provisioning_log`,`provisioning_progress`,`provisioning_start_time`,`display_name`,`key_value_pair`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateKubernetesNodeQuery = "update `kubernetes_node` set `provisioning_progress_stage` = ?,`provisioning_state` = ?,`fq_name` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`provisioning_log` = ?,`provisioning_progress` = ?,`provisioning_start_time` = ?,`display_name` = ?,`key_value_pair` = ?,`uuid` = ?;"
+const insertKubernetesNodeQuery = "insert into `kubernetes_node` (`provisioning_progress_stage`,`provisioning_start_time`,`other_access`,`group`,`group_access`,`owner`,`owner_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`fq_name`,`provisioning_log`,`uuid`,`provisioning_progress`,`provisioning_state`,`display_name`,`key_value_pair`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateKubernetesNodeQuery = "update `kubernetes_node` set `provisioning_progress_stage` = ?,`provisioning_start_time` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`fq_name` = ?,`provisioning_log` = ?,`uuid` = ?,`provisioning_progress` = ?,`provisioning_state` = ?,`display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?;"
 const deleteKubernetesNodeQuery = "delete from `kubernetes_node` where uuid = ?"
 
 // KubernetesNodeFields is db columns for KubernetesNode
 var KubernetesNodeFields = []string{
 	"provisioning_progress_stage",
-	"provisioning_state",
-	"fq_name",
+	"provisioning_start_time",
+	"other_access",
+	"group",
+	"group_access",
+	"owner",
+	"owner_access",
+	"enable",
+	"description",
 	"created",
 	"creator",
 	"user_visible",
 	"last_modified",
-	"owner",
-	"owner_access",
-	"other_access",
-	"group",
-	"group_access",
-	"enable",
-	"description",
+	"fq_name",
+	"provisioning_log",
+	"uuid",
+	"provisioning_progress",
+	"provisioning_state",
+	"display_name",
+	"key_value_pair",
 	"global_access",
 	"share",
 	"perms2_owner",
 	"perms2_owner_access",
-	"provisioning_log",
-	"provisioning_progress",
-	"provisioning_start_time",
-	"display_name",
-	"key_value_pair",
-	"uuid",
 }
 
 // KubernetesNodeRefFields is db reference fields for KubernetesNode
@@ -60,29 +59,29 @@ func CreateKubernetesNode(tx *sql.Tx, model *models.KubernetesNode) error {
 		"query": insertKubernetesNodeQuery,
 	}).Debug("create query")
 	_, err = stmt.Exec(string(model.ProvisioningProgressStage),
-		string(model.ProvisioningState),
-		utils.MustJSON(model.FQName),
+		string(model.ProvisioningStartTime),
+		int(model.IDPerms.Permissions.OtherAccess),
+		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
+		common.MustJSON(model.FQName),
 		string(model.ProvisioningLog),
+		string(model.UUID),
 		int(model.ProvisioningProgress),
-		string(model.ProvisioningStartTime),
+		string(model.ProvisioningState),
 		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		string(model.UUID))
+		common.MustJSON(model.Annotations.KeyValuePair),
+		int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -98,17 +97,105 @@ func scanKubernetesNode(values map[string]interface{}) (*models.KubernetesNode, 
 
 	if value, ok := values["provisioning_progress_stage"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.ProvisioningProgressStage = castedValue
 
 	}
 
-	if value, ok := values["provisioning_state"]; ok {
+	if value, ok := values["provisioning_start_time"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.ProvisioningState = castedValue
+		m.ProvisioningStartTime = castedValue
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -118,97 +205,55 @@ func scanKubernetesNode(values map[string]interface{}) (*models.KubernetesNode, 
 
 	}
 
-	if value, ok := values["created"]; ok {
+	if value, ok := values["provisioning_log"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.ProvisioningLog = castedValue
 
 	}
 
-	if value, ok := values["user_visible"]; ok {
+	if value, ok := values["uuid"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
+		m.UUID = castedValue
 
 	}
 
-	if value, ok := values["owner"]; ok {
+	if value, ok := values["provisioning_progress"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.ProvisioningProgress = castedValue
 
 	}
 
-	if value, ok := values["other_access"]; ok {
+	if value, ok := values["provisioning_state"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
+		m.ProvisioningState = castedValue
 
 	}
 
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
+		m.DisplayName = castedValue
 
 	}
 
-	if value, ok := values["description"]; ok {
+	if value, ok := values["key_value_pair"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
@@ -222,7 +267,7 @@ func scanKubernetesNode(values map[string]interface{}) (*models.KubernetesNode, 
 
 	if value, ok := values["perms2_owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.Perms2.Owner = castedValue
 
@@ -230,55 +275,9 @@ func scanKubernetesNode(values map[string]interface{}) (*models.KubernetesNode, 
 
 	if value, ok := values["perms2_owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["provisioning_log"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.ProvisioningLog = castedValue
-
-	}
-
-	if value, ok := values["provisioning_progress"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.ProvisioningProgress = castedValue
-
-	}
-
-	if value, ok := values["provisioning_start_time"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.ProvisioningStartTime = castedValue
-
-	}
-
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.UUID = castedValue
 
 	}
 
@@ -286,7 +285,7 @@ func scanKubernetesNode(values map[string]interface{}) (*models.KubernetesNode, 
 }
 
 // ListKubernetesNode lists KubernetesNode with list spec.
-func ListKubernetesNode(tx *sql.Tx, spec *db.ListSpec) ([]*models.KubernetesNode, error) {
+func ListKubernetesNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.KubernetesNode, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -294,7 +293,7 @@ func ListKubernetesNode(tx *sql.Tx, spec *db.ListSpec) ([]*models.KubernetesNode
 	spec.Fields = KubernetesNodeFields
 	spec.RefFields = KubernetesNodeRefFields
 	result := models.MakeKubernetesNodeSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -335,7 +334,7 @@ func ListKubernetesNode(tx *sql.Tx, spec *db.ListSpec) ([]*models.KubernetesNode
 
 // ShowKubernetesNode shows KubernetesNode resource
 func ShowKubernetesNode(tx *sql.Tx, uuid string) (*models.KubernetesNode, error) {
-	list, err := ListKubernetesNode(tx, &db.ListSpec{
+	list, err := ListKubernetesNode(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

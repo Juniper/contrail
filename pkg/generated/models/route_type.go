@@ -6,10 +6,10 @@ import "encoding/json"
 
 // RouteType
 type RouteType struct {
-	CommunityAttributes *CommunityAttributes `json:"community_attributes"`
-	NextHopType         RouteNextHopType     `json:"next_hop_type"`
 	Prefix              string               `json:"prefix"`
 	NextHop             string               `json:"next_hop"`
+	CommunityAttributes *CommunityAttributes `json:"community_attributes"`
+	NextHopType         RouteNextHopType     `json:"next_hop_type"`
 }
 
 //  parents relation object
@@ -24,10 +24,10 @@ func (model *RouteType) String() string {
 func MakeRouteType() *RouteType {
 	return &RouteType{
 		//TODO(nati): Apply default
-		Prefix:              "",
 		NextHop:             "",
 		CommunityAttributes: MakeCommunityAttributes(),
 		NextHopType:         MakeRouteNextHopType(),
+		Prefix:              "",
 	}
 }
 

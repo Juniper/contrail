@@ -6,12 +6,12 @@ import "encoding/json"
 
 // GracefulRestartParametersType
 type GracefulRestartParametersType struct {
-	Enable               bool                             `json:"enable"`
 	EndOfRibTimeout      EndOfRibTimeType                 `json:"end_of_rib_timeout"`
 	BGPHelperEnable      bool                             `json:"bgp_helper_enable"`
 	XMPPHelperEnable     bool                             `json:"xmpp_helper_enable"`
 	RestartTime          GracefulRestartTimeType          `json:"restart_time"`
 	LongLivedRestartTime LongLivedGracefulRestartTimeType `json:"long_lived_restart_time"`
+	Enable               bool                             `json:"enable"`
 }
 
 //  parents relation object
@@ -26,12 +26,12 @@ func (model *GracefulRestartParametersType) String() string {
 func MakeGracefulRestartParametersType() *GracefulRestartParametersType {
 	return &GracefulRestartParametersType{
 		//TODO(nati): Apply default
+		Enable:               false,
+		EndOfRibTimeout:      MakeEndOfRibTimeType(),
 		BGPHelperEnable:      false,
 		XMPPHelperEnable:     false,
 		RestartTime:          MakeGracefulRestartTimeType(),
 		LongLivedRestartTime: MakeLongLivedGracefulRestartTimeType(),
-		Enable:               false,
-		EndOfRibTimeout:      MakeEndOfRibTimeType(),
 	}
 }
 
@@ -39,9 +39,6 @@ func MakeGracefulRestartParametersType() *GracefulRestartParametersType {
 func InterfaceToGracefulRestartParametersType(iData interface{}) *GracefulRestartParametersType {
 	data := iData.(map[string]interface{})
 	return &GracefulRestartParametersType{
-		XMPPHelperEnable: data["xmpp_helper_enable"].(bool),
-
-		//{"Title":"","Description":"Enable GR Helper mode for XMPP peers (agents) in contrail-control","SQL":"","Default":null,"Operation":"","Presence":"","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"XMPPHelperEnable","GoType":"bool","GoPremitive":true}
 		RestartTime: InterfaceToGracefulRestartTimeType(data["restart_time"]),
 
 		//{"Title":"","Description":"Time (in seconds) taken by the restarting speaker to get back to stable state","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":4095,"Ref":"types.json#/definitions/GracefulRestartTimeType","CollectionType":"","Column":"","Item":null,"GoName":"RestartTime","GoType":"GracefulRestartTimeType","GoPremitive":false}
@@ -57,6 +54,9 @@ func InterfaceToGracefulRestartParametersType(iData interface{}) *GracefulRestar
 		BGPHelperEnable: data["bgp_helper_enable"].(bool),
 
 		//{"Title":"","Description":"Enable GR Helper mode for BGP peers in contrail-control","SQL":"","Default":null,"Operation":"","Presence":"","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"BGPHelperEnable","GoType":"bool","GoPremitive":true}
+		XMPPHelperEnable: data["xmpp_helper_enable"].(bool),
+
+		//{"Title":"","Description":"Enable GR Helper mode for XMPP peers (agents) in contrail-control","SQL":"","Default":null,"Operation":"","Presence":"","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"XMPPHelperEnable","GoType":"bool","GoPremitive":true}
 
 	}
 }

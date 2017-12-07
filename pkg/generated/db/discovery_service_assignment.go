@@ -4,39 +4,38 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertDiscoveryServiceAssignmentQuery = "insert into `discovery_service_assignment` (`display_name`,`key_value_pair`,`owner`,`owner_access`,`global_access`,`share`,`uuid`,`fq_name`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`permissions_owner`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateDiscoveryServiceAssignmentQuery = "update `discovery_service_assignment` set `display_name` = ?,`key_value_pair` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`fq_name` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?;"
+const insertDiscoveryServiceAssignmentQuery = "insert into `discovery_service_assignment` (`display_name`,`key_value_pair`,`owner_access`,`global_access`,`share`,`owner`,`uuid`,`fq_name`,`last_modified`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`user_visible`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateDiscoveryServiceAssignmentQuery = "update `discovery_service_assignment` set `display_name` = ?,`key_value_pair` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`uuid` = ?,`fq_name` = ?,`last_modified` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?;"
 const deleteDiscoveryServiceAssignmentQuery = "delete from `discovery_service_assignment` where uuid = ?"
 
 // DiscoveryServiceAssignmentFields is db columns for DiscoveryServiceAssignment
 var DiscoveryServiceAssignmentFields = []string{
 	"display_name",
 	"key_value_pair",
-	"owner",
 	"owner_access",
 	"global_access",
 	"share",
+	"owner",
 	"uuid",
 	"fq_name",
+	"last_modified",
+	"permissions_owner",
 	"permissions_owner_access",
 	"other_access",
 	"group",
 	"group_access",
-	"permissions_owner",
 	"enable",
 	"description",
 	"created",
 	"creator",
 	"user_visible",
-	"last_modified",
 }
 
 // DiscoveryServiceAssignmentRefFields is db reference fields for DiscoveryServiceAssignment
@@ -55,24 +54,24 @@ func CreateDiscoveryServiceAssignment(tx *sql.Tx, model *models.DiscoveryService
 		"query": insertDiscoveryServiceAssignmentQuery,
 	}).Debug("create query")
 	_, err = stmt.Exec(string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		string(model.Perms2.Owner),
+		common.MustJSON(model.Annotations.KeyValuePair),
 		int(model.Perms2.OwnerAccess),
 		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
+		common.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
 		string(model.UUID),
-		utils.MustJSON(model.FQName),
+		common.MustJSON(model.FQName),
+		string(model.IDPerms.LastModified),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified))
+		bool(model.IDPerms.UserVisible))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -88,7 +87,7 @@ func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.Disc
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
 
@@ -100,17 +99,9 @@ func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.Disc
 
 	}
 
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
@@ -118,7 +109,7 @@ func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.Disc
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
@@ -130,9 +121,17 @@ func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.Disc
 
 	}
 
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.UUID = castedValue
 
@@ -144,9 +143,25 @@ func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.Disc
 
 	}
 
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
@@ -154,7 +169,7 @@ func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.Disc
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
 
@@ -162,7 +177,7 @@ func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.Disc
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Group = castedValue
 
@@ -170,23 +185,15 @@ func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.Disc
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["permissions_owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
 	if value, ok := values["enable"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.Enable = castedValue
 
@@ -194,7 +201,7 @@ func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.Disc
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Description = castedValue
 
@@ -202,7 +209,7 @@ func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.Disc
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Created = castedValue
 
@@ -210,7 +217,7 @@ func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.Disc
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Creator = castedValue
 
@@ -218,17 +225,9 @@ func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.Disc
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -236,7 +235,7 @@ func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.Disc
 }
 
 // ListDiscoveryServiceAssignment lists DiscoveryServiceAssignment with list spec.
-func ListDiscoveryServiceAssignment(tx *sql.Tx, spec *db.ListSpec) ([]*models.DiscoveryServiceAssignment, error) {
+func ListDiscoveryServiceAssignment(tx *sql.Tx, spec *common.ListSpec) ([]*models.DiscoveryServiceAssignment, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -244,7 +243,7 @@ func ListDiscoveryServiceAssignment(tx *sql.Tx, spec *db.ListSpec) ([]*models.Di
 	spec.Fields = DiscoveryServiceAssignmentFields
 	spec.RefFields = DiscoveryServiceAssignmentRefFields
 	result := models.MakeDiscoveryServiceAssignmentSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -285,7 +284,7 @@ func ListDiscoveryServiceAssignment(tx *sql.Tx, spec *db.ListSpec) ([]*models.Di
 
 // ShowDiscoveryServiceAssignment shows DiscoveryServiceAssignment resource
 func ShowDiscoveryServiceAssignment(tx *sql.Tx, uuid string) (*models.DiscoveryServiceAssignment, error) {
-	list, err := ListDiscoveryServiceAssignment(tx, &db.ListSpec{
+	list, err := ListDiscoveryServiceAssignment(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

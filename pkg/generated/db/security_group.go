@@ -4,30 +4,32 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertSecurityGroupQuery = "insert into `security_group` (`policy_rule`,`configured_security_group_id`,`security_group_id`,`owner`,`owner_access`,`global_access`,`share`,`uuid`,`fq_name`,`display_name`,`last_modified`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`permissions_owner`,`enable`,`description`,`created`,`creator`,`user_visible`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateSecurityGroupQuery = "update `security_group` set `policy_rule` = ?,`configured_security_group_id` = ?,`security_group_id` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`fq_name` = ?,`display_name` = ?,`last_modified` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`key_value_pair` = ?;"
+const insertSecurityGroupQuery = "insert into `security_group` (`security_group_id`,`fq_name`,`display_name`,`key_value_pair`,`share`,`owner`,`owner_access`,`global_access`,`policy_rule`,`configured_security_group_id`,`uuid`,`creator`,`user_visible`,`last_modified`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`permissions_owner`,`enable`,`description`,`created`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateSecurityGroupQuery = "update `security_group` set `security_group_id` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`policy_rule` = ?,`configured_security_group_id` = ?,`uuid` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`enable` = ?,`description` = ?,`created` = ?;"
 const deleteSecurityGroupQuery = "delete from `security_group` where uuid = ?"
 
 // SecurityGroupFields is db columns for SecurityGroup
 var SecurityGroupFields = []string{
-	"policy_rule",
-	"configured_security_group_id",
 	"security_group_id",
+	"fq_name",
+	"display_name",
+	"key_value_pair",
+	"share",
 	"owner",
 	"owner_access",
 	"global_access",
-	"share",
+	"policy_rule",
+	"configured_security_group_id",
 	"uuid",
-	"fq_name",
-	"display_name",
+	"creator",
+	"user_visible",
 	"last_modified",
 	"permissions_owner_access",
 	"other_access",
@@ -37,9 +39,6 @@ var SecurityGroupFields = []string{
 	"enable",
 	"description",
 	"created",
-	"creator",
-	"user_visible",
-	"key_value_pair",
 }
 
 // SecurityGroupRefFields is db reference fields for SecurityGroup
@@ -57,16 +56,19 @@ func CreateSecurityGroup(tx *sql.Tx, model *models.SecurityGroup) error {
 		"model": model,
 		"query": insertSecurityGroupQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(utils.MustJSON(model.SecurityGroupEntries.PolicyRule),
-		int(model.ConfiguredSecurityGroupID),
-		int(model.SecurityGroupID),
+	_, err = stmt.Exec(int(model.SecurityGroupID),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair),
+		common.MustJSON(model.Perms2.Share),
 		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
 		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
+		common.MustJSON(model.SecurityGroupEntries.PolicyRule),
+		int(model.ConfiguredSecurityGroupID),
 		string(model.UUID),
-		utils.MustJSON(model.FQName),
-		string(model.DisplayName),
+		string(model.IDPerms.Creator),
+		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
@@ -75,10 +77,7 @@ func CreateSecurityGroup(tx *sql.Tx, model *models.SecurityGroup) error {
 		string(model.IDPerms.Permissions.Owner),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		utils.MustJSON(model.Annotations.KeyValuePair))
+		string(model.IDPerms.Created))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -92,63 +91,11 @@ func CreateSecurityGroup(tx *sql.Tx, model *models.SecurityGroup) error {
 func scanSecurityGroup(values map[string]interface{}) (*models.SecurityGroup, error) {
 	m := models.MakeSecurityGroup()
 
-	if value, ok := values["policy_rule"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.SecurityGroupEntries.PolicyRule)
-
-	}
-
-	if value, ok := values["configured_security_group_id"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.ConfiguredSecurityGroupID = models.ConfiguredSecurityGroupIdType(castedValue)
-
-	}
-
 	if value, ok := values["security_group_id"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.SecurityGroupID = models.SecurityGroupIdType(castedValue)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.UUID = castedValue
 
 	}
 
@@ -160,97 +107,9 @@ func scanSecurityGroup(values map[string]interface{}) (*models.SecurityGroup, er
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["permissions_owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["permissions_owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
 
 	}
 
@@ -260,11 +119,151 @@ func scanSecurityGroup(values map[string]interface{}) (*models.SecurityGroup, er
 
 	}
 
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["policy_rule"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.SecurityGroupEntries.PolicyRule)
+
+	}
+
+	if value, ok := values["configured_security_group_id"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.ConfiguredSecurityGroupID = models.ConfiguredSecurityGroupIdType(castedValue)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
 	return m, nil
 }
 
 // ListSecurityGroup lists SecurityGroup with list spec.
-func ListSecurityGroup(tx *sql.Tx, spec *db.ListSpec) ([]*models.SecurityGroup, error) {
+func ListSecurityGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.SecurityGroup, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -272,7 +271,7 @@ func ListSecurityGroup(tx *sql.Tx, spec *db.ListSpec) ([]*models.SecurityGroup, 
 	spec.Fields = SecurityGroupFields
 	spec.RefFields = SecurityGroupRefFields
 	result := models.MakeSecurityGroupSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -313,7 +312,7 @@ func ListSecurityGroup(tx *sql.Tx, spec *db.ListSpec) ([]*models.SecurityGroup, 
 
 // ShowSecurityGroup shows SecurityGroup resource
 func ShowSecurityGroup(tx *sql.Tx, uuid string) (*models.SecurityGroup, error) {
-	list, err := ListSecurityGroup(tx, &db.ListSpec{
+	list, err := ListSecurityGroup(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

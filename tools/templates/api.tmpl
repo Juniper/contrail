@@ -1,0 +1,123 @@
+package api
+
+import (
+    "net/http"
+    "github.com/Juniper/contrail/pkg/generated/models"
+    "github.com/Juniper/contrail/pkg/generated/db"
+    "github.com/satori/go.uuid"
+
+	log "github.com/sirupsen/logrus"
+)
+
+//{{ schema.JSONSchema.GoName }}RESTAPI
+type {{ schema.JSONSchema.GoName }}RESTAPI struct {
+    DB *sql.DB
+}
+
+type {{ schema.JSONSchema.GoName }}CreateRequest struct {
+    Data *models.{{ schema.JSONSchema.GoName }} `json:"{{ schema.Path }}"`
+}
+
+//Path returns api path for collections.
+func (api *{{ schema.JSONSchema.GoName }}RESTAPI) Path() string {
+    return "{{ prefix }}/{{ schema.PluralPath }}"
+}
+
+//LongPath returns api path for elements.
+func (api *{{ schema.JSONSchema.GoName }}RESTAPI) LongPath() string {
+    return "{{ prefix }}/{{ schema.Path }}/:id"
+}
+
+//SetDB sets db object
+func (api *{{ schema.JSONSchema.GoName }}RESTAPI) SetDB(db *sql.DB)  {
+    api.DB = db
+}
+
+//Create handle a Create REST API.
+func (api *{{ schema.JSONSchema.GoName }}RESTAPI) Create(c echo.Context) error {
+    requestData := &{{ schema.JSONSchema.GoName }}CreateRequest{
+        Data: models.Make{{ schema.JSONSchema.GoName }}(),
+    }
+    if err := c.Bind(requestData); err != nil {
+        log.WithFields(log.Fields{
+            "err": err,
+            "resource": "{{ schema.ID }}",
+        }).Debug("bind failed on create")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+    model := requestData.Data
+    if model == nil {
+       return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format") 
+    }
+    if model.UUID == "" {
+        model.UUID = uuid.NewV4().String()
+    }
+    if err := common.DoInTransaction(
+        api.DB,
+        func (tx *sql.Tx) error {
+            return db.Create{{ schema.JSONSchema.GoName }}(tx, model)
+        }); err != nil {
+        log.WithFields(log.Fields{
+            "err": err,
+            "resource": "{{ schema.ID }}",
+        }).Debug("db create failed on create")
+       return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+    }
+    return c.JSON(http.StatusCreated, requestData)
+}
+
+//Update handles a REST Update request.
+func (api *{{ schema.JSONSchema.GoName }}RESTAPI) Update(c echo.Context) error {
+    return nil
+}
+
+//Delete handles a REST Delete request.
+func (api *{{ schema.JSONSchema.GoName }}RESTAPI) Delete(c echo.Context) error {
+    id := c.Param("id")
+    if err := common.DoInTransaction(
+        api.DB,
+        func (tx *sql.Tx) error {
+            return db.Delete{{ schema.JSONSchema.GoName }}(tx, id)
+        }); err != nil {
+            log.WithField("err", err).Debug("error deleting a resource")
+        return echo.NewHTTPError(http.StatusInternalServerError, nil)
+    }
+    return c.JSON(http.StatusNoContent, nil)
+}
+
+//Show handles a REST Show request.
+func (api *{{ schema.JSONSchema.GoName }}RESTAPI) Show(c echo.Context) (error) {
+    id := c.Param("id")
+    var result *models.{{ schema.JSONSchema.GoName }}
+    var err error
+    if err := common.DoInTransaction(
+        api.DB,
+        func (tx *sql.Tx) error {
+            result, err = db.Show{{ schema.JSONSchema.GoName }}(tx, id)
+            return err
+        }); err != nil {
+        return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+    }
+    return c.JSON(http.StatusOK, map[string]interface{}{
+        "{{ schema.ID }}": result,
+    })
+}
+
+//List handles a List REST API Request.
+func (api *{{ schema.JSONSchema.GoName }}RESTAPI) List(c echo.Context) (error) {
+    var result []*models.{{ schema.JSONSchema.GoName }}
+    var err error
+    if err := common.DoInTransaction(
+        api.DB,
+        func (tx *sql.Tx) error {
+            result, err = db.List{{ schema.JSONSchema.GoName }}(tx, &common.ListSpec{
+                Limit: 1000,
+            })
+            return err
+        }); err != nil {
+        return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+    }
+    return c.JSON(http.StatusOK, map[string]interface{}{
+        "{{ schema.PluralPath }}": result,
+    })
+}

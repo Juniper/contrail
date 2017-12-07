@@ -28,14 +28,14 @@ func (model *ActionListType) String() string {
 func MakeActionListType() *ActionListType {
 	return &ActionListType{
 		//TODO(nati): Apply default
+		AssignRoutingInstance: "",
+		MirrorTo:              MakeMirrorActionType(),
 		SimpleAction:          MakeSimpleActionType(),
 		ApplyService:          []string{},
 		GatewayName:           "",
 		Log:                   false,
 		Alert:                 false,
 		QosAction:             "",
-		AssignRoutingInstance: "",
-		MirrorTo:              MakeMirrorActionType(),
 	}
 }
 
@@ -43,15 +43,6 @@ func MakeActionListType() *ActionListType {
 func InterfaceToActionListType(iData interface{}) *ActionListType {
 	data := iData.(map[string]interface{})
 	return &ActionListType{
-		ApplyService: data["apply_service"].([]string),
-
-		//{"Title":"","Description":"Ordered list of service instances in service chain applied to traffic matching the rule","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ApplyService","GoType":"string","GoPremitive":true},"GoName":"ApplyService","GoType":"[]string","GoPremitive":true}
-		GatewayName: data["gateway_name"].(string),
-
-		//{"Title":"","Description":"For internal use only","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"GatewayName","GoType":"string","GoPremitive":true}
-		Log: data["log"].(bool),
-
-		//{"Title":"","Description":"Flow records for traffic matching this rule are sent at higher priority","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Log","GoType":"bool","GoPremitive":true}
 		Alert: data["alert"].(bool),
 
 		//{"Title":"","Description":"For internal use only","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Alert","GoType":"bool","GoPremitive":true}
@@ -67,6 +58,15 @@ func InterfaceToActionListType(iData interface{}) *ActionListType {
 		SimpleAction: InterfaceToSimpleActionType(data["simple_action"]),
 
 		//{"Title":"","Description":"Simple allow(pass) or deny action for traffic matching this rule","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":["deny","pass"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/SimpleActionType","CollectionType":"","Column":"","Item":null,"GoName":"SimpleAction","GoType":"SimpleActionType","GoPremitive":false}
+		ApplyService: data["apply_service"].([]string),
+
+		//{"Title":"","Description":"Ordered list of service instances in service chain applied to traffic matching the rule","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ApplyService","GoType":"string","GoPremitive":true},"GoName":"ApplyService","GoType":"[]string","GoPremitive":true}
+		GatewayName: data["gateway_name"].(string),
+
+		//{"Title":"","Description":"For internal use only","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"GatewayName","GoType":"string","GoPremitive":true}
+		Log: data["log"].(bool),
+
+		//{"Title":"","Description":"Flow records for traffic matching this rule are sent at higher priority","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Log","GoType":"bool","GoPremitive":true}
 
 	}
 }

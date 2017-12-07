@@ -11,7 +11,7 @@ type {{ name }} struct {
     {{ property.GoName }} {% if property.Type == "object" and property.Properties %}*{% endif %}{{ property.GoType }} `json:"{{propertyName}}"`{% endfor %}
 {% for linkTo, reference in references %}
     // {{linkTo}} {{reference}}
-    {{ reference.GoName }}Refs []*{{ type.GoName }}{{ reference.GoName }}Ref{% endfor %}
+    {{ reference.GoName }}Refs []*{{ type.GoName }}{{ reference.GoName }}Ref `json:"{{linkTo}}_refs"`{% endfor %}
 {% for linkTo, reference in parents %}
     {{ reference.GoName }}s []*{{ type.GoName }}{{ reference.GoName }}{% endfor %}
 }

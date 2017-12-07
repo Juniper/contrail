@@ -6,12 +6,12 @@ import "encoding/json"
 
 // LoadbalancerType
 type LoadbalancerType struct {
+	ProvisioningStatus string         `json:"provisioning_status"`
 	AdminState         bool           `json:"admin_state"`
 	VipAddress         IpAddressType  `json:"vip_address"`
 	VipSubnetID        UuidStringType `json:"vip_subnet_id"`
 	OperatingStatus    string         `json:"operating_status"`
 	Status             string         `json:"status"`
-	ProvisioningStatus string         `json:"provisioning_status"`
 }
 
 //  parents relation object
@@ -26,12 +26,12 @@ func (model *LoadbalancerType) String() string {
 func MakeLoadbalancerType() *LoadbalancerType {
 	return &LoadbalancerType{
 		//TODO(nati): Apply default
+		Status:             "",
+		ProvisioningStatus: "",
 		AdminState:         false,
 		VipAddress:         MakeIpAddressType(),
 		VipSubnetID:        MakeUuidStringType(),
 		OperatingStatus:    "",
-		Status:             "",
-		ProvisioningStatus: "",
 	}
 }
 
@@ -39,9 +39,6 @@ func MakeLoadbalancerType() *LoadbalancerType {
 func InterfaceToLoadbalancerType(iData interface{}) *LoadbalancerType {
 	data := iData.(map[string]interface{})
 	return &LoadbalancerType{
-		AdminState: data["admin_state"].(bool),
-
-		//{"Title":"","Description":"Administrative up or down","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"AdminState","GoType":"bool","GoPremitive":true}
 		VipAddress: InterfaceToIpAddressType(data["vip_address"]),
 
 		//{"Title":"","Description":"Virtual ip for this LBaaS","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/IpAddressType","CollectionType":"","Column":"","Item":null,"GoName":"VipAddress","GoType":"IpAddressType","GoPremitive":false}
@@ -57,6 +54,9 @@ func InterfaceToLoadbalancerType(iData interface{}) *LoadbalancerType {
 		ProvisioningStatus: data["provisioning_status"].(string),
 
 		//{"Title":"","Description":"Provisioning  status of the load balancer updated by system.","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ProvisioningStatus","GoType":"string","GoPremitive":true}
+		AdminState: data["admin_state"].(bool),
+
+		//{"Title":"","Description":"Administrative up or down","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"AdminState","GoType":"bool","GoPremitive":true}
 
 	}
 }

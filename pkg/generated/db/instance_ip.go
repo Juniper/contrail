@@ -4,48 +4,47 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertInstanceIPQuery = "insert into `instance_ip` (`instance_ip_mode`,`instance_ip_local_ip`,`instance_ip_address`,`subnet_uuid`,`service_instance_ip`,`owner`,`owner_access`,`global_access`,`share`,`fq_name`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`key_value_pair`,`display_name`,`service_health_check_ip`,`ip_prefix`,`ip_prefix_len`,`instance_ip_family`,`instance_ip_secondary`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateInstanceIPQuery = "update `instance_ip` set `instance_ip_mode` = ?,`instance_ip_local_ip` = ?,`instance_ip_address` = ?,`subnet_uuid` = ?,`service_instance_ip` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`fq_name` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`key_value_pair` = ?,`display_name` = ?,`service_health_check_ip` = ?,`ip_prefix` = ?,`ip_prefix_len` = ?,`instance_ip_family` = ?,`instance_ip_secondary` = ?,`uuid` = ?;"
+const insertInstanceIPQuery = "insert into `instance_ip` (`global_access`,`share`,`owner`,`owner_access`,`service_health_check_ip`,`ip_prefix`,`ip_prefix_len`,`instance_ip_family`,`key_value_pair`,`service_instance_ip`,`instance_ip_local_ip`,`instance_ip_secondary`,`fq_name`,`instance_ip_address`,`instance_ip_mode`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`enable`,`display_name`,`subnet_uuid`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateInstanceIPQuery = "update `instance_ip` set `global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`service_health_check_ip` = ?,`ip_prefix` = ?,`ip_prefix_len` = ?,`instance_ip_family` = ?,`key_value_pair` = ?,`service_instance_ip` = ?,`instance_ip_local_ip` = ?,`instance_ip_secondary` = ?,`fq_name` = ?,`instance_ip_address` = ?,`instance_ip_mode` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`enable` = ?,`display_name` = ?,`subnet_uuid` = ?,`uuid` = ?;"
 const deleteInstanceIPQuery = "delete from `instance_ip` where uuid = ?"
 
 // InstanceIPFields is db columns for InstanceIP
 var InstanceIPFields = []string{
-	"instance_ip_mode",
-	"instance_ip_local_ip",
-	"instance_ip_address",
-	"subnet_uuid",
-	"service_instance_ip",
-	"owner",
-	"owner_access",
 	"global_access",
 	"share",
+	"owner",
+	"owner_access",
+	"service_health_check_ip",
+	"ip_prefix",
+	"ip_prefix_len",
+	"instance_ip_family",
+	"key_value_pair",
+	"service_instance_ip",
+	"instance_ip_local_ip",
+	"instance_ip_secondary",
 	"fq_name",
-	"permissions_owner",
-	"permissions_owner_access",
-	"other_access",
-	"group",
-	"group_access",
-	"enable",
+	"instance_ip_address",
+	"instance_ip_mode",
 	"description",
 	"created",
 	"creator",
 	"user_visible",
 	"last_modified",
-	"key_value_pair",
+	"group",
+	"group_access",
+	"permissions_owner",
+	"permissions_owner_access",
+	"other_access",
+	"enable",
 	"display_name",
-	"service_health_check_ip",
-	"ip_prefix",
-	"ip_prefix_len",
-	"instance_ip_family",
-	"instance_ip_secondary",
+	"subnet_uuid",
 	"uuid",
 }
 
@@ -53,27 +52,27 @@ var InstanceIPFields = []string{
 var InstanceIPRefFields = map[string][]string{
 
 	"network_ipam": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 
 	"virtual_network": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 
 	"virtual_machine_interface": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 
 	"physical_router": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 
 	"virtual_router": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 }
@@ -100,49 +99,37 @@ func CreateInstanceIP(tx *sql.Tx, model *models.InstanceIP) error {
 		"model": model,
 		"query": insertInstanceIPQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.InstanceIPMode),
-		bool(model.InstanceIPLocalIP),
-		string(model.InstanceIPAddress),
-		string(model.SubnetUUID),
-		bool(model.ServiceInstanceIP),
+	_, err = stmt.Exec(int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share),
 		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		utils.MustJSON(model.FQName),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		bool(model.IDPerms.Enable),
+		bool(model.ServiceHealthCheckIP),
+		string(model.SecondaryIPTrackingIP.IPPrefix),
+		int(model.SecondaryIPTrackingIP.IPPrefixLen),
+		string(model.InstanceIPFamily),
+		common.MustJSON(model.Annotations.KeyValuePair),
+		bool(model.ServiceInstanceIP),
+		bool(model.InstanceIPLocalIP),
+		bool(model.InstanceIPSecondary),
+		common.MustJSON(model.FQName),
+		string(model.InstanceIPAddress),
+		string(model.InstanceIPMode),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		utils.MustJSON(model.Annotations.KeyValuePair),
+		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		int(model.IDPerms.Permissions.OtherAccess),
+		bool(model.IDPerms.Enable),
 		string(model.DisplayName),
-		bool(model.ServiceHealthCheckIP),
-		string(model.SecondaryIPTrackingIP.IPPrefix),
-		int(model.SecondaryIPTrackingIP.IPPrefixLen),
-		string(model.InstanceIPFamily),
-		bool(model.InstanceIPSecondary),
+		string(model.SubnetUUID),
 		string(model.UUID))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
-	}
-
-	stmtVirtualRouterRef, err := tx.Prepare(insertInstanceIPVirtualRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualRouterRefs create statement failed")
-	}
-	defer stmtVirtualRouterRef.Close()
-	for _, ref := range model.VirtualRouterRefs {
-		_, err = stmtVirtualRouterRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualRouterRefs create failed")
-		}
 	}
 
 	stmtNetworkIpamRef, err := tx.Prepare(insertInstanceIPNetworkIpamQuery)
@@ -151,6 +138,7 @@ func CreateInstanceIP(tx *sql.Tx, model *models.InstanceIP) error {
 	}
 	defer stmtNetworkIpamRef.Close()
 	for _, ref := range model.NetworkIpamRefs {
+
 		_, err = stmtNetworkIpamRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "NetworkIpamRefs create failed")
@@ -163,6 +151,7 @@ func CreateInstanceIP(tx *sql.Tx, model *models.InstanceIP) error {
 	}
 	defer stmtVirtualNetworkRef.Close()
 	for _, ref := range model.VirtualNetworkRefs {
+
 		_, err = stmtVirtualNetworkRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualNetworkRefs create failed")
@@ -175,6 +164,7 @@ func CreateInstanceIP(tx *sql.Tx, model *models.InstanceIP) error {
 	}
 	defer stmtVirtualMachineInterfaceRef.Close()
 	for _, ref := range model.VirtualMachineInterfaceRefs {
+
 		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
@@ -187,9 +177,23 @@ func CreateInstanceIP(tx *sql.Tx, model *models.InstanceIP) error {
 	}
 	defer stmtPhysicalRouterRef.Close()
 	for _, ref := range model.PhysicalRouterRefs {
+
 		_, err = stmtPhysicalRouterRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PhysicalRouterRefs create failed")
+		}
+	}
+
+	stmtVirtualRouterRef, err := tx.Prepare(insertInstanceIPVirtualRouterQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualRouterRefs create statement failed")
+	}
+	defer stmtVirtualRouterRef.Close()
+	for _, ref := range model.VirtualRouterRefs {
+
+		_, err = stmtVirtualRouterRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualRouterRefs create failed")
 		}
 	}
 
@@ -202,65 +206,9 @@ func CreateInstanceIP(tx *sql.Tx, model *models.InstanceIP) error {
 func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 	m := models.MakeInstanceIP()
 
-	if value, ok := values["instance_ip_mode"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.InstanceIPMode = models.AddressMode(castedValue)
-
-	}
-
-	if value, ok := values["instance_ip_local_ip"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.InstanceIPLocalIP = castedValue
-
-	}
-
-	if value, ok := values["instance_ip_address"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.InstanceIPAddress = models.IpAddressType(castedValue)
-
-	}
-
-	if value, ok := values["subnet_uuid"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.SubnetUUID = castedValue
-
-	}
-
-	if value, ok := values["service_instance_ip"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.ServiceInstanceIP = castedValue
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
@@ -272,97 +220,51 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["owner"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
+		castedValue := common.InterfaceToString(value)
 
-	}
-
-	if value, ok := values["permissions_owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		m.Perms2.Owner = castedValue
 
 	}
 
-	if value, ok := values["permissions_owner_access"]; ok {
+	if value, ok := values["owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["group"]; ok {
+	if value, ok := values["service_health_check_ip"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToBool(value)
 
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.ServiceHealthCheckIP = castedValue
 
 	}
 
-	if value, ok := values["enable"]; ok {
+	if value, ok := values["ip_prefix"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
+		m.SecondaryIPTrackingIP.IPPrefix = castedValue
 
 	}
 
-	if value, ok := values["created"]; ok {
+	if value, ok := values["ip_prefix_len"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.SecondaryIPTrackingIP.IPPrefixLen = castedValue
 
 	}
 
-	if value, ok := values["user_visible"]; ok {
+	if value, ok := values["instance_ip_family"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
+		m.InstanceIPFamily = models.IpAddressFamilyType(castedValue)
 
 	}
 
@@ -372,83 +274,178 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 
 	}
 
-	if value, ok := values["display_name"]; ok {
+	if value, ok := values["service_instance_ip"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToBool(value)
 
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["service_health_check_ip"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.ServiceHealthCheckIP = castedValue
+		m.ServiceInstanceIP = castedValue
 
 	}
 
-	if value, ok := values["ip_prefix"]; ok {
+	if value, ok := values["instance_ip_local_ip"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToBool(value)
 
-		m.SecondaryIPTrackingIP.IPPrefix = castedValue
-
-	}
-
-	if value, ok := values["ip_prefix_len"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.SecondaryIPTrackingIP.IPPrefixLen = castedValue
-
-	}
-
-	if value, ok := values["instance_ip_family"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.InstanceIPFamily = models.IpAddressFamilyType(castedValue)
+		m.InstanceIPLocalIP = castedValue
 
 	}
 
 	if value, ok := values["instance_ip_secondary"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.InstanceIPSecondary = castedValue
 
 	}
 
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["instance_ip_address"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.InstanceIPAddress = models.IpAddressType(castedValue)
+
+	}
+
+	if value, ok := values["instance_ip_mode"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.InstanceIPMode = models.AddressMode(castedValue)
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["subnet_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.SubnetUUID = castedValue
+
+	}
+
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.UUID = castedValue
 
 	}
 
-	if value, ok := values["ref_virtual_router"]; ok {
-		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
-			referenceModel := &models.InstanceIPVirtualRouterRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
-			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_network_ipam"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.InstanceIPNetworkIpamRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.NetworkIpamRefs = append(m.NetworkIpamRefs, referenceModel)
 
 		}
@@ -456,12 +453,18 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 
 	if value, ok := values["ref_virtual_network"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.InstanceIPVirtualNetworkRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
 
 		}
@@ -469,12 +472,18 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.InstanceIPVirtualMachineInterfaceRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
 
 		}
@@ -482,13 +491,38 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 
 	if value, ok := values["ref_physical_router"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.InstanceIPPhysicalRouterRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_router"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.InstanceIPVirtualRouterRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
 
 		}
 	}
@@ -497,7 +531,7 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 }
 
 // ListInstanceIP lists InstanceIP with list spec.
-func ListInstanceIP(tx *sql.Tx, spec *db.ListSpec) ([]*models.InstanceIP, error) {
+func ListInstanceIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.InstanceIP, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -505,7 +539,7 @@ func ListInstanceIP(tx *sql.Tx, spec *db.ListSpec) ([]*models.InstanceIP, error)
 	spec.Fields = InstanceIPFields
 	spec.RefFields = InstanceIPRefFields
 	result := models.MakeInstanceIPSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -546,7 +580,7 @@ func ListInstanceIP(tx *sql.Tx, spec *db.ListSpec) ([]*models.InstanceIP, error)
 
 // ShowInstanceIP shows InstanceIP resource
 func ShowInstanceIP(tx *sql.Tx, uuid string) (*models.InstanceIP, error) {
-	list, err := ListInstanceIP(tx, &db.ListSpec{
+	list, err := ListInstanceIP(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

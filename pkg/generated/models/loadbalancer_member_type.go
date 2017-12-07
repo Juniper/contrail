@@ -6,12 +6,12 @@ import "encoding/json"
 
 // LoadbalancerMemberType
 type LoadbalancerMemberType struct {
-	Weight            int           `json:"weight"`
 	AdminState        bool          `json:"admin_state"`
 	Address           IpAddressType `json:"address"`
 	ProtocolPort      int           `json:"protocol_port"`
 	Status            string        `json:"status"`
 	StatusDescription string        `json:"status_description"`
+	Weight            int           `json:"weight"`
 }
 
 //  parents relation object
@@ -26,12 +26,12 @@ func (model *LoadbalancerMemberType) String() string {
 func MakeLoadbalancerMemberType() *LoadbalancerMemberType {
 	return &LoadbalancerMemberType{
 		//TODO(nati): Apply default
-		Status:            "",
 		StatusDescription: "",
 		Weight:            0,
 		AdminState:        false,
 		Address:           MakeIpAddressType(),
 		ProtocolPort:      0,
+		Status:            "",
 	}
 }
 
@@ -39,9 +39,6 @@ func MakeLoadbalancerMemberType() *LoadbalancerMemberType {
 func InterfaceToLoadbalancerMemberType(iData interface{}) *LoadbalancerMemberType {
 	data := iData.(map[string]interface{})
 	return &LoadbalancerMemberType{
-		ProtocolPort: data["protocol_port"].(int),
-
-		//{"Title":"","Description":"Destination port for the application on the member.","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ProtocolPort","GoType":"int","GoPremitive":true}
 		Status: data["status"].(string),
 
 		//{"Title":"","Description":"Operational status of the member.","SQL":"","Default":null,"Operation":"","Presence":"system-only","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Status","GoType":"string","GoPremitive":true}
@@ -57,6 +54,9 @@ func InterfaceToLoadbalancerMemberType(iData interface{}) *LoadbalancerMemberTyp
 		Address: InterfaceToIpAddressType(data["address"]),
 
 		//{"Title":"","Description":"Ip address of the member","SQL":"","Default":null,"Operation":"","Presence":"required","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/IpAddressType","CollectionType":"","Column":"","Item":null,"GoName":"Address","GoType":"IpAddressType","GoPremitive":false}
+		ProtocolPort: data["protocol_port"].(int),
+
+		//{"Title":"","Description":"Destination port for the application on the member.","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ProtocolPort","GoType":"int","GoPremitive":true}
 
 	}
 }
