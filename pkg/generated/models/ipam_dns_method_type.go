@@ -4,15 +4,18 @@ package models
 
 type IpamDnsMethodType string
 
+// MakeIpamDnsMethodType makes IpamDnsMethodType
 func MakeIpamDnsMethodType() IpamDnsMethodType {
 	var data IpamDnsMethodType
 	return data
 }
 
+// InterfaceToIpamDnsMethodType makes IpamDnsMethodType from interface
 func InterfaceToIpamDnsMethodType(data interface{}) IpamDnsMethodType {
 	return data.(IpamDnsMethodType)
 }
 
+// InterfaceToIpamDnsMethodTypeSlice makes a slice of IpamDnsMethodType from interface
 func InterfaceToIpamDnsMethodTypeSlice(data interface{}) []IpamDnsMethodType {
 	list := data.([]interface{})
 	result := MakeIpamDnsMethodTypeSlice()
@@ -22,6 +25,7 @@ func InterfaceToIpamDnsMethodTypeSlice(data interface{}) []IpamDnsMethodType {
 	return result
 }
 
+// MakeIpamDnsMethodTypeSlice() makes a slice of IpamDnsMethodType
 func MakeIpamDnsMethodTypeSlice() []IpamDnsMethodType {
 	return []IpamDnsMethodType{}
 }

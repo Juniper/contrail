@@ -4,15 +4,20 @@ package models
 
 import "encoding/json"
 
+// IpAddressesType
 type IpAddressesType struct {
 	IPAddress IpAddressType `json:"ip_address"`
 }
 
+//  parents relation object
+
+// String returns json representation of the object
 func (model *IpAddressesType) String() string {
 	b, _ := json.Marshal(model)
 	return string(b)
 }
 
+// MakeIpAddressesType makes IpAddressesType
 func MakeIpAddressesType() *IpAddressesType {
 	return &IpAddressesType{
 		//TODO(nati): Apply default
@@ -20,16 +25,18 @@ func MakeIpAddressesType() *IpAddressesType {
 	}
 }
 
+// InterfaceToIpAddressesType makes IpAddressesType from interface
 func InterfaceToIpAddressesType(iData interface{}) *IpAddressesType {
 	data := iData.(map[string]interface{})
 	return &IpAddressesType{
 		IPAddress: InterfaceToIpAddressType(data["ip_address"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/IpAddressType","CollectionType":"","Column":"","Item":null,"GoName":"IPAddress","GoType":"IpAddressType"}
+		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/IpAddressType","CollectionType":"","Column":"","Item":null,"GoName":"IPAddress","GoType":"IpAddressType","GoPremitive":false}
 
 	}
 }
 
+// InterfaceToIpAddressesTypeSlice makes a slice of IpAddressesType from interface
 func InterfaceToIpAddressesTypeSlice(data interface{}) []*IpAddressesType {
 	list := data.([]interface{})
 	result := MakeIpAddressesTypeSlice()
@@ -39,6 +46,7 @@ func InterfaceToIpAddressesTypeSlice(data interface{}) []*IpAddressesType {
 	return result
 }
 
+// MakeIpAddressesTypeSlice() makes a slice of IpAddressesType
 func MakeIpAddressesTypeSlice() []*IpAddressesType {
 	return []*IpAddressesType{}
 }

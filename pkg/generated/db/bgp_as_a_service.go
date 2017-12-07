@@ -1,242 +1,443 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertBGPAsAServiceQuery = "insert into `bgp_as_a_service` (`bgpaas_session_attributes`,`bgpaas_suppress_route_advertisement`,`bgpaas_ip_address`,`display_name`,`global_access`,`share`,`owner`,`owner_access`,`key_value_pair`,`uuid`,`bgpaas_shared`,`bgpaas_ipv4_mapped_ipv6_nexthop`,`autonomous_system`,`fq_name`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`enable`,`description`,`created`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateBGPAsAServiceQuery = "update `bgp_as_a_service` set `bgpaas_session_attributes` = ?,`bgpaas_suppress_route_advertisement` = ?,`bgpaas_ip_address` = ?,`display_name` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`key_value_pair` = ?,`uuid` = ?,`bgpaas_shared` = ?,`bgpaas_ipv4_mapped_ipv6_nexthop` = ?,`autonomous_system` = ?,`fq_name` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`enable` = ?,`description` = ?,`created` = ?;"
+const insertBGPAsAServiceQuery = "insert into `bgp_as_a_service` (`autonomous_system`,`uuid`,`display_name`,`bgpaas_suppress_route_advertisement`,`bgpaas_session_attributes`,`bgpaas_ipv4_mapped_ipv6_nexthop`,`bgpaas_ip_address`,`fq_name`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`key_value_pair`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`,`bgpaas_shared`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateBGPAsAServiceQuery = "update `bgp_as_a_service` set `autonomous_system` = ?,`uuid` = ?,`display_name` = ?,`bgpaas_suppress_route_advertisement` = ?,`bgpaas_session_attributes` = ?,`bgpaas_ipv4_mapped_ipv6_nexthop` = ?,`bgpaas_ip_address` = ?,`fq_name` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`key_value_pair` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`bgpaas_shared` = ?;"
 const deleteBGPAsAServiceQuery = "delete from `bgp_as_a_service` where uuid = ?"
-const listBGPAsAServiceQuery = "select `bgp_as_a_service`.`bgpaas_session_attributes`,`bgp_as_a_service`.`bgpaas_suppress_route_advertisement`,`bgp_as_a_service`.`bgpaas_ip_address`,`bgp_as_a_service`.`display_name`,`bgp_as_a_service`.`global_access`,`bgp_as_a_service`.`share`,`bgp_as_a_service`.`owner`,`bgp_as_a_service`.`owner_access`,`bgp_as_a_service`.`key_value_pair`,`bgp_as_a_service`.`uuid`,`bgp_as_a_service`.`bgpaas_shared`,`bgp_as_a_service`.`bgpaas_ipv4_mapped_ipv6_nexthop`,`bgp_as_a_service`.`autonomous_system`,`bgp_as_a_service`.`fq_name`,`bgp_as_a_service`.`creator`,`bgp_as_a_service`.`user_visible`,`bgp_as_a_service`.`last_modified`,`bgp_as_a_service`.`other_access`,`bgp_as_a_service`.`group`,`bgp_as_a_service`.`group_access`,`bgp_as_a_service`.`permissions_owner`,`bgp_as_a_service`.`permissions_owner_access`,`bgp_as_a_service`.`enable`,`bgp_as_a_service`.`description`,`bgp_as_a_service`.`created` from `bgp_as_a_service`"
-const showBGPAsAServiceQuery = "select `bgp_as_a_service`.`bgpaas_session_attributes`,`bgp_as_a_service`.`bgpaas_suppress_route_advertisement`,`bgp_as_a_service`.`bgpaas_ip_address`,`bgp_as_a_service`.`display_name`,`bgp_as_a_service`.`global_access`,`bgp_as_a_service`.`share`,`bgp_as_a_service`.`owner`,`bgp_as_a_service`.`owner_access`,`bgp_as_a_service`.`key_value_pair`,`bgp_as_a_service`.`uuid`,`bgp_as_a_service`.`bgpaas_shared`,`bgp_as_a_service`.`bgpaas_ipv4_mapped_ipv6_nexthop`,`bgp_as_a_service`.`autonomous_system`,`bgp_as_a_service`.`fq_name`,`bgp_as_a_service`.`creator`,`bgp_as_a_service`.`user_visible`,`bgp_as_a_service`.`last_modified`,`bgp_as_a_service`.`other_access`,`bgp_as_a_service`.`group`,`bgp_as_a_service`.`group_access`,`bgp_as_a_service`.`permissions_owner`,`bgp_as_a_service`.`permissions_owner_access`,`bgp_as_a_service`.`enable`,`bgp_as_a_service`.`description`,`bgp_as_a_service`.`created` from `bgp_as_a_service` where uuid = ?"
+
+// BGPAsAServiceFields is db columns for BGPAsAService
+var BGPAsAServiceFields = []string{
+	"autonomous_system",
+	"uuid",
+	"display_name",
+	"bgpaas_suppress_route_advertisement",
+	"bgpaas_session_attributes",
+	"bgpaas_ipv4_mapped_ipv6_nexthop",
+	"bgpaas_ip_address",
+	"fq_name",
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"owner",
+	"owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"key_value_pair",
+	"share",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"bgpaas_shared",
+}
+
+// BGPAsAServiceRefFields is db reference fields for BGPAsAService
+var BGPAsAServiceRefFields = map[string][]string{
+
+	"service_health_check": {
+	// <utils.Schema Value>
+
+	},
+
+	"virtual_machine_interface": {
+	// <utils.Schema Value>
+
+	},
+}
 
 const insertBGPAsAServiceVirtualMachineInterfaceQuery = "insert into `ref_bgp_as_a_service_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 const insertBGPAsAServiceServiceHealthCheckQuery = "insert into `ref_bgp_as_a_service_service_health_check` (`from`, `to` ) values (?, ?);"
 
+// CreateBGPAsAService inserts BGPAsAService to DB
 func CreateBGPAsAService(tx *sql.Tx, model *models.BGPAsAService) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertBGPAsAServiceQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(string(model.BgpaasSessionAttributes),
-		bool(model.BgpaasSuppressRouteAdvertisement),
-		string(model.BgpaasIPAddress),
-		string(model.DisplayName),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		utils.MustJSON(model.Annotations.KeyValuePair),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertBGPAsAServiceQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(int(model.AutonomousSystem),
 		string(model.UUID),
-		bool(model.BgpaasShared),
+		string(model.DisplayName),
+		bool(model.BgpaasSuppressRouteAdvertisement),
+		string(model.BgpaasSessionAttributes),
 		bool(model.BgpaasIpv4MappedIpv6Nexthop),
-		int(model.AutonomousSystem),
+		string(model.BgpaasIPAddress),
 		utils.MustJSON(model.FQName),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created))
+		utils.MustJSON(model.Annotations.KeyValuePair),
+		utils.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		bool(model.BgpaasShared))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
 	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertBGPAsAServiceVirtualMachineInterfaceQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
 	}
 	defer stmtVirtualMachineInterfaceRef.Close()
 	for _, ref := range model.VirtualMachineInterfaceRefs {
 		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
 	}
 
 	stmtServiceHealthCheckRef, err := tx.Prepare(insertBGPAsAServiceServiceHealthCheckQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing ServiceHealthCheckRefs create statement failed")
 	}
 	defer stmtServiceHealthCheckRef.Close()
 	for _, ref := range model.ServiceHealthCheckRefs {
 		_, err = stmtServiceHealthCheckRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceHealthCheckRefs create failed")
+		}
 	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanBGPAsAService(rows *sql.Rows) (*models.BGPAsAService, error) {
+func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, error) {
 	m := models.MakeBGPAsAService()
 
-	var jsonPerms2Share string
+	if value, ok := values["autonomous_system"]; ok {
 
-	var jsonAnnotationsKeyValuePair string
+		castedValue := utils.InterfaceToInt(value)
 
-	var jsonFQName string
+		m.AutonomousSystem = models.AutonomousSystemType(castedValue)
 
-	if err := rows.Scan(&m.BgpaasSessionAttributes,
-		&m.BgpaasSuppressRouteAdvertisement,
-		&m.BgpaasIPAddress,
-		&m.DisplayName,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&jsonAnnotationsKeyValuePair,
-		&m.UUID,
-		&m.BgpaasShared,
-		&m.BgpaasIpv4MappedIpv6Nexthop,
-		&m.AutonomousSystem,
-		&jsonFQName,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+	if value, ok := values["uuid"]; ok {
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["bgpaas_suppress_route_advertisement"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.BgpaasSuppressRouteAdvertisement = castedValue
+
+	}
+
+	if value, ok := values["bgpaas_session_attributes"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.BgpaasSessionAttributes = castedValue
+
+	}
+
+	if value, ok := values["bgpaas_ipv4_mapped_ipv6_nexthop"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.BgpaasIpv4MappedIpv6Nexthop = castedValue
+
+	}
+
+	if value, ok := values["bgpaas_ip_address"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.BgpaasIPAddress = models.IpAddressType(castedValue)
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["bgpaas_shared"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.BgpaasShared = castedValue
+
+	}
+
+	if value, ok := values["ref_service_health_check"]; ok {
+		var references []interface{}
+		stringValue := utils.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap := reference.(map[string]interface{})
+			referenceModel := &models.BGPAsAServiceServiceHealthCheckRef{}
+			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			m.ServiceHealthCheckRefs = append(m.ServiceHealthCheckRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_machine_interface"]; ok {
+		var references []interface{}
+		stringValue := utils.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap := reference.(map[string]interface{})
+			referenceModel := &models.BGPAsAServiceVirtualMachineInterfaceRef{}
+			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
 
 	return m, nil
 }
 
-func buildBGPAsAServiceWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["bgpaas_session_attributes"]; ok {
-		results = append(results, "bgpaas_session_attributes = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["bgpaas_ip_address"]; ok {
-		results = append(results, "bgpaas_ip_address = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["permissions_owner"]; ok {
-		results = append(results, "permissions_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListBGPAsAService(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.BGPAsAService, error) {
-	result := models.MakeBGPAsAServiceSlice()
-	whereQuery, values := buildBGPAsAServiceWhereQuery(where)
+// ListBGPAsAService lists BGPAsAService with list spec.
+func ListBGPAsAService(tx *sql.Tx, spec *db.ListSpec) ([]*models.BGPAsAService, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listBGPAsAServiceQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "bgp_as_a_service"
+	spec.Fields = BGPAsAServiceFields
+	spec.RefFields = BGPAsAServiceRefFields
+	result := models.MakeBGPAsAServiceSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanBGPAsAService(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanBGPAsAService(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowBGPAsAService shows BGPAsAService resource
 func ShowBGPAsAService(tx *sql.Tx, uuid string) (*models.BGPAsAService, error) {
-	rows, err := tx.Query(showBGPAsAServiceQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListBGPAsAService(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanBGPAsAService(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateBGPAsAService updates a resource
 func UpdateBGPAsAService(tx *sql.Tx, uuid string, model *models.BGPAsAService) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteBGPAsAService deletes a resource
 func DeleteBGPAsAService(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteBGPAsAServiceQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

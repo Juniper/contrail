@@ -1,28 +1,62 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertGlobalQosConfigQuery = "insert into `global_qos_config` (`key_value_pair`,`owner`,`owner_access`,`global_access`,`share`,`uuid`,`fq_name`,`control`,`analytics`,`dns`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`enable`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateGlobalQosConfigQuery = "update `global_qos_config` set `key_value_pair` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`fq_name` = ?,`control` = ?,`analytics` = ?,`dns` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`display_name` = ?;"
+const insertGlobalQosConfigQuery = "insert into `global_qos_config` (`key_value_pair`,`owner`,`owner_access`,`global_access`,`share`,`uuid`,`fq_name`,`control`,`analytics`,`dns`,`created`,`creator`,`user_visible`,`last_modified`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`permissions_owner`,`enable`,`description`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateGlobalQosConfigQuery = "update `global_qos_config` set `key_value_pair` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`fq_name` = ?,`control` = ?,`analytics` = ?,`dns` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`enable` = ?,`description` = ?,`display_name` = ?;"
 const deleteGlobalQosConfigQuery = "delete from `global_qos_config` where uuid = ?"
-const listGlobalQosConfigQuery = "select `global_qos_config`.`key_value_pair`,`global_qos_config`.`owner`,`global_qos_config`.`owner_access`,`global_qos_config`.`global_access`,`global_qos_config`.`share`,`global_qos_config`.`uuid`,`global_qos_config`.`fq_name`,`global_qos_config`.`control`,`global_qos_config`.`analytics`,`global_qos_config`.`dns`,`global_qos_config`.`description`,`global_qos_config`.`created`,`global_qos_config`.`creator`,`global_qos_config`.`user_visible`,`global_qos_config`.`last_modified`,`global_qos_config`.`group_access`,`global_qos_config`.`permissions_owner`,`global_qos_config`.`permissions_owner_access`,`global_qos_config`.`other_access`,`global_qos_config`.`group`,`global_qos_config`.`enable`,`global_qos_config`.`display_name` from `global_qos_config`"
-const showGlobalQosConfigQuery = "select `global_qos_config`.`key_value_pair`,`global_qos_config`.`owner`,`global_qos_config`.`owner_access`,`global_qos_config`.`global_access`,`global_qos_config`.`share`,`global_qos_config`.`uuid`,`global_qos_config`.`fq_name`,`global_qos_config`.`control`,`global_qos_config`.`analytics`,`global_qos_config`.`dns`,`global_qos_config`.`description`,`global_qos_config`.`created`,`global_qos_config`.`creator`,`global_qos_config`.`user_visible`,`global_qos_config`.`last_modified`,`global_qos_config`.`group_access`,`global_qos_config`.`permissions_owner`,`global_qos_config`.`permissions_owner_access`,`global_qos_config`.`other_access`,`global_qos_config`.`group`,`global_qos_config`.`enable`,`global_qos_config`.`display_name` from `global_qos_config` where uuid = ?"
 
+// GlobalQosConfigFields is db columns for GlobalQosConfig
+var GlobalQosConfigFields = []string{
+	"key_value_pair",
+	"owner",
+	"owner_access",
+	"global_access",
+	"share",
+	"uuid",
+	"fq_name",
+	"control",
+	"analytics",
+	"dns",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"permissions_owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"permissions_owner",
+	"enable",
+	"description",
+	"display_name",
+}
+
+// GlobalQosConfigRefFields is db reference fields for GlobalQosConfig
+var GlobalQosConfigRefFields = map[string][]string{}
+
+// CreateGlobalQosConfig inserts GlobalQosConfig to DB
 func CreateGlobalQosConfig(tx *sql.Tx, model *models.GlobalQosConfig) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertGlobalQosConfigQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertGlobalQosConfigQuery,
+	}).Debug("create query")
 	_, err = stmt.Exec(utils.MustJSON(model.Annotations.KeyValuePair),
 		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
@@ -33,172 +67,282 @@ func CreateGlobalQosConfig(tx *sql.Tx, model *models.GlobalQosConfig) error {
 		int(model.ControlTrafficDSCP.Control),
 		int(model.ControlTrafficDSCP.Analytics),
 		int(model.ControlTrafficDSCP.DNS),
-		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
 		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
 		string(model.DisplayName))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanGlobalQosConfig(rows *sql.Rows) (*models.GlobalQosConfig, error) {
+func scanGlobalQosConfig(values map[string]interface{}) (*models.GlobalQosConfig, error) {
 	m := models.MakeGlobalQosConfig()
 
-	var jsonAnnotationsKeyValuePair string
+	if value, ok := values["key_value_pair"]; ok {
 
-	var jsonPerms2Share string
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
-	var jsonFQName string
-
-	if err := rows.Scan(&jsonAnnotationsKeyValuePair,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.UUID,
-		&jsonFQName,
-		&m.ControlTrafficDSCP.Control,
-		&m.ControlTrafficDSCP.Analytics,
-		&m.ControlTrafficDSCP.DNS,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Enable,
-		&m.DisplayName); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+	if value, ok := values["owner"]; ok {
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["control"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.ControlTrafficDSCP.Control = models.DscpValueType(castedValue)
+
+	}
+
+	if value, ok := values["analytics"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.ControlTrafficDSCP.Analytics = models.DscpValueType(castedValue)
+
+	}
+
+	if value, ok := values["dns"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.ControlTrafficDSCP.DNS = models.DscpValueType(castedValue)
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
 
 	return m, nil
 }
 
-func buildGlobalQosConfigWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["permissions_owner"]; ok {
-		results = append(results, "permissions_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListGlobalQosConfig(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.GlobalQosConfig, error) {
-	result := models.MakeGlobalQosConfigSlice()
-	whereQuery, values := buildGlobalQosConfigWhereQuery(where)
+// ListGlobalQosConfig lists GlobalQosConfig with list spec.
+func ListGlobalQosConfig(tx *sql.Tx, spec *db.ListSpec) ([]*models.GlobalQosConfig, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listGlobalQosConfigQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "global_qos_config"
+	spec.Fields = GlobalQosConfigFields
+	spec.RefFields = GlobalQosConfigRefFields
+	result := models.MakeGlobalQosConfigSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanGlobalQosConfig(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanGlobalQosConfig(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowGlobalQosConfig shows GlobalQosConfig resource
 func ShowGlobalQosConfig(tx *sql.Tx, uuid string) (*models.GlobalQosConfig, error) {
-	rows, err := tx.Query(showGlobalQosConfigQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListGlobalQosConfig(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanGlobalQosConfig(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateGlobalQosConfig updates a resource
 func UpdateGlobalQosConfig(tx *sql.Tx, uuid string, model *models.GlobalQosConfig) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteGlobalQosConfig deletes a resource
 func DeleteGlobalQosConfig(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteGlobalQosConfigQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

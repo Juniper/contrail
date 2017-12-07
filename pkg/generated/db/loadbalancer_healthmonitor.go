@@ -1,35 +1,71 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertLoadbalancerHealthmonitorQuery = "insert into `loadbalancer_healthmonitor` (`key_value_pair`,`owner_access`,`global_access`,`share`,`owner`,`uuid`,`fq_name`,`user_visible`,`last_modified`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`display_name`,`expected_codes`,`max_retries`,`http_method`,`admin_state`,`timeout`,`url_path`,`monitor_type`,`delay`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateLoadbalancerHealthmonitorQuery = "update `loadbalancer_healthmonitor` set `key_value_pair` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`uuid` = ?,`fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`display_name` = ?,`expected_codes` = ?,`max_retries` = ?,`http_method` = ?,`admin_state` = ?,`timeout` = ?,`url_path` = ?,`monitor_type` = ?,`delay` = ?;"
+const insertLoadbalancerHealthmonitorQuery = "insert into `loadbalancer_healthmonitor` (`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`display_name`,`key_value_pair`,`expected_codes`,`max_retries`,`http_method`,`admin_state`,`timeout`,`url_path`,`monitor_type`,`delay`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateLoadbalancerHealthmonitorQuery = "update `loadbalancer_healthmonitor` set `enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`display_name` = ?,`key_value_pair` = ?,`expected_codes` = ?,`max_retries` = ?,`http_method` = ?,`admin_state` = ?,`timeout` = ?,`url_path` = ?,`monitor_type` = ?,`delay` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`uuid` = ?,`fq_name` = ?;"
 const deleteLoadbalancerHealthmonitorQuery = "delete from `loadbalancer_healthmonitor` where uuid = ?"
-const listLoadbalancerHealthmonitorQuery = "select `loadbalancer_healthmonitor`.`key_value_pair`,`loadbalancer_healthmonitor`.`owner_access`,`loadbalancer_healthmonitor`.`global_access`,`loadbalancer_healthmonitor`.`share`,`loadbalancer_healthmonitor`.`owner`,`loadbalancer_healthmonitor`.`uuid`,`loadbalancer_healthmonitor`.`fq_name`,`loadbalancer_healthmonitor`.`user_visible`,`loadbalancer_healthmonitor`.`last_modified`,`loadbalancer_healthmonitor`.`permissions_owner`,`loadbalancer_healthmonitor`.`permissions_owner_access`,`loadbalancer_healthmonitor`.`other_access`,`loadbalancer_healthmonitor`.`group`,`loadbalancer_healthmonitor`.`group_access`,`loadbalancer_healthmonitor`.`enable`,`loadbalancer_healthmonitor`.`description`,`loadbalancer_healthmonitor`.`created`,`loadbalancer_healthmonitor`.`creator`,`loadbalancer_healthmonitor`.`display_name`,`loadbalancer_healthmonitor`.`expected_codes`,`loadbalancer_healthmonitor`.`max_retries`,`loadbalancer_healthmonitor`.`http_method`,`loadbalancer_healthmonitor`.`admin_state`,`loadbalancer_healthmonitor`.`timeout`,`loadbalancer_healthmonitor`.`url_path`,`loadbalancer_healthmonitor`.`monitor_type`,`loadbalancer_healthmonitor`.`delay` from `loadbalancer_healthmonitor`"
-const showLoadbalancerHealthmonitorQuery = "select `loadbalancer_healthmonitor`.`key_value_pair`,`loadbalancer_healthmonitor`.`owner_access`,`loadbalancer_healthmonitor`.`global_access`,`loadbalancer_healthmonitor`.`share`,`loadbalancer_healthmonitor`.`owner`,`loadbalancer_healthmonitor`.`uuid`,`loadbalancer_healthmonitor`.`fq_name`,`loadbalancer_healthmonitor`.`user_visible`,`loadbalancer_healthmonitor`.`last_modified`,`loadbalancer_healthmonitor`.`permissions_owner`,`loadbalancer_healthmonitor`.`permissions_owner_access`,`loadbalancer_healthmonitor`.`other_access`,`loadbalancer_healthmonitor`.`group`,`loadbalancer_healthmonitor`.`group_access`,`loadbalancer_healthmonitor`.`enable`,`loadbalancer_healthmonitor`.`description`,`loadbalancer_healthmonitor`.`created`,`loadbalancer_healthmonitor`.`creator`,`loadbalancer_healthmonitor`.`display_name`,`loadbalancer_healthmonitor`.`expected_codes`,`loadbalancer_healthmonitor`.`max_retries`,`loadbalancer_healthmonitor`.`http_method`,`loadbalancer_healthmonitor`.`admin_state`,`loadbalancer_healthmonitor`.`timeout`,`loadbalancer_healthmonitor`.`url_path`,`loadbalancer_healthmonitor`.`monitor_type`,`loadbalancer_healthmonitor`.`delay` from `loadbalancer_healthmonitor` where uuid = ?"
 
+// LoadbalancerHealthmonitorFields is db columns for LoadbalancerHealthmonitor
+var LoadbalancerHealthmonitorFields = []string{
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"owner",
+	"owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"display_name",
+	"key_value_pair",
+	"expected_codes",
+	"max_retries",
+	"http_method",
+	"admin_state",
+	"timeout",
+	"url_path",
+	"monitor_type",
+	"delay",
+	"share",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"uuid",
+	"fq_name",
+}
+
+// LoadbalancerHealthmonitorRefFields is db reference fields for LoadbalancerHealthmonitor
+var LoadbalancerHealthmonitorRefFields = map[string][]string{}
+
+// CreateLoadbalancerHealthmonitor inserts LoadbalancerHealthmonitor to DB
 func CreateLoadbalancerHealthmonitor(tx *sql.Tx, model *models.LoadbalancerHealthmonitor) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertLoadbalancerHealthmonitorQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(utils.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		string(model.UUID),
-		utils.MustJSON(model.FQName),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertLoadbalancerHealthmonitorQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Created),
+		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
 		string(model.IDPerms.Permissions.Owner),
@@ -37,11 +73,8 @@ func CreateLoadbalancerHealthmonitor(tx *sql.Tx, model *models.LoadbalancerHealt
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
 		string(model.DisplayName),
+		utils.MustJSON(model.Annotations.KeyValuePair),
 		string(model.LoadbalancerHealthmonitorProperties.ExpectedCodes),
 		int(model.LoadbalancerHealthmonitorProperties.MaxRetries),
 		string(model.LoadbalancerHealthmonitorProperties.HTTPMethod),
@@ -49,186 +82,317 @@ func CreateLoadbalancerHealthmonitor(tx *sql.Tx, model *models.LoadbalancerHealt
 		int(model.LoadbalancerHealthmonitorProperties.Timeout),
 		string(model.LoadbalancerHealthmonitorProperties.URLPath),
 		string(model.LoadbalancerHealthmonitorProperties.MonitorType),
-		int(model.LoadbalancerHealthmonitorProperties.Delay))
+		int(model.LoadbalancerHealthmonitorProperties.Delay),
+		utils.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		string(model.UUID),
+		utils.MustJSON(model.FQName))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanLoadbalancerHealthmonitor(rows *sql.Rows) (*models.LoadbalancerHealthmonitor, error) {
+func scanLoadbalancerHealthmonitor(values map[string]interface{}) (*models.LoadbalancerHealthmonitor, error) {
 	m := models.MakeLoadbalancerHealthmonitor()
 
-	var jsonAnnotationsKeyValuePair string
+	if value, ok := values["enable"]; ok {
 
-	var jsonPerms2Share string
+		castedValue := utils.InterfaceToBool(value)
 
-	var jsonFQName string
+		m.IDPerms.Enable = castedValue
 
-	if err := rows.Scan(&jsonAnnotationsKeyValuePair,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.UUID,
-		&jsonFQName,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.DisplayName,
-		&m.LoadbalancerHealthmonitorProperties.ExpectedCodes,
-		&m.LoadbalancerHealthmonitorProperties.MaxRetries,
-		&m.LoadbalancerHealthmonitorProperties.HTTPMethod,
-		&m.LoadbalancerHealthmonitorProperties.AdminState,
-		&m.LoadbalancerHealthmonitorProperties.Timeout,
-		&m.LoadbalancerHealthmonitorProperties.URLPath,
-		&m.LoadbalancerHealthmonitorProperties.MonitorType,
-		&m.LoadbalancerHealthmonitorProperties.Delay); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+	if value, ok := values["description"]; ok {
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["expected_codes"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.LoadbalancerHealthmonitorProperties.ExpectedCodes = castedValue
+
+	}
+
+	if value, ok := values["max_retries"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.LoadbalancerHealthmonitorProperties.MaxRetries = castedValue
+
+	}
+
+	if value, ok := values["http_method"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.LoadbalancerHealthmonitorProperties.HTTPMethod = castedValue
+
+	}
+
+	if value, ok := values["admin_state"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.LoadbalancerHealthmonitorProperties.AdminState = castedValue
+
+	}
+
+	if value, ok := values["timeout"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.LoadbalancerHealthmonitorProperties.Timeout = castedValue
+
+	}
+
+	if value, ok := values["url_path"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.LoadbalancerHealthmonitorProperties.URLPath = castedValue
+
+	}
+
+	if value, ok := values["monitor_type"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.LoadbalancerHealthmonitorProperties.MonitorType = models.HealthmonitorType(castedValue)
+
+	}
+
+	if value, ok := values["delay"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.LoadbalancerHealthmonitorProperties.Delay = castedValue
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
 
 	return m, nil
 }
 
-func buildLoadbalancerHealthmonitorWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["permissions_owner"]; ok {
-		results = append(results, "permissions_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["expected_codes"]; ok {
-		results = append(results, "expected_codes = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["http_method"]; ok {
-		results = append(results, "http_method = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["url_path"]; ok {
-		results = append(results, "url_path = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["monitor_type"]; ok {
-		results = append(results, "monitor_type = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListLoadbalancerHealthmonitor(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.LoadbalancerHealthmonitor, error) {
-	result := models.MakeLoadbalancerHealthmonitorSlice()
-	whereQuery, values := buildLoadbalancerHealthmonitorWhereQuery(where)
+// ListLoadbalancerHealthmonitor lists LoadbalancerHealthmonitor with list spec.
+func ListLoadbalancerHealthmonitor(tx *sql.Tx, spec *db.ListSpec) ([]*models.LoadbalancerHealthmonitor, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listLoadbalancerHealthmonitorQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "loadbalancer_healthmonitor"
+	spec.Fields = LoadbalancerHealthmonitorFields
+	spec.RefFields = LoadbalancerHealthmonitorRefFields
+	result := models.MakeLoadbalancerHealthmonitorSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanLoadbalancerHealthmonitor(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanLoadbalancerHealthmonitor(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowLoadbalancerHealthmonitor shows LoadbalancerHealthmonitor resource
 func ShowLoadbalancerHealthmonitor(tx *sql.Tx, uuid string) (*models.LoadbalancerHealthmonitor, error) {
-	rows, err := tx.Query(showLoadbalancerHealthmonitorQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListLoadbalancerHealthmonitor(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanLoadbalancerHealthmonitor(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateLoadbalancerHealthmonitor updates a resource
 func UpdateLoadbalancerHealthmonitor(tx *sql.Tx, uuid string, model *models.LoadbalancerHealthmonitor) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteLoadbalancerHealthmonitor deletes a resource
 func DeleteLoadbalancerHealthmonitor(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteLoadbalancerHealthmonitorQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

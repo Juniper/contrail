@@ -1,83 +1,74 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
 
+	dbPkg "github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 )
 
 func TestForwardingClass(t *testing.T) {
 	t.Parallel()
-	server, err := utils.NewTestServer("TestForwardingClass", tableDefs)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer server.Close()
 	model := models.MakeForwardingClass()
 	model.UUID = "dummy_uuid"
-	db := server.DB
-	tx, err := db.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = CreateForwardingClass(tx, model)
-	if err != nil {
-		t.Fatal(err)
-	}
-	tx.Commit()
+	db := testServer.DB
 
-	tx2, err := db.Begin()
+	err := dbPkg.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateForwardingClass(tx, model)
+	})
 	if err != nil {
-		t.Fatal(err)
-	}
-	models, err := ListForwardingClass(tx2, nil, 0, 10)
-	if err != nil {
-		t.Fatal(err)
-	}
-	tx2.Commit()
-	if len(models) != 1 {
-		t.Fatal("List failed")
+		t.Fatal("create failed", err)
 	}
 
-	tx3, err := db.Begin()
+	err = dbPkg.DoInTransaction(db, func(tx *sql.Tx) error {
+		models, err := ListForwardingClass(tx, &dbPkg.ListSpec{Limit: 1})
+		if err != nil {
+			return err
+		}
+		if len(models) != 1 {
+			return fmt.Errorf("expected one element")
+		}
+		return nil
+	})
 	if err != nil {
-		t.Fatal(err)
-	}
-	model2, err := ShowForwardingClass(tx3, model.UUID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	tx3.Commit()
-	if model2 == nil {
-		t.Fatal("show failed")
+		t.Fatal("list failed", err)
 	}
 
-	tx4, err := db.Begin()
+	err = dbPkg.DoInTransaction(db, func(tx *sql.Tx) error {
+		model, err := ShowForwardingClass(tx, model.UUID)
+		if err != nil {
+			return err
+		}
+		if model == nil || model.UUID != "dummy_uuid" {
+			return fmt.Errorf("show failed")
+		}
+		return nil
+	})
 	if err != nil {
-		t.Fatal(err)
-	}
-	err = DeleteForwardingClass(tx4, model.UUID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	tx4.Commit()
-	if model2 == nil {
-		t.Fatal("delete failed")
+		t.Fatal("show failed", err)
 	}
 
-	tx5, err := db.Begin()
+	err = dbPkg.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteForwardingClass(tx, model.UUID)
+	})
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal("delete failed", err)
 	}
-	models, err = ListForwardingClass(tx5, nil, 0, 10)
+
+	err = dbPkg.DoInTransaction(db, func(tx *sql.Tx) error {
+		models, err := ListForwardingClass(tx, &dbPkg.ListSpec{Limit: 1})
+		if err != nil {
+			return err
+		}
+		if len(models) != 0 {
+			return fmt.Errorf("expected no element")
+		}
+		return nil
+	})
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal("list failed", err)
 	}
-	tx5.Commit()
-	if len(models) != 0 {
-		t.Fatal("delete failed")
-	}
-	fmt.Println(models)
+	return
 }

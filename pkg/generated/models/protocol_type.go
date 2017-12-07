@@ -4,37 +4,44 @@ package models
 
 import "encoding/json"
 
+// ProtocolType
 type ProtocolType struct {
 	Protocol string `json:"protocol"`
 	Port     int    `json:"port"`
 }
 
+//  parents relation object
+
+// String returns json representation of the object
 func (model *ProtocolType) String() string {
 	b, _ := json.Marshal(model)
 	return string(b)
 }
 
+// MakeProtocolType makes ProtocolType
 func MakeProtocolType() *ProtocolType {
 	return &ProtocolType{
 		//TODO(nati): Apply default
-		Protocol: "",
 		Port:     0,
+		Protocol: "",
 	}
 }
 
+// InterfaceToProtocolType makes ProtocolType from interface
 func InterfaceToProtocolType(iData interface{}) *ProtocolType {
 	data := iData.(map[string]interface{})
 	return &ProtocolType{
 		Protocol: data["protocol"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Protocol","GoType":"string"}
+		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Protocol","GoType":"string","GoPremitive":true}
 		Port: data["port"].(int),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Port","GoType":"int"}
+		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Port","GoType":"int","GoPremitive":true}
 
 	}
 }
 
+// InterfaceToProtocolTypeSlice makes a slice of ProtocolType from interface
 func InterfaceToProtocolTypeSlice(data interface{}) []*ProtocolType {
 	list := data.([]interface{})
 	result := MakeProtocolTypeSlice()
@@ -44,6 +51,7 @@ func InterfaceToProtocolTypeSlice(data interface{}) []*ProtocolType {
 	return result
 }
 
+// MakeProtocolTypeSlice() makes a slice of ProtocolType
 func MakeProtocolTypeSlice() []*ProtocolType {
 	return []*ProtocolType{}
 }

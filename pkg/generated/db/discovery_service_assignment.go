@@ -1,198 +1,318 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertDiscoveryServiceAssignmentQuery = "insert into `discovery_service_assignment` (`key_value_pair`,`owner_access`,`global_access`,`share`,`owner`,`uuid`,`fq_name`,`other_access`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateDiscoveryServiceAssignmentQuery = "update `discovery_service_assignment` set `key_value_pair` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`uuid` = ?,`fq_name` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`display_name` = ?;"
+const insertDiscoveryServiceAssignmentQuery = "insert into `discovery_service_assignment` (`display_name`,`key_value_pair`,`owner`,`owner_access`,`global_access`,`share`,`uuid`,`fq_name`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`permissions_owner`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateDiscoveryServiceAssignmentQuery = "update `discovery_service_assignment` set `display_name` = ?,`key_value_pair` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`fq_name` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?;"
 const deleteDiscoveryServiceAssignmentQuery = "delete from `discovery_service_assignment` where uuid = ?"
-const listDiscoveryServiceAssignmentQuery = "select `discovery_service_assignment`.`key_value_pair`,`discovery_service_assignment`.`owner_access`,`discovery_service_assignment`.`global_access`,`discovery_service_assignment`.`share`,`discovery_service_assignment`.`owner`,`discovery_service_assignment`.`uuid`,`discovery_service_assignment`.`fq_name`,`discovery_service_assignment`.`other_access`,`discovery_service_assignment`.`group`,`discovery_service_assignment`.`group_access`,`discovery_service_assignment`.`permissions_owner`,`discovery_service_assignment`.`permissions_owner_access`,`discovery_service_assignment`.`enable`,`discovery_service_assignment`.`description`,`discovery_service_assignment`.`created`,`discovery_service_assignment`.`creator`,`discovery_service_assignment`.`user_visible`,`discovery_service_assignment`.`last_modified`,`discovery_service_assignment`.`display_name` from `discovery_service_assignment`"
-const showDiscoveryServiceAssignmentQuery = "select `discovery_service_assignment`.`key_value_pair`,`discovery_service_assignment`.`owner_access`,`discovery_service_assignment`.`global_access`,`discovery_service_assignment`.`share`,`discovery_service_assignment`.`owner`,`discovery_service_assignment`.`uuid`,`discovery_service_assignment`.`fq_name`,`discovery_service_assignment`.`other_access`,`discovery_service_assignment`.`group`,`discovery_service_assignment`.`group_access`,`discovery_service_assignment`.`permissions_owner`,`discovery_service_assignment`.`permissions_owner_access`,`discovery_service_assignment`.`enable`,`discovery_service_assignment`.`description`,`discovery_service_assignment`.`created`,`discovery_service_assignment`.`creator`,`discovery_service_assignment`.`user_visible`,`discovery_service_assignment`.`last_modified`,`discovery_service_assignment`.`display_name` from `discovery_service_assignment` where uuid = ?"
 
+// DiscoveryServiceAssignmentFields is db columns for DiscoveryServiceAssignment
+var DiscoveryServiceAssignmentFields = []string{
+	"display_name",
+	"key_value_pair",
+	"owner",
+	"owner_access",
+	"global_access",
+	"share",
+	"uuid",
+	"fq_name",
+	"permissions_owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"permissions_owner",
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+}
+
+// DiscoveryServiceAssignmentRefFields is db reference fields for DiscoveryServiceAssignment
+var DiscoveryServiceAssignmentRefFields = map[string][]string{}
+
+// CreateDiscoveryServiceAssignment inserts DiscoveryServiceAssignment to DB
 func CreateDiscoveryServiceAssignment(tx *sql.Tx, model *models.DiscoveryServiceAssignment) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertDiscoveryServiceAssignmentQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(utils.MustJSON(model.Annotations.KeyValuePair),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertDiscoveryServiceAssignmentQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(string(model.DisplayName),
+		utils.MustJSON(model.Annotations.KeyValuePair),
+		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
 		int(model.Perms2.GlobalAccess),
 		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
 		string(model.UUID),
 		utils.MustJSON(model.FQName),
+		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		string(model.DisplayName))
+		string(model.IDPerms.LastModified))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanDiscoveryServiceAssignment(rows *sql.Rows) (*models.DiscoveryServiceAssignment, error) {
+func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.DiscoveryServiceAssignment, error) {
 	m := models.MakeDiscoveryServiceAssignment()
 
-	var jsonAnnotationsKeyValuePair string
+	if value, ok := values["display_name"]; ok {
 
-	var jsonPerms2Share string
+		castedValue := utils.InterfaceToString(value)
 
-	var jsonFQName string
+		m.DisplayName = castedValue
 
-	if err := rows.Scan(&jsonAnnotationsKeyValuePair,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.UUID,
-		&jsonFQName,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.DisplayName); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+	if value, ok := values["key_value_pair"]; ok {
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
 
 	return m, nil
 }
 
-func buildDiscoveryServiceAssignmentWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["permissions_owner"]; ok {
-		results = append(results, "permissions_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListDiscoveryServiceAssignment(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.DiscoveryServiceAssignment, error) {
-	result := models.MakeDiscoveryServiceAssignmentSlice()
-	whereQuery, values := buildDiscoveryServiceAssignmentWhereQuery(where)
+// ListDiscoveryServiceAssignment lists DiscoveryServiceAssignment with list spec.
+func ListDiscoveryServiceAssignment(tx *sql.Tx, spec *db.ListSpec) ([]*models.DiscoveryServiceAssignment, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listDiscoveryServiceAssignmentQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "discovery_service_assignment"
+	spec.Fields = DiscoveryServiceAssignmentFields
+	spec.RefFields = DiscoveryServiceAssignmentRefFields
+	result := models.MakeDiscoveryServiceAssignmentSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanDiscoveryServiceAssignment(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanDiscoveryServiceAssignment(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowDiscoveryServiceAssignment shows DiscoveryServiceAssignment resource
 func ShowDiscoveryServiceAssignment(tx *sql.Tx, uuid string) (*models.DiscoveryServiceAssignment, error) {
-	rows, err := tx.Query(showDiscoveryServiceAssignmentQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListDiscoveryServiceAssignment(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanDiscoveryServiceAssignment(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateDiscoveryServiceAssignment updates a resource
 func UpdateDiscoveryServiceAssignment(tx *sql.Tx, uuid string, model *models.DiscoveryServiceAssignment) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteDiscoveryServiceAssignment deletes a resource
 func DeleteDiscoveryServiceAssignment(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteDiscoveryServiceAssignmentQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

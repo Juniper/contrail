@@ -1,310 +1,478 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertNodeQuery = "insert into `node` (`type`,`aws_instance_type`,`private_power_management_password`,`private_power_management_username`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`ip_address`,`password`,`username`,`gcp_machine_type`,`private_power_management_ip`,`fq_name`,`mac_address`,`ssh_key`,`aws_ami`,`gcp_image`,`private_machine_state`,`display_name`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`,`uuid`,`hostname`,`private_machine_properties`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateNodeQuery = "update `node` set `type` = ?,`aws_instance_type` = ?,`private_power_management_password` = ?,`private_power_management_username` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`ip_address` = ?,`password` = ?,`username` = ?,`gcp_machine_type` = ?,`private_power_management_ip` = ?,`fq_name` = ?,`mac_address` = ?,`ssh_key` = ?,`aws_ami` = ?,`gcp_image` = ?,`private_machine_state` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`uuid` = ?,`hostname` = ?,`private_machine_properties` = ?;"
+const insertNodeQuery = "insert into `node` (`mac_address`,`created`,`creator`,`user_visible`,`last_modified`,`group_access`,`owner`,`owner_access`,`other_access`,`group`,`enable`,`description`,`private_machine_properties`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`uuid`,`display_name`,`key_value_pair`,`hostname`,`password`,`ssh_key`,`gcp_machine_type`,`private_power_management_password`,`fq_name`,`username`,`aws_ami`,`gcp_image`,`private_machine_state`,`private_power_management_ip`,`private_power_management_username`,`ip_address`,`type`,`aws_instance_type`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateNodeQuery = "update `node` set `mac_address` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`description` = ?,`private_machine_properties` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`uuid` = ?,`display_name` = ?,`key_value_pair` = ?,`hostname` = ?,`password` = ?,`ssh_key` = ?,`gcp_machine_type` = ?,`private_power_management_password` = ?,`fq_name` = ?,`username` = ?,`aws_ami` = ?,`gcp_image` = ?,`private_machine_state` = ?,`private_power_management_ip` = ?,`private_power_management_username` = ?,`ip_address` = ?,`type` = ?,`aws_instance_type` = ?;"
 const deleteNodeQuery = "delete from `node` where uuid = ?"
-const listNodeQuery = "select `node`.`type`,`node`.`aws_instance_type`,`node`.`private_power_management_password`,`node`.`private_power_management_username`,`node`.`enable`,`node`.`description`,`node`.`created`,`node`.`creator`,`node`.`user_visible`,`node`.`last_modified`,`node`.`owner`,`node`.`owner_access`,`node`.`other_access`,`node`.`group`,`node`.`group_access`,`node`.`ip_address`,`node`.`password`,`node`.`username`,`node`.`gcp_machine_type`,`node`.`private_power_management_ip`,`node`.`fq_name`,`node`.`mac_address`,`node`.`ssh_key`,`node`.`aws_ami`,`node`.`gcp_image`,`node`.`private_machine_state`,`node`.`display_name`,`node`.`key_value_pair`,`node`.`perms2_owner_access`,`node`.`global_access`,`node`.`share`,`node`.`perms2_owner`,`node`.`uuid`,`node`.`hostname`,`node`.`private_machine_properties` from `node`"
-const showNodeQuery = "select `node`.`type`,`node`.`aws_instance_type`,`node`.`private_power_management_password`,`node`.`private_power_management_username`,`node`.`enable`,`node`.`description`,`node`.`created`,`node`.`creator`,`node`.`user_visible`,`node`.`last_modified`,`node`.`owner`,`node`.`owner_access`,`node`.`other_access`,`node`.`group`,`node`.`group_access`,`node`.`ip_address`,`node`.`password`,`node`.`username`,`node`.`gcp_machine_type`,`node`.`private_power_management_ip`,`node`.`fq_name`,`node`.`mac_address`,`node`.`ssh_key`,`node`.`aws_ami`,`node`.`gcp_image`,`node`.`private_machine_state`,`node`.`display_name`,`node`.`key_value_pair`,`node`.`perms2_owner_access`,`node`.`global_access`,`node`.`share`,`node`.`perms2_owner`,`node`.`uuid`,`node`.`hostname`,`node`.`private_machine_properties` from `node` where uuid = ?"
 
+// NodeFields is db columns for Node
+var NodeFields = []string{
+	"mac_address",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"group_access",
+	"owner",
+	"owner_access",
+	"other_access",
+	"group",
+	"enable",
+	"description",
+	"private_machine_properties",
+	"global_access",
+	"share",
+	"perms2_owner",
+	"perms2_owner_access",
+	"uuid",
+	"display_name",
+	"key_value_pair",
+	"hostname",
+	"password",
+	"ssh_key",
+	"gcp_machine_type",
+	"private_power_management_password",
+	"fq_name",
+	"username",
+	"aws_ami",
+	"gcp_image",
+	"private_machine_state",
+	"private_power_management_ip",
+	"private_power_management_username",
+	"ip_address",
+	"type",
+	"aws_instance_type",
+}
+
+// NodeRefFields is db reference fields for Node
+var NodeRefFields = map[string][]string{}
+
+// CreateNode inserts Node to DB
 func CreateNode(tx *sql.Tx, model *models.Node) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertNodeQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(string(model.Type),
-		string(model.AwsInstanceType),
-		string(model.PrivatePowerManagementPassword),
-		string(model.PrivatePowerManagementUsername),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertNodeQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(string(model.MacAddress),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
+		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IPAddress),
-		string(model.Password),
-		string(model.Username),
-		string(model.GCPMachineType),
-		string(model.PrivatePowerManagementIP),
-		utils.MustJSON(model.FQName),
-		string(model.MacAddress),
-		string(model.SSHKey),
-		string(model.AwsAmi),
-		string(model.GCPImage),
-		string(model.PrivateMachineState),
-		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.OwnerAccess),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.PrivateMachineProperties),
 		int(model.Perms2.GlobalAccess),
 		utils.MustJSON(model.Perms2.Share),
 		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
 		string(model.UUID),
+		string(model.DisplayName),
+		utils.MustJSON(model.Annotations.KeyValuePair),
 		string(model.Hostname),
-		string(model.PrivateMachineProperties))
+		string(model.Password),
+		string(model.SSHKey),
+		string(model.GCPMachineType),
+		string(model.PrivatePowerManagementPassword),
+		utils.MustJSON(model.FQName),
+		string(model.Username),
+		string(model.AwsAmi),
+		string(model.GCPImage),
+		string(model.PrivateMachineState),
+		string(model.PrivatePowerManagementIP),
+		string(model.PrivatePowerManagementUsername),
+		string(model.IPAddress),
+		string(model.Type),
+		string(model.AwsInstanceType))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanNode(rows *sql.Rows) (*models.Node, error) {
+func scanNode(values map[string]interface{}) (*models.Node, error) {
 	m := models.MakeNode()
 
-	var jsonFQName string
+	if value, ok := values["mac_address"]; ok {
 
-	var jsonAnnotationsKeyValuePair string
+		castedValue := utils.InterfaceToString(value)
 
-	var jsonPerms2Share string
+		m.MacAddress = castedValue
 
-	if err := rows.Scan(&m.Type,
-		&m.AwsInstanceType,
-		&m.PrivatePowerManagementPassword,
-		&m.PrivatePowerManagementUsername,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IPAddress,
-		&m.Password,
-		&m.Username,
-		&m.GCPMachineType,
-		&m.PrivatePowerManagementIP,
-		&jsonFQName,
-		&m.MacAddress,
-		&m.SSHKey,
-		&m.AwsAmi,
-		&m.GCPImage,
-		&m.PrivateMachineState,
-		&m.DisplayName,
-		&jsonAnnotationsKeyValuePair,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.UUID,
-		&m.Hostname,
-		&m.PrivateMachineProperties); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+	if value, ok := values["created"]; ok {
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["private_machine_properties"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.PrivateMachineProperties = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["hostname"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Hostname = castedValue
+
+	}
+
+	if value, ok := values["password"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Password = castedValue
+
+	}
+
+	if value, ok := values["ssh_key"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.SSHKey = castedValue
+
+	}
+
+	if value, ok := values["gcp_machine_type"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.GCPMachineType = castedValue
+
+	}
+
+	if value, ok := values["private_power_management_password"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.PrivatePowerManagementPassword = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["username"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Username = castedValue
+
+	}
+
+	if value, ok := values["aws_ami"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.AwsAmi = castedValue
+
+	}
+
+	if value, ok := values["gcp_image"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.GCPImage = castedValue
+
+	}
+
+	if value, ok := values["private_machine_state"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.PrivateMachineState = castedValue
+
+	}
+
+	if value, ok := values["private_power_management_ip"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.PrivatePowerManagementIP = castedValue
+
+	}
+
+	if value, ok := values["private_power_management_username"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.PrivatePowerManagementUsername = castedValue
+
+	}
+
+	if value, ok := values["ip_address"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IPAddress = castedValue
+
+	}
+
+	if value, ok := values["type"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Type = castedValue
+
+	}
+
+	if value, ok := values["aws_instance_type"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.AwsInstanceType = castedValue
+
+	}
 
 	return m, nil
 }
 
-func buildNodeWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["type"]; ok {
-		results = append(results, "type = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["aws_instance_type"]; ok {
-		results = append(results, "aws_instance_type = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["private_power_management_password"]; ok {
-		results = append(results, "private_power_management_password = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["private_power_management_username"]; ok {
-		results = append(results, "private_power_management_username = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["ip_address"]; ok {
-		results = append(results, "ip_address = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["password"]; ok {
-		results = append(results, "password = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["username"]; ok {
-		results = append(results, "username = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["gcp_machine_type"]; ok {
-		results = append(results, "gcp_machine_type = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["private_power_management_ip"]; ok {
-		results = append(results, "private_power_management_ip = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["mac_address"]; ok {
-		results = append(results, "mac_address = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["ssh_key"]; ok {
-		results = append(results, "ssh_key = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["aws_ami"]; ok {
-		results = append(results, "aws_ami = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["gcp_image"]; ok {
-		results = append(results, "gcp_image = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["private_machine_state"]; ok {
-		results = append(results, "private_machine_state = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["perms2_owner"]; ok {
-		results = append(results, "perms2_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["hostname"]; ok {
-		results = append(results, "hostname = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["private_machine_properties"]; ok {
-		results = append(results, "private_machine_properties = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListNode(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.Node, error) {
-	result := models.MakeNodeSlice()
-	whereQuery, values := buildNodeWhereQuery(where)
+// ListNode lists Node with list spec.
+func ListNode(tx *sql.Tx, spec *db.ListSpec) ([]*models.Node, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listNodeQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "node"
+	spec.Fields = NodeFields
+	spec.RefFields = NodeRefFields
+	result := models.MakeNodeSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanNode(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanNode(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowNode shows Node resource
 func ShowNode(tx *sql.Tx, uuid string) (*models.Node, error) {
-	rows, err := tx.Query(showNodeQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListNode(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanNode(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateNode updates a resource
 func UpdateNode(tx *sql.Tx, uuid string, model *models.Node) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteNode deletes a resource
 func DeleteNode(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteNodeQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

@@ -4,15 +4,20 @@ package models
 
 import "encoding/json"
 
+// ServiceInterfaceTag
 type ServiceInterfaceTag struct {
 	InterfaceType ServiceInterfaceType `json:"interface_type"`
 }
 
+//  parents relation object
+
+// String returns json representation of the object
 func (model *ServiceInterfaceTag) String() string {
 	b, _ := json.Marshal(model)
 	return string(b)
 }
 
+// MakeServiceInterfaceTag makes ServiceInterfaceTag
 func MakeServiceInterfaceTag() *ServiceInterfaceTag {
 	return &ServiceInterfaceTag{
 		//TODO(nati): Apply default
@@ -20,16 +25,18 @@ func MakeServiceInterfaceTag() *ServiceInterfaceTag {
 	}
 }
 
+// InterfaceToServiceInterfaceTag makes ServiceInterfaceTag from interface
 func InterfaceToServiceInterfaceTag(iData interface{}) *ServiceInterfaceTag {
 	data := iData.(map[string]interface{})
 	return &ServiceInterfaceTag{
 		InterfaceType: InterfaceToServiceInterfaceType(data["interface_type"]),
 
-		//{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/ServiceInterfaceType","CollectionType":"","Column":"interface_type","Item":null,"GoName":"InterfaceType","GoType":"ServiceInterfaceType"}
+		//{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/ServiceInterfaceType","CollectionType":"","Column":"interface_type","Item":null,"GoName":"InterfaceType","GoType":"ServiceInterfaceType","GoPremitive":false}
 
 	}
 }
 
+// InterfaceToServiceInterfaceTagSlice makes a slice of ServiceInterfaceTag from interface
 func InterfaceToServiceInterfaceTagSlice(data interface{}) []*ServiceInterfaceTag {
 	list := data.([]interface{})
 	result := MakeServiceInterfaceTagSlice()
@@ -39,6 +46,7 @@ func InterfaceToServiceInterfaceTagSlice(data interface{}) []*ServiceInterfaceTa
 	return result
 }
 
+// MakeServiceInterfaceTagSlice() makes a slice of ServiceInterfaceTag
 func MakeServiceInterfaceTagSlice() []*ServiceInterfaceTag {
 	return []*ServiceInterfaceTag{}
 }

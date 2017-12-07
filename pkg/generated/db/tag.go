@@ -1,230 +1,381 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertTagQuery = "insert into `tag` (`tag_type_name`,`tag_id`,`tag_value`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`description`,`created`,`creator`,`user_visible`,`key_value_pair`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`,`fq_name`,`display_name`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateTagQuery = "update `tag` set `tag_type_name` = ?,`tag_id` = ?,`tag_value` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`key_value_pair` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`fq_name` = ?,`display_name` = ?,`uuid` = ?;"
+const insertTagQuery = "insert into `tag` (`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`group`,`group_access`,`owner`,`owner_access`,`other_access`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`,`tag_type_name`,`tag_value`,`uuid`,`fq_name`,`tag_id`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateTagQuery = "update `tag` set `enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`tag_type_name` = ?,`tag_value` = ?,`uuid` = ?,`fq_name` = ?,`tag_id` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteTagQuery = "delete from `tag` where uuid = ?"
-const listTagQuery = "select `tag`.`tag_type_name`,`tag`.`tag_id`,`tag`.`tag_value`,`tag`.`last_modified`,`tag`.`owner_access`,`tag`.`other_access`,`tag`.`group`,`tag`.`group_access`,`tag`.`owner`,`tag`.`enable`,`tag`.`description`,`tag`.`created`,`tag`.`creator`,`tag`.`user_visible`,`tag`.`key_value_pair`,`tag`.`perms2_owner`,`tag`.`perms2_owner_access`,`tag`.`global_access`,`tag`.`share`,`tag`.`fq_name`,`tag`.`display_name`,`tag`.`uuid` from `tag`"
-const showTagQuery = "select `tag`.`tag_type_name`,`tag`.`tag_id`,`tag`.`tag_value`,`tag`.`last_modified`,`tag`.`owner_access`,`tag`.`other_access`,`tag`.`group`,`tag`.`group_access`,`tag`.`owner`,`tag`.`enable`,`tag`.`description`,`tag`.`created`,`tag`.`creator`,`tag`.`user_visible`,`tag`.`key_value_pair`,`tag`.`perms2_owner`,`tag`.`perms2_owner_access`,`tag`.`global_access`,`tag`.`share`,`tag`.`fq_name`,`tag`.`display_name`,`tag`.`uuid` from `tag` where uuid = ?"
+
+// TagFields is db columns for Tag
+var TagFields = []string{
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"group",
+	"group_access",
+	"owner",
+	"owner_access",
+	"other_access",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+	"tag_type_name",
+	"tag_value",
+	"uuid",
+	"fq_name",
+	"tag_id",
+	"display_name",
+	"key_value_pair",
+}
+
+// TagRefFields is db reference fields for Tag
+var TagRefFields = map[string][]string{
+
+	"tag_type": {
+	// <utils.Schema Value>
+
+	},
+}
 
 const insertTagTagTypeQuery = "insert into `ref_tag_tag_type` (`from`, `to` ) values (?, ?);"
 
+// CreateTag inserts Tag to DB
 func CreateTag(tx *sql.Tx, model *models.Tag) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertTagQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(string(model.TagTypeName),
-		string(model.TagID),
-		string(model.TagValue),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		bool(model.IDPerms.Enable),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertTagQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
-		utils.MustJSON(model.Annotations.KeyValuePair),
+		string(model.IDPerms.LastModified),
+		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
 		int(model.Perms2.GlobalAccess),
 		utils.MustJSON(model.Perms2.Share),
+		string(model.TagTypeName),
+		string(model.TagValue),
+		string(model.UUID),
 		utils.MustJSON(model.FQName),
+		string(model.TagID),
 		string(model.DisplayName),
-		string(model.UUID))
+		utils.MustJSON(model.Annotations.KeyValuePair))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
 	stmtTagTypeRef, err := tx.Prepare(insertTagTagTypeQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing TagTypeRefs create statement failed")
 	}
 	defer stmtTagTypeRef.Close()
 	for _, ref := range model.TagTypeRefs {
 		_, err = stmtTagTypeRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "TagTypeRefs create failed")
+		}
 	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanTag(rows *sql.Rows) (*models.Tag, error) {
+func scanTag(values map[string]interface{}) (*models.Tag, error) {
 	m := models.MakeTag()
 
-	var jsonAnnotationsKeyValuePair string
+	if value, ok := values["enable"]; ok {
 
-	var jsonPerms2Share string
+		castedValue := utils.InterfaceToBool(value)
 
-	var jsonFQName string
+		m.IDPerms.Enable = castedValue
 
-	if err := rows.Scan(&m.TagTypeName,
-		&m.TagID,
-		&m.TagValue,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&jsonAnnotationsKeyValuePair,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&jsonFQName,
-		&m.DisplayName,
-		&m.UUID); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+	if value, ok := values["description"]; ok {
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["tag_type_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.TagTypeName = castedValue
+
+	}
+
+	if value, ok := values["tag_value"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.TagValue = castedValue
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["tag_id"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.TagID = models.U32BitHexInt(castedValue)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["ref_tag_type"]; ok {
+		var references []interface{}
+		stringValue := utils.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap := reference.(map[string]interface{})
+			referenceModel := &models.TagTagTypeRef{}
+			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			m.TagTypeRefs = append(m.TagTypeRefs, referenceModel)
+
+		}
+	}
 
 	return m, nil
 }
 
-func buildTagWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["tag_type_name"]; ok {
-		results = append(results, "tag_type_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["tag_id"]; ok {
-		results = append(results, "tag_id = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["tag_value"]; ok {
-		results = append(results, "tag_value = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["perms2_owner"]; ok {
-		results = append(results, "perms2_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListTag(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.Tag, error) {
-	result := models.MakeTagSlice()
-	whereQuery, values := buildTagWhereQuery(where)
+// ListTag lists Tag with list spec.
+func ListTag(tx *sql.Tx, spec *db.ListSpec) ([]*models.Tag, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listTagQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "tag"
+	spec.Fields = TagFields
+	spec.RefFields = TagRefFields
+	result := models.MakeTagSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanTag(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanTag(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowTag shows Tag resource
 func ShowTag(tx *sql.Tx, uuid string) (*models.Tag, error) {
-	rows, err := tx.Query(showTagQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListTag(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanTag(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateTag updates a resource
 func UpdateTag(tx *sql.Tx, uuid string, model *models.Tag) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteTag deletes a resource
 func DeleteTag(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteTagQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

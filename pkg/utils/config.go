@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+//InitConfig initialize config
 func InitConfig() error {
 	viper.SetConfigName("test_config")
 	viper.AddConfigPath(".")

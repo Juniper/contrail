@@ -1,40 +1,78 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertSecurityLoggingObjectQuery = "insert into `security_logging_object` (`owner_access`,`global_access`,`share`,`owner`,`rule`,`security_logging_object_rate`,`uuid`,`fq_name`,`creator`,`user_visible`,`last_modified`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateSecurityLoggingObjectQuery = "update `security_logging_object` set `owner_access` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`rule` = ?,`security_logging_object_rate` = ?,`uuid` = ?,`fq_name` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`display_name` = ?,`key_value_pair` = ?;"
+const insertSecurityLoggingObjectQuery = "insert into `security_logging_object` (`description`,`created`,`creator`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`rule`,`security_logging_object_rate`,`display_name`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateSecurityLoggingObjectQuery = "update `security_logging_object` set `description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`rule` = ?,`security_logging_object_rate` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`uuid` = ?,`fq_name` = ?;"
 const deleteSecurityLoggingObjectQuery = "delete from `security_logging_object` where uuid = ?"
-const listSecurityLoggingObjectQuery = "select `security_logging_object`.`owner_access`,`security_logging_object`.`global_access`,`security_logging_object`.`share`,`security_logging_object`.`owner`,`security_logging_object`.`rule`,`security_logging_object`.`security_logging_object_rate`,`security_logging_object`.`uuid`,`security_logging_object`.`fq_name`,`security_logging_object`.`creator`,`security_logging_object`.`user_visible`,`security_logging_object`.`last_modified`,`security_logging_object`.`permissions_owner`,`security_logging_object`.`permissions_owner_access`,`security_logging_object`.`other_access`,`security_logging_object`.`group`,`security_logging_object`.`group_access`,`security_logging_object`.`enable`,`security_logging_object`.`description`,`security_logging_object`.`created`,`security_logging_object`.`display_name`,`security_logging_object`.`key_value_pair` from `security_logging_object`"
-const showSecurityLoggingObjectQuery = "select `security_logging_object`.`owner_access`,`security_logging_object`.`global_access`,`security_logging_object`.`share`,`security_logging_object`.`owner`,`security_logging_object`.`rule`,`security_logging_object`.`security_logging_object_rate`,`security_logging_object`.`uuid`,`security_logging_object`.`fq_name`,`security_logging_object`.`creator`,`security_logging_object`.`user_visible`,`security_logging_object`.`last_modified`,`security_logging_object`.`permissions_owner`,`security_logging_object`.`permissions_owner_access`,`security_logging_object`.`other_access`,`security_logging_object`.`group`,`security_logging_object`.`group_access`,`security_logging_object`.`enable`,`security_logging_object`.`description`,`security_logging_object`.`created`,`security_logging_object`.`display_name`,`security_logging_object`.`key_value_pair` from `security_logging_object` where uuid = ?"
 
-const insertSecurityLoggingObjectSecurityGroupQuery = "insert into `ref_security_logging_object_security_group` (`from`, `to` ,`rule`) values (?, ?,?);"
+// SecurityLoggingObjectFields is db columns for SecurityLoggingObject
+var SecurityLoggingObjectFields = []string{
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"owner",
+	"owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"enable",
+	"rule",
+	"security_logging_object_rate",
+	"display_name",
+	"key_value_pair",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+	"perms2_owner",
+	"uuid",
+	"fq_name",
+}
 
-const insertSecurityLoggingObjectNetworkPolicyQuery = "insert into `ref_security_logging_object_network_policy` (`from`, `to` ) values (?, ?);"
+// SecurityLoggingObjectRefFields is db reference fields for SecurityLoggingObject
+var SecurityLoggingObjectRefFields = map[string][]string{
 
+	"security_group": {
+	// <utils.Schema Value>
+
+	},
+
+	"network_policy": {
+		// <utils.Schema Value>
+		"rule",
+	},
+}
+
+const insertSecurityLoggingObjectSecurityGroupQuery = "insert into `ref_security_logging_object_security_group` (`from`, `to` ) values (?, ?);"
+
+const insertSecurityLoggingObjectNetworkPolicyQuery = "insert into `ref_security_logging_object_network_policy` (`from`, `to` ,`rule`) values (?, ?,?);"
+
+// CreateSecurityLoggingObject inserts SecurityLoggingObject to DB
 func CreateSecurityLoggingObject(tx *sql.Tx, model *models.SecurityLoggingObject) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertSecurityLoggingObjectQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		utils.MustJSON(model.SecurityLoggingObjectRules.Rule),
-		int(model.SecurityLoggingObjectRate),
-		string(model.UUID),
-		utils.MustJSON(model.FQName),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertSecurityLoggingObjectQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(string(model.IDPerms.Description),
+		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
@@ -44,185 +82,326 @@ func CreateSecurityLoggingObject(tx *sql.Tx, model *models.SecurityLoggingObject
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
 		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
+		utils.MustJSON(model.SecurityLoggingObjectRules.Rule),
+		int(model.SecurityLoggingObjectRate),
 		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair))
+		utils.MustJSON(model.Annotations.KeyValuePair),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		utils.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		string(model.UUID),
+		utils.MustJSON(model.FQName))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
 	stmtSecurityGroupRef, err := tx.Prepare(insertSecurityLoggingObjectSecurityGroupQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing SecurityGroupRefs create statement failed")
 	}
 	defer stmtSecurityGroupRef.Close()
 	for _, ref := range model.SecurityGroupRefs {
-		_, err = stmtSecurityGroupRef.Exec(model.UUID, ref.UUID, utils.MustJSON(ref.Attr.Rule))
+		_, err = stmtSecurityGroupRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "SecurityGroupRefs create failed")
+		}
 	}
 
 	stmtNetworkPolicyRef, err := tx.Prepare(insertSecurityLoggingObjectNetworkPolicyQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing NetworkPolicyRefs create statement failed")
 	}
 	defer stmtNetworkPolicyRef.Close()
 	for _, ref := range model.NetworkPolicyRefs {
-		_, err = stmtNetworkPolicyRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtNetworkPolicyRef.Exec(model.UUID, ref.UUID, utils.MustJSON(ref.Attr.Rule))
+		if err != nil {
+			return errors.Wrap(err, "NetworkPolicyRefs create failed")
+		}
 	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanSecurityLoggingObject(rows *sql.Rows) (*models.SecurityLoggingObject, error) {
+func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityLoggingObject, error) {
 	m := models.MakeSecurityLoggingObject()
 
-	var jsonPerms2Share string
+	if value, ok := values["description"]; ok {
 
-	var jsonSecurityLoggingObjectRulesRule string
+		castedValue := utils.InterfaceToString(value)
 
-	var jsonFQName string
+		m.IDPerms.Description = castedValue
 
-	var jsonAnnotationsKeyValuePair string
-
-	if err := rows.Scan(&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&jsonSecurityLoggingObjectRulesRule,
-		&m.SecurityLoggingObjectRate,
-		&m.UUID,
-		&jsonFQName,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.DisplayName,
-		&jsonAnnotationsKeyValuePair); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+	if value, ok := values["created"]; ok {
 
-	json.Unmarshal([]byte(jsonSecurityLoggingObjectRulesRule), &m.SecurityLoggingObjectRules.Rule)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+		m.IDPerms.Created = castedValue
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["rule"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.SecurityLoggingObjectRules.Rule)
+
+	}
+
+	if value, ok := values["security_logging_object_rate"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.SecurityLoggingObjectRate = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["ref_security_group"]; ok {
+		var references []interface{}
+		stringValue := utils.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap := reference.(map[string]interface{})
+			referenceModel := &models.SecurityLoggingObjectSecurityGroupRef{}
+			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			m.SecurityGroupRefs = append(m.SecurityGroupRefs, referenceModel)
+
+			attr := models.MakeSecurityLoggingObjectRuleListType()
+			referenceModel.Attr = attr
+
+		}
+	}
+
+	if value, ok := values["ref_network_policy"]; ok {
+		var references []interface{}
+		stringValue := utils.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap := reference.(map[string]interface{})
+			referenceModel := &models.SecurityLoggingObjectNetworkPolicyRef{}
+			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
+
+			attr := models.MakeSecurityLoggingObjectRuleListType()
+			referenceModel.Attr = attr
+
+		}
+	}
 
 	return m, nil
 }
 
-func buildSecurityLoggingObjectWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["permissions_owner"]; ok {
-		results = append(results, "permissions_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListSecurityLoggingObject(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.SecurityLoggingObject, error) {
-	result := models.MakeSecurityLoggingObjectSlice()
-	whereQuery, values := buildSecurityLoggingObjectWhereQuery(where)
+// ListSecurityLoggingObject lists SecurityLoggingObject with list spec.
+func ListSecurityLoggingObject(tx *sql.Tx, spec *db.ListSpec) ([]*models.SecurityLoggingObject, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listSecurityLoggingObjectQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "security_logging_object"
+	spec.Fields = SecurityLoggingObjectFields
+	spec.RefFields = SecurityLoggingObjectRefFields
+	result := models.MakeSecurityLoggingObjectSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanSecurityLoggingObject(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanSecurityLoggingObject(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowSecurityLoggingObject shows SecurityLoggingObject resource
 func ShowSecurityLoggingObject(tx *sql.Tx, uuid string) (*models.SecurityLoggingObject, error) {
-	rows, err := tx.Query(showSecurityLoggingObjectQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListSecurityLoggingObject(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanSecurityLoggingObject(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateSecurityLoggingObject updates a resource
 func UpdateSecurityLoggingObject(tx *sql.Tx, uuid string, model *models.SecurityLoggingObject) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteSecurityLoggingObject deletes a resource
 func DeleteSecurityLoggingObject(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteSecurityLoggingObjectQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

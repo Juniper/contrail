@@ -1,204 +1,326 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertRouteTableQuery = "insert into `route_table` (`route`,`fq_name`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`display_name`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateRouteTableQuery = "update `route_table` set `route` = ?,`fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`uuid` = ?;"
+const insertRouteTableQuery = "insert into `route_table` (`route`,`display_name`,`key_value_pair`,`owner`,`owner_access`,`global_access`,`share`,`uuid`,`fq_name`,`created`,`creator`,`user_visible`,`last_modified`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`enable`,`description`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateRouteTableQuery = "update `route_table` set `route` = ?,`display_name` = ?,`key_value_pair` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`fq_name` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`description` = ?;"
 const deleteRouteTableQuery = "delete from `route_table` where uuid = ?"
-const listRouteTableQuery = "select `route_table`.`route`,`route_table`.`fq_name`,`route_table`.`user_visible`,`route_table`.`last_modified`,`route_table`.`owner`,`route_table`.`owner_access`,`route_table`.`other_access`,`route_table`.`group`,`route_table`.`group_access`,`route_table`.`enable`,`route_table`.`description`,`route_table`.`created`,`route_table`.`creator`,`route_table`.`display_name`,`route_table`.`key_value_pair`,`route_table`.`perms2_owner_access`,`route_table`.`global_access`,`route_table`.`share`,`route_table`.`perms2_owner`,`route_table`.`uuid` from `route_table`"
-const showRouteTableQuery = "select `route_table`.`route`,`route_table`.`fq_name`,`route_table`.`user_visible`,`route_table`.`last_modified`,`route_table`.`owner`,`route_table`.`owner_access`,`route_table`.`other_access`,`route_table`.`group`,`route_table`.`group_access`,`route_table`.`enable`,`route_table`.`description`,`route_table`.`created`,`route_table`.`creator`,`route_table`.`display_name`,`route_table`.`key_value_pair`,`route_table`.`perms2_owner_access`,`route_table`.`global_access`,`route_table`.`share`,`route_table`.`perms2_owner`,`route_table`.`uuid` from `route_table` where uuid = ?"
 
+// RouteTableFields is db columns for RouteTable
+var RouteTableFields = []string{
+	"route",
+	"display_name",
+	"key_value_pair",
+	"owner",
+	"owner_access",
+	"global_access",
+	"share",
+	"uuid",
+	"fq_name",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"group_access",
+	"permissions_owner",
+	"permissions_owner_access",
+	"other_access",
+	"group",
+	"enable",
+	"description",
+}
+
+// RouteTableRefFields is db reference fields for RouteTable
+var RouteTableRefFields = map[string][]string{}
+
+// CreateRouteTable inserts RouteTable to DB
 func CreateRouteTable(tx *sql.Tx, model *models.RouteTable) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertRouteTableQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertRouteTableQuery,
+	}).Debug("create query")
 	_, err = stmt.Exec(utils.MustJSON(model.Routes.Route),
+		string(model.DisplayName),
+		utils.MustJSON(model.Annotations.KeyValuePair),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		utils.MustJSON(model.Perms2.Share),
+		string(model.UUID),
 		utils.MustJSON(model.FQName),
+		string(model.IDPerms.Created),
+		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
+		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
 		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
-		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		string(model.UUID))
+		string(model.IDPerms.Description))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanRouteTable(rows *sql.Rows) (*models.RouteTable, error) {
+func scanRouteTable(values map[string]interface{}) (*models.RouteTable, error) {
 	m := models.MakeRouteTable()
 
-	var jsonRoutesRoute string
+	if value, ok := values["route"]; ok {
 
-	var jsonFQName string
+		json.Unmarshal(value.([]byte), &m.Routes.Route)
 
-	var jsonAnnotationsKeyValuePair string
-
-	var jsonPerms2Share string
-
-	if err := rows.Scan(&jsonRoutesRoute,
-		&jsonFQName,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.DisplayName,
-		&jsonAnnotationsKeyValuePair,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.UUID); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonRoutesRoute), &m.Routes.Route)
+	if value, ok := values["display_name"]; ok {
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+		m.DisplayName = castedValue
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
 
 	return m, nil
 }
 
-func buildRouteTableWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["perms2_owner"]; ok {
-		results = append(results, "perms2_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListRouteTable(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.RouteTable, error) {
-	result := models.MakeRouteTableSlice()
-	whereQuery, values := buildRouteTableWhereQuery(where)
+// ListRouteTable lists RouteTable with list spec.
+func ListRouteTable(tx *sql.Tx, spec *db.ListSpec) ([]*models.RouteTable, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listRouteTableQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "route_table"
+	spec.Fields = RouteTableFields
+	spec.RefFields = RouteTableRefFields
+	result := models.MakeRouteTableSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanRouteTable(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanRouteTable(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowRouteTable shows RouteTable resource
 func ShowRouteTable(tx *sql.Tx, uuid string) (*models.RouteTable, error) {
-	rows, err := tx.Query(showRouteTableQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListRouteTable(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanRouteTable(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateRouteTable updates a resource
 func UpdateRouteTable(tx *sql.Tx, uuid string, model *models.RouteTable) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteRouteTable deletes a resource
 func DeleteRouteTable(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteRouteTableQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

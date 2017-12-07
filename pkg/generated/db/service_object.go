@@ -1,198 +1,318 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertServiceObjectQuery = "insert into `service_object` (`display_name`,`key_value_pair`,`share`,`owner`,`owner_access`,`global_access`,`uuid`,`fq_name`,`last_modified`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`user_visible`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateServiceObjectQuery = "update `service_object` set `display_name` = ?,`key_value_pair` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`uuid` = ?,`fq_name` = ?,`last_modified` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?;"
+const insertServiceObjectQuery = "insert into `service_object` (`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`display_name`,`key_value_pair`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateServiceObjectQuery = "update `service_object` set `owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`uuid` = ?,`fq_name` = ?;"
 const deleteServiceObjectQuery = "delete from `service_object` where uuid = ?"
-const listServiceObjectQuery = "select `service_object`.`display_name`,`service_object`.`key_value_pair`,`service_object`.`share`,`service_object`.`owner`,`service_object`.`owner_access`,`service_object`.`global_access`,`service_object`.`uuid`,`service_object`.`fq_name`,`service_object`.`last_modified`,`service_object`.`permissions_owner`,`service_object`.`permissions_owner_access`,`service_object`.`other_access`,`service_object`.`group`,`service_object`.`group_access`,`service_object`.`enable`,`service_object`.`description`,`service_object`.`created`,`service_object`.`creator`,`service_object`.`user_visible` from `service_object`"
-const showServiceObjectQuery = "select `service_object`.`display_name`,`service_object`.`key_value_pair`,`service_object`.`share`,`service_object`.`owner`,`service_object`.`owner_access`,`service_object`.`global_access`,`service_object`.`uuid`,`service_object`.`fq_name`,`service_object`.`last_modified`,`service_object`.`permissions_owner`,`service_object`.`permissions_owner_access`,`service_object`.`other_access`,`service_object`.`group`,`service_object`.`group_access`,`service_object`.`enable`,`service_object`.`description`,`service_object`.`created`,`service_object`.`creator`,`service_object`.`user_visible` from `service_object` where uuid = ?"
 
+// ServiceObjectFields is db columns for ServiceObject
+var ServiceObjectFields = []string{
+	"owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"owner",
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"display_name",
+	"key_value_pair",
+	"global_access",
+	"share",
+	"perms2_owner",
+	"perms2_owner_access",
+	"uuid",
+	"fq_name",
+}
+
+// ServiceObjectRefFields is db reference fields for ServiceObject
+var ServiceObjectRefFields = map[string][]string{}
+
+// CreateServiceObject inserts ServiceObject to DB
 func CreateServiceObject(tx *sql.Tx, model *models.ServiceObject) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceObjectQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		string(model.UUID),
-		utils.MustJSON(model.FQName),
-		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertServiceObjectQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible))
+		bool(model.IDPerms.UserVisible),
+		string(model.IDPerms.LastModified),
+		string(model.DisplayName),
+		utils.MustJSON(model.Annotations.KeyValuePair),
+		int(model.Perms2.GlobalAccess),
+		utils.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		string(model.UUID),
+		utils.MustJSON(model.FQName))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanServiceObject(rows *sql.Rows) (*models.ServiceObject, error) {
+func scanServiceObject(values map[string]interface{}) (*models.ServiceObject, error) {
 	m := models.MakeServiceObject()
 
-	var jsonAnnotationsKeyValuePair string
+	if value, ok := values["owner_access"]; ok {
 
-	var jsonPerms2Share string
+		castedValue := utils.InterfaceToInt(value)
 
-	var jsonFQName string
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
-	if err := rows.Scan(&m.DisplayName,
-		&jsonAnnotationsKeyValuePair,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&m.UUID,
-		&jsonFQName,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+	if value, ok := values["other_access"]; ok {
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		castedValue := utils.InterfaceToInt(value)
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
 
 	return m, nil
 }
 
-func buildServiceObjectWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["permissions_owner"]; ok {
-		results = append(results, "permissions_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListServiceObject(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.ServiceObject, error) {
-	result := models.MakeServiceObjectSlice()
-	whereQuery, values := buildServiceObjectWhereQuery(where)
+// ListServiceObject lists ServiceObject with list spec.
+func ListServiceObject(tx *sql.Tx, spec *db.ListSpec) ([]*models.ServiceObject, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listServiceObjectQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "service_object"
+	spec.Fields = ServiceObjectFields
+	spec.RefFields = ServiceObjectRefFields
+	result := models.MakeServiceObjectSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanServiceObject(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanServiceObject(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowServiceObject shows ServiceObject resource
 func ShowServiceObject(tx *sql.Tx, uuid string) (*models.ServiceObject, error) {
-	rows, err := tx.Query(showServiceObjectQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListServiceObject(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanServiceObject(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateServiceObject updates a resource
 func UpdateServiceObject(tx *sql.Tx, uuid string, model *models.ServiceObject) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteServiceObject deletes a resource
 func DeleteServiceObject(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteServiceObjectQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

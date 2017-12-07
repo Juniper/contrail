@@ -1,29 +1,64 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertKubernetesClusterQuery = "insert into `kubernetes_cluster` (`kuberunetes_dashboard`,`creator`,`user_visible`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`description`,`created`,`display_name`,`key_value_pair`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`,`uuid`,`fq_name`,`contrail_cluster_id`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateKubernetesClusterQuery = "update `kubernetes_cluster` set `kuberunetes_dashboard` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`display_name` = ?,`key_value_pair` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`uuid` = ?,`fq_name` = ?,`contrail_cluster_id` = ?;"
+const insertKubernetesClusterQuery = "insert into `kubernetes_cluster` (`uuid`,`fq_name`,`created`,`creator`,`user_visible`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`description`,`display_name`,`contrail_cluster_id`,`kuberunetes_dashboard`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateKubernetesClusterQuery = "update `kubernetes_cluster` set `uuid` = ?,`fq_name` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`description` = ?,`display_name` = ?,`contrail_cluster_id` = ?,`kuberunetes_dashboard` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?;"
 const deleteKubernetesClusterQuery = "delete from `kubernetes_cluster` where uuid = ?"
-const listKubernetesClusterQuery = "select `kubernetes_cluster`.`kuberunetes_dashboard`,`kubernetes_cluster`.`creator`,`kubernetes_cluster`.`user_visible`,`kubernetes_cluster`.`last_modified`,`kubernetes_cluster`.`owner_access`,`kubernetes_cluster`.`other_access`,`kubernetes_cluster`.`group`,`kubernetes_cluster`.`group_access`,`kubernetes_cluster`.`owner`,`kubernetes_cluster`.`enable`,`kubernetes_cluster`.`description`,`kubernetes_cluster`.`created`,`kubernetes_cluster`.`display_name`,`kubernetes_cluster`.`key_value_pair`,`kubernetes_cluster`.`share`,`kubernetes_cluster`.`perms2_owner`,`kubernetes_cluster`.`perms2_owner_access`,`kubernetes_cluster`.`global_access`,`kubernetes_cluster`.`uuid`,`kubernetes_cluster`.`fq_name`,`kubernetes_cluster`.`contrail_cluster_id` from `kubernetes_cluster`"
-const showKubernetesClusterQuery = "select `kubernetes_cluster`.`kuberunetes_dashboard`,`kubernetes_cluster`.`creator`,`kubernetes_cluster`.`user_visible`,`kubernetes_cluster`.`last_modified`,`kubernetes_cluster`.`owner_access`,`kubernetes_cluster`.`other_access`,`kubernetes_cluster`.`group`,`kubernetes_cluster`.`group_access`,`kubernetes_cluster`.`owner`,`kubernetes_cluster`.`enable`,`kubernetes_cluster`.`description`,`kubernetes_cluster`.`created`,`kubernetes_cluster`.`display_name`,`kubernetes_cluster`.`key_value_pair`,`kubernetes_cluster`.`share`,`kubernetes_cluster`.`perms2_owner`,`kubernetes_cluster`.`perms2_owner_access`,`kubernetes_cluster`.`global_access`,`kubernetes_cluster`.`uuid`,`kubernetes_cluster`.`fq_name`,`kubernetes_cluster`.`contrail_cluster_id` from `kubernetes_cluster` where uuid = ?"
 
+// KubernetesClusterFields is db columns for KubernetesCluster
+var KubernetesClusterFields = []string{
+	"uuid",
+	"fq_name",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"owner",
+	"enable",
+	"description",
+	"display_name",
+	"contrail_cluster_id",
+	"kuberunetes_dashboard",
+	"key_value_pair",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+	"perms2_owner",
+}
+
+// KubernetesClusterRefFields is db reference fields for KubernetesCluster
+var KubernetesClusterRefFields = map[string][]string{}
+
+// CreateKubernetesCluster inserts KubernetesCluster to DB
 func CreateKubernetesCluster(tx *sql.Tx, model *models.KubernetesCluster) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertKubernetesClusterQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(string(model.KuberunetesDashboard),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertKubernetesClusterQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(string(model.UUID),
+		utils.MustJSON(model.FQName),
+		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
@@ -34,179 +69,270 @@ func CreateKubernetesCluster(tx *sql.Tx, model *models.KubernetesCluster) error 
 		string(model.IDPerms.Permissions.Owner),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.DisplayName),
+		string(model.ContrailClusterID),
+		string(model.KuberunetesDashboard),
 		utils.MustJSON(model.Annotations.KeyValuePair),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
 		int(model.Perms2.GlobalAccess),
-		string(model.UUID),
-		utils.MustJSON(model.FQName),
-		string(model.ContrailClusterID))
+		utils.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanKubernetesCluster(rows *sql.Rows) (*models.KubernetesCluster, error) {
+func scanKubernetesCluster(values map[string]interface{}) (*models.KubernetesCluster, error) {
 	m := models.MakeKubernetesCluster()
 
-	var jsonAnnotationsKeyValuePair string
+	if value, ok := values["uuid"]; ok {
 
-	var jsonPerms2Share string
+		castedValue := utils.InterfaceToString(value)
 
-	var jsonFQName string
+		m.UUID = castedValue
 
-	if err := rows.Scan(&m.KuberunetesDashboard,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Enable,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.DisplayName,
-		&jsonAnnotationsKeyValuePair,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&m.UUID,
-		&jsonFQName,
-		&m.ContrailClusterID); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+	if value, ok := values["fq_name"]; ok {
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		json.Unmarshal(value.([]byte), &m.FQName)
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["contrail_cluster_id"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.ContrailClusterID = castedValue
+
+	}
+
+	if value, ok := values["kuberunetes_dashboard"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.KuberunetesDashboard = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
 
 	return m, nil
 }
 
-func buildKubernetesClusterWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["kuberunetes_dashboard"]; ok {
-		results = append(results, "kuberunetes_dashboard = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["perms2_owner"]; ok {
-		results = append(results, "perms2_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["contrail_cluster_id"]; ok {
-		results = append(results, "contrail_cluster_id = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListKubernetesCluster(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.KubernetesCluster, error) {
-	result := models.MakeKubernetesClusterSlice()
-	whereQuery, values := buildKubernetesClusterWhereQuery(where)
+// ListKubernetesCluster lists KubernetesCluster with list spec.
+func ListKubernetesCluster(tx *sql.Tx, spec *db.ListSpec) ([]*models.KubernetesCluster, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listKubernetesClusterQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "kubernetes_cluster"
+	spec.Fields = KubernetesClusterFields
+	spec.RefFields = KubernetesClusterRefFields
+	result := models.MakeKubernetesClusterSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanKubernetesCluster(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanKubernetesCluster(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowKubernetesCluster shows KubernetesCluster resource
 func ShowKubernetesCluster(tx *sql.Tx, uuid string) (*models.KubernetesCluster, error) {
-	rows, err := tx.Query(showKubernetesClusterQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListKubernetesCluster(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanKubernetesCluster(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateKubernetesCluster updates a resource
 func UpdateKubernetesCluster(tx *sql.Tx, uuid string, model *models.KubernetesCluster) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteKubernetesCluster deletes a resource
 func DeleteKubernetesCluster(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteKubernetesClusterQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

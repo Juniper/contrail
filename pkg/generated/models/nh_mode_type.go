@@ -4,15 +4,18 @@ package models
 
 type NHModeType string
 
+// MakeNHModeType makes NHModeType
 func MakeNHModeType() NHModeType {
 	var data NHModeType
 	return data
 }
 
+// InterfaceToNHModeType makes NHModeType from interface
 func InterfaceToNHModeType(data interface{}) NHModeType {
 	return data.(NHModeType)
 }
 
+// InterfaceToNHModeTypeSlice makes a slice of NHModeType from interface
 func InterfaceToNHModeTypeSlice(data interface{}) []NHModeType {
 	list := data.([]interface{})
 	result := MakeNHModeTypeSlice()
@@ -22,6 +25,7 @@ func InterfaceToNHModeTypeSlice(data interface{}) []NHModeType {
 	return result
 }
 
+// MakeNHModeTypeSlice() makes a slice of NHModeType
 func MakeNHModeTypeSlice() []NHModeType {
 	return []NHModeType{}
 }

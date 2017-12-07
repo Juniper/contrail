@@ -1,33 +1,64 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertBGPVPNQuery = "insert into `bgpvpn` (`display_name`,`route_target`,`export_route_target_list_route_target`,`bgpvpn_type`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`fq_name`,`import_route_target_list_route_target`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateBGPVPNQuery = "update `bgpvpn` set `display_name` = ?,`route_target` = ?,`export_route_target_list_route_target` = ?,`bgpvpn_type` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`fq_name` = ?,`import_route_target_list_route_target` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`uuid` = ?;"
+const insertBGPVPNQuery = "insert into `bgpvpn` (`bgpvpn_type`,`created`,`creator`,`user_visible`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`description`,`key_value_pair`,`uuid`,`route_target`,`export_route_target_list_route_target`,`display_name`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`route_target_list_route_target`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateBGPVPNQuery = "update `bgpvpn` set `bgpvpn_type` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`description` = ?,`key_value_pair` = ?,`uuid` = ?,`route_target` = ?,`export_route_target_list_route_target` = ?,`display_name` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`route_target_list_route_target` = ?,`fq_name` = ?;"
 const deleteBGPVPNQuery = "delete from `bgpvpn` where uuid = ?"
-const listBGPVPNQuery = "select `bgpvpn`.`display_name`,`bgpvpn`.`route_target`,`bgpvpn`.`export_route_target_list_route_target`,`bgpvpn`.`bgpvpn_type`,`bgpvpn`.`description`,`bgpvpn`.`created`,`bgpvpn`.`creator`,`bgpvpn`.`user_visible`,`bgpvpn`.`last_modified`,`bgpvpn`.`owner_access`,`bgpvpn`.`other_access`,`bgpvpn`.`group`,`bgpvpn`.`group_access`,`bgpvpn`.`owner`,`bgpvpn`.`enable`,`bgpvpn`.`fq_name`,`bgpvpn`.`import_route_target_list_route_target`,`bgpvpn`.`key_value_pair`,`bgpvpn`.`perms2_owner_access`,`bgpvpn`.`global_access`,`bgpvpn`.`share`,`bgpvpn`.`perms2_owner`,`bgpvpn`.`uuid` from `bgpvpn`"
-const showBGPVPNQuery = "select `bgpvpn`.`display_name`,`bgpvpn`.`route_target`,`bgpvpn`.`export_route_target_list_route_target`,`bgpvpn`.`bgpvpn_type`,`bgpvpn`.`description`,`bgpvpn`.`created`,`bgpvpn`.`creator`,`bgpvpn`.`user_visible`,`bgpvpn`.`last_modified`,`bgpvpn`.`owner_access`,`bgpvpn`.`other_access`,`bgpvpn`.`group`,`bgpvpn`.`group_access`,`bgpvpn`.`owner`,`bgpvpn`.`enable`,`bgpvpn`.`fq_name`,`bgpvpn`.`import_route_target_list_route_target`,`bgpvpn`.`key_value_pair`,`bgpvpn`.`perms2_owner_access`,`bgpvpn`.`global_access`,`bgpvpn`.`share`,`bgpvpn`.`perms2_owner`,`bgpvpn`.`uuid` from `bgpvpn` where uuid = ?"
 
+// BGPVPNFields is db columns for BGPVPN
+var BGPVPNFields = []string{
+	"bgpvpn_type",
+	"created",
+	"creator",
+	"user_visible",
+	"last_modified",
+	"owner_access",
+	"other_access",
+	"group",
+	"group_access",
+	"owner",
+	"enable",
+	"description",
+	"key_value_pair",
+	"uuid",
+	"route_target",
+	"export_route_target_list_route_target",
+	"display_name",
+	"global_access",
+	"share",
+	"perms2_owner",
+	"perms2_owner_access",
+	"route_target_list_route_target",
+	"fq_name",
+}
+
+// BGPVPNRefFields is db reference fields for BGPVPN
+var BGPVPNRefFields = map[string][]string{}
+
+// CreateBGPVPN inserts BGPVPN to DB
 func CreateBGPVPN(tx *sql.Tx, model *models.BGPVPN) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertBGPVPNQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(string(model.DisplayName),
-		utils.MustJSON(model.RouteTargetList.RouteTarget),
-		utils.MustJSON(model.ExportRouteTargetList.RouteTarget),
-		string(model.BGPVPNType),
-		string(model.IDPerms.Description),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertBGPVPNQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(string(model.BGPVPNType),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
@@ -38,186 +69,284 @@ func CreateBGPVPN(tx *sql.Tx, model *models.BGPVPN) error {
 		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
 		bool(model.IDPerms.Enable),
-		utils.MustJSON(model.FQName),
-		utils.MustJSON(model.ImportRouteTargetList.RouteTarget),
+		string(model.IDPerms.Description),
 		utils.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.OwnerAccess),
+		string(model.UUID),
+		utils.MustJSON(model.ImportRouteTargetList.RouteTarget),
+		utils.MustJSON(model.ExportRouteTargetList.RouteTarget),
+		string(model.DisplayName),
 		int(model.Perms2.GlobalAccess),
 		utils.MustJSON(model.Perms2.Share),
 		string(model.Perms2.Owner),
-		string(model.UUID))
+		int(model.Perms2.OwnerAccess),
+		utils.MustJSON(model.RouteTargetList.RouteTarget),
+		utils.MustJSON(model.FQName))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanBGPVPN(rows *sql.Rows) (*models.BGPVPN, error) {
+func scanBGPVPN(values map[string]interface{}) (*models.BGPVPN, error) {
 	m := models.MakeBGPVPN()
 
-	var jsonRouteTargetListRouteTarget string
+	if value, ok := values["bgpvpn_type"]; ok {
 
-	var jsonExportRouteTargetListRouteTarget string
+		castedValue := utils.InterfaceToString(value)
 
-	var jsonFQName string
+		m.BGPVPNType = models.VpnType(castedValue)
 
-	var jsonImportRouteTargetListRouteTarget string
-
-	var jsonAnnotationsKeyValuePair string
-
-	var jsonPerms2Share string
-
-	if err := rows.Scan(&m.DisplayName,
-		&jsonRouteTargetListRouteTarget,
-		&jsonExportRouteTargetListRouteTarget,
-		&m.BGPVPNType,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Enable,
-		&jsonFQName,
-		&jsonImportRouteTargetListRouteTarget,
-		&jsonAnnotationsKeyValuePair,
-		&m.Perms2.OwnerAccess,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.UUID); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonRouteTargetListRouteTarget), &m.RouteTargetList.RouteTarget)
+	if value, ok := values["created"]; ok {
 
-	json.Unmarshal([]byte(jsonExportRouteTargetListRouteTarget), &m.ExportRouteTargetList.RouteTarget)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+		m.IDPerms.Created = castedValue
 
-	json.Unmarshal([]byte(jsonImportRouteTargetListRouteTarget), &m.ImportRouteTargetList.RouteTarget)
+	}
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+	if value, ok := values["creator"]; ok {
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["route_target"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.ImportRouteTargetList.RouteTarget)
+
+	}
+
+	if value, ok := values["export_route_target_list_route_target"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.ExportRouteTargetList.RouteTarget)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["route_target_list_route_target"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.RouteTargetList.RouteTarget)
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
 
 	return m, nil
 }
 
-func buildBGPVPNWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["bgpvpn_type"]; ok {
-		results = append(results, "bgpvpn_type = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["perms2_owner"]; ok {
-		results = append(results, "perms2_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListBGPVPN(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.BGPVPN, error) {
-	result := models.MakeBGPVPNSlice()
-	whereQuery, values := buildBGPVPNWhereQuery(where)
+// ListBGPVPN lists BGPVPN with list spec.
+func ListBGPVPN(tx *sql.Tx, spec *db.ListSpec) ([]*models.BGPVPN, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listBGPVPNQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "bgpvpn"
+	spec.Fields = BGPVPNFields
+	spec.RefFields = BGPVPNRefFields
+	result := models.MakeBGPVPNSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanBGPVPN(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanBGPVPN(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowBGPVPN shows BGPVPN resource
 func ShowBGPVPN(tx *sql.Tx, uuid string) (*models.BGPVPN, error) {
-	rows, err := tx.Query(showBGPVPNQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListBGPVPN(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanBGPVPN(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateBGPVPN updates a resource
 func UpdateBGPVPN(tx *sql.Tx, uuid string, model *models.BGPVPN) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteBGPVPN deletes a resource
 func DeleteBGPVPN(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteBGPVPNQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

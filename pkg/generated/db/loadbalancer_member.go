@@ -1,225 +1,378 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/utils"
-	"strings"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
-const insertLoadbalancerMemberQuery = "insert into `loadbalancer_member` (`uuid`,`fq_name`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`display_name`,`key_value_pair`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`protocol_port`,`status`,`status_description`,`weight`,`admin_state`,`address`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateLoadbalancerMemberQuery = "update `loadbalancer_member` set `uuid` = ?,`fq_name` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`protocol_port` = ?,`status` = ?,`status_description` = ?,`weight` = ?,`admin_state` = ?,`address` = ?;"
+const insertLoadbalancerMemberQuery = "insert into `loadbalancer_member` (`status`,`status_description`,`weight`,`admin_state`,`address`,`protocol_port`,`user_visible`,`last_modified`,`group`,`group_access`,`owner`,`owner_access`,`other_access`,`enable`,`description`,`created`,`creator`,`display_name`,`key_value_pair`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateLoadbalancerMemberQuery = "update `loadbalancer_member` set `status` = ?,`status_description` = ?,`weight` = ?,`admin_state` = ?,`address` = ?,`protocol_port` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`fq_name` = ?;"
 const deleteLoadbalancerMemberQuery = "delete from `loadbalancer_member` where uuid = ?"
-const listLoadbalancerMemberQuery = "select `loadbalancer_member`.`uuid`,`loadbalancer_member`.`fq_name`,`loadbalancer_member`.`description`,`loadbalancer_member`.`created`,`loadbalancer_member`.`creator`,`loadbalancer_member`.`user_visible`,`loadbalancer_member`.`last_modified`,`loadbalancer_member`.`owner_access`,`loadbalancer_member`.`other_access`,`loadbalancer_member`.`group`,`loadbalancer_member`.`group_access`,`loadbalancer_member`.`owner`,`loadbalancer_member`.`enable`,`loadbalancer_member`.`display_name`,`loadbalancer_member`.`key_value_pair`,`loadbalancer_member`.`global_access`,`loadbalancer_member`.`share`,`loadbalancer_member`.`perms2_owner`,`loadbalancer_member`.`perms2_owner_access`,`loadbalancer_member`.`protocol_port`,`loadbalancer_member`.`status`,`loadbalancer_member`.`status_description`,`loadbalancer_member`.`weight`,`loadbalancer_member`.`admin_state`,`loadbalancer_member`.`address` from `loadbalancer_member`"
-const showLoadbalancerMemberQuery = "select `loadbalancer_member`.`uuid`,`loadbalancer_member`.`fq_name`,`loadbalancer_member`.`description`,`loadbalancer_member`.`created`,`loadbalancer_member`.`creator`,`loadbalancer_member`.`user_visible`,`loadbalancer_member`.`last_modified`,`loadbalancer_member`.`owner_access`,`loadbalancer_member`.`other_access`,`loadbalancer_member`.`group`,`loadbalancer_member`.`group_access`,`loadbalancer_member`.`owner`,`loadbalancer_member`.`enable`,`loadbalancer_member`.`display_name`,`loadbalancer_member`.`key_value_pair`,`loadbalancer_member`.`global_access`,`loadbalancer_member`.`share`,`loadbalancer_member`.`perms2_owner`,`loadbalancer_member`.`perms2_owner_access`,`loadbalancer_member`.`protocol_port`,`loadbalancer_member`.`status`,`loadbalancer_member`.`status_description`,`loadbalancer_member`.`weight`,`loadbalancer_member`.`admin_state`,`loadbalancer_member`.`address` from `loadbalancer_member` where uuid = ?"
 
+// LoadbalancerMemberFields is db columns for LoadbalancerMember
+var LoadbalancerMemberFields = []string{
+	"status",
+	"status_description",
+	"weight",
+	"admin_state",
+	"address",
+	"protocol_port",
+	"user_visible",
+	"last_modified",
+	"group",
+	"group_access",
+	"owner",
+	"owner_access",
+	"other_access",
+	"enable",
+	"description",
+	"created",
+	"creator",
+	"display_name",
+	"key_value_pair",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+	"uuid",
+	"fq_name",
+}
+
+// LoadbalancerMemberRefFields is db reference fields for LoadbalancerMember
+var LoadbalancerMemberRefFields = map[string][]string{}
+
+// CreateLoadbalancerMember inserts LoadbalancerMember to DB
 func CreateLoadbalancerMember(tx *sql.Tx, model *models.LoadbalancerMember) error {
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertLoadbalancerMemberQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(string(model.UUID),
-		utils.MustJSON(model.FQName),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		bool(model.IDPerms.Enable),
-		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.LoadbalancerMemberProperties.ProtocolPort),
-		string(model.LoadbalancerMemberProperties.Status),
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": insertLoadbalancerMemberQuery,
+	}).Debug("create query")
+	_, err = stmt.Exec(string(model.LoadbalancerMemberProperties.Status),
 		string(model.LoadbalancerMemberProperties.StatusDescription),
 		int(model.LoadbalancerMemberProperties.Weight),
 		bool(model.LoadbalancerMemberProperties.AdminState),
-		string(model.LoadbalancerMemberProperties.Address))
+		string(model.LoadbalancerMemberProperties.Address),
+		int(model.LoadbalancerMemberProperties.ProtocolPort),
+		bool(model.IDPerms.UserVisible),
+		string(model.IDPerms.LastModified),
+		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		int(model.IDPerms.Permissions.OtherAccess),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Created),
+		string(model.IDPerms.Creator),
+		string(model.DisplayName),
+		utils.MustJSON(model.Annotations.KeyValuePair),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		utils.MustJSON(model.Perms2.Share),
+		string(model.UUID),
+		utils.MustJSON(model.FQName))
+	if err != nil {
+		return errors.Wrap(err, "create failed")
+	}
 
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("created")
 	return err
 }
 
-func scanLoadbalancerMember(rows *sql.Rows) (*models.LoadbalancerMember, error) {
+func scanLoadbalancerMember(values map[string]interface{}) (*models.LoadbalancerMember, error) {
 	m := models.MakeLoadbalancerMember()
 
-	var jsonFQName string
+	if value, ok := values["status"]; ok {
 
-	var jsonAnnotationsKeyValuePair string
+		castedValue := utils.InterfaceToString(value)
 
-	var jsonPerms2Share string
+		m.LoadbalancerMemberProperties.Status = castedValue
 
-	if err := rows.Scan(&m.UUID,
-		&jsonFQName,
-		&m.IDPerms.Description,
-		&m.IDPerms.Created,
-		&m.IDPerms.Creator,
-		&m.IDPerms.UserVisible,
-		&m.IDPerms.LastModified,
-		&m.IDPerms.Permissions.OwnerAccess,
-		&m.IDPerms.Permissions.OtherAccess,
-		&m.IDPerms.Permissions.Group,
-		&m.IDPerms.Permissions.GroupAccess,
-		&m.IDPerms.Permissions.Owner,
-		&m.IDPerms.Enable,
-		&m.DisplayName,
-		&jsonAnnotationsKeyValuePair,
-		&m.Perms2.GlobalAccess,
-		&jsonPerms2Share,
-		&m.Perms2.Owner,
-		&m.Perms2.OwnerAccess,
-		&m.LoadbalancerMemberProperties.ProtocolPort,
-		&m.LoadbalancerMemberProperties.Status,
-		&m.LoadbalancerMemberProperties.StatusDescription,
-		&m.LoadbalancerMemberProperties.Weight,
-		&m.LoadbalancerMemberProperties.AdminState,
-		&m.LoadbalancerMemberProperties.Address); err != nil {
-		return nil, err
 	}
 
-	json.Unmarshal([]byte(jsonFQName), &m.FQName)
+	if value, ok := values["status_description"]; ok {
 
-	json.Unmarshal([]byte(jsonAnnotationsKeyValuePair), &m.Annotations.KeyValuePair)
+		castedValue := utils.InterfaceToString(value)
 
-	json.Unmarshal([]byte(jsonPerms2Share), &m.Perms2.Share)
+		m.LoadbalancerMemberProperties.StatusDescription = castedValue
+
+	}
+
+	if value, ok := values["weight"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.LoadbalancerMemberProperties.Weight = castedValue
+
+	}
+
+	if value, ok := values["admin_state"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.LoadbalancerMemberProperties.AdminState = castedValue
+
+	}
+
+	if value, ok := values["address"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.LoadbalancerMemberProperties.Address = models.IpAddressType(castedValue)
+
+	}
+
+	if value, ok := values["protocol_port"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.LoadbalancerMemberProperties.ProtocolPort = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := utils.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := utils.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := utils.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
 
 	return m, nil
 }
 
-func buildLoadbalancerMemberWhereQuery(where map[string]interface{}) (string, []interface{}) {
-	if where == nil {
-		return "", nil
-	}
-	results := []string{}
-	values := []interface{}{}
-
-	if value, ok := where["uuid"]; ok {
-		results = append(results, "uuid = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["description"]; ok {
-		results = append(results, "description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["created"]; ok {
-		results = append(results, "created = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["creator"]; ok {
-		results = append(results, "creator = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["last_modified"]; ok {
-		results = append(results, "last_modified = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["group"]; ok {
-		results = append(results, "group = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["owner"]; ok {
-		results = append(results, "owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["display_name"]; ok {
-		results = append(results, "display_name = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["perms2_owner"]; ok {
-		results = append(results, "perms2_owner = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["status"]; ok {
-		results = append(results, "status = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["status_description"]; ok {
-		results = append(results, "status_description = ?")
-		values = append(values, value)
-	}
-
-	if value, ok := where["address"]; ok {
-		results = append(results, "address = ?")
-		values = append(values, value)
-	}
-
-	return "where " + strings.Join(results, " and "), values
-}
-
-func ListLoadbalancerMember(tx *sql.Tx, where map[string]interface{}, offset int, limit int) ([]*models.LoadbalancerMember, error) {
-	result := models.MakeLoadbalancerMemberSlice()
-	whereQuery, values := buildLoadbalancerMemberWhereQuery(where)
+// ListLoadbalancerMember lists LoadbalancerMember with list spec.
+func ListLoadbalancerMember(tx *sql.Tx, spec *db.ListSpec) ([]*models.LoadbalancerMember, error) {
 	var rows *sql.Rows
 	var err error
-	var query bytes.Buffer
-	pagenationQuery := fmt.Sprintf("limit %d offset %d", limit, offset)
-	query.WriteString(listLoadbalancerMemberQuery)
-	query.WriteRune(' ')
-	query.WriteString(whereQuery)
-	query.WriteRune(' ')
-	query.WriteString(pagenationQuery)
-	rows, err = tx.Query(query.String(), values...)
+	//TODO (check input)
+	spec.Table = "loadbalancer_member"
+	spec.Fields = LoadbalancerMemberFields
+	spec.RefFields = LoadbalancerMemberRefFields
+	result := models.MakeLoadbalancerMemberSlice()
+	query, columns, values := db.BuildListQuery(spec)
+	log.WithFields(log.Fields{
+		"listSpec": spec,
+		"query":    query,
+	}).Debug("select query")
+	rows, err = tx.Query(query, values...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "select query failed")
 	}
 	defer rows.Close()
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "row error")
 	}
 	for rows.Next() {
-		m, _ := scanLoadbalancerMember(rows)
+		valuesMap := map[string]interface{}{}
+		values := make([]interface{}, len(columns))
+		valuesPointers := make([]interface{}, len(columns))
+		for _, index := range columns {
+			valuesPointers[index] = &values[index]
+		}
+		if err := rows.Scan(valuesPointers...); err != nil {
+			return nil, errors.Wrap(err, "scan failed")
+		}
+		for column, index := range columns {
+			val := valuesPointers[index].(*interface{})
+			valuesMap[column] = *val
+		}
+		log.WithFields(log.Fields{
+			"valuesMap": valuesMap,
+		}).Debug("valueMap")
+		m, err := scanLoadbalancerMember(valuesMap)
+		if err != nil {
+			return nil, errors.Wrap(err, "scan row failed")
+		}
 		result = append(result, m)
 	}
 	return result, nil
 }
 
+// ShowLoadbalancerMember shows LoadbalancerMember resource
 func ShowLoadbalancerMember(tx *sql.Tx, uuid string) (*models.LoadbalancerMember, error) {
-	rows, err := tx.Query(showLoadbalancerMemberQuery, uuid)
-	if err != nil {
-		return nil, err
+	list, err := ListLoadbalancerMember(tx, &db.ListSpec{
+		Filter: map[string]interface{}{"uuid": uuid},
+		Limit:  1})
+	if len(list) == 0 {
+		return nil, errors.Wrap(err, "show query failed")
 	}
-	defer rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		return scanLoadbalancerMember(rows)
-	}
-	return nil, nil
+	return list[0], err
 }
 
+// UpdateLoadbalancerMember updates a resource
 func UpdateLoadbalancerMember(tx *sql.Tx, uuid string, model *models.LoadbalancerMember) error {
+	//TODO(nati) support update
 	return nil
 }
 
+// DeleteLoadbalancerMember deletes a resource
 func DeleteLoadbalancerMember(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(deleteLoadbalancerMemberQuery)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "preparing delete query failed")
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(uuid)
-	return err
+	if err != nil {
+		return errors.Wrap(err, "delete failed")
+	}
+	log.WithFields(log.Fields{
+		"uuid": uuid,
+	}).Debug("deleted")
+	return nil
 }

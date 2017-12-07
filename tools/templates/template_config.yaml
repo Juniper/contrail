@@ -1,0 +1,21 @@
+# - type: resource
+#   template_path: model.tmpl
+#   output_path: testoutput/__resource___controller.go
+- type: type
+  template_path: model.tmpl
+  output_path: pkg/generated/models/__resource__.go
+- type: type
+  template_path: model_test.tmpl
+  output_path: pkg/generated/models/__resource___test.go
+- type: all
+  template_path: sql.tmpl
+  output_path: tools/init.sql
+- type: resource
+  template_path: db.tmpl
+  output_path: pkg/generated/db/__resource__.go
+- type: resource
+  template_path: db_test.tmpl
+  output_path: pkg/generated/db/__resource___test.go
+- type: all 
+  template_path: db_test_main.tmpl
+  output_path: pkg/generated/db/main_test.go

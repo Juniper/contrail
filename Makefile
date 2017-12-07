@@ -7,11 +7,11 @@ lint:
 	./tools/lint.sh
 
 test:
-	go test $(glide novendor)
+	./tools/test.sh
 
 build:
 	go build ./cmd/...
 
 generate:
-	go run cmd/contrail_util/main.go generate --schema-dir schemas --template-config cmd/contrail_util/templates/template_config.yaml
-	go fmt ./pkg/generated/...
+	go run cmd/contrail_util/main.go generate --schemas schemas --templates tools/templates/template_config.yaml
+	./tools/fmt.sh
