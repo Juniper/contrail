@@ -23,9 +23,9 @@ func (model *AllocationPoolType) String() string {
 func MakeAllocationPoolType() *AllocationPoolType {
 	return &AllocationPoolType{
 		//TODO(nati): Apply default
+		VrouterSpecificPool: false,
 		Start:               "",
 		End:                 "",
-		VrouterSpecificPool: false,
 	}
 }
 
@@ -33,15 +33,15 @@ func MakeAllocationPoolType() *AllocationPoolType {
 func InterfaceToAllocationPoolType(iData interface{}) *AllocationPoolType {
 	data := iData.(map[string]interface{})
 	return &AllocationPoolType{
-		VrouterSpecificPool: data["vrouter_specific_pool"].(bool),
-
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"VrouterSpecificPool","GoType":"bool","GoPremitive":true}
 		Start: data["start"].(string),
 
 		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Start","GoType":"string","GoPremitive":true}
 		End: data["end"].(string),
 
 		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"End","GoType":"string","GoPremitive":true}
+		VrouterSpecificPool: data["vrouter_specific_pool"].(bool),
+
+		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"VrouterSpecificPool","GoType":"bool","GoPremitive":true}
 
 	}
 }

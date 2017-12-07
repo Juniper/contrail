@@ -1,0 +1,9 @@
+package api
+
+import "github.com/Juniper/contrail/pkg/common"
+
+var APIs = []common.RESTAPI{
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+   &{{ schema.JSONSchema.GoName }}RESTAPI{},
+{% endif%}{% endfor %}
+}

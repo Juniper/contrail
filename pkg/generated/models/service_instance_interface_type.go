@@ -6,10 +6,10 @@ import "encoding/json"
 
 // ServiceInstanceInterfaceType
 type ServiceInstanceInterfaceType struct {
-	VirtualNetwork      string               `json:"virtual_network"`
-	IPAddress           IpAddressType        `json:"ip_address"`
 	AllowedAddressPairs *AllowedAddressPairs `json:"allowed_address_pairs"`
 	StaticRoutes        *RouteTableType      `json:"static_routes"`
+	VirtualNetwork      string               `json:"virtual_network"`
+	IPAddress           IpAddressType        `json:"ip_address"`
 }
 
 //  parents relation object
@@ -24,10 +24,10 @@ func (model *ServiceInstanceInterfaceType) String() string {
 func MakeServiceInstanceInterfaceType() *ServiceInstanceInterfaceType {
 	return &ServiceInstanceInterfaceType{
 		//TODO(nati): Apply default
-		AllowedAddressPairs: MakeAllowedAddressPairs(),
-		StaticRoutes:        MakeRouteTableType(),
 		VirtualNetwork:      "",
 		IPAddress:           MakeIpAddressType(),
+		AllowedAddressPairs: MakeAllowedAddressPairs(),
+		StaticRoutes:        MakeRouteTableType(),
 	}
 }
 

@@ -4,40 +4,39 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertTagTypeQuery = "insert into `tag_type` (`owner`,`owner_access`,`global_access`,`share`,`uuid`,`fq_name`,`user_visible`,`last_modified`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`display_name`,`tag_type_id`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateTagTypeQuery = "update `tag_type` set `owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`display_name` = ?,`tag_type_id` = ?,`key_value_pair` = ?;"
+const insertTagTypeQuery = "insert into `tag_type` (`last_modified`,`group_access`,`owner`,`owner_access`,`other_access`,`group`,`enable`,`description`,`created`,`creator`,`user_visible`,`display_name`,`key_value_pair`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`,`tag_type_id`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateTagTypeQuery = "update `tag_type` set `last_modified` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`tag_type_id` = ?,`uuid` = ?,`fq_name` = ?;"
 const deleteTagTypeQuery = "delete from `tag_type` where uuid = ?"
 
 // TagTypeFields is db columns for TagType
 var TagTypeFields = []string{
+	"last_modified",
+	"group_access",
 	"owner",
 	"owner_access",
-	"global_access",
-	"share",
-	"uuid",
-	"fq_name",
-	"user_visible",
-	"last_modified",
-	"permissions_owner",
-	"permissions_owner_access",
 	"other_access",
 	"group",
-	"group_access",
 	"enable",
 	"description",
 	"created",
 	"creator",
+	"user_visible",
 	"display_name",
-	"tag_type_id",
 	"key_value_pair",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+	"tag_type_id",
+	"uuid",
+	"fq_name",
 }
 
 // TagTypeRefFields is db reference fields for TagType
@@ -55,26 +54,26 @@ func CreateTagType(tx *sql.Tx, model *models.TagType) error {
 		"model": model,
 		"query": insertTagTypeQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.UUID),
-		utils.MustJSON(model.FQName),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
+	_, err = stmt.Exec(string(model.IDPerms.LastModified),
+		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
+		bool(model.IDPerms.UserVisible),
 		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share),
 		string(model.TagTypeID),
-		utils.MustJSON(model.Annotations.KeyValuePair))
+		string(model.UUID),
+		common.MustJSON(model.FQName))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -88,17 +87,119 @@ func CreateTagType(tx *sql.Tx, model *models.TagType) error {
 func scanTagType(values map[string]interface{}) (*models.TagType, error) {
 	m := models.MakeTagType()
 
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.Perms2.Owner = castedValue
+		m.IDPerms.Permissions.Owner = castedValue
 
 	}
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
@@ -106,7 +207,7 @@ func scanTagType(values map[string]interface{}) (*models.TagType, error) {
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
@@ -118,9 +219,17 @@ func scanTagType(values map[string]interface{}) (*models.TagType, error) {
 
 	}
 
+	if value, ok := values["tag_type_id"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.TagTypeID = models.U16BitHexInt(castedValue)
+
+	}
+
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.UUID = castedValue
 
@@ -132,121 +241,11 @@ func scanTagType(values map[string]interface{}) (*models.TagType, error) {
 
 	}
 
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["permissions_owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["permissions_owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["tag_type_id"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.TagTypeID = models.U16BitHexInt(castedValue)
-
-	}
-
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
 	return m, nil
 }
 
 // ListTagType lists TagType with list spec.
-func ListTagType(tx *sql.Tx, spec *db.ListSpec) ([]*models.TagType, error) {
+func ListTagType(tx *sql.Tx, spec *common.ListSpec) ([]*models.TagType, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -254,7 +253,7 @@ func ListTagType(tx *sql.Tx, spec *db.ListSpec) ([]*models.TagType, error) {
 	spec.Fields = TagTypeFields
 	spec.RefFields = TagTypeRefFields
 	result := models.MakeTagTypeSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -295,7 +294,7 @@ func ListTagType(tx *sql.Tx, spec *db.ListSpec) ([]*models.TagType, error) {
 
 // ShowTagType shows TagType resource
 func ShowTagType(tx *sql.Tx, uuid string) (*models.TagType, error) {
-	list, err := ListTagType(tx, &db.ListSpec{
+	list, err := ListTagType(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

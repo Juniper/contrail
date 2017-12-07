@@ -4,60 +4,59 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertSecurityLoggingObjectQuery = "insert into `security_logging_object` (`description`,`created`,`creator`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`rule`,`security_logging_object_rate`,`display_name`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateSecurityLoggingObjectQuery = "update `security_logging_object` set `description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`rule` = ?,`security_logging_object_rate` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`uuid` = ?,`fq_name` = ?;"
+const insertSecurityLoggingObjectQuery = "insert into `security_logging_object` (`key_value_pair`,`owner`,`owner_access`,`global_access`,`share`,`uuid`,`fq_name`,`rule`,`security_logging_object_rate`,`created`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`enable`,`description`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateSecurityLoggingObjectQuery = "update `security_logging_object` set `key_value_pair` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`fq_name` = ?,`rule` = ?,`security_logging_object_rate` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`enable` = ?,`description` = ?,`display_name` = ?;"
 const deleteSecurityLoggingObjectQuery = "delete from `security_logging_object` where uuid = ?"
 
 // SecurityLoggingObjectFields is db columns for SecurityLoggingObject
 var SecurityLoggingObjectFields = []string{
-	"description",
+	"key_value_pair",
+	"owner",
+	"owner_access",
+	"global_access",
+	"share",
+	"uuid",
+	"fq_name",
+	"rule",
+	"security_logging_object_rate",
 	"created",
 	"creator",
 	"user_visible",
 	"last_modified",
-	"owner",
-	"owner_access",
 	"other_access",
 	"group",
 	"group_access",
+	"permissions_owner",
+	"permissions_owner_access",
 	"enable",
-	"rule",
-	"security_logging_object_rate",
+	"description",
 	"display_name",
-	"key_value_pair",
-	"perms2_owner_access",
-	"global_access",
-	"share",
-	"perms2_owner",
-	"uuid",
-	"fq_name",
 }
 
 // SecurityLoggingObjectRefFields is db reference fields for SecurityLoggingObject
 var SecurityLoggingObjectRefFields = map[string][]string{
 
 	"security_group": {
-	// <utils.Schema Value>
-
+		// <common.Schema Value>
+		"rule",
 	},
 
 	"network_policy": {
-		// <utils.Schema Value>
-		"rule",
+	// <common.Schema Value>
+
 	},
 }
 
-const insertSecurityLoggingObjectSecurityGroupQuery = "insert into `ref_security_logging_object_security_group` (`from`, `to` ) values (?, ?);"
+const insertSecurityLoggingObjectSecurityGroupQuery = "insert into `ref_security_logging_object_security_group` (`from`, `to` ,`rule`) values (?, ?,?);"
 
-const insertSecurityLoggingObjectNetworkPolicyQuery = "insert into `ref_security_logging_object_network_policy` (`from`, `to` ,`rule`) values (?, ?,?);"
+const insertSecurityLoggingObjectNetworkPolicyQuery = "insert into `ref_security_logging_object_network_policy` (`from`, `to` ) values (?, ?);"
 
 // CreateSecurityLoggingObject inserts SecurityLoggingObject to DB
 func CreateSecurityLoggingObject(tx *sql.Tx, model *models.SecurityLoggingObject) error {
@@ -71,27 +70,27 @@ func CreateSecurityLoggingObject(tx *sql.Tx, model *models.SecurityLoggingObject
 		"model": model,
 		"query": insertSecurityLoggingObjectQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.IDPerms.Description),
+	_, err = stmt.Exec(common.MustJSON(model.Annotations.KeyValuePair),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share),
+		string(model.UUID),
+		common.MustJSON(model.FQName),
+		common.MustJSON(model.SecurityLoggingObjectRules.Rule),
+		int(model.SecurityLoggingObjectRate),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
 		bool(model.IDPerms.Enable),
-		utils.MustJSON(model.SecurityLoggingObjectRules.Rule),
-		int(model.SecurityLoggingObjectRate),
-		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		string(model.UUID),
-		utils.MustJSON(model.FQName))
+		string(model.IDPerms.Description),
+		string(model.DisplayName))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -102,7 +101,12 @@ func CreateSecurityLoggingObject(tx *sql.Tx, model *models.SecurityLoggingObject
 	}
 	defer stmtSecurityGroupRef.Close()
 	for _, ref := range model.SecurityGroupRefs {
-		_, err = stmtSecurityGroupRef.Exec(model.UUID, ref.UUID)
+
+		if ref.Attr == nil {
+			ref.Attr = models.MakeSecurityLoggingObjectRuleListType()
+		}
+
+		_, err = stmtSecurityGroupRef.Exec(model.UUID, ref.UUID, common.MustJSON(ref.Attr.Rule))
 		if err != nil {
 			return errors.Wrap(err, "SecurityGroupRefs create failed")
 		}
@@ -114,7 +118,12 @@ func CreateSecurityLoggingObject(tx *sql.Tx, model *models.SecurityLoggingObject
 	}
 	defer stmtNetworkPolicyRef.Close()
 	for _, ref := range model.NetworkPolicyRefs {
-		_, err = stmtNetworkPolicyRef.Exec(model.UUID, ref.UUID, utils.MustJSON(ref.Attr.Rule))
+
+		if ref.Attr == nil {
+			ref.Attr = models.MakeSecurityLoggingObjectRuleListType()
+		}
+
+		_, err = stmtNetworkPolicyRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "NetworkPolicyRefs create failed")
 		}
@@ -129,125 +138,23 @@ func CreateSecurityLoggingObject(tx *sql.Tx, model *models.SecurityLoggingObject
 func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityLoggingObject, error) {
 	m := models.MakeSecurityLoggingObject()
 
-	if value, ok := values["description"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["rule"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.SecurityLoggingObjectRules.Rule)
-
-	}
-
-	if value, ok := values["security_logging_object_rate"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.SecurityLoggingObjectRate = castedValue
-
-	}
-
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.DisplayName = castedValue
-
-	}
-
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
-	if value, ok := values["perms2_owner_access"]; ok {
+	if value, ok := values["owner"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
@@ -255,7 +162,7 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
@@ -267,17 +174,9 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 
 	}
 
-	if value, ok := values["perms2_owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.UUID = castedValue
 
@@ -289,14 +188,130 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 
 	}
 
+	if value, ok := values["rule"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.SecurityLoggingObjectRules.Rule)
+
+	}
+
+	if value, ok := values["security_logging_object_rate"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.SecurityLoggingObjectRate = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
 	if value, ok := values["ref_security_group"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.SecurityLoggingObjectSecurityGroupRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.SecurityGroupRefs = append(m.SecurityGroupRefs, referenceModel)
 
 			attr := models.MakeSecurityLoggingObjectRuleListType()
@@ -307,12 +322,18 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 
 	if value, ok := values["ref_network_policy"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.SecurityLoggingObjectNetworkPolicyRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
 
 			attr := models.MakeSecurityLoggingObjectRuleListType()
@@ -325,7 +346,7 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 }
 
 // ListSecurityLoggingObject lists SecurityLoggingObject with list spec.
-func ListSecurityLoggingObject(tx *sql.Tx, spec *db.ListSpec) ([]*models.SecurityLoggingObject, error) {
+func ListSecurityLoggingObject(tx *sql.Tx, spec *common.ListSpec) ([]*models.SecurityLoggingObject, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -333,7 +354,7 @@ func ListSecurityLoggingObject(tx *sql.Tx, spec *db.ListSpec) ([]*models.Securit
 	spec.Fields = SecurityLoggingObjectFields
 	spec.RefFields = SecurityLoggingObjectRefFields
 	result := models.MakeSecurityLoggingObjectSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -374,7 +395,7 @@ func ListSecurityLoggingObject(tx *sql.Tx, spec *db.ListSpec) ([]*models.Securit
 
 // ShowSecurityLoggingObject shows SecurityLoggingObject resource
 func ShowSecurityLoggingObject(tx *sql.Tx, uuid string) (*models.SecurityLoggingObject, error) {
-	list, err := ListSecurityLoggingObject(tx, &db.ListSpec{
+	list, err := ListSecurityLoggingObject(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

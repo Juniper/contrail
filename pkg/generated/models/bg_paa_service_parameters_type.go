@@ -22,8 +22,8 @@ func (model *BGPaaServiceParametersType) String() string {
 func MakeBGPaaServiceParametersType() *BGPaaServiceParametersType {
 	return &BGPaaServiceParametersType{
 		//TODO(nati): Apply default
-		PortStart: MakeL4PortType(),
 		PortEnd:   MakeL4PortType(),
+		PortStart: MakeL4PortType(),
 	}
 }
 

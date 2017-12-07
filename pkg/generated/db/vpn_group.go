@@ -4,52 +4,51 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertVPNGroupQuery = "insert into `vpn_group` (`fq_name`,`provisioning_start_time`,`provisioning_log`,`provisioning_progress`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`owner`,`owner_access`,`display_name`,`uuid`,`provisioning_progress_stage`,`provisioning_state`,`type`,`key_value_pair`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateVPNGroupQuery = "update `vpn_group` set `fq_name` = ?,`provisioning_start_time` = ?,`provisioning_log` = ?,`provisioning_progress` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`display_name` = ?,`uuid` = ?,`provisioning_progress_stage` = ?,`provisioning_state` = ?,`type` = ?,`key_value_pair` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?;"
+const insertVPNGroupQuery = "insert into `vpn_group` (`key_value_pair`,`provisioning_progress_stage`,`provisioning_state`,`fq_name`,`user_visible`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`description`,`created`,`creator`,`uuid`,`display_name`,`provisioning_log`,`provisioning_progress`,`provisioning_start_time`,`type`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateVPNGroupQuery = "update `vpn_group` set `key_value_pair` = ?,`provisioning_progress_stage` = ?,`provisioning_state` = ?,`fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`uuid` = ?,`display_name` = ?,`provisioning_log` = ?,`provisioning_progress` = ?,`provisioning_start_time` = ?,`type` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?;"
 const deleteVPNGroupQuery = "delete from `vpn_group` where uuid = ?"
 
 // VPNGroupFields is db columns for VPNGroup
 var VPNGroupFields = []string{
+	"key_value_pair",
+	"provisioning_progress_stage",
+	"provisioning_state",
 	"fq_name",
-	"provisioning_start_time",
-	"provisioning_log",
-	"provisioning_progress",
-	"enable",
-	"description",
-	"created",
-	"creator",
 	"user_visible",
 	"last_modified",
+	"owner_access",
 	"other_access",
 	"group",
 	"group_access",
 	"owner",
-	"owner_access",
-	"display_name",
+	"enable",
+	"description",
+	"created",
+	"creator",
 	"uuid",
-	"provisioning_progress_stage",
-	"provisioning_state",
+	"display_name",
+	"provisioning_log",
+	"provisioning_progress",
+	"provisioning_start_time",
 	"type",
-	"key_value_pair",
-	"share",
-	"perms2_owner",
 	"perms2_owner_access",
 	"global_access",
+	"share",
+	"perms2_owner",
 }
 
 // VPNGroupRefFields is db reference fields for VPNGroup
 var VPNGroupRefFields = map[string][]string{
 
 	"location": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 }
@@ -68,31 +67,31 @@ func CreateVPNGroup(tx *sql.Tx, model *models.VPNGroup) error {
 		"model": model,
 		"query": insertVPNGroupQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(utils.MustJSON(model.FQName),
-		string(model.ProvisioningStartTime),
-		string(model.ProvisioningLog),
-		int(model.ProvisioningProgress),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
+	_, err = stmt.Exec(common.MustJSON(model.Annotations.KeyValuePair),
+		string(model.ProvisioningProgressStage),
+		string(model.ProvisioningState),
+		common.MustJSON(model.FQName),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
+		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		string(model.DisplayName),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Created),
+		string(model.IDPerms.Creator),
 		string(model.UUID),
-		string(model.ProvisioningProgressStage),
-		string(model.ProvisioningState),
+		string(model.DisplayName),
+		string(model.ProvisioningLog),
+		int(model.ProvisioningProgress),
+		string(model.ProvisioningStartTime),
 		string(model.Type),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess))
+		int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -103,6 +102,7 @@ func CreateVPNGroup(tx *sql.Tx, model *models.VPNGroup) error {
 	}
 	defer stmtLocationRef.Close()
 	for _, ref := range model.LocationRefs {
+
 		_, err = stmtLocationRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "LocationRefs create failed")
@@ -118,143 +118,15 @@ func CreateVPNGroup(tx *sql.Tx, model *models.VPNGroup) error {
 func scanVPNGroup(values map[string]interface{}) (*models.VPNGroup, error) {
 	m := models.MakeVPNGroup()
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["key_value_pair"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["provisioning_start_time"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.ProvisioningStartTime = castedValue
-
-	}
-
-	if value, ok := values["provisioning_log"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.ProvisioningLog = castedValue
-
-	}
-
-	if value, ok := values["provisioning_progress"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.ProvisioningProgress = castedValue
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.UUID = castedValue
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
 	if value, ok := values["provisioning_progress_stage"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.ProvisioningProgressStage = castedValue
 
@@ -262,23 +134,167 @@ func scanVPNGroup(values map[string]interface{}) (*models.VPNGroup, error) {
 
 	if value, ok := values["provisioning_state"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.ProvisioningState = castedValue
 
 	}
 
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["provisioning_log"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ProvisioningLog = castedValue
+
+	}
+
+	if value, ok := values["provisioning_progress"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.ProvisioningProgress = castedValue
+
+	}
+
+	if value, ok := values["provisioning_start_time"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ProvisioningStartTime = castedValue
+
+	}
+
 	if value, ok := values["type"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.Type = castedValue
 
 	}
 
-	if value, ok := values["key_value_pair"]; ok {
+	if value, ok := values["perms2_owner_access"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
 	}
 
@@ -290,36 +306,26 @@ func scanVPNGroup(values map[string]interface{}) (*models.VPNGroup, error) {
 
 	if value, ok := values["perms2_owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.Perms2.Owner = castedValue
 
 	}
 
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
 	if value, ok := values["ref_location"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.VPNGroupLocationRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.LocationRefs = append(m.LocationRefs, referenceModel)
 
 		}
@@ -329,7 +335,7 @@ func scanVPNGroup(values map[string]interface{}) (*models.VPNGroup, error) {
 }
 
 // ListVPNGroup lists VPNGroup with list spec.
-func ListVPNGroup(tx *sql.Tx, spec *db.ListSpec) ([]*models.VPNGroup, error) {
+func ListVPNGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.VPNGroup, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -337,7 +343,7 @@ func ListVPNGroup(tx *sql.Tx, spec *db.ListSpec) ([]*models.VPNGroup, error) {
 	spec.Fields = VPNGroupFields
 	spec.RefFields = VPNGroupRefFields
 	result := models.MakeVPNGroupSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -378,7 +384,7 @@ func ListVPNGroup(tx *sql.Tx, spec *db.ListSpec) ([]*models.VPNGroup, error) {
 
 // ShowVPNGroup shows VPNGroup resource
 func ShowVPNGroup(tx *sql.Tx, uuid string) (*models.VPNGroup, error) {
-	list, err := ListVPNGroup(tx, &db.ListSpec{
+	list, err := ListVPNGroup(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

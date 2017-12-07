@@ -6,10 +6,10 @@ import "encoding/json"
 
 // AlarmExpression
 type AlarmExpression struct {
-	Operation AlarmOperation `json:"operation"`
 	Operand1  string         `json:"operand1"`
 	Variables []string       `json:"variables"`
 	Operand2  *AlarmOperand2 `json:"operand2"`
+	Operation AlarmOperation `json:"operation"`
 }
 
 //  parents relation object
@@ -24,10 +24,10 @@ func (model *AlarmExpression) String() string {
 func MakeAlarmExpression() *AlarmExpression {
 	return &AlarmExpression{
 		//TODO(nati): Apply default
-		Operand2:  MakeAlarmOperand2(),
 		Operation: MakeAlarmOperation(),
 		Operand1:  "",
 		Variables: []string{},
+		Operand2:  MakeAlarmOperand2(),
 	}
 }
 
@@ -35,9 +35,6 @@ func MakeAlarmExpression() *AlarmExpression {
 func InterfaceToAlarmExpression(iData interface{}) *AlarmExpression {
 	data := iData.(map[string]interface{})
 	return &AlarmExpression{
-		Operand1: data["operand1"].(string),
-
-		//{"Title":"","Description":"UVE attribute specified in the dotted format. Example: NodeStatus.process_info.process_state","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Operand1","GoType":"string","GoPremitive":true}
 		Variables: data["variables"].([]string),
 
 		//{"Title":"","Description":"List of UVE attributes that would be useful when the alarm is raised. For example, user may want to raise an alarm if the NodeStatus.process_info.process_state != PROCESS_STATE_RUNNING. But, it would be useful to know the process_name whose state != PROCESS_STATE_RUNNING. This UVE attribute which is neither part of operand1 nor operand2 may be specified in variables","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Variables","GoType":"string","GoPremitive":true},"GoName":"Variables","GoType":"[]string","GoPremitive":true}
@@ -47,6 +44,9 @@ func InterfaceToAlarmExpression(iData interface{}) *AlarmExpression {
 		Operation: InterfaceToAlarmOperation(data["operation"]),
 
 		//{"Title":"","Description":"operation to compare operand1 and operand2","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":["==","!=","\u003c","\u003c=","\u003e","\u003e=","in","not in","range","size==","size!="],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/AlarmOperation","CollectionType":"","Column":"","Item":null,"GoName":"Operation","GoType":"AlarmOperation","GoPremitive":false}
+		Operand1: data["operand1"].(string),
+
+		//{"Title":"","Description":"UVE attribute specified in the dotted format. Example: NodeStatus.process_info.process_state","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Operand1","GoType":"string","GoPremitive":true}
 
 	}
 }

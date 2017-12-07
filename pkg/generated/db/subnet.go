@@ -4,48 +4,47 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertSubnetQuery = "insert into `subnet` (`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`group_access`,`owner`,`owner_access`,`other_access`,`group`,`display_name`,`key_value_pair`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`,`ip_prefix_len`,`ip_prefix`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateSubnetQuery = "update `subnet` set `enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`display_name` = ?,`key_value_pair` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`ip_prefix_len` = ?,`ip_prefix` = ?,`uuid` = ?,`fq_name` = ?;"
+const insertSubnetQuery = "insert into `subnet` (`display_name`,`key_value_pair`,`global_access`,`share`,`owner`,`owner_access`,`ip_prefix_len`,`ip_prefix`,`uuid`,`fq_name`,`other_access`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateSubnetQuery = "update `subnet` set `display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`ip_prefix_len` = ?,`ip_prefix` = ?,`uuid` = ?,`fq_name` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?;"
 const deleteSubnetQuery = "delete from `subnet` where uuid = ?"
 
 // SubnetFields is db columns for Subnet
 var SubnetFields = []string{
+	"display_name",
+	"key_value_pair",
+	"global_access",
+	"share",
+	"owner",
+	"owner_access",
+	"ip_prefix_len",
+	"ip_prefix",
+	"uuid",
+	"fq_name",
+	"other_access",
+	"group",
+	"group_access",
+	"permissions_owner",
+	"permissions_owner_access",
 	"enable",
 	"description",
 	"created",
 	"creator",
 	"user_visible",
 	"last_modified",
-	"group_access",
-	"owner",
-	"owner_access",
-	"other_access",
-	"group",
-	"display_name",
-	"key_value_pair",
-	"share",
-	"perms2_owner",
-	"perms2_owner_access",
-	"global_access",
-	"ip_prefix_len",
-	"ip_prefix",
-	"uuid",
-	"fq_name",
 }
 
 // SubnetRefFields is db reference fields for Subnet
 var SubnetRefFields = map[string][]string{
 
 	"virtual_machine_interface": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 }
@@ -64,27 +63,27 @@ func CreateSubnet(tx *sql.Tx, model *models.Subnet) error {
 		"model": model,
 		"query": insertSubnetQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(bool(model.IDPerms.Enable),
+	_, err = stmt.Exec(string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair),
+		int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.SubnetIPPrefix.IPPrefixLen),
+		string(model.SubnetIPPrefix.IPPrefix),
+		string(model.UUID),
+		common.MustJSON(model.FQName),
+		int(model.IDPerms.Permissions.OtherAccess),
+		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		int(model.SubnetIPPrefix.IPPrefixLen),
-		string(model.SubnetIPPrefix.IPPrefix),
-		string(model.UUID),
-		utils.MustJSON(model.FQName))
+		string(model.IDPerms.LastModified))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -95,6 +94,7 @@ func CreateSubnet(tx *sql.Tx, model *models.Subnet) error {
 	}
 	defer stmtVirtualMachineInterfaceRef.Close()
 	for _, ref := range model.VirtualMachineInterfaceRefs {
+
 		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
@@ -110,97 +110,9 @@ func CreateSubnet(tx *sql.Tx, model *models.Subnet) error {
 func scanSubnet(values map[string]interface{}) (*models.Subnet, error) {
 	m := models.MakeSubnet()
 
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
 
@@ -212,39 +124,39 @@ func scanSubnet(values map[string]interface{}) (*models.Subnet, error) {
 
 	}
 
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["share"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
 	}
 
-	if value, ok := values["perms2_owner"]; ok {
+	if value, ok := values["owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.Perms2.Owner = castedValue
 
 	}
 
-	if value, ok := values["perms2_owner_access"]; ok {
+	if value, ok := values["owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
 	if value, ok := values["ip_prefix_len"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.SubnetIPPrefix.IPPrefixLen = castedValue
 
@@ -252,7 +164,7 @@ func scanSubnet(values map[string]interface{}) (*models.Subnet, error) {
 
 	if value, ok := values["ip_prefix"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.SubnetIPPrefix.IPPrefix = castedValue
 
@@ -260,7 +172,7 @@ func scanSubnet(values map[string]interface{}) (*models.Subnet, error) {
 
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.UUID = castedValue
 
@@ -272,14 +184,108 @@ func scanSubnet(values map[string]interface{}) (*models.Subnet, error) {
 
 	}
 
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.SubnetVirtualMachineInterfaceRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
 
 		}
@@ -289,7 +295,7 @@ func scanSubnet(values map[string]interface{}) (*models.Subnet, error) {
 }
 
 // ListSubnet lists Subnet with list spec.
-func ListSubnet(tx *sql.Tx, spec *db.ListSpec) ([]*models.Subnet, error) {
+func ListSubnet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Subnet, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -297,7 +303,7 @@ func ListSubnet(tx *sql.Tx, spec *db.ListSpec) ([]*models.Subnet, error) {
 	spec.Fields = SubnetFields
 	spec.RefFields = SubnetRefFields
 	result := models.MakeSubnetSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -338,7 +344,7 @@ func ListSubnet(tx *sql.Tx, spec *db.ListSpec) ([]*models.Subnet, error) {
 
 // ShowSubnet shows Subnet resource
 func ShowSubnet(tx *sql.Tx, uuid string) (*models.Subnet, error) {
-	list, err := ListSubnet(tx, &db.ListSpec{
+	list, err := ListSubnet(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

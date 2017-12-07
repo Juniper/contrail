@@ -4,26 +4,20 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertNetworkIpamQuery = "insert into `network_ipam` (`ipam_subnet_method`,`uuid`,`global_access`,`share`,`owner`,`owner_access`,`ipam_dns_method`,`ip_address`,`virtual_dns_server_name`,`dhcp_option`,`route`,`ip_prefix`,`ip_prefix_len`,`ipam_method`,`ipam_subnets`,`fq_name`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`enable`,`description`,`created`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateNetworkIpamQuery = "update `network_ipam` set `ipam_subnet_method` = ?,`uuid` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`ipam_dns_method` = ?,`ip_address` = ?,`virtual_dns_server_name` = ?,`dhcp_option` = ?,`route` = ?,`ip_prefix` = ?,`ip_prefix_len` = ?,`ipam_method` = ?,`ipam_subnets` = ?,`fq_name` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`display_name` = ?,`key_value_pair` = ?;"
+const insertNetworkIpamQuery = "insert into `network_ipam` (`ipam_method`,`ipam_dns_method`,`ip_address`,`virtual_dns_server_name`,`dhcp_option`,`route`,`ip_prefix`,`ip_prefix_len`,`ipam_subnets`,`ipam_subnet_method`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`group`,`group_access`,`owner`,`owner_access`,`other_access`,`enable`,`display_name`,`key_value_pair`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateNetworkIpamQuery = "update `network_ipam` set `ipam_method` = ?,`ipam_dns_method` = ?,`ip_address` = ?,`virtual_dns_server_name` = ?,`dhcp_option` = ?,`route` = ?,`ip_prefix` = ?,`ip_prefix_len` = ?,`ipam_subnets` = ?,`ipam_subnet_method` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`enable` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`fq_name` = ?;"
 const deleteNetworkIpamQuery = "delete from `network_ipam` where uuid = ?"
 
 // NetworkIpamFields is db columns for NetworkIpam
 var NetworkIpamFields = []string{
-	"ipam_subnet_method",
-	"uuid",
-	"global_access",
-	"share",
-	"owner",
-	"owner_access",
+	"ipam_method",
 	"ipam_dns_method",
 	"ip_address",
 	"virtual_dns_server_name",
@@ -31,29 +25,34 @@ var NetworkIpamFields = []string{
 	"route",
 	"ip_prefix",
 	"ip_prefix_len",
-	"ipam_method",
 	"ipam_subnets",
-	"fq_name",
+	"ipam_subnet_method",
+	"description",
+	"created",
 	"creator",
 	"user_visible",
 	"last_modified",
-	"other_access",
 	"group",
 	"group_access",
-	"permissions_owner",
-	"permissions_owner_access",
+	"owner",
+	"owner_access",
+	"other_access",
 	"enable",
-	"description",
-	"created",
 	"display_name",
 	"key_value_pair",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+	"uuid",
+	"fq_name",
 }
 
 // NetworkIpamRefFields is db reference fields for NetworkIpam
 var NetworkIpamRefFields = map[string][]string{
 
 	"virtual_DNS": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 }
@@ -72,35 +71,35 @@ func CreateNetworkIpam(tx *sql.Tx, model *models.NetworkIpam) error {
 		"model": model,
 		"query": insertNetworkIpamQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.IpamSubnetMethod),
-		string(model.UUID),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
+	_, err = stmt.Exec(string(model.NetworkIpamMGMT.IpamMethod),
 		string(model.NetworkIpamMGMT.IpamDNSMethod),
 		string(model.NetworkIpamMGMT.IpamDNSServer.TenantDNSServerAddress.IPAddress),
 		string(model.NetworkIpamMGMT.IpamDNSServer.VirtualDNSServerName),
-		utils.MustJSON(model.NetworkIpamMGMT.DHCPOptionList.DHCPOption),
-		utils.MustJSON(model.NetworkIpamMGMT.HostRoutes.Route),
+		common.MustJSON(model.NetworkIpamMGMT.DHCPOptionList.DHCPOption),
+		common.MustJSON(model.NetworkIpamMGMT.HostRoutes.Route),
 		string(model.NetworkIpamMGMT.CidrBlock.IPPrefix),
 		int(model.NetworkIpamMGMT.CidrBlock.IPPrefixLen),
-		string(model.NetworkIpamMGMT.IpamMethod),
-		utils.MustJSON(model.IpamSubnets),
-		utils.MustJSON(model.FQName),
+		common.MustJSON(model.IpamSubnets),
+		string(model.IpamSubnetMethod),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		int(model.IDPerms.Permissions.OtherAccess),
 		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair))
+		common.MustJSON(model.Annotations.KeyValuePair),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share),
+		string(model.UUID),
+		common.MustJSON(model.FQName))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -111,6 +110,7 @@ func CreateNetworkIpam(tx *sql.Tx, model *models.NetworkIpam) error {
 	}
 	defer stmtVirtualDNSRef.Close()
 	for _, ref := range model.VirtualDNSRefs {
+
 		_, err = stmtVirtualDNSRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualDNSRefs create failed")
@@ -126,55 +126,17 @@ func CreateNetworkIpam(tx *sql.Tx, model *models.NetworkIpam) error {
 func scanNetworkIpam(values map[string]interface{}) (*models.NetworkIpam, error) {
 	m := models.MakeNetworkIpam()
 
-	if value, ok := values["ipam_subnet_method"]; ok {
+	if value, ok := values["ipam_method"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IpamSubnetMethod = models.SubnetMethodType(castedValue)
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.UUID = castedValue
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.NetworkIpamMGMT.IpamMethod = models.IpamMethodType(castedValue)
 
 	}
 
 	if value, ok := values["ipam_dns_method"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.NetworkIpamMGMT.IpamDNSMethod = models.IpamDnsMethodType(castedValue)
 
@@ -182,7 +144,7 @@ func scanNetworkIpam(values map[string]interface{}) (*models.NetworkIpam, error)
 
 	if value, ok := values["ip_address"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.NetworkIpamMGMT.IpamDNSServer.TenantDNSServerAddress.IPAddress = models.IpAddressType(castedValue)
 
@@ -190,7 +152,7 @@ func scanNetworkIpam(values map[string]interface{}) (*models.NetworkIpam, error)
 
 	if value, ok := values["virtual_dns_server_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.NetworkIpamMGMT.IpamDNSServer.VirtualDNSServerName = castedValue
 
@@ -210,7 +172,7 @@ func scanNetworkIpam(values map[string]interface{}) (*models.NetworkIpam, error)
 
 	if value, ok := values["ip_prefix"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.NetworkIpamMGMT.CidrBlock.IPPrefix = castedValue
 
@@ -218,17 +180,9 @@ func scanNetworkIpam(values map[string]interface{}) (*models.NetworkIpam, error)
 
 	if value, ok := values["ip_prefix_len"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.NetworkIpamMGMT.CidrBlock.IPPrefixLen = castedValue
-
-	}
-
-	if value, ok := values["ipam_method"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.NetworkIpamMGMT.IpamMethod = models.IpamMethodType(castedValue)
 
 	}
 
@@ -238,87 +192,17 @@ func scanNetworkIpam(values map[string]interface{}) (*models.NetworkIpam, error)
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["ipam_subnet_method"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
+		castedValue := common.InterfaceToString(value)
 
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["permissions_owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["permissions_owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
+		m.IpamSubnetMethod = models.SubnetMethodType(castedValue)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Description = castedValue
 
@@ -326,15 +210,87 @@ func scanNetworkIpam(values map[string]interface{}) (*models.NetworkIpam, error)
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Created = castedValue
 
 	}
 
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
 
@@ -346,14 +302,64 @@ func scanNetworkIpam(values map[string]interface{}) (*models.NetworkIpam, error)
 
 	}
 
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
 	if value, ok := values["ref_virtual_DNS"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.NetworkIpamVirtualDNSRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.VirtualDNSRefs = append(m.VirtualDNSRefs, referenceModel)
 
 		}
@@ -363,7 +369,7 @@ func scanNetworkIpam(values map[string]interface{}) (*models.NetworkIpam, error)
 }
 
 // ListNetworkIpam lists NetworkIpam with list spec.
-func ListNetworkIpam(tx *sql.Tx, spec *db.ListSpec) ([]*models.NetworkIpam, error) {
+func ListNetworkIpam(tx *sql.Tx, spec *common.ListSpec) ([]*models.NetworkIpam, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -371,7 +377,7 @@ func ListNetworkIpam(tx *sql.Tx, spec *db.ListSpec) ([]*models.NetworkIpam, erro
 	spec.Fields = NetworkIpamFields
 	spec.RefFields = NetworkIpamRefFields
 	result := models.MakeNetworkIpamSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -412,7 +418,7 @@ func ListNetworkIpam(tx *sql.Tx, spec *db.ListSpec) ([]*models.NetworkIpam, erro
 
 // ShowNetworkIpam shows NetworkIpam resource
 func ShowNetworkIpam(tx *sql.Tx, uuid string) (*models.NetworkIpam, error) {
-	list, err := ListNetworkIpam(tx, &db.ListSpec{
+	list, err := ListNetworkIpam(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

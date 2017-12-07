@@ -6,11 +6,11 @@ import "encoding/json"
 
 // PermType
 type PermType struct {
-	Owner       string     `json:"owner"`
-	OwnerAccess AccessType `json:"owner_access"`
 	OtherAccess AccessType `json:"other_access"`
 	Group       string     `json:"group"`
 	GroupAccess AccessType `json:"group_access"`
+	Owner       string     `json:"owner"`
+	OwnerAccess AccessType `json:"owner_access"`
 }
 
 //  parents relation object
@@ -25,11 +25,11 @@ func (model *PermType) String() string {
 func MakePermType() *PermType {
 	return &PermType{
 		//TODO(nati): Apply default
-		OtherAccess: MakeAccessType(),
-		Group:       "",
 		GroupAccess: MakeAccessType(),
 		Owner:       "",
 		OwnerAccess: MakeAccessType(),
+		OtherAccess: MakeAccessType(),
+		Group:       "",
 	}
 }
 

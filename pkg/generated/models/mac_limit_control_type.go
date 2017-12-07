@@ -6,8 +6,8 @@ import "encoding/json"
 
 // MACLimitControlType
 type MACLimitControlType struct {
-	MacLimit       int                      `json:"mac_limit"`
 	MacLimitAction MACLimitExceedActionType `json:"mac_limit_action"`
+	MacLimit       int                      `json:"mac_limit"`
 }
 
 //  parents relation object
@@ -22,8 +22,8 @@ func (model *MACLimitControlType) String() string {
 func MakeMACLimitControlType() *MACLimitControlType {
 	return &MACLimitControlType{
 		//TODO(nati): Apply default
-		MacLimit:       0,
 		MacLimitAction: MakeMACLimitExceedActionType(),
+		MacLimit:       0,
 	}
 }
 

@@ -23,9 +23,9 @@ func (model *ControlTrafficDscpType) String() string {
 func MakeControlTrafficDscpType() *ControlTrafficDscpType {
 	return &ControlTrafficDscpType{
 		//TODO(nati): Apply default
+		Analytics: MakeDscpValueType(),
 		DNS:       MakeDscpValueType(),
 		Control:   MakeDscpValueType(),
-		Analytics: MakeDscpValueType(),
 	}
 }
 

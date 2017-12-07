@@ -4,52 +4,51 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertE2ServiceProviderQuery = "insert into `e2_service_provider` (`display_name`,`key_value_pair`,`owner`,`owner_access`,`global_access`,`share`,`e2_service_provider_promiscuous`,`uuid`,`fq_name`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateE2ServiceProviderQuery = "update `e2_service_provider` set `display_name` = ?,`key_value_pair` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`e2_service_provider_promiscuous` = ?,`uuid` = ?,`fq_name` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?;"
+const insertE2ServiceProviderQuery = "insert into `e2_service_provider` (`fq_name`,`last_modified`,`group_access`,`owner`,`owner_access`,`other_access`,`group`,`enable`,`description`,`created`,`creator`,`user_visible`,`e2_service_provider_promiscuous`,`display_name`,`key_value_pair`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateE2ServiceProviderQuery = "update `e2_service_provider` set `fq_name` = ?,`last_modified` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`e2_service_provider_promiscuous` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?;"
 const deleteE2ServiceProviderQuery = "delete from `e2_service_provider` where uuid = ?"
 
 // E2ServiceProviderFields is db columns for E2ServiceProvider
 var E2ServiceProviderFields = []string{
-	"display_name",
-	"key_value_pair",
+	"fq_name",
+	"last_modified",
+	"group_access",
 	"owner",
 	"owner_access",
-	"global_access",
-	"share",
-	"e2_service_provider_promiscuous",
-	"uuid",
-	"fq_name",
-	"permissions_owner",
-	"permissions_owner_access",
 	"other_access",
 	"group",
-	"group_access",
 	"enable",
 	"description",
 	"created",
 	"creator",
 	"user_visible",
-	"last_modified",
+	"e2_service_provider_promiscuous",
+	"display_name",
+	"key_value_pair",
+	"perms2_owner",
+	"perms2_owner_access",
+	"global_access",
+	"share",
+	"uuid",
 }
 
 // E2ServiceProviderRefFields is db reference fields for E2ServiceProvider
 var E2ServiceProviderRefFields = map[string][]string{
 
 	"physical_router": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 
 	"peering_policy": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 }
@@ -70,40 +69,28 @@ func CreateE2ServiceProvider(tx *sql.Tx, model *models.E2ServiceProvider) error 
 		"model": model,
 		"query": insertE2ServiceProviderQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		bool(model.E2ServiceProviderPromiscuous),
-		string(model.UUID),
-		utils.MustJSON(model.FQName),
+	_, err = stmt.Exec(common.MustJSON(model.FQName),
+		string(model.IDPerms.LastModified),
+		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified))
+		bool(model.E2ServiceProviderPromiscuous),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share),
+		string(model.UUID))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
-	}
-
-	stmtPhysicalRouterRef, err := tx.Prepare(insertE2ServiceProviderPhysicalRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing PhysicalRouterRefs create statement failed")
-	}
-	defer stmtPhysicalRouterRef.Close()
-	for _, ref := range model.PhysicalRouterRefs {
-		_, err = stmtPhysicalRouterRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "PhysicalRouterRefs create failed")
-		}
 	}
 
 	stmtPeeringPolicyRef, err := tx.Prepare(insertE2ServiceProviderPeeringPolicyQuery)
@@ -112,9 +99,23 @@ func CreateE2ServiceProvider(tx *sql.Tx, model *models.E2ServiceProvider) error 
 	}
 	defer stmtPeeringPolicyRef.Close()
 	for _, ref := range model.PeeringPolicyRefs {
+
 		_, err = stmtPeeringPolicyRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PeeringPolicyRefs create failed")
+		}
+	}
+
+	stmtPhysicalRouterRef, err := tx.Prepare(insertE2ServiceProviderPhysicalRouterQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing PhysicalRouterRefs create statement failed")
+	}
+	defer stmtPhysicalRouterRef.Close()
+	for _, ref := range model.PhysicalRouterRefs {
+
+		_, err = stmtPhysicalRouterRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "PhysicalRouterRefs create failed")
 		}
 	}
 
@@ -127,9 +128,111 @@ func CreateE2ServiceProvider(tx *sql.Tx, model *models.E2ServiceProvider) error 
 func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProvider, error) {
 	m := models.MakeE2ServiceProvider()
 
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["e2_service_provider_promiscuous"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.E2ServiceProviderPromiscuous = castedValue
+
+	}
+
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
 
@@ -141,17 +244,17 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 
 	}
 
-	if value, ok := values["owner"]; ok {
+	if value, ok := values["perms2_owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.Perms2.Owner = castedValue
 
 	}
 
-	if value, ok := values["owner_access"]; ok {
+	if value, ok := values["perms2_owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
@@ -159,7 +262,7 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
@@ -171,124 +274,28 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 
 	}
 
-	if value, ok := values["e2_service_provider_promiscuous"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.E2ServiceProviderPromiscuous = castedValue
-
-	}
-
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.UUID = castedValue
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["permissions_owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["permissions_owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
 	if value, ok := values["ref_physical_router"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.E2ServiceProviderPhysicalRouterRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
 
 		}
@@ -296,12 +303,18 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 
 	if value, ok := values["ref_peering_policy"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.E2ServiceProviderPeeringPolicyRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.PeeringPolicyRefs = append(m.PeeringPolicyRefs, referenceModel)
 
 		}
@@ -311,7 +324,7 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 }
 
 // ListE2ServiceProvider lists E2ServiceProvider with list spec.
-func ListE2ServiceProvider(tx *sql.Tx, spec *db.ListSpec) ([]*models.E2ServiceProvider, error) {
+func ListE2ServiceProvider(tx *sql.Tx, spec *common.ListSpec) ([]*models.E2ServiceProvider, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -319,7 +332,7 @@ func ListE2ServiceProvider(tx *sql.Tx, spec *db.ListSpec) ([]*models.E2ServicePr
 	spec.Fields = E2ServiceProviderFields
 	spec.RefFields = E2ServiceProviderRefFields
 	result := models.MakeE2ServiceProviderSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -360,7 +373,7 @@ func ListE2ServiceProvider(tx *sql.Tx, spec *db.ListSpec) ([]*models.E2ServicePr
 
 // ShowE2ServiceProvider shows E2ServiceProvider resource
 func ShowE2ServiceProvider(tx *sql.Tx, uuid string) (*models.E2ServiceProvider, error) {
-	list, err := ListE2ServiceProvider(tx, &db.ListSpec{
+	list, err := ListE2ServiceProvider(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

@@ -4,48 +4,47 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertOpenstackComputeNodeRoleQuery = "insert into `openstack_compute_node_role` (`fq_name`,`uuid`,`key_value_pair`,`provisioning_start_time`,`provisioning_state`,`default_gateway`,`vrouter_bond_interface_members`,`vrouter_type`,`owner`,`owner_access`,`global_access`,`share`,`provisioning_progress`,`provisioning_progress_stage`,`vrouter_bond_interface`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`display_name`,`provisioning_log`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateOpenstackComputeNodeRoleQuery = "update `openstack_compute_node_role` set `fq_name` = ?,`uuid` = ?,`key_value_pair` = ?,`provisioning_start_time` = ?,`provisioning_state` = ?,`default_gateway` = ?,`vrouter_bond_interface_members` = ?,`vrouter_type` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`provisioning_progress` = ?,`provisioning_progress_stage` = ?,`vrouter_bond_interface` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`display_name` = ?,`provisioning_log` = ?;"
+const insertOpenstackComputeNodeRoleQuery = "insert into `openstack_compute_node_role` (`vrouter_bond_interface_members`,`vrouter_type`,`group_access`,`owner`,`owner_access`,`other_access`,`group`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`provisioning_progress_stage`,`display_name`,`key_value_pair`,`provisioning_start_time`,`provisioning_state`,`default_gateway`,`fq_name`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`provisioning_log`,`provisioning_progress`,`vrouter_bond_interface`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateOpenstackComputeNodeRoleQuery = "update `openstack_compute_node_role` set `vrouter_bond_interface_members` = ?,`vrouter_type` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`provisioning_progress_stage` = ?,`display_name` = ?,`key_value_pair` = ?,`provisioning_start_time` = ?,`provisioning_state` = ?,`default_gateway` = ?,`fq_name` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`provisioning_log` = ?,`provisioning_progress` = ?,`vrouter_bond_interface` = ?,`uuid` = ?;"
 const deleteOpenstackComputeNodeRoleQuery = "delete from `openstack_compute_node_role` where uuid = ?"
 
 // OpenstackComputeNodeRoleFields is db columns for OpenstackComputeNodeRole
 var OpenstackComputeNodeRoleFields = []string{
-	"fq_name",
-	"uuid",
-	"key_value_pair",
-	"provisioning_start_time",
-	"provisioning_state",
-	"default_gateway",
 	"vrouter_bond_interface_members",
 	"vrouter_type",
+	"group_access",
 	"owner",
 	"owner_access",
-	"global_access",
-	"share",
-	"provisioning_progress",
-	"provisioning_progress_stage",
-	"vrouter_bond_interface",
+	"other_access",
+	"group",
 	"enable",
 	"description",
 	"created",
 	"creator",
 	"user_visible",
 	"last_modified",
-	"permissions_owner",
-	"permissions_owner_access",
-	"other_access",
-	"group",
-	"group_access",
+	"provisioning_progress_stage",
 	"display_name",
+	"key_value_pair",
+	"provisioning_start_time",
+	"provisioning_state",
+	"default_gateway",
+	"fq_name",
+	"global_access",
+	"share",
+	"perms2_owner",
+	"perms2_owner_access",
 	"provisioning_log",
+	"provisioning_progress",
+	"vrouter_bond_interface",
+	"uuid",
 }
 
 // OpenstackComputeNodeRoleRefFields is db reference fields for OpenstackComputeNodeRole
@@ -63,34 +62,34 @@ func CreateOpenstackComputeNodeRole(tx *sql.Tx, model *models.OpenstackComputeNo
 		"model": model,
 		"query": insertOpenstackComputeNodeRoleQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(utils.MustJSON(model.FQName),
-		string(model.UUID),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		string(model.ProvisioningStartTime),
-		string(model.ProvisioningState),
-		string(model.DefaultGateway),
-		string(model.VrouterBondInterfaceMembers),
+	_, err = stmt.Exec(string(model.VrouterBondInterfaceMembers),
 		string(model.VrouterType),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		int(model.ProvisioningProgress),
-		string(model.ProvisioningProgressStage),
-		string(model.VrouterBondInterface),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		int(model.IDPerms.Permissions.OtherAccess),
+		string(model.IDPerms.Permissions.Group),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.ProvisioningProgressStage),
 		string(model.DisplayName),
-		string(model.ProvisioningLog))
+		common.MustJSON(model.Annotations.KeyValuePair),
+		string(model.ProvisioningStartTime),
+		string(model.ProvisioningState),
+		string(model.DefaultGateway),
+		common.MustJSON(model.FQName),
+		int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		string(model.ProvisioningLog),
+		int(model.ProvisioningProgress),
+		string(model.VrouterBondInterface),
+		string(model.UUID))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -104,17 +103,123 @@ func CreateOpenstackComputeNodeRole(tx *sql.Tx, model *models.OpenstackComputeNo
 func scanOpenstackComputeNodeRole(values map[string]interface{}) (*models.OpenstackComputeNodeRole, error) {
 	m := models.MakeOpenstackComputeNodeRole()
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["vrouter_bond_interface_members"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
+		castedValue := common.InterfaceToString(value)
+
+		m.VrouterBondInterfaceMembers = castedValue
 
 	}
 
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["vrouter_type"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.UUID = castedValue
+		m.VrouterType = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["provisioning_progress_stage"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ProvisioningProgressStage = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
 
 	}
 
@@ -126,7 +231,7 @@ func scanOpenstackComputeNodeRole(values map[string]interface{}) (*models.Openst
 
 	if value, ok := values["provisioning_start_time"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.ProvisioningStartTime = castedValue
 
@@ -134,7 +239,7 @@ func scanOpenstackComputeNodeRole(values map[string]interface{}) (*models.Openst
 
 	if value, ok := values["provisioning_state"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.ProvisioningState = castedValue
 
@@ -142,47 +247,21 @@ func scanOpenstackComputeNodeRole(values map[string]interface{}) (*models.Openst
 
 	if value, ok := values["default_gateway"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DefaultGateway = castedValue
 
 	}
 
-	if value, ok := values["vrouter_bond_interface_members"]; ok {
+	if value, ok := values["fq_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
-
-		m.VrouterBondInterfaceMembers = castedValue
-
-	}
-
-	if value, ok := values["vrouter_type"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.VrouterType = castedValue
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
@@ -194,131 +273,51 @@ func scanOpenstackComputeNodeRole(values map[string]interface{}) (*models.Openst
 
 	}
 
-	if value, ok := values["provisioning_progress"]; ok {
+	if value, ok := values["perms2_owner"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.ProvisioningProgress = castedValue
-
-	}
-
-	if value, ok := values["provisioning_progress_stage"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.ProvisioningProgressStage = castedValue
+		m.Perms2.Owner = castedValue
 
 	}
 
-	if value, ok := values["vrouter_bond_interface"]; ok {
+	if value, ok := values["perms2_owner_access"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.VrouterBondInterface = castedValue
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["permissions_owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["permissions_owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
 	if value, ok := values["provisioning_log"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.ProvisioningLog = castedValue
+
+	}
+
+	if value, ok := values["provisioning_progress"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.ProvisioningProgress = castedValue
+
+	}
+
+	if value, ok := values["vrouter_bond_interface"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.VrouterBondInterface = castedValue
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
 
 	}
 
@@ -326,7 +325,7 @@ func scanOpenstackComputeNodeRole(values map[string]interface{}) (*models.Openst
 }
 
 // ListOpenstackComputeNodeRole lists OpenstackComputeNodeRole with list spec.
-func ListOpenstackComputeNodeRole(tx *sql.Tx, spec *db.ListSpec) ([]*models.OpenstackComputeNodeRole, error) {
+func ListOpenstackComputeNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.OpenstackComputeNodeRole, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -334,7 +333,7 @@ func ListOpenstackComputeNodeRole(tx *sql.Tx, spec *db.ListSpec) ([]*models.Open
 	spec.Fields = OpenstackComputeNodeRoleFields
 	spec.RefFields = OpenstackComputeNodeRoleRefFields
 	result := models.MakeOpenstackComputeNodeRoleSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -375,7 +374,7 @@ func ListOpenstackComputeNodeRole(tx *sql.Tx, spec *db.ListSpec) ([]*models.Open
 
 // ShowOpenstackComputeNodeRole shows OpenstackComputeNodeRole resource
 func ShowOpenstackComputeNodeRole(tx *sql.Tx, uuid string) (*models.OpenstackComputeNodeRole, error) {
-	list, err := ListOpenstackComputeNodeRole(tx, &db.ListSpec{
+	list, err := ListOpenstackComputeNodeRole(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

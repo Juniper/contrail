@@ -6,12 +6,12 @@ import "encoding/json"
 
 // IpamType
 type IpamType struct {
+	IpamMethod     IpamMethodType       `json:"ipam_method"`
+	IpamDNSMethod  IpamDnsMethodType    `json:"ipam_dns_method"`
 	IpamDNSServer  *IpamDnsAddressType  `json:"ipam_dns_server"`
 	DHCPOptionList *DhcpOptionsListType `json:"dhcp_option_list"`
 	HostRoutes     *RouteTableType      `json:"host_routes"`
 	CidrBlock      *SubnetType          `json:"cidr_block"`
-	IpamMethod     IpamMethodType       `json:"ipam_method"`
-	IpamDNSMethod  IpamDnsMethodType    `json:"ipam_dns_method"`
 }
 
 //  parents relation object
@@ -39,6 +39,9 @@ func MakeIpamType() *IpamType {
 func InterfaceToIpamType(iData interface{}) *IpamType {
 	data := iData.(map[string]interface{})
 	return &IpamType{
+		IpamDNSMethod: InterfaceToIpamDnsMethodType(data["ipam_dns_method"]),
+
+		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["none","default-dns-server","tenant-dns-server","virtual-dns-server"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/IpamDnsMethodType","CollectionType":"","Column":"","Item":null,"GoName":"IpamDNSMethod","GoType":"IpamDnsMethodType","GoPremitive":false}
 		IpamDNSServer: InterfaceToIpamDnsAddressType(data["ipam_dns_server"]),
 
 		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"object","Permission":null,"Properties":{"tenant_dns_server_address":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"object","Permission":null,"Properties":{"ip_address":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/IpAddressType","CollectionType":"","Column":"","Item":null,"GoName":"IPAddress","GoType":"IpAddressType","GoPremitive":false}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/IpAddressesType","CollectionType":"","Column":"","Item":null,"GoName":"TenantDNSServerAddress","GoType":"IpAddressesType","GoPremitive":false},"virtual_dns_server_name":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"VirtualDNSServerName","GoType":"string","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/IpamDnsAddressType","CollectionType":"","Column":"","Item":null,"GoName":"IpamDNSServer","GoType":"IpamDnsAddressType","GoPremitive":false}
@@ -54,9 +57,6 @@ func InterfaceToIpamType(iData interface{}) *IpamType {
 		IpamMethod: InterfaceToIpamMethodType(data["ipam_method"]),
 
 		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["dhcp","fixed"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/IpamMethodType","CollectionType":"","Column":"","Item":null,"GoName":"IpamMethod","GoType":"IpamMethodType","GoPremitive":false}
-		IpamDNSMethod: InterfaceToIpamDnsMethodType(data["ipam_dns_method"]),
-
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["none","default-dns-server","tenant-dns-server","virtual-dns-server"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/IpamDnsMethodType","CollectionType":"","Column":"","Item":null,"GoName":"IpamDNSMethod","GoType":"IpamDnsMethodType","GoPremitive":false}
 
 	}
 }

@@ -4,66 +4,65 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertLocationQuery = "insert into `location` (`private_ospd_user_name`,`gcp_account_info`,`gcp_subnet`,`uuid`,`private_ntp_hosts`,`aws_subnet`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`display_name`,`provisioning_start_time`,`private_dns_servers`,`private_ospd_vm_ram_mb`,`private_redhat_subscription_user`,`aws_secret_key`,`private_ospd_package_url`,`private_ospd_user_password`,`private_redhat_subscription_key`,`gcp_region`,`type`,`key_value_pair`,`provisioning_state`,`provisioning_progress`,`private_redhat_subscription_pasword`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`,`provisioning_progress_stage`,`provisioning_log`,`private_ospd_vm_disk_gb`,`private_ospd_vm_name`,`private_ospd_vm_vcpus`,`private_redhat_pool_id`,`fq_name`,`gcp_asn`,`aws_access_key`,`aws_region`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateLocationQuery = "update `location` set `private_ospd_user_name` = ?,`gcp_account_info` = ?,`gcp_subnet` = ?,`uuid` = ?,`private_ntp_hosts` = ?,`aws_subnet` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`display_name` = ?,`provisioning_start_time` = ?,`private_dns_servers` = ?,`private_ospd_vm_ram_mb` = ?,`private_redhat_subscription_user` = ?,`aws_secret_key` = ?,`private_ospd_package_url` = ?,`private_ospd_user_password` = ?,`private_redhat_subscription_key` = ?,`gcp_region` = ?,`type` = ?,`key_value_pair` = ?,`provisioning_state` = ?,`provisioning_progress` = ?,`private_redhat_subscription_pasword` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`provisioning_progress_stage` = ?,`provisioning_log` = ?,`private_ospd_vm_disk_gb` = ?,`private_ospd_vm_name` = ?,`private_ospd_vm_vcpus` = ?,`private_redhat_pool_id` = ?,`fq_name` = ?,`gcp_asn` = ?,`aws_access_key` = ?,`aws_region` = ?;"
+const insertLocationQuery = "insert into `location` (`private_ospd_vm_disk_gb`,`private_ospd_vm_vcpus`,`gcp_region`,`other_access`,`group`,`group_access`,`owner`,`owner_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`provisioning_progress`,`provisioning_state`,`private_redhat_subscription_pasword`,`gcp_asn`,`aws_access_key`,`aws_subnet`,`fq_name`,`private_redhat_subscription_key`,`gcp_subnet`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`private_ospd_vm_ram_mb`,`aws_secret_key`,`type`,`private_ospd_package_url`,`private_ospd_user_name`,`private_redhat_pool_id`,`provisioning_log`,`provisioning_start_time`,`private_dns_servers`,`private_ntp_hosts`,`aws_region`,`display_name`,`provisioning_progress_stage`,`private_ospd_vm_name`,`private_redhat_subscription_user`,`key_value_pair`,`private_ospd_user_password`,`gcp_account_info`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateLocationQuery = "update `location` set `private_ospd_vm_disk_gb` = ?,`private_ospd_vm_vcpus` = ?,`gcp_region` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`provisioning_progress` = ?,`provisioning_state` = ?,`private_redhat_subscription_pasword` = ?,`gcp_asn` = ?,`aws_access_key` = ?,`aws_subnet` = ?,`fq_name` = ?,`private_redhat_subscription_key` = ?,`gcp_subnet` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`private_ospd_vm_ram_mb` = ?,`aws_secret_key` = ?,`type` = ?,`private_ospd_package_url` = ?,`private_ospd_user_name` = ?,`private_redhat_pool_id` = ?,`provisioning_log` = ?,`provisioning_start_time` = ?,`private_dns_servers` = ?,`private_ntp_hosts` = ?,`aws_region` = ?,`display_name` = ?,`provisioning_progress_stage` = ?,`private_ospd_vm_name` = ?,`private_redhat_subscription_user` = ?,`key_value_pair` = ?,`private_ospd_user_password` = ?,`gcp_account_info` = ?,`uuid` = ?;"
 const deleteLocationQuery = "delete from `location` where uuid = ?"
 
 // LocationFields is db columns for Location
 var LocationFields = []string{
-	"private_ospd_user_name",
-	"gcp_account_info",
-	"gcp_subnet",
-	"uuid",
-	"private_ntp_hosts",
-	"aws_subnet",
+	"private_ospd_vm_disk_gb",
+	"private_ospd_vm_vcpus",
+	"gcp_region",
+	"other_access",
+	"group",
+	"group_access",
+	"owner",
+	"owner_access",
 	"enable",
 	"description",
 	"created",
 	"creator",
 	"user_visible",
 	"last_modified",
-	"owner",
-	"owner_access",
-	"other_access",
-	"group",
-	"group_access",
-	"display_name",
-	"provisioning_start_time",
-	"private_dns_servers",
-	"private_ospd_vm_ram_mb",
-	"private_redhat_subscription_user",
-	"aws_secret_key",
-	"private_ospd_package_url",
-	"private_ospd_user_password",
-	"private_redhat_subscription_key",
-	"gcp_region",
-	"type",
-	"key_value_pair",
-	"provisioning_state",
 	"provisioning_progress",
+	"provisioning_state",
 	"private_redhat_subscription_pasword",
-	"perms2_owner",
-	"perms2_owner_access",
-	"global_access",
-	"share",
-	"provisioning_progress_stage",
-	"provisioning_log",
-	"private_ospd_vm_disk_gb",
-	"private_ospd_vm_name",
-	"private_ospd_vm_vcpus",
-	"private_redhat_pool_id",
-	"fq_name",
 	"gcp_asn",
 	"aws_access_key",
+	"aws_subnet",
+	"fq_name",
+	"private_redhat_subscription_key",
+	"gcp_subnet",
+	"global_access",
+	"share",
+	"perms2_owner",
+	"perms2_owner_access",
+	"private_ospd_vm_ram_mb",
+	"aws_secret_key",
+	"type",
+	"private_ospd_package_url",
+	"private_ospd_user_name",
+	"private_redhat_pool_id",
+	"provisioning_log",
+	"provisioning_start_time",
+	"private_dns_servers",
+	"private_ntp_hosts",
 	"aws_region",
+	"display_name",
+	"provisioning_progress_stage",
+	"private_ospd_vm_name",
+	"private_redhat_subscription_user",
+	"key_value_pair",
+	"private_ospd_user_password",
+	"gcp_account_info",
+	"uuid",
 }
 
 // LocationRefFields is db reference fields for Location
@@ -81,52 +80,52 @@ func CreateLocation(tx *sql.Tx, model *models.Location) error {
 		"model": model,
 		"query": insertLocationQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.PrivateOspdUserName),
-		string(model.GCPAccountInfo),
-		string(model.GCPSubnet),
-		string(model.UUID),
-		string(model.PrivateNTPHosts),
-		string(model.AwsSubnet),
+	_, err = stmt.Exec(string(model.PrivateOspdVMDiskGB),
+		string(model.PrivateOspdVMVcpus),
+		string(model.GCPRegion),
+		int(model.IDPerms.Permissions.OtherAccess),
+		string(model.IDPerms.Permissions.Group),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.DisplayName),
-		string(model.ProvisioningStartTime),
-		string(model.PrivateDNSServers),
-		string(model.PrivateOspdVMRAMMB),
-		string(model.PrivateRedhatSubscriptionUser),
-		string(model.AwsSecretKey),
-		string(model.PrivateOspdPackageURL),
-		string(model.PrivateOspdUserPassword),
-		string(model.PrivateRedhatSubscriptionKey),
-		string(model.GCPRegion),
-		string(model.Type),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		string(model.ProvisioningState),
 		int(model.ProvisioningProgress),
+		string(model.ProvisioningState),
 		string(model.PrivateRedhatSubscriptionPasword),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.ProvisioningProgressStage),
-		string(model.ProvisioningLog),
-		string(model.PrivateOspdVMDiskGB),
-		string(model.PrivateOspdVMName),
-		string(model.PrivateOspdVMVcpus),
-		string(model.PrivateRedhatPoolID),
-		utils.MustJSON(model.FQName),
 		int(model.GCPAsn),
 		string(model.AwsAccessKey),
-		string(model.AwsRegion))
+		string(model.AwsSubnet),
+		common.MustJSON(model.FQName),
+		string(model.PrivateRedhatSubscriptionKey),
+		string(model.GCPSubnet),
+		int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		string(model.PrivateOspdVMRAMMB),
+		string(model.AwsSecretKey),
+		string(model.Type),
+		string(model.PrivateOspdPackageURL),
+		string(model.PrivateOspdUserName),
+		string(model.PrivateRedhatPoolID),
+		string(model.ProvisioningLog),
+		string(model.ProvisioningStartTime),
+		string(model.PrivateDNSServers),
+		string(model.PrivateNTPHosts),
+		string(model.AwsRegion),
+		string(model.DisplayName),
+		string(model.ProvisioningProgressStage),
+		string(model.PrivateOspdVMName),
+		string(model.PrivateRedhatSubscriptionUser),
+		common.MustJSON(model.Annotations.KeyValuePair),
+		string(model.PrivateOspdUserPassword),
+		string(model.GCPAccountInfo),
+		string(model.UUID))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -140,121 +139,33 @@ func CreateLocation(tx *sql.Tx, model *models.Location) error {
 func scanLocation(values map[string]interface{}) (*models.Location, error) {
 	m := models.MakeLocation()
 
-	if value, ok := values["private_ospd_user_name"]; ok {
+	if value, ok := values["private_ospd_vm_disk_gb"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.PrivateOspdUserName = castedValue
-
-	}
-
-	if value, ok := values["gcp_account_info"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.GCPAccountInfo = castedValue
+		m.PrivateOspdVMDiskGB = castedValue
 
 	}
 
-	if value, ok := values["gcp_subnet"]; ok {
+	if value, ok := values["private_ospd_vm_vcpus"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.GCPSubnet = castedValue
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.UUID = castedValue
+		m.PrivateOspdVMVcpus = castedValue
 
 	}
 
-	if value, ok := values["private_ntp_hosts"]; ok {
+	if value, ok := values["gcp_region"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.PrivateNTPHosts = castedValue
-
-	}
-
-	if value, ok := values["aws_subnet"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.AwsSubnet = castedValue
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.GCPRegion = castedValue
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
 
@@ -262,7 +173,7 @@ func scanLocation(values map[string]interface{}) (*models.Location, error) {
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Group = castedValue
 
@@ -270,149 +181,149 @@ func scanLocation(values map[string]interface{}) (*models.Location, error) {
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["display_name"]; ok {
+	if value, ok := values["owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["provisioning_start_time"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.ProvisioningStartTime = castedValue
+		m.IDPerms.Permissions.Owner = castedValue
 
 	}
 
-	if value, ok := values["private_dns_servers"]; ok {
+	if value, ok := values["owner_access"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.PrivateDNSServers = castedValue
-
-	}
-
-	if value, ok := values["private_ospd_vm_ram_mb"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.PrivateOspdVMRAMMB = castedValue
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["private_redhat_subscription_user"]; ok {
+	if value, ok := values["enable"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToBool(value)
 
-		m.PrivateRedhatSubscriptionUser = castedValue
-
-	}
-
-	if value, ok := values["aws_secret_key"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.AwsSecretKey = castedValue
+		m.IDPerms.Enable = castedValue
 
 	}
 
-	if value, ok := values["private_ospd_package_url"]; ok {
+	if value, ok := values["description"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.PrivateOspdPackageURL = castedValue
-
-	}
-
-	if value, ok := values["private_ospd_user_password"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.PrivateOspdUserPassword = castedValue
+		m.IDPerms.Description = castedValue
 
 	}
 
-	if value, ok := values["private_redhat_subscription_key"]; ok {
+	if value, ok := values["created"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.PrivateRedhatSubscriptionKey = castedValue
-
-	}
-
-	if value, ok := values["gcp_region"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.GCPRegion = castedValue
+		m.IDPerms.Created = castedValue
 
 	}
 
-	if value, ok := values["type"]; ok {
+	if value, ok := values["creator"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.Type = castedValue
-
-	}
-
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+		m.IDPerms.Creator = castedValue
 
 	}
 
-	if value, ok := values["provisioning_state"]; ok {
+	if value, ok := values["user_visible"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToBool(value)
 
-		m.ProvisioningState = castedValue
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
 	if value, ok := values["provisioning_progress"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.ProvisioningProgress = castedValue
 
 	}
 
+	if value, ok := values["provisioning_state"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ProvisioningState = castedValue
+
+	}
+
 	if value, ok := values["private_redhat_subscription_pasword"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.PrivateRedhatSubscriptionPasword = castedValue
 
 	}
 
-	if value, ok := values["perms2_owner"]; ok {
+	if value, ok := values["gcp_asn"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.Perms2.Owner = castedValue
+		m.GCPAsn = castedValue
 
 	}
 
-	if value, ok := values["perms2_owner_access"]; ok {
+	if value, ok := values["aws_access_key"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.AwsAccessKey = castedValue
+
+	}
+
+	if value, ok := values["aws_subnet"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.AwsSubnet = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["private_redhat_subscription_key"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.PrivateRedhatSubscriptionKey = castedValue
+
+	}
+
+	if value, ok := values["gcp_subnet"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.GCPSubnet = castedValue
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
@@ -424,81 +335,169 @@ func scanLocation(values map[string]interface{}) (*models.Location, error) {
 
 	}
 
-	if value, ok := values["provisioning_progress_stage"]; ok {
+	if value, ok := values["perms2_owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.ProvisioningProgressStage = castedValue
-
-	}
-
-	if value, ok := values["provisioning_log"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.ProvisioningLog = castedValue
+		m.Perms2.Owner = castedValue
 
 	}
 
-	if value, ok := values["private_ospd_vm_disk_gb"]; ok {
+	if value, ok := values["perms2_owner_access"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.PrivateOspdVMDiskGB = castedValue
-
-	}
-
-	if value, ok := values["private_ospd_vm_name"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.PrivateOspdVMName = castedValue
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["private_ospd_vm_vcpus"]; ok {
+	if value, ok := values["private_ospd_vm_ram_mb"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.PrivateOspdVMVcpus = castedValue
+		m.PrivateOspdVMRAMMB = castedValue
+
+	}
+
+	if value, ok := values["aws_secret_key"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.AwsSecretKey = castedValue
+
+	}
+
+	if value, ok := values["type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Type = castedValue
+
+	}
+
+	if value, ok := values["private_ospd_package_url"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.PrivateOspdPackageURL = castedValue
+
+	}
+
+	if value, ok := values["private_ospd_user_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.PrivateOspdUserName = castedValue
 
 	}
 
 	if value, ok := values["private_redhat_pool_id"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.PrivateRedhatPoolID = castedValue
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["provisioning_log"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
+		castedValue := common.InterfaceToString(value)
 
-	}
-
-	if value, ok := values["gcp_asn"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.GCPAsn = castedValue
+		m.ProvisioningLog = castedValue
 
 	}
 
-	if value, ok := values["aws_access_key"]; ok {
+	if value, ok := values["provisioning_start_time"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.AwsAccessKey = castedValue
+		m.ProvisioningStartTime = castedValue
+
+	}
+
+	if value, ok := values["private_dns_servers"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.PrivateDNSServers = castedValue
+
+	}
+
+	if value, ok := values["private_ntp_hosts"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.PrivateNTPHosts = castedValue
 
 	}
 
 	if value, ok := values["aws_region"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.AwsRegion = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["provisioning_progress_stage"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ProvisioningProgressStage = castedValue
+
+	}
+
+	if value, ok := values["private_ospd_vm_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.PrivateOspdVMName = castedValue
+
+	}
+
+	if value, ok := values["private_redhat_subscription_user"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.PrivateRedhatSubscriptionUser = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["private_ospd_user_password"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.PrivateOspdUserPassword = castedValue
+
+	}
+
+	if value, ok := values["gcp_account_info"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.GCPAccountInfo = castedValue
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
 
 	}
 
@@ -506,7 +505,7 @@ func scanLocation(values map[string]interface{}) (*models.Location, error) {
 }
 
 // ListLocation lists Location with list spec.
-func ListLocation(tx *sql.Tx, spec *db.ListSpec) ([]*models.Location, error) {
+func ListLocation(tx *sql.Tx, spec *common.ListSpec) ([]*models.Location, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -514,7 +513,7 @@ func ListLocation(tx *sql.Tx, spec *db.ListSpec) ([]*models.Location, error) {
 	spec.Fields = LocationFields
 	spec.RefFields = LocationRefFields
 	result := models.MakeLocationSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -555,7 +554,7 @@ func ListLocation(tx *sql.Tx, spec *db.ListSpec) ([]*models.Location, error) {
 
 // ShowLocation shows Location resource
 func ShowLocation(tx *sql.Tx, uuid string) (*models.Location, error) {
-	list, err := ListLocation(tx, &db.ListSpec{
+	list, err := ListLocation(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

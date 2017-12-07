@@ -6,9 +6,9 @@ import "encoding/json"
 
 // TelemetryResourceInfo
 type TelemetryResourceInfo struct {
-	Path string `json:"path"`
 	Rate string `json:"rate"`
 	Name string `json:"name"`
+	Path string `json:"path"`
 }
 
 //  parents relation object
@@ -23,9 +23,9 @@ func (model *TelemetryResourceInfo) String() string {
 func MakeTelemetryResourceInfo() *TelemetryResourceInfo {
 	return &TelemetryResourceInfo{
 		//TODO(nati): Apply default
+		Path: "",
 		Rate: "",
 		Name: "",
-		Path: "",
 	}
 }
 

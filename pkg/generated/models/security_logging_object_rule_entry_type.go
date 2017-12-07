@@ -31,12 +31,12 @@ func MakeSecurityLoggingObjectRuleEntryType() *SecurityLoggingObjectRuleEntryTyp
 func InterfaceToSecurityLoggingObjectRuleEntryType(iData interface{}) *SecurityLoggingObjectRuleEntryType {
 	data := iData.(map[string]interface{})
 	return &SecurityLoggingObjectRuleEntryType{
-		Rate: data["rate"].(int),
-
-		//{"Title":"","Description":"Rate at which sessions are logged. When rates are specified at multiple levels, the rate which specifies highest frequency is selected","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Rate","GoType":"int","GoPremitive":true}
 		RuleUUID: data["rule_uuid"].(string),
 
 		//{"Title":"","Description":"Rule UUID of network policy or security-group. When this is absent it implies all rules of security-group or network-policy","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"RuleUUID","GoType":"string","GoPremitive":true}
+		Rate: data["rate"].(int),
+
+		//{"Title":"","Description":"Rate at which sessions are logged. When rates are specified at multiple levels, the rate which specifies highest frequency is selected","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Rate","GoType":"int","GoPremitive":true}
 
 	}
 }

@@ -6,8 +6,7 @@ import (
     "fmt"
   	"database/sql"
     "encoding/json"
-    "github.com/Juniper/contrail/pkg/utils"
-    "github.com/Juniper/contrail/pkg/db"
+    "github.com/Juniper/contrail/pkg/common"
     "github.com/Juniper/contrail/pkg/generated/models"
     "github.com/pkg/errors"
 
@@ -52,7 +51,7 @@ func Create{{ schema.JSONSchema.GoName }}(tx *sql.Tx, model *models.{{ schema.JS
         "model": model,
         "query": insert{{ schema.JSONSchema.GoName }}Query,
     }).Debug("create query")
-    _, err = stmt.Exec({% for column in schema.Columns %}{% if column.Bind == "json" %}utils.MustJSON(model{{ column.Path }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.Path }}){% else %}model{{ column.Path }}{% endif %}{% if not forloop.Last %},
+    _, err = stmt.Exec({% for column in schema.Columns %}{% if column.Bind == "json" %}common.MustJSON(model{{ column.Path }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.Path }}){% else %}model{{ column.Path }}{% endif %}{% if not forloop.Last %},
     {% endif %}{% endfor %})
 	if err != nil {
         return errors.Wrap(err, "create failed")
@@ -64,7 +63,12 @@ func Create{{ schema.JSONSchema.GoName }}(tx *sql.Tx, model *models.{{ schema.JS
 	}
     defer stmt{{ reference.GoName }}Ref.Close()
     for _, ref := range model.{{ reference.GoName }}Refs {
-        _, err = stmt{{ reference.GoName }}Ref.Exec(model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}utils.MustJSON(ref.Attr{{ column.Path }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.Path }}){% else %}ref.Attr{{ column.Path }}{% endif %}{% if not forloop.Last %},
+       {% if reference.RefType  %}
+       if ref.Attr == nil {
+           ref.Attr = models.Make{{ reference.RefType }}()
+       } 
+       {% endif %}
+        _, err = stmt{{ reference.GoName }}Ref.Exec(model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.Path }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.Path }}){% else %}ref.Attr{{ column.Path }}{% endif %}{% if not forloop.Last %},
     {% endif %}{% endfor %})
 	    if err != nil {
             return errors.Wrap(err,"{{ reference.GoName }}Refs create failed")
@@ -85,11 +89,11 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
             json.Unmarshal(value.([]byte), &m{{ column.Path }})
         {% else %}
             {% if column.Bind == "int" %}
-                castedValue := utils.InterfaceToInt(value)
+                castedValue := common.InterfaceToInt(value)
             {% elif column.Bind == "bool" %}
-                castedValue := utils.InterfaceToBool(value)
+                castedValue := common.InterfaceToBool(value)
             {% elif column.Bind == "string" %}
-                castedValue := utils.InterfaceToString(value)
+                castedValue := common.InterfaceToString(value)
             {% else %}
                 castedValue, _ := value.({{ column.Bind }})
             {% endif %}
@@ -105,12 +109,18 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
     {% for linkTo, reference in schema.References %}
     if value, ok := values["ref_{{ linkTo }}"]; ok {
         var references []interface{}
-        stringValue := utils.InterfaceToString(value)
+        stringValue := common.InterfaceToString(value)
         json.Unmarshal([]byte("[" + stringValue + "]"), &references )
         for _, reference := range references {
-            referenceMap := reference.(map[string]interface{})
+            referenceMap, ok := reference.(map[string]interface{})
+            if !ok {
+                continue
+            }
+            if referenceMap["to"] == "" {
+                continue
+            }
             referenceModel := &models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{}
-            referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+            referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
             m.{{ reference.GoName }}Refs = append(m.{{ reference.GoName }}Refs, referenceModel)
             {% if reference.RefType %}
             attr := models.Make{{reference.RefType}}()
@@ -121,11 +131,11 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
                     json.Unmarshal(refAttrValue.([]byte), &attr{{ column.Path }})
                 {% else %}
                     {% if column.Bind == "int" %}
-                        castedValue := utils.InterfaceToInt(refAttrValue)
+                        castedValue := common.InterfaceToInt(refAttrValue)
                     {% elif column.Bind == "bool" %}
-                        castedValue := utils.InterfaceToBool(refAttrValue)
+                        castedValue := common.InterfaceToBool(refAttrValue)
                     {% elif column.Bind == "string" %}
-                        castedValue := utils.InterfaceToString(refAttrValue)
+                        castedValue := common.InterfaceToString(refAttrValue)
                     {% else %}
                         castedValue, _ := refAttrValue.({{ column.Bind }})
                     {% endif %}
@@ -145,7 +155,7 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
 }
 
 // List{{ schema.JSONSchema.GoName }} lists {{ schema.JSONSchema.GoName }} with list spec.
-func List{{ schema.JSONSchema.GoName }}(tx *sql.Tx, spec *db.ListSpec) ([]*models.{{ schema.JSONSchema.GoName }}, error) {
+func List{{ schema.JSONSchema.GoName }}(tx *sql.Tx, spec *common.ListSpec) ([]*models.{{ schema.JSONSchema.GoName }}, error) {
     var rows *sql.Rows
     var err error
     //TODO (check input)
@@ -153,7 +163,7 @@ func List{{ schema.JSONSchema.GoName }}(tx *sql.Tx, spec *db.ListSpec) ([]*model
     spec.Fields = {{ schema.JSONSchema.GoName }}Fields
     spec.RefFields = {{ schema.JSONSchema.GoName }}RefFields
     result := models.Make{{ schema.JSONSchema.GoName }}Slice()
-    query, columns, values := db.BuildListQuery(spec)
+    query, columns, values := common.BuildListQuery(spec)
     log.WithFields(log.Fields{
         "listSpec": spec, 
         "query": query,
@@ -194,7 +204,7 @@ func List{{ schema.JSONSchema.GoName }}(tx *sql.Tx, spec *db.ListSpec) ([]*model
 
 // Show{{ schema.JSONSchema.GoName }} shows {{ schema.JSONSchema.GoName }} resource
 func Show{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string) (*models.{{ schema.JSONSchema.GoName }}, error) {
-    list, err := List{{ schema.JSONSchema.GoName }}(tx, &db.ListSpec{
+    list, err := List{{ schema.JSONSchema.GoName }}(tx, &common.ListSpec{
         Filter: map[string]interface{}{"uuid": uuid}, 
         Limit: 1})
     if len(list) == 0 {

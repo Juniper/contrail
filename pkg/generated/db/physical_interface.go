@@ -4,47 +4,46 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertPhysicalInterfaceQuery = "insert into `physical_interface` (`ethernet_segment_identifier`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`display_name`,`key_value_pair`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updatePhysicalInterfaceQuery = "update `physical_interface` set `ethernet_segment_identifier` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`display_name` = ?,`key_value_pair` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`uuid` = ?,`fq_name` = ?;"
+const insertPhysicalInterfaceQuery = "insert into `physical_interface` (`fq_name`,`user_visible`,`last_modified`,`group_access`,`owner`,`owner_access`,`other_access`,`group`,`enable`,`description`,`created`,`creator`,`display_name`,`key_value_pair`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`ethernet_segment_identifier`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updatePhysicalInterfaceQuery = "update `physical_interface` set `fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`ethernet_segment_identifier` = ?,`uuid` = ?;"
 const deletePhysicalInterfaceQuery = "delete from `physical_interface` where uuid = ?"
 
 // PhysicalInterfaceFields is db columns for PhysicalInterface
 var PhysicalInterfaceFields = []string{
-	"ethernet_segment_identifier",
-	"enable",
-	"description",
-	"created",
-	"creator",
+	"fq_name",
 	"user_visible",
 	"last_modified",
+	"group_access",
 	"owner",
 	"owner_access",
 	"other_access",
 	"group",
-	"group_access",
+	"enable",
+	"description",
+	"created",
+	"creator",
 	"display_name",
 	"key_value_pair",
+	"global_access",
 	"share",
 	"perms2_owner",
 	"perms2_owner_access",
-	"global_access",
+	"ethernet_segment_identifier",
 	"uuid",
-	"fq_name",
 }
 
 // PhysicalInterfaceRefFields is db reference fields for PhysicalInterface
 var PhysicalInterfaceRefFields = map[string][]string{
 
 	"physical_interface": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 }
@@ -63,26 +62,26 @@ func CreatePhysicalInterface(tx *sql.Tx, model *models.PhysicalInterface) error 
 		"model": model,
 		"query": insertPhysicalInterfaceQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.EthernetSegmentIdentifier),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
+	_, err = stmt.Exec(common.MustJSON(model.FQName),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
+		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Created),
+		string(model.IDPerms.Creator),
 		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		utils.MustJSON(model.Perms2.Share),
+		common.MustJSON(model.Annotations.KeyValuePair),
+		int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share),
 		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		string(model.UUID),
-		utils.MustJSON(model.FQName))
+		string(model.EthernetSegmentIdentifier),
+		string(model.UUID))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -93,6 +92,7 @@ func CreatePhysicalInterface(tx *sql.Tx, model *models.PhysicalInterface) error 
 	}
 	defer stmtPhysicalInterfaceRef.Close()
 	for _, ref := range model.PhysicalInterfaceRefs {
+
 		_, err = stmtPhysicalInterfaceRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PhysicalInterfaceRefs create failed")
@@ -108,49 +108,15 @@ func CreatePhysicalInterface(tx *sql.Tx, model *models.PhysicalInterface) error 
 func scanPhysicalInterface(values map[string]interface{}) (*models.PhysicalInterface, error) {
 	m := models.MakePhysicalInterface()
 
-	if value, ok := values["ethernet_segment_identifier"]; ok {
+	if value, ok := values["fq_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
-
-		m.EthernetSegmentIdentifier = castedValue
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.UserVisible = castedValue
 
@@ -158,15 +124,23 @@ func scanPhysicalInterface(values map[string]interface{}) (*models.PhysicalInter
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.LastModified = castedValue
 
 	}
 
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Owner = castedValue
 
@@ -174,7 +148,7 @@ func scanPhysicalInterface(values map[string]interface{}) (*models.PhysicalInter
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
@@ -182,7 +156,7 @@ func scanPhysicalInterface(values map[string]interface{}) (*models.PhysicalInter
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
 
@@ -190,23 +164,47 @@ func scanPhysicalInterface(values map[string]interface{}) (*models.PhysicalInter
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Group = castedValue
 
 	}
 
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["enable"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToBool(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
 
 	}
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
 
@@ -218,6 +216,14 @@ func scanPhysicalInterface(values map[string]interface{}) (*models.PhysicalInter
 
 	}
 
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["share"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Perms2.Share)
@@ -226,7 +232,7 @@ func scanPhysicalInterface(values map[string]interface{}) (*models.PhysicalInter
 
 	if value, ok := values["perms2_owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.Perms2.Owner = castedValue
 
@@ -234,42 +240,42 @@ func scanPhysicalInterface(values map[string]interface{}) (*models.PhysicalInter
 
 	if value, ok := values["perms2_owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["global_access"]; ok {
+	if value, ok := values["ethernet_segment_identifier"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.EthernetSegmentIdentifier = castedValue
 
 	}
 
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.UUID = castedValue
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
 	if value, ok := values["ref_physical_interface"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.PhysicalInterfacePhysicalInterfaceRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.PhysicalInterfaceRefs = append(m.PhysicalInterfaceRefs, referenceModel)
 
 		}
@@ -279,7 +285,7 @@ func scanPhysicalInterface(values map[string]interface{}) (*models.PhysicalInter
 }
 
 // ListPhysicalInterface lists PhysicalInterface with list spec.
-func ListPhysicalInterface(tx *sql.Tx, spec *db.ListSpec) ([]*models.PhysicalInterface, error) {
+func ListPhysicalInterface(tx *sql.Tx, spec *common.ListSpec) ([]*models.PhysicalInterface, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -287,7 +293,7 @@ func ListPhysicalInterface(tx *sql.Tx, spec *db.ListSpec) ([]*models.PhysicalInt
 	spec.Fields = PhysicalInterfaceFields
 	spec.RefFields = PhysicalInterfaceRefFields
 	result := models.MakePhysicalInterfaceSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -328,7 +334,7 @@ func ListPhysicalInterface(tx *sql.Tx, spec *db.ListSpec) ([]*models.PhysicalInt
 
 // ShowPhysicalInterface shows PhysicalInterface resource
 func ShowPhysicalInterface(tx *sql.Tx, uuid string) (*models.PhysicalInterface, error) {
-	list, err := ListPhysicalInterface(tx, &db.ListSpec{
+	list, err := ListPhysicalInterface(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

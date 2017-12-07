@@ -4,27 +4,32 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertInterfaceRouteTableQuery = "insert into `interface_route_table` (`uuid`,`fq_name`,`other_access`,`group`,`group_access`,`owner`,`owner_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`display_name`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`,`route`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateInterfaceRouteTableQuery = "update `interface_route_table` set `uuid` = ?,`fq_name` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`route` = ?;"
+const insertInterfaceRouteTableQuery = "insert into `interface_route_table` (`key_value_pair`,`global_access`,`share`,`owner`,`owner_access`,`route`,`uuid`,`fq_name`,`other_access`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateInterfaceRouteTableQuery = "update `interface_route_table` set `key_value_pair` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`route` = ?,`uuid` = ?,`fq_name` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`display_name` = ?;"
 const deleteInterfaceRouteTableQuery = "delete from `interface_route_table` where uuid = ?"
 
 // InterfaceRouteTableFields is db columns for InterfaceRouteTable
 var InterfaceRouteTableFields = []string{
+	"key_value_pair",
+	"global_access",
+	"share",
+	"owner",
+	"owner_access",
+	"route",
 	"uuid",
 	"fq_name",
 	"other_access",
 	"group",
 	"group_access",
-	"owner",
-	"owner_access",
+	"permissions_owner",
+	"permissions_owner_access",
 	"enable",
 	"description",
 	"created",
@@ -32,19 +37,13 @@ var InterfaceRouteTableFields = []string{
 	"user_visible",
 	"last_modified",
 	"display_name",
-	"key_value_pair",
-	"perms2_owner_access",
-	"global_access",
-	"share",
-	"perms2_owner",
-	"route",
 }
 
 // InterfaceRouteTableRefFields is db reference fields for InterfaceRouteTable
 var InterfaceRouteTableRefFields = map[string][]string{
 
 	"service_instance": {
-		// <utils.Schema Value>
+		// <common.Schema Value>
 		"interface_type",
 	},
 }
@@ -63,8 +62,14 @@ func CreateInterfaceRouteTable(tx *sql.Tx, model *models.InterfaceRouteTable) er
 		"model": model,
 		"query": insertInterfaceRouteTableQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
-		utils.MustJSON(model.FQName),
+	_, err = stmt.Exec(common.MustJSON(model.Annotations.KeyValuePair),
+		int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		common.MustJSON(model.InterfaceRouteTableRoutes.Route),
+		string(model.UUID),
+		common.MustJSON(model.FQName),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
@@ -76,13 +81,7 @@ func CreateInterfaceRouteTable(tx *sql.Tx, model *models.InterfaceRouteTable) er
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		utils.MustJSON(model.InterfaceRouteTableRoutes.Route))
+		string(model.DisplayName))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -93,6 +92,11 @@ func CreateInterfaceRouteTable(tx *sql.Tx, model *models.InterfaceRouteTable) er
 	}
 	defer stmtServiceInstanceRef.Close()
 	for _, ref := range model.ServiceInstanceRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = models.MakeServiceInterfaceTag()
+		}
+
 		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID, string(ref.Attr.InterfaceType))
 		if err != nil {
 			return errors.Wrap(err, "ServiceInstanceRefs create failed")
@@ -108,9 +112,51 @@ func CreateInterfaceRouteTable(tx *sql.Tx, model *models.InterfaceRouteTable) er
 func scanInterfaceRouteTable(values map[string]interface{}) (*models.InterfaceRouteTable, error) {
 	m := models.MakeInterfaceRouteTable()
 
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["route"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.InterfaceRouteTableRoutes.Route)
+
+	}
+
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.UUID = castedValue
 
@@ -124,7 +170,7 @@ func scanInterfaceRouteTable(values map[string]interface{}) (*models.InterfaceRo
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
 
@@ -132,7 +178,7 @@ func scanInterfaceRouteTable(values map[string]interface{}) (*models.InterfaceRo
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Group = castedValue
 
@@ -140,23 +186,23 @@ func scanInterfaceRouteTable(values map[string]interface{}) (*models.InterfaceRo
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["owner"]; ok {
+	if value, ok := values["permissions_owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Owner = castedValue
 
 	}
 
-	if value, ok := values["owner_access"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
@@ -164,7 +210,7 @@ func scanInterfaceRouteTable(values map[string]interface{}) (*models.InterfaceRo
 
 	if value, ok := values["enable"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.Enable = castedValue
 
@@ -172,7 +218,7 @@ func scanInterfaceRouteTable(values map[string]interface{}) (*models.InterfaceRo
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Description = castedValue
 
@@ -180,7 +226,7 @@ func scanInterfaceRouteTable(values map[string]interface{}) (*models.InterfaceRo
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Created = castedValue
 
@@ -188,7 +234,7 @@ func scanInterfaceRouteTable(values map[string]interface{}) (*models.InterfaceRo
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Creator = castedValue
 
@@ -196,7 +242,7 @@ func scanInterfaceRouteTable(values map[string]interface{}) (*models.InterfaceRo
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.UserVisible = castedValue
 
@@ -204,7 +250,7 @@ func scanInterfaceRouteTable(values map[string]interface{}) (*models.InterfaceRo
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.LastModified = castedValue
 
@@ -212,62 +258,26 @@ func scanInterfaceRouteTable(values map[string]interface{}) (*models.InterfaceRo
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
 
 	}
 
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["route"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.InterfaceRouteTableRoutes.Route)
-
-	}
-
 	if value, ok := values["ref_service_instance"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.InterfaceRouteTableServiceInstanceRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
 
 			attr := models.MakeServiceInterfaceTag()
@@ -280,7 +290,7 @@ func scanInterfaceRouteTable(values map[string]interface{}) (*models.InterfaceRo
 }
 
 // ListInterfaceRouteTable lists InterfaceRouteTable with list spec.
-func ListInterfaceRouteTable(tx *sql.Tx, spec *db.ListSpec) ([]*models.InterfaceRouteTable, error) {
+func ListInterfaceRouteTable(tx *sql.Tx, spec *common.ListSpec) ([]*models.InterfaceRouteTable, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -288,7 +298,7 @@ func ListInterfaceRouteTable(tx *sql.Tx, spec *db.ListSpec) ([]*models.Interface
 	spec.Fields = InterfaceRouteTableFields
 	spec.RefFields = InterfaceRouteTableRefFields
 	result := models.MakeInterfaceRouteTableSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -329,7 +339,7 @@ func ListInterfaceRouteTable(tx *sql.Tx, spec *db.ListSpec) ([]*models.Interface
 
 // ShowInterfaceRouteTable shows InterfaceRouteTable resource
 func ShowInterfaceRouteTable(tx *sql.Tx, uuid string) (*models.InterfaceRouteTable, error) {
-	list, err := ListInterfaceRouteTable(tx, &db.ListSpec{
+	list, err := ListInterfaceRouteTable(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

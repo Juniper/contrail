@@ -6,8 +6,8 @@ import "encoding/json"
 
 // VirtualRouterNetworkIpamType
 type VirtualRouterNetworkIpamType struct {
-	AllocationPools []*AllocationPoolType `json:"allocation_pools"`
 	Subnet          []*SubnetType         `json:"subnet"`
+	AllocationPools []*AllocationPoolType `json:"allocation_pools"`
 }
 
 //  parents relation object

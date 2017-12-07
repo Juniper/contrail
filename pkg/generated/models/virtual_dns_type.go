@@ -6,14 +6,14 @@ import "encoding/json"
 
 // VirtualDnsType
 type VirtualDnsType struct {
-	DynamicRecordsFromClient bool                  `json:"dynamic_records_from_client"`
-	ReverseResolution        bool                  `json:"reverse_resolution"`
-	DefaultTTLSeconds        int                   `json:"default_ttl_seconds"`
-	RecordOrder              DnsRecordOrderType    `json:"record_order"`
 	FloatingIPRecord         FloatingIpDnsNotation `json:"floating_ip_record"`
 	DomainName               string                `json:"domain_name"`
 	ExternalVisible          bool                  `json:"external_visible"`
 	NextVirtualDNS           string                `json:"next_virtual_DNS"`
+	DynamicRecordsFromClient bool                  `json:"dynamic_records_from_client"`
+	ReverseResolution        bool                  `json:"reverse_resolution"`
+	DefaultTTLSeconds        int                   `json:"default_ttl_seconds"`
+	RecordOrder              DnsRecordOrderType    `json:"record_order"`
 }
 
 //  parents relation object
@@ -28,14 +28,14 @@ func (model *VirtualDnsType) String() string {
 func MakeVirtualDnsType() *VirtualDnsType {
 	return &VirtualDnsType{
 		//TODO(nati): Apply default
-		FloatingIPRecord:         MakeFloatingIpDnsNotation(),
-		DomainName:               "",
-		ExternalVisible:          false,
 		NextVirtualDNS:           "",
 		DynamicRecordsFromClient: false,
 		ReverseResolution:        false,
 		DefaultTTLSeconds:        0,
 		RecordOrder:              MakeDnsRecordOrderType(),
+		FloatingIPRecord:         MakeFloatingIpDnsNotation(),
+		DomainName:               "",
+		ExternalVisible:          false,
 	}
 }
 
@@ -43,6 +43,15 @@ func MakeVirtualDnsType() *VirtualDnsType {
 func InterfaceToVirtualDnsType(iData interface{}) *VirtualDnsType {
 	data := iData.(map[string]interface{})
 	return &VirtualDnsType{
+		FloatingIPRecord: InterfaceToFloatingIpDnsNotation(data["floating_ip_record"]),
+
+		//{"Title":"","Description":"Decides how floating ip records are added","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["dashed-ip","dashed-ip-tenant-name","vm-name","vm-name-tenant-name"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/FloatingIpDnsNotation","CollectionType":"","Column":"","Item":null,"GoName":"FloatingIPRecord","GoType":"FloatingIpDnsNotation","GoPremitive":false}
+		DomainName: data["domain_name"].(string),
+
+		//{"Title":"","Description":"Default domain name for this virtual DNS server","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"DomainName","GoType":"string","GoPremitive":true}
+		ExternalVisible: data["external_visible"].(bool),
+
+		//{"Title":"","Description":"Currently this option is not supported","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ExternalVisible","GoType":"bool","GoPremitive":true}
 		NextVirtualDNS: data["next_virtual_DNS"].(string),
 
 		//{"Title":"","Description":"Next virtual DNS server to lookup if record is not found. Default is proxy to infrastructure DNS","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"NextVirtualDNS","GoType":"string","GoPremitive":true}
@@ -58,15 +67,6 @@ func InterfaceToVirtualDnsType(iData interface{}) *VirtualDnsType {
 		RecordOrder: InterfaceToDnsRecordOrderType(data["record_order"]),
 
 		//{"Title":"","Description":"Order of DNS load balancing, fixed, random, round-robin. Default is random","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["fixed","random","round-robin"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/DnsRecordOrderType","CollectionType":"","Column":"","Item":null,"GoName":"RecordOrder","GoType":"DnsRecordOrderType","GoPremitive":false}
-		FloatingIPRecord: InterfaceToFloatingIpDnsNotation(data["floating_ip_record"]),
-
-		//{"Title":"","Description":"Decides how floating ip records are added","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["dashed-ip","dashed-ip-tenant-name","vm-name","vm-name-tenant-name"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/FloatingIpDnsNotation","CollectionType":"","Column":"","Item":null,"GoName":"FloatingIPRecord","GoType":"FloatingIpDnsNotation","GoPremitive":false}
-		DomainName: data["domain_name"].(string),
-
-		//{"Title":"","Description":"Default domain name for this virtual DNS server","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"DomainName","GoType":"string","GoPremitive":true}
-		ExternalVisible: data["external_visible"].(bool),
-
-		//{"Title":"","Description":"Currently this option is not supported","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ExternalVisible","GoType":"bool","GoPremitive":true}
 
 	}
 }

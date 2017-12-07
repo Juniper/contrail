@@ -1,0 +1,17 @@
+SET FOREIGN_KEY_CHECKS=0;
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+truncate table {{schema.ID }};
+
+{% for linkTo, reference in schema.References %}
+truncate table ref_{{ schema.ID }}_{{ linkTo }};
+{% endfor %}
+
+{% for linkTo, reference in schema.Parents %}
+truncate table parent_{{ schema.ID }}_{{ linkTo }};
+{% endfor %}
+
+{% endif %}
+{% endfor %}
+
+SET FOREIGN_KEY_CHECKS=1;

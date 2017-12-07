@@ -6,9 +6,9 @@ import "encoding/json"
 
 // DomainLimitsType
 type DomainLimitsType struct {
+	ProjectLimit        int `json:"project_limit"`
 	VirtualNetworkLimit int `json:"virtual_network_limit"`
 	SecurityGroupLimit  int `json:"security_group_limit"`
-	ProjectLimit        int `json:"project_limit"`
 }
 
 //  parents relation object
@@ -23,9 +23,9 @@ func (model *DomainLimitsType) String() string {
 func MakeDomainLimitsType() *DomainLimitsType {
 	return &DomainLimitsType{
 		//TODO(nati): Apply default
-		VirtualNetworkLimit: 0,
 		SecurityGroupLimit:  0,
 		ProjectLimit:        0,
+		VirtualNetworkLimit: 0,
 	}
 }
 

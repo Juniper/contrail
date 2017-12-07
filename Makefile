@@ -13,5 +13,5 @@ build:
 	go build ./cmd/...
 
 generate:
-	go run cmd/contrail_util/main.go generate --schemas schemas --templates tools/templates/template_config.yaml
+	go run cmd/contrailutil/main.go generate --schemas schemas --templates tools/templates/template_config.yaml
 	./tools/fmt.sh

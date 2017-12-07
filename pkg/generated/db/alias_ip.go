@@ -4,53 +4,52 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertAliasIPQuery = "insert into `alias_ip` (`uuid`,`fq_name`,`alias_ip_address`,`alias_ip_address_family`,`creator`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`display_name`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateAliasIPQuery = "update `alias_ip` set `uuid` = ?,`fq_name` = ?,`alias_ip_address` = ?,`alias_ip_address_family` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?;"
+const insertAliasIPQuery = "insert into `alias_ip` (`owner_access`,`global_access`,`share`,`owner`,`uuid`,`fq_name`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`enable`,`description`,`created`,`alias_ip_address`,`alias_ip_address_family`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateAliasIPQuery = "update `alias_ip` set `owner_access` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`uuid` = ?,`fq_name` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`alias_ip_address` = ?,`alias_ip_address_family` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteAliasIPQuery = "delete from `alias_ip` where uuid = ?"
 
 // AliasIPFields is db columns for AliasIP
 var AliasIPFields = []string{
+	"owner_access",
+	"global_access",
+	"share",
+	"owner",
 	"uuid",
 	"fq_name",
-	"alias_ip_address",
-	"alias_ip_address_family",
 	"creator",
 	"user_visible",
 	"last_modified",
-	"owner",
-	"owner_access",
 	"other_access",
 	"group",
 	"group_access",
+	"permissions_owner",
+	"permissions_owner_access",
 	"enable",
 	"description",
 	"created",
+	"alias_ip_address",
+	"alias_ip_address_family",
 	"display_name",
 	"key_value_pair",
-	"perms2_owner_access",
-	"global_access",
-	"share",
-	"perms2_owner",
 }
 
 // AliasIPRefFields is db reference fields for AliasIP
 var AliasIPRefFields = map[string][]string{
 
 	"project": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 
 	"virtual_machine_interface": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 }
@@ -71,41 +70,29 @@ func CreateAliasIP(tx *sql.Tx, model *models.AliasIP) error {
 		"model": model,
 		"query": insertAliasIPQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
-		utils.MustJSON(model.FQName),
-		string(model.AliasIPAddress),
-		string(model.AliasIPAddressFamily),
+	_, err = stmt.Exec(int(model.Perms2.OwnerAccess),
+		int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		string(model.UUID),
+		common.MustJSON(model.FQName),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OwnerAccess),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
 		string(model.IDPerms.Created),
+		string(model.AliasIPAddress),
+		string(model.AliasIPAddressFamily),
 		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner))
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
-	}
-
-	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertAliasIPVirtualMachineInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
-	}
-	defer stmtVirtualMachineInterfaceRef.Close()
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
 	}
 
 	stmtProjectRef, err := tx.Prepare(insertAliasIPProjectQuery)
@@ -114,9 +101,23 @@ func CreateAliasIP(tx *sql.Tx, model *models.AliasIP) error {
 	}
 	defer stmtProjectRef.Close()
 	for _, ref := range model.ProjectRefs {
+
 		_, err = stmtProjectRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ProjectRefs create failed")
+		}
+	}
+
+	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertAliasIPVirtualMachineInterfaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
+	}
+	defer stmtVirtualMachineInterfaceRef.Close()
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
 	}
 
@@ -129,141 +130,9 @@ func CreateAliasIP(tx *sql.Tx, model *models.AliasIP) error {
 func scanAliasIP(values map[string]interface{}) (*models.AliasIP, error) {
 	m := models.MakeAliasIP()
 
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.UUID = castedValue
-
-	}
-
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["alias_ip_address"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.AliasIPAddress = models.IpAddressType(castedValue)
-
-	}
-
-	if value, ok := values["alias_ip_address_family"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.AliasIPAddressFamily = models.IpAddressFamilyType(castedValue)
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
@@ -271,7 +140,7 @@ func scanAliasIP(values map[string]interface{}) (*models.AliasIP, error) {
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
@@ -283,36 +152,180 @@ func scanAliasIP(values map[string]interface{}) (*models.AliasIP, error) {
 
 	}
 
-	if value, ok := values["perms2_owner"]; ok {
+	if value, ok := values["owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.Perms2.Owner = castedValue
 
 	}
 
-	if value, ok := values["ref_project"]; ok {
-		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
-			referenceModel := &models.AliasIPProjectRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
-			m.ProjectRefs = append(m.ProjectRefs, referenceModel)
+	if value, ok := values["uuid"]; ok {
 
-		}
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["alias_ip_address"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.AliasIPAddress = models.IpAddressType(castedValue)
+
+	}
+
+	if value, ok := values["alias_ip_address_family"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.AliasIPAddressFamily = models.IpAddressFamilyType(castedValue)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
 	}
 
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.AliasIPVirtualMachineInterfaceRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_project"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.AliasIPProjectRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.ProjectRefs = append(m.ProjectRefs, referenceModel)
 
 		}
 	}
@@ -321,7 +334,7 @@ func scanAliasIP(values map[string]interface{}) (*models.AliasIP, error) {
 }
 
 // ListAliasIP lists AliasIP with list spec.
-func ListAliasIP(tx *sql.Tx, spec *db.ListSpec) ([]*models.AliasIP, error) {
+func ListAliasIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.AliasIP, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -329,7 +342,7 @@ func ListAliasIP(tx *sql.Tx, spec *db.ListSpec) ([]*models.AliasIP, error) {
 	spec.Fields = AliasIPFields
 	spec.RefFields = AliasIPRefFields
 	result := models.MakeAliasIPSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -370,7 +383,7 @@ func ListAliasIP(tx *sql.Tx, spec *db.ListSpec) ([]*models.AliasIP, error) {
 
 // ShowAliasIP shows AliasIP resource
 func ShowAliasIP(tx *sql.Tx, uuid string) (*models.AliasIP, error) {
-	list, err := ListAliasIP(tx, &db.ListSpec{
+	list, err := ListAliasIP(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

@@ -4,46 +4,45 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertProviderAttachmentQuery = "insert into `provider_attachment` (`global_access`,`share`,`owner`,`owner_access`,`uuid`,`fq_name`,`creator`,`user_visible`,`last_modified`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`permissions_owner`,`enable`,`description`,`created`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateProviderAttachmentQuery = "update `provider_attachment` set `global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`uuid` = ?,`fq_name` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`display_name` = ?,`key_value_pair` = ?;"
+const insertProviderAttachmentQuery = "insert into `provider_attachment` (`created`,`creator`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`display_name`,`key_value_pair`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateProviderAttachmentQuery = "update `provider_attachment` set `created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`uuid` = ?,`fq_name` = ?;"
 const deleteProviderAttachmentQuery = "delete from `provider_attachment` where uuid = ?"
 
 // ProviderAttachmentFields is db columns for ProviderAttachment
 var ProviderAttachmentFields = []string{
-	"global_access",
-	"share",
-	"owner",
-	"owner_access",
-	"uuid",
-	"fq_name",
+	"created",
 	"creator",
 	"user_visible",
 	"last_modified",
-	"permissions_owner_access",
+	"owner",
+	"owner_access",
 	"other_access",
 	"group",
 	"group_access",
-	"permissions_owner",
 	"enable",
 	"description",
-	"created",
 	"display_name",
 	"key_value_pair",
+	"global_access",
+	"share",
+	"perms2_owner",
+	"perms2_owner_access",
+	"uuid",
+	"fq_name",
 }
 
 // ProviderAttachmentRefFields is db reference fields for ProviderAttachment
 var ProviderAttachmentRefFields = map[string][]string{
 
 	"virtual_router": {
-	// <utils.Schema Value>
+	// <common.Schema Value>
 
 	},
 }
@@ -62,25 +61,25 @@ func CreateProviderAttachment(tx *sql.Tx, model *models.ProviderAttachment) erro
 		"model": model,
 		"query": insertProviderAttachmentQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		string(model.UUID),
-		utils.MustJSON(model.FQName),
+	_, err = stmt.Exec(string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
 		string(model.IDPerms.LastModified),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.DisplayName),
-		utils.MustJSON(model.Annotations.KeyValuePair))
+		common.MustJSON(model.Annotations.KeyValuePair),
+		int(model.Perms2.GlobalAccess),
+		common.MustJSON(model.Perms2.Share),
+		string(model.Perms2.Owner),
+		int(model.Perms2.OwnerAccess),
+		string(model.UUID),
+		common.MustJSON(model.FQName))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -91,6 +90,7 @@ func CreateProviderAttachment(tx *sql.Tx, model *models.ProviderAttachment) erro
 	}
 	defer stmtVirtualRouterRef.Close()
 	for _, ref := range model.VirtualRouterRefs {
+
 		_, err = stmtVirtualRouterRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualRouterRefs create failed")
@@ -106,53 +106,17 @@ func CreateProviderAttachment(tx *sql.Tx, model *models.ProviderAttachment) erro
 func scanProviderAttachment(values map[string]interface{}) (*models.ProviderAttachment, error) {
 	m := models.MakeProviderAttachment()
 
-	if value, ok := values["global_access"]; ok {
+	if value, ok := values["created"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.UUID = castedValue
-
-	}
-
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
+		m.IDPerms.Created = castedValue
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Creator = castedValue
 
@@ -160,7 +124,7 @@ func scanProviderAttachment(values map[string]interface{}) (*models.ProviderAtta
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.UserVisible = castedValue
 
@@ -168,15 +132,23 @@ func scanProviderAttachment(values map[string]interface{}) (*models.ProviderAtta
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.LastModified = castedValue
 
 	}
 
-	if value, ok := values["permissions_owner_access"]; ok {
+	if value, ok := values["owner"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
@@ -184,7 +156,7 @@ func scanProviderAttachment(values map[string]interface{}) (*models.ProviderAtta
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
 
@@ -192,7 +164,7 @@ func scanProviderAttachment(values map[string]interface{}) (*models.ProviderAtta
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Group = castedValue
 
@@ -200,23 +172,15 @@ func scanProviderAttachment(values map[string]interface{}) (*models.ProviderAtta
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["permissions_owner"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
 	if value, ok := values["enable"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.Enable = castedValue
 
@@ -224,23 +188,15 @@ func scanProviderAttachment(values map[string]interface{}) (*models.ProviderAtta
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Description = castedValue
 
 	}
 
-	if value, ok := values["created"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
 
@@ -252,14 +208,64 @@ func scanProviderAttachment(values map[string]interface{}) (*models.ProviderAtta
 
 	}
 
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["perms2_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["perms2_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
 	if value, ok := values["ref_virtual_router"]; ok {
 		var references []interface{}
-		stringValue := utils.InterfaceToString(value)
+		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
-			referenceMap := reference.(map[string]interface{})
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
 			referenceModel := &models.ProviderAttachmentVirtualRouterRef{}
-			referenceModel.UUID = utils.InterfaceToString(referenceMap["uuid"])
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
 
 		}
@@ -269,7 +275,7 @@ func scanProviderAttachment(values map[string]interface{}) (*models.ProviderAtta
 }
 
 // ListProviderAttachment lists ProviderAttachment with list spec.
-func ListProviderAttachment(tx *sql.Tx, spec *db.ListSpec) ([]*models.ProviderAttachment, error) {
+func ListProviderAttachment(tx *sql.Tx, spec *common.ListSpec) ([]*models.ProviderAttachment, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -277,7 +283,7 @@ func ListProviderAttachment(tx *sql.Tx, spec *db.ListSpec) ([]*models.ProviderAt
 	spec.Fields = ProviderAttachmentFields
 	spec.RefFields = ProviderAttachmentRefFields
 	result := models.MakeProviderAttachmentSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -318,7 +324,7 @@ func ListProviderAttachment(tx *sql.Tx, spec *db.ListSpec) ([]*models.ProviderAt
 
 // ShowProviderAttachment shows ProviderAttachment resource
 func ShowProviderAttachment(tx *sql.Tx, uuid string) (*models.ProviderAttachment, error) {
-	list, err := ListProviderAttachment(tx, &db.ListSpec{
+	list, err := ListProviderAttachment(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {

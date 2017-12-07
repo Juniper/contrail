@@ -4,37 +4,33 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/utils"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const insertBridgeDomainQuery = "insert into `bridge_domain` (`isid`,`mac_learning_enabled`,`uuid`,`key_value_pair`,`mac_aging_time`,`mac_move_time_window`,`mac_move_limit`,`mac_move_limit_action`,`mac_limit`,`mac_limit_action`,`owner`,`owner_access`,`global_access`,`share`,`fq_name`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateBridgeDomainQuery = "update `bridge_domain` set `isid` = ?,`mac_learning_enabled` = ?,`uuid` = ?,`key_value_pair` = ?,`mac_aging_time` = ?,`mac_move_time_window` = ?,`mac_move_limit` = ?,`mac_move_limit_action` = ?,`mac_limit` = ?,`mac_limit_action` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`fq_name` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`display_name` = ?;"
+const insertBridgeDomainQuery = "insert into `bridge_domain` (`isid`,`mac_learning_enabled`,`mac_move_time_window`,`mac_move_limit`,`mac_move_limit_action`,`owner`,`owner_access`,`global_access`,`share`,`mac_aging_time`,`mac_limit`,`mac_limit_action`,`uuid`,`fq_name`,`created`,`creator`,`user_visible`,`last_modified`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateBridgeDomainQuery = "update `bridge_domain` set `isid` = ?,`mac_learning_enabled` = ?,`mac_move_time_window` = ?,`mac_move_limit` = ?,`mac_move_limit_action` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`mac_aging_time` = ?,`mac_limit` = ?,`mac_limit_action` = ?,`uuid` = ?,`fq_name` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteBridgeDomainQuery = "delete from `bridge_domain` where uuid = ?"
 
 // BridgeDomainFields is db columns for BridgeDomain
 var BridgeDomainFields = []string{
 	"isid",
 	"mac_learning_enabled",
-	"uuid",
-	"key_value_pair",
-	"mac_aging_time",
 	"mac_move_time_window",
 	"mac_move_limit",
 	"mac_move_limit_action",
-	"mac_limit",
-	"mac_limit_action",
 	"owner",
 	"owner_access",
 	"global_access",
 	"share",
+	"mac_aging_time",
+	"mac_limit",
+	"mac_limit_action",
+	"uuid",
 	"fq_name",
-	"enable",
-	"description",
 	"created",
 	"creator",
 	"user_visible",
@@ -44,7 +40,10 @@ var BridgeDomainFields = []string{
 	"other_access",
 	"group",
 	"group_access",
+	"enable",
+	"description",
 	"display_name",
+	"key_value_pair",
 }
 
 // BridgeDomainRefFields is db reference fields for BridgeDomain
@@ -64,21 +63,18 @@ func CreateBridgeDomain(tx *sql.Tx, model *models.BridgeDomain) error {
 	}).Debug("create query")
 	_, err = stmt.Exec(int(model.Isid),
 		bool(model.MacLearningEnabled),
-		string(model.UUID),
-		utils.MustJSON(model.Annotations.KeyValuePair),
-		int(model.MacAgingTime),
 		int(model.MacMoveControl.MacMoveTimeWindow),
 		int(model.MacMoveControl.MacMoveLimit),
 		string(model.MacMoveControl.MacMoveLimitAction),
-		int(model.MacLimitControl.MacLimit),
-		string(model.MacLimitControl.MacLimitAction),
 		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
 		int(model.Perms2.GlobalAccess),
-		utils.MustJSON(model.Perms2.Share),
-		utils.MustJSON(model.FQName),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
+		common.MustJSON(model.Perms2.Share),
+		int(model.MacAgingTime),
+		int(model.MacLimitControl.MacLimit),
+		string(model.MacLimitControl.MacLimitAction),
+		string(model.UUID),
+		common.MustJSON(model.FQName),
 		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
 		bool(model.IDPerms.UserVisible),
@@ -88,7 +84,10 @@ func CreateBridgeDomain(tx *sql.Tx, model *models.BridgeDomain) error {
 		int(model.IDPerms.Permissions.OtherAccess),
 		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.DisplayName))
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -104,7 +103,7 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 
 	if value, ok := values["isid"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Isid = models.IsidType(castedValue)
 
@@ -112,37 +111,15 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 
 	if value, ok := values["mac_learning_enabled"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.MacLearningEnabled = castedValue
 
 	}
 
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.UUID = castedValue
-
-	}
-
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["mac_aging_time"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.MacAgingTime = models.MACAgingTime(castedValue)
-
-	}
-
 	if value, ok := values["mac_move_time_window"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.MacMoveControl.MacMoveTimeWindow = models.MACMoveTimeWindow(castedValue)
 
@@ -150,7 +127,7 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 
 	if value, ok := values["mac_move_limit"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.MacMoveControl.MacMoveLimit = castedValue
 
@@ -158,31 +135,15 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 
 	if value, ok := values["mac_move_limit_action"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.MacMoveControl.MacMoveLimitAction = models.MACLimitExceedActionType(castedValue)
 
 	}
 
-	if value, ok := values["mac_limit"]; ok {
-
-		castedValue := utils.InterfaceToInt(value)
-
-		m.MacLimitControl.MacLimit = castedValue
-
-	}
-
-	if value, ok := values["mac_limit_action"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.MacLimitControl.MacLimitAction = models.MACLimitExceedActionType(castedValue)
-
-	}
-
 	if value, ok := values["owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.Perms2.Owner = castedValue
 
@@ -190,7 +151,7 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
@@ -198,7 +159,7 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
@@ -210,31 +171,47 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 
 	}
 
+	if value, ok := values["mac_aging_time"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.MacAgingTime = models.MACAgingTime(castedValue)
+
+	}
+
+	if value, ok := values["mac_limit"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.MacLimitControl.MacLimit = castedValue
+
+	}
+
+	if value, ok := values["mac_limit_action"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.MacLimitControl.MacLimitAction = models.MACLimitExceedActionType(castedValue)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
 	if value, ok := values["fq_name"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
-	if value, ok := values["enable"]; ok {
-
-		castedValue := utils.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := utils.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
 	if value, ok := values["created"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Created = castedValue
 
@@ -242,7 +219,7 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Creator = castedValue
 
@@ -250,7 +227,7 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := utils.InterfaceToBool(value)
+		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.UserVisible = castedValue
 
@@ -258,7 +235,7 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.LastModified = castedValue
 
@@ -266,7 +243,7 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Owner = castedValue
 
@@ -274,7 +251,7 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
@@ -282,7 +259,7 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
 
@@ -290,7 +267,7 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Group = castedValue
 
@@ -298,17 +275,39 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := utils.InterfaceToInt(value)
+		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
 
 	}
 
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := utils.InterfaceToString(value)
+		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
@@ -316,7 +315,7 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 }
 
 // ListBridgeDomain lists BridgeDomain with list spec.
-func ListBridgeDomain(tx *sql.Tx, spec *db.ListSpec) ([]*models.BridgeDomain, error) {
+func ListBridgeDomain(tx *sql.Tx, spec *common.ListSpec) ([]*models.BridgeDomain, error) {
 	var rows *sql.Rows
 	var err error
 	//TODO (check input)
@@ -324,7 +323,7 @@ func ListBridgeDomain(tx *sql.Tx, spec *db.ListSpec) ([]*models.BridgeDomain, er
 	spec.Fields = BridgeDomainFields
 	spec.RefFields = BridgeDomainRefFields
 	result := models.MakeBridgeDomainSlice()
-	query, columns, values := db.BuildListQuery(spec)
+	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
@@ -365,7 +364,7 @@ func ListBridgeDomain(tx *sql.Tx, spec *db.ListSpec) ([]*models.BridgeDomain, er
 
 // ShowBridgeDomain shows BridgeDomain resource
 func ShowBridgeDomain(tx *sql.Tx, uuid string) (*models.BridgeDomain, error) {
-	list, err := ListBridgeDomain(tx, &db.ListSpec{
+	list, err := ListBridgeDomain(tx, &common.ListSpec{
 		Filter: map[string]interface{}{"uuid": uuid},
 		Limit:  1})
 	if len(list) == 0 {
