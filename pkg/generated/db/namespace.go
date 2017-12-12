@@ -11,37 +11,42 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertNamespaceQuery = "insert into `namespace` (`key_value_pair`,`share`,`owner`,`owner_access`,`global_access`,`uuid`,`fq_name`,`last_modified`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`ip_prefix_len`,`ip_prefix`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateNamespaceQuery = "update `namespace` set `key_value_pair` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`uuid` = ?,`fq_name` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`ip_prefix_len` = ?,`ip_prefix` = ?,`display_name` = ?;"
+const insertNamespaceQuery = "insert into `namespace` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`ip_prefix_len`,`ip_prefix`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateNamespaceQuery = "update `namespace` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`ip_prefix_len` = ?,`ip_prefix` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteNamespaceQuery = "delete from `namespace` where uuid = ?"
 
 // NamespaceFields is db columns for Namespace
 var NamespaceFields = []string{
-	"key_value_pair",
-	"share",
-	"owner",
-	"owner_access",
-	"global_access",
 	"uuid",
-	"fq_name",
-	"last_modified",
-	"group",
-	"group_access",
-	"permissions_owner",
-	"permissions_owner_access",
-	"other_access",
-	"enable",
-	"description",
-	"created",
-	"creator",
-	"user_visible",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
 	"ip_prefix_len",
 	"ip_prefix",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
+	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
+	"enable",
+	"description",
+	"creator",
+	"created",
+	"fq_name",
 	"display_name",
+	"key_value_pair",
 }
 
 // NamespaceRefFields is db reference fields for Namespace
 var NamespaceRefFields = map[string][]string{}
+
+// NamespaceBackRefFields is db back reference fields for Namespace
+var NamespaceBackRefFields = map[string][]string{}
 
 // CreateNamespace inserts Namespace to DB
 func CreateNamespace(tx *sql.Tx, model *models.Namespace) error {
@@ -55,27 +60,29 @@ func CreateNamespace(tx *sql.Tx, model *models.Namespace) error {
 		"model": model,
 		"query": insertNamespaceQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(common.MustJSON(model.Annotations.KeyValuePair),
+	_, err = stmt.Exec(string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
 		int(model.Perms2.GlobalAccess),
-		string(model.UUID),
-		common.MustJSON(model.FQName),
-		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		int(model.NamespaceCidr.IPPrefixLen),
 		string(model.NamespaceCidr.IPPrefix),
-		string(model.DisplayName))
+		bool(model.IDPerms.UserVisible),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -89,23 +96,17 @@ func CreateNamespace(tx *sql.Tx, model *models.Namespace) error {
 func scanNamespace(values map[string]interface{}) (*models.Namespace, error) {
 	m := models.MakeNamespace()
 
-	if value, ok := values["key_value_pair"]; ok {
+	if value, ok := values["uuid"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
 
 	}
 
 	if value, ok := values["share"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
 
 	}
 
@@ -117,6 +118,14 @@ func scanNamespace(values map[string]interface{}) (*models.Namespace, error) {
 
 	}
 
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
 	if value, ok := values["global_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
@@ -125,105 +134,19 @@ func scanNamespace(values map[string]interface{}) (*models.Namespace, error) {
 
 	}
 
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["parent_uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.UUID = castedValue
+		m.ParentUUID = castedValue
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
+	if value, ok := values["parent_type"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["permissions_owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["permissions_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
+		m.ParentType = castedValue
 
 	}
 
@@ -243,11 +166,111 @@ func scanNamespace(values map[string]interface{}) (*models.Namespace, error) {
 
 	}
 
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
 	if value, ok := values["display_name"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
@@ -262,6 +285,7 @@ func ListNamespace(tx *sql.Tx, spec *common.ListSpec) ([]*models.Namespace, erro
 	spec.Table = "namespace"
 	spec.Fields = NamespaceFields
 	spec.RefFields = NamespaceRefFields
+	spec.BackRefFields = NamespaceBackRefFields
 	result := models.MakeNamespaceSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

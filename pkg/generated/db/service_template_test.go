@@ -11,9 +11,16 @@ import (
 
 func TestServiceTemplate(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "service_template")
+	defer func() {
+		common.ClearTable(db, "service_template")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeServiceTemplate()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateServiceTemplate(tx, model)

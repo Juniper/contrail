@@ -6,24 +6,24 @@ import "encoding/json"
 
 // OpenstackStorageNodeRole
 type OpenstackStorageNodeRole struct {
+	DisplayName                        string         `json:"display_name"`
+	UUID                               string         `json:"uuid"`
 	ProvisioningProgress               int            `json:"provisioning_progress"`
+	ProvisioningStartTime              string         `json:"provisioning_start_time"`
 	JournalDrives                      string         `json:"journal_drives"`
+	FQName                             []string       `json:"fq_name"`
+	IDPerms                            *IdPermsType   `json:"id_perms"`
+	Perms2                             *PermType2     `json:"perms2"`
+	ParentUUID                         string         `json:"parent_uuid"`
+	ProvisioningState                  string         `json:"provisioning_state"`
+	StorageBackendBondInterfaceMembers string         `json:"storage_backend_bond_interface_members"`
+	ParentType                         string         `json:"parent_type"`
+	ProvisioningLog                    string         `json:"provisioning_log"`
+	OsdDrives                          string         `json:"osd_drives"`
 	StorageAccessBondInterfaceMembers  string         `json:"storage_access_bond_interface_members"`
 	Annotations                        *KeyValuePairs `json:"annotations"`
-	IDPerms                            *IdPermsType   `json:"id_perms"`
-	ProvisioningState                  string         `json:"provisioning_state"`
-	OsdDrives                          string         `json:"osd_drives"`
-	StorageBackendBondInterfaceMembers string         `json:"storage_backend_bond_interface_members"`
-	Perms2                             *PermType2     `json:"perms2"`
-	UUID                               string         `json:"uuid"`
-	ProvisioningLog                    string         `json:"provisioning_log"`
-	FQName                             []string       `json:"fq_name"`
 	ProvisioningProgressStage          string         `json:"provisioning_progress_stage"`
-	DisplayName                        string         `json:"display_name"`
-	ProvisioningStartTime              string         `json:"provisioning_start_time"`
 }
-
-// OpenstackStorageNodeRole parents relation object
 
 // String returns json representation of the object
 func (model *OpenstackStorageNodeRole) String() string {
@@ -35,21 +35,23 @@ func (model *OpenstackStorageNodeRole) String() string {
 func MakeOpenstackStorageNodeRole() *OpenstackStorageNodeRole {
 	return &OpenstackStorageNodeRole{
 		//TODO(nati): Apply default
+		StorageBackendBondInterfaceMembers: "",
+		ParentType:                         "",
+		ProvisioningLog:                    "",
+		OsdDrives:                          "",
 		StorageAccessBondInterfaceMembers:  "",
 		Annotations:                        MakeKeyValuePairs(),
-		IDPerms:                            MakeIdPermsType(),
-		ProvisioningState:                  "",
+		ProvisioningProgressStage:          "",
+		DisplayName:                        "",
+		UUID:                               "",
 		ProvisioningProgress:               0,
+		ProvisioningStartTime:              "",
+		ParentUUID:                         "",
+		ProvisioningState:                  "",
 		JournalDrives:                      "",
-		StorageBackendBondInterfaceMembers: "",
-		Perms2:                    MakePermType2(),
-		UUID:                      "",
-		ProvisioningLog:           "",
-		OsdDrives:                 "",
-		ProvisioningProgressStage: "",
-		FQName:                []string{},
-		ProvisioningStartTime: "",
-		DisplayName:           "",
+		FQName:                             []string{},
+		IDPerms:                            MakeIdPermsType(),
+		Perms2:                             MakePermType2(),
 	}
 }
 
@@ -57,51 +59,57 @@ func MakeOpenstackStorageNodeRole() *OpenstackStorageNodeRole {
 func InterfaceToOpenstackStorageNodeRole(iData interface{}) *OpenstackStorageNodeRole {
 	data := iData.(map[string]interface{})
 	return &OpenstackStorageNodeRole{
-		DisplayName: data["display_name"].(string),
-
-		//{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"display_name","Item":null,"GoName":"DisplayName","GoType":"string","GoPremitive":true}
-		ProvisioningStartTime: data["provisioning_start_time"].(string),
-
-		//{"Title":"Time provisioning started","Description":"","SQL":"varchar(255)","Default":"","Operation":"","Presence":"","Type":"string","Permission":["create","update"],"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"provisioning_start_time","Item":null,"GoName":"ProvisioningStartTime","GoType":"string","GoPremitive":true}
-		ProvisioningState: data["provisioning_state"].(string),
-
-		//{"Title":"Provisioning Status","Description":"","SQL":"varchar(255)","Default":"CREATED","Operation":"","Presence":"","Type":"string","Permission":["create","update"],"Properties":{},"Enum":["CREATED","IN_CREATE_PROGRESS","UPDATED","IN_UPDATE_PROGRESS","DELETED","IN_DELETE_PROGRESS","ERROR"],"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"provisioning_state","Item":null,"GoName":"ProvisioningState","GoType":"string","GoPremitive":true}
-		ProvisioningProgress: data["provisioning_progress"].(int),
-
-		//{"Title":"Provisioning Progress","Description":"","SQL":"int","Default":0,"Operation":"","Presence":"","Type":"integer","Permission":["create","update"],"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"provisioning_progress","Item":null,"GoName":"ProvisioningProgress","GoType":"int","GoPremitive":true}
-		JournalDrives: data["journal_drives"].(string),
-
-		//{"Title":"Journal Drives","Description":"SSD Drives to use for journals","SQL":"varchar(255)","Default":"sdf","Operation":"","Presence":"","Type":"string","Permission":["create","update"],"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"journal_drives","Item":null,"GoName":"JournalDrives","GoType":"string","GoPremitive":true}
-		StorageAccessBondInterfaceMembers: data["storage_access_bond_interface_members"].(string),
-
-		//{"Title":"Storage Access  Bond Interface Members","Description":"Storage Management  Bond Interface Members","SQL":"varchar(255)","Default":"ens8f0,ens8f1","Operation":"","Presence":"","Type":"string","Permission":["create","update"],"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"storage_access_bond_interface_members","Item":null,"GoName":"StorageAccessBondInterfaceMembers","GoType":"string","GoPremitive":true}
-		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
-
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"object","Permission":null,"Properties":{"key_value_pair":{"Title":"","Description":"","SQL":"text","Default":null,"Operation":"","Presence":"","Type":"array","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"key_value_pair","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"object","Permission":null,"Properties":{"key":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Key","GoType":"string","GoPremitive":true},"value":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Value","GoType":"string","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/KeyValuePair","CollectionType":"","Column":"","Item":null,"GoName":"KeyValuePair","GoType":"KeyValuePair","GoPremitive":false},"GoName":"KeyValuePair","GoType":"[]*KeyValuePair","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/KeyValuePairs","CollectionType":"","Column":"","Item":null,"GoName":"Annotations","GoType":"KeyValuePairs","GoPremitive":false}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
-
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"system-only","Type":"object","Permission":null,"Properties":{"created":{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"system-only","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"created","Item":null,"GoName":"Created","GoType":"string","GoPremitive":true},"creator":{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"system-only","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"creator","Item":null,"GoName":"Creator","GoType":"string","GoPremitive":true},"description":{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"description","Item":null,"GoName":"Description","GoType":"string","GoPremitive":true},"enable":{"Title":"","Description":"","SQL":"bool","Default":null,"Operation":"","Presence":"true","Type":"boolean","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"enable","Item":null,"GoName":"Enable","GoType":"bool","GoPremitive":true},"last_modified":{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"system-only","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"last_modified","Item":null,"GoName":"LastModified","GoType":"string","GoPremitive":true},"permissions":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"object","Permission":null,"Properties":{"group":{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"group","Item":null,"GoName":"Group","GoType":"string","GoPremitive":true},"group_access":{"Title":"","Description":"","SQL":"int","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"group_access","Item":null,"GoName":"GroupAccess","GoType":"AccessType","GoPremitive":false},"other_access":{"Title":"","Description":"","SQL":"int","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"other_access","Item":null,"GoName":"OtherAccess","GoType":"AccessType","GoPremitive":false},"owner":{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"owner","Item":null,"GoName":"Owner","GoType":"string","GoPremitive":true},"owner_access":{"Title":"","Description":"","SQL":"int","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"owner_access","Item":null,"GoName":"OwnerAccess","GoType":"AccessType","GoPremitive":false}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/PermType","CollectionType":"","Column":"","Item":null,"GoName":"Permissions","GoType":"PermType","GoPremitive":false},"user_visible":{"Title":"","Description":"","SQL":"bool","Default":null,"Operation":"","Presence":"system-only","Type":"boolean","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"user_visible","Item":null,"GoName":"UserVisible","GoType":"bool","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/IdPermsType","CollectionType":"","Column":"","Item":null,"GoName":"IDPerms","GoType":"IdPermsType","GoPremitive":false}
-		ProvisioningLog: data["provisioning_log"].(string),
-
-		//{"Title":"Provisioning Log","Description":"","SQL":"text","Default":"","Operation":"","Presence":"","Type":"string","Permission":["create","update"],"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"provisioning_log","Item":null,"GoName":"ProvisioningLog","GoType":"string","GoPremitive":true}
 		OsdDrives: data["osd_drives"].(string),
 
-		//{"Title":"Stoage Drives","Description":"Drives to use for cloud storage","SQL":"varchar(255)","Default":"sdc,sdd,sde","Operation":"","Presence":"","Type":"string","Permission":["create","update"],"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"osd_drives","Item":null,"GoName":"OsdDrives","GoType":"string","GoPremitive":true}
-		StorageBackendBondInterfaceMembers: data["storage_backend_bond_interface_members"].(string),
+		//{"title":"Stoage Drives","description":"Drives to use for cloud storage","default":"sdc,sdd,sde","type":"string","permission":["create","update"]}
+		StorageAccessBondInterfaceMembers: data["storage_access_bond_interface_members"].(string),
 
-		//{"Title":"Storage Backend Bond Interface Members","Description":"Storage Backend Bond Interface Members","SQL":"varchar(255)","Default":"ens9f0,ens9f1","Operation":"","Presence":"","Type":"string","Permission":["create","update"],"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"storage_backend_bond_interface_members","Item":null,"GoName":"StorageBackendBondInterfaceMembers","GoType":"string","GoPremitive":true}
-		Perms2: InterfaceToPermType2(data["perms2"]),
+		//{"title":"Storage Access  Bond Interface Members","description":"Storage Management  Bond Interface Members","default":"ens8f0,ens8f1","type":"string","permission":["create","update"]}
+		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"system-only","Type":"object","Permission":null,"Properties":{"global_access":{"Title":"","Description":"","SQL":"int","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"global_access","Item":null,"GoName":"GlobalAccess","GoType":"AccessType","GoPremitive":false},"owner":{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"perms2_owner","Item":null,"GoName":"Owner","GoType":"string","GoPremitive":true},"owner_access":{"Title":"","Description":"","SQL":"int","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"perms2_owner_access","Item":null,"GoName":"OwnerAccess","GoType":"AccessType","GoPremitive":false},"share":{"Title":"","Description":"","SQL":"text","Default":null,"Operation":"","Presence":"optional","Type":"array","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"share","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"object","Permission":null,"Properties":{"tenant":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Tenant","GoType":"string","GoPremitive":true},"tenant_access":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"","Item":null,"GoName":"TenantAccess","GoType":"AccessType","GoPremitive":false}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/ShareType","CollectionType":"","Column":"","Item":null,"GoName":"Share","GoType":"ShareType","GoPremitive":false},"GoName":"Share","GoType":"[]*ShareType","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/PermType2","CollectionType":"","Column":"","Item":null,"GoName":"Perms2","GoType":"PermType2","GoPremitive":false}
-		UUID: data["uuid"].(string),
-
-		//{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"uuid","Item":null,"GoName":"UUID","GoType":"string","GoPremitive":true}
-		FQName: data["fq_name"].([]string),
-
-		//{"Title":"","Description":"","SQL":"text","Default":null,"Operation":"","Presence":"true","Type":"array","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"fq_name","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"FQName","GoType":"string","GoPremitive":true},"GoName":"FQName","GoType":"[]string","GoPremitive":true}
+		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
 		ProvisioningProgressStage: data["provisioning_progress_stage"].(string),
 
-		//{"Title":"Provisioning Progress Stage","Description":"","SQL":"varchar(255)","Default":"","Operation":"","Presence":"","Type":"string","Permission":["create","update"],"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"provisioning_progress_stage","Item":null,"GoName":"ProvisioningProgressStage","GoType":"string","GoPremitive":true}
+		//{"title":"Provisioning Progress Stage","default":"","type":"string","permission":["create","update"]}
+		DisplayName: data["display_name"].(string),
+
+		//{"type":"string"}
+		UUID: data["uuid"].(string),
+
+		//{"type":"string"}
+		ProvisioningProgress: data["provisioning_progress"].(int),
+
+		//{"title":"Provisioning Progress","default":0,"type":"integer","permission":["create","update"]}
+		ProvisioningStartTime: data["provisioning_start_time"].(string),
+
+		//{"title":"Time provisioning started","default":"","type":"string","permission":["create","update"]}
+		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
+		ProvisioningState: data["provisioning_state"].(string),
+
+		//{"title":"Provisioning Status","default":"CREATED","type":"string","permission":["create","update"],"enum":["CREATED","IN_CREATE_PROGRESS","UPDATED","IN_UPDATE_PROGRESS","DELETED","IN_DELETE_PROGRESS","ERROR"]}
+		JournalDrives: data["journal_drives"].(string),
+
+		//{"title":"Journal Drives","description":"SSD Drives to use for journals","default":"sdf","type":"string","permission":["create","update"]}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
+		Perms2: InterfaceToPermType2(data["perms2"]),
+
+		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
+		StorageBackendBondInterfaceMembers: data["storage_backend_bond_interface_members"].(string),
+
+		//{"title":"Storage Backend Bond Interface Members","description":"Storage Backend Bond Interface Members","default":"ens9f0,ens9f1","type":"string","permission":["create","update"]}
+		ParentType: data["parent_type"].(string),
+
+		//{"type":"string"}
+		ProvisioningLog: data["provisioning_log"].(string),
+
+		//{"title":"Provisioning Log","default":"","type":"string","permission":["create","update"]}
 
 	}
 }

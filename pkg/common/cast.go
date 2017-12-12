@@ -2,6 +2,9 @@ package common
 
 //InterfaceToInt makes an int from interface
 func InterfaceToInt(i interface{}) int {
+	if i == nil {
+		return 0
+	}
 	switch t := i.(type) {
 	case []byte:
 		return int(t[0])
@@ -35,4 +38,15 @@ func InterfaceToString(i interface{}) string {
 		return t
 	}
 	return ""
+}
+
+//InterfaceToBytes makes a bytes from interface
+func InterfaceToBytes(i interface{}) []byte {
+	switch t := i.(type) {
+	case []byte:
+		return t
+	case string:
+		return []byte(t)
+	}
+	return []byte{}
 }

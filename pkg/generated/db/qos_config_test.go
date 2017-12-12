@@ -11,9 +11,16 @@ import (
 
 func TestQosConfig(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "qos_config")
+	defer func() {
+		common.ClearTable(db, "qos_config")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeQosConfig()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateQosConfig(tx, model)

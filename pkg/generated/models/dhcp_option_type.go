@@ -6,12 +6,10 @@ import "encoding/json"
 
 // DhcpOptionType
 type DhcpOptionType struct {
-	DHCPOptionValue      string `json:"dhcp_option_value"`
 	DHCPOptionValueBytes string `json:"dhcp_option_value_bytes"`
 	DHCPOptionName       string `json:"dhcp_option_name"`
+	DHCPOptionValue      string `json:"dhcp_option_value"`
 }
-
-//  parents relation object
 
 // String returns json representation of the object
 func (model *DhcpOptionType) String() string {
@@ -33,15 +31,15 @@ func MakeDhcpOptionType() *DhcpOptionType {
 func InterfaceToDhcpOptionType(iData interface{}) *DhcpOptionType {
 	data := iData.(map[string]interface{})
 	return &DhcpOptionType{
-		DHCPOptionValue: data["dhcp_option_value"].(string),
-
-		//{"Title":"","Description":"Encoded DHCP option value (decimal)","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"DHCPOptionValue","GoType":"string","GoPremitive":true}
-		DHCPOptionValueBytes: data["dhcp_option_value_bytes"].(string),
-
-		//{"Title":"","Description":"Value of the DHCP option to be copied byte by byte","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"DHCPOptionValueBytes","GoType":"string","GoPremitive":true}
 		DHCPOptionName: data["dhcp_option_name"].(string),
 
-		//{"Title":"","Description":"Name of the DHCP option","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"DHCPOptionName","GoType":"string","GoPremitive":true}
+		//{"description":"Name of the DHCP option","type":"string"}
+		DHCPOptionValue: data["dhcp_option_value"].(string),
+
+		//{"description":"Encoded DHCP option value (decimal)","type":"string"}
+		DHCPOptionValueBytes: data["dhcp_option_value_bytes"].(string),
+
+		//{"description":"Value of the DHCP option to be copied byte by byte","type":"string"}
 
 	}
 }

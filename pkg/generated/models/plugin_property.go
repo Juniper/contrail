@@ -10,8 +10,6 @@ type PluginProperty struct {
 	Value    string `json:"value"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *PluginProperty) String() string {
 	b, _ := json.Marshal(model)
@@ -22,8 +20,8 @@ func (model *PluginProperty) String() string {
 func MakePluginProperty() *PluginProperty {
 	return &PluginProperty{
 		//TODO(nati): Apply default
-		Property: "",
 		Value:    "",
+		Property: "",
 	}
 }
 
@@ -33,10 +31,10 @@ func InterfaceToPluginProperty(iData interface{}) *PluginProperty {
 	return &PluginProperty{
 		Property: data["property"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Property","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 		Value: data["value"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Value","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 
 	}
 }

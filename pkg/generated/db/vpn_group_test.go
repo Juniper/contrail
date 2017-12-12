@@ -11,9 +11,16 @@ import (
 
 func TestVPNGroup(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "vpn_group")
+	defer func() {
+		common.ClearTable(db, "vpn_group")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeVPNGroup()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateVPNGroup(tx, model)

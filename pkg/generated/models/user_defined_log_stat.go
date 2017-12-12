@@ -10,8 +10,6 @@ type UserDefinedLogStat struct {
 	Name    string `json:"name"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *UserDefinedLogStat) String() string {
 	b, _ := json.Marshal(model)
@@ -33,10 +31,10 @@ func InterfaceToUserDefinedLogStat(iData interface{}) *UserDefinedLogStat {
 	return &UserDefinedLogStat{
 		Pattern: data["pattern"].(string),
 
-		//{"Title":"","Description":"Perl type regular expression pattern to match","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Pattern","GoType":"string","GoPremitive":true}
+		//{"description":"Perl type regular expression pattern to match","type":"string"}
 		Name: data["name"].(string),
 
-		//{"Title":"","Description":"Name of the stat","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Name","GoType":"string","GoPremitive":true}
+		//{"description":"Name of the stat","type":"string"}
 
 	}
 }

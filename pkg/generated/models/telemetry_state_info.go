@@ -11,8 +11,6 @@ type TelemetryStateInfo struct {
 	ServerIP   string                   `json:"server_ip"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *TelemetryStateInfo) String() string {
 	b, _ := json.Marshal(model)
@@ -35,16 +33,16 @@ func MakeTelemetryStateInfo() *TelemetryStateInfo {
 func InterfaceToTelemetryStateInfo(iData interface{}) *TelemetryStateInfo {
 	data := iData.(map[string]interface{})
 	return &TelemetryStateInfo{
+		ServerIP: data["server_ip"].(string),
+
+		//{"type":"string"}
 
 		Resource: InterfaceToTelemetryResourceInfoSlice(data["resource"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"object","Permission":null,"Properties":{"name":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Name","GoType":"string","GoPremitive":true},"path":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Path","GoType":"string","GoPremitive":true},"rate":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Rate","GoType":"string","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/TelemetryResourceInfo","CollectionType":"","Column":"","Item":null,"GoName":"Resource","GoType":"TelemetryResourceInfo","GoPremitive":false},"GoName":"Resource","GoType":"[]*TelemetryResourceInfo","GoPremitive":true}
+		//{"type":"array","item":{"type":"object","properties":{"name":{"type":"string"},"path":{"type":"string"},"rate":{"type":"string"}}}}
 		ServerPort: data["server_port"].(int),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ServerPort","GoType":"int","GoPremitive":true}
-		ServerIP: data["server_ip"].(string),
-
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ServerIP","GoType":"string","GoPremitive":true}
+		//{"type":"integer"}
 
 	}
 }

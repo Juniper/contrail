@@ -11,9 +11,16 @@ import (
 
 func TestRoutingPolicy(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "routing_policy")
+	defer func() {
+		common.ClearTable(db, "routing_policy")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeRoutingPolicy()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateRoutingPolicy(tx, model)

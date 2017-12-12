@@ -11,9 +11,16 @@ import (
 
 func TestNetworkIpam(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "network_ipam")
+	defer func() {
+		common.ClearTable(db, "network_ipam")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeNetworkIpam()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateNetworkIpam(tx, model)

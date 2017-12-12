@@ -9,8 +9,6 @@ type CommunityAttributes struct {
 	CommunityAttribute CommunityAttribute `json:"community_attribute"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *CommunityAttributes) String() string {
 	b, _ := json.Marshal(model)
@@ -33,7 +31,7 @@ func InterfaceToCommunityAttributes(iData interface{}) *CommunityAttributes {
 
 		CommunityAttribute: InterfaceToCommunityAttribute(data["community_attribute"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"array","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/CommunityAttribute","CollectionType":"","Column":"","Item":null,"GoName":"CommunityAttribute","GoType":"CommunityAttribute","GoPremitive":false}
+		//{"type":"array"}
 
 	}
 }

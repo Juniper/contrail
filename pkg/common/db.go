@@ -19,13 +19,14 @@ const (
 
 //ListSpec is configuraion option for select query.
 type ListSpec struct {
-	Table     string
-	Filter    map[string]interface{}
-	Limit     int
-	Offset    int
-	Detail    bool
-	Fields    []string
-	RefFields map[string][]string
+	Table         string
+	Filter        map[string]interface{}
+	Limit         int
+	Offset        int
+	Detail        bool
+	Fields        []string
+	RefFields     map[string][]string
+	BackRefFields map[string][]string
 }
 
 //Columns represents column index
@@ -82,6 +83,21 @@ func BuildListQuery(spec *ListSpec) (string, Columns, []interface{}) {
 				refTable,
 			))
 		groupBy = append(groupBy, refTable+".`from`")
+	}
+	for refTable, refFields := range spec.BackRefFields {
+		refColumns := []string{}
+		for _, field := range refFields {
+			refColumns = append(refColumns, fmt.Sprintf("'%s', `%s`.`%s`", field, refTable, field))
+		}
+		columnParts = append(columnParts, fmt.Sprintf("group_concat(distinct JSON_OBJECT(%s)) as `%s_ref`", strings.Join(refColumns, ","), refTable))
+		columns["backref_"+refTable] = len(columns)
+		joins = append(joins,
+			fmt.Sprintf("left join `%s` on `%s`.`uuid` = `%s`.`parent_uuid`",
+				refTable,
+				spec.Table,
+				refTable,
+			))
+		groupBy = append(groupBy, refTable+".`uuid`")
 	}
 	pagenationQuery := fmt.Sprintf(" limit %d offset %d ", spec.Limit, spec.Offset)
 

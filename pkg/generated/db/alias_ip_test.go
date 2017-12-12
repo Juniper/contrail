@@ -11,9 +11,16 @@ import (
 
 func TestAliasIP(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "alias_ip")
+	defer func() {
+		common.ClearTable(db, "alias_ip")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeAliasIP()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateAliasIP(tx, model)

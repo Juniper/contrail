@@ -9,8 +9,6 @@ type PluginProperties struct {
 	PluginProperty []*PluginProperty `json:"plugin_property"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *PluginProperties) String() string {
 	b, _ := json.Marshal(model)
@@ -33,7 +31,7 @@ func InterfaceToPluginProperties(iData interface{}) *PluginProperties {
 
 		PluginProperty: InterfaceToPluginPropertySlice(data["plugin_property"]),
 
-		//{"Title":"","Description":"List of plugin specific properties (property, value)","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"object","Permission":null,"Properties":{"property":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Property","GoType":"string","GoPremitive":true},"value":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Value","GoType":"string","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/PluginProperty","CollectionType":"","Column":"","Item":null,"GoName":"PluginProperty","GoType":"PluginProperty","GoPremitive":false},"GoName":"PluginProperty","GoType":"[]*PluginProperty","GoPremitive":true}
+		//{"description":"List of plugin specific properties (property, value)","type":"array","item":{"type":"object","properties":{"property":{"type":"string"},"value":{"type":"string"}}}}
 
 	}
 }

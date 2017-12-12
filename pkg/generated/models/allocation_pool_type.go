@@ -11,8 +11,6 @@ type AllocationPoolType struct {
 	End                 string `json:"end"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *AllocationPoolType) String() string {
 	b, _ := json.Marshal(model)
@@ -23,9 +21,9 @@ func (model *AllocationPoolType) String() string {
 func MakeAllocationPoolType() *AllocationPoolType {
 	return &AllocationPoolType{
 		//TODO(nati): Apply default
+		End:                 "",
 		VrouterSpecificPool: false,
 		Start:               "",
-		End:                 "",
 	}
 }
 
@@ -33,15 +31,15 @@ func MakeAllocationPoolType() *AllocationPoolType {
 func InterfaceToAllocationPoolType(iData interface{}) *AllocationPoolType {
 	data := iData.(map[string]interface{})
 	return &AllocationPoolType{
-		Start: data["start"].(string),
-
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Start","GoType":"string","GoPremitive":true}
-		End: data["end"].(string),
-
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"End","GoType":"string","GoPremitive":true}
 		VrouterSpecificPool: data["vrouter_specific_pool"].(bool),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"VrouterSpecificPool","GoType":"bool","GoPremitive":true}
+		//{"type":"boolean"}
+		Start: data["start"].(string),
+
+		//{"type":"string"}
+		End: data["end"].(string),
+
+		//{"type":"string"}
 
 	}
 }

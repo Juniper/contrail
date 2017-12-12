@@ -14,8 +14,6 @@ type LoadbalancerType struct {
 	Status             string         `json:"status"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *LoadbalancerType) String() string {
 	b, _ := json.Marshal(model)
@@ -39,24 +37,24 @@ func MakeLoadbalancerType() *LoadbalancerType {
 func InterfaceToLoadbalancerType(iData interface{}) *LoadbalancerType {
 	data := iData.(map[string]interface{})
 	return &LoadbalancerType{
-		VipAddress: InterfaceToIpAddressType(data["vip_address"]),
-
-		//{"Title":"","Description":"Virtual ip for this LBaaS","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/IpAddressType","CollectionType":"","Column":"","Item":null,"GoName":"VipAddress","GoType":"IpAddressType","GoPremitive":false}
 		VipSubnetID: InterfaceToUuidStringType(data["vip_subnet_id"]),
 
-		//{"Title":"","Description":"Subnet UUID of the subnet of VIP, representing virtual network.","SQL":"","Default":null,"Operation":"","Presence":"required","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/UuidStringType","CollectionType":"","Column":"","Item":null,"GoName":"VipSubnetID","GoType":"UuidStringType","GoPremitive":false}
+		//{"description":"Subnet UUID of the subnet of VIP, representing virtual network.","type":"string"}
 		OperatingStatus: data["operating_status"].(string),
 
-		//{"Title":"","Description":"Operational status of the load balancer updated by system.","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"OperatingStatus","GoType":"string","GoPremitive":true}
+		//{"description":"Operational status of the load balancer updated by system.","type":"string"}
 		Status: data["status"].(string),
 
-		//{"Title":"","Description":"Operational status of the load balancer updated by system.","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Status","GoType":"string","GoPremitive":true}
+		//{"description":"Operational status of the load balancer updated by system.","type":"string"}
 		ProvisioningStatus: data["provisioning_status"].(string),
 
-		//{"Title":"","Description":"Provisioning  status of the load balancer updated by system.","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ProvisioningStatus","GoType":"string","GoPremitive":true}
+		//{"description":"Provisioning  status of the load balancer updated by system.","type":"string"}
 		AdminState: data["admin_state"].(bool),
 
-		//{"Title":"","Description":"Administrative up or down","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"AdminState","GoType":"bool","GoPremitive":true}
+		//{"description":"Administrative up or down","type":"boolean"}
+		VipAddress: InterfaceToIpAddressType(data["vip_address"]),
+
+		//{"description":"Virtual ip for this LBaaS","type":"string"}
 
 	}
 }

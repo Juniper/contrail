@@ -11,8 +11,6 @@ type DomainLimitsType struct {
 	SecurityGroupLimit  int `json:"security_group_limit"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *DomainLimitsType) String() string {
 	b, _ := json.Marshal(model)
@@ -23,9 +21,9 @@ func (model *DomainLimitsType) String() string {
 func MakeDomainLimitsType() *DomainLimitsType {
 	return &DomainLimitsType{
 		//TODO(nati): Apply default
+		VirtualNetworkLimit: 0,
 		SecurityGroupLimit:  0,
 		ProjectLimit:        0,
-		VirtualNetworkLimit: 0,
 	}
 }
 
@@ -35,13 +33,13 @@ func InterfaceToDomainLimitsType(iData interface{}) *DomainLimitsType {
 	return &DomainLimitsType{
 		ProjectLimit: data["project_limit"].(int),
 
-		//{"Title":"","Description":"Maximum number of projects allowed in this domain","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ProjectLimit","GoType":"int","GoPremitive":true}
+		//{"description":"Maximum number of projects allowed in this domain","type":"integer"}
 		VirtualNetworkLimit: data["virtual_network_limit"].(int),
 
-		//{"Title":"","Description":"Maximum number of virtual networks allowed in this domain","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"VirtualNetworkLimit","GoType":"int","GoPremitive":true}
+		//{"description":"Maximum number of virtual networks allowed in this domain","type":"integer"}
 		SecurityGroupLimit: data["security_group_limit"].(int),
 
-		//{"Title":"","Description":"Maximum number of security groups allowed in this domain","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"SecurityGroupLimit","GoType":"int","GoPremitive":true}
+		//{"description":"Maximum number of security groups allowed in this domain","type":"integer"}
 
 	}
 }

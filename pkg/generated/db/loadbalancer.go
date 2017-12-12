@@ -11,38 +11,40 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertLoadbalancerQuery = "insert into `loadbalancer` (`loadbalancer_provider`,`uuid`,`fq_name`,`user_visible`,`last_modified`,`group`,`group_access`,`owner`,`owner_access`,`other_access`,`enable`,`description`,`created`,`creator`,`display_name`,`key_value_pair`,`perms2_owner_access`,`global_access`,`share`,`perms2_owner`,`operating_status`,`status`,`provisioning_status`,`admin_state`,`vip_address`,`vip_subnet_id`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateLoadbalancerQuery = "update `loadbalancer` set `loadbalancer_provider` = ?,`uuid` = ?,`fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`operating_status` = ?,`status` = ?,`provisioning_status` = ?,`admin_state` = ?,`vip_address` = ?,`vip_subnet_id` = ?;"
+const insertLoadbalancerQuery = "insert into `loadbalancer` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`loadbalancer_provider`,`vip_subnet_id`,`vip_address`,`status`,`provisioning_status`,`operating_status`,`admin_state`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateLoadbalancerQuery = "update `loadbalancer` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`loadbalancer_provider` = ?,`vip_subnet_id` = ?,`vip_address` = ?,`status` = ?,`provisioning_status` = ?,`operating_status` = ?,`admin_state` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteLoadbalancerQuery = "delete from `loadbalancer` where uuid = ?"
 
 // LoadbalancerFields is db columns for Loadbalancer
 var LoadbalancerFields = []string{
-	"loadbalancer_provider",
 	"uuid",
-	"fq_name",
-	"user_visible",
-	"last_modified",
-	"group",
-	"group_access",
-	"owner",
-	"owner_access",
-	"other_access",
-	"enable",
-	"description",
-	"created",
-	"creator",
-	"display_name",
-	"key_value_pair",
-	"perms2_owner_access",
-	"global_access",
 	"share",
-	"perms2_owner",
-	"operating_status",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"loadbalancer_provider",
+	"vip_subnet_id",
+	"vip_address",
 	"status",
 	"provisioning_status",
+	"operating_status",
 	"admin_state",
-	"vip_address",
-	"vip_subnet_id",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
+	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
+	"enable",
+	"description",
+	"creator",
+	"created",
+	"fq_name",
+	"display_name",
+	"key_value_pair",
 }
 
 // LoadbalancerRefFields is db reference fields for Loadbalancer
@@ -64,6 +66,9 @@ var LoadbalancerRefFields = map[string][]string{
 	},
 }
 
+// LoadbalancerBackRefFields is db back reference fields for Loadbalancer
+var LoadbalancerBackRefFields = map[string][]string{}
+
 const insertLoadbalancerServiceApplianceSetQuery = "insert into `ref_loadbalancer_service_appliance_set` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerVirtualMachineInterfaceQuery = "insert into `ref_loadbalancer_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
@@ -82,32 +87,34 @@ func CreateLoadbalancer(tx *sql.Tx, model *models.Loadbalancer) error {
 		"model": model,
 		"query": insertLoadbalancerQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.LoadbalancerProvider),
-		string(model.UUID),
-		common.MustJSON(model.FQName),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
-		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
+	_, err = stmt.Exec(string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
-		string(model.LoadbalancerProperties.OperatingStatus),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
+		string(model.LoadbalancerProvider),
+		string(model.LoadbalancerProperties.VipSubnetID),
+		string(model.LoadbalancerProperties.VipAddress),
 		string(model.LoadbalancerProperties.Status),
 		string(model.LoadbalancerProperties.ProvisioningStatus),
+		string(model.LoadbalancerProperties.OperatingStatus),
 		bool(model.LoadbalancerProperties.AdminState),
-		string(model.LoadbalancerProperties.VipAddress),
-		string(model.LoadbalancerProperties.VipSubnetID))
+		bool(model.IDPerms.UserVisible),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -160,14 +167,6 @@ func CreateLoadbalancer(tx *sql.Tx, model *models.Loadbalancer) error {
 func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, error) {
 	m := models.MakeLoadbalancer()
 
-	if value, ok := values["loadbalancer_provider"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.LoadbalancerProvider = castedValue
-
-	}
-
 	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -176,49 +175,9 @@ func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, erro
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["share"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
 	}
 
@@ -226,69 +185,15 @@ func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, erro
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
 		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
 
 	}
 
@@ -300,25 +205,43 @@ func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, erro
 
 	}
 
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
+	if value, ok := values["parent_uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.Perms2.Owner = castedValue
+		m.ParentUUID = castedValue
 
 	}
 
-	if value, ok := values["operating_status"]; ok {
+	if value, ok := values["parent_type"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.LoadbalancerProperties.OperatingStatus = castedValue
+		m.ParentType = castedValue
+
+	}
+
+	if value, ok := values["loadbalancer_provider"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.LoadbalancerProvider = castedValue
+
+	}
+
+	if value, ok := values["vip_subnet_id"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.LoadbalancerProperties.VipSubnetID = models.UuidStringType(castedValue)
+
+	}
+
+	if value, ok := values["vip_address"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.LoadbalancerProperties.VipAddress = models.IpAddressType(castedValue)
 
 	}
 
@@ -338,6 +261,14 @@ func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, erro
 
 	}
 
+	if value, ok := values["operating_status"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.LoadbalancerProperties.OperatingStatus = castedValue
+
+	}
+
 	if value, ok := values["admin_state"]; ok {
 
 		castedValue := common.InterfaceToBool(value)
@@ -346,19 +277,111 @@ func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, erro
 
 	}
 
-	if value, ok := values["vip_address"]; ok {
+	if value, ok := values["user_visible"]; ok {
 
-		castedValue := common.InterfaceToString(value)
+		castedValue := common.InterfaceToBool(value)
 
-		m.LoadbalancerProperties.VipAddress = models.IpAddressType(castedValue)
+		m.IDPerms.UserVisible = castedValue
 
 	}
 
-	if value, ok := values["vip_subnet_id"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.LoadbalancerProperties.VipSubnetID = models.UuidStringType(castedValue)
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
@@ -430,6 +453,7 @@ func ListLoadbalancer(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadbalancer
 	spec.Table = "loadbalancer"
 	spec.Fields = LoadbalancerFields
 	spec.RefFields = LoadbalancerRefFields
+	spec.BackRefFields = LoadbalancerBackRefFields
 	result := models.MakeLoadbalancerSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

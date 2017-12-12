@@ -6,19 +6,17 @@ import "encoding/json"
 
 // VirtualIpType
 type VirtualIpType struct {
+	PersistenceCookieName string                   `json:"persistence_cookie_name"`
 	ConnectionLimit       int                      `json:"connection_limit"`
+	PersistenceType       SessionPersistenceType   `json:"persistence_type"`
 	AdminState            bool                     `json:"admin_state"`
 	Address               IpAddressType            `json:"address"`
 	ProtocolPort          int                      `json:"protocol_port"`
-	PersistenceType       SessionPersistenceType   `json:"persistence_type"`
-	Status                string                   `json:"status"`
-	StatusDescription     string                   `json:"status_description"`
 	Protocol              LoadbalancerProtocolType `json:"protocol"`
 	SubnetID              UuidStringType           `json:"subnet_id"`
-	PersistenceCookieName string                   `json:"persistence_cookie_name"`
+	Status                string                   `json:"status"`
+	StatusDescription     string                   `json:"status_description"`
 }
-
-//  parents relation object
 
 // String returns json representation of the object
 func (model *VirtualIpType) String() string {
@@ -30,16 +28,16 @@ func (model *VirtualIpType) String() string {
 func MakeVirtualIpType() *VirtualIpType {
 	return &VirtualIpType{
 		//TODO(nati): Apply default
-		ConnectionLimit:       0,
 		AdminState:            false,
 		Address:               MakeIpAddressType(),
 		ProtocolPort:          0,
-		Status:                "",
-		StatusDescription:     "",
 		Protocol:              MakeLoadbalancerProtocolType(),
 		SubnetID:              MakeUuidStringType(),
 		PersistenceCookieName: "",
+		ConnectionLimit:       0,
 		PersistenceType:       MakeSessionPersistenceType(),
+		Status:                "",
+		StatusDescription:     "",
 	}
 }
 
@@ -47,36 +45,36 @@ func MakeVirtualIpType() *VirtualIpType {
 func InterfaceToVirtualIpType(iData interface{}) *VirtualIpType {
 	data := iData.(map[string]interface{})
 	return &VirtualIpType{
-		Protocol: InterfaceToLoadbalancerProtocolType(data["protocol"]),
-
-		//{"Title":"","Description":"IP protocol string like http, https or tcp.","SQL":"","Default":null,"Operation":"","Presence":"required","Type":"string","Permission":null,"Properties":{},"Enum":["HTTP","HTTPS","TCP","UDP","TERMINATED_HTTPS"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/LoadbalancerProtocolType","CollectionType":"","Column":"","Item":null,"GoName":"Protocol","GoType":"LoadbalancerProtocolType","GoPremitive":false}
-		SubnetID: InterfaceToUuidStringType(data["subnet_id"]),
-
-		//{"Title":"","Description":"UUID of subnet in which to allocate the Virtual IP.","SQL":"","Default":null,"Operation":"","Presence":"required","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/UuidStringType","CollectionType":"","Column":"","Item":null,"GoName":"SubnetID","GoType":"UuidStringType","GoPremitive":false}
-		PersistenceCookieName: data["persistence_cookie_name"].(string),
-
-		//{"Title":"","Description":"Set this string if the relation of client and server(pool member) need to persist.","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"PersistenceCookieName","GoType":"string","GoPremitive":true}
 		PersistenceType: InterfaceToSessionPersistenceType(data["persistence_type"]),
 
-		//{"Title":"","Description":"Method for persistence. HTTP_COOKIE, SOURCE_IP or APP_COOKIE.","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["SOURCE_IP","HTTP_COOKIE","APP_COOKIE"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/SessionPersistenceType","CollectionType":"","Column":"","Item":null,"GoName":"PersistenceType","GoType":"SessionPersistenceType","GoPremitive":false}
-		Status: data["status"].(string),
-
-		//{"Title":"","Description":"Operating status for this virtual ip.","SQL":"","Default":null,"Operation":"","Presence":"system-only","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Status","GoType":"string","GoPremitive":true}
-		StatusDescription: data["status_description"].(string),
-
-		//{"Title":"","Description":"Operating status description this virtual ip.","SQL":"","Default":null,"Operation":"","Presence":"system-only","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"StatusDescription","GoType":"string","GoPremitive":true}
-		Address: InterfaceToIpAddressType(data["address"]),
-
-		//{"Title":"","Description":"IP address automatically allocated by system.","SQL":"","Default":null,"Operation":"","Presence":"system-only","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/IpAddressType","CollectionType":"","Column":"","Item":null,"GoName":"Address","GoType":"IpAddressType","GoPremitive":false}
-		ProtocolPort: data["protocol_port"].(int),
-
-		//{"Title":"","Description":"Layer 4 protocol destination port.","SQL":"","Default":null,"Operation":"","Presence":"required","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ProtocolPort","GoType":"int","GoPremitive":true}
-		ConnectionLimit: data["connection_limit"].(int),
-
-		//{"Title":"","Description":"Maximum number of concurrent connections","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ConnectionLimit","GoType":"int","GoPremitive":true}
+		//{"description":"Method for persistence. HTTP_COOKIE, SOURCE_IP or APP_COOKIE.","type":"string","enum":["SOURCE_IP","HTTP_COOKIE","APP_COOKIE"]}
 		AdminState: data["admin_state"].(bool),
 
-		//{"Title":"","Description":"Administrative up or down.","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"AdminState","GoType":"bool","GoPremitive":true}
+		//{"description":"Administrative up or down.","type":"boolean"}
+		Address: InterfaceToIpAddressType(data["address"]),
+
+		//{"description":"IP address automatically allocated by system.","type":"string"}
+		ProtocolPort: data["protocol_port"].(int),
+
+		//{"description":"Layer 4 protocol destination port.","type":"integer"}
+		Protocol: InterfaceToLoadbalancerProtocolType(data["protocol"]),
+
+		//{"description":"IP protocol string like http, https or tcp.","type":"string","enum":["HTTP","HTTPS","TCP","UDP","TERMINATED_HTTPS"]}
+		SubnetID: InterfaceToUuidStringType(data["subnet_id"]),
+
+		//{"description":"UUID of subnet in which to allocate the Virtual IP.","type":"string"}
+		PersistenceCookieName: data["persistence_cookie_name"].(string),
+
+		//{"description":"Set this string if the relation of client and server(pool member) need to persist.","type":"string"}
+		ConnectionLimit: data["connection_limit"].(int),
+
+		//{"description":"Maximum number of concurrent connections","type":"integer"}
+		Status: data["status"].(string),
+
+		//{"description":"Operating status for this virtual ip.","type":"string"}
+		StatusDescription: data["status_description"].(string),
+
+		//{"description":"Operating status description this virtual ip.","type":"string"}
 
 	}
 }

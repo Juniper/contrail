@@ -6,31 +6,45 @@ import "encoding/json"
 
 // LogicalRouter
 type LogicalRouter struct {
-	Perms2                    *PermType2       `json:"perms2"`
+	IDPerms                   *IdPermsType     `json:"id_perms"`
+	Annotations               *KeyValuePairs   `json:"annotations"`
 	UUID                      string           `json:"uuid"`
 	FQName                    []string         `json:"fq_name"`
-	IDPerms                   *IdPermsType     `json:"id_perms"`
+	ParentType                string           `json:"parent_type"`
 	VxlanNetworkIdentifier    string           `json:"vxlan_network_identifier"`
 	ConfiguredRouteTargetList *RouteTargetList `json:"configured_route_target_list"`
 	DisplayName               string           `json:"display_name"`
-	Annotations               *KeyValuePairs   `json:"annotations"`
+	Perms2                    *PermType2       `json:"perms2"`
+	ParentUUID                string           `json:"parent_uuid"`
 
-	// physical_router <common.Reference Value>
-	PhysicalRouterRefs []*LogicalRouterPhysicalRouterRef `json:"physical_router_refs"`
-	// bgpvpn <common.Reference Value>
-	BGPVPNRefs []*LogicalRouterBGPVPNRef `json:"bgpvpn_refs"`
-	// route_target <common.Reference Value>
-	RouteTargetRefs []*LogicalRouterRouteTargetRef `json:"route_target_refs"`
-	// virtual_machine_interface <common.Reference Value>
+	VirtualNetworkRefs          []*LogicalRouterVirtualNetworkRef          `json:"virtual_network_refs"`
+	PhysicalRouterRefs          []*LogicalRouterPhysicalRouterRef          `json:"physical_router_refs"`
+	BGPVPNRefs                  []*LogicalRouterBGPVPNRef                  `json:"bgpvpn_refs"`
+	RouteTargetRefs             []*LogicalRouterRouteTargetRef             `json:"route_target_refs"`
 	VirtualMachineInterfaceRefs []*LogicalRouterVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs"`
-	// service_instance <common.Reference Value>
-	ServiceInstanceRefs []*LogicalRouterServiceInstanceRef `json:"service_instance_refs"`
-	// route_table <common.Reference Value>
-	RouteTableRefs []*LogicalRouterRouteTableRef `json:"route_table_refs"`
-	// virtual_network <common.Reference Value>
-	VirtualNetworkRefs []*LogicalRouterVirtualNetworkRef `json:"virtual_network_refs"`
+	ServiceInstanceRefs         []*LogicalRouterServiceInstanceRef         `json:"service_instance_refs"`
+	RouteTableRefs              []*LogicalRouterRouteTableRef              `json:"route_table_refs"`
+}
 
-	Projects []*LogicalRouterProject
+// LogicalRouterRouteTargetRef references each other
+type LogicalRouterRouteTargetRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
+// LogicalRouterVirtualMachineInterfaceRef references each other
+type LogicalRouterVirtualMachineInterfaceRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
+// LogicalRouterServiceInstanceRef references each other
+type LogicalRouterServiceInstanceRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
 }
 
 // LogicalRouterRouteTableRef references each other
@@ -61,35 +75,6 @@ type LogicalRouterBGPVPNRef struct {
 
 }
 
-// LogicalRouterRouteTargetRef references each other
-type LogicalRouterRouteTargetRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// LogicalRouterVirtualMachineInterfaceRef references each other
-type LogicalRouterVirtualMachineInterfaceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// LogicalRouterServiceInstanceRef references each other
-type LogicalRouterServiceInstanceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// LogicalRouter parents relation object
-
-type LogicalRouterProject struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
 // String returns json representation of the object
 func (model *LogicalRouter) String() string {
 	b, _ := json.Marshal(model)
@@ -100,13 +85,15 @@ func (model *LogicalRouter) String() string {
 func MakeLogicalRouter() *LogicalRouter {
 	return &LogicalRouter{
 		//TODO(nati): Apply default
-		FQName:                    []string{},
-		IDPerms:                   MakeIdPermsType(),
+		Perms2:                    MakePermType2(),
+		ParentUUID:                "",
+		ParentType:                "",
 		VxlanNetworkIdentifier:    "",
 		ConfiguredRouteTargetList: MakeRouteTargetList(),
 		DisplayName:               "",
+		FQName:                    []string{},
+		IDPerms:                   MakeIdPermsType(),
 		Annotations:               MakeKeyValuePairs(),
-		Perms2:                    MakePermType2(),
 		UUID:                      "",
 	}
 }
@@ -115,30 +102,36 @@ func MakeLogicalRouter() *LogicalRouter {
 func InterfaceToLogicalRouter(iData interface{}) *LogicalRouter {
 	data := iData.(map[string]interface{})
 	return &LogicalRouter{
-		Perms2: InterfaceToPermType2(data["perms2"]),
-
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"system-only","Type":"object","Permission":null,"Properties":{"global_access":{"Title":"","Description":"","SQL":"int","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"global_access","Item":null,"GoName":"GlobalAccess","GoType":"AccessType","GoPremitive":false},"owner":{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"perms2_owner","Item":null,"GoName":"Owner","GoType":"string","GoPremitive":true},"owner_access":{"Title":"","Description":"","SQL":"int","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"perms2_owner_access","Item":null,"GoName":"OwnerAccess","GoType":"AccessType","GoPremitive":false},"share":{"Title":"","Description":"","SQL":"text","Default":null,"Operation":"","Presence":"optional","Type":"array","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"share","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"object","Permission":null,"Properties":{"tenant":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Tenant","GoType":"string","GoPremitive":true},"tenant_access":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"","Item":null,"GoName":"TenantAccess","GoType":"AccessType","GoPremitive":false}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/ShareType","CollectionType":"","Column":"","Item":null,"GoName":"Share","GoType":"ShareType","GoPremitive":false},"GoName":"Share","GoType":"[]*ShareType","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/PermType2","CollectionType":"","Column":"","Item":null,"GoName":"Perms2","GoType":"PermType2","GoPremitive":false}
-		UUID: data["uuid"].(string),
-
-		//{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"uuid","Item":null,"GoName":"UUID","GoType":"string","GoPremitive":true}
-		FQName: data["fq_name"].([]string),
-
-		//{"Title":"","Description":"","SQL":"text","Default":null,"Operation":"","Presence":"true","Type":"array","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"fq_name","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"FQName","GoType":"string","GoPremitive":true},"GoName":"FQName","GoType":"[]string","GoPremitive":true}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
-
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"system-only","Type":"object","Permission":null,"Properties":{"created":{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"system-only","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"created","Item":null,"GoName":"Created","GoType":"string","GoPremitive":true},"creator":{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"system-only","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"creator","Item":null,"GoName":"Creator","GoType":"string","GoPremitive":true},"description":{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"description","Item":null,"GoName":"Description","GoType":"string","GoPremitive":true},"enable":{"Title":"","Description":"","SQL":"bool","Default":null,"Operation":"","Presence":"true","Type":"boolean","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"enable","Item":null,"GoName":"Enable","GoType":"bool","GoPremitive":true},"last_modified":{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"system-only","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"last_modified","Item":null,"GoName":"LastModified","GoType":"string","GoPremitive":true},"permissions":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"object","Permission":null,"Properties":{"group":{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"group","Item":null,"GoName":"Group","GoType":"string","GoPremitive":true},"group_access":{"Title":"","Description":"","SQL":"int","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"group_access","Item":null,"GoName":"GroupAccess","GoType":"AccessType","GoPremitive":false},"other_access":{"Title":"","Description":"","SQL":"int","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"other_access","Item":null,"GoName":"OtherAccess","GoType":"AccessType","GoPremitive":false},"owner":{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"owner","Item":null,"GoName":"Owner","GoType":"string","GoPremitive":true},"owner_access":{"Title":"","Description":"","SQL":"int","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"owner_access","Item":null,"GoName":"OwnerAccess","GoType":"AccessType","GoPremitive":false}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/PermType","CollectionType":"","Column":"","Item":null,"GoName":"Permissions","GoType":"PermType","GoPremitive":false},"user_visible":{"Title":"","Description":"","SQL":"bool","Default":null,"Operation":"","Presence":"system-only","Type":"boolean","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"user_visible","Item":null,"GoName":"UserVisible","GoType":"bool","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/IdPermsType","CollectionType":"","Column":"","Item":null,"GoName":"IDPerms","GoType":"IdPermsType","GoPremitive":false}
-		VxlanNetworkIdentifier: data["vxlan_network_identifier"].(string),
-
-		//{"Title":"","Description":"The VNI that needs to be associated with the internal VN if vxlan_routing mode is enabled.","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"vxlan_network_identifier","Item":null,"GoName":"VxlanNetworkIdentifier","GoType":"string","GoPremitive":true}
 		ConfiguredRouteTargetList: InterfaceToRouteTargetList(data["configured_route_target_list"]),
 
-		//{"Title":"","Description":"List of route targets that represent this logical router, all virtual networks connected to this logical router will have this as their route target list.","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"object","Permission":null,"Properties":{"route_target":{"Title":"","Description":"","SQL":"text","Default":null,"Operation":"","Presence":"","Type":"array","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"route_target","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"RouteTarget","GoType":"string","GoPremitive":true},"GoName":"RouteTarget","GoType":"[]string","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/RouteTargetList","CollectionType":"","Column":"","Item":null,"GoName":"ConfiguredRouteTargetList","GoType":"RouteTargetList","GoPremitive":false}
+		//{"description":"List of route targets that represent this logical router, all virtual networks connected to this logical router will have this as their route target list.","type":"object","properties":{"route_target":{"type":"array","item":{"type":"string"}}}}
 		DisplayName: data["display_name"].(string),
 
-		//{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"display_name","Item":null,"GoName":"DisplayName","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
+		Perms2: InterfaceToPermType2(data["perms2"]),
+
+		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
+		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
+		ParentType: data["parent_type"].(string),
+
+		//{"type":"string"}
+		VxlanNetworkIdentifier: data["vxlan_network_identifier"].(string),
+
+		//{"description":"The VNI that needs to be associated with the internal VN if vxlan_routing mode is enabled.","type":"string"}
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"object","Permission":null,"Properties":{"key_value_pair":{"Title":"","Description":"","SQL":"text","Default":null,"Operation":"","Presence":"","Type":"array","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"key_value_pair","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"object","Permission":null,"Properties":{"key":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Key","GoType":"string","GoPremitive":true},"value":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Value","GoType":"string","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/KeyValuePair","CollectionType":"","Column":"","Item":null,"GoName":"KeyValuePair","GoType":"KeyValuePair","GoPremitive":false},"GoName":"KeyValuePair","GoType":"[]*KeyValuePair","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/KeyValuePairs","CollectionType":"","Column":"","Item":null,"GoName":"Annotations","GoType":"KeyValuePairs","GoPremitive":false}
+		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
+		UUID: data["uuid"].(string),
+
+		//{"type":"string"}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
 
 	}
 }

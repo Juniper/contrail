@@ -11,37 +11,39 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertLoadbalancerListenerQuery = "insert into `loadbalancer_listener` (`fq_name`,`creator`,`user_visible`,`last_modified`,`group`,`group_access`,`owner`,`owner_access`,`other_access`,`enable`,`description`,`created`,`display_name`,`sni_containers`,`protocol_port`,`default_tls_container`,`protocol`,`connection_limit`,`admin_state`,`key_value_pair`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateLoadbalancerListenerQuery = "update `loadbalancer_listener` set `fq_name` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`display_name` = ?,`sni_containers` = ?,`protocol_port` = ?,`default_tls_container` = ?,`protocol` = ?,`connection_limit` = ?,`admin_state` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`uuid` = ?;"
+const insertLoadbalancerListenerQuery = "insert into `loadbalancer_listener` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`sni_containers`,`protocol_port`,`protocol`,`default_tls_container`,`connection_limit`,`admin_state`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateLoadbalancerListenerQuery = "update `loadbalancer_listener` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`sni_containers` = ?,`protocol_port` = ?,`protocol` = ?,`default_tls_container` = ?,`connection_limit` = ?,`admin_state` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteLoadbalancerListenerQuery = "delete from `loadbalancer_listener` where uuid = ?"
 
 // LoadbalancerListenerFields is db columns for LoadbalancerListener
 var LoadbalancerListenerFields = []string{
-	"fq_name",
-	"creator",
-	"user_visible",
-	"last_modified",
-	"group",
-	"group_access",
-	"owner",
+	"uuid",
+	"share",
 	"owner_access",
-	"other_access",
-	"enable",
-	"description",
-	"created",
-	"display_name",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
 	"sni_containers",
 	"protocol_port",
-	"default_tls_container",
 	"protocol",
+	"default_tls_container",
 	"connection_limit",
 	"admin_state",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
+	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
+	"enable",
+	"description",
+	"creator",
+	"created",
+	"fq_name",
+	"display_name",
 	"key_value_pair",
-	"global_access",
-	"share",
-	"perms2_owner",
-	"perms2_owner_access",
-	"uuid",
 }
 
 // LoadbalancerListenerRefFields is db reference fields for LoadbalancerListener
@@ -52,6 +54,9 @@ var LoadbalancerListenerRefFields = map[string][]string{
 
 	},
 }
+
+// LoadbalancerListenerBackRefFields is db back reference fields for LoadbalancerListener
+var LoadbalancerListenerBackRefFields = map[string][]string{}
 
 const insertLoadbalancerListenerLoadbalancerQuery = "insert into `ref_loadbalancer_listener_loadbalancer` (`from`, `to` ) values (?, ?);"
 
@@ -67,31 +72,33 @@ func CreateLoadbalancerListener(tx *sql.Tx, model *models.LoadbalancerListener) 
 		"model": model,
 		"query": insertLoadbalancerListenerQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(common.MustJSON(model.FQName),
-		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.DisplayName),
+	_, err = stmt.Exec(string(model.UUID),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		common.MustJSON(model.LoadbalancerListenerProperties.SniContainers),
 		int(model.LoadbalancerListenerProperties.ProtocolPort),
-		string(model.LoadbalancerListenerProperties.DefaultTLSContainer),
 		string(model.LoadbalancerListenerProperties.Protocol),
+		string(model.LoadbalancerListenerProperties.DefaultTLSContainer),
 		int(model.LoadbalancerListenerProperties.ConnectionLimit),
 		bool(model.LoadbalancerListenerProperties.AdminState),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.GlobalAccess),
-		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		string(model.UUID))
+		bool(model.IDPerms.UserVisible),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -118,57 +125,17 @@ func CreateLoadbalancerListener(tx *sql.Tx, model *models.LoadbalancerListener) 
 func scanLoadbalancerListener(values map[string]interface{}) (*models.LoadbalancerListener, error) {
 	m := models.MakeLoadbalancerListener()
 
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["creator"]; ok {
+	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Creator = castedValue
+		m.UUID = castedValue
 
 	}
 
-	if value, ok := values["user_visible"]; ok {
+	if value, ok := values["share"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
 	}
 
@@ -176,47 +143,39 @@ func scanLoadbalancerListener(values map[string]interface{}) (*models.Loadbalanc
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["other_access"]; ok {
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["enable"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
+	if value, ok := values["parent_uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Description = castedValue
+		m.ParentUUID = castedValue
 
 	}
 
-	if value, ok := values["created"]; ok {
+	if value, ok := values["parent_type"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		m.ParentType = castedValue
 
 	}
 
@@ -234,19 +193,19 @@ func scanLoadbalancerListener(values map[string]interface{}) (*models.Loadbalanc
 
 	}
 
-	if value, ok := values["default_tls_container"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.LoadbalancerListenerProperties.DefaultTLSContainer = castedValue
-
-	}
-
 	if value, ok := values["protocol"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
 		m.LoadbalancerListenerProperties.Protocol = models.LoadbalancerProtocolType(castedValue)
+
+	}
+
+	if value, ok := values["default_tls_container"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.LoadbalancerListenerProperties.DefaultTLSContainer = castedValue
 
 	}
 
@@ -266,47 +225,111 @@ func scanLoadbalancerListener(values map[string]interface{}) (*models.Loadbalanc
 
 	}
 
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
 
 	}
 
@@ -340,6 +363,7 @@ func ListLoadbalancerListener(tx *sql.Tx, spec *common.ListSpec) ([]*models.Load
 	spec.Table = "loadbalancer_listener"
 	spec.Fields = LoadbalancerListenerFields
 	spec.RefFields = LoadbalancerListenerRefFields
+	spec.BackRefFields = LoadbalancerListenerBackRefFields
 	result := models.MakeLoadbalancerListenerSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

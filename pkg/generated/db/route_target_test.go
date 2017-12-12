@@ -11,9 +11,16 @@ import (
 
 func TestRouteTarget(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "route_target")
+	defer func() {
+		common.ClearTable(db, "route_target")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeRouteTarget()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateRouteTarget(tx, model)

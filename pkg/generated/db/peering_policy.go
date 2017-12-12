@@ -11,36 +11,41 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertPeeringPolicyQuery = "insert into `peering_policy` (`fq_name`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`display_name`,`key_value_pair`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`peering_service`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updatePeeringPolicyQuery = "update `peering_policy` set `fq_name` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`peering_service` = ?,`uuid` = ?;"
+const insertPeeringPolicyQuery = "insert into `peering_policy` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`peering_service`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updatePeeringPolicyQuery = "update `peering_policy` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`peering_service` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deletePeeringPolicyQuery = "delete from `peering_policy` where uuid = ?"
 
 // PeeringPolicyFields is db columns for PeeringPolicy
 var PeeringPolicyFields = []string{
-	"fq_name",
+	"uuid",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"peering_service",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
+	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
-	"created",
 	"creator",
-	"user_visible",
-	"last_modified",
-	"owner",
-	"owner_access",
-	"other_access",
-	"group",
-	"group_access",
+	"created",
+	"fq_name",
 	"display_name",
 	"key_value_pair",
-	"global_access",
-	"share",
-	"perms2_owner",
-	"perms2_owner_access",
-	"peering_service",
-	"uuid",
 }
 
 // PeeringPolicyRefFields is db reference fields for PeeringPolicy
 var PeeringPolicyRefFields = map[string][]string{}
+
+// PeeringPolicyBackRefFields is db back reference fields for PeeringPolicy
+var PeeringPolicyBackRefFields = map[string][]string{}
 
 // CreatePeeringPolicy inserts PeeringPolicy to DB
 func CreatePeeringPolicy(tx *sql.Tx, model *models.PeeringPolicy) error {
@@ -54,26 +59,28 @@ func CreatePeeringPolicy(tx *sql.Tx, model *models.PeeringPolicy) error {
 		"model": model,
 		"query": insertPeeringPolicyQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(common.MustJSON(model.FQName),
+	_, err = stmt.Exec(string(model.UUID),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.PeeringService),
+		string(model.ParentUUID),
+		string(model.ParentType),
+		bool(model.IDPerms.UserVisible),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
 		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.GlobalAccess),
-		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		string(model.PeeringService),
-		string(model.UUID))
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -87,9 +94,121 @@ func CreatePeeringPolicy(tx *sql.Tx, model *models.PeeringPolicy) error {
 func scanPeeringPolicy(values map[string]interface{}) (*models.PeeringPolicy, error) {
 	m := models.MakePeeringPolicy()
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["uuid"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["peering_service"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.PeeringService = models.PeeringServiceType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -109,14 +228,6 @@ func scanPeeringPolicy(values map[string]interface{}) (*models.PeeringPolicy, er
 
 	}
 
-	if value, ok := values["created"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
 	if value, ok := values["creator"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -125,59 +236,17 @@ func scanPeeringPolicy(values map[string]interface{}) (*models.PeeringPolicy, er
 
 	}
 
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
+	if value, ok := values["created"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.Created = castedValue
 
 	}
 
-	if value, ok := values["owner"]; ok {
+	if value, ok := values["fq_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
@@ -195,52 +264,6 @@ func scanPeeringPolicy(values map[string]interface{}) (*models.PeeringPolicy, er
 
 	}
 
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["peering_service"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.PeeringService = models.PeeringServiceType(castedValue)
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
-
-	}
-
 	return m, nil
 }
 
@@ -252,6 +275,7 @@ func ListPeeringPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.PeeringPoli
 	spec.Table = "peering_policy"
 	spec.Fields = PeeringPolicyFields
 	spec.RefFields = PeeringPolicyRefFields
+	spec.BackRefFields = PeeringPolicyBackRefFields
 	result := models.MakePeeringPolicySlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

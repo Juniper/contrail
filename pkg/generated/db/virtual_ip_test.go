@@ -11,9 +11,16 @@ import (
 
 func TestVirtualIP(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "virtual_ip")
+	defer func() {
+		common.ClearTable(db, "virtual_ip")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeVirtualIP()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateVirtualIP(tx, model)

@@ -11,9 +11,16 @@ import (
 
 func TestRouteAggregate(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "route_aggregate")
+	defer func() {
+		common.ClearTable(db, "route_aggregate")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeRouteAggregate()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateRouteAggregate(tx, model)

@@ -11,9 +11,16 @@ import (
 
 func TestTag(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "tag")
+	defer func() {
+		common.ClearTable(db, "tag")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeTag()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateTag(tx, model)

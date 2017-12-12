@@ -9,8 +9,6 @@ type JunosServicePorts struct {
 	ServicePort []string `json:"service_port"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *JunosServicePorts) String() string {
 	b, _ := json.Marshal(model)
@@ -31,7 +29,7 @@ func InterfaceToJunosServicePorts(iData interface{}) *JunosServicePorts {
 	return &JunosServicePorts{
 		ServicePort: data["service_port"].([]string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ServicePort","GoType":"string","GoPremitive":true},"GoName":"ServicePort","GoType":"[]string","GoPremitive":true}
+		//{"type":"array","item":{"type":"string"}}
 
 	}
 }

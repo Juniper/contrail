@@ -11,9 +11,16 @@ import (
 
 func TestServiceConnectionModule(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "service_connection_module")
+	defer func() {
+		common.ClearTable(db, "service_connection_module")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeServiceConnectionModule()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateServiceConnectionModule(tx, model)

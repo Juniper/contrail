@@ -11,43 +11,48 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertRouteAggregateQuery = "insert into `route_aggregate` (`display_name`,`key_value_pair`,`global_access`,`share`,`owner`,`owner_access`,`uuid`,`fq_name`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`enable`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateRouteAggregateQuery = "update `route_aggregate` set `display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`uuid` = ?,`fq_name` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`enable` = ?;"
+const insertRouteAggregateQuery = "insert into `route_aggregate` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateRouteAggregateQuery = "update `route_aggregate` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteRouteAggregateQuery = "delete from `route_aggregate` where uuid = ?"
 
 // RouteAggregateFields is db columns for RouteAggregate
 var RouteAggregateFields = []string{
+	"uuid",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
+	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
+	"enable",
+	"description",
+	"creator",
+	"created",
+	"fq_name",
 	"display_name",
 	"key_value_pair",
-	"global_access",
-	"share",
-	"owner",
-	"owner_access",
-	"uuid",
-	"fq_name",
-	"description",
-	"created",
-	"creator",
-	"user_visible",
-	"last_modified",
-	"other_access",
-	"group",
-	"group_access",
-	"permissions_owner",
-	"permissions_owner_access",
-	"enable",
 }
 
 // RouteAggregateRefFields is db reference fields for RouteAggregate
 var RouteAggregateRefFields = map[string][]string{
 
 	"service_instance": {
-	// <common.Schema Value>
-
+		// <common.Schema Value>
+		"interface_type",
 	},
 }
 
-const insertRouteAggregateServiceInstanceQuery = "insert into `ref_route_aggregate_service_instance` (`from`, `to` ) values (?, ?);"
+// RouteAggregateBackRefFields is db back reference fields for RouteAggregate
+var RouteAggregateBackRefFields = map[string][]string{}
+
+const insertRouteAggregateServiceInstanceQuery = "insert into `ref_route_aggregate_service_instance` (`from`, `to` ,`interface_type`) values (?, ?,?);"
 
 // CreateRouteAggregate inserts RouteAggregate to DB
 func CreateRouteAggregate(tx *sql.Tx, model *models.RouteAggregate) error {
@@ -61,25 +66,27 @@ func CreateRouteAggregate(tx *sql.Tx, model *models.RouteAggregate) error {
 		"model": model,
 		"query": insertRouteAggregateQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.GlobalAccess),
+	_, err = stmt.Exec(string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
-		string(model.UUID),
-		common.MustJSON(model.FQName),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
-		bool(model.IDPerms.Enable))
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -95,7 +102,7 @@ func CreateRouteAggregate(tx *sql.Tx, model *models.RouteAggregate) error {
 			ref.Attr = models.MakeServiceInterfaceTag()
 		}
 
-		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID, string(ref.Attr.InterfaceType))
 		if err != nil {
 			return errors.Wrap(err, "ServiceInstanceRefs create failed")
 		}
@@ -110,39 +117,17 @@ func CreateRouteAggregate(tx *sql.Tx, model *models.RouteAggregate) error {
 func scanRouteAggregate(values map[string]interface{}) (*models.RouteAggregate, error) {
 	m := models.MakeRouteAggregate()
 
-	if value, ok := values["display_name"]; ok {
+	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.UUID = castedValue
 
 	}
 
 	if value, ok := values["share"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
 
 	}
 
@@ -154,41 +139,35 @@ func scanRouteAggregate(values map[string]interface{}) (*models.RouteAggregate, 
 
 	}
 
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["owner"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.UUID = castedValue
+		m.Perms2.Owner = castedValue
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["global_access"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["description"]; ok {
+	if value, ok := values["parent_uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Description = castedValue
+		m.ParentUUID = castedValue
 
 	}
 
-	if value, ok := values["created"]; ok {
+	if value, ok := values["parent_type"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.ParentType = castedValue
 
 	}
 
@@ -200,35 +179,11 @@ func scanRouteAggregate(values map[string]interface{}) (*models.RouteAggregate, 
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["other_access"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
@@ -240,11 +195,35 @@ func scanRouteAggregate(values map[string]interface{}) (*models.RouteAggregate, 
 
 	}
 
-	if value, ok := values["permissions_owner_access"]; ok {
+	if value, ok := values["other_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -253,6 +232,50 @@ func scanRouteAggregate(values map[string]interface{}) (*models.RouteAggregate, 
 		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
@@ -289,6 +312,7 @@ func ListRouteAggregate(tx *sql.Tx, spec *common.ListSpec) ([]*models.RouteAggre
 	spec.Table = "route_aggregate"
 	spec.Fields = RouteAggregateFields
 	spec.RefFields = RouteAggregateRefFields
+	spec.BackRefFields = RouteAggregateBackRefFields
 	result := models.MakeRouteAggregateSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

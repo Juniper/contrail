@@ -11,9 +11,16 @@ import (
 
 func TestSecurityLoggingObject(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "security_logging_object")
+	defer func() {
+		common.ClearTable(db, "security_logging_object")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeSecurityLoggingObject()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateSecurityLoggingObject(tx, model)

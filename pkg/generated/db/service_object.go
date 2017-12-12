@@ -11,35 +11,40 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertServiceObjectQuery = "insert into `service_object` (`key_value_pair`,`owner`,`owner_access`,`global_access`,`share`,`uuid`,`fq_name`,`last_modified`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateServiceObjectQuery = "update `service_object` set `key_value_pair` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`fq_name` = ?,`last_modified` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`display_name` = ?;"
+const insertServiceObjectQuery = "insert into `service_object` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateServiceObjectQuery = "update `service_object` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteServiceObjectQuery = "delete from `service_object` where uuid = ?"
 
 // ServiceObjectFields is db columns for ServiceObject
 var ServiceObjectFields = []string{
-	"key_value_pair",
-	"owner",
-	"owner_access",
-	"global_access",
-	"share",
 	"uuid",
-	"fq_name",
-	"last_modified",
-	"permissions_owner",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
 	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
-	"group",
 	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
-	"created",
 	"creator",
-	"user_visible",
+	"created",
+	"fq_name",
 	"display_name",
+	"key_value_pair",
 }
 
 // ServiceObjectRefFields is db reference fields for ServiceObject
 var ServiceObjectRefFields = map[string][]string{}
+
+// ServiceObjectBackRefFields is db back reference fields for ServiceObject
+var ServiceObjectBackRefFields = map[string][]string{}
 
 // CreateServiceObject inserts ServiceObject to DB
 func CreateServiceObject(tx *sql.Tx, model *models.ServiceObject) error {
@@ -53,25 +58,27 @@ func CreateServiceObject(tx *sql.Tx, model *models.ServiceObject) error {
 		"model": model,
 		"query": insertServiceObjectQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(common.MustJSON(model.Annotations.KeyValuePair),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
+	_, err = stmt.Exec(string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
-		string(model.UUID),
-		common.MustJSON(model.FQName),
-		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
+		bool(model.IDPerms.UserVisible),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.DisplayName))
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -85,17 +92,17 @@ func CreateServiceObject(tx *sql.Tx, model *models.ServiceObject) error {
 func scanServiceObject(values map[string]interface{}) (*models.ServiceObject, error) {
 	m := models.MakeServiceObject()
 
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["owner"]; ok {
+	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.Perms2.Owner = castedValue
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
 	}
 
@@ -107,6 +114,14 @@ func scanServiceObject(values map[string]interface{}) (*models.ServiceObject, er
 
 	}
 
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
 	if value, ok := values["global_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
@@ -115,39 +130,27 @@ func scanServiceObject(values map[string]interface{}) (*models.ServiceObject, er
 
 	}
 
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["parent_uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.UUID = castedValue
+		m.ParentUUID = castedValue
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
+	if value, ok := values["parent_type"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.LastModified = castedValue
+		m.ParentType = castedValue
 
 	}
 
-	if value, ok := values["permissions_owner"]; ok {
+	if value, ok := values["user_visible"]; ok {
 
-		castedValue := common.InterfaceToString(value)
+		castedValue := common.InterfaceToBool(value)
 
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.UserVisible = castedValue
 
 	}
 
@@ -159,11 +162,27 @@ func scanServiceObject(values map[string]interface{}) (*models.ServiceObject, er
 
 	}
 
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
 	if value, ok := values["other_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
 
 	}
 
@@ -175,11 +194,11 @@ func scanServiceObject(values map[string]interface{}) (*models.ServiceObject, er
 
 	}
 
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -199,14 +218,6 @@ func scanServiceObject(values map[string]interface{}) (*models.ServiceObject, er
 
 	}
 
-	if value, ok := values["created"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
 	if value, ok := values["creator"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -215,11 +226,17 @@ func scanServiceObject(values map[string]interface{}) (*models.ServiceObject, er
 
 	}
 
-	if value, ok := values["user_visible"]; ok {
+	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
@@ -228,6 +245,12 @@ func scanServiceObject(values map[string]interface{}) (*models.ServiceObject, er
 		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
@@ -242,6 +265,7 @@ func ListServiceObject(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceObje
 	spec.Table = "service_object"
 	spec.Fields = ServiceObjectFields
 	spec.RefFields = ServiceObjectRefFields
+	spec.BackRefFields = ServiceObjectBackRefFields
 	result := models.MakeServiceObjectSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

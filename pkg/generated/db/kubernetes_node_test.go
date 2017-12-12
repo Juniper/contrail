@@ -11,9 +11,16 @@ import (
 
 func TestKubernetesNode(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "kubernetes_node")
+	defer func() {
+		common.ClearTable(db, "kubernetes_node")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeKubernetesNode()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateKubernetesNode(tx, model)

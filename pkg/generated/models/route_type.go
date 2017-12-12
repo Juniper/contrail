@@ -12,8 +12,6 @@ type RouteType struct {
 	NextHopType         RouteNextHopType     `json:"next_hop_type"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *RouteType) String() string {
 	b, _ := json.Marshal(model)
@@ -24,10 +22,10 @@ func (model *RouteType) String() string {
 func MakeRouteType() *RouteType {
 	return &RouteType{
 		//TODO(nati): Apply default
-		NextHop:             "",
 		CommunityAttributes: MakeCommunityAttributes(),
 		NextHopType:         MakeRouteNextHopType(),
 		Prefix:              "",
+		NextHop:             "",
 	}
 }
 
@@ -37,16 +35,16 @@ func InterfaceToRouteType(iData interface{}) *RouteType {
 	return &RouteType{
 		Prefix: data["prefix"].(string),
 
-		//{"Title":"","Description":"Ip prefix/len format prefix","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Prefix","GoType":"string","GoPremitive":true}
+		//{"description":"Ip prefix/len format prefix","type":"string"}
 		NextHop: data["next_hop"].(string),
 
-		//{"Title":"","Description":"Ip address or service instance name.","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"NextHop","GoType":"string","GoPremitive":true}
+		//{"description":"Ip address or service instance name.","type":"string"}
 		CommunityAttributes: InterfaceToCommunityAttributes(data["community_attributes"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"object","Permission":null,"Properties":{"community_attribute":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"array","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/CommunityAttribute","CollectionType":"","Column":"","Item":null,"GoName":"CommunityAttribute","GoType":"CommunityAttribute","GoPremitive":false}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/CommunityAttributes","CollectionType":"","Column":"","Item":null,"GoName":"CommunityAttributes","GoType":"CommunityAttributes","GoPremitive":false}
+		//{"type":"object","properties":{"community_attribute":{"type":"array"}}}
 		NextHopType: InterfaceToRouteNextHopType(data["next_hop_type"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":["service-instance","ip-address"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/RouteNextHopType","CollectionType":"","Column":"","Item":null,"GoName":"NextHopType","GoType":"RouteNextHopType","GoPremitive":false}
+		//{"type":"string","enum":["service-instance","ip-address"]}
 
 	}
 }

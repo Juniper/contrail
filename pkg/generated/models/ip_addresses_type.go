@@ -9,8 +9,6 @@ type IpAddressesType struct {
 	IPAddress IpAddressType `json:"ip_address"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *IpAddressesType) String() string {
 	b, _ := json.Marshal(model)
@@ -31,7 +29,7 @@ func InterfaceToIpAddressesType(iData interface{}) *IpAddressesType {
 	return &IpAddressesType{
 		IPAddress: InterfaceToIpAddressType(data["ip_address"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/IpAddressType","CollectionType":"","Column":"","Item":null,"GoName":"IPAddress","GoType":"IpAddressType","GoPremitive":false}
+		//{"type":"string"}
 
 	}
 }

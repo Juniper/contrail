@@ -11,9 +11,16 @@ import (
 
 func TestVirtualNetwork(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "virtual_network")
+	defer func() {
+		common.ClearTable(db, "virtual_network")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeVirtualNetwork()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateVirtualNetwork(tx, model)

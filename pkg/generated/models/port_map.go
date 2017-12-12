@@ -11,8 +11,6 @@ type PortMap struct {
 	DSTPort  int    `json:"dst_port"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *PortMap) String() string {
 	b, _ := json.Marshal(model)
@@ -35,13 +33,13 @@ func InterfaceToPortMap(iData interface{}) *PortMap {
 	return &PortMap{
 		SRCPort: data["src_port"].(int),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"SRCPort","GoType":"int","GoPremitive":true}
+		//{"type":"integer"}
 		Protocol: data["protocol"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Protocol","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 		DSTPort: data["dst_port"].(int),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"DSTPort","GoType":"int","GoPremitive":true}
+		//{"type":"integer"}
 
 	}
 }

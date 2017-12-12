@@ -11,40 +11,45 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertAppformixNodeRoleQuery = "insert into `appformix_node_role` (`provisioning_state`,`uuid`,`owner`,`owner_access`,`global_access`,`share`,`provisioning_progress`,`provisioning_progress_stage`,`provisioning_start_time`,`fq_name`,`last_modified`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`enable`,`description`,`created`,`creator`,`user_visible`,`display_name`,`key_value_pair`,`provisioning_log`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateAppformixNodeRoleQuery = "update `appformix_node_role` set `provisioning_state` = ?,`uuid` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`provisioning_progress` = ?,`provisioning_progress_stage` = ?,`provisioning_start_time` = ?,`fq_name` = ?,`last_modified` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`display_name` = ?,`key_value_pair` = ?,`provisioning_log` = ?;"
+const insertAppformixNodeRoleQuery = "insert into `appformix_node_role` (`uuid`,`provisioning_state`,`provisioning_start_time`,`provisioning_progress_stage`,`provisioning_progress`,`provisioning_log`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateAppformixNodeRoleQuery = "update `appformix_node_role` set `uuid` = ?,`provisioning_state` = ?,`provisioning_start_time` = ?,`provisioning_progress_stage` = ?,`provisioning_progress` = ?,`provisioning_log` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteAppformixNodeRoleQuery = "delete from `appformix_node_role` where uuid = ?"
 
 // AppformixNodeRoleFields is db columns for AppformixNodeRole
 var AppformixNodeRoleFields = []string{
-	"provisioning_state",
 	"uuid",
-	"owner",
-	"owner_access",
-	"global_access",
-	"share",
-	"provisioning_progress",
-	"provisioning_progress_stage",
+	"provisioning_state",
 	"provisioning_start_time",
-	"fq_name",
-	"last_modified",
-	"group_access",
-	"permissions_owner",
+	"provisioning_progress_stage",
+	"provisioning_progress",
+	"provisioning_log",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
 	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
+	"group_access",
 	"group",
+	"last_modified",
 	"enable",
 	"description",
-	"created",
 	"creator",
-	"user_visible",
+	"created",
+	"fq_name",
 	"display_name",
 	"key_value_pair",
-	"provisioning_log",
 }
 
 // AppformixNodeRoleRefFields is db reference fields for AppformixNodeRole
 var AppformixNodeRoleRefFields = map[string][]string{}
+
+// AppformixNodeRoleBackRefFields is db back reference fields for AppformixNodeRole
+var AppformixNodeRoleBackRefFields = map[string][]string{}
 
 // CreateAppformixNodeRole inserts AppformixNodeRole to DB
 func CreateAppformixNodeRole(tx *sql.Tx, model *models.AppformixNodeRole) error {
@@ -58,30 +63,32 @@ func CreateAppformixNodeRole(tx *sql.Tx, model *models.AppformixNodeRole) error 
 		"model": model,
 		"query": insertAppformixNodeRoleQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.ProvisioningState),
-		string(model.UUID),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		common.MustJSON(model.Perms2.Share),
-		int(model.ProvisioningProgress),
-		string(model.ProvisioningProgressStage),
+	_, err = stmt.Exec(string(model.UUID),
+		string(model.ProvisioningState),
 		string(model.ProvisioningStartTime),
-		common.MustJSON(model.FQName),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
+		string(model.ProvisioningProgressStage),
+		int(model.ProvisioningProgress),
+		string(model.ProvisioningLog),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
+		bool(model.IDPerms.UserVisible),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
 		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		string(model.ProvisioningLog))
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -95,14 +102,6 @@ func CreateAppformixNodeRole(tx *sql.Tx, model *models.AppformixNodeRole) error 
 func scanAppformixNodeRole(values map[string]interface{}) (*models.AppformixNodeRole, error) {
 	m := models.MakeAppformixNodeRole()
 
-	if value, ok := values["provisioning_state"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ProvisioningState = castedValue
-
-	}
-
 	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -111,49 +110,11 @@ func scanAppformixNodeRole(values map[string]interface{}) (*models.AppformixNode
 
 	}
 
-	if value, ok := values["owner"]; ok {
+	if value, ok := values["provisioning_state"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["provisioning_progress"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.ProvisioningProgress = castedValue
-
-	}
-
-	if value, ok := values["provisioning_progress_stage"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ProvisioningProgressStage = castedValue
+		m.ProvisioningState = castedValue
 
 	}
 
@@ -165,33 +126,81 @@ func scanAppformixNodeRole(values map[string]interface{}) (*models.AppformixNode
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
+	if value, ok := values["provisioning_progress_stage"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.LastModified = castedValue
+		m.ProvisioningProgressStage = castedValue
 
 	}
 
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["provisioning_progress"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.ProvisioningProgress = castedValue
 
 	}
 
-	if value, ok := values["permissions_owner"]; ok {
+	if value, ok := values["provisioning_log"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.Owner = castedValue
+		m.ProvisioningLog = castedValue
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
 
 	}
 
@@ -203,6 +212,14 @@ func scanAppformixNodeRole(values map[string]interface{}) (*models.AppformixNode
 
 	}
 
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
 	if value, ok := values["other_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
@@ -211,11 +228,27 @@ func scanAppformixNodeRole(values map[string]interface{}) (*models.AppformixNode
 
 	}
 
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["group"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -235,14 +268,6 @@ func scanAppformixNodeRole(values map[string]interface{}) (*models.AppformixNode
 
 	}
 
-	if value, ok := values["created"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
 	if value, ok := values["creator"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -251,11 +276,17 @@ func scanAppformixNodeRole(values map[string]interface{}) (*models.AppformixNode
 
 	}
 
-	if value, ok := values["user_visible"]; ok {
+	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
@@ -273,14 +304,6 @@ func scanAppformixNodeRole(values map[string]interface{}) (*models.AppformixNode
 
 	}
 
-	if value, ok := values["provisioning_log"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ProvisioningLog = castedValue
-
-	}
-
 	return m, nil
 }
 
@@ -292,6 +315,7 @@ func ListAppformixNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.Appform
 	spec.Table = "appformix_node_role"
 	spec.Fields = AppformixNodeRoleFields
 	spec.RefFields = AppformixNodeRoleRefFields
+	spec.BackRefFields = AppformixNodeRoleBackRefFields
 	result := models.MakeAppformixNodeRoleSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

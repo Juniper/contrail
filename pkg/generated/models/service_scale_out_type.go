@@ -10,8 +10,6 @@ type ServiceScaleOutType struct {
 	MaxInstances int  `json:"max_instances"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *ServiceScaleOutType) String() string {
 	b, _ := json.Marshal(model)
@@ -22,8 +20,8 @@ func (model *ServiceScaleOutType) String() string {
 func MakeServiceScaleOutType() *ServiceScaleOutType {
 	return &ServiceScaleOutType{
 		//TODO(nati): Apply default
-		MaxInstances: 0,
 		AutoScale:    false,
+		MaxInstances: 0,
 	}
 }
 
@@ -33,10 +31,10 @@ func InterfaceToServiceScaleOutType(iData interface{}) *ServiceScaleOutType {
 	return &ServiceScaleOutType{
 		AutoScale: data["auto_scale"].(bool),
 
-		//{"Title":"","Description":"Automatically change the number of virtual machines. Not implemented","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"AutoScale","GoType":"bool","GoPremitive":true}
+		//{"description":"Automatically change the number of virtual machines. Not implemented","type":"boolean"}
 		MaxInstances: data["max_instances"].(int),
 
-		//{"Title":"","Description":"Maximum number of scale out factor(virtual machines). can be changed dynamically","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"MaxInstances","GoType":"int","GoPremitive":true}
+		//{"description":"Maximum number of scale out factor(virtual machines). can be changed dynamically","type":"integer"}
 
 	}
 }

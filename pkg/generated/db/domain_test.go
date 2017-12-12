@@ -11,9 +11,16 @@ import (
 
 func TestDomain(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "domain")
+	defer func() {
+		common.ClearTable(db, "domain")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeDomain()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateDomain(tx, model)

@@ -11,36 +11,38 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertBGPAsAServiceQuery = "insert into `bgp_as_a_service` (`share`,`owner`,`owner_access`,`global_access`,`bgpaas_session_attributes`,`bgpaas_ipv4_mapped_ipv6_nexthop`,`bgpaas_ip_address`,`fq_name`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`enable`,`description`,`created`,`display_name`,`bgpaas_shared`,`bgpaas_suppress_route_advertisement`,`autonomous_system`,`uuid`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateBGPAsAServiceQuery = "update `bgp_as_a_service` set `share` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`bgpaas_session_attributes` = ?,`bgpaas_ipv4_mapped_ipv6_nexthop` = ?,`bgpaas_ip_address` = ?,`fq_name` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`display_name` = ?,`bgpaas_shared` = ?,`bgpaas_suppress_route_advertisement` = ?,`autonomous_system` = ?,`uuid` = ?,`key_value_pair` = ?;"
+const insertBGPAsAServiceQuery = "insert into `bgp_as_a_service` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`bgpaas_suppress_route_advertisement`,`bgpaas_shared`,`bgpaas_session_attributes`,`bgpaas_ipv4_mapped_ipv6_nexthop`,`bgpaas_ip_address`,`autonomous_system`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateBGPAsAServiceQuery = "update `bgp_as_a_service` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`bgpaas_suppress_route_advertisement` = ?,`bgpaas_shared` = ?,`bgpaas_session_attributes` = ?,`bgpaas_ipv4_mapped_ipv6_nexthop` = ?,`bgpaas_ip_address` = ?,`autonomous_system` = ?,`key_value_pair` = ?;"
 const deleteBGPAsAServiceQuery = "delete from `bgp_as_a_service` where uuid = ?"
 
 // BGPAsAServiceFields is db columns for BGPAsAService
 var BGPAsAServiceFields = []string{
+	"uuid",
 	"share",
-	"owner",
 	"owner_access",
+	"owner",
 	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
+	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
+	"enable",
+	"description",
+	"creator",
+	"created",
+	"fq_name",
+	"display_name",
+	"bgpaas_suppress_route_advertisement",
+	"bgpaas_shared",
 	"bgpaas_session_attributes",
 	"bgpaas_ipv4_mapped_ipv6_nexthop",
 	"bgpaas_ip_address",
-	"fq_name",
-	"creator",
-	"user_visible",
-	"last_modified",
-	"other_access",
-	"group",
-	"group_access",
-	"permissions_owner",
-	"permissions_owner_access",
-	"enable",
-	"description",
-	"created",
-	"display_name",
-	"bgpaas_shared",
-	"bgpaas_suppress_route_advertisement",
 	"autonomous_system",
-	"uuid",
 	"key_value_pair",
 }
 
@@ -58,6 +60,9 @@ var BGPAsAServiceRefFields = map[string][]string{
 	},
 }
 
+// BGPAsAServiceBackRefFields is db back reference fields for BGPAsAService
+var BGPAsAServiceBackRefFields = map[string][]string{}
+
 const insertBGPAsAServiceVirtualMachineInterfaceQuery = "insert into `ref_bgp_as_a_service_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 const insertBGPAsAServiceServiceHealthCheckQuery = "insert into `ref_bgp_as_a_service_service_health_check` (`from`, `to` ) values (?, ?);"
@@ -74,30 +79,32 @@ func CreateBGPAsAService(tx *sql.Tx, model *models.BGPAsAService) error {
 		"model": model,
 		"query": insertBGPAsAServiceQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
+	_, err = stmt.Exec(string(model.UUID),
+		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
 		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
+		bool(model.IDPerms.UserVisible),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		bool(model.BgpaasSuppressRouteAdvertisement),
+		bool(model.BgpaasShared),
 		string(model.BgpaasSessionAttributes),
 		bool(model.BgpaasIpv4MappedIpv6Nexthop),
 		string(model.BgpaasIPAddress),
-		common.MustJSON(model.FQName),
-		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.DisplayName),
-		bool(model.BgpaasShared),
-		bool(model.BgpaasSuppressRouteAdvertisement),
 		int(model.AutonomousSystem),
-		string(model.UUID),
 		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -138,17 +145,17 @@ func CreateBGPAsAService(tx *sql.Tx, model *models.BGPAsAService) error {
 func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, error) {
 	m := models.MakeBGPAsAService()
 
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["owner"]; ok {
+	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.Perms2.Owner = castedValue
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
 	}
 
@@ -160,11 +167,153 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 
 	}
 
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
 	if value, ok := values["global_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["bgpaas_suppress_route_advertisement"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.BgpaasSuppressRouteAdvertisement = castedValue
+
+	}
+
+	if value, ok := values["bgpaas_shared"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.BgpaasShared = castedValue
 
 	}
 
@@ -192,137 +341,11 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["permissions_owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["permissions_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["enable"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["bgpaas_shared"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.BgpaasShared = castedValue
-
-	}
-
-	if value, ok := values["bgpaas_suppress_route_advertisement"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.BgpaasSuppressRouteAdvertisement = castedValue
-
-	}
-
 	if value, ok := values["autonomous_system"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.AutonomousSystem = models.AutonomousSystemType(castedValue)
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
 
 	}
 
@@ -381,6 +404,7 @@ func ListBGPAsAService(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPAsAServi
 	spec.Table = "bgp_as_a_service"
 	spec.Fields = BGPAsAServiceFields
 	spec.RefFields = BGPAsAServiceRefFields
+	spec.BackRefFields = BGPAsAServiceBackRefFields
 	result := models.MakeBGPAsAServiceSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

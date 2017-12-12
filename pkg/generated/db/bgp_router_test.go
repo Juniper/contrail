@@ -11,9 +11,16 @@ import (
 
 func TestBGPRouter(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "bgp_router")
+	defer func() {
+		common.ClearTable(db, "bgp_router")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeBGPRouter()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateBGPRouter(tx, model)

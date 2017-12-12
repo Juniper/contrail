@@ -11,9 +11,16 @@ import (
 
 func TestTagType(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "tag_type")
+	defer func() {
+		common.ClearTable(db, "tag_type")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeTagType()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateTagType(tx, model)

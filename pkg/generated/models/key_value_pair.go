@@ -10,8 +10,6 @@ type KeyValuePair struct {
 	Key   string `json:"key"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *KeyValuePair) String() string {
 	b, _ := json.Marshal(model)
@@ -22,8 +20,8 @@ func (model *KeyValuePair) String() string {
 func MakeKeyValuePair() *KeyValuePair {
 	return &KeyValuePair{
 		//TODO(nati): Apply default
-		Value: "",
 		Key:   "",
+		Value: "",
 	}
 }
 
@@ -33,10 +31,10 @@ func InterfaceToKeyValuePair(iData interface{}) *KeyValuePair {
 	return &KeyValuePair{
 		Value: data["value"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Value","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 		Key: data["key"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Key","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 
 	}
 }

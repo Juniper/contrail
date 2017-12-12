@@ -11,43 +11,45 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertServiceTemplateQuery = "insert into `service_template` (`uuid`,`fq_name`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`group_access`,`owner`,`owner_access`,`other_access`,`group`,`enable`,`display_name`,`key_value_pair`,`instance_data`,`vrouter_instance_type`,`interface_type`,`service_mode`,`availability_zone_enable`,`service_type`,`ordered_interfaces`,`service_virtualization_type`,`service_scaling`,`version`,`flavor`,`image_name`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateServiceTemplateQuery = "update `service_template` set `uuid` = ?,`fq_name` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`display_name` = ?,`key_value_pair` = ?,`instance_data` = ?,`vrouter_instance_type` = ?,`interface_type` = ?,`service_mode` = ?,`availability_zone_enable` = ?,`service_type` = ?,`ordered_interfaces` = ?,`service_virtualization_type` = ?,`service_scaling` = ?,`version` = ?,`flavor` = ?,`image_name` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?;"
+const insertServiceTemplateQuery = "insert into `service_template` (`uuid`,`vrouter_instance_type`,`version`,`service_virtualization_type`,`service_type`,`service_scaling`,`service_mode`,`ordered_interfaces`,`interface_type`,`instance_data`,`image_name`,`flavor`,`availability_zone_enable`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateServiceTemplateQuery = "update `service_template` set `uuid` = ?,`vrouter_instance_type` = ?,`version` = ?,`service_virtualization_type` = ?,`service_type` = ?,`service_scaling` = ?,`service_mode` = ?,`ordered_interfaces` = ?,`interface_type` = ?,`instance_data` = ?,`image_name` = ?,`flavor` = ?,`availability_zone_enable` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteServiceTemplateQuery = "delete from `service_template` where uuid = ?"
 
 // ServiceTemplateFields is db columns for ServiceTemplate
 var ServiceTemplateFields = []string{
 	"uuid",
-	"fq_name",
-	"description",
-	"created",
-	"creator",
-	"user_visible",
-	"last_modified",
-	"group_access",
-	"owner",
+	"vrouter_instance_type",
+	"version",
+	"service_virtualization_type",
+	"service_type",
+	"service_scaling",
+	"service_mode",
+	"ordered_interfaces",
+	"interface_type",
+	"instance_data",
+	"image_name",
+	"flavor",
+	"availability_zone_enable",
+	"share",
 	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
+	"group_access",
 	"group",
+	"last_modified",
 	"enable",
+	"description",
+	"creator",
+	"created",
+	"fq_name",
 	"display_name",
 	"key_value_pair",
-	"instance_data",
-	"vrouter_instance_type",
-	"interface_type",
-	"service_mode",
-	"availability_zone_enable",
-	"service_type",
-	"ordered_interfaces",
-	"service_virtualization_type",
-	"service_scaling",
-	"version",
-	"flavor",
-	"image_name",
-	"perms2_owner",
-	"perms2_owner_access",
-	"global_access",
-	"share",
 }
 
 // ServiceTemplateRefFields is db reference fields for ServiceTemplate
@@ -58,6 +60,9 @@ var ServiceTemplateRefFields = map[string][]string{
 
 	},
 }
+
+// ServiceTemplateBackRefFields is db back reference fields for ServiceTemplate
+var ServiceTemplateBackRefFields = map[string][]string{}
 
 const insertServiceTemplateServiceApplianceSetQuery = "insert into `ref_service_template_service_appliance_set` (`from`, `to` ) values (?, ?);"
 
@@ -74,36 +79,38 @@ func CreateServiceTemplate(tx *sql.Tx, model *models.ServiceTemplate) error {
 		"query": insertServiceTemplateQuery,
 	}).Debug("create query")
 	_, err = stmt.Exec(string(model.UUID),
-		common.MustJSON(model.FQName),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		bool(model.IDPerms.Enable),
-		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		string(model.ServiceTemplateProperties.InstanceData),
 		string(model.ServiceTemplateProperties.VrouterInstanceType),
-		common.MustJSON(model.ServiceTemplateProperties.InterfaceType),
-		string(model.ServiceTemplateProperties.ServiceMode),
-		bool(model.ServiceTemplateProperties.AvailabilityZoneEnable),
-		string(model.ServiceTemplateProperties.ServiceType),
-		bool(model.ServiceTemplateProperties.OrderedInterfaces),
-		string(model.ServiceTemplateProperties.ServiceVirtualizationType),
-		bool(model.ServiceTemplateProperties.ServiceScaling),
 		int(model.ServiceTemplateProperties.Version),
-		string(model.ServiceTemplateProperties.Flavor),
+		string(model.ServiceTemplateProperties.ServiceVirtualizationType),
+		string(model.ServiceTemplateProperties.ServiceType),
+		bool(model.ServiceTemplateProperties.ServiceScaling),
+		string(model.ServiceTemplateProperties.ServiceMode),
+		bool(model.ServiceTemplateProperties.OrderedInterfaces),
+		common.MustJSON(model.ServiceTemplateProperties.InterfaceType),
+		string(model.ServiceTemplateProperties.InstanceData),
 		string(model.ServiceTemplateProperties.ImageName),
-		string(model.Perms2.Owner),
+		string(model.ServiceTemplateProperties.Flavor),
+		bool(model.ServiceTemplateProperties.AvailabilityZoneEnable),
+		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
 		int(model.Perms2.GlobalAccess),
-		common.MustJSON(model.Perms2.Share))
+		string(model.ParentUUID),
+		string(model.ParentType),
+		bool(model.IDPerms.UserVisible),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -138,33 +145,143 @@ func scanServiceTemplate(values map[string]interface{}) (*models.ServiceTemplate
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["description"]; ok {
+	if value, ok := values["vrouter_instance_type"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Description = castedValue
+		m.ServiceTemplateProperties.VrouterInstanceType = models.VRouterInstanceType(castedValue)
 
 	}
 
-	if value, ok := values["created"]; ok {
+	if value, ok := values["version"]; ok {
 
-		castedValue := common.InterfaceToString(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Created = castedValue
+		m.ServiceTemplateProperties.Version = castedValue
 
 	}
 
-	if value, ok := values["creator"]; ok {
+	if value, ok := values["service_virtualization_type"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Creator = castedValue
+		m.ServiceTemplateProperties.ServiceVirtualizationType = models.ServiceVirtualizationType(castedValue)
+
+	}
+
+	if value, ok := values["service_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ServiceTemplateProperties.ServiceType = models.ServiceType(castedValue)
+
+	}
+
+	if value, ok := values["service_scaling"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.ServiceTemplateProperties.ServiceScaling = castedValue
+
+	}
+
+	if value, ok := values["service_mode"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ServiceTemplateProperties.ServiceMode = models.ServiceModeType(castedValue)
+
+	}
+
+	if value, ok := values["ordered_interfaces"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.ServiceTemplateProperties.OrderedInterfaces = castedValue
+
+	}
+
+	if value, ok := values["interface_type"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.ServiceTemplateProperties.InterfaceType)
+
+	}
+
+	if value, ok := values["instance_data"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ServiceTemplateProperties.InstanceData = castedValue
+
+	}
+
+	if value, ok := values["image_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ServiceTemplateProperties.ImageName = castedValue
+
+	}
+
+	if value, ok := values["flavor"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ServiceTemplateProperties.Flavor = castedValue
+
+	}
+
+	if value, ok := values["availability_zone_enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.ServiceTemplateProperties.AvailabilityZoneEnable = castedValue
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
 
 	}
 
@@ -176,35 +293,19 @@ func scanServiceTemplate(values map[string]interface{}) (*models.ServiceTemplate
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
 
 	}
 
@@ -216,6 +317,14 @@ func scanServiceTemplate(values map[string]interface{}) (*models.ServiceTemplate
 
 	}
 
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["group"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -224,11 +333,49 @@ func scanServiceTemplate(values map[string]interface{}) (*models.ServiceTemplate
 
 	}
 
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
 	if value, ok := values["enable"]; ok {
 
 		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
@@ -243,130 +390,6 @@ func scanServiceTemplate(values map[string]interface{}) (*models.ServiceTemplate
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["instance_data"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ServiceTemplateProperties.InstanceData = castedValue
-
-	}
-
-	if value, ok := values["vrouter_instance_type"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ServiceTemplateProperties.VrouterInstanceType = models.VRouterInstanceType(castedValue)
-
-	}
-
-	if value, ok := values["interface_type"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.ServiceTemplateProperties.InterfaceType)
-
-	}
-
-	if value, ok := values["service_mode"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ServiceTemplateProperties.ServiceMode = models.ServiceModeType(castedValue)
-
-	}
-
-	if value, ok := values["availability_zone_enable"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.ServiceTemplateProperties.AvailabilityZoneEnable = castedValue
-
-	}
-
-	if value, ok := values["service_type"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ServiceTemplateProperties.ServiceType = models.ServiceType(castedValue)
-
-	}
-
-	if value, ok := values["ordered_interfaces"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.ServiceTemplateProperties.OrderedInterfaces = castedValue
-
-	}
-
-	if value, ok := values["service_virtualization_type"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ServiceTemplateProperties.ServiceVirtualizationType = models.ServiceVirtualizationType(castedValue)
-
-	}
-
-	if value, ok := values["service_scaling"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.ServiceTemplateProperties.ServiceScaling = castedValue
-
-	}
-
-	if value, ok := values["version"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.ServiceTemplateProperties.Version = castedValue
-
-	}
-
-	if value, ok := values["flavor"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ServiceTemplateProperties.Flavor = castedValue
-
-	}
-
-	if value, ok := values["image_name"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ServiceTemplateProperties.ImageName = castedValue
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
 	}
 
@@ -400,6 +423,7 @@ func ListServiceTemplate(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceTe
 	spec.Table = "service_template"
 	spec.Fields = ServiceTemplateFields
 	spec.RefFields = ServiceTemplateRefFields
+	spec.BackRefFields = ServiceTemplateBackRefFields
 	result := models.MakeServiceTemplateSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

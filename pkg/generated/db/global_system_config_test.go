@@ -11,9 +11,16 @@ import (
 
 func TestGlobalSystemConfig(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "global_system_config")
+	defer func() {
+		common.ClearTable(db, "global_system_config")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeGlobalSystemConfig()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateGlobalSystemConfig(tx, model)

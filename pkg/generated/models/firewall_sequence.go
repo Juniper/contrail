@@ -9,8 +9,6 @@ type FirewallSequence struct {
 	Sequence string `json:"sequence"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *FirewallSequence) String() string {
 	b, _ := json.Marshal(model)
@@ -31,7 +29,7 @@ func InterfaceToFirewallSequence(iData interface{}) *FirewallSequence {
 	return &FirewallSequence{
 		Sequence: data["sequence"].(string),
 
-		//{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"sequence","Item":null,"GoName":"Sequence","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 
 	}
 }

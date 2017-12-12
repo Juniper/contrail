@@ -10,8 +10,6 @@ type QosIdForwardingClassPair struct {
 	ForwardingClassID ForwardingClassId `json:"forwarding_class_id"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *QosIdForwardingClassPair) String() string {
 	b, _ := json.Marshal(model)
@@ -33,10 +31,10 @@ func InterfaceToQosIdForwardingClassPair(iData interface{}) *QosIdForwardingClas
 	return &QosIdForwardingClassPair{
 		Key: data["key"].(int),
 
-		//{"Title":"","Description":"QoS bit value (DSCP or Vlan priority or EXP bit value","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Key","GoType":"int","GoPremitive":true}
+		//{"description":"QoS bit value (DSCP or Vlan priority or EXP bit value","type":"integer"}
 		ForwardingClassID: InterfaceToForwardingClassId(data["forwarding_class_id"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":"0","Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":255,"Ref":"types.json#/definitions/ForwardingClassId","CollectionType":"","Column":"","Item":null,"GoName":"ForwardingClassID","GoType":"ForwardingClassId","GoPremitive":false}
+		//{"default":"0","type":"integer","minimum":0,"maximum":255}
 
 	}
 }

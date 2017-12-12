@@ -11,41 +11,46 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertDsaRuleQuery = "insert into `dsa_rule` (`subscriber`,`ip_prefix`,`ip_prefix_len`,`ep_version`,`ep_id`,`ep_type`,`uuid`,`fq_name`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`display_name`,`key_value_pair`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateDsaRuleQuery = "update `dsa_rule` set `subscriber` = ?,`ip_prefix` = ?,`ip_prefix_len` = ?,`ep_version` = ?,`ep_id` = ?,`ep_type` = ?,`uuid` = ?,`fq_name` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`display_name` = ?,`key_value_pair` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?;"
+const insertDsaRuleQuery = "insert into `dsa_rule` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`subscriber`,`ep_version`,`ep_type`,`ip_prefix_len`,`ip_prefix`,`ep_id`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateDsaRuleQuery = "update `dsa_rule` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`subscriber` = ?,`ep_version` = ?,`ep_type` = ?,`ip_prefix_len` = ?,`ip_prefix` = ?,`ep_id` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteDsaRuleQuery = "delete from `dsa_rule` where uuid = ?"
 
 // DsaRuleFields is db columns for DsaRule
 var DsaRuleFields = []string{
-	"subscriber",
-	"ip_prefix",
-	"ip_prefix_len",
-	"ep_version",
-	"ep_id",
-	"ep_type",
 	"uuid",
-	"fq_name",
-	"description",
-	"created",
-	"creator",
-	"user_visible",
-	"last_modified",
+	"share",
 	"owner_access",
-	"other_access",
-	"group",
-	"group_access",
 	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
+	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
 	"enable",
+	"description",
+	"creator",
+	"created",
+	"fq_name",
+	"subscriber",
+	"ep_version",
+	"ep_type",
+	"ip_prefix_len",
+	"ip_prefix",
+	"ep_id",
 	"display_name",
 	"key_value_pair",
-	"share",
-	"perms2_owner",
-	"perms2_owner_access",
-	"global_access",
 }
 
 // DsaRuleRefFields is db reference fields for DsaRule
 var DsaRuleRefFields = map[string][]string{}
+
+// DsaRuleBackRefFields is db back reference fields for DsaRule
+var DsaRuleBackRefFields = map[string][]string{}
 
 // CreateDsaRule inserts DsaRule to DB
 func CreateDsaRule(tx *sql.Tx, model *models.DsaRule) error {
@@ -59,31 +64,33 @@ func CreateDsaRule(tx *sql.Tx, model *models.DsaRule) error {
 		"model": model,
 		"query": insertDsaRuleQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(common.MustJSON(model.DsaRuleEntry.Subscriber),
-		string(model.DsaRuleEntry.Publisher.EpPrefix.IPPrefix),
-		int(model.DsaRuleEntry.Publisher.EpPrefix.IPPrefixLen),
-		string(model.DsaRuleEntry.Publisher.EpVersion),
-		string(model.DsaRuleEntry.Publisher.EpID),
-		string(model.DsaRuleEntry.Publisher.EpType),
-		string(model.UUID),
-		common.MustJSON(model.FQName),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		bool(model.IDPerms.Enable),
-		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
+	_, err = stmt.Exec(string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess))
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
+		bool(model.IDPerms.UserVisible),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		common.MustJSON(model.DsaRuleEntry.Subscriber),
+		string(model.DsaRuleEntry.Publisher.EpVersion),
+		string(model.DsaRuleEntry.Publisher.EpType),
+		int(model.DsaRuleEntry.Publisher.EpPrefix.IPPrefixLen),
+		string(model.DsaRuleEntry.Publisher.EpPrefix.IPPrefix),
+		string(model.DsaRuleEntry.Publisher.EpID),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -97,52 +104,6 @@ func CreateDsaRule(tx *sql.Tx, model *models.DsaRule) error {
 func scanDsaRule(values map[string]interface{}) (*models.DsaRule, error) {
 	m := models.MakeDsaRule()
 
-	if value, ok := values["subscriber"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.DsaRuleEntry.Subscriber)
-
-	}
-
-	if value, ok := values["ip_prefix"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.DsaRuleEntry.Publisher.EpPrefix.IPPrefix = castedValue
-
-	}
-
-	if value, ok := values["ip_prefix_len"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.DsaRuleEntry.Publisher.EpPrefix.IPPrefixLen = castedValue
-
-	}
-
-	if value, ok := values["ep_version"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.DsaRuleEntry.Publisher.EpVersion = castedValue
-
-	}
-
-	if value, ok := values["ep_id"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.DsaRuleEntry.Publisher.EpID = castedValue
-
-	}
-
-	if value, ok := values["ep_type"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.DsaRuleEntry.Publisher.EpType = castedValue
-
-	}
-
 	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -151,33 +112,49 @@ func scanDsaRule(values map[string]interface{}) (*models.DsaRule, error) {
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["share"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
 	}
 
-	if value, ok := values["created"]; ok {
+	if value, ok := values["owner_access"]; ok {
 
-		castedValue := common.InterfaceToString(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Created = castedValue
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["creator"]; ok {
+	if value, ok := values["owner"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Creator = castedValue
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
 
 	}
 
@@ -189,19 +166,19 @@ func scanDsaRule(values map[string]interface{}) (*models.DsaRule, error) {
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
 
 	}
 
@@ -213,14 +190,6 @@ func scanDsaRule(values map[string]interface{}) (*models.DsaRule, error) {
 
 	}
 
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
 	if value, ok := values["group_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
@@ -229,11 +198,19 @@ func scanDsaRule(values map[string]interface{}) (*models.DsaRule, error) {
 
 	}
 
-	if value, ok := values["owner"]; ok {
+	if value, ok := values["group"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -242,6 +219,82 @@ func scanDsaRule(values map[string]interface{}) (*models.DsaRule, error) {
 		castedValue := common.InterfaceToBool(value)
 
 		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["subscriber"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.DsaRuleEntry.Subscriber)
+
+	}
+
+	if value, ok := values["ep_version"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DsaRuleEntry.Publisher.EpVersion = castedValue
+
+	}
+
+	if value, ok := values["ep_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DsaRuleEntry.Publisher.EpType = castedValue
+
+	}
+
+	if value, ok := values["ip_prefix_len"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.DsaRuleEntry.Publisher.EpPrefix.IPPrefixLen = castedValue
+
+	}
+
+	if value, ok := values["ip_prefix"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DsaRuleEntry.Publisher.EpPrefix.IPPrefix = castedValue
+
+	}
+
+	if value, ok := values["ep_id"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DsaRuleEntry.Publisher.EpID = castedValue
 
 	}
 
@@ -259,36 +312,6 @@ func scanDsaRule(values map[string]interface{}) (*models.DsaRule, error) {
 
 	}
 
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
 	return m, nil
 }
 
@@ -300,6 +323,7 @@ func ListDsaRule(tx *sql.Tx, spec *common.ListSpec) ([]*models.DsaRule, error) {
 	spec.Table = "dsa_rule"
 	spec.Fields = DsaRuleFields
 	spec.RefFields = DsaRuleRefFields
+	spec.BackRefFields = DsaRuleBackRefFields
 	result := models.MakeDsaRuleSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

@@ -10,8 +10,6 @@ type SequenceType struct {
 	Minor int `json:"minor"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *SequenceType) String() string {
 	b, _ := json.Marshal(model)
@@ -33,10 +31,10 @@ func InterfaceToSequenceType(iData interface{}) *SequenceType {
 	return &SequenceType{
 		Major: data["major"].(int),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Major","GoType":"int","GoPremitive":true}
+		//{"type":"integer"}
 		Minor: data["minor"].(int),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Minor","GoType":"int","GoPremitive":true}
+		//{"type":"integer"}
 
 	}
 }

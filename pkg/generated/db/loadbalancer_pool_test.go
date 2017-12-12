@@ -11,9 +11,16 @@ import (
 
 func TestLoadbalancerPool(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "loadbalancer_pool")
+	defer func() {
+		common.ClearTable(db, "loadbalancer_pool")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeLoadbalancerPool()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateLoadbalancerPool(tx, model)

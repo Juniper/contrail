@@ -11,31 +11,33 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertCustomerAttachmentQuery = "insert into `customer_attachment` (`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`display_name`,`key_value_pair`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateCustomerAttachmentQuery = "update `customer_attachment` set `last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?,`fq_name` = ?;"
+const insertCustomerAttachmentQuery = "insert into `customer_attachment` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateCustomerAttachmentQuery = "update `customer_attachment` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteCustomerAttachmentQuery = "delete from `customer_attachment` where uuid = ?"
 
 // CustomerAttachmentFields is db columns for CustomerAttachment
 var CustomerAttachmentFields = []string{
-	"last_modified",
-	"owner",
+	"uuid",
+	"share",
 	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
-	"group",
 	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
-	"created",
 	"creator",
-	"user_visible",
+	"created",
+	"fq_name",
 	"display_name",
 	"key_value_pair",
-	"perms2_owner",
-	"perms2_owner_access",
-	"global_access",
-	"share",
-	"uuid",
-	"fq_name",
 }
 
 // CustomerAttachmentRefFields is db reference fields for CustomerAttachment
@@ -51,6 +53,9 @@ var CustomerAttachmentRefFields = map[string][]string{
 
 	},
 }
+
+// CustomerAttachmentBackRefFields is db back reference fields for CustomerAttachment
+var CustomerAttachmentBackRefFields = map[string][]string{}
 
 const insertCustomerAttachmentVirtualMachineInterfaceQuery = "insert into `ref_customer_attachment_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
@@ -68,25 +73,27 @@ func CreateCustomerAttachment(tx *sql.Tx, model *models.CustomerAttachment) erro
 		"model": model,
 		"query": insertCustomerAttachmentQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
+	_, err = stmt.Exec(string(model.UUID),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
+		bool(model.IDPerms.UserVisible),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
 		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		common.MustJSON(model.Perms2.Share),
-		string(model.UUID),
-		common.MustJSON(model.FQName))
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -126,19 +133,17 @@ func CreateCustomerAttachment(tx *sql.Tx, model *models.CustomerAttachment) erro
 func scanCustomerAttachment(values map[string]interface{}) (*models.CustomerAttachment, error) {
 	m := models.MakeCustomerAttachment()
 
-	if value, ok := values["last_modified"]; ok {
+	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.LastModified = castedValue
+		m.UUID = castedValue
 
 	}
 
-	if value, ok := values["owner"]; ok {
+	if value, ok := values["share"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
 	}
 
@@ -146,7 +151,63 @@ func scanCustomerAttachment(values map[string]interface{}) (*models.CustomerAtta
 
 		castedValue := common.InterfaceToInt(value)
 
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
 
 	}
 
@@ -158,6 +219,14 @@ func scanCustomerAttachment(values map[string]interface{}) (*models.CustomerAtta
 
 	}
 
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["group"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -166,11 +235,11 @@ func scanCustomerAttachment(values map[string]interface{}) (*models.CustomerAtta
 
 	}
 
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -190,14 +259,6 @@ func scanCustomerAttachment(values map[string]interface{}) (*models.CustomerAtta
 
 	}
 
-	if value, ok := values["created"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
 	if value, ok := values["creator"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -206,11 +267,17 @@ func scanCustomerAttachment(values map[string]interface{}) (*models.CustomerAtta
 
 	}
 
-	if value, ok := values["user_visible"]; ok {
+	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
@@ -225,50 +292,6 @@ func scanCustomerAttachment(values map[string]interface{}) (*models.CustomerAtta
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
-
-	}
-
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
@@ -321,6 +344,7 @@ func ListCustomerAttachment(tx *sql.Tx, spec *common.ListSpec) ([]*models.Custom
 	spec.Table = "customer_attachment"
 	spec.Fields = CustomerAttachmentFields
 	spec.RefFields = CustomerAttachmentRefFields
+	spec.BackRefFields = CustomerAttachmentBackRefFields
 	result := models.MakeCustomerAttachmentSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

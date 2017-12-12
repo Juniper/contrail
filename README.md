@@ -20,21 +20,39 @@ go get github.com/Juniper/contrail
 make generate
 ```
 
+Templates are stored in tools/templates
+You can add your template on template_config.yaml
+
 # Schema Files
 
-Note that schema stored here is just a cache for helping development. 
+Note that schema stored here is just a cache for helping development.
 Developers should make sure download latest schema from http://github.com/Juniper/contrail-api-client
+
+JSON version stored in public/schema.json
 
 # Testing
 
 You need to run local mysql running with test configuraion.
 
-ID: root 
-Password: contrail123 
-DataBase: contrail_test 
+ID: root
+Password: contrail123
+DataBase: contrail_test
+
+Init DB before test
+```
+./tool/reset_db.sh
+```
 
 ```
 make test
+```
+
+# API Server
+
+You can run API server using this command.
+
+```
+go run cmd/contrail/main.go server -c tools/test_config.yml
 ```
 
 # Packaging

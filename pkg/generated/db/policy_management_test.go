@@ -11,9 +11,16 @@ import (
 
 func TestPolicyManagement(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "policy_management")
+	defer func() {
+		common.ClearTable(db, "policy_management")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakePolicyManagement()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreatePolicyManagement(tx, model)

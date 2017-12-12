@@ -11,9 +11,16 @@ import (
 
 func TestAPIAccessList(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "api_access_list")
+	defer func() {
+		common.ClearTable(db, "api_access_list")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeAPIAccessList()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateAPIAccessList(tx, model)

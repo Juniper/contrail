@@ -11,8 +11,6 @@ type StaticMirrorNhType struct {
 	Vni               VxlanNetworkIdentifierType `json:"vni"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *StaticMirrorNhType) String() string {
 	b, _ := json.Marshal(model)
@@ -35,13 +33,13 @@ func InterfaceToStaticMirrorNhType(iData interface{}) *StaticMirrorNhType {
 	return &StaticMirrorNhType{
 		VtepDSTIPAddress: data["vtep_dst_ip_address"].(string),
 
-		//{"Title":"","Description":"ip address of destination vtep","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"VtepDSTIPAddress","GoType":"string","GoPremitive":true}
+		//{"description":"ip address of destination vtep","type":"string"}
 		VtepDSTMacAddress: data["vtep_dst_mac_address"].(string),
 
-		//{"Title":"","Description":"mac address of destination vtep","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"VtepDSTMacAddress","GoType":"string","GoPremitive":true}
+		//{"description":"mac address of destination vtep","type":"string"}
 		Vni: InterfaceToVxlanNetworkIdentifierType(data["vni"]),
 
-		//{"Title":"","Description":"Vni of vtep","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":1,"Maximum":16777215,"Ref":"types.json#/definitions/VxlanNetworkIdentifierType","CollectionType":"","Column":"","Item":null,"GoName":"Vni","GoType":"VxlanNetworkIdentifierType","GoPremitive":false}
+		//{"description":"Vni of vtep","type":"integer","minimum":1,"maximum":16777215}
 
 	}
 }

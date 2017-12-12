@@ -11,9 +11,16 @@ import (
 
 func TestSubnet(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "subnet")
+	defer func() {
+		common.ClearTable(db, "subnet")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeSubnet()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateSubnet(tx, model)

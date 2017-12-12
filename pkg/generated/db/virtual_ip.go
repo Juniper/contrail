@@ -11,41 +11,43 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertVirtualIPQuery = "insert into `virtual_ip` (`status_description`,`protocol`,`persistence_cookie_name`,`connection_limit`,`admin_state`,`address`,`protocol_port`,`status`,`subnet_id`,`persistence_type`,`uuid`,`fq_name`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`display_name`,`key_value_pair`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateVirtualIPQuery = "update `virtual_ip` set `status_description` = ?,`protocol` = ?,`persistence_cookie_name` = ?,`connection_limit` = ?,`admin_state` = ?,`address` = ?,`protocol_port` = ?,`status` = ?,`subnet_id` = ?,`persistence_type` = ?,`uuid` = ?,`fq_name` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`display_name` = ?,`key_value_pair` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?;"
+const insertVirtualIPQuery = "insert into `virtual_ip` (`subnet_id`,`status_description`,`status`,`protocol_port`,`protocol`,`persistence_type`,`persistence_cookie_name`,`connection_limit`,`admin_state`,`address`,`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateVirtualIPQuery = "update `virtual_ip` set `subnet_id` = ?,`status_description` = ?,`status` = ?,`protocol_port` = ?,`protocol` = ?,`persistence_type` = ?,`persistence_cookie_name` = ?,`connection_limit` = ?,`admin_state` = ?,`address` = ?,`uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteVirtualIPQuery = "delete from `virtual_ip` where uuid = ?"
 
 // VirtualIPFields is db columns for VirtualIP
 var VirtualIPFields = []string{
+	"subnet_id",
 	"status_description",
+	"status",
+	"protocol_port",
 	"protocol",
+	"persistence_type",
 	"persistence_cookie_name",
 	"connection_limit",
 	"admin_state",
 	"address",
-	"protocol_port",
-	"status",
-	"subnet_id",
-	"persistence_type",
 	"uuid",
-	"fq_name",
-	"owner",
+	"share",
 	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
-	"group",
 	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
-	"created",
 	"creator",
-	"user_visible",
-	"last_modified",
+	"created",
+	"fq_name",
 	"display_name",
 	"key_value_pair",
-	"share",
-	"perms2_owner",
-	"perms2_owner_access",
-	"global_access",
 }
 
 // VirtualIPRefFields is db reference fields for VirtualIP
@@ -62,9 +64,12 @@ var VirtualIPRefFields = map[string][]string{
 	},
 }
 
-const insertVirtualIPLoadbalancerPoolQuery = "insert into `ref_virtual_ip_loadbalancer_pool` (`from`, `to` ) values (?, ?);"
+// VirtualIPBackRefFields is db back reference fields for VirtualIP
+var VirtualIPBackRefFields = map[string][]string{}
 
 const insertVirtualIPVirtualMachineInterfaceQuery = "insert into `ref_virtual_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
+
+const insertVirtualIPLoadbalancerPoolQuery = "insert into `ref_virtual_ip_loadbalancer_pool` (`from`, `to` ) values (?, ?);"
 
 // CreateVirtualIP inserts VirtualIP to DB
 func CreateVirtualIP(tx *sql.Tx, model *models.VirtualIP) error {
@@ -78,50 +83,39 @@ func CreateVirtualIP(tx *sql.Tx, model *models.VirtualIP) error {
 		"model": model,
 		"query": insertVirtualIPQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.VirtualIPProperties.StatusDescription),
+	_, err = stmt.Exec(string(model.VirtualIPProperties.SubnetID),
+		string(model.VirtualIPProperties.StatusDescription),
+		string(model.VirtualIPProperties.Status),
+		int(model.VirtualIPProperties.ProtocolPort),
 		string(model.VirtualIPProperties.Protocol),
+		string(model.VirtualIPProperties.PersistenceType),
 		string(model.VirtualIPProperties.PersistenceCookieName),
 		int(model.VirtualIPProperties.ConnectionLimit),
 		bool(model.VirtualIPProperties.AdminState),
 		string(model.VirtualIPProperties.Address),
-		int(model.VirtualIPProperties.ProtocolPort),
-		string(model.VirtualIPProperties.Status),
-		string(model.VirtualIPProperties.SubnetID),
-		string(model.VirtualIPProperties.PersistenceType),
 		string(model.UUID),
-		common.MustJSON(model.FQName),
-		string(model.IDPerms.Permissions.Owner),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
+		bool(model.IDPerms.UserVisible),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
 		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess))
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
-	}
-
-	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertVirtualIPVirtualMachineInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
-	}
-	defer stmtVirtualMachineInterfaceRef.Close()
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
 	}
 
 	stmtLoadbalancerPoolRef, err := tx.Prepare(insertVirtualIPLoadbalancerPoolQuery)
@@ -137,6 +131,19 @@ func CreateVirtualIP(tx *sql.Tx, model *models.VirtualIP) error {
 		}
 	}
 
+	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertVirtualIPVirtualMachineInterfaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
+	}
+	defer stmtVirtualMachineInterfaceRef.Close()
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
+	}
+
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -146,6 +153,14 @@ func CreateVirtualIP(tx *sql.Tx, model *models.VirtualIP) error {
 func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 	m := models.MakeVirtualIP()
 
+	if value, ok := values["subnet_id"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.VirtualIPProperties.SubnetID = models.UuidStringType(castedValue)
+
+	}
+
 	if value, ok := values["status_description"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -154,11 +169,35 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 
 	}
 
+	if value, ok := values["status"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.VirtualIPProperties.Status = castedValue
+
+	}
+
+	if value, ok := values["protocol_port"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.VirtualIPProperties.ProtocolPort = castedValue
+
+	}
+
 	if value, ok := values["protocol"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
 		m.VirtualIPProperties.Protocol = models.LoadbalancerProtocolType(castedValue)
+
+	}
+
+	if value, ok := values["persistence_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.VirtualIPProperties.PersistenceType = models.SessionPersistenceType(castedValue)
 
 	}
 
@@ -194,38 +233,6 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 
 	}
 
-	if value, ok := values["protocol_port"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.VirtualIPProperties.ProtocolPort = castedValue
-
-	}
-
-	if value, ok := values["status"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.VirtualIPProperties.Status = castedValue
-
-	}
-
-	if value, ok := values["subnet_id"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.VirtualIPProperties.SubnetID = models.UuidStringType(castedValue)
-
-	}
-
-	if value, ok := values["persistence_type"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.VirtualIPProperties.PersistenceType = models.SessionPersistenceType(castedValue)
-
-	}
-
 	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -234,17 +241,9 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["share"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
 	}
 
@@ -252,7 +251,63 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 
 		castedValue := common.InterfaceToInt(value)
 
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
 
 	}
 
@@ -264,6 +319,14 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 
 	}
 
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["group"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -272,11 +335,11 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 
 	}
 
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -296,14 +359,6 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 
 	}
 
-	if value, ok := values["created"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
 	if value, ok := values["creator"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -312,19 +367,17 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 
 	}
 
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
+	if value, ok := values["created"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
@@ -339,36 +392,6 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
 	}
 
@@ -421,6 +444,7 @@ func ListVirtualIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualIP, erro
 	spec.Table = "virtual_ip"
 	spec.Fields = VirtualIPFields
 	spec.RefFields = VirtualIPRefFields
+	spec.BackRefFields = VirtualIPBackRefFields
 	result := models.MakeVirtualIPSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

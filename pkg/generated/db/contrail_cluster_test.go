@@ -11,9 +11,16 @@ import (
 
 func TestContrailCluster(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "contrail_cluster")
+	defer func() {
+		common.ClearTable(db, "contrail_cluster")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeContrailCluster()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateContrailCluster(tx, model)

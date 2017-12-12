@@ -9,8 +9,6 @@ type BridgeDomainMembershipType struct {
 	VlanTag Dot1QTagType `json:"vlan_tag"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *BridgeDomainMembershipType) String() string {
 	b, _ := json.Marshal(model)
@@ -31,7 +29,7 @@ func InterfaceToBridgeDomainMembershipType(iData interface{}) *BridgeDomainMembe
 	return &BridgeDomainMembershipType{
 		VlanTag: InterfaceToDot1QTagType(data["vlan_tag"]),
 
-		//{"Title":"","Description":"VLAN tag of the incoming packet that maps the                      virtual-machine-interface to bridge domain","SQL":"int","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":4094,"Ref":"types.json#/definitions/Dot1QTagType","CollectionType":"","Column":"vlan_tag","Item":null,"GoName":"VlanTag","GoType":"Dot1QTagType","GoPremitive":false}
+		//{"description":"VLAN tag of the incoming packet that maps the                      virtual-machine-interface to bridge domain","type":"integer","minimum":0,"maximum":4094}
 
 	}
 }

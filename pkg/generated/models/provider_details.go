@@ -10,8 +10,6 @@ type ProviderDetails struct {
 	PhysicalNetwork string     `json:"physical_network"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *ProviderDetails) String() string {
 	b, _ := json.Marshal(model)
@@ -33,10 +31,10 @@ func InterfaceToProviderDetails(iData interface{}) *ProviderDetails {
 	return &ProviderDetails{
 		SegmentationID: InterfaceToVlanIdType(data["segmentation_id"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":1,"Maximum":4094,"Ref":"types.json#/definitions/VlanIdType","CollectionType":"","Column":"","Item":null,"GoName":"SegmentationID","GoType":"VlanIdType","GoPremitive":false}
+		//{"type":"integer","minimum":1,"maximum":4094}
 		PhysicalNetwork: data["physical_network"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"PhysicalNetwork","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 
 	}
 }

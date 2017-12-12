@@ -1,13 +1,14 @@
 name: Virtual Network Test
 description:  basic virtual network test
 cleanup:
+- routing_instance
 - virtual_network
 - network_policy
 workflow:
 - name: create network policy
   request:
     path: /network-policys
-    method: POST 
+    method: POST
     expected:
     - 201
     data:
@@ -18,7 +19,7 @@ workflow:
       uuid: network_policy_uuid
 - name: create virtual network
   request:
-    path: /virtual-networks 
+    path: /virtual-networks
     method: POST
     expected:
     - 201
@@ -32,10 +33,24 @@ workflow:
       uuid: vn_uuid
       network_policy_refs:
       - uuid: network_policy_uuid
+- name: create routing instance
+  request:
+    path: /routing-instances
+    method: POST
+    expected:
+    - 201
+    data:
+      routing-instance:
+        uuid: ri_uuid
+        parent_uuid: vn_uuid
+  expect:
+    routing-instance:
+      uuid: ri_uuid
+      parent_uuid: vn_uuid
 - name: list virtual networks
   request:
-    path: /virtual-networks 
-    method: GET 
+    path: /virtual-networks
+    method: GET
     expected:
     - 200
   expect:
@@ -43,17 +58,20 @@ workflow:
     - uuid: vn_uuid
       network_policy_refs:
       - uuid: network_policy_uuid
+      routing_instances:
+      - uuid: ri_uuid
+        parent_uuid: vn_uuid
 - name: delete virtual network
   request:
     path: /virtual-network/vn_uuid
-    method: DELETE 
+    method: DELETE
     expected:
     - 204
-  expect: null 
+  expect: null
 - name: delete network policy
   request:
     path: /network-policy/network_policy_uuid
-    method: DELETE 
+    method: DELETE
     expected:
     - 204
   expect: null

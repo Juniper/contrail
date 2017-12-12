@@ -11,9 +11,16 @@ import (
 
 func TestDsaRule(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "dsa_rule")
+	defer func() {
+		common.ClearTable(db, "dsa_rule")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeDsaRule()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateDsaRule(tx, model)

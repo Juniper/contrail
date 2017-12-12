@@ -11,9 +11,16 @@ import (
 
 func TestPeeringPolicy(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "peering_policy")
+	defer func() {
+		common.ClearTable(db, "peering_policy")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakePeeringPolicy()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreatePeeringPolicy(tx, model)

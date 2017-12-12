@@ -11,9 +11,16 @@ import (
 
 func TestServiceAppliance(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "service_appliance")
+	defer func() {
+		common.ClearTable(db, "service_appliance")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeServiceAppliance()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateServiceAppliance(tx, model)

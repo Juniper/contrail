@@ -6,11 +6,9 @@ import "encoding/json"
 
 // ProtocolType
 type ProtocolType struct {
-	Protocol string `json:"protocol"`
 	Port     int    `json:"port"`
+	Protocol string `json:"protocol"`
 }
-
-//  parents relation object
 
 // String returns json representation of the object
 func (model *ProtocolType) String() string {
@@ -31,12 +29,12 @@ func MakeProtocolType() *ProtocolType {
 func InterfaceToProtocolType(iData interface{}) *ProtocolType {
 	data := iData.(map[string]interface{})
 	return &ProtocolType{
-		Port: data["port"].(int),
-
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Port","GoType":"int","GoPremitive":true}
 		Protocol: data["protocol"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Protocol","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
+		Port: data["port"].(int),
+
+		//{"type":"integer"}
 
 	}
 }

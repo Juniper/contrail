@@ -6,12 +6,10 @@ import "encoding/json"
 
 // RbacRuleType
 type RbacRuleType struct {
+	RuleObject string          `json:"rule_object"`
 	RulePerms  []*RbacPermType `json:"rule_perms"`
 	RuleField  string          `json:"rule_field"`
-	RuleObject string          `json:"rule_object"`
 }
-
-//  parents relation object
 
 // String returns json representation of the object
 func (model *RbacRuleType) String() string {
@@ -37,14 +35,14 @@ func InterfaceToRbacRuleType(iData interface{}) *RbacRuleType {
 	return &RbacRuleType{
 		RuleObject: data["rule_object"].(string),
 
-		//{"Title":"","Description":"Name of the REST API (object) for this rule, * represent all objects","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"RuleObject","GoType":"string","GoPremitive":true}
+		//{"description":"Name of the REST API (object) for this rule, * represent all objects","type":"string"}
 
 		RulePerms: InterfaceToRbacPermTypeSlice(data["rule_perms"]),
 
-		//{"Title":"","Description":"List of [(role, permissions),...]","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"object","Permission":null,"Properties":{"role_crud":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"RoleCrud","GoType":"string","GoPremitive":true},"role_name":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"RoleName","GoType":"string","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/RbacPermType","CollectionType":"","Column":"","Item":null,"GoName":"RulePerms","GoType":"RbacPermType","GoPremitive":false},"GoName":"RulePerms","GoType":"[]*RbacPermType","GoPremitive":true}
+		//{"description":"List of [(role, permissions),...]","type":"array","item":{"type":"object","properties":{"role_crud":{"type":"string"},"role_name":{"type":"string"}}}}
 		RuleField: data["rule_field"].(string),
 
-		//{"Title":"","Description":"Name of the level one field (property) for this object, * represent all properties","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"RuleField","GoType":"string","GoPremitive":true}
+		//{"description":"Name of the level one field (property) for this object, * represent all properties","type":"string"}
 
 	}
 }

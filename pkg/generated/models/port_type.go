@@ -10,8 +10,6 @@ type PortType struct {
 	StartPort L4PortType `json:"start_port"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *PortType) String() string {
 	b, _ := json.Marshal(model)
@@ -33,10 +31,10 @@ func InterfaceToPortType(iData interface{}) *PortType {
 	return &PortType{
 		EndPort: InterfaceToL4PortType(data["end_port"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":-1,"Maximum":65535,"Ref":"types.json#/definitions/L4PortType","CollectionType":"","Column":"","Item":null,"GoName":"EndPort","GoType":"L4PortType","GoPremitive":false}
+		//{"type":"integer","minimum":-1,"maximum":65535}
 		StartPort: InterfaceToL4PortType(data["start_port"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":-1,"Maximum":65535,"Ref":"types.json#/definitions/L4PortType","CollectionType":"","Column":"","Item":null,"GoName":"StartPort","GoType":"L4PortType","GoPremitive":false}
+		//{"type":"integer","minimum":-1,"maximum":65535}
 
 	}
 }

@@ -11,9 +11,16 @@ import (
 
 func TestNetworkDeviceConfig(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "network_device_config")
+	defer func() {
+		common.ClearTable(db, "network_device_config")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeNetworkDeviceConfig()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateNetworkDeviceConfig(tx, model)

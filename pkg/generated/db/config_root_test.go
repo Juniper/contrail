@@ -11,9 +11,16 @@ import (
 
 func TestConfigRoot(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "config_root")
+	defer func() {
+		common.ClearTable(db, "config_root")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeConfigRoot()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateConfigRoot(tx, model)

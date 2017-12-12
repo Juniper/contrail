@@ -11,9 +11,16 @@ import (
 
 func TestServiceGroup(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "service_group")
+	defer func() {
+		common.ClearTable(db, "service_group")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeServiceGroup()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateServiceGroup(tx, model)

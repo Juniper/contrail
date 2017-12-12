@@ -11,40 +11,45 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertContrailAnalyticsDatabaseNodeRoleQuery = "insert into `contrail_analytics_database_node_role` (`uuid`,`key_value_pair`,`owner`,`owner_access`,`global_access`,`share`,`provisioning_log`,`provisioning_progress`,`provisioning_start_time`,`fq_name`,`last_modified`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`permissions_owner`,`enable`,`description`,`created`,`creator`,`user_visible`,`display_name`,`provisioning_progress_stage`,`provisioning_state`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateContrailAnalyticsDatabaseNodeRoleQuery = "update `contrail_analytics_database_node_role` set `uuid` = ?,`key_value_pair` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`provisioning_log` = ?,`provisioning_progress` = ?,`provisioning_start_time` = ?,`fq_name` = ?,`last_modified` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`display_name` = ?,`provisioning_progress_stage` = ?,`provisioning_state` = ?;"
+const insertContrailAnalyticsDatabaseNodeRoleQuery = "insert into `contrail_analytics_database_node_role` (`uuid`,`provisioning_state`,`provisioning_start_time`,`provisioning_progress_stage`,`provisioning_progress`,`provisioning_log`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateContrailAnalyticsDatabaseNodeRoleQuery = "update `contrail_analytics_database_node_role` set `uuid` = ?,`provisioning_state` = ?,`provisioning_start_time` = ?,`provisioning_progress_stage` = ?,`provisioning_progress` = ?,`provisioning_log` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteContrailAnalyticsDatabaseNodeRoleQuery = "delete from `contrail_analytics_database_node_role` where uuid = ?"
 
 // ContrailAnalyticsDatabaseNodeRoleFields is db columns for ContrailAnalyticsDatabaseNodeRole
 var ContrailAnalyticsDatabaseNodeRoleFields = []string{
 	"uuid",
-	"key_value_pair",
-	"owner",
-	"owner_access",
-	"global_access",
-	"share",
-	"provisioning_log",
-	"provisioning_progress",
+	"provisioning_state",
 	"provisioning_start_time",
-	"fq_name",
-	"last_modified",
+	"provisioning_progress_stage",
+	"provisioning_progress",
+	"provisioning_log",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
 	"permissions_owner_access",
-	"other_access",
-	"group",
-	"group_access",
 	"permissions_owner",
+	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
-	"created",
 	"creator",
-	"user_visible",
+	"created",
+	"fq_name",
 	"display_name",
-	"provisioning_progress_stage",
-	"provisioning_state",
+	"key_value_pair",
 }
 
 // ContrailAnalyticsDatabaseNodeRoleRefFields is db reference fields for ContrailAnalyticsDatabaseNodeRole
 var ContrailAnalyticsDatabaseNodeRoleRefFields = map[string][]string{}
+
+// ContrailAnalyticsDatabaseNodeRoleBackRefFields is db back reference fields for ContrailAnalyticsDatabaseNodeRole
+var ContrailAnalyticsDatabaseNodeRoleBackRefFields = map[string][]string{}
 
 // CreateContrailAnalyticsDatabaseNodeRole inserts ContrailAnalyticsDatabaseNodeRole to DB
 func CreateContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, model *models.ContrailAnalyticsDatabaseNodeRole) error {
@@ -59,29 +64,31 @@ func CreateContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, model *models.ContrailA
 		"query": insertContrailAnalyticsDatabaseNodeRoleQuery,
 	}).Debug("create query")
 	_, err = stmt.Exec(string(model.UUID),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		common.MustJSON(model.Perms2.Share),
-		string(model.ProvisioningLog),
-		int(model.ProvisioningProgress),
+		string(model.ProvisioningState),
 		string(model.ProvisioningStartTime),
-		common.MustJSON(model.FQName),
-		string(model.IDPerms.LastModified),
+		string(model.ProvisioningProgressStage),
+		int(model.ProvisioningProgress),
+		string(model.ProvisioningLog),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
+		bool(model.IDPerms.UserVisible),
 		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
 		string(model.DisplayName),
-		string(model.ProvisioningProgressStage),
-		string(model.ProvisioningState))
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -103,55 +110,11 @@ func scanContrailAnalyticsDatabaseNodeRole(values map[string]interface{}) (*mode
 
 	}
 
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["owner"]; ok {
+	if value, ok := values["provisioning_state"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["provisioning_log"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ProvisioningLog = castedValue
-
-	}
-
-	if value, ok := values["provisioning_progress"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.ProvisioningProgress = castedValue
+		m.ProvisioningState = castedValue
 
 	}
 
@@ -163,17 +126,81 @@ func scanContrailAnalyticsDatabaseNodeRole(values map[string]interface{}) (*mode
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
+	if value, ok := values["provisioning_progress_stage"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.LastModified = castedValue
+		m.ProvisioningProgressStage = castedValue
+
+	}
+
+	if value, ok := values["provisioning_progress"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.ProvisioningProgress = castedValue
+
+	}
+
+	if value, ok := values["provisioning_log"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ProvisioningLog = castedValue
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
 
 	}
 
@@ -185,19 +212,19 @@ func scanContrailAnalyticsDatabaseNodeRole(values map[string]interface{}) (*mode
 
 	}
 
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
 	if value, ok := values["other_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
 
 	}
 
@@ -209,11 +236,19 @@ func scanContrailAnalyticsDatabaseNodeRole(values map[string]interface{}) (*mode
 
 	}
 
-	if value, ok := values["permissions_owner"]; ok {
+	if value, ok := values["group"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -233,14 +268,6 @@ func scanContrailAnalyticsDatabaseNodeRole(values map[string]interface{}) (*mode
 
 	}
 
-	if value, ok := values["created"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
 	if value, ok := values["creator"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -249,11 +276,17 @@ func scanContrailAnalyticsDatabaseNodeRole(values map[string]interface{}) (*mode
 
 	}
 
-	if value, ok := values["user_visible"]; ok {
+	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
@@ -265,19 +298,9 @@ func scanContrailAnalyticsDatabaseNodeRole(values map[string]interface{}) (*mode
 
 	}
 
-	if value, ok := values["provisioning_progress_stage"]; ok {
+	if value, ok := values["key_value_pair"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ProvisioningProgressStage = castedValue
-
-	}
-
-	if value, ok := values["provisioning_state"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ProvisioningState = castedValue
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
@@ -292,6 +315,7 @@ func ListContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, spec *common.ListSpec) ([
 	spec.Table = "contrail_analytics_database_node_role"
 	spec.Fields = ContrailAnalyticsDatabaseNodeRoleFields
 	spec.RefFields = ContrailAnalyticsDatabaseNodeRoleRefFields
+	spec.BackRefFields = ContrailAnalyticsDatabaseNodeRoleBackRefFields
 	result := models.MakeContrailAnalyticsDatabaseNodeRoleSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

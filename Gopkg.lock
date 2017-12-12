@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/dgrijalva/jwt-go"
+  packages = ["."]
+  revision = "dbeaa9332f19a944acb5736b4456cfcc02140e29"
+  version = "v3.1.0"
+
+[[projects]]
   name = "github.com/flosch/pongo2"
   packages = ["."]
   revision = "5e81b817a0c48c1c57cdf1a9056cf76bdee02ca9"
@@ -32,14 +38,20 @@
   version = "v1.0"
 
 [[projects]]
-  name = "github.com/labstack/echo"
+  name = "github.com/k0kubun/pp"
   packages = ["."]
+  revision = "027a6d1765d673d337e687394dbe780dd64e2a1e"
+  version = "v2.3.0"
+
+[[projects]]
+  name = "github.com/labstack/echo"
+  packages = [".","middleware"]
   revision = "0473c51f1dbd83487effce00702571d19033a6e5"
   version = "3.2.5"
 
 [[projects]]
   name = "github.com/labstack/gommon"
-  packages = ["color","log"]
+  packages = ["bytes","color","log","random"]
   revision = "57409ada9da0f2afad6664c49502f8c50fbd8476"
   version = "0.2.3"
 
@@ -78,6 +90,12 @@
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
+
+[[projects]]
+  name = "github.com/satori/go.uuid"
+  packages = ["."]
+  revision = "879c5887cd475cd7864858769793b2ceb0d44feb"
+  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
@@ -172,6 +190,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a246e2084ef7e1cf7b3a67bb9b49555bfd544471ea1da91e41891d2c8a863801"
+  inputs-digest = "9dde4ea971665f7bcb52f02605cd2404861fd4865bf45104254a96fa6ed96174"
   solver-name = "gps-cdcl"
   solver-version = 1

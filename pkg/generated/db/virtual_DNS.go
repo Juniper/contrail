@@ -11,43 +11,79 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertVirtualDNSQuery = "insert into `virtual_DNS` (`display_name`,`dynamic_records_from_client`,`reverse_resolution`,`default_ttl_seconds`,`record_order`,`floating_ip_record`,`domain_name`,`external_visible`,`next_virtual_DNS`,`key_value_pair`,`owner_access`,`global_access`,`share`,`owner`,`uuid`,`fq_name`,`user_visible`,`last_modified`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`enable`,`description`,`created`,`creator`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateVirtualDNSQuery = "update `virtual_DNS` set `display_name` = ?,`dynamic_records_from_client` = ?,`reverse_resolution` = ?,`default_ttl_seconds` = ?,`record_order` = ?,`floating_ip_record` = ?,`domain_name` = ?,`external_visible` = ?,`next_virtual_DNS` = ?,`key_value_pair` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`uuid` = ?,`fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?;"
+const insertVirtualDNSQuery = "insert into `virtual_DNS` (`reverse_resolution`,`record_order`,`next_virtual_DNS`,`floating_ip_record`,`external_visible`,`dynamic_records_from_client`,`domain_name`,`default_ttl_seconds`,`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateVirtualDNSQuery = "update `virtual_DNS` set `reverse_resolution` = ?,`record_order` = ?,`next_virtual_DNS` = ?,`floating_ip_record` = ?,`external_visible` = ?,`dynamic_records_from_client` = ?,`domain_name` = ?,`default_ttl_seconds` = ?,`uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteVirtualDNSQuery = "delete from `virtual_DNS` where uuid = ?"
 
 // VirtualDNSFields is db columns for VirtualDNS
 var VirtualDNSFields = []string{
-	"display_name",
-	"dynamic_records_from_client",
 	"reverse_resolution",
-	"default_ttl_seconds",
 	"record_order",
-	"floating_ip_record",
-	"domain_name",
-	"external_visible",
 	"next_virtual_DNS",
-	"key_value_pair",
-	"owner_access",
-	"global_access",
-	"share",
-	"owner",
+	"floating_ip_record",
+	"external_visible",
+	"dynamic_records_from_client",
+	"domain_name",
+	"default_ttl_seconds",
 	"uuid",
-	"fq_name",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
 	"user_visible",
-	"last_modified",
-	"group",
-	"group_access",
-	"permissions_owner",
 	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
-	"created",
 	"creator",
+	"created",
+	"fq_name",
+	"display_name",
+	"key_value_pair",
 }
 
 // VirtualDNSRefFields is db reference fields for VirtualDNS
 var VirtualDNSRefFields = map[string][]string{}
+
+// VirtualDNSBackRefFields is db back reference fields for VirtualDNS
+var VirtualDNSBackRefFields = map[string][]string{
+
+	"virtual_DNS_record": {
+		"record_type",
+		"record_ttl_seconds",
+		"record_name",
+		"record_mx_preference",
+		"record_data",
+		"record_class",
+		"uuid",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"display_name",
+		"key_value_pair",
+	},
+}
 
 // CreateVirtualDNS inserts VirtualDNS to DB
 func CreateVirtualDNS(tx *sql.Tx, model *models.VirtualDNS) error {
@@ -61,33 +97,35 @@ func CreateVirtualDNS(tx *sql.Tx, model *models.VirtualDNS) error {
 		"model": model,
 		"query": insertVirtualDNSQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.DisplayName),
-		bool(model.VirtualDNSData.DynamicRecordsFromClient),
-		bool(model.VirtualDNSData.ReverseResolution),
-		int(model.VirtualDNSData.DefaultTTLSeconds),
+	_, err = stmt.Exec(bool(model.VirtualDNSData.ReverseResolution),
 		string(model.VirtualDNSData.RecordOrder),
-		string(model.VirtualDNSData.FloatingIPRecord),
-		string(model.VirtualDNSData.DomainName),
-		bool(model.VirtualDNSData.ExternalVisible),
 		string(model.VirtualDNSData.NextVirtualDNS),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
+		string(model.VirtualDNSData.FloatingIPRecord),
+		bool(model.VirtualDNSData.ExternalVisible),
+		bool(model.VirtualDNSData.DynamicRecordsFromClient),
+		string(model.VirtualDNSData.DomainName),
+		int(model.VirtualDNSData.DefaultTTLSeconds),
 		string(model.UUID),
-		common.MustJSON(model.FQName),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
 		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator))
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -101,35 +139,11 @@ func CreateVirtualDNS(tx *sql.Tx, model *models.VirtualDNS) error {
 func scanVirtualDNS(values map[string]interface{}) (*models.VirtualDNS, error) {
 	m := models.MakeVirtualDNS()
 
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["dynamic_records_from_client"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.VirtualDNSData.DynamicRecordsFromClient = castedValue
-
-	}
-
 	if value, ok := values["reverse_resolution"]; ok {
 
 		castedValue := common.InterfaceToBool(value)
 
 		m.VirtualDNSData.ReverseResolution = castedValue
-
-	}
-
-	if value, ok := values["default_ttl_seconds"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.VirtualDNSData.DefaultTTLSeconds = castedValue
 
 	}
 
@@ -141,19 +155,19 @@ func scanVirtualDNS(values map[string]interface{}) (*models.VirtualDNS, error) {
 
 	}
 
+	if value, ok := values["next_virtual_DNS"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.VirtualDNSData.NextVirtualDNS = castedValue
+
+	}
+
 	if value, ok := values["floating_ip_record"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
 		m.VirtualDNSData.FloatingIPRecord = models.FloatingIpDnsNotation(castedValue)
-
-	}
-
-	if value, ok := values["domain_name"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.VirtualDNSData.DomainName = castedValue
 
 	}
 
@@ -165,47 +179,27 @@ func scanVirtualDNS(values map[string]interface{}) (*models.VirtualDNS, error) {
 
 	}
 
-	if value, ok := values["next_virtual_DNS"]; ok {
+	if value, ok := values["dynamic_records_from_client"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.VirtualDNSData.DynamicRecordsFromClient = castedValue
+
+	}
+
+	if value, ok := values["domain_name"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.VirtualDNSData.NextVirtualDNS = castedValue
+		m.VirtualDNSData.DomainName = castedValue
 
 	}
 
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
+	if value, ok := values["default_ttl_seconds"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
+		m.VirtualDNSData.DefaultTTLSeconds = castedValue
 
 	}
 
@@ -217,9 +211,49 @@ func scanVirtualDNS(values map[string]interface{}) (*models.VirtualDNS, error) {
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["share"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
 
 	}
 
@@ -231,27 +265,11 @@ func scanVirtualDNS(values map[string]interface{}) (*models.VirtualDNS, error) {
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
@@ -263,19 +281,35 @@ func scanVirtualDNS(values map[string]interface{}) (*models.VirtualDNS, error) {
 
 	}
 
-	if value, ok := values["permissions_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
 	if value, ok := values["other_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -295,6 +329,14 @@ func scanVirtualDNS(values map[string]interface{}) (*models.VirtualDNS, error) {
 
 	}
 
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
 	if value, ok := values["created"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -303,12 +345,252 @@ func scanVirtualDNS(values map[string]interface{}) (*models.VirtualDNS, error) {
 
 	}
 
-	if value, ok := values["creator"]; ok {
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Creator = castedValue
+		m.DisplayName = castedValue
 
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["backref_virtual_DNS_record"]; ok {
+		var childResources []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if childResourceMap["uuid"] == "" {
+				continue
+			}
+			childModel := models.MakeVirtualDNSRecord()
+			m.VirtualDNSRecords = append(m.VirtualDNSRecords, childModel)
+
+			if propertyValue, ok := childResourceMap["record_type"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.VirtualDNSRecordData.RecordType = models.DnsRecordTypeType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["record_ttl_seconds"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.VirtualDNSRecordData.RecordTTLSeconds = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["record_name"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.VirtualDNSRecordData.RecordName = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["record_mx_preference"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.VirtualDNSRecordData.RecordMXPreference = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["record_data"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.VirtualDNSRecordData.RecordData = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["record_class"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.VirtualDNSRecordData.RecordClass = models.DnsRecordClassType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.UUID = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.Perms2.Owner = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.ParentUUID = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.ParentType = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToBool(propertyValue)
+
+				childModel.IDPerms.UserVisible = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Permissions.Owner = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Permissions.Group = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.LastModified = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToBool(propertyValue)
+
+				childModel.IDPerms.Enable = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Description = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Creator = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Created = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.DisplayName = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
 	}
 
 	return m, nil
@@ -322,6 +604,7 @@ func ListVirtualDNS(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualDNS, er
 	spec.Table = "virtual_DNS"
 	spec.Fields = VirtualDNSFields
 	spec.RefFields = VirtualDNSRefFields
+	spec.BackRefFields = VirtualDNSBackRefFields
 	result := models.MakeVirtualDNSSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

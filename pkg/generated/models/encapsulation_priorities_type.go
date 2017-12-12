@@ -9,8 +9,6 @@ type EncapsulationPrioritiesType struct {
 	Encapsulation EncapsulationType `json:"encapsulation"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *EncapsulationPrioritiesType) String() string {
 	b, _ := json.Marshal(model)
@@ -33,7 +31,7 @@ func InterfaceToEncapsulationPrioritiesType(iData interface{}) *EncapsulationPri
 
 		Encapsulation: InterfaceToEncapsulationType(data["encapsulation"]),
 
-		//{"Title":"","Description":"Ordered list of encapsulation types to be used in priority","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"array","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/EncapsulationType","CollectionType":"","Column":"","Item":null,"GoName":"Encapsulation","GoType":"EncapsulationType","GoPremitive":false}
+		//{"description":"Ordered list of encapsulation types to be used in priority","type":"array"}
 
 	}
 }

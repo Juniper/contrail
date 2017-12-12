@@ -11,9 +11,16 @@ import (
 
 func TestBGPAsAService(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "bgp_as_a_service")
+	defer func() {
+		common.ClearTable(db, "bgp_as_a_service")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeBGPAsAService()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateBGPAsAService(tx, model)

@@ -11,36 +11,38 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertFloatingIPQuery = "insert into `floating_ip` (`floating_ip_address_family`,`floating_ip_port_mappings`,`floating_ip_port_mappings_enable`,`floating_ip_traffic_direction`,`global_access`,`share`,`owner`,`owner_access`,`uuid`,`fq_name`,`floating_ip_is_virtual_ip`,`floating_ip_address`,`floating_ip_fixed_ip_address`,`creator`,`user_visible`,`last_modified`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`enable`,`description`,`created`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateFloatingIPQuery = "update `floating_ip` set `floating_ip_address_family` = ?,`floating_ip_port_mappings` = ?,`floating_ip_port_mappings_enable` = ?,`floating_ip_traffic_direction` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`uuid` = ?,`fq_name` = ?,`floating_ip_is_virtual_ip` = ?,`floating_ip_address` = ?,`floating_ip_fixed_ip_address` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`display_name` = ?,`key_value_pair` = ?;"
+const insertFloatingIPQuery = "insert into `floating_ip` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`floating_ip_traffic_direction`,`port_mappings`,`floating_ip_port_mappings_enable`,`floating_ip_is_virtual_ip`,`floating_ip_fixed_ip_address`,`floating_ip_address_family`,`floating_ip_address`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateFloatingIPQuery = "update `floating_ip` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`floating_ip_traffic_direction` = ?,`port_mappings` = ?,`floating_ip_port_mappings_enable` = ?,`floating_ip_is_virtual_ip` = ?,`floating_ip_fixed_ip_address` = ?,`floating_ip_address_family` = ?,`floating_ip_address` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteFloatingIPQuery = "delete from `floating_ip` where uuid = ?"
 
 // FloatingIPFields is db columns for FloatingIP
 var FloatingIPFields = []string{
-	"floating_ip_address_family",
-	"floating_ip_port_mappings",
-	"floating_ip_port_mappings_enable",
-	"floating_ip_traffic_direction",
-	"global_access",
-	"share",
-	"owner",
-	"owner_access",
 	"uuid",
-	"fq_name",
-	"floating_ip_is_virtual_ip",
-	"floating_ip_address",
-	"floating_ip_fixed_ip_address",
-	"creator",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
 	"user_visible",
-	"last_modified",
-	"group",
-	"group_access",
-	"permissions_owner",
 	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
+	"creator",
 	"created",
+	"fq_name",
+	"floating_ip_traffic_direction",
+	"port_mappings",
+	"floating_ip_port_mappings_enable",
+	"floating_ip_is_virtual_ip",
+	"floating_ip_fixed_ip_address",
+	"floating_ip_address_family",
+	"floating_ip_address",
 	"display_name",
 	"key_value_pair",
 }
@@ -59,6 +61,9 @@ var FloatingIPRefFields = map[string][]string{
 	},
 }
 
+// FloatingIPBackRefFields is db back reference fields for FloatingIP
+var FloatingIPBackRefFields = map[string][]string{}
+
 const insertFloatingIPProjectQuery = "insert into `ref_floating_ip_project` (`from`, `to` ) values (?, ?);"
 
 const insertFloatingIPVirtualMachineInterfaceQuery = "insert into `ref_floating_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
@@ -75,30 +80,32 @@ func CreateFloatingIP(tx *sql.Tx, model *models.FloatingIP) error {
 		"model": model,
 		"query": insertFloatingIPQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.FloatingIPAddressFamily),
-		common.MustJSON(model.FloatingIPPortMappings),
-		bool(model.FloatingIPPortMappingsEnable),
-		string(model.FloatingIPTrafficDirection),
-		int(model.Perms2.GlobalAccess),
+	_, err = stmt.Exec(string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
-		string(model.UUID),
-		common.MustJSON(model.FQName),
-		bool(model.FloatingIPIsVirtualIP),
-		string(model.FloatingIPAddress),
-		string(model.FloatingIPFixedIPAddress),
-		string(model.IDPerms.Creator),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
 		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.FloatingIPTrafficDirection),
+		common.MustJSON(model.FloatingIPPortMappings.PortMappings),
+		bool(model.FloatingIPPortMappingsEnable),
+		bool(model.FloatingIPIsVirtualIP),
+		string(model.FloatingIPFixedIPAddress),
+		string(model.FloatingIPAddressFamily),
+		string(model.FloatingIPAddress),
 		string(model.DisplayName),
 		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
@@ -140,55 +147,17 @@ func CreateFloatingIP(tx *sql.Tx, model *models.FloatingIP) error {
 func scanFloatingIP(values map[string]interface{}) (*models.FloatingIP, error) {
 	m := models.MakeFloatingIP()
 
-	if value, ok := values["floating_ip_address_family"]; ok {
+	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.FloatingIPAddressFamily = models.IpAddressFamilyType(castedValue)
-
-	}
-
-	if value, ok := values["floating_ip_port_mappings"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FloatingIPPortMappings)
-
-	}
-
-	if value, ok := values["floating_ip_port_mappings_enable"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.FloatingIPPortMappingsEnable = castedValue
-
-	}
-
-	if value, ok := values["floating_ip_traffic_direction"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.FloatingIPTrafficDirection = models.TrafficDirectionType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.UUID = castedValue
 
 	}
 
 	if value, ok := values["share"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
 
 	}
 
@@ -200,49 +169,35 @@ func scanFloatingIP(values map[string]interface{}) (*models.FloatingIP, error) {
 
 	}
 
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["owner"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.UUID = castedValue
+		m.Perms2.Owner = castedValue
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["global_access"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
+		castedValue := common.InterfaceToInt(value)
 
-	}
-
-	if value, ok := values["floating_ip_is_virtual_ip"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.FloatingIPIsVirtualIP = castedValue
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["floating_ip_address"]; ok {
+	if value, ok := values["parent_uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.FloatingIPAddress = models.IpAddressType(castedValue)
+		m.ParentUUID = castedValue
 
 	}
 
-	if value, ok := values["floating_ip_fixed_ip_address"]; ok {
+	if value, ok := values["parent_type"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.FloatingIPFixedIPAddress = models.IpAddressType(castedValue)
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.ParentType = castedValue
 
 	}
 
@@ -254,27 +209,11 @@ func scanFloatingIP(values map[string]interface{}) (*models.FloatingIP, error) {
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
@@ -286,19 +225,35 @@ func scanFloatingIP(values map[string]interface{}) (*models.FloatingIP, error) {
 
 	}
 
-	if value, ok := values["permissions_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
 	if value, ok := values["other_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -318,11 +273,79 @@ func scanFloatingIP(values map[string]interface{}) (*models.FloatingIP, error) {
 
 	}
 
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
 	if value, ok := values["created"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["floating_ip_traffic_direction"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.FloatingIPTrafficDirection = models.TrafficDirectionType(castedValue)
+
+	}
+
+	if value, ok := values["port_mappings"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FloatingIPPortMappings.PortMappings)
+
+	}
+
+	if value, ok := values["floating_ip_port_mappings_enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.FloatingIPPortMappingsEnable = castedValue
+
+	}
+
+	if value, ok := values["floating_ip_is_virtual_ip"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.FloatingIPIsVirtualIP = castedValue
+
+	}
+
+	if value, ok := values["floating_ip_fixed_ip_address"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.FloatingIPFixedIPAddress = models.IpAddressType(castedValue)
+
+	}
+
+	if value, ok := values["floating_ip_address_family"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.FloatingIPAddressFamily = models.IpAddressFamilyType(castedValue)
+
+	}
+
+	if value, ok := values["floating_ip_address"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.FloatingIPAddress = models.IpAddressType(castedValue)
 
 	}
 
@@ -389,6 +412,7 @@ func ListFloatingIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.FloatingIP, er
 	spec.Table = "floating_ip"
 	spec.Fields = FloatingIPFields
 	spec.RefFields = FloatingIPRefFields
+	spec.BackRefFields = FloatingIPBackRefFields
 	result := models.MakeFloatingIPSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

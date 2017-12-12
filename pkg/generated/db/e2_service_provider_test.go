@@ -11,9 +11,16 @@ import (
 
 func TestE2ServiceProvider(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "e2_service_provider")
+	defer func() {
+		common.ClearTable(db, "e2_service_provider")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeE2ServiceProvider()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateE2ServiceProvider(tx, model)

@@ -6,13 +6,11 @@ import "encoding/json"
 
 // DiscoveryPubSubEndPointType
 type DiscoveryPubSubEndPointType struct {
-	EpVersion string      `json:"ep_version"`
 	EpID      string      `json:"ep_id"`
 	EpType    string      `json:"ep_type"`
 	EpPrefix  *SubnetType `json:"ep_prefix"`
+	EpVersion string      `json:"ep_version"`
 }
-
-//  parents relation object
 
 // String returns json representation of the object
 func (model *DiscoveryPubSubEndPointType) String() string {
@@ -24,10 +22,10 @@ func (model *DiscoveryPubSubEndPointType) String() string {
 func MakeDiscoveryPubSubEndPointType() *DiscoveryPubSubEndPointType {
 	return &DiscoveryPubSubEndPointType{
 		//TODO(nati): Apply default
-		EpPrefix:  MakeSubnetType(),
 		EpVersion: "",
 		EpID:      "",
 		EpType:    "",
+		EpPrefix:  MakeSubnetType(),
 	}
 }
 
@@ -37,16 +35,16 @@ func InterfaceToDiscoveryPubSubEndPointType(iData interface{}) *DiscoveryPubSubE
 	return &DiscoveryPubSubEndPointType{
 		EpVersion: data["ep_version"].(string),
 
-		//{"Title":"","Description":"All  servers or clients whose version match this version","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"EpVersion","GoType":"string","GoPremitive":true}
+		//{"description":"All  servers or clients whose version match this version","type":"string"}
 		EpID: data["ep_id"].(string),
 
-		//{"Title":"","Description":"Specific service or client which is set of one.","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"EpID","GoType":"string","GoPremitive":true}
+		//{"description":"Specific service or client which is set of one.","type":"string"}
 		EpType: data["ep_type"].(string),
 
-		//{"Title":"","Description":"Type of service or client","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"EpType","GoType":"string","GoPremitive":true}
+		//{"description":"Type of service or client","type":"string"}
 		EpPrefix: InterfaceToSubnetType(data["ep_prefix"]),
 
-		//{"Title":"","Description":"All  servers or clients whose ip match this prefix","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"object","Permission":null,"Properties":{"ip_prefix":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"IPPrefix","GoType":"string","GoPremitive":true},"ip_prefix_len":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"IPPrefixLen","GoType":"int","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/SubnetType","CollectionType":"","Column":"","Item":null,"GoName":"EpPrefix","GoType":"SubnetType","GoPremitive":false}
+		//{"description":"All  servers or clients whose ip match this prefix","type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}}
 
 	}
 }

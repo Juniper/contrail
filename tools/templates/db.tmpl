@@ -20,7 +20,7 @@ const delete{{ schema.JSONSchema.GoName }}Query = "delete from `{{schema.ID}}` w
 // {{ schema.JSONSchema.GoName }}Fields is db columns for {{ schema.JSONSchema.GoName }}
 var {{ schema.JSONSchema.GoName }}Fields = []string{
    {% for column in schema.Columns %}"{{ column.Column }}",
-   {% endfor %} 
+   {% endfor %}
 }
 
 // {{ schema.JSONSchema.GoName }}RefFields is db reference fields for {{ schema.JSONSchema.GoName }}
@@ -31,12 +31,22 @@ var {{ schema.JSONSchema.GoName }}RefFields = map[string][]string{
         {% for column in reference.Columns %}"{{ column.Column }}",
         {% endfor %}
     },
-   {% endfor %} 
+   {% endfor %}
+}
+
+// {{ schema.JSONSchema.GoName }}BackRefFields is db back reference fields for {{ schema.JSONSchema.GoName }}
+var {{ schema.JSONSchema.GoName }}BackRefFields = map[string][]string{
+   {% for child in schema.Children %}
+   "{{ child.ID }}": []string{
+        {% for column in child.Columns %}"{{ column.Column }}",
+        {% endfor %}
+   },
+   {% endfor %}
 }
 
 
 {% for linkTo, reference in schema.References %}
-const insert{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Query = "insert into `ref_{{ schema.ID }}_{{ linkTo }}` (`from`, `to` {% for column in reference.Columns %},`{{column.Column }}`{% endfor %}) values (?, ?{% for column in reference.Columns %},?{% endfor %});" 
+const insert{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Query = "insert into `ref_{{ schema.ID }}_{{ linkTo }}` (`from`, `to` {% for column in reference.Columns %},`{{column.Column }}`{% endfor %}) values (?, ?{% for column in reference.Columns %},?{% endfor %});"
 {% endfor %}
 
 // Create{{ schema.JSONSchema.GoName }} inserts {{ schema.JSONSchema.GoName }} to DB
@@ -66,7 +76,7 @@ func Create{{ schema.JSONSchema.GoName }}(tx *sql.Tx, model *models.{{ schema.JS
        {% if reference.RefType  %}
        if ref.Attr == nil {
            ref.Attr = models.Make{{ reference.RefType }}()
-       } 
+       }
        {% endif %}
         _, err = stmt{{ reference.GoName }}Ref.Exec(model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.Path }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.Path }}){% else %}ref.Attr{{ column.Path }}{% endif %}{% if not forloop.Last %},
     {% endif %}{% endfor %})
@@ -124,11 +134,11 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
             m.{{ reference.GoName }}Refs = append(m.{{ reference.GoName }}Refs, referenceModel)
             {% if reference.RefType %}
             attr := models.Make{{reference.RefType}}()
-            referenceModel.Attr = attr 
+            referenceModel.Attr = attr
             {% for column in reference.Colums %}
-                if refAttrValue, ok := referenceMap[column]; ok {
+                if refAttrValue, ok := referenceMap[column]; ok && refAttrValue != nil {
                 {% if column.Bind == "json" %}
-                    json.Unmarshal(refAttrValue.([]byte), &attr{{ column.Path }})
+                    json.Unmarshal(common.InterfaceToBytes(refAttrValue), &attr{{ column.Path }})
                 {% else %}
                     {% if column.Bind == "int" %}
                         castedValue := common.InterfaceToInt(refAttrValue)
@@ -151,6 +161,47 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
         }
     }
     {% endfor %}
+    {% for child in schema.Children %}
+    if value, ok := values["backref_{{ child.ID }}"]; ok {
+        var childResources []interface{}
+        stringValue := common.InterfaceToString(value)
+        json.Unmarshal([]byte("[" + stringValue + "]"), &childResources )
+        for _, childResource := range childResources {
+            childResourceMap, ok := childResource.(map[string]interface{})
+            if !ok {
+                continue
+            }
+            if childResourceMap["uuid"] == "" {
+                continue
+            }
+            childModel := models.Make{{ child.JSONSchema.GoName }}()
+            m.{{ child.JSONSchema.GoName }}s = append(m.{{ child.JSONSchema.GoName }}s, childModel)
+
+            {% for column in child.Columns %}
+                if propertyValue, ok := childResourceMap["{{ column.Column }}"]; ok && propertyValue != nil {
+                {% if column.Bind == "json" %}
+                    json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel{{ column.Path }})
+                {% else %}
+                    {% if column.Bind == "int" %}
+                        castedValue := common.InterfaceToInt(propertyValue)
+                    {% elif column.Bind == "bool" %}
+                        castedValue := common.InterfaceToBool(propertyValue)
+                    {% elif column.Bind == "string" %}
+                        castedValue := common.InterfaceToString(propertyValue)
+                    {% else %}
+                        castedValue, _ := propertyValue.({{ column.Bind }})
+                    {% endif %}
+                    {% if column.GoPremitive %}
+                        childModel{{ column.Path }} = castedValue
+                    {% else %}
+                        childModel{{ column.Path }} = models.{{ column.GoType }}(castedValue)
+                    {% endif %}
+                {% endif %}
+                }
+            {% endfor %}
+        }
+    }
+    {% endfor %}
     return m, nil
 }
 
@@ -162,10 +213,11 @@ func List{{ schema.JSONSchema.GoName }}(tx *sql.Tx, spec *common.ListSpec) ([]*m
     spec.Table = "{{ schema.ID }}"
     spec.Fields = {{ schema.JSONSchema.GoName }}Fields
     spec.RefFields = {{ schema.JSONSchema.GoName }}RefFields
+    spec.BackRefFields = {{ schema.JSONSchema.GoName }}BackRefFields
     result := models.Make{{ schema.JSONSchema.GoName }}Slice()
     query, columns, values := common.BuildListQuery(spec)
     log.WithFields(log.Fields{
-        "listSpec": spec, 
+        "listSpec": spec,
         "query": query,
     }).Debug("select query")
     rows, err = tx.Query(query, values...)
@@ -178,7 +230,7 @@ func List{{ schema.JSONSchema.GoName }}(tx *sql.Tx, spec *common.ListSpec) ([]*m
     }
     for rows.Next() {
             valuesMap := map[string]interface{}{}
-            values := make([]interface{}, len(columns)) 
+            values := make([]interface{}, len(columns))
             valuesPointers := make([]interface{}, len(columns))
             for _, index := range columns {
                 valuesPointers[index] = &values[index]
@@ -191,7 +243,7 @@ func List{{ schema.JSONSchema.GoName }}(tx *sql.Tx, spec *common.ListSpec) ([]*m
                 valuesMap[column] = *val
             }
             log.WithFields(log.Fields{
-                "valuesMap": valuesMap, 
+                "valuesMap": valuesMap,
             }).Debug("valueMap")
             m, err := scan{{ schema.JSONSchema.GoName }}(valuesMap)
             if err != nil {
@@ -205,7 +257,7 @@ func List{{ schema.JSONSchema.GoName }}(tx *sql.Tx, spec *common.ListSpec) ([]*m
 // Show{{ schema.JSONSchema.GoName }} shows {{ schema.JSONSchema.GoName }} resource
 func Show{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string) (*models.{{ schema.JSONSchema.GoName }}, error) {
     list, err := List{{ schema.JSONSchema.GoName }}(tx, &common.ListSpec{
-        Filter: map[string]interface{}{"uuid": uuid}, 
+        Filter: map[string]interface{}{"uuid": uuid},
         Limit: 1})
     if len(list) == 0 {
         return nil, errors.Wrap(err, "show query failed")
@@ -219,7 +271,7 @@ func Update{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string, model *models
     return nil
 }
 
-// Delete{{ schema.JSONSchema.GoName }} deletes a resource 
+// Delete{{ schema.JSONSchema.GoName }} deletes a resource
 func Delete{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string) error {
 	stmt, err := tx.Prepare(delete{{ schema.JSONSchema.GoName }}Query)
 	if err != nil {
@@ -232,6 +284,6 @@ func Delete{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string) error {
     }
     log.WithFields(log.Fields{
         "uuid": uuid,
-    }).Debug("deleted") 
+    }).Debug("deleted")
     return nil
 }

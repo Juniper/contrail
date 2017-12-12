@@ -11,38 +11,72 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertServiceApplianceSetQuery = "insert into `service_appliance_set` (`owner_access`,`global_access`,`share`,`owner`,`key_value_pair`,`service_appliance_ha_mode`,`service_appliance_driver`,`fq_name`,`display_name`,`created`,`creator`,`user_visible`,`last_modified`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`annotations_key_value_pair`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateServiceApplianceSetQuery = "update `service_appliance_set` set `owner_access` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`key_value_pair` = ?,`service_appliance_ha_mode` = ?,`service_appliance_driver` = ?,`fq_name` = ?,`display_name` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`annotations_key_value_pair` = ?,`uuid` = ?;"
+const insertServiceApplianceSetQuery = "insert into `service_appliance_set` (`uuid`,`key_value_pair`,`service_appliance_ha_mode`,`service_appliance_driver`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`annotations_key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateServiceApplianceSetQuery = "update `service_appliance_set` set `uuid` = ?,`key_value_pair` = ?,`service_appliance_ha_mode` = ?,`service_appliance_driver` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`annotations_key_value_pair` = ?;"
 const deleteServiceApplianceSetQuery = "delete from `service_appliance_set` where uuid = ?"
 
 // ServiceApplianceSetFields is db columns for ServiceApplianceSet
 var ServiceApplianceSetFields = []string{
-	"owner_access",
-	"global_access",
-	"share",
-	"owner",
+	"uuid",
 	"key_value_pair",
 	"service_appliance_ha_mode",
 	"service_appliance_driver",
-	"fq_name",
-	"display_name",
-	"created",
-	"creator",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
 	"user_visible",
-	"last_modified",
-	"permissions_owner",
 	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
-	"group",
 	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
+	"creator",
+	"created",
+	"fq_name",
+	"display_name",
 	"annotations_key_value_pair",
-	"uuid",
 }
 
 // ServiceApplianceSetRefFields is db reference fields for ServiceApplianceSet
 var ServiceApplianceSetRefFields = map[string][]string{}
+
+// ServiceApplianceSetBackRefFields is db back reference fields for ServiceApplianceSet
+var ServiceApplianceSetBackRefFields = map[string][]string{
+
+	"service_appliance": {
+		"uuid",
+		"username",
+		"password",
+		"key_value_pair",
+		"service_appliance_ip_address",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"display_name",
+		"annotations_key_value_pair",
+	},
+}
 
 // CreateServiceApplianceSet inserts ServiceApplianceSet to DB
 func CreateServiceApplianceSet(tx *sql.Tx, model *models.ServiceApplianceSet) error {
@@ -56,28 +90,30 @@ func CreateServiceApplianceSet(tx *sql.Tx, model *models.ServiceApplianceSet) er
 		"model": model,
 		"query": insertServiceApplianceSetQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
+	_, err = stmt.Exec(string(model.UUID),
 		common.MustJSON(model.ServiceApplianceSetProperties.KeyValuePair),
 		string(model.ServiceApplianceHaMode),
 		string(model.ServiceApplianceDriver),
-		common.MustJSON(model.FQName),
-		string(model.DisplayName),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		string(model.UUID))
+		string(model.IDPerms.Creator),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -91,33 +127,11 @@ func CreateServiceApplianceSet(tx *sql.Tx, model *models.ServiceApplianceSet) er
 func scanServiceApplianceSet(values map[string]interface{}) (*models.ServiceApplianceSet, error) {
 	m := models.MakeServiceApplianceSet()
 
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["owner"]; ok {
+	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.Perms2.Owner = castedValue
+		m.UUID = castedValue
 
 	}
 
@@ -143,33 +157,49 @@ func scanServiceApplianceSet(values map[string]interface{}) (*models.ServiceAppl
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["share"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
 	}
 
-	if value, ok := values["created"]; ok {
+	if value, ok := values["owner_access"]; ok {
 
-		castedValue := common.InterfaceToString(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Created = castedValue
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["creator"]; ok {
+	if value, ok := values["owner"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Creator = castedValue
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
 
 	}
 
@@ -181,11 +211,11 @@ func scanServiceApplianceSet(values map[string]interface{}) (*models.ServiceAppl
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := common.InterfaceToString(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
@@ -197,19 +227,19 @@ func scanServiceApplianceSet(values map[string]interface{}) (*models.ServiceAppl
 
 	}
 
-	if value, ok := values["permissions_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
 	if value, ok := values["other_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
 
 	}
 
@@ -221,11 +251,11 @@ func scanServiceApplianceSet(values map[string]interface{}) (*models.ServiceAppl
 
 	}
 
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -245,18 +275,250 @@ func scanServiceApplianceSet(values map[string]interface{}) (*models.ServiceAppl
 
 	}
 
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
 	if value, ok := values["annotations_key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["backref_service_appliance"]; ok {
+		var childResources []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if childResourceMap["uuid"] == "" {
+				continue
+			}
+			childModel := models.MakeServiceAppliance()
+			m.ServiceAppliances = append(m.ServiceAppliances, childModel)
 
-		castedValue := common.InterfaceToString(value)
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-		m.UUID = castedValue
+				castedValue := common.InterfaceToString(propertyValue)
 
+				childModel.UUID = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["username"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.ServiceApplianceUserCredentials.Username = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["password"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.ServiceApplianceUserCredentials.Password = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.ServiceApplianceProperties.KeyValuePair)
+
+			}
+
+			if propertyValue, ok := childResourceMap["service_appliance_ip_address"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.ServiceApplianceIPAddress = models.IpAddressType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.Perms2.Owner = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.ParentUUID = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.ParentType = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToBool(propertyValue)
+
+				childModel.IDPerms.UserVisible = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Permissions.Owner = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Permissions.Group = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.LastModified = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToBool(propertyValue)
+
+				childModel.IDPerms.Enable = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Description = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Creator = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Created = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.DisplayName = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["annotations_key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
 	}
 
 	return m, nil
@@ -270,6 +532,7 @@ func ListServiceApplianceSet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Servi
 	spec.Table = "service_appliance_set"
 	spec.Fields = ServiceApplianceSetFields
 	spec.RefFields = ServiceApplianceSetRefFields
+	spec.BackRefFields = ServiceApplianceSetBackRefFields
 	result := models.MakeServiceApplianceSetSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

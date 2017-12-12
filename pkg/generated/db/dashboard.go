@@ -11,36 +11,41 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertDashboardQuery = "insert into `dashboard` (`key_value_pair`,`global_access`,`share`,`owner`,`owner_access`,`uuid`,`fq_name`,`creator`,`user_visible`,`last_modified`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`enable`,`description`,`created`,`container_config`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateDashboardQuery = "update `dashboard` set `key_value_pair` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`uuid` = ?,`fq_name` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`description` = ?,`created` = ?,`container_config` = ?,`display_name` = ?;"
+const insertDashboardQuery = "insert into `dashboard` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`container_config`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateDashboardQuery = "update `dashboard` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`container_config` = ?,`key_value_pair` = ?;"
 const deleteDashboardQuery = "delete from `dashboard` where uuid = ?"
 
 // DashboardFields is db columns for Dashboard
 var DashboardFields = []string{
-	"key_value_pair",
-	"global_access",
-	"share",
-	"owner",
-	"owner_access",
 	"uuid",
-	"fq_name",
-	"creator",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
 	"user_visible",
-	"last_modified",
-	"group_access",
-	"permissions_owner",
 	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
+	"group_access",
 	"group",
+	"last_modified",
 	"enable",
 	"description",
+	"creator",
 	"created",
-	"container_config",
+	"fq_name",
 	"display_name",
+	"container_config",
+	"key_value_pair",
 }
 
 // DashboardRefFields is db reference fields for Dashboard
 var DashboardRefFields = map[string][]string{}
+
+// DashboardBackRefFields is db back reference fields for Dashboard
+var DashboardBackRefFields = map[string][]string{}
 
 // CreateDashboard inserts Dashboard to DB
 func CreateDashboard(tx *sql.Tx, model *models.Dashboard) error {
@@ -54,26 +59,28 @@ func CreateDashboard(tx *sql.Tx, model *models.Dashboard) error {
 		"model": model,
 		"query": insertDashboardQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(common.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.GlobalAccess),
+	_, err = stmt.Exec(string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
-		string(model.UUID),
-		common.MustJSON(model.FQName),
-		string(model.IDPerms.Creator),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
 		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
 		string(model.ContainerConfig),
-		string(model.DisplayName))
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -87,31 +94,17 @@ func CreateDashboard(tx *sql.Tx, model *models.Dashboard) error {
 func scanDashboard(values map[string]interface{}) (*models.Dashboard, error) {
 	m := models.MakeDashboard()
 
-	if value, ok := values["key_value_pair"]; ok {
+	if value, ok := values["uuid"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+		castedValue := common.InterfaceToString(value)
 
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.UUID = castedValue
 
 	}
 
 	if value, ok := values["share"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
 
 	}
 
@@ -123,25 +116,35 @@ func scanDashboard(values map[string]interface{}) (*models.Dashboard, error) {
 
 	}
 
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["owner"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.UUID = castedValue
+		m.Perms2.Owner = castedValue
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["global_access"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["creator"]; ok {
+	if value, ok := values["parent_uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Creator = castedValue
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
 
 	}
 
@@ -153,19 +156,11 @@ func scanDashboard(values map[string]interface{}) (*models.Dashboard, error) {
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
@@ -177,14 +172,6 @@ func scanDashboard(values map[string]interface{}) (*models.Dashboard, error) {
 
 	}
 
-	if value, ok := values["permissions_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
 	if value, ok := values["other_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
@@ -193,11 +180,27 @@ func scanDashboard(values map[string]interface{}) (*models.Dashboard, error) {
 
 	}
 
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["group"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -217,11 +220,33 @@ func scanDashboard(values map[string]interface{}) (*models.Dashboard, error) {
 
 	}
 
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
 	if value, ok := values["created"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
 
 	}
 
@@ -233,11 +258,9 @@ func scanDashboard(values map[string]interface{}) (*models.Dashboard, error) {
 
 	}
 
-	if value, ok := values["display_name"]; ok {
+	if value, ok := values["key_value_pair"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
@@ -252,6 +275,7 @@ func ListDashboard(tx *sql.Tx, spec *common.ListSpec) ([]*models.Dashboard, erro
 	spec.Table = "dashboard"
 	spec.Fields = DashboardFields
 	spec.RefFields = DashboardRefFields
+	spec.BackRefFields = DashboardBackRefFields
 	result := models.MakeDashboardSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

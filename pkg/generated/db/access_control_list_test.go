@@ -11,9 +11,16 @@ import (
 
 func TestAccessControlList(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "access_control_list")
+	defer func() {
+		common.ClearTable(db, "access_control_list")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeAccessControlList()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateAccessControlList(tx, model)

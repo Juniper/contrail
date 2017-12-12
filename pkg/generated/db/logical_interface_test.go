@@ -11,9 +11,16 @@ import (
 
 func TestLogicalInterface(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "logical_interface")
+	defer func() {
+		common.ClearTable(db, "logical_interface")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeLogicalInterface()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateLogicalInterface(tx, model)

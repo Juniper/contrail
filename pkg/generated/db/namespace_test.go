@@ -11,9 +11,16 @@ import (
 
 func TestNamespace(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "namespace")
+	defer func() {
+		common.ClearTable(db, "namespace")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeNamespace()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateNamespace(tx, model)

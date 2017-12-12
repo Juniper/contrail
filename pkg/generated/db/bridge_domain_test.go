@@ -11,9 +11,16 @@ import (
 
 func TestBridgeDomain(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "bridge_domain")
+	defer func() {
+		common.ClearTable(db, "bridge_domain")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeBridgeDomain()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateBridgeDomain(tx, model)

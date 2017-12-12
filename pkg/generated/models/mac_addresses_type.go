@@ -9,8 +9,6 @@ type MacAddressesType struct {
 	MacAddress []string `json:"mac_address"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *MacAddressesType) String() string {
 	b, _ := json.Marshal(model)
@@ -31,7 +29,7 @@ func InterfaceToMacAddressesType(iData interface{}) *MacAddressesType {
 	return &MacAddressesType{
 		MacAddress: data["mac_address"].([]string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"MacAddress","GoType":"string","GoPremitive":true},"GoName":"MacAddress","GoType":"[]string","GoPremitive":true}
+		//{"type":"array","item":{"type":"string"}}
 
 	}
 }

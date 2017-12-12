@@ -11,9 +11,16 @@ import (
 
 func TestLocation(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "location")
+	defer func() {
+		common.ClearTable(db, "location")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeLocation()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateLocation(tx, model)

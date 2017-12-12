@@ -6,13 +6,11 @@ import "encoding/json"
 
 // TimerType
 type TimerType struct {
-	StartTime   string `json:"start_time"`
 	OffInterval string `json:"off_interval"`
 	OnInterval  string `json:"on_interval"`
 	EndTime     string `json:"end_time"`
+	StartTime   string `json:"start_time"`
 }
-
-//  parents relation object
 
 // String returns json representation of the object
 func (model *TimerType) String() string {
@@ -24,10 +22,10 @@ func (model *TimerType) String() string {
 func MakeTimerType() *TimerType {
 	return &TimerType{
 		//TODO(nati): Apply default
-		StartTime:   "",
-		OffInterval: "",
 		OnInterval:  "",
 		EndTime:     "",
+		StartTime:   "",
+		OffInterval: "",
 	}
 }
 
@@ -37,16 +35,16 @@ func InterfaceToTimerType(iData interface{}) *TimerType {
 	return &TimerType{
 		StartTime: data["start_time"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"StartTime","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 		OffInterval: data["off_interval"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"OffInterval","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 		OnInterval: data["on_interval"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"OnInterval","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 		EndTime: data["end_time"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"EndTime","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 
 	}
 }

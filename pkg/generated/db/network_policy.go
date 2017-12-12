@@ -11,36 +11,41 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertNetworkPolicyQuery = "insert into `network_policy` (`key_value_pair`,`owner_access`,`global_access`,`share`,`owner`,`policy_rule`,`uuid`,`fq_name`,`user_visible`,`last_modified`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateNetworkPolicyQuery = "update `network_policy` set `key_value_pair` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`policy_rule` = ?,`uuid` = ?,`fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`display_name` = ?;"
+const insertNetworkPolicyQuery = "insert into `network_policy` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`policy_rule`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateNetworkPolicyQuery = "update `network_policy` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`policy_rule` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteNetworkPolicyQuery = "delete from `network_policy` where uuid = ?"
 
 // NetworkPolicyFields is db columns for NetworkPolicy
 var NetworkPolicyFields = []string{
-	"key_value_pair",
-	"owner_access",
-	"global_access",
-	"share",
-	"owner",
-	"policy_rule",
 	"uuid",
-	"fq_name",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"policy_rule",
 	"user_visible",
-	"last_modified",
-	"permissions_owner",
 	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
-	"group",
 	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
-	"created",
 	"creator",
+	"created",
+	"fq_name",
 	"display_name",
+	"key_value_pair",
 }
 
 // NetworkPolicyRefFields is db reference fields for NetworkPolicy
 var NetworkPolicyRefFields = map[string][]string{}
+
+// NetworkPolicyBackRefFields is db back reference fields for NetworkPolicy
+var NetworkPolicyBackRefFields = map[string][]string{}
 
 // CreateNetworkPolicy inserts NetworkPolicy to DB
 func CreateNetworkPolicy(tx *sql.Tx, model *models.NetworkPolicy) error {
@@ -54,26 +59,28 @@ func CreateNetworkPolicy(tx *sql.Tx, model *models.NetworkPolicy) error {
 		"model": model,
 		"query": insertNetworkPolicyQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(common.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
+	_, err = stmt.Exec(string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		common.MustJSON(model.NetworkPolicyEntries.PolicyRule),
-		string(model.UUID),
-		common.MustJSON(model.FQName),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
-		string(model.DisplayName))
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -87,9 +94,17 @@ func CreateNetworkPolicy(tx *sql.Tx, model *models.NetworkPolicy) error {
 func scanNetworkPolicy(values map[string]interface{}) (*models.NetworkPolicy, error) {
 	m := models.MakeNetworkPolicy()
 
-	if value, ok := values["key_value_pair"]; ok {
+	if value, ok := values["uuid"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
 	}
 
@@ -101,20 +116,6 @@ func scanNetworkPolicy(values map[string]interface{}) (*models.NetworkPolicy, er
 
 	}
 
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
 	if value, ok := values["owner"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -123,23 +124,33 @@ func scanNetworkPolicy(values map[string]interface{}) (*models.NetworkPolicy, er
 
 	}
 
-	if value, ok := values["policy_rule"]; ok {
+	if value, ok := values["global_access"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.NetworkPolicyEntries.PolicyRule)
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["parent_uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.UUID = castedValue
+		m.ParentUUID = castedValue
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["parent_type"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
+
+	}
+
+	if value, ok := values["policy_rule"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.NetworkPolicyEntries.PolicyRule)
 
 	}
 
@@ -151,11 +162,11 @@ func scanNetworkPolicy(values map[string]interface{}) (*models.NetworkPolicy, er
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := common.InterfaceToString(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
@@ -167,19 +178,19 @@ func scanNetworkPolicy(values map[string]interface{}) (*models.NetworkPolicy, er
 
 	}
 
-	if value, ok := values["permissions_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
 	if value, ok := values["other_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
 
 	}
 
@@ -191,11 +202,11 @@ func scanNetworkPolicy(values map[string]interface{}) (*models.NetworkPolicy, er
 
 	}
 
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -215,14 +226,6 @@ func scanNetworkPolicy(values map[string]interface{}) (*models.NetworkPolicy, er
 
 	}
 
-	if value, ok := values["created"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
 	if value, ok := values["creator"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -231,11 +234,31 @@ func scanNetworkPolicy(values map[string]interface{}) (*models.NetworkPolicy, er
 
 	}
 
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
 	if value, ok := values["display_name"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
@@ -250,6 +273,7 @@ func ListNetworkPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.NetworkPoli
 	spec.Table = "network_policy"
 	spec.Fields = NetworkPolicyFields
 	spec.RefFields = NetworkPolicyRefFields
+	spec.BackRefFields = NetworkPolicyBackRefFields
 	result := models.MakeNetworkPolicySlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

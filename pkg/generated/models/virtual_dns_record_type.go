@@ -14,8 +14,6 @@ type VirtualDnsRecordType struct {
 	RecordMXPreference int                `json:"record_mx_preference"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *VirtualDnsRecordType) String() string {
 	b, _ := json.Marshal(model)
@@ -26,12 +24,12 @@ func (model *VirtualDnsRecordType) String() string {
 func MakeVirtualDnsRecordType() *VirtualDnsRecordType {
 	return &VirtualDnsRecordType{
 		//TODO(nati): Apply default
+		RecordData:         "",
+		RecordType:         MakeDnsRecordTypeType(),
 		RecordTTLSeconds:   0,
 		RecordMXPreference: 0,
 		RecordName:         "",
 		RecordClass:        MakeDnsRecordClassType(),
-		RecordData:         "",
-		RecordType:         MakeDnsRecordTypeType(),
 	}
 }
 
@@ -41,22 +39,22 @@ func InterfaceToVirtualDnsRecordType(iData interface{}) *VirtualDnsRecordType {
 	return &VirtualDnsRecordType{
 		RecordTTLSeconds: data["record_ttl_seconds"].(int),
 
-		//{"Title":"","Description":"Time To Live for this DNS record","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"RecordTTLSeconds","GoType":"int","GoPremitive":true}
+		//{"description":"Time To Live for this DNS record","type":"integer"}
 		RecordMXPreference: data["record_mx_preference"].(int),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"RecordMXPreference","GoType":"int","GoPremitive":true}
+		//{"type":"integer"}
 		RecordName: data["record_name"].(string),
 
-		//{"Title":"","Description":"DNS name to be resolved","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"RecordName","GoType":"string","GoPremitive":true}
+		//{"description":"DNS name to be resolved","type":"string"}
 		RecordClass: InterfaceToDnsRecordClassType(data["record_class"]),
 
-		//{"Title":"","Description":"DNS record class supported is IN","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["IN"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/DnsRecordClassType","CollectionType":"","Column":"","Item":null,"GoName":"RecordClass","GoType":"DnsRecordClassType","GoPremitive":false}
+		//{"description":"DNS record class supported is IN","type":"string","enum":["IN"]}
 		RecordData: data["record_data"].(string),
 
-		//{"Title":"","Description":"DNS record data is either ip address or string depending on type","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"RecordData","GoType":"string","GoPremitive":true}
+		//{"description":"DNS record data is either ip address or string depending on type","type":"string"}
 		RecordType: InterfaceToDnsRecordTypeType(data["record_type"]),
 
-		//{"Title":"","Description":"DNS record type can be A, AAAA, CNAME, PTR, NS and MX","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["A","AAAA","CNAME","PTR","NS","MX"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/DnsRecordTypeType","CollectionType":"","Column":"","Item":null,"GoName":"RecordType","GoType":"DnsRecordTypeType","GoPremitive":false}
+		//{"description":"DNS record type can be A, AAAA, CNAME, PTR, NS and MX","type":"string","enum":["A","AAAA","CNAME","PTR","NS","MX"]}
 
 	}
 }

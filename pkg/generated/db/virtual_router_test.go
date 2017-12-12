@@ -11,9 +11,16 @@ import (
 
 func TestVirtualRouter(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "virtual_router")
+	defer func() {
+		common.ClearTable(db, "virtual_router")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeVirtualRouter()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateVirtualRouter(tx, model)

@@ -10,8 +10,6 @@ type BGPaaServiceParametersType struct {
 	PortEnd   L4PortType `json:"port_end"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *BGPaaServiceParametersType) String() string {
 	b, _ := json.Marshal(model)
@@ -22,8 +20,8 @@ func (model *BGPaaServiceParametersType) String() string {
 func MakeBGPaaServiceParametersType() *BGPaaServiceParametersType {
 	return &BGPaaServiceParametersType{
 		//TODO(nati): Apply default
-		PortEnd:   MakeL4PortType(),
 		PortStart: MakeL4PortType(),
+		PortEnd:   MakeL4PortType(),
 	}
 }
 
@@ -33,10 +31,10 @@ func InterfaceToBGPaaServiceParametersType(iData interface{}) *BGPaaServiceParam
 	return &BGPaaServiceParametersType{
 		PortStart: InterfaceToL4PortType(data["port_start"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":-1,"Maximum":65535,"Ref":"types.json#/definitions/L4PortType","CollectionType":"","Column":"","Item":null,"GoName":"PortStart","GoType":"L4PortType","GoPremitive":false}
+		//{"type":"integer","minimum":-1,"maximum":65535}
 		PortEnd: InterfaceToL4PortType(data["port_end"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":-1,"Maximum":65535,"Ref":"types.json#/definitions/L4PortType","CollectionType":"","Column":"","Item":null,"GoName":"PortEnd","GoType":"L4PortType","GoPremitive":false}
+		//{"type":"integer","minimum":-1,"maximum":65535}
 
 	}
 }
