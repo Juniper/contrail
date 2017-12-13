@@ -11,74 +11,76 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertFirewallRuleQuery = "insert into `firewall_rule` (`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`display_name`,`apply_service`,`gateway_name`,`log`,`alert`,`qos_action`,`assign_routing_instance`,`analyzer_name`,`nh_mode`,`nic_assisted_mirroring_vlan`,`vni`,`vtep_dst_ip_address`,`vtep_dst_mac_address`,`analyzer_ip_address`,`analyzer_mac_address`,`udp_port`,`encapsulation`,`routing_instance`,`nic_assisted_mirroring`,`juniper_header`,`simple_action`,`tag_type`,`fq_name`,`direction`,`match_tags`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`,`uuid`,`key_value_pair`,`ip_prefix_len`,`ip_prefix`,`tags`,`tag_ids`,`virtual_network`,`any`,`address_group`,`endpoint_2_subnet_ip_prefix`,`endpoint_2_subnet_ip_prefix_len`,`endpoint_2_tags`,`endpoint_2_tag_ids`,`endpoint_2_virtual_network`,`endpoint_2_any`,`endpoint_2_address_group`,`end_port`,`start_port`,`src_ports_start_port`,`src_ports_end_port`,`protocol_id`,`protocol`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateFirewallRuleQuery = "update `firewall_rule` set `enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`display_name` = ?,`apply_service` = ?,`gateway_name` = ?,`log` = ?,`alert` = ?,`qos_action` = ?,`assign_routing_instance` = ?,`analyzer_name` = ?,`nh_mode` = ?,`nic_assisted_mirroring_vlan` = ?,`vni` = ?,`vtep_dst_ip_address` = ?,`vtep_dst_mac_address` = ?,`analyzer_ip_address` = ?,`analyzer_mac_address` = ?,`udp_port` = ?,`encapsulation` = ?,`routing_instance` = ?,`nic_assisted_mirroring` = ?,`juniper_header` = ?,`simple_action` = ?,`tag_type` = ?,`fq_name` = ?,`direction` = ?,`match_tags` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`uuid` = ?,`key_value_pair` = ?,`ip_prefix_len` = ?,`ip_prefix` = ?,`tags` = ?,`tag_ids` = ?,`virtual_network` = ?,`any` = ?,`address_group` = ?,`endpoint_2_subnet_ip_prefix` = ?,`endpoint_2_subnet_ip_prefix_len` = ?,`endpoint_2_tags` = ?,`endpoint_2_tag_ids` = ?,`endpoint_2_virtual_network` = ?,`endpoint_2_any` = ?,`endpoint_2_address_group` = ?,`end_port` = ?,`start_port` = ?,`src_ports_start_port` = ?,`src_ports_end_port` = ?,`protocol_id` = ?,`protocol` = ?;"
+const insertFirewallRuleQuery = "insert into `firewall_rule` (`uuid`,`start_port`,`end_port`,`protocol_id`,`protocol`,`dst_ports_start_port`,`dst_ports_end_port`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`tag_list`,`tag_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`virtual_network`,`tags`,`tag_ids`,`ip_prefix_len`,`ip_prefix`,`any`,`address_group`,`endpoint_1_virtual_network`,`endpoint_1_tags`,`endpoint_1_tag_ids`,`subnet_ip_prefix_len`,`subnet_ip_prefix`,`endpoint_1_any`,`endpoint_1_address_group`,`display_name`,`direction`,`key_value_pair`,`simple_action`,`qos_action`,`udp_port`,`vtep_dst_mac_address`,`vtep_dst_ip_address`,`vni`,`routing_instance`,`nic_assisted_mirroring_vlan`,`nic_assisted_mirroring`,`nh_mode`,`juniper_header`,`encapsulation`,`analyzer_name`,`analyzer_mac_address`,`analyzer_ip_address`,`log`,`gateway_name`,`assign_routing_instance`,`apply_service`,`alert`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateFirewallRuleQuery = "update `firewall_rule` set `uuid` = ?,`start_port` = ?,`end_port` = ?,`protocol_id` = ?,`protocol` = ?,`dst_ports_start_port` = ?,`dst_ports_end_port` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`tag_list` = ?,`tag_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`virtual_network` = ?,`tags` = ?,`tag_ids` = ?,`ip_prefix_len` = ?,`ip_prefix` = ?,`any` = ?,`address_group` = ?,`endpoint_1_virtual_network` = ?,`endpoint_1_tags` = ?,`endpoint_1_tag_ids` = ?,`subnet_ip_prefix_len` = ?,`subnet_ip_prefix` = ?,`endpoint_1_any` = ?,`endpoint_1_address_group` = ?,`display_name` = ?,`direction` = ?,`key_value_pair` = ?,`simple_action` = ?,`qos_action` = ?,`udp_port` = ?,`vtep_dst_mac_address` = ?,`vtep_dst_ip_address` = ?,`vni` = ?,`routing_instance` = ?,`nic_assisted_mirroring_vlan` = ?,`nic_assisted_mirroring` = ?,`nh_mode` = ?,`juniper_header` = ?,`encapsulation` = ?,`analyzer_name` = ?,`analyzer_mac_address` = ?,`analyzer_ip_address` = ?,`log` = ?,`gateway_name` = ?,`assign_routing_instance` = ?,`apply_service` = ?,`alert` = ?;"
 const deleteFirewallRuleQuery = "delete from `firewall_rule` where uuid = ?"
 
 // FirewallRuleFields is db columns for FirewallRule
 var FirewallRuleFields = []string{
-	"enable",
-	"description",
-	"created",
-	"creator",
-	"user_visible",
-	"last_modified",
-	"owner_access",
-	"other_access",
-	"group",
-	"group_access",
-	"owner",
-	"display_name",
-	"apply_service",
-	"gateway_name",
-	"log",
-	"alert",
-	"qos_action",
-	"assign_routing_instance",
-	"analyzer_name",
-	"nh_mode",
-	"nic_assisted_mirroring_vlan",
-	"vni",
-	"vtep_dst_ip_address",
-	"vtep_dst_mac_address",
-	"analyzer_ip_address",
-	"analyzer_mac_address",
-	"udp_port",
-	"encapsulation",
-	"routing_instance",
-	"nic_assisted_mirroring",
-	"juniper_header",
-	"simple_action",
-	"tag_type",
-	"fq_name",
-	"direction",
-	"match_tags",
-	"share",
-	"perms2_owner",
-	"perms2_owner_access",
-	"global_access",
 	"uuid",
-	"key_value_pair",
-	"ip_prefix_len",
-	"ip_prefix",
-	"tags",
-	"tag_ids",
-	"virtual_network",
-	"any",
-	"address_group",
-	"endpoint_2_subnet_ip_prefix",
-	"endpoint_2_subnet_ip_prefix_len",
-	"endpoint_2_tags",
-	"endpoint_2_tag_ids",
-	"endpoint_2_virtual_network",
-	"endpoint_2_any",
-	"endpoint_2_address_group",
-	"end_port",
 	"start_port",
-	"src_ports_start_port",
-	"src_ports_end_port",
+	"end_port",
 	"protocol_id",
 	"protocol",
+	"dst_ports_start_port",
+	"dst_ports_end_port",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"tag_list",
+	"tag_type",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
+	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
+	"enable",
+	"description",
+	"creator",
+	"created",
+	"fq_name",
+	"virtual_network",
+	"tags",
+	"tag_ids",
+	"ip_prefix_len",
+	"ip_prefix",
+	"any",
+	"address_group",
+	"endpoint_1_virtual_network",
+	"endpoint_1_tags",
+	"endpoint_1_tag_ids",
+	"subnet_ip_prefix_len",
+	"subnet_ip_prefix",
+	"endpoint_1_any",
+	"endpoint_1_address_group",
+	"display_name",
+	"direction",
+	"key_value_pair",
+	"simple_action",
+	"qos_action",
+	"udp_port",
+	"vtep_dst_mac_address",
+	"vtep_dst_ip_address",
+	"vni",
+	"routing_instance",
+	"nic_assisted_mirroring_vlan",
+	"nic_assisted_mirroring",
+	"nh_mode",
+	"juniper_header",
+	"encapsulation",
+	"analyzer_name",
+	"analyzer_mac_address",
+	"analyzer_ip_address",
+	"log",
+	"gateway_name",
+	"assign_routing_instance",
+	"apply_service",
+	"alert",
 }
 
 // FirewallRuleRefFields is db reference fields for FirewallRule
@@ -105,13 +107,16 @@ var FirewallRuleRefFields = map[string][]string{
 	},
 }
 
+// FirewallRuleBackRefFields is db back reference fields for FirewallRule
+var FirewallRuleBackRefFields = map[string][]string{}
+
+const insertFirewallRuleVirtualNetworkQuery = "insert into `ref_firewall_rule_virtual_network` (`from`, `to` ) values (?, ?);"
+
 const insertFirewallRuleServiceGroupQuery = "insert into `ref_firewall_rule_service_group` (`from`, `to` ) values (?, ?);"
 
 const insertFirewallRuleAddressGroupQuery = "insert into `ref_firewall_rule_address_group` (`from`, `to` ) values (?, ?);"
 
 const insertFirewallRuleSecurityLoggingObjectQuery = "insert into `ref_firewall_rule_security_logging_object` (`from`, `to` ) values (?, ?);"
-
-const insertFirewallRuleVirtualNetworkQuery = "insert into `ref_firewall_rule_virtual_network` (`from`, `to` ) values (?, ?);"
 
 // CreateFirewallRule inserts FirewallRule to DB
 func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
@@ -125,83 +130,72 @@ func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
 		"model": model,
 		"query": insertFirewallRuleQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		string(model.DisplayName),
-		common.MustJSON(model.ActionList.ApplyService),
-		string(model.ActionList.GatewayName),
-		bool(model.ActionList.Log),
-		bool(model.ActionList.Alert),
-		string(model.ActionList.QosAction),
-		string(model.ActionList.AssignRoutingInstance),
-		string(model.ActionList.MirrorTo.AnalyzerName),
-		string(model.ActionList.MirrorTo.NHMode),
-		int(model.ActionList.MirrorTo.NicAssistedMirroringVlan),
-		int(model.ActionList.MirrorTo.StaticNHHeader.Vni),
-		string(model.ActionList.MirrorTo.StaticNHHeader.VtepDSTIPAddress),
-		string(model.ActionList.MirrorTo.StaticNHHeader.VtepDSTMacAddress),
-		string(model.ActionList.MirrorTo.AnalyzerIPAddress),
-		string(model.ActionList.MirrorTo.AnalyzerMacAddress),
-		int(model.ActionList.MirrorTo.UDPPort),
-		string(model.ActionList.MirrorTo.Encapsulation),
-		string(model.ActionList.MirrorTo.RoutingInstance),
-		bool(model.ActionList.MirrorTo.NicAssistedMirroring),
-		bool(model.ActionList.MirrorTo.JuniperHeader),
-		string(model.ActionList.SimpleAction),
-		common.MustJSON(model.MatchTagTypes.TagType),
-		common.MustJSON(model.FQName),
-		string(model.Direction),
-		common.MustJSON(model.MatchTags),
-		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		string(model.UUID),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Endpoint1.Subnet.IPPrefixLen),
-		string(model.Endpoint1.Subnet.IPPrefix),
-		common.MustJSON(model.Endpoint1.Tags),
-		common.MustJSON(model.Endpoint1.TagIds),
-		string(model.Endpoint1.VirtualNetwork),
-		bool(model.Endpoint1.Any),
-		string(model.Endpoint1.AddressGroup),
-		string(model.Endpoint2.Subnet.IPPrefix),
-		int(model.Endpoint2.Subnet.IPPrefixLen),
-		common.MustJSON(model.Endpoint2.Tags),
-		common.MustJSON(model.Endpoint2.TagIds),
-		string(model.Endpoint2.VirtualNetwork),
-		bool(model.Endpoint2.Any),
-		string(model.Endpoint2.AddressGroup),
-		int(model.Service.DSTPorts.EndPort),
-		int(model.Service.DSTPorts.StartPort),
+	_, err = stmt.Exec(string(model.UUID),
 		int(model.Service.SRCPorts.StartPort),
 		int(model.Service.SRCPorts.EndPort),
 		int(model.Service.ProtocolID),
-		string(model.Service.Protocol))
+		string(model.Service.Protocol),
+		int(model.Service.DSTPorts.StartPort),
+		int(model.Service.DSTPorts.EndPort),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
+		common.MustJSON(model.MatchTags.TagList),
+		common.MustJSON(model.MatchTagTypes.TagType),
+		bool(model.IDPerms.UserVisible),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
+		bool(model.IDPerms.Enable),
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.Endpoint2.VirtualNetwork),
+		common.MustJSON(model.Endpoint2.Tags),
+		common.MustJSON(model.Endpoint2.TagIds),
+		int(model.Endpoint2.Subnet.IPPrefixLen),
+		string(model.Endpoint2.Subnet.IPPrefix),
+		bool(model.Endpoint2.Any),
+		string(model.Endpoint2.AddressGroup),
+		string(model.Endpoint1.VirtualNetwork),
+		common.MustJSON(model.Endpoint1.Tags),
+		common.MustJSON(model.Endpoint1.TagIds),
+		int(model.Endpoint1.Subnet.IPPrefixLen),
+		string(model.Endpoint1.Subnet.IPPrefix),
+		bool(model.Endpoint1.Any),
+		string(model.Endpoint1.AddressGroup),
+		string(model.DisplayName),
+		string(model.Direction),
+		common.MustJSON(model.Annotations.KeyValuePair),
+		string(model.ActionList.SimpleAction),
+		string(model.ActionList.QosAction),
+		int(model.ActionList.MirrorTo.UDPPort),
+		string(model.ActionList.MirrorTo.StaticNHHeader.VtepDSTMacAddress),
+		string(model.ActionList.MirrorTo.StaticNHHeader.VtepDSTIPAddress),
+		int(model.ActionList.MirrorTo.StaticNHHeader.Vni),
+		string(model.ActionList.MirrorTo.RoutingInstance),
+		int(model.ActionList.MirrorTo.NicAssistedMirroringVlan),
+		bool(model.ActionList.MirrorTo.NicAssistedMirroring),
+		string(model.ActionList.MirrorTo.NHMode),
+		bool(model.ActionList.MirrorTo.JuniperHeader),
+		string(model.ActionList.MirrorTo.Encapsulation),
+		string(model.ActionList.MirrorTo.AnalyzerName),
+		string(model.ActionList.MirrorTo.AnalyzerMacAddress),
+		string(model.ActionList.MirrorTo.AnalyzerIPAddress),
+		bool(model.ActionList.Log),
+		string(model.ActionList.GatewayName),
+		string(model.ActionList.AssignRoutingInstance),
+		common.MustJSON(model.ActionList.ApplyService),
+		bool(model.ActionList.Alert))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
-	}
-
-	stmtServiceGroupRef, err := tx.Prepare(insertFirewallRuleServiceGroupQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceGroupRefs create statement failed")
-	}
-	defer stmtServiceGroupRef.Close()
-	for _, ref := range model.ServiceGroupRefs {
-
-		_, err = stmtServiceGroupRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceGroupRefs create failed")
-		}
 	}
 
 	stmtAddressGroupRef, err := tx.Prepare(insertFirewallRuleAddressGroupQuery)
@@ -243,6 +237,19 @@ func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
 		}
 	}
 
+	stmtServiceGroupRef, err := tx.Prepare(insertFirewallRuleServiceGroupQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceGroupRefs create statement failed")
+	}
+	defer stmtServiceGroupRef.Close()
+	for _, ref := range model.ServiceGroupRefs {
+
+		_, err = stmtServiceGroupRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceGroupRefs create failed")
+		}
+	}
+
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -252,316 +259,6 @@ func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
 func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, error) {
 	m := models.MakeFirewallRule()
 
-	if value, ok := values["enable"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
-
-	}
-
-	if value, ok := values["description"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
-
-	}
-
-	if value, ok := values["created"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
-
-	}
-
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["apply_service"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.ActionList.ApplyService)
-
-	}
-
-	if value, ok := values["gateway_name"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ActionList.GatewayName = castedValue
-
-	}
-
-	if value, ok := values["log"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.ActionList.Log = castedValue
-
-	}
-
-	if value, ok := values["alert"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.ActionList.Alert = castedValue
-
-	}
-
-	if value, ok := values["qos_action"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ActionList.QosAction = castedValue
-
-	}
-
-	if value, ok := values["assign_routing_instance"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ActionList.AssignRoutingInstance = castedValue
-
-	}
-
-	if value, ok := values["analyzer_name"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ActionList.MirrorTo.AnalyzerName = castedValue
-
-	}
-
-	if value, ok := values["nh_mode"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ActionList.MirrorTo.NHMode = models.NHModeType(castedValue)
-
-	}
-
-	if value, ok := values["nic_assisted_mirroring_vlan"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.ActionList.MirrorTo.NicAssistedMirroringVlan = models.VlanIdType(castedValue)
-
-	}
-
-	if value, ok := values["vni"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.ActionList.MirrorTo.StaticNHHeader.Vni = models.VxlanNetworkIdentifierType(castedValue)
-
-	}
-
-	if value, ok := values["vtep_dst_ip_address"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ActionList.MirrorTo.StaticNHHeader.VtepDSTIPAddress = castedValue
-
-	}
-
-	if value, ok := values["vtep_dst_mac_address"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ActionList.MirrorTo.StaticNHHeader.VtepDSTMacAddress = castedValue
-
-	}
-
-	if value, ok := values["analyzer_ip_address"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ActionList.MirrorTo.AnalyzerIPAddress = castedValue
-
-	}
-
-	if value, ok := values["analyzer_mac_address"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ActionList.MirrorTo.AnalyzerMacAddress = castedValue
-
-	}
-
-	if value, ok := values["udp_port"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.ActionList.MirrorTo.UDPPort = castedValue
-
-	}
-
-	if value, ok := values["encapsulation"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ActionList.MirrorTo.Encapsulation = castedValue
-
-	}
-
-	if value, ok := values["routing_instance"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ActionList.MirrorTo.RoutingInstance = castedValue
-
-	}
-
-	if value, ok := values["nic_assisted_mirroring"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.ActionList.MirrorTo.NicAssistedMirroring = castedValue
-
-	}
-
-	if value, ok := values["juniper_header"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.ActionList.MirrorTo.JuniperHeader = castedValue
-
-	}
-
-	if value, ok := values["simple_action"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ActionList.SimpleAction = models.SimpleActionType(castedValue)
-
-	}
-
-	if value, ok := values["tag_type"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.MatchTagTypes.TagType)
-
-	}
-
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["direction"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Direction = models.FirewallRuleDirectionType(castedValue)
-
-	}
-
-	if value, ok := values["match_tags"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.MatchTags)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
 	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -570,133 +267,7 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	}
 
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["ip_prefix_len"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Endpoint1.Subnet.IPPrefixLen = castedValue
-
-	}
-
-	if value, ok := values["ip_prefix"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Endpoint1.Subnet.IPPrefix = castedValue
-
-	}
-
-	if value, ok := values["tags"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Endpoint1.Tags)
-
-	}
-
-	if value, ok := values["tag_ids"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Endpoint1.TagIds)
-
-	}
-
-	if value, ok := values["virtual_network"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Endpoint1.VirtualNetwork = castedValue
-
-	}
-
-	if value, ok := values["any"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.Endpoint1.Any = castedValue
-
-	}
-
-	if value, ok := values["address_group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Endpoint1.AddressGroup = castedValue
-
-	}
-
-	if value, ok := values["endpoint_2_subnet_ip_prefix"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Endpoint2.Subnet.IPPrefix = castedValue
-
-	}
-
-	if value, ok := values["endpoint_2_subnet_ip_prefix_len"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Endpoint2.Subnet.IPPrefixLen = castedValue
-
-	}
-
-	if value, ok := values["endpoint_2_tags"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Endpoint2.Tags)
-
-	}
-
-	if value, ok := values["endpoint_2_tag_ids"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Endpoint2.TagIds)
-
-	}
-
-	if value, ok := values["endpoint_2_virtual_network"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Endpoint2.VirtualNetwork = castedValue
-
-	}
-
-	if value, ok := values["endpoint_2_any"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.Endpoint2.Any = castedValue
-
-	}
-
-	if value, ok := values["endpoint_2_address_group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Endpoint2.AddressGroup = castedValue
-
-	}
-
-	if value, ok := values["end_port"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Service.DSTPorts.EndPort = models.L4PortType(castedValue)
-
-	}
-
 	if value, ok := values["start_port"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Service.DSTPorts.StartPort = models.L4PortType(castedValue)
-
-	}
-
-	if value, ok := values["src_ports_start_port"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
@@ -704,7 +275,7 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	}
 
-	if value, ok := values["src_ports_end_port"]; ok {
+	if value, ok := values["end_port"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
@@ -725,6 +296,458 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 		castedValue := common.InterfaceToString(value)
 
 		m.Service.Protocol = castedValue
+
+	}
+
+	if value, ok := values["dst_ports_start_port"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Service.DSTPorts.StartPort = models.L4PortType(castedValue)
+
+	}
+
+	if value, ok := values["dst_ports_end_port"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Service.DSTPorts.EndPort = models.L4PortType(castedValue)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
+
+	}
+
+	if value, ok := values["tag_list"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.MatchTags.TagList)
+
+	}
+
+	if value, ok := values["tag_type"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.MatchTagTypes.TagType)
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
+	if value, ok := values["enable"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.Enable = castedValue
+
+	}
+
+	if value, ok := values["description"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["virtual_network"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Endpoint2.VirtualNetwork = castedValue
+
+	}
+
+	if value, ok := values["tags"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Endpoint2.Tags)
+
+	}
+
+	if value, ok := values["tag_ids"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Endpoint2.TagIds)
+
+	}
+
+	if value, ok := values["ip_prefix_len"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Endpoint2.Subnet.IPPrefixLen = castedValue
+
+	}
+
+	if value, ok := values["ip_prefix"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Endpoint2.Subnet.IPPrefix = castedValue
+
+	}
+
+	if value, ok := values["any"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.Endpoint2.Any = castedValue
+
+	}
+
+	if value, ok := values["address_group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Endpoint2.AddressGroup = castedValue
+
+	}
+
+	if value, ok := values["endpoint_1_virtual_network"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Endpoint1.VirtualNetwork = castedValue
+
+	}
+
+	if value, ok := values["endpoint_1_tags"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Endpoint1.Tags)
+
+	}
+
+	if value, ok := values["endpoint_1_tag_ids"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Endpoint1.TagIds)
+
+	}
+
+	if value, ok := values["subnet_ip_prefix_len"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Endpoint1.Subnet.IPPrefixLen = castedValue
+
+	}
+
+	if value, ok := values["subnet_ip_prefix"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Endpoint1.Subnet.IPPrefix = castedValue
+
+	}
+
+	if value, ok := values["endpoint_1_any"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.Endpoint1.Any = castedValue
+
+	}
+
+	if value, ok := values["endpoint_1_address_group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Endpoint1.AddressGroup = castedValue
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["direction"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Direction = models.FirewallRuleDirectionType(castedValue)
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["simple_action"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ActionList.SimpleAction = models.SimpleActionType(castedValue)
+
+	}
+
+	if value, ok := values["qos_action"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ActionList.QosAction = castedValue
+
+	}
+
+	if value, ok := values["udp_port"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.ActionList.MirrorTo.UDPPort = castedValue
+
+	}
+
+	if value, ok := values["vtep_dst_mac_address"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ActionList.MirrorTo.StaticNHHeader.VtepDSTMacAddress = castedValue
+
+	}
+
+	if value, ok := values["vtep_dst_ip_address"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ActionList.MirrorTo.StaticNHHeader.VtepDSTIPAddress = castedValue
+
+	}
+
+	if value, ok := values["vni"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.ActionList.MirrorTo.StaticNHHeader.Vni = models.VxlanNetworkIdentifierType(castedValue)
+
+	}
+
+	if value, ok := values["routing_instance"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ActionList.MirrorTo.RoutingInstance = castedValue
+
+	}
+
+	if value, ok := values["nic_assisted_mirroring_vlan"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.ActionList.MirrorTo.NicAssistedMirroringVlan = models.VlanIdType(castedValue)
+
+	}
+
+	if value, ok := values["nic_assisted_mirroring"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.ActionList.MirrorTo.NicAssistedMirroring = castedValue
+
+	}
+
+	if value, ok := values["nh_mode"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ActionList.MirrorTo.NHMode = models.NHModeType(castedValue)
+
+	}
+
+	if value, ok := values["juniper_header"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.ActionList.MirrorTo.JuniperHeader = castedValue
+
+	}
+
+	if value, ok := values["encapsulation"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ActionList.MirrorTo.Encapsulation = castedValue
+
+	}
+
+	if value, ok := values["analyzer_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ActionList.MirrorTo.AnalyzerName = castedValue
+
+	}
+
+	if value, ok := values["analyzer_mac_address"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ActionList.MirrorTo.AnalyzerMacAddress = castedValue
+
+	}
+
+	if value, ok := values["analyzer_ip_address"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ActionList.MirrorTo.AnalyzerIPAddress = castedValue
+
+	}
+
+	if value, ok := values["log"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.ActionList.Log = castedValue
+
+	}
+
+	if value, ok := values["gateway_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ActionList.GatewayName = castedValue
+
+	}
+
+	if value, ok := values["assign_routing_instance"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ActionList.AssignRoutingInstance = castedValue
+
+	}
+
+	if value, ok := values["apply_service"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.ActionList.ApplyService)
+
+	}
+
+	if value, ok := values["alert"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.ActionList.Alert = castedValue
 
 	}
 
@@ -815,6 +838,7 @@ func ListFirewallRule(tx *sql.Tx, spec *common.ListSpec) ([]*models.FirewallRule
 	spec.Table = "firewall_rule"
 	spec.Fields = FirewallRuleFields
 	spec.RefFields = FirewallRuleRefFields
+	spec.BackRefFields = FirewallRuleBackRefFields
 	result := models.MakeFirewallRuleSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

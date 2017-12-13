@@ -11,9 +11,16 @@ import (
 
 func TestProject(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "project")
+	defer func() {
+		common.ClearTable(db, "project")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeProject()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateProject(tx, model)

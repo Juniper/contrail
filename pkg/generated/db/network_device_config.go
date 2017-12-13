@@ -11,31 +11,33 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertNetworkDeviceConfigQuery = "insert into `network_device_config` (`key_value_pair`,`owner_access`,`global_access`,`share`,`owner`,`uuid`,`fq_name`,`creator`,`user_visible`,`last_modified`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`enable`,`description`,`created`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateNetworkDeviceConfigQuery = "update `network_device_config` set `key_value_pair` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`uuid` = ?,`fq_name` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`display_name` = ?;"
+const insertNetworkDeviceConfigQuery = "insert into `network_device_config` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateNetworkDeviceConfigQuery = "update `network_device_config` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteNetworkDeviceConfigQuery = "delete from `network_device_config` where uuid = ?"
 
 // NetworkDeviceConfigFields is db columns for NetworkDeviceConfig
 var NetworkDeviceConfigFields = []string{
-	"key_value_pair",
-	"owner_access",
-	"global_access",
-	"share",
-	"owner",
 	"uuid",
-	"fq_name",
-	"creator",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
 	"user_visible",
-	"last_modified",
-	"group",
-	"group_access",
-	"permissions_owner",
 	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
+	"creator",
 	"created",
+	"fq_name",
 	"display_name",
+	"key_value_pair",
 }
 
 // NetworkDeviceConfigRefFields is db reference fields for NetworkDeviceConfig
@@ -46,6 +48,9 @@ var NetworkDeviceConfigRefFields = map[string][]string{
 
 	},
 }
+
+// NetworkDeviceConfigBackRefFields is db back reference fields for NetworkDeviceConfig
+var NetworkDeviceConfigBackRefFields = map[string][]string{}
 
 const insertNetworkDeviceConfigPhysicalRouterQuery = "insert into `ref_network_device_config_physical_router` (`from`, `to` ) values (?, ?);"
 
@@ -61,25 +66,27 @@ func CreateNetworkDeviceConfig(tx *sql.Tx, model *models.NetworkDeviceConfig) er
 		"model": model,
 		"query": insertNetworkDeviceConfigQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(common.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
+	_, err = stmt.Exec(string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
-		string(model.UUID),
-		common.MustJSON(model.FQName),
-		string(model.IDPerms.Creator),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
 		string(model.IDPerms.Created),
-		string(model.DisplayName))
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -106,9 +113,17 @@ func CreateNetworkDeviceConfig(tx *sql.Tx, model *models.NetworkDeviceConfig) er
 func scanNetworkDeviceConfig(values map[string]interface{}) (*models.NetworkDeviceConfig, error) {
 	m := models.MakeNetworkDeviceConfig()
 
-	if value, ok := values["key_value_pair"]; ok {
+	if value, ok := values["uuid"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
 	}
 
@@ -120,20 +135,6 @@ func scanNetworkDeviceConfig(values map[string]interface{}) (*models.NetworkDevi
 
 	}
 
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
 	if value, ok := values["owner"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -142,25 +143,27 @@ func scanNetworkDeviceConfig(values map[string]interface{}) (*models.NetworkDevi
 
 	}
 
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["global_access"]; ok {
 
-		castedValue := common.InterfaceToString(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.UUID = castedValue
-
-	}
-
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["creator"]; ok {
+	if value, ok := values["parent_uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Creator = castedValue
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
 
 	}
 
@@ -172,27 +175,11 @@ func scanNetworkDeviceConfig(values map[string]interface{}) (*models.NetworkDevi
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
@@ -204,19 +191,35 @@ func scanNetworkDeviceConfig(values map[string]interface{}) (*models.NetworkDevi
 
 	}
 
-	if value, ok := values["permissions_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
 	if value, ok := values["other_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -236,6 +239,14 @@ func scanNetworkDeviceConfig(values map[string]interface{}) (*models.NetworkDevi
 
 	}
 
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
 	if value, ok := values["created"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -244,11 +255,23 @@ func scanNetworkDeviceConfig(values map[string]interface{}) (*models.NetworkDevi
 
 	}
 
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
 	if value, ok := values["display_name"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
@@ -282,6 +305,7 @@ func ListNetworkDeviceConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Netwo
 	spec.Table = "network_device_config"
 	spec.Fields = NetworkDeviceConfigFields
 	spec.RefFields = NetworkDeviceConfigRefFields
+	spec.BackRefFields = NetworkDeviceConfigBackRefFields
 	result := models.MakeNetworkDeviceConfigSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

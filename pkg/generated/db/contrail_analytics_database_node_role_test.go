@@ -11,9 +11,16 @@ import (
 
 func TestContrailAnalyticsDatabaseNodeRole(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "contrail_analytics_database_node_role")
+	defer func() {
+		common.ClearTable(db, "contrail_analytics_database_node_role")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeContrailAnalyticsDatabaseNodeRole()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateContrailAnalyticsDatabaseNodeRole(tx, model)

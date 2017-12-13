@@ -9,8 +9,6 @@ type FlowAgingTimeoutList struct {
 	FlowAgingTimeout []*FlowAgingTimeout `json:"flow_aging_timeout"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *FlowAgingTimeoutList) String() string {
 	b, _ := json.Marshal(model)
@@ -33,7 +31,7 @@ func InterfaceToFlowAgingTimeoutList(iData interface{}) *FlowAgingTimeoutList {
 
 		FlowAgingTimeout: InterfaceToFlowAgingTimeoutSlice(data["flow_aging_timeout"]),
 
-		//{"Title":"","Description":"List of (ip protocol, port number, timeout in seconds)","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"object","Permission":null,"Properties":{"port":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Port","GoType":"int","GoPremitive":true},"protocol":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Protocol","GoType":"string","GoPremitive":true},"timeout_in_seconds":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"TimeoutInSeconds","GoType":"int","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/FlowAgingTimeout","CollectionType":"","Column":"","Item":null,"GoName":"FlowAgingTimeout","GoType":"FlowAgingTimeout","GoPremitive":false},"GoName":"FlowAgingTimeout","GoType":"[]*FlowAgingTimeout","GoPremitive":true}
+		//{"description":"List of (ip protocol, port number, timeout in seconds)","type":"array","item":{"type":"object","properties":{"port":{"type":"integer"},"protocol":{"type":"string"},"timeout_in_seconds":{"type":"integer"}}}}
 
 	}
 }

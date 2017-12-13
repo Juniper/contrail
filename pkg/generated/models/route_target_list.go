@@ -9,8 +9,6 @@ type RouteTargetList struct {
 	RouteTarget []string `json:"route_target"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *RouteTargetList) String() string {
 	b, _ := json.Marshal(model)
@@ -31,7 +29,7 @@ func InterfaceToRouteTargetList(iData interface{}) *RouteTargetList {
 	return &RouteTargetList{
 		RouteTarget: data["route_target"].([]string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"RouteTarget","GoType":"string","GoPremitive":true},"GoName":"RouteTarget","GoType":"[]string","GoPremitive":true}
+		//{"type":"array","item":{"type":"string"}}
 
 	}
 }

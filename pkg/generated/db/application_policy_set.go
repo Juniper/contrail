@@ -11,32 +11,34 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertApplicationPolicySetQuery = "insert into `application_policy_set` (`all_applications`,`global_access`,`share`,`owner`,`owner_access`,`uuid`,`fq_name`,`last_modified`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateApplicationPolicySetQuery = "update `application_policy_set` set `all_applications` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`uuid` = ?,`fq_name` = ?,`last_modified` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`display_name` = ?,`key_value_pair` = ?;"
+const insertApplicationPolicySetQuery = "insert into `application_policy_set` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`,`all_applications`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateApplicationPolicySetQuery = "update `application_policy_set` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?,`all_applications` = ?;"
 const deleteApplicationPolicySetQuery = "delete from `application_policy_set` where uuid = ?"
 
 // ApplicationPolicySetFields is db columns for ApplicationPolicySet
 var ApplicationPolicySetFields = []string{
-	"all_applications",
-	"global_access",
-	"share",
-	"owner",
-	"owner_access",
 	"uuid",
-	"fq_name",
-	"last_modified",
-	"permissions_owner",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
 	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
-	"group",
 	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
-	"created",
 	"creator",
-	"user_visible",
+	"created",
+	"fq_name",
 	"display_name",
 	"key_value_pair",
+	"all_applications",
 }
 
 // ApplicationPolicySetRefFields is db reference fields for ApplicationPolicySet
@@ -52,6 +54,9 @@ var ApplicationPolicySetRefFields = map[string][]string{
 
 	},
 }
+
+// ApplicationPolicySetBackRefFields is db back reference fields for ApplicationPolicySet
+var ApplicationPolicySetBackRefFields = map[string][]string{}
 
 const insertApplicationPolicySetFirewallPolicyQuery = "insert into `ref_application_policy_set_firewall_policy` (`from`, `to` ,`sequence`) values (?, ?,?);"
 
@@ -69,26 +74,28 @@ func CreateApplicationPolicySet(tx *sql.Tx, model *models.ApplicationPolicySet) 
 		"model": model,
 		"query": insertApplicationPolicySetQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(bool(model.AllApplications),
-		int(model.Perms2.GlobalAccess),
+	_, err = stmt.Exec(string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
-		string(model.UUID),
-		common.MustJSON(model.FQName),
-		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
+		bool(model.IDPerms.UserVisible),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
 		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair))
+		common.MustJSON(model.Annotations.KeyValuePair),
+		bool(model.AllApplications))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -132,33 +139,17 @@ func CreateApplicationPolicySet(tx *sql.Tx, model *models.ApplicationPolicySet) 
 func scanApplicationPolicySet(values map[string]interface{}) (*models.ApplicationPolicySet, error) {
 	m := models.MakeApplicationPolicySet()
 
-	if value, ok := values["all_applications"]; ok {
+	if value, ok := values["uuid"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.AllApplications = castedValue
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.UUID = castedValue
 
 	}
 
 	if value, ok := values["share"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
 
 	}
 
@@ -170,33 +161,43 @@ func scanApplicationPolicySet(values map[string]interface{}) (*models.Applicatio
 
 	}
 
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["owner"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.UUID = castedValue
+		m.Perms2.Owner = castedValue
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["global_access"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
+	if value, ok := values["parent_uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.LastModified = castedValue
+		m.ParentUUID = castedValue
 
 	}
 
-	if value, ok := values["permissions_owner"]; ok {
+	if value, ok := values["parent_type"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.Owner = castedValue
+		m.ParentType = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
 
 	}
 
@@ -208,11 +209,27 @@ func scanApplicationPolicySet(values map[string]interface{}) (*models.Applicatio
 
 	}
 
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
 	if value, ok := values["other_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
 
 	}
 
@@ -224,11 +241,11 @@ func scanApplicationPolicySet(values map[string]interface{}) (*models.Applicatio
 
 	}
 
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -248,14 +265,6 @@ func scanApplicationPolicySet(values map[string]interface{}) (*models.Applicatio
 
 	}
 
-	if value, ok := values["created"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
 	if value, ok := values["creator"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -264,11 +273,17 @@ func scanApplicationPolicySet(values map[string]interface{}) (*models.Applicatio
 
 	}
 
-	if value, ok := values["user_visible"]; ok {
+	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
@@ -283,6 +298,14 @@ func scanApplicationPolicySet(values map[string]interface{}) (*models.Applicatio
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+
+	}
+
+	if value, ok := values["all_applications"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.AllApplications = castedValue
 
 	}
 
@@ -338,6 +361,7 @@ func ListApplicationPolicySet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Appl
 	spec.Table = "application_policy_set"
 	spec.Fields = ApplicationPolicySetFields
 	spec.RefFields = ApplicationPolicySetRefFields
+	spec.BackRefFields = ApplicationPolicySetBackRefFields
 	result := models.MakeApplicationPolicySetSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

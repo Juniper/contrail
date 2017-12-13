@@ -17,6 +17,14 @@
           presence: "true"
           description: "UUID of the object, system automatically allocates one if not provided"
           type: "string"
+      parent_uuid:
+          presence: "true"
+          description: "UUID of the parent object"
+          type: "string"
+      parent_type:
+          presence: "true"
+          description: "Parent resource type"
+          type: "string"
       fq_name:
           presence: "true"
           description: "FQ Name of the object"

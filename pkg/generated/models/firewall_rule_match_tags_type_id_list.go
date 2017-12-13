@@ -9,8 +9,6 @@ type FirewallRuleMatchTagsTypeIdList struct {
 	TagType []int `json:"tag_type"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *FirewallRuleMatchTagsTypeIdList) String() string {
 	b, _ := json.Marshal(model)
@@ -33,7 +31,7 @@ func InterfaceToFirewallRuleMatchTagsTypeIdList(iData interface{}) *FirewallRule
 
 		TagType: data["tag_type"].([]int),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"TagType","GoType":"int","GoPremitive":true},"GoName":"TagType","GoType":"[]int","GoPremitive":true}
+		//{"type":"array","item":{"type":"integer"}}
 
 	}
 }

@@ -11,39 +11,41 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertFirewallPolicyQuery = "insert into `firewall_policy` (`fq_name`,`creator`,`user_visible`,`last_modified`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`description`,`created`,`display_name`,`key_value_pair`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateFirewallPolicyQuery = "update `firewall_policy` set `fq_name` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`display_name` = ?,`key_value_pair` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`uuid` = ?;"
+const insertFirewallPolicyQuery = "insert into `firewall_policy` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateFirewallPolicyQuery = "update `firewall_policy` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteFirewallPolicyQuery = "delete from `firewall_policy` where uuid = ?"
 
 // FirewallPolicyFields is db columns for FirewallPolicy
 var FirewallPolicyFields = []string{
-	"fq_name",
-	"creator",
-	"user_visible",
-	"last_modified",
+	"uuid",
+	"share",
 	"owner_access",
-	"other_access",
-	"group",
-	"group_access",
 	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
+	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
+	"creator",
 	"created",
+	"fq_name",
 	"display_name",
 	"key_value_pair",
-	"perms2_owner",
-	"perms2_owner_access",
-	"global_access",
-	"share",
-	"uuid",
 }
 
 // FirewallPolicyRefFields is db reference fields for FirewallPolicy
 var FirewallPolicyRefFields = map[string][]string{
 
 	"firewall_rule": {
-	// <common.Schema Value>
-
+		// <common.Schema Value>
+		"sequence",
 	},
 
 	"security_logging_object": {
@@ -52,7 +54,10 @@ var FirewallPolicyRefFields = map[string][]string{
 	},
 }
 
-const insertFirewallPolicyFirewallRuleQuery = "insert into `ref_firewall_policy_firewall_rule` (`from`, `to` ) values (?, ?);"
+// FirewallPolicyBackRefFields is db back reference fields for FirewallPolicy
+var FirewallPolicyBackRefFields = map[string][]string{}
+
+const insertFirewallPolicyFirewallRuleQuery = "insert into `ref_firewall_policy_firewall_rule` (`from`, `to` ,`sequence`) values (?, ?,?);"
 
 const insertFirewallPolicySecurityLoggingObjectQuery = "insert into `ref_firewall_policy_security_logging_object` (`from`, `to` ) values (?, ?);"
 
@@ -68,25 +73,27 @@ func CreateFirewallPolicy(tx *sql.Tx, model *models.FirewallPolicy) error {
 		"model": model,
 		"query": insertFirewallPolicyQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(common.MustJSON(model.FQName),
-		string(model.IDPerms.Creator),
+	_, err = stmt.Exec(string(model.UUID),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
 		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
 		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
 		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		common.MustJSON(model.Perms2.Share),
-		string(model.UUID))
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -102,7 +109,7 @@ func CreateFirewallPolicy(tx *sql.Tx, model *models.FirewallPolicy) error {
 			ref.Attr = models.MakeFirewallSequence()
 		}
 
-		_, err = stmtFirewallRuleRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtFirewallRuleRef.Exec(model.UUID, ref.UUID, string(ref.Attr.Sequence))
 		if err != nil {
 			return errors.Wrap(err, "FirewallRuleRefs create failed")
 		}
@@ -130,17 +137,57 @@ func CreateFirewallPolicy(tx *sql.Tx, model *models.FirewallPolicy) error {
 func scanFirewallPolicy(values map[string]interface{}) (*models.FirewallPolicy, error) {
 	m := models.MakeFirewallPolicy()
 
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["creator"]; ok {
+	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Creator = castedValue
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
 
 	}
 
@@ -152,19 +199,19 @@ func scanFirewallPolicy(values map[string]interface{}) (*models.FirewallPolicy, 
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
 
 	}
 
@@ -176,14 +223,6 @@ func scanFirewallPolicy(values map[string]interface{}) (*models.FirewallPolicy, 
 
 	}
 
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
 	if value, ok := values["group_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
@@ -192,11 +231,19 @@ func scanFirewallPolicy(values map[string]interface{}) (*models.FirewallPolicy, 
 
 	}
 
-	if value, ok := values["owner"]; ok {
+	if value, ok := values["group"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -216,11 +263,25 @@ func scanFirewallPolicy(values map[string]interface{}) (*models.FirewallPolicy, 
 
 	}
 
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
 	if value, ok := values["created"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
@@ -235,44 +296,6 @@ func scanFirewallPolicy(values map[string]interface{}) (*models.FirewallPolicy, 
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
 
 	}
 
@@ -328,6 +351,7 @@ func ListFirewallPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.FirewallPo
 	spec.Table = "firewall_policy"
 	spec.Fields = FirewallPolicyFields
 	spec.RefFields = FirewallPolicyRefFields
+	spec.BackRefFields = FirewallPolicyBackRefFields
 	result := models.MakeFirewallPolicySlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

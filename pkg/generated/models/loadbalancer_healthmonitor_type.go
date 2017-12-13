@@ -16,8 +16,6 @@ type LoadbalancerHealthmonitorType struct {
 	URLPath       string            `json:"url_path"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *LoadbalancerHealthmonitorType) String() string {
 	b, _ := json.Marshal(model)
@@ -43,30 +41,30 @@ func MakeLoadbalancerHealthmonitorType() *LoadbalancerHealthmonitorType {
 func InterfaceToLoadbalancerHealthmonitorType(iData interface{}) *LoadbalancerHealthmonitorType {
 	data := iData.(map[string]interface{})
 	return &LoadbalancerHealthmonitorType{
-		Delay: data["delay"].(int),
-
-		//{"Title":"","Description":"Time in seconds  at which health check is repeated","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Delay","GoType":"int","GoPremitive":true}
-		ExpectedCodes: data["expected_codes"].(string),
-
-		//{"Title":"","Description":"In case monitor protocol is HTTP, expected return code for HTTP operations like 200 ok.","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ExpectedCodes","GoType":"string","GoPremitive":true}
-		MaxRetries: data["max_retries"].(int),
-
-		//{"Title":"","Description":"Number of failures before declaring health bad","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"MaxRetries","GoType":"int","GoPremitive":true}
-		HTTPMethod: data["http_method"].(string),
-
-		//{"Title":"","Description":"In case monitor protocol is HTTP, type of http method used like GET, PUT, POST etc","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"HTTPMethod","GoType":"string","GoPremitive":true}
-		AdminState: data["admin_state"].(bool),
-
-		//{"Title":"","Description":"Administratively up or dowm.","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"AdminState","GoType":"bool","GoPremitive":true}
-		Timeout: data["timeout"].(int),
-
-		//{"Title":"","Description":"Time in seconds to wait for response","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Timeout","GoType":"int","GoPremitive":true}
 		URLPath: data["url_path"].(string),
 
-		//{"Title":"","Description":"In case monitor protocol is HTTP, URL to be used. In case of ICMP, ip address","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"URLPath","GoType":"string","GoPremitive":true}
+		//{"description":"In case monitor protocol is HTTP, URL to be used. In case of ICMP, ip address","type":"string"}
 		MonitorType: InterfaceToHealthmonitorType(data["monitor_type"]),
 
-		//{"Title":"","Description":"Protocol used to monitor health, PING, HTTP, HTTPS or TCP","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":["PING","TCP","HTTP","HTTPS"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/HealthmonitorType","CollectionType":"","Column":"","Item":null,"GoName":"MonitorType","GoType":"HealthmonitorType","GoPremitive":false}
+		//{"description":"Protocol used to monitor health, PING, HTTP, HTTPS or TCP","type":"string","enum":["PING","TCP","HTTP","HTTPS"]}
+		Delay: data["delay"].(int),
+
+		//{"description":"Time in seconds  at which health check is repeated","type":"integer"}
+		ExpectedCodes: data["expected_codes"].(string),
+
+		//{"description":"In case monitor protocol is HTTP, expected return code for HTTP operations like 200 ok.","type":"string"}
+		MaxRetries: data["max_retries"].(int),
+
+		//{"description":"Number of failures before declaring health bad","type":"integer"}
+		HTTPMethod: data["http_method"].(string),
+
+		//{"description":"In case monitor protocol is HTTP, type of http method used like GET, PUT, POST etc","type":"string"}
+		AdminState: data["admin_state"].(bool),
+
+		//{"description":"Administratively up or dowm.","type":"boolean"}
+		Timeout: data["timeout"].(int),
+
+		//{"description":"Time in seconds to wait for response","type":"integer"}
 
 	}
 }

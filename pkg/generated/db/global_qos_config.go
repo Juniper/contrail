@@ -11,38 +11,128 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertGlobalQosConfigQuery = "insert into `global_qos_config` (`fq_name`,`created`,`creator`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`display_name`,`key_value_pair`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`control`,`analytics`,`dns`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateGlobalQosConfigQuery = "update `global_qos_config` set `fq_name` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`control` = ?,`analytics` = ?,`dns` = ?,`uuid` = ?;"
+const insertGlobalQosConfigQuery = "insert into `global_qos_config` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`dns`,`control`,`analytics`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateGlobalQosConfigQuery = "update `global_qos_config` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`dns` = ?,`control` = ?,`analytics` = ?,`key_value_pair` = ?;"
 const deleteGlobalQosConfigQuery = "delete from `global_qos_config` where uuid = ?"
 
 // GlobalQosConfigFields is db columns for GlobalQosConfig
 var GlobalQosConfigFields = []string{
-	"fq_name",
-	"created",
-	"creator",
-	"user_visible",
-	"last_modified",
-	"owner",
+	"uuid",
+	"share",
 	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
-	"group",
 	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
+	"creator",
+	"created",
+	"fq_name",
 	"display_name",
-	"key_value_pair",
-	"global_access",
-	"share",
-	"perms2_owner",
-	"perms2_owner_access",
+	"dns",
 	"control",
 	"analytics",
-	"dns",
-	"uuid",
+	"key_value_pair",
 }
 
 // GlobalQosConfigRefFields is db reference fields for GlobalQosConfig
 var GlobalQosConfigRefFields = map[string][]string{}
+
+// GlobalQosConfigBackRefFields is db back reference fields for GlobalQosConfig
+var GlobalQosConfigBackRefFields = map[string][]string{
+
+	"forwarding_class": {
+		"uuid",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"forwarding_class_vlan_priority",
+		"forwarding_class_mpls_exp",
+		"forwarding_class_id",
+		"forwarding_class_dscp",
+		"display_name",
+		"key_value_pair",
+	},
+
+	"qos_config": {
+		"qos_id_forwarding_class_pair",
+		"uuid",
+		"qos_config_type",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"mpls_exp_entries_qos_id_forwarding_class_pair",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"dscp_entries_qos_id_forwarding_class_pair",
+		"display_name",
+		"default_forwarding_class_id",
+		"key_value_pair",
+	},
+
+	"qos_queue": {
+		"uuid",
+		"qos_queue_identifier",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"min_bandwidth",
+		"max_bandwidth",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"display_name",
+		"key_value_pair",
+	},
+}
 
 // CreateGlobalQosConfig inserts GlobalQosConfig to DB
 func CreateGlobalQosConfig(tx *sql.Tx, model *models.GlobalQosConfig) error {
@@ -56,28 +146,30 @@ func CreateGlobalQosConfig(tx *sql.Tx, model *models.GlobalQosConfig) error {
 		"model": model,
 		"query": insertGlobalQosConfigQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(common.MustJSON(model.FQName),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
+	_, err = stmt.Exec(string(model.UUID),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
 		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.GlobalAccess),
-		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
+		int(model.ControlTrafficDSCP.DNS),
 		int(model.ControlTrafficDSCP.Control),
 		int(model.ControlTrafficDSCP.Analytics),
-		int(model.ControlTrafficDSCP.DNS),
-		string(model.UUID))
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -91,25 +183,57 @@ func CreateGlobalQosConfig(tx *sql.Tx, model *models.GlobalQosConfig) error {
 func scanGlobalQosConfig(values map[string]interface{}) (*models.GlobalQosConfig, error) {
 	m := models.MakeGlobalQosConfig()
 
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["created"]; ok {
+	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Created = castedValue
+		m.UUID = castedValue
 
 	}
 
-	if value, ok := values["creator"]; ok {
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Creator = castedValue
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
 
 	}
 
@@ -121,27 +245,19 @@ func scanGlobalQosConfig(values map[string]interface{}) (*models.GlobalQosConfig
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
 
 	}
 
@@ -153,6 +269,14 @@ func scanGlobalQosConfig(values map[string]interface{}) (*models.GlobalQosConfig
 
 	}
 
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["group"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -161,11 +285,11 @@ func scanGlobalQosConfig(values map[string]interface{}) (*models.GlobalQosConfig
 
 	}
 
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -185,6 +309,28 @@ func scanGlobalQosConfig(values map[string]interface{}) (*models.GlobalQosConfig
 
 	}
 
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
 	if value, ok := values["display_name"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -193,39 +339,11 @@ func scanGlobalQosConfig(values map[string]interface{}) (*models.GlobalQosConfig
 
 	}
 
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
+	if value, ok := values["dns"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.ControlTrafficDSCP.DNS = models.DscpValueType(castedValue)
 
 	}
 
@@ -245,20 +363,640 @@ func scanGlobalQosConfig(values map[string]interface{}) (*models.GlobalQosConfig
 
 	}
 
-	if value, ok := values["dns"]; ok {
+	if value, ok := values["key_value_pair"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.ControlTrafficDSCP.DNS = models.DscpValueType(castedValue)
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["backref_forwarding_class"]; ok {
+		var childResources []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if childResourceMap["uuid"] == "" {
+				continue
+			}
+			childModel := models.MakeForwardingClass()
+			m.ForwardingClasss = append(m.ForwardingClasss, childModel)
 
-		castedValue := common.InterfaceToString(value)
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-		m.UUID = castedValue
+				castedValue := common.InterfaceToString(propertyValue)
 
+				childModel.UUID = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.Perms2.Owner = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.ParentUUID = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.ParentType = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToBool(propertyValue)
+
+				childModel.IDPerms.UserVisible = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Permissions.Owner = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Permissions.Group = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.LastModified = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToBool(propertyValue)
+
+				childModel.IDPerms.Enable = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Description = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Creator = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Created = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["forwarding_class_vlan_priority"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.ForwardingClassVlanPriority = models.VlanPriorityType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["forwarding_class_mpls_exp"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.ForwardingClassMPLSExp = models.MplsExpType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["forwarding_class_id"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.ForwardingClassID = models.ForwardingClassId(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["forwarding_class_dscp"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.ForwardingClassDSCP = models.DscpValueType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.DisplayName = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
+	}
+
+	if value, ok := values["backref_qos_config"]; ok {
+		var childResources []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if childResourceMap["uuid"] == "" {
+				continue
+			}
+			childModel := models.MakeQosConfig()
+			m.QosConfigs = append(m.QosConfigs, childModel)
+
+			if propertyValue, ok := childResourceMap["qos_id_forwarding_class_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.VlanPriorityEntries.QosIDForwardingClassPair)
+
+			}
+
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.UUID = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["qos_config_type"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.QosConfigType = models.QosConfigType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.Perms2.Owner = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.ParentUUID = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.ParentType = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["mpls_exp_entries_qos_id_forwarding_class_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.MPLSExpEntries.QosIDForwardingClassPair)
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToBool(propertyValue)
+
+				childModel.IDPerms.UserVisible = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Permissions.Owner = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Permissions.Group = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.LastModified = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToBool(propertyValue)
+
+				childModel.IDPerms.Enable = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Description = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Creator = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Created = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["dscp_entries_qos_id_forwarding_class_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.DSCPEntries.QosIDForwardingClassPair)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.DisplayName = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["default_forwarding_class_id"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.DefaultForwardingClassID = models.ForwardingClassId(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
+	}
+
+	if value, ok := values["backref_qos_queue"]; ok {
+		var childResources []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if childResourceMap["uuid"] == "" {
+				continue
+			}
+			childModel := models.MakeQosQueue()
+			m.QosQueues = append(m.QosQueues, childModel)
+
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.UUID = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["qos_queue_identifier"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.QosQueueIdentifier = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.Perms2.Owner = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.ParentUUID = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.ParentType = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["min_bandwidth"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.MinBandwidth = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["max_bandwidth"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.MaxBandwidth = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToBool(propertyValue)
+
+				childModel.IDPerms.UserVisible = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Permissions.Owner = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Permissions.Group = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.LastModified = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToBool(propertyValue)
+
+				childModel.IDPerms.Enable = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Description = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Creator = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Created = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.DisplayName = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
 	}
 
 	return m, nil
@@ -272,6 +1010,7 @@ func ListGlobalQosConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.GlobalQos
 	spec.Table = "global_qos_config"
 	spec.Fields = GlobalQosConfigFields
 	spec.RefFields = GlobalQosConfigRefFields
+	spec.BackRefFields = GlobalQosConfigBackRefFields
 	result := models.MakeGlobalQosConfigSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

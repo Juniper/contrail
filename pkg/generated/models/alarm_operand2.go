@@ -10,8 +10,6 @@ type AlarmOperand2 struct {
 	JSONValue    string `json:"json_value"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *AlarmOperand2) String() string {
 	b, _ := json.Marshal(model)
@@ -33,10 +31,10 @@ func InterfaceToAlarmOperand2(iData interface{}) *AlarmOperand2 {
 	return &AlarmOperand2{
 		UveAttribute: data["uve_attribute"].(string),
 
-		//{"Title":"","Description":"UVE attribute specified in the dotted format. Example: NodeStatus.process_info.process_state","SQL":"","Default":null,"Operation":"","Presence":"exclusive","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"UveAttribute","GoType":"string","GoPremitive":true}
+		//{"description":"UVE attribute specified in the dotted format. Example: NodeStatus.process_info.process_state","type":"string"}
 		JSONValue: data["json_value"].(string),
 
-		//{"Title":"","Description":"json value as string","SQL":"","Default":null,"Operation":"","Presence":"exclusive","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"JSONValue","GoType":"string","GoPremitive":true}
+		//{"description":"json value as string","type":"string"}
 
 	}
 }

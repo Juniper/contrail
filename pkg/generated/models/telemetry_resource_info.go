@@ -6,12 +6,10 @@ import "encoding/json"
 
 // TelemetryResourceInfo
 type TelemetryResourceInfo struct {
-	Rate string `json:"rate"`
 	Name string `json:"name"`
 	Path string `json:"path"`
+	Rate string `json:"rate"`
 }
-
-//  parents relation object
 
 // String returns json representation of the object
 func (model *TelemetryResourceInfo) String() string {
@@ -35,13 +33,13 @@ func InterfaceToTelemetryResourceInfo(iData interface{}) *TelemetryResourceInfo 
 	return &TelemetryResourceInfo{
 		Path: data["path"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Path","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 		Rate: data["rate"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Rate","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 		Name: data["name"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Name","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 
 	}
 }

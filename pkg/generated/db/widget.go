@@ -11,38 +11,43 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertWidgetQuery = "insert into `widget` (`layout_config`,`uuid`,`display_name`,`container_config`,`fq_name`,`user_visible`,`last_modified`,`owner`,`owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`key_value_pair`,`perms2_owner`,`perms2_owner_access`,`global_access`,`share`,`content_config`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateWidgetQuery = "update `widget` set `layout_config` = ?,`uuid` = ?,`display_name` = ?,`container_config` = ?,`fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`key_value_pair` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`share` = ?,`content_config` = ?;"
+const insertWidgetQuery = "insert into `widget` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`layout_config`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`content_config`,`container_config`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateWidgetQuery = "update `widget` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`layout_config` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`content_config` = ?,`container_config` = ?,`key_value_pair` = ?;"
 const deleteWidgetQuery = "delete from `widget` where uuid = ?"
 
 // WidgetFields is db columns for Widget
 var WidgetFields = []string{
-	"layout_config",
 	"uuid",
-	"display_name",
-	"container_config",
-	"fq_name",
-	"user_visible",
-	"last_modified",
-	"owner",
+	"share",
 	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"layout_config",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
-	"group",
 	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
-	"created",
 	"creator",
-	"key_value_pair",
-	"perms2_owner",
-	"perms2_owner_access",
-	"global_access",
-	"share",
+	"created",
+	"fq_name",
+	"display_name",
 	"content_config",
+	"container_config",
+	"key_value_pair",
 }
 
 // WidgetRefFields is db reference fields for Widget
 var WidgetRefFields = map[string][]string{}
+
+// WidgetBackRefFields is db back reference fields for Widget
+var WidgetBackRefFields = map[string][]string{}
 
 // CreateWidget inserts Widget to DB
 func CreateWidget(tx *sql.Tx, model *models.Widget) error {
@@ -56,28 +61,30 @@ func CreateWidget(tx *sql.Tx, model *models.Widget) error {
 		"model": model,
 		"query": insertWidgetQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.LayoutConfig),
-		string(model.UUID),
-		string(model.DisplayName),
-		string(model.ContainerConfig),
-		common.MustJSON(model.FQName),
+	_, err = stmt.Exec(string(model.UUID),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
+		string(model.LayoutConfig),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		common.MustJSON(model.Perms2.Share),
-		string(model.ContentConfig))
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		string(model.ContentConfig),
+		string(model.ContainerConfig),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -91,14 +98,6 @@ func CreateWidget(tx *sql.Tx, model *models.Widget) error {
 func scanWidget(values map[string]interface{}) (*models.Widget, error) {
 	m := models.MakeWidget()
 
-	if value, ok := values["layout_config"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.LayoutConfig = castedValue
-
-	}
-
 	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -107,25 +106,57 @@ func scanWidget(values map[string]interface{}) (*models.Widget, error) {
 
 	}
 
-	if value, ok := values["display_name"]; ok {
+	if value, ok := values["share"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
 	}
 
-	if value, ok := values["container_config"]; ok {
+	if value, ok := values["owner_access"]; ok {
 
-		castedValue := common.InterfaceToString(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.ContainerConfig = castedValue
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["owner"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
+
+	}
+
+	if value, ok := values["layout_config"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.LayoutConfig = castedValue
 
 	}
 
@@ -137,27 +168,19 @@ func scanWidget(values map[string]interface{}) (*models.Widget, error) {
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
 
 	}
 
@@ -169,6 +192,14 @@ func scanWidget(values map[string]interface{}) (*models.Widget, error) {
 
 	}
 
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["group"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -177,11 +208,11 @@ func scanWidget(values map[string]interface{}) (*models.Widget, error) {
 
 	}
 
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -201,14 +232,6 @@ func scanWidget(values map[string]interface{}) (*models.Widget, error) {
 
 	}
 
-	if value, ok := values["created"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
 	if value, ok := values["creator"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -217,39 +240,25 @@ func scanWidget(values map[string]interface{}) (*models.Widget, error) {
 
 	}
 
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
+	if value, ok := values["created"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.Perms2.Owner = castedValue
+		m.IDPerms.Created = castedValue
 
 	}
 
-	if value, ok := values["perms2_owner_access"]; ok {
+	if value, ok := values["fq_name"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
-	if value, ok := values["global_access"]; ok {
+	if value, ok := values["display_name"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+		m.DisplayName = castedValue
 
 	}
 
@@ -258,6 +267,20 @@ func scanWidget(values map[string]interface{}) (*models.Widget, error) {
 		castedValue := common.InterfaceToString(value)
 
 		m.ContentConfig = castedValue
+
+	}
+
+	if value, ok := values["container_config"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ContainerConfig = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
@@ -272,6 +295,7 @@ func ListWidget(tx *sql.Tx, spec *common.ListSpec) ([]*models.Widget, error) {
 	spec.Table = "widget"
 	spec.Fields = WidgetFields
 	spec.RefFields = WidgetRefFields
+	spec.BackRefFields = WidgetBackRefFields
 	result := models.MakeWidgetSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

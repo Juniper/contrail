@@ -10,8 +10,6 @@ type SecurityLoggingObjectRuleEntryType struct {
 	Rate     int    `json:"rate"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *SecurityLoggingObjectRuleEntryType) String() string {
 	b, _ := json.Marshal(model)
@@ -33,10 +31,10 @@ func InterfaceToSecurityLoggingObjectRuleEntryType(iData interface{}) *SecurityL
 	return &SecurityLoggingObjectRuleEntryType{
 		RuleUUID: data["rule_uuid"].(string),
 
-		//{"Title":"","Description":"Rule UUID of network policy or security-group. When this is absent it implies all rules of security-group or network-policy","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"RuleUUID","GoType":"string","GoPremitive":true}
+		//{"description":"Rule UUID of network policy or security-group. When this is absent it implies all rules of security-group or network-policy","type":"string"}
 		Rate: data["rate"].(int),
 
-		//{"Title":"","Description":"Rate at which sessions are logged. When rates are specified at multiple levels, the rate which specifies highest frequency is selected","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Rate","GoType":"int","GoPremitive":true}
+		//{"description":"Rate at which sessions are logged. When rates are specified at multiple levels, the rate which specifies highest frequency is selected","type":"integer"}
 
 	}
 }

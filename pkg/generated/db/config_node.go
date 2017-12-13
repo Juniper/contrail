@@ -11,36 +11,41 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertConfigNodeQuery = "insert into `config_node` (`display_name`,`key_value_pair`,`global_access`,`share`,`owner`,`owner_access`,`uuid`,`config_node_ip_address`,`fq_name`,`creator`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`permissions_owner`,`permissions_owner_access`,`enable`,`description`,`created`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateConfigNodeQuery = "update `config_node` set `display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`uuid` = ?,`config_node_ip_address` = ?,`fq_name` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`enable` = ?,`description` = ?,`created` = ?;"
+const insertConfigNodeQuery = "insert into `config_node` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`config_node_ip_address`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateConfigNodeQuery = "update `config_node` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`config_node_ip_address` = ?,`key_value_pair` = ?;"
 const deleteConfigNodeQuery = "delete from `config_node` where uuid = ?"
 
 // ConfigNodeFields is db columns for ConfigNode
 var ConfigNodeFields = []string{
-	"display_name",
-	"key_value_pair",
-	"global_access",
-	"share",
-	"owner",
-	"owner_access",
 	"uuid",
-	"config_node_ip_address",
-	"fq_name",
-	"creator",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
 	"user_visible",
-	"last_modified",
-	"other_access",
-	"group",
-	"group_access",
-	"permissions_owner",
 	"permissions_owner_access",
+	"permissions_owner",
+	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
+	"creator",
 	"created",
+	"fq_name",
+	"display_name",
+	"config_node_ip_address",
+	"key_value_pair",
 }
 
 // ConfigNodeRefFields is db reference fields for ConfigNode
 var ConfigNodeRefFields = map[string][]string{}
+
+// ConfigNodeBackRefFields is db back reference fields for ConfigNode
+var ConfigNodeBackRefFields = map[string][]string{}
 
 // CreateConfigNode inserts ConfigNode to DB
 func CreateConfigNode(tx *sql.Tx, model *models.ConfigNode) error {
@@ -54,26 +59,28 @@ func CreateConfigNode(tx *sql.Tx, model *models.ConfigNode) error {
 		"model": model,
 		"query": insertConfigNodeQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.GlobalAccess),
+	_, err = stmt.Exec(string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
-		string(model.UUID),
-		string(model.ConfigNodeIPAddress),
-		common.MustJSON(model.FQName),
-		string(model.IDPerms.Creator),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created))
+		string(model.IDPerms.Creator),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		string(model.ConfigNodeIPAddress),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -87,39 +94,17 @@ func CreateConfigNode(tx *sql.Tx, model *models.ConfigNode) error {
 func scanConfigNode(values map[string]interface{}) (*models.ConfigNode, error) {
 	m := models.MakeConfigNode()
 
-	if value, ok := values["display_name"]; ok {
+	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.UUID = castedValue
 
 	}
 
 	if value, ok := values["share"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
 
 	}
 
@@ -131,33 +116,35 @@ func scanConfigNode(values map[string]interface{}) (*models.ConfigNode, error) {
 
 	}
 
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["owner"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.UUID = castedValue
+		m.Perms2.Owner = castedValue
 
 	}
 
-	if value, ok := values["config_node_ip_address"]; ok {
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.ConfigNodeIPAddress = models.IpAddressType(castedValue)
+		m.ParentUUID = castedValue
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["creator"]; ok {
+	if value, ok := values["parent_type"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Creator = castedValue
+		m.ParentType = castedValue
 
 	}
 
@@ -169,35 +156,11 @@ func scanConfigNode(values map[string]interface{}) (*models.ConfigNode, error) {
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["other_access"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
@@ -209,11 +172,35 @@ func scanConfigNode(values map[string]interface{}) (*models.ConfigNode, error) {
 
 	}
 
-	if value, ok := values["permissions_owner_access"]; ok {
+	if value, ok := values["other_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -233,11 +220,47 @@ func scanConfigNode(values map[string]interface{}) (*models.ConfigNode, error) {
 
 	}
 
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
 	if value, ok := values["created"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["config_node_ip_address"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ConfigNodeIPAddress = models.IpAddressType(castedValue)
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
@@ -252,6 +275,7 @@ func ListConfigNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.ConfigNode, er
 	spec.Table = "config_node"
 	spec.Fields = ConfigNodeFields
 	spec.RefFields = ConfigNodeRefFields
+	spec.BackRefFields = ConfigNodeBackRefFields
 	result := models.MakeConfigNodeSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

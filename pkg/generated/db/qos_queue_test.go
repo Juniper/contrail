@@ -11,9 +11,16 @@ import (
 
 func TestQosQueue(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "qos_queue")
+	defer func() {
+		common.ClearTable(db, "qos_queue")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeQosQueue()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateQosQueue(tx, model)

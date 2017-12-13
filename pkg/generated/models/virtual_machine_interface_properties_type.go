@@ -12,8 +12,6 @@ type VirtualMachineInterfacePropertiesType struct {
 	ServiceInterfaceType ServiceInterfaceType `json:"service_interface_type"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *VirtualMachineInterfacePropertiesType) String() string {
 	b, _ := json.Marshal(model)
@@ -24,10 +22,10 @@ func (model *VirtualMachineInterfacePropertiesType) String() string {
 func MakeVirtualMachineInterfacePropertiesType() *VirtualMachineInterfacePropertiesType {
 	return &VirtualMachineInterfacePropertiesType{
 		//TODO(nati): Apply default
-		LocalPreference:      0,
-		InterfaceMirror:      MakeInterfaceMirrorType(),
 		ServiceInterfaceType: MakeServiceInterfaceType(),
 		SubInterfaceVlanTag:  0,
+		LocalPreference:      0,
+		InterfaceMirror:      MakeInterfaceMirrorType(),
 	}
 }
 
@@ -35,18 +33,18 @@ func MakeVirtualMachineInterfacePropertiesType() *VirtualMachineInterfacePropert
 func InterfaceToVirtualMachineInterfacePropertiesType(iData interface{}) *VirtualMachineInterfacePropertiesType {
 	data := iData.(map[string]interface{})
 	return &VirtualMachineInterfacePropertiesType{
-		SubInterfaceVlanTag: data["sub_interface_vlan_tag"].(int),
-
-		//{"Title":"","Description":"802.1Q VLAN tag to be used if this interface is sub-interface for some other interface.","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"SubInterfaceVlanTag","GoType":"int","GoPremitive":true}
-		LocalPreference: data["local_preference"].(int),
-
-		//{"Title":"","Description":"BGP route local preference for routes representing this interface, higher value is higher preference","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"LocalPreference","GoType":"int","GoPremitive":true}
-		InterfaceMirror: InterfaceToInterfaceMirrorType(data["interface_mirror"]),
-
-		//{"Title":"","Description":"Interface Mirror configuration","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"object","Permission":null,"Properties":{"mirror_to":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"object","Permission":null,"Properties":{"analyzer_ip_address":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"AnalyzerIPAddress","GoType":"string","GoPremitive":true},"analyzer_mac_address":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"AnalyzerMacAddress","GoType":"string","GoPremitive":true},"analyzer_name":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"AnalyzerName","GoType":"string","GoPremitive":true},"encapsulation":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Encapsulation","GoType":"string","GoPremitive":true},"juniper_header":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"boolean","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"JuniperHeader","GoType":"bool","GoPremitive":true},"nh_mode":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["dynamic","static"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/NHModeType","CollectionType":"","Column":"","Item":null,"GoName":"NHMode","GoType":"NHModeType","GoPremitive":false},"nic_assisted_mirroring":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"boolean","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"NicAssistedMirroring","GoType":"bool","GoPremitive":true},"nic_assisted_mirroring_vlan":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":1,"Maximum":4094,"Ref":"types.json#/definitions/VlanIdType","CollectionType":"","Column":"","Item":null,"GoName":"NicAssistedMirroringVlan","GoType":"VlanIdType","GoPremitive":false},"routing_instance":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"RoutingInstance","GoType":"string","GoPremitive":true},"static_nh_header":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"object","Permission":null,"Properties":{"vni":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":1,"Maximum":16777215,"Ref":"types.json#/definitions/VxlanNetworkIdentifierType","CollectionType":"","Column":"","Item":null,"GoName":"Vni","GoType":"VxlanNetworkIdentifierType","GoPremitive":false},"vtep_dst_ip_address":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"VtepDSTIPAddress","GoType":"string","GoPremitive":true},"vtep_dst_mac_address":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"VtepDSTMacAddress","GoType":"string","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/StaticMirrorNhType","CollectionType":"","Column":"","Item":null,"GoName":"StaticNHHeader","GoType":"StaticMirrorNhType","GoPremitive":false},"udp_port":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"UDPPort","GoType":"int","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/MirrorActionType","CollectionType":"","Column":"","Item":null,"GoName":"MirrorTo","GoType":"MirrorActionType","GoPremitive":false},"traffic_direction":{"Title":"","Description":"","SQL":"","Default":"both","Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":["ingress","egress","both"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/TrafficDirectionType","CollectionType":"","Column":"","Item":null,"GoName":"TrafficDirection","GoType":"TrafficDirectionType","GoPremitive":false}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/InterfaceMirrorType","CollectionType":"","Column":"","Item":null,"GoName":"InterfaceMirror","GoType":"InterfaceMirrorType","GoPremitive":false}
 		ServiceInterfaceType: InterfaceToServiceInterfaceType(data["service_interface_type"]),
 
-		//{"Title":"","Description":"This interface belongs to Service Instance and is tagged as left, right or other","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/ServiceInterfaceType","CollectionType":"","Column":"","Item":null,"GoName":"ServiceInterfaceType","GoType":"ServiceInterfaceType","GoPremitive":false}
+		//{"description":"This interface belongs to Service Instance and is tagged as left, right or other","type":"string"}
+		SubInterfaceVlanTag: data["sub_interface_vlan_tag"].(int),
+
+		//{"description":"802.1Q VLAN tag to be used if this interface is sub-interface for some other interface.","type":"integer"}
+		LocalPreference: data["local_preference"].(int),
+
+		//{"description":"BGP route local preference for routes representing this interface, higher value is higher preference","type":"integer"}
+		InterfaceMirror: InterfaceToInterfaceMirrorType(data["interface_mirror"]),
+
+		//{"description":"Interface Mirror configuration","type":"object","properties":{"mirror_to":{"type":"object","properties":{"analyzer_ip_address":{"type":"string"},"analyzer_mac_address":{"type":"string"},"analyzer_name":{"type":"string"},"encapsulation":{"type":"string"},"juniper_header":{"type":"boolean"},"nh_mode":{"type":"string","enum":["dynamic","static"]},"nic_assisted_mirroring":{"type":"boolean"},"nic_assisted_mirroring_vlan":{"type":"integer","minimum":1,"maximum":4094},"routing_instance":{"type":"string"},"static_nh_header":{"type":"object","properties":{"vni":{"type":"integer","minimum":1,"maximum":16777215},"vtep_dst_ip_address":{"type":"string"},"vtep_dst_mac_address":{"type":"string"}}},"udp_port":{"type":"integer"}}},"traffic_direction":{"default":"both","type":"string","enum":["ingress","egress","both"]}}}
 
 	}
 }

@@ -11,9 +11,16 @@ import (
 
 func TestOpenstackCluster(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "openstack_cluster")
+	defer func() {
+		common.ClearTable(db, "openstack_cluster")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeOpenstackCluster()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateOpenstackCluster(tx, model)

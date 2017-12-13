@@ -6,14 +6,12 @@ import "encoding/json"
 
 // PermType
 type PermType struct {
+	OwnerAccess AccessType `json:"owner_access"`
 	OtherAccess AccessType `json:"other_access"`
 	Group       string     `json:"group"`
 	GroupAccess AccessType `json:"group_access"`
 	Owner       string     `json:"owner"`
-	OwnerAccess AccessType `json:"owner_access"`
 }
-
-//  parents relation object
 
 // String returns json representation of the object
 func (model *PermType) String() string {
@@ -25,11 +23,11 @@ func (model *PermType) String() string {
 func MakePermType() *PermType {
 	return &PermType{
 		//TODO(nati): Apply default
-		GroupAccess: MakeAccessType(),
 		Owner:       "",
 		OwnerAccess: MakeAccessType(),
 		OtherAccess: MakeAccessType(),
 		Group:       "",
+		GroupAccess: MakeAccessType(),
 	}
 }
 
@@ -39,19 +37,19 @@ func InterfaceToPermType(iData interface{}) *PermType {
 	return &PermType{
 		Owner: data["owner"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Owner","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 		OwnerAccess: InterfaceToAccessType(data["owner_access"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"","Item":null,"GoName":"OwnerAccess","GoType":"AccessType","GoPremitive":false}
+		//{"type":"integer","minimum":0,"maximum":7}
 		OtherAccess: InterfaceToAccessType(data["other_access"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"","Item":null,"GoName":"OtherAccess","GoType":"AccessType","GoPremitive":false}
+		//{"type":"integer","minimum":0,"maximum":7}
 		Group: data["group"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Group","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 		GroupAccess: InterfaceToAccessType(data["group_access"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"","Item":null,"GoName":"GroupAccess","GoType":"AccessType","GoPremitive":false}
+		//{"type":"integer","minimum":0,"maximum":7}
 
 	}
 }

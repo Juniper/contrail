@@ -11,9 +11,16 @@ import (
 
 func TestDashboard(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "dashboard")
+	defer func() {
+		common.ClearTable(db, "dashboard")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeDashboard()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateDashboard(tx, model)

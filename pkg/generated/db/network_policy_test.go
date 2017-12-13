@@ -11,9 +11,16 @@ import (
 
 func TestNetworkPolicy(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "network_policy")
+	defer func() {
+		common.ClearTable(db, "network_policy")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeNetworkPolicy()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateNetworkPolicy(tx, model)

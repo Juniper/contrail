@@ -8,9 +8,16 @@ import ("fmt"
 
 func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
     t.Parallel()
+    db := testDB
+    common.UseTable(db, "{{ schema.ID }}")
+    defer func(){
+        common.ClearTable(db, "{{ schema.ID }}")
+        if p := recover(); p != nil {
+			panic(p)
+		}
+    }()
     model := models.Make{{ schema.JSONSchema.GoName }}()
     model.UUID = "dummy_uuid"
-    db := testDB
 
     err := common.DoInTransaction(db, func (tx *sql.Tx) error {
         return Create{{ schema.JSONSchema.GoName }}(tx, model)

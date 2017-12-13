@@ -11,9 +11,16 @@ import (
 
 func TestServiceHealthCheck(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "service_health_check")
+	defer func() {
+		common.ClearTable(db, "service_health_check")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeServiceHealthCheck()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateServiceHealthCheck(tx, model)

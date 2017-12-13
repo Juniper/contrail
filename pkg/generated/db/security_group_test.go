@@ -11,9 +11,16 @@ import (
 
 func TestSecurityGroup(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "security_group")
+	defer func() {
+		common.ClearTable(db, "security_group")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeSecurityGroup()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateSecurityGroup(tx, model)

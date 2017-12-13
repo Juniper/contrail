@@ -11,38 +11,43 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertQosQueueQuery = "insert into `qos_queue` (`qos_queue_identifier`,`max_bandwidth`,`display_name`,`key_value_pair`,`global_access`,`share`,`owner`,`owner_access`,`uuid`,`min_bandwidth`,`fq_name`,`creator`,`user_visible`,`last_modified`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateQosQueueQuery = "update `qos_queue` set `qos_queue_identifier` = ?,`max_bandwidth` = ?,`display_name` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`uuid` = ?,`min_bandwidth` = ?,`fq_name` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?;"
+const insertQosQueueQuery = "insert into `qos_queue` (`uuid`,`qos_queue_identifier`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`min_bandwidth`,`max_bandwidth`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateQosQueueQuery = "update `qos_queue` set `uuid` = ?,`qos_queue_identifier` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`min_bandwidth` = ?,`max_bandwidth` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteQosQueueQuery = "delete from `qos_queue` where uuid = ?"
 
 // QosQueueFields is db columns for QosQueue
 var QosQueueFields = []string{
-	"qos_queue_identifier",
-	"max_bandwidth",
-	"display_name",
-	"key_value_pair",
-	"global_access",
-	"share",
-	"owner",
-	"owner_access",
 	"uuid",
+	"qos_queue_identifier",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
 	"min_bandwidth",
-	"fq_name",
-	"creator",
+	"max_bandwidth",
 	"user_visible",
-	"last_modified",
-	"permissions_owner",
 	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
-	"group",
 	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
+	"creator",
 	"created",
+	"fq_name",
+	"display_name",
+	"key_value_pair",
 }
 
 // QosQueueRefFields is db reference fields for QosQueue
 var QosQueueRefFields = map[string][]string{}
+
+// QosQueueBackRefFields is db back reference fields for QosQueue
+var QosQueueBackRefFields = map[string][]string{}
 
 // CreateQosQueue inserts QosQueue to DB
 func CreateQosQueue(tx *sql.Tx, model *models.QosQueue) error {
@@ -56,28 +61,30 @@ func CreateQosQueue(tx *sql.Tx, model *models.QosQueue) error {
 		"model": model,
 		"query": insertQosQueueQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(int(model.QosQueueIdentifier),
-		int(model.MaxBandwidth),
-		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.GlobalAccess),
+	_, err = stmt.Exec(string(model.UUID),
+		int(model.QosQueueIdentifier),
 		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
-		string(model.UUID),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		int(model.MinBandwidth),
-		common.MustJSON(model.FQName),
-		string(model.IDPerms.Creator),
+		int(model.MaxBandwidth),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created))
+		string(model.IDPerms.Creator),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -91,6 +98,14 @@ func CreateQosQueue(tx *sql.Tx, model *models.QosQueue) error {
 func scanQosQueue(values map[string]interface{}) (*models.QosQueue, error) {
 	m := models.MakeQosQueue()
 
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
 	if value, ok := values["qos_queue_identifier"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
@@ -99,47 +114,9 @@ func scanQosQueue(values map[string]interface{}) (*models.QosQueue, error) {
 
 	}
 
-	if value, ok := values["max_bandwidth"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.MaxBandwidth = castedValue
-
-	}
-
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
 	if value, ok := values["share"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
 
 	}
 
@@ -151,11 +128,35 @@ func scanQosQueue(values map[string]interface{}) (*models.QosQueue, error) {
 
 	}
 
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["owner"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.UUID = castedValue
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
 
 	}
 
@@ -167,17 +168,11 @@ func scanQosQueue(values map[string]interface{}) (*models.QosQueue, error) {
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["max_bandwidth"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
+		castedValue := common.InterfaceToInt(value)
 
-	}
-
-	if value, ok := values["creator"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.MaxBandwidth = castedValue
 
 	}
 
@@ -189,11 +184,11 @@ func scanQosQueue(values map[string]interface{}) (*models.QosQueue, error) {
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := common.InterfaceToString(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
@@ -205,19 +200,19 @@ func scanQosQueue(values map[string]interface{}) (*models.QosQueue, error) {
 
 	}
 
-	if value, ok := values["permissions_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
 	if value, ok := values["other_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
 
 	}
 
@@ -229,11 +224,11 @@ func scanQosQueue(values map[string]interface{}) (*models.QosQueue, error) {
 
 	}
 
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -253,11 +248,39 @@ func scanQosQueue(values map[string]interface{}) (*models.QosQueue, error) {
 
 	}
 
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
 	if value, ok := values["created"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
@@ -272,6 +295,7 @@ func ListQosQueue(tx *sql.Tx, spec *common.ListSpec) ([]*models.QosQueue, error)
 	spec.Table = "qos_queue"
 	spec.Fields = QosQueueFields
 	spec.RefFields = QosQueueRefFields
+	spec.BackRefFields = QosQueueBackRefFields
 	result := models.MakeQosQueueSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

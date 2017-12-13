@@ -11,9 +11,16 @@ import (
 
 func TestLoadbalancerHealthmonitor(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "loadbalancer_healthmonitor")
+	defer func() {
+		common.ClearTable(db, "loadbalancer_healthmonitor")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeLoadbalancerHealthmonitor()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateLoadbalancerHealthmonitor(tx, model)

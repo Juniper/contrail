@@ -6,12 +6,10 @@ import "encoding/json"
 
 // ControlTrafficDscpType
 type ControlTrafficDscpType struct {
-	Control   DscpValueType `json:"control"`
 	Analytics DscpValueType `json:"analytics"`
 	DNS       DscpValueType `json:"dns"`
+	Control   DscpValueType `json:"control"`
 }
-
-//  parents relation object
 
 // String returns json representation of the object
 func (model *ControlTrafficDscpType) String() string {
@@ -23,9 +21,9 @@ func (model *ControlTrafficDscpType) String() string {
 func MakeControlTrafficDscpType() *ControlTrafficDscpType {
 	return &ControlTrafficDscpType{
 		//TODO(nati): Apply default
+		Control:   MakeDscpValueType(),
 		Analytics: MakeDscpValueType(),
 		DNS:       MakeDscpValueType(),
-		Control:   MakeDscpValueType(),
 	}
 }
 
@@ -33,15 +31,15 @@ func MakeControlTrafficDscpType() *ControlTrafficDscpType {
 func InterfaceToControlTrafficDscpType(iData interface{}) *ControlTrafficDscpType {
 	data := iData.(map[string]interface{})
 	return &ControlTrafficDscpType{
-		Control: InterfaceToDscpValueType(data["control"]),
-
-		//{"Title":"","Description":"DSCP value for control protocols traffic","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":63,"Ref":"types.json#/definitions/DscpValueType","CollectionType":"","Column":"","Item":null,"GoName":"Control","GoType":"DscpValueType","GoPremitive":false}
 		Analytics: InterfaceToDscpValueType(data["analytics"]),
 
-		//{"Title":"","Description":"DSCP value for traffic towards analytics","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":63,"Ref":"types.json#/definitions/DscpValueType","CollectionType":"","Column":"","Item":null,"GoName":"Analytics","GoType":"DscpValueType","GoPremitive":false}
+		//{"description":"DSCP value for traffic towards analytics","type":"integer","minimum":0,"maximum":63}
 		DNS: InterfaceToDscpValueType(data["dns"]),
 
-		//{"Title":"","Description":"DSCP value for DNS traffic","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":63,"Ref":"types.json#/definitions/DscpValueType","CollectionType":"","Column":"","Item":null,"GoName":"DNS","GoType":"DscpValueType","GoPremitive":false}
+		//{"description":"DSCP value for DNS traffic","type":"integer","minimum":0,"maximum":63}
+		Control: InterfaceToDscpValueType(data["control"]),
+
+		//{"description":"DSCP value for control protocols traffic","type":"integer","minimum":0,"maximum":63}
 
 	}
 }

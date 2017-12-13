@@ -11,9 +11,16 @@ import (
 
 func TestLoadbalancerListener(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "loadbalancer_listener")
+	defer func() {
+		common.ClearTable(db, "loadbalancer_listener")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeLoadbalancerListener()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateLoadbalancerListener(tx, model)

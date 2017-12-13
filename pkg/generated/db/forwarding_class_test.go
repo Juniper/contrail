@@ -11,9 +11,16 @@ import (
 
 func TestForwardingClass(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "forwarding_class")
+	defer func() {
+		common.ClearTable(db, "forwarding_class")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeForwardingClass()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateForwardingClass(tx, model)

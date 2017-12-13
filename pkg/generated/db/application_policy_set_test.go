@@ -11,9 +11,16 @@ import (
 
 func TestApplicationPolicySet(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "application_policy_set")
+	defer func() {
+		common.ClearTable(db, "application_policy_set")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeApplicationPolicySet()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateApplicationPolicySet(tx, model)

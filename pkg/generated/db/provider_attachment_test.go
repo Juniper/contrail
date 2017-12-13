@@ -11,9 +11,16 @@ import (
 
 func TestProviderAttachment(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "provider_attachment")
+	defer func() {
+		common.ClearTable(db, "provider_attachment")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeProviderAttachment()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateProviderAttachment(tx, model)

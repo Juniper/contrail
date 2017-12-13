@@ -11,9 +11,16 @@ import (
 
 func TestAlarm(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "alarm")
+	defer func() {
+		common.ClearTable(db, "alarm")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeAlarm()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateAlarm(tx, model)

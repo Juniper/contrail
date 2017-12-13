@@ -11,9 +11,16 @@ import (
 
 func TestPortTuple(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "port_tuple")
+	defer func() {
+		common.ClearTable(db, "port_tuple")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakePortTuple()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreatePortTuple(tx, model)

@@ -11,9 +11,16 @@ import (
 
 func TestFloatingIPPool(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "floating_ip_pool")
+	defer func() {
+		common.ClearTable(db, "floating_ip_pool")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeFloatingIPPool()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateFloatingIPPool(tx, model)

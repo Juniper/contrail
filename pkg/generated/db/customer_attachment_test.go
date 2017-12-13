@@ -11,9 +11,16 @@ import (
 
 func TestCustomerAttachment(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "customer_attachment")
+	defer func() {
+		common.ClearTable(db, "customer_attachment")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeCustomerAttachment()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateCustomerAttachment(tx, model)

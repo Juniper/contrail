@@ -11,33 +11,35 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertServiceConnectionModuleQuery = "insert into `service_connection_module` (`display_name`,`key_value_pair`,`service_type`,`e2_service`,`owner_access`,`global_access`,`share`,`owner`,`uuid`,`fq_name`,`created`,`creator`,`user_visible`,`last_modified`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`permissions_owner`,`enable`,`description`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateServiceConnectionModuleQuery = "update `service_connection_module` set `display_name` = ?,`key_value_pair` = ?,`service_type` = ?,`e2_service` = ?,`owner_access` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`uuid` = ?,`fq_name` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`enable` = ?,`description` = ?;"
+const insertServiceConnectionModuleQuery = "insert into `service_connection_module` (`uuid`,`service_type`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`e2_service`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateServiceConnectionModuleQuery = "update `service_connection_module` set `uuid` = ?,`service_type` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`e2_service` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteServiceConnectionModuleQuery = "delete from `service_connection_module` where uuid = ?"
 
 // ServiceConnectionModuleFields is db columns for ServiceConnectionModule
 var ServiceConnectionModuleFields = []string{
-	"display_name",
-	"key_value_pair",
-	"service_type",
-	"e2_service",
-	"owner_access",
-	"global_access",
-	"share",
-	"owner",
 	"uuid",
-	"fq_name",
-	"created",
-	"creator",
+	"service_type",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
 	"user_visible",
-	"last_modified",
 	"permissions_owner_access",
-	"other_access",
-	"group",
-	"group_access",
 	"permissions_owner",
+	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
+	"creator",
+	"created",
+	"fq_name",
+	"e2_service",
+	"display_name",
+	"key_value_pair",
 }
 
 // ServiceConnectionModuleRefFields is db reference fields for ServiceConnectionModule
@@ -48,6 +50,9 @@ var ServiceConnectionModuleRefFields = map[string][]string{
 
 	},
 }
+
+// ServiceConnectionModuleBackRefFields is db back reference fields for ServiceConnectionModule
+var ServiceConnectionModuleBackRefFields = map[string][]string{}
 
 const insertServiceConnectionModuleServiceObjectQuery = "insert into `ref_service_connection_module_service_object` (`from`, `to` ) values (?, ?);"
 
@@ -63,27 +68,29 @@ func CreateServiceConnectionModule(tx *sql.Tx, model *models.ServiceConnectionMo
 		"model": model,
 		"query": insertServiceConnectionModuleQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
+	_, err = stmt.Exec(string(model.UUID),
 		string(model.ServiceType),
-		string(model.E2Service),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
 		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
-		string(model.UUID),
-		common.MustJSON(model.FQName),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
 		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description))
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.E2Service),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -110,17 +117,11 @@ func CreateServiceConnectionModule(tx *sql.Tx, model *models.ServiceConnectionMo
 func scanServiceConnectionModule(values map[string]interface{}) (*models.ServiceConnectionModule, error) {
 	m := models.MakeServiceConnectionModule()
 
-	if value, ok := values["display_name"]; ok {
+	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+		m.UUID = castedValue
 
 	}
 
@@ -132,11 +133,9 @@ func scanServiceConnectionModule(values map[string]interface{}) (*models.Service
 
 	}
 
-	if value, ok := values["e2_service"]; ok {
+	if value, ok := values["share"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.E2Service = models.E2servicetype(castedValue)
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
 	}
 
@@ -148,20 +147,6 @@ func scanServiceConnectionModule(values map[string]interface{}) (*models.Service
 
 	}
 
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
 	if value, ok := values["owner"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -170,33 +155,27 @@ func scanServiceConnectionModule(values map[string]interface{}) (*models.Service
 
 	}
 
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["global_access"]; ok {
 
-		castedValue := common.InterfaceToString(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.UUID = castedValue
-
-	}
-
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["created"]; ok {
+	if value, ok := values["parent_uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Created = castedValue
+		m.ParentUUID = castedValue
 
 	}
 
-	if value, ok := values["creator"]; ok {
+	if value, ok := values["parent_type"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Creator = castedValue
+		m.ParentType = castedValue
 
 	}
 
@@ -208,19 +187,19 @@ func scanServiceConnectionModule(values map[string]interface{}) (*models.Service
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
 	if value, ok := values["permissions_owner_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
 
 	}
 
@@ -232,14 +211,6 @@ func scanServiceConnectionModule(values map[string]interface{}) (*models.Service
 
 	}
 
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
 	if value, ok := values["group_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
@@ -248,11 +219,19 @@ func scanServiceConnectionModule(values map[string]interface{}) (*models.Service
 
 	}
 
-	if value, ok := values["permissions_owner"]; ok {
+	if value, ok := values["group"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -269,6 +248,50 @@ func scanServiceConnectionModule(values map[string]interface{}) (*models.Service
 		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["e2_service"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.E2Service = models.E2servicetype(castedValue)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
@@ -302,6 +325,7 @@ func ListServiceConnectionModule(tx *sql.Tx, spec *common.ListSpec) ([]*models.S
 	spec.Table = "service_connection_module"
 	spec.Fields = ServiceConnectionModuleFields
 	spec.RefFields = ServiceConnectionModuleRefFields
+	spec.BackRefFields = ServiceConnectionModuleBackRefFields
 	result := models.MakeServiceConnectionModuleSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

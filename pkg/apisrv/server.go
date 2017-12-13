@@ -2,9 +2,11 @@ package apisrv
 
 import (
 	"database/sql"
+	"net/url"
 	"time"
 
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 
@@ -47,6 +49,9 @@ func (s *Server) init() error {
 
 	e := s.Echo
 
+	e.Use(middleware.Recover())
+	e.Use(middleware.BodyLimit("10M"))
+
 	for _, a := range api.APIs {
 		a.SetDB(s.DB)
 		common.RegisterAPI(a)
@@ -56,6 +61,51 @@ func (s *Server) init() error {
 	writeTimeout := viper.GetInt("server.write_timeout")
 	e.Server.ReadTimeout = time.Duration(readTimeout) * time.Second
 	e.Server.WriteTimeout = time.Duration(writeTimeout) * time.Second
+
+	cors := viper.GetString("cors")
+
+	if cors != "" {
+		log.Printf("Enabling CORS for %s", cors)
+		if cors == "*" {
+			log.Printf("cors for * have security issue. DO NOT USE THIS IN PRODUCTION")
+		}
+		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+			AllowOrigins:  []string{cors},
+			AllowMethods:  []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
+			AllowHeaders:  []string{"X-Auth-Token", "Content-Type"},
+			ExposeHeaders: []string{"X-Total-Count"},
+		}))
+	}
+
+	staticPath := viper.GetStringMapString("static_files")
+	if staticPath != nil {
+		for prefix, root := range staticPath {
+			e.Static(prefix, root)
+		}
+	}
+
+	proxy := viper.GetStringMapStringSlice("proxy")
+	if proxy != nil {
+		for prefix, targetStrings := range proxy {
+			targets := []*middleware.ProxyTarget{}
+			for _, targetString := range targetStrings {
+				targetURL, err := url.Parse(targetString)
+				if err != nil {
+					e.Logger.Fatal(err)
+				}
+				targets = append(targets,
+					&middleware.ProxyTarget{
+						URL: targetURL,
+					})
+			}
+
+			g := e.Group(prefix)
+			g.Use(removePathPrefix(prefix))
+			g.Use(middleware.Proxy(&middleware.RoundRobinBalancer{
+				Targets: targets}))
+		}
+
+	}
 	return nil
 }
 

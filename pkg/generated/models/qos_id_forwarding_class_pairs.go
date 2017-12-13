@@ -9,8 +9,6 @@ type QosIdForwardingClassPairs struct {
 	QosIDForwardingClassPair []*QosIdForwardingClassPair `json:"qos_id_forwarding_class_pair"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *QosIdForwardingClassPairs) String() string {
 	b, _ := json.Marshal(model)
@@ -33,7 +31,7 @@ func InterfaceToQosIdForwardingClassPairs(iData interface{}) *QosIdForwardingCla
 
 		QosIDForwardingClassPair: InterfaceToQosIdForwardingClassPairSlice(data["qos_id_forwarding_class_pair"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"object","Permission":null,"Properties":{"forwarding_class_id":{"Title":"","Description":"","SQL":"","Default":"0","Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":255,"Ref":"types.json#/definitions/ForwardingClassId","CollectionType":"","Column":"","Item":null,"GoName":"ForwardingClassID","GoType":"ForwardingClassId","GoPremitive":false},"key":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Key","GoType":"int","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/QosIdForwardingClassPair","CollectionType":"","Column":"","Item":null,"GoName":"QosIDForwardingClassPair","GoType":"QosIdForwardingClassPair","GoPremitive":false},"GoName":"QosIDForwardingClassPair","GoType":"[]*QosIdForwardingClassPair","GoPremitive":true}
+		//{"type":"array","item":{"type":"object","properties":{"forwarding_class_id":{"default":"0","type":"integer","minimum":0,"maximum":255},"key":{"type":"integer"}}}}
 
 	}
 }

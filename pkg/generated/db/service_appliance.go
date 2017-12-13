@@ -11,35 +11,37 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertServiceApplianceQuery = "insert into `service_appliance` (`username`,`password`,`key_value_pair`,`display_name`,`creator`,`user_visible`,`last_modified`,`group_access`,`owner`,`owner_access`,`other_access`,`group`,`enable`,`description`,`created`,`service_appliance_ip_address`,`annotations_key_value_pair`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateServiceApplianceQuery = "update `service_appliance` set `username` = ?,`password` = ?,`key_value_pair` = ?,`display_name` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`enable` = ?,`description` = ?,`created` = ?,`service_appliance_ip_address` = ?,`annotations_key_value_pair` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?,`uuid` = ?,`fq_name` = ?;"
+const insertServiceApplianceQuery = "insert into `service_appliance` (`uuid`,`username`,`password`,`key_value_pair`,`service_appliance_ip_address`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`annotations_key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateServiceApplianceQuery = "update `service_appliance` set `uuid` = ?,`username` = ?,`password` = ?,`key_value_pair` = ?,`service_appliance_ip_address` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`annotations_key_value_pair` = ?;"
 const deleteServiceApplianceQuery = "delete from `service_appliance` where uuid = ?"
 
 // ServiceApplianceFields is db columns for ServiceAppliance
 var ServiceApplianceFields = []string{
+	"uuid",
 	"username",
 	"password",
 	"key_value_pair",
-	"display_name",
-	"creator",
-	"user_visible",
-	"last_modified",
-	"group_access",
-	"owner",
+	"service_appliance_ip_address",
+	"share",
 	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
+	"group_access",
 	"group",
+	"last_modified",
 	"enable",
 	"description",
+	"creator",
 	"created",
-	"service_appliance_ip_address",
-	"annotations_key_value_pair",
-	"share",
-	"perms2_owner",
-	"perms2_owner_access",
-	"global_access",
-	"uuid",
 	"fq_name",
+	"display_name",
+	"annotations_key_value_pair",
 }
 
 // ServiceApplianceRefFields is db reference fields for ServiceAppliance
@@ -50,6 +52,9 @@ var ServiceApplianceRefFields = map[string][]string{
 		"interface_type",
 	},
 }
+
+// ServiceApplianceBackRefFields is db back reference fields for ServiceAppliance
+var ServiceApplianceBackRefFields = map[string][]string{}
 
 const insertServiceAppliancePhysicalInterfaceQuery = "insert into `ref_service_appliance_physical_interface` (`from`, `to` ,`interface_type`) values (?, ?,?);"
 
@@ -65,29 +70,31 @@ func CreateServiceAppliance(tx *sql.Tx, model *models.ServiceAppliance) error {
 		"model": model,
 		"query": insertServiceApplianceQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.ServiceApplianceUserCredentials.Username),
+	_, err = stmt.Exec(string(model.UUID),
+		string(model.ServiceApplianceUserCredentials.Username),
 		string(model.ServiceApplianceUserCredentials.Password),
 		common.MustJSON(model.ServiceApplianceProperties.KeyValuePair),
-		string(model.DisplayName),
-		string(model.IDPerms.Creator),
+		string(model.ServiceApplianceIPAddress),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
 		string(model.IDPerms.Created),
-		string(model.ServiceApplianceIPAddress),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess),
-		string(model.UUID),
-		common.MustJSON(model.FQName))
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -118,6 +125,14 @@ func CreateServiceAppliance(tx *sql.Tx, model *models.ServiceAppliance) error {
 func scanServiceAppliance(values map[string]interface{}) (*models.ServiceAppliance, error) {
 	m := models.MakeServiceAppliance()
 
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
 	if value, ok := values["username"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -140,19 +155,57 @@ func scanServiceAppliance(values map[string]interface{}) (*models.ServiceApplian
 
 	}
 
-	if value, ok := values["display_name"]; ok {
+	if value, ok := values["service_appliance_ip_address"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.DisplayName = castedValue
+		m.ServiceApplianceIPAddress = models.IpAddressType(castedValue)
 
 	}
 
-	if value, ok := values["creator"]; ok {
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Creator = castedValue
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
 
 	}
 
@@ -164,35 +217,19 @@ func scanServiceAppliance(values map[string]interface{}) (*models.ServiceApplian
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
 
 	}
 
@@ -204,11 +241,27 @@ func scanServiceAppliance(values map[string]interface{}) (*models.ServiceApplian
 
 	}
 
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["group"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
 		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -228,6 +281,14 @@ func scanServiceAppliance(values map[string]interface{}) (*models.ServiceApplian
 
 	}
 
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
 	if value, ok := values["created"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -236,61 +297,23 @@ func scanServiceAppliance(values map[string]interface{}) (*models.ServiceApplian
 
 	}
 
-	if value, ok := values["service_appliance_ip_address"]; ok {
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.ServiceApplianceIPAddress = models.IpAddressType(castedValue)
+		m.DisplayName = castedValue
 
 	}
 
 	if value, ok := values["annotations_key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
-
-	}
-
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
@@ -327,6 +350,7 @@ func ListServiceAppliance(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceA
 	spec.Table = "service_appliance"
 	spec.Fields = ServiceApplianceFields
 	spec.RefFields = ServiceApplianceRefFields
+	spec.BackRefFields = ServiceApplianceBackRefFields
 	result := models.MakeServiceApplianceSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

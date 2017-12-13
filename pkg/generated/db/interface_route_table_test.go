@@ -11,9 +11,16 @@ import (
 
 func TestInterfaceRouteTable(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "interface_route_table")
+	defer func() {
+		common.ClearTable(db, "interface_route_table")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeInterfaceRouteTable()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateInterfaceRouteTable(tx, model)

@@ -11,9 +11,16 @@ import (
 
 func TestNode(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "node")
+	defer func() {
+		common.ClearTable(db, "node")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeNode()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateNode(tx, model)

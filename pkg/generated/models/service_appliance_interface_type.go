@@ -9,8 +9,6 @@ type ServiceApplianceInterfaceType struct {
 	InterfaceType ServiceInterfaceType `json:"interface_type"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *ServiceApplianceInterfaceType) String() string {
 	b, _ := json.Marshal(model)
@@ -31,7 +29,7 @@ func InterfaceToServiceApplianceInterfaceType(iData interface{}) *ServiceApplian
 	return &ServiceApplianceInterfaceType{
 		InterfaceType: InterfaceToServiceInterfaceType(data["interface_type"]),
 
-		//{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/ServiceInterfaceType","CollectionType":"","Column":"interface_type","Item":null,"GoName":"InterfaceType","GoType":"ServiceInterfaceType","GoPremitive":false}
+		//{"type":"string"}
 
 	}
 }

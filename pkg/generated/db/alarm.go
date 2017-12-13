@@ -11,38 +11,43 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertAlarmQuery = "insert into `alarm` (`alarm_rules`,`alarm_severity`,`display_name`,`uve_key`,`user_visible`,`last_modified`,`other_access`,`group`,`group_access`,`owner`,`owner_access`,`enable`,`description`,`created`,`creator`,`key_value_pair`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`,`uuid`,`fq_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateAlarmQuery = "update `alarm` set `alarm_rules` = ?,`alarm_severity` = ?,`display_name` = ?,`uve_key` = ?,`user_visible` = ?,`last_modified` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`key_value_pair` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`uuid` = ?,`fq_name` = ?;"
+const insertAlarmQuery = "insert into `alarm` (`uve_key`,`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`,`alarm_severity`,`or_list`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateAlarmQuery = "update `alarm` set `uve_key` = ?,`uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?,`alarm_severity` = ?,`or_list` = ?;"
 const deleteAlarmQuery = "delete from `alarm` where uuid = ?"
 
 // AlarmFields is db columns for Alarm
 var AlarmFields = []string{
-	"alarm_rules",
-	"alarm_severity",
-	"display_name",
 	"uve_key",
-	"user_visible",
-	"last_modified",
-	"other_access",
-	"group",
-	"group_access",
-	"owner",
+	"uuid",
+	"share",
 	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
+	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
-	"created",
 	"creator",
-	"key_value_pair",
-	"global_access",
-	"share",
-	"perms2_owner",
-	"perms2_owner_access",
-	"uuid",
+	"created",
 	"fq_name",
+	"display_name",
+	"key_value_pair",
+	"alarm_severity",
+	"or_list",
 }
 
 // AlarmRefFields is db reference fields for Alarm
 var AlarmRefFields = map[string][]string{}
+
+// AlarmBackRefFields is db back reference fields for Alarm
+var AlarmBackRefFields = map[string][]string{}
 
 // CreateAlarm inserts Alarm to DB
 func CreateAlarm(tx *sql.Tx, model *models.Alarm) error {
@@ -56,28 +61,30 @@ func CreateAlarm(tx *sql.Tx, model *models.Alarm) error {
 		"model": model,
 		"query": insertAlarmQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(common.MustJSON(model.AlarmRules),
-		int(model.AlarmSeverity),
-		string(model.DisplayName),
-		common.MustJSON(model.UveKeys.UveKey),
+	_, err = stmt.Exec(common.MustJSON(model.UveKeys.UveKey),
+		string(model.UUID),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
 		common.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.GlobalAccess),
-		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		string(model.UUID),
-		common.MustJSON(model.FQName))
+		int(model.AlarmSeverity),
+		common.MustJSON(model.AlarmRules.OrList))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -91,31 +98,63 @@ func CreateAlarm(tx *sql.Tx, model *models.Alarm) error {
 func scanAlarm(values map[string]interface{}) (*models.Alarm, error) {
 	m := models.MakeAlarm()
 
-	if value, ok := values["alarm_rules"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.AlarmRules)
-
-	}
-
-	if value, ok := values["alarm_severity"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.AlarmSeverity = models.AlarmSeverity(castedValue)
-
-	}
-
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
-
-	}
-
 	if value, ok := values["uve_key"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.UveKeys.UveKey)
+
+	}
+
+	if value, ok := values["uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
 
 	}
 
@@ -127,11 +166,19 @@ func scanAlarm(values map[string]interface{}) (*models.Alarm, error) {
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.Permissions.Owner = castedValue
 
 	}
 
@@ -143,14 +190,6 @@ func scanAlarm(values map[string]interface{}) (*models.Alarm, error) {
 
 	}
 
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
 	if value, ok := values["group_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
@@ -159,19 +198,19 @@ func scanAlarm(values map[string]interface{}) (*models.Alarm, error) {
 
 	}
 
-	if value, ok := values["owner"]; ok {
+	if value, ok := values["group"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Group = castedValue
 
 	}
 
-	if value, ok := values["owner_access"]; ok {
+	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -191,6 +230,14 @@ func scanAlarm(values map[string]interface{}) (*models.Alarm, error) {
 
 	}
 
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
 	if value, ok := values["created"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -199,11 +246,17 @@ func scanAlarm(values map[string]interface{}) (*models.Alarm, error) {
 
 	}
 
-	if value, ok := values["creator"]; ok {
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Creator = castedValue
+		m.DisplayName = castedValue
 
 	}
 
@@ -213,47 +266,17 @@ func scanAlarm(values map[string]interface{}) (*models.Alarm, error) {
 
 	}
 
-	if value, ok := values["global_access"]; ok {
+	if value, ok := values["alarm_severity"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.AlarmSeverity = models.AlarmSeverity(castedValue)
 
 	}
 
-	if value, ok := values["share"]; ok {
+	if value, ok := values["or_list"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["uuid"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
-
-	}
-
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
+		json.Unmarshal(value.([]byte), &m.AlarmRules.OrList)
 
 	}
 
@@ -268,6 +291,7 @@ func ListAlarm(tx *sql.Tx, spec *common.ListSpec) ([]*models.Alarm, error) {
 	spec.Table = "alarm"
 	spec.Fields = AlarmFields
 	spec.RefFields = AlarmRefFields
+	spec.BackRefFields = AlarmBackRefFields
 	result := models.MakeAlarmSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

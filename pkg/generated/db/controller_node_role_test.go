@@ -11,9 +11,16 @@ import (
 
 func TestControllerNodeRole(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "controller_node_role")
+	defer func() {
+		common.ClearTable(db, "controller_node_role")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeControllerNodeRole()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateControllerNodeRole(tx, model)

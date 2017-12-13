@@ -11,9 +11,16 @@ import (
 
 func TestFirewallRule(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "firewall_rule")
+	defer func() {
+		common.ClearTable(db, "firewall_rule")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeFirewallRule()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateFirewallRule(tx, model)

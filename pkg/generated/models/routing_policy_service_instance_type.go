@@ -6,11 +6,9 @@ import "encoding/json"
 
 // RoutingPolicyServiceInstanceType
 type RoutingPolicyServiceInstanceType struct {
-	RightSequence string `json:"right_sequence"`
 	LeftSequence  string `json:"left_sequence"`
+	RightSequence string `json:"right_sequence"`
 }
-
-//  parents relation object
 
 // String returns json representation of the object
 func (model *RoutingPolicyServiceInstanceType) String() string {
@@ -22,8 +20,8 @@ func (model *RoutingPolicyServiceInstanceType) String() string {
 func MakeRoutingPolicyServiceInstanceType() *RoutingPolicyServiceInstanceType {
 	return &RoutingPolicyServiceInstanceType{
 		//TODO(nati): Apply default
-		RightSequence: "",
 		LeftSequence:  "",
+		RightSequence: "",
 	}
 }
 
@@ -33,10 +31,10 @@ func InterfaceToRoutingPolicyServiceInstanceType(iData interface{}) *RoutingPoli
 	return &RoutingPolicyServiceInstanceType{
 		RightSequence: data["right_sequence"].(string),
 
-		//{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"right_sequence","Item":null,"GoName":"RightSequence","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 		LeftSequence: data["left_sequence"].(string),
 
-		//{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"left_sequence","Item":null,"GoName":"LeftSequence","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 
 	}
 }

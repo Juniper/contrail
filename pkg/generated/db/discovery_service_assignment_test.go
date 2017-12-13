@@ -11,9 +11,16 @@ import (
 
 func TestDiscoveryServiceAssignment(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "discovery_service_assignment")
+	defer func() {
+		common.ClearTable(db, "discovery_service_assignment")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeDiscoveryServiceAssignment()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateDiscoveryServiceAssignment(tx, model)

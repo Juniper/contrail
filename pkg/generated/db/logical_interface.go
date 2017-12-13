@@ -11,33 +11,35 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertLogicalInterfaceQuery = "insert into `logical_interface` (`key_value_pair`,`global_access`,`share`,`owner`,`owner_access`,`logical_interface_vlan_tag`,`logical_interface_type`,`uuid`,`fq_name`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`display_name`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateLogicalInterfaceQuery = "update `logical_interface` set `key_value_pair` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`logical_interface_vlan_tag` = ?,`logical_interface_type` = ?,`uuid` = ?,`fq_name` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`display_name` = ?;"
+const insertLogicalInterfaceQuery = "insert into `logical_interface` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`logical_interface_vlan_tag`,`logical_interface_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateLogicalInterfaceQuery = "update `logical_interface` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`logical_interface_vlan_tag` = ?,`logical_interface_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteLogicalInterfaceQuery = "delete from `logical_interface` where uuid = ?"
 
 // LogicalInterfaceFields is db columns for LogicalInterface
 var LogicalInterfaceFields = []string{
-	"key_value_pair",
-	"global_access",
+	"uuid",
 	"share",
-	"owner",
 	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
 	"logical_interface_vlan_tag",
 	"logical_interface_type",
-	"uuid",
-	"fq_name",
-	"permissions_owner",
+	"user_visible",
 	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
-	"group",
 	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
-	"created",
 	"creator",
-	"user_visible",
-	"last_modified",
+	"created",
+	"fq_name",
 	"display_name",
+	"key_value_pair",
 }
 
 // LogicalInterfaceRefFields is db reference fields for LogicalInterface
@@ -48,6 +50,9 @@ var LogicalInterfaceRefFields = map[string][]string{
 
 	},
 }
+
+// LogicalInterfaceBackRefFields is db back reference fields for LogicalInterface
+var LogicalInterfaceBackRefFields = map[string][]string{}
 
 const insertLogicalInterfaceVirtualMachineInterfaceQuery = "insert into `ref_logical_interface_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
@@ -63,27 +68,29 @@ func CreateLogicalInterface(tx *sql.Tx, model *models.LogicalInterface) error {
 		"model": model,
 		"query": insertLogicalInterfaceQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(common.MustJSON(model.Annotations.KeyValuePair),
-		int(model.Perms2.GlobalAccess),
+	_, err = stmt.Exec(string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		int(model.LogicalInterfaceVlanTag),
 		string(model.LogicalInterfaceType),
-		string(model.UUID),
-		common.MustJSON(model.FQName),
-		string(model.IDPerms.Permissions.Owner),
+		bool(model.IDPerms.UserVisible),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
 		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		string(model.DisplayName))
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -110,23 +117,25 @@ func CreateLogicalInterface(tx *sql.Tx, model *models.LogicalInterface) error {
 func scanLogicalInterface(values map[string]interface{}) (*models.LogicalInterface, error) {
 	m := models.MakeLogicalInterface()
 
-	if value, ok := values["key_value_pair"]; ok {
+	if value, ok := values["uuid"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+		castedValue := common.InterfaceToString(value)
 
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.UUID = castedValue
 
 	}
 
 	if value, ok := values["share"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
@@ -138,11 +147,27 @@ func scanLogicalInterface(values map[string]interface{}) (*models.LogicalInterfa
 
 	}
 
-	if value, ok := values["owner_access"]; ok {
+	if value, ok := values["global_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
 
 	}
 
@@ -162,25 +187,11 @@ func scanLogicalInterface(values map[string]interface{}) (*models.LogicalInterfa
 
 	}
 
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["user_visible"]; ok {
 
-		castedValue := common.InterfaceToString(value)
+		castedValue := common.InterfaceToBool(value)
 
-		m.UUID = castedValue
-
-	}
-
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["permissions_owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.UserVisible = castedValue
 
 	}
 
@@ -192,11 +203,27 @@ func scanLogicalInterface(values map[string]interface{}) (*models.LogicalInterfa
 
 	}
 
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
 	if value, ok := values["other_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
 
 	}
 
@@ -208,11 +235,11 @@ func scanLogicalInterface(values map[string]interface{}) (*models.LogicalInterfa
 
 	}
 
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -232,14 +259,6 @@ func scanLogicalInterface(values map[string]interface{}) (*models.LogicalInterfa
 
 	}
 
-	if value, ok := values["created"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
 	if value, ok := values["creator"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -248,19 +267,17 @@ func scanLogicalInterface(values map[string]interface{}) (*models.LogicalInterfa
 
 	}
 
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
+	if value, ok := values["created"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
@@ -269,6 +286,12 @@ func scanLogicalInterface(values map[string]interface{}) (*models.LogicalInterfa
 		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
@@ -302,6 +325,7 @@ func ListLogicalInterface(tx *sql.Tx, spec *common.ListSpec) ([]*models.LogicalI
 	spec.Table = "logical_interface"
 	spec.Fields = LogicalInterfaceFields
 	spec.RefFields = LogicalInterfaceRefFields
+	spec.BackRefFields = LogicalInterfaceBackRefFields
 	result := models.MakeLogicalInterfaceSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

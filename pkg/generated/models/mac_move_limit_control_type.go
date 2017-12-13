@@ -11,8 +11,6 @@ type MACMoveLimitControlType struct {
 	MacMoveLimitAction MACLimitExceedActionType `json:"mac_move_limit_action"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *MACMoveLimitControlType) String() string {
 	b, _ := json.Marshal(model)
@@ -23,9 +21,9 @@ func (model *MACMoveLimitControlType) String() string {
 func MakeMACMoveLimitControlType() *MACMoveLimitControlType {
 	return &MACMoveLimitControlType{
 		//TODO(nati): Apply default
-		MacMoveTimeWindow:  MakeMACMoveTimeWindow(),
 		MacMoveLimit:       0,
 		MacMoveLimitAction: MakeMACLimitExceedActionType(),
+		MacMoveTimeWindow:  MakeMACMoveTimeWindow(),
 	}
 }
 
@@ -35,13 +33,13 @@ func InterfaceToMACMoveLimitControlType(iData interface{}) *MACMoveLimitControlT
 	return &MACMoveLimitControlType{
 		MacMoveTimeWindow: InterfaceToMACMoveTimeWindow(data["mac_move_time_window"]),
 
-		//{"Title":"","Description":"MAC move time window","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":1,"Maximum":60,"Ref":"types.json#/definitions/MACMoveTimeWindow","CollectionType":"","Column":"","Item":null,"GoName":"MacMoveTimeWindow","GoType":"MACMoveTimeWindow","GoPremitive":false}
+		//{"description":"MAC move time window","type":"integer","minimum":1,"maximum":60}
 		MacMoveLimit: data["mac_move_limit"].(int),
 
-		//{"Title":"","Description":"Number of MAC moves permitted in mac move time window","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"MacMoveLimit","GoType":"int","GoPremitive":true}
+		//{"description":"Number of MAC moves permitted in mac move time window","type":"integer"}
 		MacMoveLimitAction: InterfaceToMACLimitExceedActionType(data["mac_move_limit_action"]),
 
-		//{"Title":"","Description":"Action to be taken when MAC move limit exceeds","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["log","alarm","shutdown","drop"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/MACLimitExceedActionType","CollectionType":"","Column":"","Item":null,"GoName":"MacMoveLimitAction","GoType":"MACLimitExceedActionType","GoPremitive":false}
+		//{"description":"Action to be taken when MAC move limit exceeds","type":"string","enum":["log","alarm","shutdown","drop"]}
 
 	}
 }

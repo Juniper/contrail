@@ -6,13 +6,11 @@ import "encoding/json"
 
 // PermType2
 type PermType2 struct {
+	OwnerAccess  AccessType   `json:"owner_access"`
 	GlobalAccess AccessType   `json:"global_access"`
 	Share        []*ShareType `json:"share"`
 	Owner        string       `json:"owner"`
-	OwnerAccess  AccessType   `json:"owner_access"`
 }
-
-//  parents relation object
 
 // String returns json representation of the object
 func (model *PermType2) String() string {
@@ -38,17 +36,17 @@ func InterfaceToPermType2(iData interface{}) *PermType2 {
 	return &PermType2{
 		Owner: data["owner"].(string),
 
-		//{"Title":"","Description":"Owner tenant of the object","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Owner","GoType":"string","GoPremitive":true}
+		//{"description":"Owner tenant of the object","type":"string"}
 		OwnerAccess: InterfaceToAccessType(data["owner_access"]),
 
-		//{"Title":"","Description":"Owner permissions of the object","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"","Item":null,"GoName":"OwnerAccess","GoType":"AccessType","GoPremitive":false}
+		//{"description":"Owner permissions of the object","type":"integer","minimum":0,"maximum":7}
 		GlobalAccess: InterfaceToAccessType(data["global_access"]),
 
-		//{"Title":"","Description":"Globally(others) shared object and permissions for others of the object","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"","Item":null,"GoName":"GlobalAccess","GoType":"AccessType","GoPremitive":false}
+		//{"description":"Globally(others) shared object and permissions for others of the object","type":"integer","minimum":0,"maximum":7}
 
 		Share: InterfaceToShareTypeSlice(data["share"]),
 
-		//{"Title":"","Description":"Selectively shared object, List of (tenant, permissions)","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"object","Permission":null,"Properties":{"tenant":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Tenant","GoType":"string","GoPremitive":true},"tenant_access":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":7,"Ref":"types.json#/definitions/AccessType","CollectionType":"","Column":"","Item":null,"GoName":"TenantAccess","GoType":"AccessType","GoPremitive":false}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/ShareType","CollectionType":"","Column":"","Item":null,"GoName":"Share","GoType":"ShareType","GoPremitive":false},"GoName":"Share","GoType":"[]*ShareType","GoPremitive":true}
+		//{"description":"Selectively shared object, List of (tenant, permissions)","type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}
 
 	}
 }

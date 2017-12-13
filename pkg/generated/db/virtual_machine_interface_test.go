@@ -11,9 +11,16 @@ import (
 
 func TestVirtualMachineInterface(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "virtual_machine_interface")
+	defer func() {
+		common.ClearTable(db, "virtual_machine_interface")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeVirtualMachineInterface()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateVirtualMachineInterface(tx, model)

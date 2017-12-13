@@ -6,15 +6,13 @@ import "encoding/json"
 
 // GracefulRestartParametersType
 type GracefulRestartParametersType struct {
+	LongLivedRestartTime LongLivedGracefulRestartTimeType `json:"long_lived_restart_time"`
+	Enable               bool                             `json:"enable"`
 	EndOfRibTimeout      EndOfRibTimeType                 `json:"end_of_rib_timeout"`
 	BGPHelperEnable      bool                             `json:"bgp_helper_enable"`
 	XMPPHelperEnable     bool                             `json:"xmpp_helper_enable"`
 	RestartTime          GracefulRestartTimeType          `json:"restart_time"`
-	LongLivedRestartTime LongLivedGracefulRestartTimeType `json:"long_lived_restart_time"`
-	Enable               bool                             `json:"enable"`
 }
-
-//  parents relation object
 
 // String returns json representation of the object
 func (model *GracefulRestartParametersType) String() string {
@@ -26,12 +24,12 @@ func (model *GracefulRestartParametersType) String() string {
 func MakeGracefulRestartParametersType() *GracefulRestartParametersType {
 	return &GracefulRestartParametersType{
 		//TODO(nati): Apply default
-		Enable:               false,
-		EndOfRibTimeout:      MakeEndOfRibTimeType(),
-		BGPHelperEnable:      false,
 		XMPPHelperEnable:     false,
 		RestartTime:          MakeGracefulRestartTimeType(),
 		LongLivedRestartTime: MakeLongLivedGracefulRestartTimeType(),
+		Enable:               false,
+		EndOfRibTimeout:      MakeEndOfRibTimeType(),
+		BGPHelperEnable:      false,
 	}
 }
 
@@ -39,24 +37,24 @@ func MakeGracefulRestartParametersType() *GracefulRestartParametersType {
 func InterfaceToGracefulRestartParametersType(iData interface{}) *GracefulRestartParametersType {
 	data := iData.(map[string]interface{})
 	return &GracefulRestartParametersType{
-		RestartTime: InterfaceToGracefulRestartTimeType(data["restart_time"]),
-
-		//{"Title":"","Description":"Time (in seconds) taken by the restarting speaker to get back to stable state","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":4095,"Ref":"types.json#/definitions/GracefulRestartTimeType","CollectionType":"","Column":"","Item":null,"GoName":"RestartTime","GoType":"GracefulRestartTimeType","GoPremitive":false}
-		LongLivedRestartTime: InterfaceToLongLivedGracefulRestartTimeType(data["long_lived_restart_time"]),
-
-		//{"Title":"","Description":"Extended Time (in seconds) taken by the restarting speaker after restart-time to get back to stable state","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":16777215,"Ref":"types.json#/definitions/LongLivedGracefulRestartTimeType","CollectionType":"","Column":"","Item":null,"GoName":"LongLivedRestartTime","GoType":"LongLivedGracefulRestartTimeType","GoPremitive":false}
-		Enable: data["enable"].(bool),
-
-		//{"Title":"","Description":"Enable/Disable knob for all GR parameters to take effect","SQL":"","Default":null,"Operation":"","Presence":"","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Enable","GoType":"bool","GoPremitive":true}
 		EndOfRibTimeout: InterfaceToEndOfRibTimeType(data["end_of_rib_timeout"]),
 
-		//{"Title":"","Description":"Maximum time (in seconds) to wait for EndOfRib reception/transmission","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":0,"Maximum":4095,"Ref":"types.json#/definitions/EndOfRibTimeType","CollectionType":"","Column":"","Item":null,"GoName":"EndOfRibTimeout","GoType":"EndOfRibTimeType","GoPremitive":false}
+		//{"description":"Maximum time (in seconds) to wait for EndOfRib reception/transmission","type":"integer","minimum":0,"maximum":4095}
 		BGPHelperEnable: data["bgp_helper_enable"].(bool),
 
-		//{"Title":"","Description":"Enable GR Helper mode for BGP peers in contrail-control","SQL":"","Default":null,"Operation":"","Presence":"","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"BGPHelperEnable","GoType":"bool","GoPremitive":true}
+		//{"description":"Enable GR Helper mode for BGP peers in contrail-control","type":"boolean"}
 		XMPPHelperEnable: data["xmpp_helper_enable"].(bool),
 
-		//{"Title":"","Description":"Enable GR Helper mode for XMPP peers (agents) in contrail-control","SQL":"","Default":null,"Operation":"","Presence":"","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"XMPPHelperEnable","GoType":"bool","GoPremitive":true}
+		//{"description":"Enable GR Helper mode for XMPP peers (agents) in contrail-control","type":"boolean"}
+		RestartTime: InterfaceToGracefulRestartTimeType(data["restart_time"]),
+
+		//{"description":"Time (in seconds) taken by the restarting speaker to get back to stable state","type":"integer","minimum":0,"maximum":4095}
+		LongLivedRestartTime: InterfaceToLongLivedGracefulRestartTimeType(data["long_lived_restart_time"]),
+
+		//{"description":"Extended Time (in seconds) taken by the restarting speaker after restart-time to get back to stable state","type":"integer","minimum":0,"maximum":16777215}
+		Enable: data["enable"].(bool),
+
+		//{"description":"Enable/Disable knob for all GR parameters to take effect","type":"boolean"}
 
 	}
 }

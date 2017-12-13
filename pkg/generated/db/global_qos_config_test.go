@@ -11,9 +11,16 @@ import (
 
 func TestGlobalQosConfig(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "global_qos_config")
+	defer func() {
+		common.ClearTable(db, "global_qos_config")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeGlobalQosConfig()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateGlobalQosConfig(tx, model)

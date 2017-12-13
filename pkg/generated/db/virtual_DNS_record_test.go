@@ -11,9 +11,16 @@ import (
 
 func TestVirtualDNSRecord(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "virtual_DNS_record")
+	defer func() {
+		common.ClearTable(db, "virtual_DNS_record")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeVirtualDNSRecord()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateVirtualDNSRecord(tx, model)

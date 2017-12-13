@@ -11,44 +11,49 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertControllerNodeRoleQuery = "insert into `controller_node_role` (`display_name`,`provisioning_state`,`capacity_drives`,`storage_management_bond_interface_members`,`key_value_pair`,`provisioning_progress`,`provisioning_progress_stage`,`provisioning_start_time`,`internalapi_bond_interface_members`,`fq_name`,`global_access`,`share`,`owner`,`owner_access`,`provisioning_log`,`performance_drives`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`permissions_owner_access`,`other_access`,`group`,`group_access`,`permissions_owner`,`enable`,`uuid`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateControllerNodeRoleQuery = "update `controller_node_role` set `display_name` = ?,`provisioning_state` = ?,`capacity_drives` = ?,`storage_management_bond_interface_members` = ?,`key_value_pair` = ?,`provisioning_progress` = ?,`provisioning_progress_stage` = ?,`provisioning_start_time` = ?,`internalapi_bond_interface_members` = ?,`fq_name` = ?,`global_access` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`provisioning_log` = ?,`performance_drives` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`permissions_owner` = ?,`enable` = ?,`uuid` = ?;"
+const insertControllerNodeRoleQuery = "insert into `controller_node_role` (`uuid`,`storage_management_bond_interface_members`,`provisioning_state`,`provisioning_start_time`,`provisioning_progress_stage`,`provisioning_progress`,`provisioning_log`,`share`,`owner_access`,`owner`,`global_access`,`performance_drives`,`parent_uuid`,`parent_type`,`internalapi_bond_interface_members`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`capacity_drives`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateControllerNodeRoleQuery = "update `controller_node_role` set `uuid` = ?,`storage_management_bond_interface_members` = ?,`provisioning_state` = ?,`provisioning_start_time` = ?,`provisioning_progress_stage` = ?,`provisioning_progress` = ?,`provisioning_log` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`performance_drives` = ?,`parent_uuid` = ?,`parent_type` = ?,`internalapi_bond_interface_members` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`capacity_drives` = ?,`key_value_pair` = ?;"
 const deleteControllerNodeRoleQuery = "delete from `controller_node_role` where uuid = ?"
 
 // ControllerNodeRoleFields is db columns for ControllerNodeRole
 var ControllerNodeRoleFields = []string{
-	"display_name",
-	"provisioning_state",
-	"capacity_drives",
-	"storage_management_bond_interface_members",
-	"key_value_pair",
-	"provisioning_progress",
-	"provisioning_progress_stage",
-	"provisioning_start_time",
-	"internalapi_bond_interface_members",
-	"fq_name",
-	"global_access",
-	"share",
-	"owner",
-	"owner_access",
-	"provisioning_log",
-	"performance_drives",
-	"description",
-	"created",
-	"creator",
-	"user_visible",
-	"last_modified",
-	"permissions_owner_access",
-	"other_access",
-	"group",
-	"group_access",
-	"permissions_owner",
-	"enable",
 	"uuid",
+	"storage_management_bond_interface_members",
+	"provisioning_state",
+	"provisioning_start_time",
+	"provisioning_progress_stage",
+	"provisioning_progress",
+	"provisioning_log",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"performance_drives",
+	"parent_uuid",
+	"parent_type",
+	"internalapi_bond_interface_members",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
+	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
+	"enable",
+	"description",
+	"creator",
+	"created",
+	"fq_name",
+	"display_name",
+	"capacity_drives",
+	"key_value_pair",
 }
 
 // ControllerNodeRoleRefFields is db reference fields for ControllerNodeRole
 var ControllerNodeRoleRefFields = map[string][]string{}
+
+// ControllerNodeRoleBackRefFields is db back reference fields for ControllerNodeRole
+var ControllerNodeRoleBackRefFields = map[string][]string{}
 
 // CreateControllerNodeRole inserts ControllerNodeRole to DB
 func CreateControllerNodeRole(tx *sql.Tx, model *models.ControllerNodeRole) error {
@@ -62,34 +67,36 @@ func CreateControllerNodeRole(tx *sql.Tx, model *models.ControllerNodeRole) erro
 		"model": model,
 		"query": insertControllerNodeRoleQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.DisplayName),
-		string(model.ProvisioningState),
-		string(model.CapacityDrives),
+	_, err = stmt.Exec(string(model.UUID),
 		string(model.StorageManagementBondInterfaceMembers),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		int(model.ProvisioningProgress),
-		string(model.ProvisioningProgressStage),
+		string(model.ProvisioningState),
 		string(model.ProvisioningStartTime),
-		string(model.InternalapiBondInterfaceMembers),
-		common.MustJSON(model.FQName),
-		int(model.Perms2.GlobalAccess),
-		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
+		string(model.ProvisioningProgressStage),
+		int(model.ProvisioningProgress),
 		string(model.ProvisioningLog),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
 		string(model.PerformanceDrives),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
-		string(model.IDPerms.Creator),
+		string(model.ParentUUID),
+		string(model.ParentType),
+		string(model.InternalapiBondInterfaceMembers),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
 		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
-		string(model.UUID))
+		string(model.IDPerms.Description),
+		string(model.IDPerms.Creator),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		string(model.CapacityDrives),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -103,27 +110,11 @@ func CreateControllerNodeRole(tx *sql.Tx, model *models.ControllerNodeRole) erro
 func scanControllerNodeRole(values map[string]interface{}) (*models.ControllerNodeRole, error) {
 	m := models.MakeControllerNodeRole()
 
-	if value, ok := values["display_name"]; ok {
+	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["provisioning_state"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.ProvisioningState = castedValue
-
-	}
-
-	if value, ok := values["capacity_drives"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.CapacityDrives = castedValue
+		m.UUID = castedValue
 
 	}
 
@@ -135,25 +126,11 @@ func scanControllerNodeRole(values map[string]interface{}) (*models.ControllerNo
 
 	}
 
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
-	if value, ok := values["provisioning_progress"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.ProvisioningProgress = castedValue
-
-	}
-
-	if value, ok := values["provisioning_progress_stage"]; ok {
+	if value, ok := values["provisioning_state"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.ProvisioningProgressStage = castedValue
+		m.ProvisioningState = castedValue
 
 	}
 
@@ -165,47 +142,19 @@ func scanControllerNodeRole(values map[string]interface{}) (*models.ControllerNo
 
 	}
 
-	if value, ok := values["internalapi_bond_interface_members"]; ok {
+	if value, ok := values["provisioning_progress_stage"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.InternalapiBondInterfaceMembers = castedValue
+		m.ProvisioningProgressStage = castedValue
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.FQName)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
+	if value, ok := values["provisioning_progress"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.ProvisioningProgress = castedValue
 
 	}
 
@@ -217,6 +166,36 @@ func scanControllerNodeRole(values map[string]interface{}) (*models.ControllerNo
 
 	}
 
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
 	if value, ok := values["performance_drives"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -225,27 +204,27 @@ func scanControllerNodeRole(values map[string]interface{}) (*models.ControllerNo
 
 	}
 
-	if value, ok := values["description"]; ok {
+	if value, ok := values["parent_uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Description = castedValue
+		m.ParentUUID = castedValue
 
 	}
 
-	if value, ok := values["created"]; ok {
+	if value, ok := values["parent_type"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Created = castedValue
+		m.ParentType = castedValue
 
 	}
 
-	if value, ok := values["creator"]; ok {
+	if value, ok := values["internalapi_bond_interface_members"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Creator = castedValue
+		m.InternalapiBondInterfaceMembers = castedValue
 
 	}
 
@@ -257,43 +236,11 @@ func scanControllerNodeRole(values map[string]interface{}) (*models.ControllerNo
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
-
-	}
-
 	if value, ok := values["permissions_owner_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
-	if value, ok := values["group_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
 
 	}
 
@@ -305,6 +252,38 @@ func scanControllerNodeRole(values map[string]interface{}) (*models.ControllerNo
 
 	}
 
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
+
+	}
+
 	if value, ok := values["enable"]; ok {
 
 		castedValue := common.InterfaceToBool(value)
@@ -313,11 +292,55 @@ func scanControllerNodeRole(values map[string]interface{}) (*models.ControllerNo
 
 	}
 
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["description"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.UUID = castedValue
+		m.IDPerms.Description = castedValue
+
+	}
+
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
+	if value, ok := values["created"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Created = castedValue
+
+	}
+
+	if value, ok := values["fq_name"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.FQName)
+
+	}
+
+	if value, ok := values["display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["capacity_drives"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.CapacityDrives = castedValue
+
+	}
+
+	if value, ok := values["key_value_pair"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
@@ -332,6 +355,7 @@ func ListControllerNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.Contro
 	spec.Table = "controller_node_role"
 	spec.Fields = ControllerNodeRoleFields
 	spec.RefFields = ControllerNodeRoleRefFields
+	spec.BackRefFields = ControllerNodeRoleBackRefFields
 	result := models.MakeControllerNodeRoleSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

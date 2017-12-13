@@ -11,12 +11,14 @@ import (
 
 var schemasDir string
 var templateConfPath string
+var schemaOutputPath string
 
 func init() {
 	cobra.OnInitialize()
 	Cmd.AddCommand(generateCmd)
 	generateCmd.Flags().StringVarP(&schemasDir, "schemas", "s", "", "Schema Directory")
 	generateCmd.Flags().StringVarP(&templateConfPath, "templates", "t", "", "Template Configuraion")
+	generateCmd.Flags().StringVarP(&schemaOutputPath, "schema-output", "", "", "Schema Output path")
 }
 
 func generateCode() {
@@ -25,6 +27,7 @@ func generateCode() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	templateConf, err := common.LoadTemplates(templateConfPath)
 	if err != nil {
 		log.Fatal(err)
@@ -33,6 +36,8 @@ func generateCode() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	common.SaveFile(schemaOutputPath, api)
 }
 
 var generateCmd = &cobra.Command{

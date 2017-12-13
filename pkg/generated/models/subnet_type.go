@@ -10,8 +10,6 @@ type SubnetType struct {
 	IPPrefixLen int    `json:"ip_prefix_len"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *SubnetType) String() string {
 	b, _ := json.Marshal(model)
@@ -33,10 +31,10 @@ func InterfaceToSubnetType(iData interface{}) *SubnetType {
 	return &SubnetType{
 		IPPrefix: data["ip_prefix"].(string),
 
-		//{"Title":"","Description":"","SQL":"varchar(255)","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"ip_prefix","Item":null,"GoName":"IPPrefix","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 		IPPrefixLen: data["ip_prefix_len"].(int),
 
-		//{"Title":"","Description":"","SQL":"int","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"ip_prefix_len","Item":null,"GoName":"IPPrefixLen","GoType":"int","GoPremitive":true}
+		//{"type":"integer"}
 
 	}
 }

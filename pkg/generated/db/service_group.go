@@ -11,36 +11,41 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertServiceGroupQuery = "insert into `service_group` (`service_group_firewall_service_list`,`uuid`,`fq_name`,`user_visible`,`last_modified`,`group`,`group_access`,`owner`,`owner_access`,`other_access`,`enable`,`description`,`created`,`creator`,`display_name`,`key_value_pair`,`share`,`perms2_owner`,`perms2_owner_access`,`global_access`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateServiceGroupQuery = "update `service_group` set `service_group_firewall_service_list` = ?,`uuid` = ?,`fq_name` = ?,`user_visible` = ?,`last_modified` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`owner_access` = ?,`other_access` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`display_name` = ?,`key_value_pair` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?,`global_access` = ?;"
+const insertServiceGroupQuery = "insert into `service_group` (`uuid`,`firewall_service`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateServiceGroupQuery = "update `service_group` set `uuid` = ?,`firewall_service` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteServiceGroupQuery = "delete from `service_group` where uuid = ?"
 
 // ServiceGroupFields is db columns for ServiceGroup
 var ServiceGroupFields = []string{
-	"service_group_firewall_service_list",
 	"uuid",
-	"fq_name",
-	"user_visible",
-	"last_modified",
-	"group",
-	"group_access",
-	"owner",
+	"firewall_service",
+	"share",
 	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
 	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
-	"created",
 	"creator",
+	"created",
+	"fq_name",
 	"display_name",
 	"key_value_pair",
-	"share",
-	"perms2_owner",
-	"perms2_owner_access",
-	"global_access",
 }
 
 // ServiceGroupRefFields is db reference fields for ServiceGroup
 var ServiceGroupRefFields = map[string][]string{}
+
+// ServiceGroupBackRefFields is db back reference fields for ServiceGroup
+var ServiceGroupBackRefFields = map[string][]string{}
 
 // CreateServiceGroup inserts ServiceGroup to DB
 func CreateServiceGroup(tx *sql.Tx, model *models.ServiceGroup) error {
@@ -54,26 +59,28 @@ func CreateServiceGroup(tx *sql.Tx, model *models.ServiceGroup) error {
 		"model": model,
 		"query": insertServiceGroupQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(common.MustJSON(model.ServiceGroupFirewallServiceList),
-		string(model.UUID),
-		common.MustJSON(model.FQName),
+	_, err = stmt.Exec(string(model.UUID),
+		common.MustJSON(model.ServiceGroupFirewallServiceList.FirewallService),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
 		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
 		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
 		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess),
-		int(model.Perms2.GlobalAccess))
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -87,12 +94,6 @@ func CreateServiceGroup(tx *sql.Tx, model *models.ServiceGroup) error {
 func scanServiceGroup(values map[string]interface{}) (*models.ServiceGroup, error) {
 	m := models.MakeServiceGroup()
 
-	if value, ok := values["service_group_firewall_service_list"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.ServiceGroupFirewallServiceList)
-
-	}
-
 	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -101,9 +102,55 @@ func scanServiceGroup(values map[string]interface{}) (*models.ServiceGroup, erro
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["firewall_service"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
+		json.Unmarshal(value.([]byte), &m.ServiceGroupFirewallServiceList.FirewallService)
+
+	}
+
+	if value, ok := values["share"]; ok {
+
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
+
+	}
+
+	if value, ok := values["owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
 
 	}
 
@@ -115,19 +162,27 @@ func scanServiceGroup(values map[string]interface{}) (*models.ServiceGroup, erro
 
 	}
 
-	if value, ok := values["last_modified"]; ok {
+	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := common.InterfaceToString(value)
+		castedValue := common.InterfaceToInt(value)
 
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
 
 	}
 
-	if value, ok := values["group"]; ok {
+	if value, ok := values["permissions_owner"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.Group = castedValue
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
 
 	}
 
@@ -139,27 +194,19 @@ func scanServiceGroup(values map[string]interface{}) (*models.ServiceGroup, erro
 
 	}
 
-	if value, ok := values["owner"]; ok {
+	if value, ok := values["group"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Group = castedValue
 
 	}
 
-	if value, ok := values["owner_access"]; ok {
+	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -179,6 +226,14 @@ func scanServiceGroup(values map[string]interface{}) (*models.ServiceGroup, erro
 
 	}
 
+	if value, ok := values["creator"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Creator = castedValue
+
+	}
+
 	if value, ok := values["created"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -187,11 +242,9 @@ func scanServiceGroup(values map[string]interface{}) (*models.ServiceGroup, erro
 
 	}
 
-	if value, ok := values["creator"]; ok {
+	if value, ok := values["fq_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
@@ -209,36 +262,6 @@ func scanServiceGroup(values map[string]interface{}) (*models.ServiceGroup, erro
 
 	}
 
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
-
-	}
-
-	if value, ok := values["perms2_owner_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["global_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
-
-	}
-
 	return m, nil
 }
 
@@ -250,6 +273,7 @@ func ListServiceGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceGroup
 	spec.Table = "service_group"
 	spec.Fields = ServiceGroupFields
 	spec.RefFields = ServiceGroupRefFields
+	spec.BackRefFields = ServiceGroupBackRefFields
 	result := models.MakeServiceGroupSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

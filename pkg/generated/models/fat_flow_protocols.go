@@ -9,8 +9,6 @@ type FatFlowProtocols struct {
 	FatFlowProtocol []*ProtocolType `json:"fat_flow_protocol"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *FatFlowProtocols) String() string {
 	b, _ := json.Marshal(model)
@@ -33,7 +31,7 @@ func InterfaceToFatFlowProtocols(iData interface{}) *FatFlowProtocols {
 
 		FatFlowProtocol: InterfaceToProtocolTypeSlice(data["fat_flow_protocol"]),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"object","Permission":null,"Properties":{"port":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Port","GoType":"int","GoPremitive":true},"protocol":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Protocol","GoType":"string","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/ProtocolType","CollectionType":"","Column":"","Item":null,"GoName":"FatFlowProtocol","GoType":"ProtocolType","GoPremitive":false},"GoName":"FatFlowProtocol","GoType":"[]*ProtocolType","GoPremitive":true}
+		//{"type":"array","item":{"type":"object","properties":{"port":{"type":"integer"},"protocol":{"type":"string"}}}}
 
 	}
 }

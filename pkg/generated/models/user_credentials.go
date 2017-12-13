@@ -10,8 +10,6 @@ type UserCredentials struct {
 	Password string `json:"password"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *UserCredentials) String() string {
 	b, _ := json.Marshal(model)
@@ -33,10 +31,10 @@ func InterfaceToUserCredentials(iData interface{}) *UserCredentials {
 	return &UserCredentials{
 		Username: data["username"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Username","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 		Password: data["password"].(string),
 
-		//{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Password","GoType":"string","GoPremitive":true}
+		//{"type":"string"}
 
 	}
 }

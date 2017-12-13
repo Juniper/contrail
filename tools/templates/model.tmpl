@@ -10,30 +10,18 @@ type {{ name }} struct {
 {% for propertyName, property in type.Properties %}
     {{ property.GoName }} {% if property.Type == "object" and property.Properties %}*{% endif %}{{ property.GoType }} `json:"{{propertyName}}"`{% endfor %}
 {% for linkTo, reference in references %}
-    // {{linkTo}} {{reference}}
     {{ reference.GoName }}Refs []*{{ type.GoName }}{{ reference.GoName }}Ref `json:"{{linkTo}}_refs"`{% endfor %}
-{% for linkTo, reference in parents %}
-    {{ reference.GoName }}s []*{{ type.GoName }}{{ reference.GoName }}{% endfor %}
+{% for child in children %}
+    {{ child.JSONSchema.GoName }}s []*{{ child.JSONSchema.GoName }} `json:"{{ child.ID }}s"`{% endfor %}
 }
 
 {% for linkTo, reference in references %}
-// {{ type.GoName }}{{ reference.GoName }}Ref references each other 
+// {{ type.GoName }}{{ reference.GoName }}Ref references each other
 type {{ type.GoName }}{{ reference.GoName }}Ref struct {
     UUID string `json:"uuid"`
     To   []string `json:"to"`//FQDN
     {% if reference.RefType %}
     Attr *{{ reference.RefType }}
-    {% endif %}
-}
-{% endfor %}
-
-// {{ type.GoName }}{{ reference.GoName }} parents relation object
-{% for linkTo, reference in parents %}
-type {{ type.GoName }}{{ reference.GoName }} struct {
-    UUID string `json:"uuid"`
-    To   []string `json:"to"`//FQDN
-    {% if reference.RefType %}
-    Attr *referenceRefType
     {% endif %}
 }
 {% endfor %}

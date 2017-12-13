@@ -9,8 +9,6 @@ type FloatingIpPoolSubnetType struct {
 	SubnetUUID []string `json:"subnet_uuid"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *FloatingIpPoolSubnetType) String() string {
 	b, _ := json.Marshal(model)
@@ -31,7 +29,7 @@ func InterfaceToFloatingIpPoolSubnetType(iData interface{}) *FloatingIpPoolSubne
 	return &FloatingIpPoolSubnetType{
 		SubnetUUID: data["subnet_uuid"].([]string),
 
-		//{"Title":"","Description":"List of subnets associated with this floating ip pool.","SQL":"","Default":null,"Operation":"","Presence":"","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"SubnetUUID","GoType":"string","GoPremitive":true},"GoName":"SubnetUUID","GoType":"[]string","GoPremitive":true}
+		//{"description":"List of subnets associated with this floating ip pool.","type":"array","item":{"type":"string"}}
 
 	}
 }

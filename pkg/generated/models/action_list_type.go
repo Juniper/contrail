@@ -6,17 +6,15 @@ import "encoding/json"
 
 // ActionListType
 type ActionListType struct {
-	ApplyService          []string          `json:"apply_service"`
-	GatewayName           string            `json:"gateway_name"`
 	Log                   bool              `json:"log"`
 	Alert                 bool              `json:"alert"`
 	QosAction             string            `json:"qos_action"`
 	AssignRoutingInstance string            `json:"assign_routing_instance"`
 	MirrorTo              *MirrorActionType `json:"mirror_to"`
 	SimpleAction          SimpleActionType  `json:"simple_action"`
+	ApplyService          []string          `json:"apply_service"`
+	GatewayName           string            `json:"gateway_name"`
 }
-
-//  parents relation object
 
 // String returns json representation of the object
 func (model *ActionListType) String() string {
@@ -28,14 +26,14 @@ func (model *ActionListType) String() string {
 func MakeActionListType() *ActionListType {
 	return &ActionListType{
 		//TODO(nati): Apply default
-		AssignRoutingInstance: "",
-		MirrorTo:              MakeMirrorActionType(),
-		SimpleAction:          MakeSimpleActionType(),
-		ApplyService:          []string{},
 		GatewayName:           "",
 		Log:                   false,
 		Alert:                 false,
 		QosAction:             "",
+		AssignRoutingInstance: "",
+		MirrorTo:              MakeMirrorActionType(),
+		SimpleAction:          MakeSimpleActionType(),
+		ApplyService:          []string{},
 	}
 }
 
@@ -43,30 +41,30 @@ func MakeActionListType() *ActionListType {
 func InterfaceToActionListType(iData interface{}) *ActionListType {
 	data := iData.(map[string]interface{})
 	return &ActionListType{
-		Alert: data["alert"].(bool),
-
-		//{"Title":"","Description":"For internal use only","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Alert","GoType":"bool","GoPremitive":true}
-		QosAction: data["qos_action"].(string),
-
-		//{"Title":"","Description":"FQN of Qos configuration object for QoS marking","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"QosAction","GoType":"string","GoPremitive":true}
 		AssignRoutingInstance: data["assign_routing_instance"].(string),
 
-		//{"Title":"","Description":"For internal use only","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"AssignRoutingInstance","GoType":"string","GoPremitive":true}
+		//{"description":"For internal use only","type":"string"}
 		MirrorTo: InterfaceToMirrorActionType(data["mirror_to"]),
 
-		//{"Title":"","Description":"Mirror traffic matching this rule","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"object","Permission":null,"Properties":{"analyzer_ip_address":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"AnalyzerIPAddress","GoType":"string","GoPremitive":true},"analyzer_mac_address":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"AnalyzerMacAddress","GoType":"string","GoPremitive":true},"analyzer_name":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"AnalyzerName","GoType":"string","GoPremitive":true},"encapsulation":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Encapsulation","GoType":"string","GoPremitive":true},"juniper_header":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"boolean","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"JuniperHeader","GoType":"bool","GoPremitive":true},"nh_mode":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":["dynamic","static"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/NHModeType","CollectionType":"","Column":"","Item":null,"GoName":"NHMode","GoType":"NHModeType","GoPremitive":false},"nic_assisted_mirroring":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"boolean","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"NicAssistedMirroring","GoType":"bool","GoPremitive":true},"nic_assisted_mirroring_vlan":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":1,"Maximum":4094,"Ref":"types.json#/definitions/VlanIdType","CollectionType":"","Column":"","Item":null,"GoName":"NicAssistedMirroringVlan","GoType":"VlanIdType","GoPremitive":false},"routing_instance":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"RoutingInstance","GoType":"string","GoPremitive":true},"static_nh_header":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"object","Permission":null,"Properties":{"vni":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":1,"Maximum":16777215,"Ref":"types.json#/definitions/VxlanNetworkIdentifierType","CollectionType":"","Column":"","Item":null,"GoName":"Vni","GoType":"VxlanNetworkIdentifierType","GoPremitive":false},"vtep_dst_ip_address":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"VtepDSTIPAddress","GoType":"string","GoPremitive":true},"vtep_dst_mac_address":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"VtepDSTMacAddress","GoType":"string","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/StaticMirrorNhType","CollectionType":"","Column":"","Item":null,"GoName":"StaticNHHeader","GoType":"StaticMirrorNhType","GoPremitive":false},"udp_port":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"integer","Permission":null,"Properties":{},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"UDPPort","GoType":"int","GoPremitive":true}},"Enum":null,"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/MirrorActionType","CollectionType":"","Column":"","Item":null,"GoName":"MirrorTo","GoType":"MirrorActionType","GoPremitive":false}
+		//{"description":"Mirror traffic matching this rule","type":"object","properties":{"analyzer_ip_address":{"type":"string"},"analyzer_mac_address":{"type":"string"},"analyzer_name":{"type":"string"},"encapsulation":{"type":"string"},"juniper_header":{"type":"boolean"},"nh_mode":{"type":"string","enum":["dynamic","static"]},"nic_assisted_mirroring":{"type":"boolean"},"nic_assisted_mirroring_vlan":{"type":"integer","minimum":1,"maximum":4094},"routing_instance":{"type":"string"},"static_nh_header":{"type":"object","properties":{"vni":{"type":"integer","minimum":1,"maximum":16777215},"vtep_dst_ip_address":{"type":"string"},"vtep_dst_mac_address":{"type":"string"}}},"udp_port":{"type":"integer"}}}
 		SimpleAction: InterfaceToSimpleActionType(data["simple_action"]),
 
-		//{"Title":"","Description":"Simple allow(pass) or deny action for traffic matching this rule","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"string","Permission":null,"Properties":{},"Enum":["deny","pass"],"Minimum":null,"Maximum":null,"Ref":"types.json#/definitions/SimpleActionType","CollectionType":"","Column":"","Item":null,"GoName":"SimpleAction","GoType":"SimpleActionType","GoPremitive":false}
+		//{"description":"Simple allow(pass) or deny action for traffic matching this rule","type":"string","enum":["deny","pass"]}
 		ApplyService: data["apply_service"].([]string),
 
-		//{"Title":"","Description":"Ordered list of service instances in service chain applied to traffic matching the rule","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"ApplyService","GoType":"string","GoPremitive":true},"GoName":"ApplyService","GoType":"[]string","GoPremitive":true}
+		//{"description":"Ordered list of service instances in service chain applied to traffic matching the rule","type":"array","item":{"type":"string"}}
 		GatewayName: data["gateway_name"].(string),
 
-		//{"Title":"","Description":"For internal use only","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"GatewayName","GoType":"string","GoPremitive":true}
+		//{"description":"For internal use only","type":"string"}
 		Log: data["log"].(bool),
 
-		//{"Title":"","Description":"Flow records for traffic matching this rule are sent at higher priority","SQL":"","Default":null,"Operation":"","Presence":"optional","Type":"boolean","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"Log","GoType":"bool","GoPremitive":true}
+		//{"description":"Flow records for traffic matching this rule are sent at higher priority","type":"boolean"}
+		Alert: data["alert"].(bool),
+
+		//{"description":"For internal use only","type":"boolean"}
+		QosAction: data["qos_action"].(string),
+
+		//{"description":"FQN of Qos configuration object for QoS marking","type":"string"}
 
 	}
 }

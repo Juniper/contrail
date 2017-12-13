@@ -11,9 +11,16 @@ import (
 
 func TestAnalyticsNode(t *testing.T) {
 	t.Parallel()
+	db := testDB
+	common.UseTable(db, "analytics_node")
+	defer func() {
+		common.ClearTable(db, "analytics_node")
+		if p := recover(); p != nil {
+			panic(p)
+		}
+	}()
 	model := models.MakeAnalyticsNode()
 	model.UUID = "dummy_uuid"
-	db := testDB
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateAnalyticsNode(tx, model)

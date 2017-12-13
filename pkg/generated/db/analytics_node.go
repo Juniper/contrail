@@ -11,36 +11,41 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertAnalyticsNodeQuery = "insert into `analytics_node` (`analytics_node_ip_address`,`display_name`,`key_value_pair`,`share`,`owner`,`owner_access`,`global_access`,`uuid`,`fq_name`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`group_access`,`permissions_owner`,`permissions_owner_access`,`other_access`,`group`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateAnalyticsNodeQuery = "update `analytics_node` set `analytics_node_ip_address` = ?,`display_name` = ?,`key_value_pair` = ?,`share` = ?,`owner` = ?,`owner_access` = ?,`global_access` = ?,`uuid` = ?,`fq_name` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`group_access` = ?,`permissions_owner` = ?,`permissions_owner_access` = ?,`other_access` = ?,`group` = ?;"
+const insertAnalyticsNodeQuery = "insert into `analytics_node` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`,`analytics_node_ip_address`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateAnalyticsNodeQuery = "update `analytics_node` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?,`analytics_node_ip_address` = ?;"
 const deleteAnalyticsNodeQuery = "delete from `analytics_node` where uuid = ?"
 
 // AnalyticsNodeFields is db columns for AnalyticsNode
 var AnalyticsNodeFields = []string{
-	"analytics_node_ip_address",
-	"display_name",
-	"key_value_pair",
-	"share",
-	"owner",
-	"owner_access",
-	"global_access",
 	"uuid",
-	"fq_name",
+	"share",
+	"owner_access",
+	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
+	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
-	"created",
 	"creator",
-	"user_visible",
-	"last_modified",
-	"group_access",
-	"permissions_owner",
-	"permissions_owner_access",
-	"other_access",
-	"group",
+	"created",
+	"fq_name",
+	"display_name",
+	"key_value_pair",
+	"analytics_node_ip_address",
 }
 
 // AnalyticsNodeRefFields is db reference fields for AnalyticsNode
 var AnalyticsNodeRefFields = map[string][]string{}
+
+// AnalyticsNodeBackRefFields is db back reference fields for AnalyticsNode
+var AnalyticsNodeBackRefFields = map[string][]string{}
 
 // CreateAnalyticsNode inserts AnalyticsNode to DB
 func CreateAnalyticsNode(tx *sql.Tx, model *models.AnalyticsNode) error {
@@ -54,26 +59,28 @@ func CreateAnalyticsNode(tx *sql.Tx, model *models.AnalyticsNode) error {
 		"model": model,
 		"query": insertAnalyticsNodeQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.AnalyticsNodeIPAddress),
-		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
+	_, err = stmt.Exec(string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
 		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
 		int(model.Perms2.GlobalAccess),
-		string(model.UUID),
-		common.MustJSON(model.FQName),
+		string(model.ParentUUID),
+		string(model.ParentType),
+		bool(model.IDPerms.UserVisible),
+		int(model.IDPerms.Permissions.OwnerAccess),
+		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group))
+		string(model.IDPerms.Created),
+		common.MustJSON(model.FQName),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair),
+		string(model.AnalyticsNodeIPAddress))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -87,39 +94,17 @@ func CreateAnalyticsNode(tx *sql.Tx, model *models.AnalyticsNode) error {
 func scanAnalyticsNode(values map[string]interface{}) (*models.AnalyticsNode, error) {
 	m := models.MakeAnalyticsNode()
 
-	if value, ok := values["analytics_node_ip_address"]; ok {
+	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.AnalyticsNodeIPAddress = models.IpAddressType(castedValue)
-
-	}
-
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
+		m.UUID = castedValue
 
 	}
 
 	if value, ok := values["share"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["owner"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
 
 	}
 
@@ -131,6 +116,14 @@ func scanAnalyticsNode(values map[string]interface{}) (*models.AnalyticsNode, er
 
 	}
 
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
 	if value, ok := values["global_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
@@ -139,17 +132,75 @@ func scanAnalyticsNode(values map[string]interface{}) (*models.AnalyticsNode, er
 
 	}
 
-	if value, ok := values["uuid"]; ok {
+	if value, ok := values["parent_uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.UUID = castedValue
+		m.ParentUUID = castedValue
 
 	}
 
-	if value, ok := values["fq_name"]; ok {
+	if value, ok := values["parent_type"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.FQName)
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
+
+	}
+
+	if value, ok := values["other_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["group"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -169,14 +220,6 @@ func scanAnalyticsNode(values map[string]interface{}) (*models.AnalyticsNode, er
 
 	}
 
-	if value, ok := values["created"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
 	if value, ok := values["creator"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -185,59 +228,39 @@ func scanAnalyticsNode(values map[string]interface{}) (*models.AnalyticsNode, er
 
 	}
 
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
+	if value, ok := values["created"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.Created = castedValue
 
 	}
 
-	if value, ok := values["group_access"]; ok {
+	if value, ok := values["fq_name"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		json.Unmarshal(value.([]byte), &m.FQName)
 
 	}
 
-	if value, ok := values["permissions_owner"]; ok {
+	if value, ok := values["display_name"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.Owner = castedValue
+		m.DisplayName = castedValue
 
 	}
 
-	if value, ok := values["permissions_owner_access"]; ok {
+	if value, ok := values["key_value_pair"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
-	if value, ok := values["other_access"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
-
-	}
-
-	if value, ok := values["group"]; ok {
+	if value, ok := values["analytics_node_ip_address"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.Group = castedValue
+		m.AnalyticsNodeIPAddress = models.IpAddressType(castedValue)
 
 	}
 
@@ -252,6 +275,7 @@ func ListAnalyticsNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.AnalyticsNo
 	spec.Table = "analytics_node"
 	spec.Fields = AnalyticsNodeFields
 	spec.RefFields = AnalyticsNodeRefFields
+	spec.BackRefFields = AnalyticsNodeBackRefFields
 	result := models.MakeAnalyticsNodeSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

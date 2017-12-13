@@ -11,35 +11,37 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertForwardingClassQuery = "insert into `forwarding_class` (`display_name`,`key_value_pair`,`uuid`,`forwarding_class_dscp`,`forwarding_class_mpls_exp`,`owner_access`,`other_access`,`group`,`group_access`,`owner`,`enable`,`description`,`created`,`creator`,`user_visible`,`last_modified`,`fq_name`,`forwarding_class_vlan_priority`,`forwarding_class_id`,`global_access`,`share`,`perms2_owner`,`perms2_owner_access`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateForwardingClassQuery = "update `forwarding_class` set `display_name` = ?,`key_value_pair` = ?,`uuid` = ?,`forwarding_class_dscp` = ?,`forwarding_class_mpls_exp` = ?,`owner_access` = ?,`other_access` = ?,`group` = ?,`group_access` = ?,`owner` = ?,`enable` = ?,`description` = ?,`created` = ?,`creator` = ?,`user_visible` = ?,`last_modified` = ?,`fq_name` = ?,`forwarding_class_vlan_priority` = ?,`forwarding_class_id` = ?,`global_access` = ?,`share` = ?,`perms2_owner` = ?,`perms2_owner_access` = ?;"
+const insertForwardingClassQuery = "insert into `forwarding_class` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`forwarding_class_vlan_priority`,`forwarding_class_mpls_exp`,`forwarding_class_id`,`forwarding_class_dscp`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const updateForwardingClassQuery = "update `forwarding_class` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`forwarding_class_vlan_priority` = ?,`forwarding_class_mpls_exp` = ?,`forwarding_class_id` = ?,`forwarding_class_dscp` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteForwardingClassQuery = "delete from `forwarding_class` where uuid = ?"
 
 // ForwardingClassFields is db columns for ForwardingClass
 var ForwardingClassFields = []string{
-	"display_name",
-	"key_value_pair",
 	"uuid",
-	"forwarding_class_dscp",
-	"forwarding_class_mpls_exp",
+	"share",
 	"owner_access",
-	"other_access",
-	"group",
-	"group_access",
 	"owner",
+	"global_access",
+	"parent_uuid",
+	"parent_type",
+	"user_visible",
+	"permissions_owner_access",
+	"permissions_owner",
+	"other_access",
+	"group_access",
+	"group",
+	"last_modified",
 	"enable",
 	"description",
-	"created",
 	"creator",
-	"user_visible",
-	"last_modified",
+	"created",
 	"fq_name",
 	"forwarding_class_vlan_priority",
+	"forwarding_class_mpls_exp",
 	"forwarding_class_id",
-	"global_access",
-	"share",
-	"perms2_owner",
-	"perms2_owner_access",
+	"forwarding_class_dscp",
+	"display_name",
+	"key_value_pair",
 }
 
 // ForwardingClassRefFields is db reference fields for ForwardingClass
@@ -50,6 +52,9 @@ var ForwardingClassRefFields = map[string][]string{
 
 	},
 }
+
+// ForwardingClassBackRefFields is db back reference fields for ForwardingClass
+var ForwardingClassBackRefFields = map[string][]string{}
 
 const insertForwardingClassQosQueueQuery = "insert into `ref_forwarding_class_qos_queue` (`from`, `to` ) values (?, ?);"
 
@@ -65,29 +70,31 @@ func CreateForwardingClass(tx *sql.Tx, model *models.ForwardingClass) error {
 		"model": model,
 		"query": insertForwardingClassQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		string(model.UUID),
-		int(model.ForwardingClassDSCP),
-		int(model.ForwardingClassMPLSExp),
+	_, err = stmt.Exec(string(model.UUID),
+		common.MustJSON(model.Perms2.Share),
+		int(model.Perms2.OwnerAccess),
+		string(model.Perms2.Owner),
+		int(model.Perms2.GlobalAccess),
+		string(model.ParentUUID),
+		string(model.ParentType),
+		bool(model.IDPerms.UserVisible),
 		int(model.IDPerms.Permissions.OwnerAccess),
-		int(model.IDPerms.Permissions.OtherAccess),
-		string(model.IDPerms.Permissions.Group),
-		int(model.IDPerms.Permissions.GroupAccess),
 		string(model.IDPerms.Permissions.Owner),
+		int(model.IDPerms.Permissions.OtherAccess),
+		int(model.IDPerms.Permissions.GroupAccess),
+		string(model.IDPerms.Permissions.Group),
+		string(model.IDPerms.LastModified),
 		bool(model.IDPerms.Enable),
 		string(model.IDPerms.Description),
-		string(model.IDPerms.Created),
 		string(model.IDPerms.Creator),
-		bool(model.IDPerms.UserVisible),
-		string(model.IDPerms.LastModified),
+		string(model.IDPerms.Created),
 		common.MustJSON(model.FQName),
 		int(model.ForwardingClassVlanPriority),
+		int(model.ForwardingClassMPLSExp),
 		int(model.ForwardingClassID),
-		int(model.Perms2.GlobalAccess),
-		common.MustJSON(model.Perms2.Share),
-		string(model.Perms2.Owner),
-		int(model.Perms2.OwnerAccess))
+		int(model.ForwardingClassDSCP),
+		string(model.DisplayName),
+		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -114,20 +121,6 @@ func CreateForwardingClass(tx *sql.Tx, model *models.ForwardingClass) error {
 func scanForwardingClass(values map[string]interface{}) (*models.ForwardingClass, error) {
 	m := models.MakeForwardingClass()
 
-	if value, ok := values["display_name"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
-
-	}
-
-	if value, ok := values["key_value_pair"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
-
-	}
-
 	if value, ok := values["uuid"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -136,19 +129,9 @@ func scanForwardingClass(values map[string]interface{}) (*models.ForwardingClass
 
 	}
 
-	if value, ok := values["forwarding_class_dscp"]; ok {
+	if value, ok := values["share"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.ForwardingClassDSCP = models.DscpValueType(castedValue)
-
-	}
-
-	if value, ok := values["forwarding_class_mpls_exp"]; ok {
-
-		castedValue := common.InterfaceToInt(value)
-
-		m.ForwardingClassMPLSExp = models.MplsExpType(castedValue)
+		json.Unmarshal(value.([]byte), &m.Perms2.Share)
 
 	}
 
@@ -156,7 +139,63 @@ func scanForwardingClass(values map[string]interface{}) (*models.ForwardingClass
 
 		castedValue := common.InterfaceToInt(value)
 
+		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.Perms2.Owner = castedValue
+
+	}
+
+	if value, ok := values["global_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["parent_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentUUID = castedValue
+
+	}
+
+	if value, ok := values["parent_type"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ParentType = castedValue
+
+	}
+
+	if value, ok := values["user_visible"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.IDPerms.UserVisible = castedValue
+
+	}
+
+	if value, ok := values["permissions_owner_access"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
 		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+	}
+
+	if value, ok := values["permissions_owner"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.Permissions.Owner = castedValue
 
 	}
 
@@ -168,14 +207,6 @@ func scanForwardingClass(values map[string]interface{}) (*models.ForwardingClass
 
 	}
 
-	if value, ok := values["group"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
-
-	}
-
 	if value, ok := values["group_access"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
@@ -184,11 +215,19 @@ func scanForwardingClass(values map[string]interface{}) (*models.ForwardingClass
 
 	}
 
-	if value, ok := values["owner"]; ok {
+	if value, ok := values["group"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Group = castedValue
+
+	}
+
+	if value, ok := values["last_modified"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.IDPerms.LastModified = castedValue
 
 	}
 
@@ -208,14 +247,6 @@ func scanForwardingClass(values map[string]interface{}) (*models.ForwardingClass
 
 	}
 
-	if value, ok := values["created"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
-
-	}
-
 	if value, ok := values["creator"]; ok {
 
 		castedValue := common.InterfaceToString(value)
@@ -224,19 +255,11 @@ func scanForwardingClass(values map[string]interface{}) (*models.ForwardingClass
 
 	}
 
-	if value, ok := values["user_visible"]; ok {
-
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
-
-	}
-
-	if value, ok := values["last_modified"]; ok {
+	if value, ok := values["created"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.Created = castedValue
 
 	}
 
@@ -254,6 +277,14 @@ func scanForwardingClass(values map[string]interface{}) (*models.ForwardingClass
 
 	}
 
+	if value, ok := values["forwarding_class_mpls_exp"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.ForwardingClassMPLSExp = models.MplsExpType(castedValue)
+
+	}
+
 	if value, ok := values["forwarding_class_id"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
@@ -262,33 +293,25 @@ func scanForwardingClass(values map[string]interface{}) (*models.ForwardingClass
 
 	}
 
-	if value, ok := values["global_access"]; ok {
+	if value, ok := values["forwarding_class_dscp"]; ok {
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.ForwardingClassDSCP = models.DscpValueType(castedValue)
 
 	}
 
-	if value, ok := values["share"]; ok {
-
-		json.Unmarshal(value.([]byte), &m.Perms2.Share)
-
-	}
-
-	if value, ok := values["perms2_owner"]; ok {
+	if value, ok := values["display_name"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.Perms2.Owner = castedValue
+		m.DisplayName = castedValue
 
 	}
 
-	if value, ok := values["perms2_owner_access"]; ok {
+	if value, ok := values["key_value_pair"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
 	}
 
@@ -322,6 +345,7 @@ func ListForwardingClass(tx *sql.Tx, spec *common.ListSpec) ([]*models.Forwardin
 	spec.Table = "forwarding_class"
 	spec.Fields = ForwardingClassFields
 	spec.RefFields = ForwardingClassRefFields
+	spec.BackRefFields = ForwardingClassBackRefFields
 	result := models.MakeForwardingClassSlice()
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{

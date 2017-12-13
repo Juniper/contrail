@@ -9,8 +9,6 @@ type UveKeysType struct {
 	UveKey []string `json:"uve_key"`
 }
 
-//  parents relation object
-
 // String returns json representation of the object
 func (model *UveKeysType) String() string {
 	b, _ := json.Marshal(model)
@@ -31,7 +29,7 @@ func InterfaceToUveKeysType(iData interface{}) *UveKeysType {
 	return &UveKeysType{
 		UveKey: data["uve_key"].([]string),
 
-		//{"Title":"","Description":"List of UVE tables where this alarm config should be applied","SQL":"","Default":null,"Operation":"","Presence":"true","Type":"array","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":{"Title":"","Description":"","SQL":"","Default":null,"Operation":"","Presence":"","Type":"string","Permission":null,"Properties":null,"Enum":null,"Minimum":null,"Maximum":null,"Ref":"","CollectionType":"","Column":"","Item":null,"GoName":"UveKey","GoType":"string","GoPremitive":true},"GoName":"UveKey","GoType":"[]string","GoPremitive":true}
+		//{"description":"List of UVE tables where this alarm config should be applied","type":"array","item":{"type":"string"}}
 
 	}
 }

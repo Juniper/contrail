@@ -1,25 +1,23 @@
+SET GLOBAL group_concat_max_len=100000;
+
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 create table {{schema.ID }} (
     {% for column in schema.Columns %}`{{column.Column}}` {{column.Type}},
-    {% endfor %} primary key(uuid));
+    {% endfor %} primary key(`uuid`),
+    index parent_uuid_index (`parent_uuid`)
+    ) CHARACTER SET utf8mb4;
 {% endif %}
 {% endfor %}
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 {% for linkTo, reference in schema.References %}
 create table ref_{{ schema.ID }}_{{ linkTo }} (
-    `from` varchar(255), 
+    `from` varchar(255),
     `to` varchar(255),
     {% for column in reference.Columns %}`{{column.Column}}` {{column.Type}},
     {% endfor %} foreign key (`from`) references {{ schema.ID }}(uuid) on delete cascade, 
-    foreign key (`to`) references {{ linkTo }}(uuid) );
+    foreign key (`to`) references {{ linkTo }}(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
 {% endfor %}
-{% for linkTo, reference in schema.Parents %}
-create table parent_{{ schema.ID }}_{{ linkTo }} (
-    `from` varchar(255) unique, 
-    `to` varchar(255),
-    {% for column in reference.Columns %}`{{column.Column}}` {{column.Type}},
-    {% endfor %} foreign key (`from`) references {{ schema.ID }}(uuid), 
-    foreign key (`to`) references {{ linkTo }}(uuid) );
-{% endfor %}
+
 {% endif %}
 {% endfor %}
