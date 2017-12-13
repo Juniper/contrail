@@ -38,6 +38,12 @@ ID: root
 Password: contrail123
 DataBase: contrail_test
 
+You need also add this for /etc/hosts
+
+```
+127.0.0.1       mysql
+```
+
 Init DB before test
 ```
 ./tool/reset_db.sh
@@ -63,10 +69,7 @@ TBD
 
 We use golang standard dep tool for dependency management.
 (see https://github.com/golang/dep)
+
+```
 brew install dep
-
-We use glide for dependency management for go code.
-
-https://github.com/Masterminds/glide
-
-see
+```
