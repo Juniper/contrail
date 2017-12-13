@@ -7,8 +7,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-
-	"github.com/k0kubun/pp"
 )
 
 var sqlTypeMap = map[string]string{
@@ -359,7 +357,6 @@ func (api *API) loadType(schemaFile, typeName string) (*JSONSchema, error) {
 	}
 	definition, ok := definitions.Definitions[typeName]
 	if !ok {
-		pp.Println(definition)
 		return nil, fmt.Errorf("%s isn't defined in %s", typeName, schemaFile)
 	}
 	err := definition.Walk("", api.resolveRef)
