@@ -131,6 +131,7 @@ func (s *Server) Run() error {
 	return nil
 }
 
+//Close closes server resources
 func (s *Server) Close() error {
 	return s.DB.Close()
 }

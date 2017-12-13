@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo"
 )
 
-//REST API defines handlers for REST API calls.
+//RESTAPI defines handlers for REST API calls.
 type RESTAPI interface {
 	Path() string
 	LongPath() string

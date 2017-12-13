@@ -1,0 +1,30 @@
+version: 2
+jobs:
+  build:
+    working_directory: /go/src/github.com/Juniper/contrail
+    docker:
+      - image: circleci/golang:1.9
+      - image: circleci/mysql:5.7
+        environment:
+          - MYSQL_ROOT_PASSWORD=contrail123
+
+    steps:
+    - checkout
+    - run:
+        name: install mysql client
+        command: sudo apt install mysql-client
+    - run:
+        name: install deps
+        command: ./tools/deps.sh
+    - run:
+        name: lint
+        command: ./tools/lint.sh
+    - run:
+        name: Wait for db
+        command: dockerize -wait tcp://localhost:3306 -timeout 1m
+    - run:
+        name: Reset database
+        command: ./tools/reset_db.sh
+    - run:
+        name: Run Test
+        command: make test

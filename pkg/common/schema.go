@@ -59,7 +59,7 @@ func (c ColumnConfigs) Less(i, j int) bool {
 	return strings.Compare(strings.Join(c[i].ParentColumn, "")+c[i].Column, strings.Join(c[j].ParentColumn, "")+c[j].Column) > 0
 }
 
-func (c ColumnConfigs) ShortenColumn() {
+func (c ColumnConfigs) shortenColumn() {
 	sort.Sort(c)
 	if len(c) < 2 {
 		return
@@ -418,7 +418,7 @@ func (api *API) resolveAllSQL() error {
 		if err != nil {
 			return err
 		}
-		s.Columns.ShortenColumn()
+		s.Columns.shortenColumn()
 	}
 	return nil
 }

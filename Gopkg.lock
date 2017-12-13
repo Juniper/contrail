@@ -38,12 +38,6 @@
   version = "v1.0"
 
 [[projects]]
-  name = "github.com/k0kubun/pp"
-  packages = ["."]
-  revision = "027a6d1765d673d337e687394dbe780dd64e2a1e"
-  version = "v2.3.0"
-
-[[projects]]
   name = "github.com/labstack/echo"
   packages = [".","middleware"]
   revision = "0473c51f1dbd83487effce00702571d19033a6e5"
@@ -190,6 +184,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9dde4ea971665f7bcb52f02605cd2404861fd4865bf45104254a96fa6ed96174"
+  inputs-digest = "91d7e800d2f1f3a52367e62e3955304d6b398f30af511965b14896f3c9811766"
   solver-name = "gps-cdcl"
   solver-version = 1
