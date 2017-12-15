@@ -59,9 +59,9 @@ var AliasIPRefFields = map[string][]string{
 // AliasIPBackRefFields is db back reference fields for AliasIP
 var AliasIPBackRefFields = map[string][]string{}
 
-const insertAliasIPVirtualMachineInterfaceQuery = "insert into `ref_alias_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
-
 const insertAliasIPProjectQuery = "insert into `ref_alias_ip_project` (`from`, `to` ) values (?, ?);"
+
+const insertAliasIPVirtualMachineInterfaceQuery = "insert into `ref_alias_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateAliasIP inserts AliasIP to DB
 func CreateAliasIP(tx *sql.Tx, model *models.AliasIP) error {
@@ -102,19 +102,6 @@ func CreateAliasIP(tx *sql.Tx, model *models.AliasIP) error {
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtProjectRef, err := tx.Prepare(insertAliasIPProjectQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ProjectRefs create statement failed")
-	}
-	defer stmtProjectRef.Close()
-	for _, ref := range model.ProjectRefs {
-
-		_, err = stmtProjectRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ProjectRefs create failed")
-		}
-	}
-
 	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertAliasIPVirtualMachineInterfaceQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
@@ -125,6 +112,19 @@ func CreateAliasIP(tx *sql.Tx, model *models.AliasIP) error {
 		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
+	}
+
+	stmtProjectRef, err := tx.Prepare(insertAliasIPProjectQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ProjectRefs create statement failed")
+	}
+	defer stmtProjectRef.Close()
+	for _, ref := range model.ProjectRefs {
+
+		_, err = stmtProjectRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ProjectRefs create failed")
 		}
 	}
 
@@ -393,9 +393,6 @@ func ListAliasIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.AliasIP, error) {
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanAliasIP(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -405,17 +402,6 @@ func ListAliasIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.AliasIP, error) {
 	return result, nil
 }
 
-// ShowAliasIP shows AliasIP resource
-func ShowAliasIP(tx *sql.Tx, uuid string) (*models.AliasIP, error) {
-	list, err := ListAliasIP(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateAliasIP updates a resource
 func UpdateAliasIP(tx *sql.Tx, uuid string, model *models.AliasIP) error {
 	//TODO(nati) support update
@@ -423,16 +409,21 @@ func UpdateAliasIP(tx *sql.Tx, uuid string, model *models.AliasIP) error {
 }
 
 // DeleteAliasIP deletes a resource
-func DeleteAliasIP(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteAliasIPQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteAliasIP(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteAliasIPQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

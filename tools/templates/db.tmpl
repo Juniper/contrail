@@ -242,9 +242,6 @@ func List{{ schema.JSONSchema.GoName }}(tx *sql.Tx, spec *common.ListSpec) ([]*m
                 val := valuesPointers[index].(*interface{})
                 valuesMap[column] = *val
             }
-            log.WithFields(log.Fields{
-                "valuesMap": valuesMap,
-            }).Debug("valueMap")
             m, err := scan{{ schema.JSONSchema.GoName }}(valuesMap)
             if err != nil {
                 return nil, errors.Wrap(err, "scan row failed")
@@ -254,17 +251,6 @@ func List{{ schema.JSONSchema.GoName }}(tx *sql.Tx, spec *common.ListSpec) ([]*m
     return result, nil
 }
 
-// Show{{ schema.JSONSchema.GoName }} shows {{ schema.JSONSchema.GoName }} resource
-func Show{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string) (*models.{{ schema.JSONSchema.GoName }}, error) {
-    list, err := List{{ schema.JSONSchema.GoName }}(tx, &common.ListSpec{
-        Filter: map[string]interface{}{"uuid": uuid},
-        Limit: 1})
-    if len(list) == 0 {
-        return nil, errors.Wrap(err, "show query failed")
-    }
-    return list[0], err
-}
-
 // Update{{ schema.JSONSchema.GoName }} updates a resource
 func Update{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string, model *models.{{ schema.JSONSchema.GoName }}) error {
     //TODO(nati) support update
@@ -272,16 +258,21 @@ func Update{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string, model *models
 }
 
 // Delete{{ schema.JSONSchema.GoName }} deletes a resource
-func Delete{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(delete{{ schema.JSONSchema.GoName }}Query)
-	if err != nil {
-        return errors.Wrap(err, "preparing delete query failed")
-	}
-	defer stmt.Close()
-    _, err = stmt.Exec(uuid)
+func Delete{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+    query := delete{{ schema.JSONSchema.GoName }}Query
+    var err error
+
+    if auth.IsAdmin() {
+        _, err = tx.Exec(query, uuid)
+    }else{
+        query += " and owner = ?"
+        _, err = tx.Exec(query, uuid, auth.ProjectID() )
+    }
+
     if err != nil {
         return errors.Wrap(err, "delete failed")
     }
+
     log.WithFields(log.Fields{
         "uuid": uuid,
     }).Debug("deleted")

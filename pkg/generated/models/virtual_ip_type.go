@@ -8,14 +8,14 @@ import "encoding/json"
 type VirtualIpType struct {
 	PersistenceCookieName string                   `json:"persistence_cookie_name"`
 	ConnectionLimit       int                      `json:"connection_limit"`
-	PersistenceType       SessionPersistenceType   `json:"persistence_type"`
 	AdminState            bool                     `json:"admin_state"`
-	Address               IpAddressType            `json:"address"`
 	ProtocolPort          int                      `json:"protocol_port"`
-	Protocol              LoadbalancerProtocolType `json:"protocol"`
-	SubnetID              UuidStringType           `json:"subnet_id"`
 	Status                string                   `json:"status"`
+	Protocol              LoadbalancerProtocolType `json:"protocol"`
+	PersistenceType       SessionPersistenceType   `json:"persistence_type"`
+	Address               IpAddressType            `json:"address"`
 	StatusDescription     string                   `json:"status_description"`
+	SubnetID              UuidStringType           `json:"subnet_id"`
 }
 
 // String returns json representation of the object
@@ -29,15 +29,15 @@ func MakeVirtualIpType() *VirtualIpType {
 	return &VirtualIpType{
 		//TODO(nati): Apply default
 		AdminState:            false,
-		Address:               MakeIpAddressType(),
 		ProtocolPort:          0,
+		Status:                "",
 		Protocol:              MakeLoadbalancerProtocolType(),
-		SubnetID:              MakeUuidStringType(),
 		PersistenceCookieName: "",
 		ConnectionLimit:       0,
-		PersistenceType:       MakeSessionPersistenceType(),
-		Status:                "",
 		StatusDescription:     "",
+		SubnetID:              MakeUuidStringType(),
+		PersistenceType:       MakeSessionPersistenceType(),
+		Address:               MakeIpAddressType(),
 	}
 }
 
@@ -45,36 +45,36 @@ func MakeVirtualIpType() *VirtualIpType {
 func InterfaceToVirtualIpType(iData interface{}) *VirtualIpType {
 	data := iData.(map[string]interface{})
 	return &VirtualIpType{
-		PersistenceType: InterfaceToSessionPersistenceType(data["persistence_type"]),
+		Status: data["status"].(string),
 
-		//{"description":"Method for persistence. HTTP_COOKIE, SOURCE_IP or APP_COOKIE.","type":"string","enum":["SOURCE_IP","HTTP_COOKIE","APP_COOKIE"]}
-		AdminState: data["admin_state"].(bool),
-
-		//{"description":"Administrative up or down.","type":"boolean"}
-		Address: InterfaceToIpAddressType(data["address"]),
-
-		//{"description":"IP address automatically allocated by system.","type":"string"}
-		ProtocolPort: data["protocol_port"].(int),
-
-		//{"description":"Layer 4 protocol destination port.","type":"integer"}
+		//{"description":"Operating status for this virtual ip.","type":"string"}
 		Protocol: InterfaceToLoadbalancerProtocolType(data["protocol"]),
 
 		//{"description":"IP protocol string like http, https or tcp.","type":"string","enum":["HTTP","HTTPS","TCP","UDP","TERMINATED_HTTPS"]}
-		SubnetID: InterfaceToUuidStringType(data["subnet_id"]),
-
-		//{"description":"UUID of subnet in which to allocate the Virtual IP.","type":"string"}
 		PersistenceCookieName: data["persistence_cookie_name"].(string),
 
 		//{"description":"Set this string if the relation of client and server(pool member) need to persist.","type":"string"}
 		ConnectionLimit: data["connection_limit"].(int),
 
 		//{"description":"Maximum number of concurrent connections","type":"integer"}
-		Status: data["status"].(string),
+		AdminState: data["admin_state"].(bool),
 
-		//{"description":"Operating status for this virtual ip.","type":"string"}
+		//{"description":"Administrative up or down.","type":"boolean"}
+		ProtocolPort: data["protocol_port"].(int),
+
+		//{"description":"Layer 4 protocol destination port.","type":"integer"}
 		StatusDescription: data["status_description"].(string),
 
 		//{"description":"Operating status description this virtual ip.","type":"string"}
+		SubnetID: InterfaceToUuidStringType(data["subnet_id"]),
+
+		//{"description":"UUID of subnet in which to allocate the Virtual IP.","type":"string"}
+		PersistenceType: InterfaceToSessionPersistenceType(data["persistence_type"]),
+
+		//{"description":"Method for persistence. HTTP_COOKIE, SOURCE_IP or APP_COOKIE.","type":"string","enum":["SOURCE_IP","HTTP_COOKIE","APP_COOKIE"]}
+		Address: InterfaceToIpAddressType(data["address"]),
+
+		//{"description":"IP address automatically allocated by system.","type":"string"}
 
 	}
 }

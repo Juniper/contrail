@@ -110,13 +110,13 @@ var FirewallRuleRefFields = map[string][]string{
 // FirewallRuleBackRefFields is db back reference fields for FirewallRule
 var FirewallRuleBackRefFields = map[string][]string{}
 
-const insertFirewallRuleVirtualNetworkQuery = "insert into `ref_firewall_rule_virtual_network` (`from`, `to` ) values (?, ?);"
-
-const insertFirewallRuleServiceGroupQuery = "insert into `ref_firewall_rule_service_group` (`from`, `to` ) values (?, ?);"
-
 const insertFirewallRuleAddressGroupQuery = "insert into `ref_firewall_rule_address_group` (`from`, `to` ) values (?, ?);"
 
 const insertFirewallRuleSecurityLoggingObjectQuery = "insert into `ref_firewall_rule_security_logging_object` (`from`, `to` ) values (?, ?);"
+
+const insertFirewallRuleVirtualNetworkQuery = "insert into `ref_firewall_rule_virtual_network` (`from`, `to` ) values (?, ?);"
+
+const insertFirewallRuleServiceGroupQuery = "insert into `ref_firewall_rule_service_group` (`from`, `to` ) values (?, ?);"
 
 // CreateFirewallRule inserts FirewallRule to DB
 func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
@@ -198,19 +198,6 @@ func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtAddressGroupRef, err := tx.Prepare(insertFirewallRuleAddressGroupQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing AddressGroupRefs create statement failed")
-	}
-	defer stmtAddressGroupRef.Close()
-	for _, ref := range model.AddressGroupRefs {
-
-		_, err = stmtAddressGroupRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "AddressGroupRefs create failed")
-		}
-	}
-
 	stmtSecurityLoggingObjectRef, err := tx.Prepare(insertFirewallRuleSecurityLoggingObjectQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing SecurityLoggingObjectRefs create statement failed")
@@ -247,6 +234,19 @@ func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
 		_, err = stmtServiceGroupRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceGroupRefs create failed")
+		}
+	}
+
+	stmtAddressGroupRef, err := tx.Prepare(insertFirewallRuleAddressGroupQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing AddressGroupRefs create statement failed")
+	}
+	defer stmtAddressGroupRef.Close()
+	for _, ref := range model.AddressGroupRefs {
+
+		_, err = stmtAddressGroupRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "AddressGroupRefs create failed")
 		}
 	}
 
@@ -867,9 +867,6 @@ func ListFirewallRule(tx *sql.Tx, spec *common.ListSpec) ([]*models.FirewallRule
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanFirewallRule(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -879,17 +876,6 @@ func ListFirewallRule(tx *sql.Tx, spec *common.ListSpec) ([]*models.FirewallRule
 	return result, nil
 }
 
-// ShowFirewallRule shows FirewallRule resource
-func ShowFirewallRule(tx *sql.Tx, uuid string) (*models.FirewallRule, error) {
-	list, err := ListFirewallRule(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateFirewallRule updates a resource
 func UpdateFirewallRule(tx *sql.Tx, uuid string, model *models.FirewallRule) error {
 	//TODO(nati) support update
@@ -897,16 +883,21 @@ func UpdateFirewallRule(tx *sql.Tx, uuid string, model *models.FirewallRule) err
 }
 
 // DeleteFirewallRule deletes a resource
-func DeleteFirewallRule(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteFirewallRuleQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteFirewallRule(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteFirewallRuleQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

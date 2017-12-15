@@ -6,8 +6,8 @@ import "encoding/json"
 
 // KeyValuePair
 type KeyValuePair struct {
-	Value string `json:"value"`
 	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 // String returns json representation of the object
@@ -20,8 +20,8 @@ func (model *KeyValuePair) String() string {
 func MakeKeyValuePair() *KeyValuePair {
 	return &KeyValuePair{
 		//TODO(nati): Apply default
-		Key:   "",
 		Value: "",
+		Key:   "",
 	}
 }
 
@@ -29,10 +29,10 @@ func MakeKeyValuePair() *KeyValuePair {
 func InterfaceToKeyValuePair(iData interface{}) *KeyValuePair {
 	data := iData.(map[string]interface{})
 	return &KeyValuePair{
-		Value: data["value"].(string),
+		Key: data["key"].(string),
 
 		//{"type":"string"}
-		Key: data["key"].(string),
+		Value: data["value"].(string),
 
 		//{"type":"string"}
 

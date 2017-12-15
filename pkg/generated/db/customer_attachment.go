@@ -373,9 +373,6 @@ func ListCustomerAttachment(tx *sql.Tx, spec *common.ListSpec) ([]*models.Custom
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanCustomerAttachment(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -385,17 +382,6 @@ func ListCustomerAttachment(tx *sql.Tx, spec *common.ListSpec) ([]*models.Custom
 	return result, nil
 }
 
-// ShowCustomerAttachment shows CustomerAttachment resource
-func ShowCustomerAttachment(tx *sql.Tx, uuid string) (*models.CustomerAttachment, error) {
-	list, err := ListCustomerAttachment(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateCustomerAttachment updates a resource
 func UpdateCustomerAttachment(tx *sql.Tx, uuid string, model *models.CustomerAttachment) error {
 	//TODO(nati) support update
@@ -403,16 +389,21 @@ func UpdateCustomerAttachment(tx *sql.Tx, uuid string, model *models.CustomerAtt
 }
 
 // DeleteCustomerAttachment deletes a resource
-func DeleteCustomerAttachment(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteCustomerAttachmentQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteCustomerAttachment(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteCustomerAttachmentQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

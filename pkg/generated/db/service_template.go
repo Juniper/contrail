@@ -452,9 +452,6 @@ func ListServiceTemplate(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceTe
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanServiceTemplate(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -464,17 +461,6 @@ func ListServiceTemplate(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceTe
 	return result, nil
 }
 
-// ShowServiceTemplate shows ServiceTemplate resource
-func ShowServiceTemplate(tx *sql.Tx, uuid string) (*models.ServiceTemplate, error) {
-	list, err := ListServiceTemplate(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateServiceTemplate updates a resource
 func UpdateServiceTemplate(tx *sql.Tx, uuid string, model *models.ServiceTemplate) error {
 	//TODO(nati) support update
@@ -482,16 +468,21 @@ func UpdateServiceTemplate(tx *sql.Tx, uuid string, model *models.ServiceTemplat
 }
 
 // DeleteServiceTemplate deletes a resource
-func DeleteServiceTemplate(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteServiceTemplateQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteServiceTemplate(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteServiceTemplateQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

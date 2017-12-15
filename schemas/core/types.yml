@@ -2212,4 +2212,11 @@
           type: "array"
     U16BitHexInt:
       type: "string"
+    MemberType:
+      type: "object"
+      properties:
+        role:
+          type: "string"
+          description: "User role for the project"
+          presence: "true"
 

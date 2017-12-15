@@ -6,17 +6,17 @@ import "encoding/json"
 
 // ServiceHealthCheckType
 type ServiceHealthCheckType struct {
-	Enabled         bool                    `json:"enabled"`
-	ExpectedCodes   string                  `json:"expected_codes"`
-	MaxRetries      int                     `json:"max_retries"`
-	HealthCheckType HealthCheckType         `json:"health_check_type"`
-	DelayUsecs      int                     `json:"delayUsecs"`
-	TimeoutUsecs    int                     `json:"timeoutUsecs"`
-	Delay           int                     `json:"delay"`
-	HTTPMethod      string                  `json:"http_method"`
 	Timeout         int                     `json:"timeout"`
 	URLPath         string                  `json:"url_path"`
 	MonitorType     HealthCheckProtocolType `json:"monitor_type"`
+	DelayUsecs      int                     `json:"delayUsecs"`
+	MaxRetries      int                     `json:"max_retries"`
+	HTTPMethod      string                  `json:"http_method"`
+	ExpectedCodes   string                  `json:"expected_codes"`
+	HealthCheckType HealthCheckType         `json:"health_check_type"`
+	TimeoutUsecs    int                     `json:"timeoutUsecs"`
+	Enabled         bool                    `json:"enabled"`
+	Delay           int                     `json:"delay"`
 }
 
 // String returns json representation of the object
@@ -29,17 +29,17 @@ func (model *ServiceHealthCheckType) String() string {
 func MakeServiceHealthCheckType() *ServiceHealthCheckType {
 	return &ServiceHealthCheckType{
 		//TODO(nati): Apply default
-		DelayUsecs:      0,
-		TimeoutUsecs:    0,
-		Delay:           0,
-		HTTPMethod:      "",
-		Timeout:         0,
 		URLPath:         "",
 		MonitorType:     MakeHealthCheckProtocolType(),
-		Enabled:         false,
-		ExpectedCodes:   "",
+		DelayUsecs:      0,
 		MaxRetries:      0,
+		HTTPMethod:      "",
+		Timeout:         0,
 		HealthCheckType: MakeHealthCheckType(),
+		TimeoutUsecs:    0,
+		Enabled:         false,
+		Delay:           0,
+		ExpectedCodes:   "",
 	}
 }
 
@@ -47,24 +47,6 @@ func MakeServiceHealthCheckType() *ServiceHealthCheckType {
 func InterfaceToServiceHealthCheckType(iData interface{}) *ServiceHealthCheckType {
 	data := iData.(map[string]interface{})
 	return &ServiceHealthCheckType{
-		ExpectedCodes: data["expected_codes"].(string),
-
-		//{"description":"In case monitor protocol is HTTP, expected return code for HTTP operations like 200 ok.","type":"string"}
-		MaxRetries: data["max_retries"].(int),
-
-		//{"description":"Number of failures before declaring health bad","type":"integer"}
-		HealthCheckType: InterfaceToHealthCheckType(data["health_check_type"]),
-
-		//{"description":"Health check type, currently only link-local, end-to-end and segment are supported","type":"string","enum":["link-local","end-to-end","segment"]}
-		Enabled: data["enabled"].(bool),
-
-		//{"description":"Administratively enable or disable this health check.","type":"boolean"}
-		TimeoutUsecs: data["timeoutUsecs"].(int),
-
-		//{"description":"Time in micro seconds to wait for response","type":"integer"}
-		Delay: data["delay"].(int),
-
-		//{"description":"Time in seconds at which health check is repeated","type":"integer"}
 		HTTPMethod: data["http_method"].(string),
 
 		//{"description":"In case monitor protocol is HTTP, type of http method used like GET, PUT, POST etc","type":"string"}
@@ -80,6 +62,24 @@ func InterfaceToServiceHealthCheckType(iData interface{}) *ServiceHealthCheckTyp
 		DelayUsecs: data["delayUsecs"].(int),
 
 		//{"description":"Time in micro seconds at which health check is repeated","type":"integer"}
+		MaxRetries: data["max_retries"].(int),
+
+		//{"description":"Number of failures before declaring health bad","type":"integer"}
+		Delay: data["delay"].(int),
+
+		//{"description":"Time in seconds at which health check is repeated","type":"integer"}
+		ExpectedCodes: data["expected_codes"].(string),
+
+		//{"description":"In case monitor protocol is HTTP, expected return code for HTTP operations like 200 ok.","type":"string"}
+		HealthCheckType: InterfaceToHealthCheckType(data["health_check_type"]),
+
+		//{"description":"Health check type, currently only link-local, end-to-end and segment are supported","type":"string","enum":["link-local","end-to-end","segment"]}
+		TimeoutUsecs: data["timeoutUsecs"].(int),
+
+		//{"description":"Time in micro seconds to wait for response","type":"integer"}
+		Enabled: data["enabled"].(bool),
+
+		//{"description":"Administratively enable or disable this health check.","type":"boolean"}
 
 	}
 }

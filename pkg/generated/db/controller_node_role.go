@@ -384,9 +384,6 @@ func ListControllerNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.Contro
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanControllerNodeRole(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -396,17 +393,6 @@ func ListControllerNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.Contro
 	return result, nil
 }
 
-// ShowControllerNodeRole shows ControllerNodeRole resource
-func ShowControllerNodeRole(tx *sql.Tx, uuid string) (*models.ControllerNodeRole, error) {
-	list, err := ListControllerNodeRole(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateControllerNodeRole updates a resource
 func UpdateControllerNodeRole(tx *sql.Tx, uuid string, model *models.ControllerNodeRole) error {
 	//TODO(nati) support update
@@ -414,16 +400,21 @@ func UpdateControllerNodeRole(tx *sql.Tx, uuid string, model *models.ControllerN
 }
 
 // DeleteControllerNodeRole deletes a resource
-func DeleteControllerNodeRole(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteControllerNodeRoleQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteControllerNodeRole(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteControllerNodeRoleQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

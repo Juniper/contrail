@@ -343,9 +343,6 @@ func ListRoutingPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.RoutingPoli
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanRoutingPolicy(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -355,17 +352,6 @@ func ListRoutingPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.RoutingPoli
 	return result, nil
 }
 
-// ShowRoutingPolicy shows RoutingPolicy resource
-func ShowRoutingPolicy(tx *sql.Tx, uuid string) (*models.RoutingPolicy, error) {
-	list, err := ListRoutingPolicy(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateRoutingPolicy updates a resource
 func UpdateRoutingPolicy(tx *sql.Tx, uuid string, model *models.RoutingPolicy) error {
 	//TODO(nati) support update
@@ -373,16 +359,21 @@ func UpdateRoutingPolicy(tx *sql.Tx, uuid string, model *models.RoutingPolicy) e
 }
 
 // DeleteRoutingPolicy deletes a resource
-func DeleteRoutingPolicy(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteRoutingPolicyQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteRoutingPolicy(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteRoutingPolicyQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

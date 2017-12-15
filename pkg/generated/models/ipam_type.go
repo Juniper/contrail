@@ -37,6 +37,9 @@ func MakeIpamType() *IpamType {
 func InterfaceToIpamType(iData interface{}) *IpamType {
 	data := iData.(map[string]interface{})
 	return &IpamType{
+		IpamDNSMethod: InterfaceToIpamDnsMethodType(data["ipam_dns_method"]),
+
+		//{"type":"string","enum":["none","default-dns-server","tenant-dns-server","virtual-dns-server"]}
 		IpamDNSServer: InterfaceToIpamDnsAddressType(data["ipam_dns_server"]),
 
 		//{"type":"object","properties":{"tenant_dns_server_address":{"type":"object","properties":{"ip_address":{"type":"string"}}},"virtual_dns_server_name":{"type":"string"}}}
@@ -52,9 +55,6 @@ func InterfaceToIpamType(iData interface{}) *IpamType {
 		IpamMethod: InterfaceToIpamMethodType(data["ipam_method"]),
 
 		//{"type":"string","enum":["dhcp","fixed"]}
-		IpamDNSMethod: InterfaceToIpamDnsMethodType(data["ipam_dns_method"]),
-
-		//{"type":"string","enum":["none","default-dns-server","tenant-dns-server","virtual-dns-server"]}
 
 	}
 }

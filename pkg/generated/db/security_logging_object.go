@@ -321,28 +321,6 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 
 	}
 
-	if value, ok := values["ref_security_group"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			if referenceMap["to"] == "" {
-				continue
-			}
-			referenceModel := &models.SecurityLoggingObjectSecurityGroupRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
-			m.SecurityGroupRefs = append(m.SecurityGroupRefs, referenceModel)
-
-			attr := models.MakeSecurityLoggingObjectRuleListType()
-			referenceModel.Attr = attr
-
-		}
-	}
-
 	if value, ok := values["ref_network_policy"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -358,6 +336,28 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 			referenceModel := &models.SecurityLoggingObjectNetworkPolicyRef{}
 			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
+
+			attr := models.MakeSecurityLoggingObjectRuleListType()
+			referenceModel.Attr = attr
+
+		}
+	}
+
+	if value, ok := values["ref_security_group"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.SecurityLoggingObjectSecurityGroupRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.SecurityGroupRefs = append(m.SecurityGroupRefs, referenceModel)
 
 			attr := models.MakeSecurityLoggingObjectRuleListType()
 			referenceModel.Attr = attr
@@ -405,9 +405,6 @@ func ListSecurityLoggingObject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Sec
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanSecurityLoggingObject(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -417,17 +414,6 @@ func ListSecurityLoggingObject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Sec
 	return result, nil
 }
 
-// ShowSecurityLoggingObject shows SecurityLoggingObject resource
-func ShowSecurityLoggingObject(tx *sql.Tx, uuid string) (*models.SecurityLoggingObject, error) {
-	list, err := ListSecurityLoggingObject(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateSecurityLoggingObject updates a resource
 func UpdateSecurityLoggingObject(tx *sql.Tx, uuid string, model *models.SecurityLoggingObject) error {
 	//TODO(nati) support update
@@ -435,16 +421,21 @@ func UpdateSecurityLoggingObject(tx *sql.Tx, uuid string, model *models.Security
 }
 
 // DeleteSecurityLoggingObject deletes a resource
-func DeleteSecurityLoggingObject(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteSecurityLoggingObjectQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteSecurityLoggingObject(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteSecurityLoggingObjectQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

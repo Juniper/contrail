@@ -26,14 +26,14 @@ func (model *ActionListType) String() string {
 func MakeActionListType() *ActionListType {
 	return &ActionListType{
 		//TODO(nati): Apply default
-		GatewayName:           "",
-		Log:                   false,
 		Alert:                 false,
 		QosAction:             "",
 		AssignRoutingInstance: "",
 		MirrorTo:              MakeMirrorActionType(),
 		SimpleAction:          MakeSimpleActionType(),
 		ApplyService:          []string{},
+		GatewayName:           "",
+		Log:                   false,
 	}
 }
 
@@ -41,15 +41,6 @@ func MakeActionListType() *ActionListType {
 func InterfaceToActionListType(iData interface{}) *ActionListType {
 	data := iData.(map[string]interface{})
 	return &ActionListType{
-		AssignRoutingInstance: data["assign_routing_instance"].(string),
-
-		//{"description":"For internal use only","type":"string"}
-		MirrorTo: InterfaceToMirrorActionType(data["mirror_to"]),
-
-		//{"description":"Mirror traffic matching this rule","type":"object","properties":{"analyzer_ip_address":{"type":"string"},"analyzer_mac_address":{"type":"string"},"analyzer_name":{"type":"string"},"encapsulation":{"type":"string"},"juniper_header":{"type":"boolean"},"nh_mode":{"type":"string","enum":["dynamic","static"]},"nic_assisted_mirroring":{"type":"boolean"},"nic_assisted_mirroring_vlan":{"type":"integer","minimum":1,"maximum":4094},"routing_instance":{"type":"string"},"static_nh_header":{"type":"object","properties":{"vni":{"type":"integer","minimum":1,"maximum":16777215},"vtep_dst_ip_address":{"type":"string"},"vtep_dst_mac_address":{"type":"string"}}},"udp_port":{"type":"integer"}}}
-		SimpleAction: InterfaceToSimpleActionType(data["simple_action"]),
-
-		//{"description":"Simple allow(pass) or deny action for traffic matching this rule","type":"string","enum":["deny","pass"]}
 		ApplyService: data["apply_service"].([]string),
 
 		//{"description":"Ordered list of service instances in service chain applied to traffic matching the rule","type":"array","item":{"type":"string"}}
@@ -65,6 +56,15 @@ func InterfaceToActionListType(iData interface{}) *ActionListType {
 		QosAction: data["qos_action"].(string),
 
 		//{"description":"FQN of Qos configuration object for QoS marking","type":"string"}
+		AssignRoutingInstance: data["assign_routing_instance"].(string),
+
+		//{"description":"For internal use only","type":"string"}
+		MirrorTo: InterfaceToMirrorActionType(data["mirror_to"]),
+
+		//{"description":"Mirror traffic matching this rule","type":"object","properties":{"analyzer_ip_address":{"type":"string"},"analyzer_mac_address":{"type":"string"},"analyzer_name":{"type":"string"},"encapsulation":{"type":"string"},"juniper_header":{"type":"boolean"},"nh_mode":{"type":"string","enum":["dynamic","static"]},"nic_assisted_mirroring":{"type":"boolean"},"nic_assisted_mirroring_vlan":{"type":"integer","minimum":1,"maximum":4094},"routing_instance":{"type":"string"},"static_nh_header":{"type":"object","properties":{"vni":{"type":"integer","minimum":1,"maximum":16777215},"vtep_dst_ip_address":{"type":"string"},"vtep_dst_mac_address":{"type":"string"}}},"udp_port":{"type":"integer"}}}
+		SimpleAction: InterfaceToSimpleActionType(data["simple_action"]),
+
+		//{"description":"Simple allow(pass) or deny action for traffic matching this rule","type":"string","enum":["deny","pass"]}
 
 	}
 }

@@ -6,14 +6,14 @@ import "encoding/json"
 
 // VirtualDnsType
 type VirtualDnsType struct {
+	ReverseResolution        bool                  `json:"reverse_resolution"`
+	DefaultTTLSeconds        int                   `json:"default_ttl_seconds"`
 	RecordOrder              DnsRecordOrderType    `json:"record_order"`
 	FloatingIPRecord         FloatingIpDnsNotation `json:"floating_ip_record"`
 	DomainName               string                `json:"domain_name"`
 	ExternalVisible          bool                  `json:"external_visible"`
 	NextVirtualDNS           string                `json:"next_virtual_DNS"`
 	DynamicRecordsFromClient bool                  `json:"dynamic_records_from_client"`
-	ReverseResolution        bool                  `json:"reverse_resolution"`
-	DefaultTTLSeconds        int                   `json:"default_ttl_seconds"`
 }
 
 // String returns json representation of the object
@@ -26,14 +26,14 @@ func (model *VirtualDnsType) String() string {
 func MakeVirtualDnsType() *VirtualDnsType {
 	return &VirtualDnsType{
 		//TODO(nati): Apply default
-		FloatingIPRecord:         MakeFloatingIpDnsNotation(),
-		DomainName:               "",
-		ExternalVisible:          false,
 		NextVirtualDNS:           "",
 		DynamicRecordsFromClient: false,
 		ReverseResolution:        false,
 		DefaultTTLSeconds:        0,
 		RecordOrder:              MakeDnsRecordOrderType(),
+		FloatingIPRecord:         MakeFloatingIpDnsNotation(),
+		DomainName:               "",
+		ExternalVisible:          false,
 	}
 }
 
@@ -41,12 +41,6 @@ func MakeVirtualDnsType() *VirtualDnsType {
 func InterfaceToVirtualDnsType(iData interface{}) *VirtualDnsType {
 	data := iData.(map[string]interface{})
 	return &VirtualDnsType{
-		DefaultTTLSeconds: data["default_ttl_seconds"].(int),
-
-		//{"description":"Default Time To Live for DNS records","type":"integer"}
-		RecordOrder: InterfaceToDnsRecordOrderType(data["record_order"]),
-
-		//{"description":"Order of DNS load balancing, fixed, random, round-robin. Default is random","type":"string","enum":["fixed","random","round-robin"]}
 		FloatingIPRecord: InterfaceToFloatingIpDnsNotation(data["floating_ip_record"]),
 
 		//{"description":"Decides how floating ip records are added","type":"string","enum":["dashed-ip","dashed-ip-tenant-name","vm-name","vm-name-tenant-name"]}
@@ -65,6 +59,12 @@ func InterfaceToVirtualDnsType(iData interface{}) *VirtualDnsType {
 		ReverseResolution: data["reverse_resolution"].(bool),
 
 		//{"description":"Allow reverse DNS resolution, ip to name mapping","type":"boolean"}
+		DefaultTTLSeconds: data["default_ttl_seconds"].(int),
+
+		//{"description":"Default Time To Live for DNS records","type":"integer"}
+		RecordOrder: InterfaceToDnsRecordOrderType(data["record_order"]),
+
+		//{"description":"Order of DNS load balancing, fixed, random, round-robin. Default is random","type":"string","enum":["fixed","random","round-robin"]}
 
 	}
 }

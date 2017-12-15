@@ -364,9 +364,6 @@ func ListTag(tx *sql.Tx, spec *common.ListSpec) ([]*models.Tag, error) {
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanTag(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -376,17 +373,6 @@ func ListTag(tx *sql.Tx, spec *common.ListSpec) ([]*models.Tag, error) {
 	return result, nil
 }
 
-// ShowTag shows Tag resource
-func ShowTag(tx *sql.Tx, uuid string) (*models.Tag, error) {
-	list, err := ListTag(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateTag updates a resource
 func UpdateTag(tx *sql.Tx, uuid string, model *models.Tag) error {
 	//TODO(nati) support update
@@ -394,16 +380,21 @@ func UpdateTag(tx *sql.Tx, uuid string, model *models.Tag) error {
 }
 
 // DeleteTag deletes a resource
-func DeleteTag(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteTagQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteTag(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteTagQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

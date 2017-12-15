@@ -6,12 +6,12 @@ import "encoding/json"
 
 // FirewallRuleEndpointType
 type FirewallRuleEndpointType struct {
-	Any            bool        `json:"any"`
 	AddressGroup   string      `json:"address_group"`
 	Subnet         *SubnetType `json:"subnet"`
 	Tags           []string    `json:"tags"`
 	TagIds         []int       `json:"tag_ids"`
 	VirtualNetwork string      `json:"virtual_network"`
+	Any            bool        `json:"any"`
 }
 
 // String returns json representation of the object
@@ -24,14 +24,14 @@ func (model *FirewallRuleEndpointType) String() string {
 func MakeFirewallRuleEndpointType() *FirewallRuleEndpointType {
 	return &FirewallRuleEndpointType{
 		//TODO(nati): Apply default
-		AddressGroup: "",
-		Subnet:       MakeSubnetType(),
-		Tags:         []string{},
+		Subnet: MakeSubnetType(),
+		Tags:   []string{},
 
 		TagIds: []int{},
 
 		VirtualNetwork: "",
 		Any:            false,
+		AddressGroup:   "",
 	}
 }
 
@@ -39,6 +39,9 @@ func MakeFirewallRuleEndpointType() *FirewallRuleEndpointType {
 func InterfaceToFirewallRuleEndpointType(iData interface{}) *FirewallRuleEndpointType {
 	data := iData.(map[string]interface{})
 	return &FirewallRuleEndpointType{
+		Any: data["any"].(bool),
+
+		//{"description":"Match any workload","type":"boolean"}
 		AddressGroup: data["address_group"].(string),
 
 		//{"description":"Any workload with interface in this address-group","type":"string"}
@@ -55,9 +58,6 @@ func InterfaceToFirewallRuleEndpointType(iData interface{}) *FirewallRuleEndpoin
 		VirtualNetwork: data["virtual_network"].(string),
 
 		//{"description":"Any workload that belongs to this virtual network ","type":"string"}
-		Any: data["any"].(bool),
-
-		//{"description":"Match any workload","type":"boolean"}
 
 	}
 }

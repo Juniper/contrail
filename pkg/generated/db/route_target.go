@@ -294,9 +294,6 @@ func ListRouteTarget(tx *sql.Tx, spec *common.ListSpec) ([]*models.RouteTarget, 
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanRouteTarget(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -306,17 +303,6 @@ func ListRouteTarget(tx *sql.Tx, spec *common.ListSpec) ([]*models.RouteTarget, 
 	return result, nil
 }
 
-// ShowRouteTarget shows RouteTarget resource
-func ShowRouteTarget(tx *sql.Tx, uuid string) (*models.RouteTarget, error) {
-	list, err := ListRouteTarget(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateRouteTarget updates a resource
 func UpdateRouteTarget(tx *sql.Tx, uuid string, model *models.RouteTarget) error {
 	//TODO(nati) support update
@@ -324,16 +310,21 @@ func UpdateRouteTarget(tx *sql.Tx, uuid string, model *models.RouteTarget) error
 }
 
 // DeleteRouteTarget deletes a resource
-func DeleteRouteTarget(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteRouteTargetQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteRouteTarget(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteRouteTargetQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

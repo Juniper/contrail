@@ -6,9 +6,9 @@ import "encoding/json"
 
 // TelemetryResourceInfo
 type TelemetryResourceInfo struct {
-	Name string `json:"name"`
 	Path string `json:"path"`
 	Rate string `json:"rate"`
+	Name string `json:"name"`
 }
 
 // String returns json representation of the object
@@ -31,13 +31,13 @@ func MakeTelemetryResourceInfo() *TelemetryResourceInfo {
 func InterfaceToTelemetryResourceInfo(iData interface{}) *TelemetryResourceInfo {
 	data := iData.(map[string]interface{})
 	return &TelemetryResourceInfo{
-		Path: data["path"].(string),
-
-		//{"type":"string"}
 		Rate: data["rate"].(string),
 
 		//{"type":"string"}
 		Name: data["name"].(string),
+
+		//{"type":"string"}
+		Path: data["path"].(string),
 
 		//{"type":"string"}
 

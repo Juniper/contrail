@@ -550,9 +550,6 @@ func ListSecurityGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.SecurityGro
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanSecurityGroup(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -562,17 +559,6 @@ func ListSecurityGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.SecurityGro
 	return result, nil
 }
 
-// ShowSecurityGroup shows SecurityGroup resource
-func ShowSecurityGroup(tx *sql.Tx, uuid string) (*models.SecurityGroup, error) {
-	list, err := ListSecurityGroup(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateSecurityGroup updates a resource
 func UpdateSecurityGroup(tx *sql.Tx, uuid string, model *models.SecurityGroup) error {
 	//TODO(nati) support update
@@ -580,16 +566,21 @@ func UpdateSecurityGroup(tx *sql.Tx, uuid string, model *models.SecurityGroup) e
 }
 
 // DeleteSecurityGroup deletes a resource
-func DeleteSecurityGroup(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteSecurityGroupQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteSecurityGroup(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteSecurityGroupQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

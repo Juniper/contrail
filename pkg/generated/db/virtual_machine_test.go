@@ -44,21 +44,7 @@ func TestVirtualMachine(t *testing.T) {
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		model, err := ShowVirtualMachine(tx, model.UUID)
-		if err != nil {
-			return err
-		}
-		if model == nil || model.UUID != "dummy_uuid" {
-			return fmt.Errorf("show failed")
-		}
-		return nil
-	})
-	if err != nil {
-		t.Fatal("show failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualMachine(tx, model.UUID)
+		return DeleteVirtualMachine(tx, model.UUID, nil)
 	})
 	if err != nil {
 		t.Fatal("delete failed", err)

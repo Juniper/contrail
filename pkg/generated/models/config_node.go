@@ -6,15 +6,15 @@ import "encoding/json"
 
 // ConfigNode
 type ConfigNode struct {
+	ConfigNodeIPAddress IpAddressType  `json:"config_node_ip_address"`
+	Perms2              *PermType2     `json:"perms2"`
+	IDPerms             *IdPermsType   `json:"id_perms"`
+	DisplayName         string         `json:"display_name"`
+	Annotations         *KeyValuePairs `json:"annotations"`
+	UUID                string         `json:"uuid"`
 	ParentUUID          string         `json:"parent_uuid"`
 	ParentType          string         `json:"parent_type"`
 	FQName              []string       `json:"fq_name"`
-	ConfigNodeIPAddress IpAddressType  `json:"config_node_ip_address"`
-	Annotations         *KeyValuePairs `json:"annotations"`
-	Perms2              *PermType2     `json:"perms2"`
-	UUID                string         `json:"uuid"`
-	IDPerms             *IdPermsType   `json:"id_perms"`
-	DisplayName         string         `json:"display_name"`
 }
 
 // String returns json representation of the object
@@ -27,15 +27,15 @@ func (model *ConfigNode) String() string {
 func MakeConfigNode() *ConfigNode {
 	return &ConfigNode{
 		//TODO(nati): Apply default
-		IDPerms:             MakeIdPermsType(),
-		DisplayName:         "",
-		UUID:                "",
-		Annotations:         MakeKeyValuePairs(),
-		Perms2:              MakePermType2(),
-		ParentUUID:          "",
 		ParentType:          "",
 		FQName:              []string{},
+		Annotations:         MakeKeyValuePairs(),
+		UUID:                "",
+		ParentUUID:          "",
+		DisplayName:         "",
 		ConfigNodeIPAddress: MakeIpAddressType(),
+		Perms2:              MakePermType2(),
+		IDPerms:             MakeIdPermsType(),
 	}
 }
 
@@ -43,15 +43,6 @@ func MakeConfigNode() *ConfigNode {
 func InterfaceToConfigNode(iData interface{}) *ConfigNode {
 	data := iData.(map[string]interface{})
 	return &ConfigNode{
-		ConfigNodeIPAddress: InterfaceToIpAddressType(data["config_node_ip_address"]),
-
-		//{"description":"Ip address of the config node, set while provisioning.","type":"string"}
-		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
-
-		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		Perms2: InterfaceToPermType2(data["perms2"]),
-
-		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
 		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
@@ -61,6 +52,9 @@ func InterfaceToConfigNode(iData interface{}) *ConfigNode {
 		FQName: data["fq_name"].([]string),
 
 		//{"type":"array","item":{"type":"string"}}
+		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
+
+		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
 		UUID: data["uuid"].(string),
 
 		//{"type":"string"}
@@ -70,6 +64,12 @@ func InterfaceToConfigNode(iData interface{}) *ConfigNode {
 		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}
+		ConfigNodeIPAddress: InterfaceToIpAddressType(data["config_node_ip_address"]),
+
+		//{"description":"Ip address of the config node, set while provisioning.","type":"string"}
+		Perms2: InterfaceToPermType2(data["perms2"]),
+
+		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
 
 	}
 }

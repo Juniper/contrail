@@ -6,14 +6,14 @@ import "encoding/json"
 
 // BGPRouter
 type BGPRouter struct {
-	Perms2      *PermType2     `json:"perms2"`
-	UUID        string         `json:"uuid"`
-	ParentUUID  string         `json:"parent_uuid"`
-	ParentType  string         `json:"parent_type"`
 	FQName      []string       `json:"fq_name"`
 	IDPerms     *IdPermsType   `json:"id_perms"`
 	DisplayName string         `json:"display_name"`
 	Annotations *KeyValuePairs `json:"annotations"`
+	Perms2      *PermType2     `json:"perms2"`
+	UUID        string         `json:"uuid"`
+	ParentUUID  string         `json:"parent_uuid"`
+	ParentType  string         `json:"parent_type"`
 }
 
 // String returns json representation of the object
@@ -41,9 +41,6 @@ func MakeBGPRouter() *BGPRouter {
 func InterfaceToBGPRouter(iData interface{}) *BGPRouter {
 	data := iData.(map[string]interface{})
 	return &BGPRouter{
-		FQName: data["fq_name"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
 		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
 
 		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
@@ -65,6 +62,9 @@ func InterfaceToBGPRouter(iData interface{}) *BGPRouter {
 		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
 
 	}
 }

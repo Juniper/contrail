@@ -392,9 +392,6 @@ func ListLoadbalancerListener(tx *sql.Tx, spec *common.ListSpec) ([]*models.Load
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanLoadbalancerListener(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -404,17 +401,6 @@ func ListLoadbalancerListener(tx *sql.Tx, spec *common.ListSpec) ([]*models.Load
 	return result, nil
 }
 
-// ShowLoadbalancerListener shows LoadbalancerListener resource
-func ShowLoadbalancerListener(tx *sql.Tx, uuid string) (*models.LoadbalancerListener, error) {
-	list, err := ListLoadbalancerListener(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateLoadbalancerListener updates a resource
 func UpdateLoadbalancerListener(tx *sql.Tx, uuid string, model *models.LoadbalancerListener) error {
 	//TODO(nati) support update
@@ -422,16 +408,21 @@ func UpdateLoadbalancerListener(tx *sql.Tx, uuid string, model *models.Loadbalan
 }
 
 // DeleteLoadbalancerListener deletes a resource
-func DeleteLoadbalancerListener(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteLoadbalancerListenerQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteLoadbalancerListener(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteLoadbalancerListenerQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

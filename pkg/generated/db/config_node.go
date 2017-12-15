@@ -304,9 +304,6 @@ func ListConfigNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.ConfigNode, er
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanConfigNode(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -316,17 +313,6 @@ func ListConfigNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.ConfigNode, er
 	return result, nil
 }
 
-// ShowConfigNode shows ConfigNode resource
-func ShowConfigNode(tx *sql.Tx, uuid string) (*models.ConfigNode, error) {
-	list, err := ListConfigNode(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateConfigNode updates a resource
 func UpdateConfigNode(tx *sql.Tx, uuid string, model *models.ConfigNode) error {
 	//TODO(nati) support update
@@ -334,16 +320,21 @@ func UpdateConfigNode(tx *sql.Tx, uuid string, model *models.ConfigNode) error {
 }
 
 // DeleteConfigNode deletes a resource
-func DeleteConfigNode(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteConfigNodeQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteConfigNode(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteConfigNodeQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

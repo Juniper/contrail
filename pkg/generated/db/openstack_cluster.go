@@ -484,9 +484,6 @@ func ListOpenstackCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.Openstac
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanOpenstackCluster(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -496,17 +493,6 @@ func ListOpenstackCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.Openstac
 	return result, nil
 }
 
-// ShowOpenstackCluster shows OpenstackCluster resource
-func ShowOpenstackCluster(tx *sql.Tx, uuid string) (*models.OpenstackCluster, error) {
-	list, err := ListOpenstackCluster(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateOpenstackCluster updates a resource
 func UpdateOpenstackCluster(tx *sql.Tx, uuid string, model *models.OpenstackCluster) error {
 	//TODO(nati) support update
@@ -514,16 +500,21 @@ func UpdateOpenstackCluster(tx *sql.Tx, uuid string, model *models.OpenstackClus
 }
 
 // DeleteOpenstackCluster deletes a resource
-func DeleteOpenstackCluster(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteOpenstackClusterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteOpenstackCluster(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteOpenstackClusterQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

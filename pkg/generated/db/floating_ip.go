@@ -441,9 +441,6 @@ func ListFloatingIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.FloatingIP, er
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanFloatingIP(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -453,17 +450,6 @@ func ListFloatingIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.FloatingIP, er
 	return result, nil
 }
 
-// ShowFloatingIP shows FloatingIP resource
-func ShowFloatingIP(tx *sql.Tx, uuid string) (*models.FloatingIP, error) {
-	list, err := ListFloatingIP(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateFloatingIP updates a resource
 func UpdateFloatingIP(tx *sql.Tx, uuid string, model *models.FloatingIP) error {
 	//TODO(nati) support update
@@ -471,16 +457,21 @@ func UpdateFloatingIP(tx *sql.Tx, uuid string, model *models.FloatingIP) error {
 }
 
 // DeleteFloatingIP deletes a resource
-func DeleteFloatingIP(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteFloatingIPQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteFloatingIP(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteFloatingIPQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

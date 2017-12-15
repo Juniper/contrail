@@ -334,9 +334,6 @@ func ListNetworkDeviceConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Netwo
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanNetworkDeviceConfig(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -346,17 +343,6 @@ func ListNetworkDeviceConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Netwo
 	return result, nil
 }
 
-// ShowNetworkDeviceConfig shows NetworkDeviceConfig resource
-func ShowNetworkDeviceConfig(tx *sql.Tx, uuid string) (*models.NetworkDeviceConfig, error) {
-	list, err := ListNetworkDeviceConfig(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateNetworkDeviceConfig updates a resource
 func UpdateNetworkDeviceConfig(tx *sql.Tx, uuid string, model *models.NetworkDeviceConfig) error {
 	//TODO(nati) support update
@@ -364,16 +350,21 @@ func UpdateNetworkDeviceConfig(tx *sql.Tx, uuid string, model *models.NetworkDev
 }
 
 // DeleteNetworkDeviceConfig deletes a resource
-func DeleteNetworkDeviceConfig(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteNetworkDeviceConfigQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteNetworkDeviceConfig(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteNetworkDeviceConfigQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

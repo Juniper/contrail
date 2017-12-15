@@ -20,16 +20,20 @@ const (
 //ListSpec is configuraion option for select query.
 type ListSpec struct {
 	Table         string
-	Filter        map[string]interface{}
+	Filter        Filter
 	Limit         int
 	Offset        int
 	Detail        bool
 	Fields        []string
 	RefFields     map[string][]string
 	BackRefFields map[string][]string
+	Auth          *AuthContext
 }
 
-//Columns represents column index
+//Filter represents search filter.
+type Filter map[string]interface{}
+
+//Columns represents column index.
 type Columns map[string]int
 
 //DoInTransaction run a function inside of DB transaction
@@ -105,6 +109,13 @@ func BuildListQuery(spec *ListSpec) (string, Columns, []interface{}) {
 		where = append(where, fmt.Sprintf("`%s`.`%s` = ?", spec.Table, key))
 		values = append(values, value)
 	}
+
+	auth := spec.Auth
+	if !auth.IsAdmin() {
+		where = append(where, fmt.Sprintf("`%s`.`%s` = ?", spec.Table, "owner"))
+		values = append(values, auth.ProjectID())
+	}
+
 	query.WriteString("select ")
 	if len(columnParts) != len(columns) {
 		log.Fatal("unmatch")
@@ -118,7 +129,7 @@ func BuildListQuery(spec *ListSpec) (string, Columns, []interface{}) {
 	}
 	if len(where) > 0 {
 		query.WriteString(" where ")
-		query.WriteString(strings.Join(where, ","))
+		query.WriteString(strings.Join(where, " and "))
 	}
 	if len(groupBy) > 0 {
 		query.WriteString(" group by ")

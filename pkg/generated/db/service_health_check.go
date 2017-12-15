@@ -451,9 +451,6 @@ func ListServiceHealthCheck(tx *sql.Tx, spec *common.ListSpec) ([]*models.Servic
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanServiceHealthCheck(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -463,17 +460,6 @@ func ListServiceHealthCheck(tx *sql.Tx, spec *common.ListSpec) ([]*models.Servic
 	return result, nil
 }
 
-// ShowServiceHealthCheck shows ServiceHealthCheck resource
-func ShowServiceHealthCheck(tx *sql.Tx, uuid string) (*models.ServiceHealthCheck, error) {
-	list, err := ListServiceHealthCheck(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateServiceHealthCheck updates a resource
 func UpdateServiceHealthCheck(tx *sql.Tx, uuid string, model *models.ServiceHealthCheck) error {
 	//TODO(nati) support update
@@ -481,16 +467,21 @@ func UpdateServiceHealthCheck(tx *sql.Tx, uuid string, model *models.ServiceHeal
 }
 
 // DeleteServiceHealthCheck deletes a resource
-func DeleteServiceHealthCheck(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteServiceHealthCheckQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteServiceHealthCheck(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteServiceHealthCheckQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

@@ -1,9 +1,12 @@
 package apisrv
 
-import "github.com/labstack/echo"
-import "strings"
+import (
+	"strings"
 
-func removePathPrefix(prefix string) echo.MiddlewareFunc {
+	"github.com/labstack/echo"
+)
+
+func removePathPrefixMiddleware(prefix string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			req := c.Request()

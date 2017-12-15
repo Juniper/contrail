@@ -6,8 +6,8 @@ import "encoding/json"
 
 // RoutingPolicyServiceInstanceType
 type RoutingPolicyServiceInstanceType struct {
-	LeftSequence  string `json:"left_sequence"`
 	RightSequence string `json:"right_sequence"`
+	LeftSequence  string `json:"left_sequence"`
 }
 
 // String returns json representation of the object
@@ -20,8 +20,8 @@ func (model *RoutingPolicyServiceInstanceType) String() string {
 func MakeRoutingPolicyServiceInstanceType() *RoutingPolicyServiceInstanceType {
 	return &RoutingPolicyServiceInstanceType{
 		//TODO(nati): Apply default
-		LeftSequence:  "",
 		RightSequence: "",
+		LeftSequence:  "",
 	}
 }
 

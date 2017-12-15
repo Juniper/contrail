@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 
+	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/api"
 
@@ -32,14 +33,11 @@ func NewServer() (*Server, error) {
 	server := &Server{
 		Echo: echo.New(),
 	}
-	err := server.init()
-	if err != nil {
-		return nil, err
-	}
 	return server, nil
 }
 
-func (s *Server) init() error {
+//Init setup the server.
+func (s *Server) Init() error {
 	common.SetLogLevel()
 	db, err := common.ConnectDB()
 	if err != nil {
@@ -49,7 +47,7 @@ func (s *Server) init() error {
 
 	e := s.Echo
 
-	e.Use(middleware.Recover())
+	//e.Use(middleware.Recover())
 	e.Use(middleware.BodyLimit("10M"))
 
 	for _, a := range api.APIs {
@@ -100,16 +98,27 @@ func (s *Server) init() error {
 			}
 
 			g := e.Group(prefix)
-			g.Use(removePathPrefix(prefix))
+			g.Use(removePathPrefixMiddleware(prefix))
 			g.Use(middleware.Proxy(&middleware.RoundRobinBalancer{
 				Targets: targets}))
 		}
 
 	}
+	keystoneAuthURL := viper.GetString("keystone.authurl")
+	if keystoneAuthURL != "" {
+		e.Use(keystone.AuthMiddleware(keystoneAuthURL, "/v3/auth/tokens"))
+	}
+	localKeystone := viper.GetBool("keystone.local")
+	if localKeystone {
+		err := keystone.Init(e)
+		if err != nil {
+			return errors.Wrap(err, "Failed to init local keystone server")
+		}
+	}
 	return nil
 }
 
-// Run run's application
+// Run runs server.
 func (s *Server) Run() error {
 	defer func() {
 		err := s.Close()

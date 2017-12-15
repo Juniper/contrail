@@ -6,9 +6,9 @@ import "encoding/json"
 
 // DhcpOptionType
 type DhcpOptionType struct {
+	DHCPOptionValue      string `json:"dhcp_option_value"`
 	DHCPOptionValueBytes string `json:"dhcp_option_value_bytes"`
 	DHCPOptionName       string `json:"dhcp_option_name"`
-	DHCPOptionValue      string `json:"dhcp_option_value"`
 }
 
 // String returns json representation of the object
@@ -31,15 +31,15 @@ func MakeDhcpOptionType() *DhcpOptionType {
 func InterfaceToDhcpOptionType(iData interface{}) *DhcpOptionType {
 	data := iData.(map[string]interface{})
 	return &DhcpOptionType{
-		DHCPOptionName: data["dhcp_option_name"].(string),
-
-		//{"description":"Name of the DHCP option","type":"string"}
 		DHCPOptionValue: data["dhcp_option_value"].(string),
 
 		//{"description":"Encoded DHCP option value (decimal)","type":"string"}
 		DHCPOptionValueBytes: data["dhcp_option_value_bytes"].(string),
 
 		//{"description":"Value of the DHCP option to be copied byte by byte","type":"string"}
+		DHCPOptionName: data["dhcp_option_name"].(string),
+
+		//{"description":"Name of the DHCP option","type":"string"}
 
 	}
 }

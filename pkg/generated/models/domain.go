@@ -6,15 +6,15 @@ import "encoding/json"
 
 // Domain
 type Domain struct {
-	Perms2       *PermType2        `json:"perms2"`
-	ParentType   string            `json:"parent_type"`
+	IDPerms      *IdPermsType      `json:"id_perms"`
+	Annotations  *KeyValuePairs    `json:"annotations"`
+	UUID         string            `json:"uuid"`
 	FQName       []string          `json:"fq_name"`
 	DisplayName  string            `json:"display_name"`
-	Annotations  *KeyValuePairs    `json:"annotations"`
-	DomainLimits *DomainLimitsType `json:"domain_limits"`
+	Perms2       *PermType2        `json:"perms2"`
 	ParentUUID   string            `json:"parent_uuid"`
-	IDPerms      *IdPermsType      `json:"id_perms"`
-	UUID         string            `json:"uuid"`
+	ParentType   string            `json:"parent_type"`
+	DomainLimits *DomainLimitsType `json:"domain_limits"`
 
 	APIAccessLists   []*APIAccessList   `json:"api_access_lists"`
 	Namespaces       []*Namespace       `json:"namespaces"`
@@ -33,15 +33,15 @@ func (model *Domain) String() string {
 func MakeDomain() *Domain {
 	return &Domain{
 		//TODO(nati): Apply default
-		DomainLimits: MakeDomainLimitsType(),
-		Perms2:       MakePermType2(),
-		ParentType:   "",
 		FQName:       []string{},
-		DisplayName:  "",
+		IDPerms:      MakeIdPermsType(),
 		Annotations:  MakeKeyValuePairs(),
 		UUID:         "",
+		DomainLimits: MakeDomainLimitsType(),
+		DisplayName:  "",
+		Perms2:       MakePermType2(),
 		ParentUUID:   "",
-		IDPerms:      MakeIdPermsType(),
+		ParentType:   "",
 	}
 }
 
@@ -49,31 +49,31 @@ func MakeDomain() *Domain {
 func InterfaceToDomain(iData interface{}) *Domain {
 	data := iData.(map[string]interface{})
 	return &Domain{
-		UUID: data["uuid"].(string),
+		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
+		DomainLimits: InterfaceToDomainLimitsType(data["domain_limits"]),
+
+		//{"description":"Domain level quota, not currently implemented","type":"object","properties":{"project_limit":{"type":"integer"},"security_group_limit":{"type":"integer"},"virtual_network_limit":{"type":"integer"}}}
+		DisplayName: data["display_name"].(string),
+
+		//{"type":"string"}
+		Perms2: InterfaceToPermType2(data["perms2"]),
+
+		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
 		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
 		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
 
 		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
 		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		DomainLimits: InterfaceToDomainLimitsType(data["domain_limits"]),
-
-		//{"description":"Domain level quota, not currently implemented","type":"object","properties":{"project_limit":{"type":"integer"},"security_group_limit":{"type":"integer"},"virtual_network_limit":{"type":"integer"}}}
-		Perms2: InterfaceToPermType2(data["perms2"]),
-
-		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
-		ParentType: data["parent_type"].(string),
-
-		//{"type":"string"}
-		FQName: data["fq_name"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
-		DisplayName: data["display_name"].(string),
+		UUID: data["uuid"].(string),
 
 		//{"type":"string"}
 

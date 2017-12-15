@@ -304,9 +304,6 @@ func ListDatabaseNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.DatabaseNode
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanDatabaseNode(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -316,17 +313,6 @@ func ListDatabaseNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.DatabaseNode
 	return result, nil
 }
 
-// ShowDatabaseNode shows DatabaseNode resource
-func ShowDatabaseNode(tx *sql.Tx, uuid string) (*models.DatabaseNode, error) {
-	list, err := ListDatabaseNode(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateDatabaseNode updates a resource
 func UpdateDatabaseNode(tx *sql.Tx, uuid string, model *models.DatabaseNode) error {
 	//TODO(nati) support update
@@ -334,16 +320,21 @@ func UpdateDatabaseNode(tx *sql.Tx, uuid string, model *models.DatabaseNode) err
 }
 
 // DeleteDatabaseNode deletes a resource
-func DeleteDatabaseNode(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteDatabaseNodeQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteDatabaseNode(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteDatabaseNodeQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

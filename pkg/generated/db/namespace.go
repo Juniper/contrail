@@ -314,9 +314,6 @@ func ListNamespace(tx *sql.Tx, spec *common.ListSpec) ([]*models.Namespace, erro
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanNamespace(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -326,17 +323,6 @@ func ListNamespace(tx *sql.Tx, spec *common.ListSpec) ([]*models.Namespace, erro
 	return result, nil
 }
 
-// ShowNamespace shows Namespace resource
-func ShowNamespace(tx *sql.Tx, uuid string) (*models.Namespace, error) {
-	list, err := ListNamespace(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateNamespace updates a resource
 func UpdateNamespace(tx *sql.Tx, uuid string, model *models.Namespace) error {
 	//TODO(nati) support update
@@ -344,16 +330,21 @@ func UpdateNamespace(tx *sql.Tx, uuid string, model *models.Namespace) error {
 }
 
 // DeleteNamespace deletes a resource
-func DeleteNamespace(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteNamespaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteNamespace(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteNamespaceQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

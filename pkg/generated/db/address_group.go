@@ -302,9 +302,6 @@ func ListAddressGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.AddressGroup
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanAddressGroup(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -314,17 +311,6 @@ func ListAddressGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.AddressGroup
 	return result, nil
 }
 
-// ShowAddressGroup shows AddressGroup resource
-func ShowAddressGroup(tx *sql.Tx, uuid string) (*models.AddressGroup, error) {
-	list, err := ListAddressGroup(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateAddressGroup updates a resource
 func UpdateAddressGroup(tx *sql.Tx, uuid string, model *models.AddressGroup) error {
 	//TODO(nati) support update
@@ -332,16 +318,21 @@ func UpdateAddressGroup(tx *sql.Tx, uuid string, model *models.AddressGroup) err
 }
 
 // DeleteAddressGroup deletes a resource
-func DeleteAddressGroup(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteAddressGroupQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteAddressGroup(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteAddressGroupQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

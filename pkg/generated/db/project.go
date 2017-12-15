@@ -71,6 +71,11 @@ var ProjectFields = []string{
 // ProjectRefFields is db reference fields for Project
 var ProjectRefFields = map[string][]string{
 
+	"floating_ip_pool": {
+	// <common.Schema Value>
+
+	},
+
 	"alias_ip_pool": {
 	// <common.Schema Value>
 
@@ -83,11 +88,6 @@ var ProjectRefFields = map[string][]string{
 	},
 
 	"application_policy_set": {
-	// <common.Schema Value>
-
-	},
-
-	"floating_ip_pool": {
 	// <common.Schema Value>
 
 	},
@@ -863,6 +863,31 @@ var ProjectBackRefFields = map[string][]string{
 		"key_value_pair",
 	},
 
+	"user": {
+		"uuid",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"password",
+		"parent_uuid",
+		"parent_type",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"display_name",
+		"key_value_pair",
+	},
+
 	"virtual_ip": {
 		"subnet_id",
 		"status_description",
@@ -1540,6 +1565,25 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 
 	}
 
+	if value, ok := values["ref_alias_ip_pool"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.ProjectAliasIPPoolRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.AliasIPPoolRefs = append(m.AliasIPPoolRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_namespace"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -1596,25 +1640,6 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			referenceModel := &models.ProjectFloatingIPPoolRef{}
 			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.FloatingIPPoolRefs = append(m.FloatingIPPoolRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_alias_ip_pool"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			if referenceMap["to"] == "" {
-				continue
-			}
-			referenceModel := &models.ProjectAliasIPPoolRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
-			m.AliasIPPoolRefs = append(m.AliasIPPoolRefs, referenceModel)
 
 		}
 	}
@@ -7381,6 +7406,194 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 		}
 	}
 
+	if value, ok := values["backref_user"]; ok {
+		var childResources []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if childResourceMap["uuid"] == "" {
+				continue
+			}
+			childModel := models.MakeUser()
+			m.Users = append(m.Users, childModel)
+
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.UUID = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.Perms2.OwnerAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.Perms2.Owner = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.Perms2.GlobalAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["password"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.Password = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.ParentUUID = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.ParentType = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToBool(propertyValue)
+
+				childModel.IDPerms.UserVisible = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Permissions.Owner = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Permissions.Group = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.LastModified = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToBool(propertyValue)
+
+				childModel.IDPerms.Enable = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Description = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Creator = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.IDPerms.Created = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				castedValue := common.InterfaceToString(propertyValue)
+
+				childModel.DisplayName = castedValue
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
+	}
+
 	if value, ok := values["backref_virtual_ip"]; ok {
 		var childResources []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -8573,9 +8786,6 @@ func ListProject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Project, error) {
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanProject(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -8585,17 +8795,6 @@ func ListProject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Project, error) {
 	return result, nil
 }
 
-// ShowProject shows Project resource
-func ShowProject(tx *sql.Tx, uuid string) (*models.Project, error) {
-	list, err := ListProject(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateProject updates a resource
 func UpdateProject(tx *sql.Tx, uuid string, model *models.Project) error {
 	//TODO(nati) support update
@@ -8603,16 +8802,21 @@ func UpdateProject(tx *sql.Tx, uuid string, model *models.Project) error {
 }
 
 // DeleteProject deletes a resource
-func DeleteProject(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteProjectQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteProject(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteProjectQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

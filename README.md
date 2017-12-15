@@ -51,8 +51,14 @@ make test
 You can run API server using this command.
 
 ```
-go run cmd/contrail/main.go server -c tools/test_config.yml
+go run cmd/contrail/main.go server -c packaging/apisrv.yml
 ```
+
+## Keystone Support
+
+API Server supports Keystone V3 authentication and RBAC.
+API Server has minimal Keystone API V3 support for standalone usecase.
+see a configuraion example in tools/test_config.yml
 
 # Binary
 

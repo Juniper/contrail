@@ -6,12 +6,12 @@ import "encoding/json"
 
 // VirtualNetworkType
 type VirtualNetworkType struct {
+	ForwardingMode         ForwardingModeType         `json:"forwarding_mode"`
 	AllowTransit           bool                       `json:"allow_transit"`
 	NetworkID              int                        `json:"network_id"`
 	MirrorDestination      bool                       `json:"mirror_destination"`
 	VxlanNetworkIdentifier VxlanNetworkIdentifierType `json:"vxlan_network_identifier"`
 	RPF                    RpfModeType                `json:"rpf"`
-	ForwardingMode         ForwardingModeType         `json:"forwarding_mode"`
 }
 
 // String returns json representation of the object
@@ -24,12 +24,12 @@ func (model *VirtualNetworkType) String() string {
 func MakeVirtualNetworkType() *VirtualNetworkType {
 	return &VirtualNetworkType{
 		//TODO(nati): Apply default
+		NetworkID:              0,
 		MirrorDestination:      false,
 		VxlanNetworkIdentifier: MakeVxlanNetworkIdentifierType(),
 		RPF:            MakeRpfModeType(),
 		ForwardingMode: MakeForwardingModeType(),
 		AllowTransit:   false,
-		NetworkID:      0,
 	}
 }
 
@@ -37,12 +37,6 @@ func MakeVirtualNetworkType() *VirtualNetworkType {
 func InterfaceToVirtualNetworkType(iData interface{}) *VirtualNetworkType {
 	data := iData.(map[string]interface{})
 	return &VirtualNetworkType{
-		VxlanNetworkIdentifier: InterfaceToVxlanNetworkIdentifierType(data["vxlan_network_identifier"]),
-
-		//{"description":"VxLAN VNI value for this network","type":"integer","minimum":1,"maximum":16777215}
-		RPF: InterfaceToRpfModeType(data["rpf"]),
-
-		//{"description":"Flag used to disable Reverse Path Forwarding(RPF) check for this network","type":"string","enum":["enable","disable"]}
 		ForwardingMode: InterfaceToForwardingModeType(data["forwarding_mode"]),
 
 		//{"description":"Packet forwarding mode for this virtual network","type":"string","enum":["l2_l3","l2","l3"]}
@@ -55,6 +49,12 @@ func InterfaceToVirtualNetworkType(iData interface{}) *VirtualNetworkType {
 		MirrorDestination: data["mirror_destination"].(bool),
 
 		//{"description":"Flag to mark the virtual network as mirror destination network","type":"boolean"}
+		VxlanNetworkIdentifier: InterfaceToVxlanNetworkIdentifierType(data["vxlan_network_identifier"]),
+
+		//{"description":"VxLAN VNI value for this network","type":"integer","minimum":1,"maximum":16777215}
+		RPF: InterfaceToRpfModeType(data["rpf"]),
+
+		//{"description":"Flag used to disable Reverse Path Forwarding(RPF) check for this network","type":"string","enum":["enable","disable"]}
 
 	}
 }

@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/databus23/keystone"
+  packages = ["."]
+  revision = "12c566d59fdb198f5a6d7ad7dfbf99f2a7e09929"
+
+[[projects]]
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
   revision = "dbeaa9332f19a944acb5736b4456cfcc02140e29"
@@ -184,6 +190,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "91d7e800d2f1f3a52367e62e3955304d6b398f30af511965b14896f3c9811766"
+  inputs-digest = "d4e868fb14960055f7210d45171bb8990fc92413788d39283dabe8c5601859a4"
   solver-name = "gps-cdcl"
   solver-version = 1

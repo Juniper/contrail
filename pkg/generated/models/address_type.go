@@ -6,11 +6,11 @@ import "encoding/json"
 
 // AddressType
 type AddressType struct {
-	SecurityGroup  string        `json:"security_group"`
 	Subnet         *SubnetType   `json:"subnet"`
 	NetworkPolicy  string        `json:"network_policy"`
 	SubnetList     []*SubnetType `json:"subnet_list"`
 	VirtualNetwork string        `json:"virtual_network"`
+	SecurityGroup  string        `json:"security_group"`
 }
 
 // String returns json representation of the object
@@ -23,13 +23,13 @@ func (model *AddressType) String() string {
 func MakeAddressType() *AddressType {
 	return &AddressType{
 		//TODO(nati): Apply default
-		SecurityGroup: "",
 		Subnet:        MakeSubnetType(),
 		NetworkPolicy: "",
 
 		SubnetList: MakeSubnetTypeSlice(),
 
 		VirtualNetwork: "",
+		SecurityGroup:  "",
 	}
 }
 
@@ -37,6 +37,9 @@ func MakeAddressType() *AddressType {
 func InterfaceToAddressType(iData interface{}) *AddressType {
 	data := iData.(map[string]interface{})
 	return &AddressType{
+		SecurityGroup: data["security_group"].(string),
+
+		//{"description":"Any address that belongs to interface with this security-group","type":"string"}
 		Subnet: InterfaceToSubnetType(data["subnet"]),
 
 		//{"description":"Any address that belongs to this subnet","type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}}
@@ -50,9 +53,6 @@ func InterfaceToAddressType(iData interface{}) *AddressType {
 		VirtualNetwork: data["virtual_network"].(string),
 
 		//{"description":"Any address that belongs to this virtual network ","type":"string"}
-		SecurityGroup: data["security_group"].(string),
-
-		//{"description":"Any address that belongs to interface with this security-group","type":"string"}
 
 	}
 }

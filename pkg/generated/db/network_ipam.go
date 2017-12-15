@@ -428,9 +428,6 @@ func ListNetworkIpam(tx *sql.Tx, spec *common.ListSpec) ([]*models.NetworkIpam, 
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanNetworkIpam(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -440,17 +437,6 @@ func ListNetworkIpam(tx *sql.Tx, spec *common.ListSpec) ([]*models.NetworkIpam, 
 	return result, nil
 }
 
-// ShowNetworkIpam shows NetworkIpam resource
-func ShowNetworkIpam(tx *sql.Tx, uuid string) (*models.NetworkIpam, error) {
-	list, err := ListNetworkIpam(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateNetworkIpam updates a resource
 func UpdateNetworkIpam(tx *sql.Tx, uuid string, model *models.NetworkIpam) error {
 	//TODO(nati) support update
@@ -458,16 +444,21 @@ func UpdateNetworkIpam(tx *sql.Tx, uuid string, model *models.NetworkIpam) error
 }
 
 // DeleteNetworkIpam deletes a resource
-func DeleteNetworkIpam(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteNetworkIpamQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteNetworkIpam(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteNetworkIpamQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

@@ -56,6 +56,8 @@ func (api *ServiceObjectRESTAPI) Create(c echo.Context) error {
 	if model.UUID == "" {
 		model.UUID = uuid.NewV4().String()
 	}
+	auth := common.GetAuthContext(c)
+	model.Perms2.Owner = auth.ProjectID()
 	if err := common.DoInTransaction(
 		api.DB,
 		func(tx *sql.Tx) error {
@@ -78,10 +80,11 @@ func (api *ServiceObjectRESTAPI) Update(c echo.Context) error {
 //Delete handles a REST Delete request.
 func (api *ServiceObjectRESTAPI) Delete(c echo.Context) error {
 	id := c.Param("id")
+	auth := common.GetAuthContext(c)
 	if err := common.DoInTransaction(
 		api.DB,
 		func(tx *sql.Tx) error {
-			return db.DeleteServiceObject(tx, id)
+			return db.DeleteServiceObject(tx, id, auth)
 		}); err != nil {
 		log.WithField("err", err).Debug("error deleting a resource")
 		return echo.NewHTTPError(http.StatusInternalServerError, nil)
@@ -92,12 +95,19 @@ func (api *ServiceObjectRESTAPI) Delete(c echo.Context) error {
 //Show handles a REST Show request.
 func (api *ServiceObjectRESTAPI) Show(c echo.Context) error {
 	id := c.Param("id")
-	var result *models.ServiceObject
+	auth := common.GetAuthContext(c)
+	var result []*models.ServiceObject
 	var err error
 	if err := common.DoInTransaction(
 		api.DB,
 		func(tx *sql.Tx) error {
-			result, err = db.ShowServiceObject(tx, id)
+			result, err = db.ListServiceObject(tx, &common.ListSpec{
+				Limit: 1000,
+				Auth:  auth,
+				Filter: common.Filter{
+					"uuid": id,
+				},
+			})
 			return err
 		}); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
@@ -111,11 +121,13 @@ func (api *ServiceObjectRESTAPI) Show(c echo.Context) error {
 func (api *ServiceObjectRESTAPI) List(c echo.Context) error {
 	var result []*models.ServiceObject
 	var err error
+	auth := common.GetAuthContext(c)
 	if err := common.DoInTransaction(
 		api.DB,
 		func(tx *sql.Tx) error {
 			result, err = db.ListServiceObject(tx, &common.ListSpec{
 				Limit: 1000,
+				Auth:  auth,
 			})
 			return err
 		}); err != nil {

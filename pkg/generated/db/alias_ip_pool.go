@@ -517,9 +517,6 @@ func ListAliasIPPool(tx *sql.Tx, spec *common.ListSpec) ([]*models.AliasIPPool, 
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanAliasIPPool(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -529,17 +526,6 @@ func ListAliasIPPool(tx *sql.Tx, spec *common.ListSpec) ([]*models.AliasIPPool, 
 	return result, nil
 }
 
-// ShowAliasIPPool shows AliasIPPool resource
-func ShowAliasIPPool(tx *sql.Tx, uuid string) (*models.AliasIPPool, error) {
-	list, err := ListAliasIPPool(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateAliasIPPool updates a resource
 func UpdateAliasIPPool(tx *sql.Tx, uuid string, model *models.AliasIPPool) error {
 	//TODO(nati) support update
@@ -547,16 +533,21 @@ func UpdateAliasIPPool(tx *sql.Tx, uuid string, model *models.AliasIPPool) error
 }
 
 // DeleteAliasIPPool deletes a resource
-func DeleteAliasIPPool(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteAliasIPPoolQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteAliasIPPool(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteAliasIPPoolQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

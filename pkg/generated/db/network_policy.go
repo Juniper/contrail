@@ -302,9 +302,6 @@ func ListNetworkPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.NetworkPoli
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanNetworkPolicy(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -314,17 +311,6 @@ func ListNetworkPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.NetworkPoli
 	return result, nil
 }
 
-// ShowNetworkPolicy shows NetworkPolicy resource
-func ShowNetworkPolicy(tx *sql.Tx, uuid string) (*models.NetworkPolicy, error) {
-	list, err := ListNetworkPolicy(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateNetworkPolicy updates a resource
 func UpdateNetworkPolicy(tx *sql.Tx, uuid string, model *models.NetworkPolicy) error {
 	//TODO(nati) support update
@@ -332,16 +318,21 @@ func UpdateNetworkPolicy(tx *sql.Tx, uuid string, model *models.NetworkPolicy) e
 }
 
 // DeleteNetworkPolicy deletes a resource
-func DeleteNetworkPolicy(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteNetworkPolicyQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteNetworkPolicy(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteNetworkPolicyQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

@@ -56,6 +56,8 @@ func (api *NodeRESTAPI) Create(c echo.Context) error {
 	if model.UUID == "" {
 		model.UUID = uuid.NewV4().String()
 	}
+	auth := common.GetAuthContext(c)
+	model.Perms2.Owner = auth.ProjectID()
 	if err := common.DoInTransaction(
 		api.DB,
 		func(tx *sql.Tx) error {
@@ -78,10 +80,11 @@ func (api *NodeRESTAPI) Update(c echo.Context) error {
 //Delete handles a REST Delete request.
 func (api *NodeRESTAPI) Delete(c echo.Context) error {
 	id := c.Param("id")
+	auth := common.GetAuthContext(c)
 	if err := common.DoInTransaction(
 		api.DB,
 		func(tx *sql.Tx) error {
-			return db.DeleteNode(tx, id)
+			return db.DeleteNode(tx, id, auth)
 		}); err != nil {
 		log.WithField("err", err).Debug("error deleting a resource")
 		return echo.NewHTTPError(http.StatusInternalServerError, nil)
@@ -92,12 +95,19 @@ func (api *NodeRESTAPI) Delete(c echo.Context) error {
 //Show handles a REST Show request.
 func (api *NodeRESTAPI) Show(c echo.Context) error {
 	id := c.Param("id")
-	var result *models.Node
+	auth := common.GetAuthContext(c)
+	var result []*models.Node
 	var err error
 	if err := common.DoInTransaction(
 		api.DB,
 		func(tx *sql.Tx) error {
-			result, err = db.ShowNode(tx, id)
+			result, err = db.ListNode(tx, &common.ListSpec{
+				Limit: 1000,
+				Auth:  auth,
+				Filter: common.Filter{
+					"uuid": id,
+				},
+			})
 			return err
 		}); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
@@ -111,11 +121,13 @@ func (api *NodeRESTAPI) Show(c echo.Context) error {
 func (api *NodeRESTAPI) List(c echo.Context) error {
 	var result []*models.Node
 	var err error
+	auth := common.GetAuthContext(c)
 	if err := common.DoInTransaction(
 		api.DB,
 		func(tx *sql.Tx) error {
 			result, err = db.ListNode(tx, &common.ListSpec{
 				Limit: 1000,
+				Auth:  auth,
 			})
 			return err
 		}); err != nil {

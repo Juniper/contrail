@@ -320,9 +320,6 @@ func ListAccessControlList(tx *sql.Tx, spec *common.ListSpec) ([]*models.AccessC
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanAccessControlList(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -332,17 +329,6 @@ func ListAccessControlList(tx *sql.Tx, spec *common.ListSpec) ([]*models.AccessC
 	return result, nil
 }
 
-// ShowAccessControlList shows AccessControlList resource
-func ShowAccessControlList(tx *sql.Tx, uuid string) (*models.AccessControlList, error) {
-	list, err := ListAccessControlList(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateAccessControlList updates a resource
 func UpdateAccessControlList(tx *sql.Tx, uuid string, model *models.AccessControlList) error {
 	//TODO(nati) support update
@@ -350,16 +336,21 @@ func UpdateAccessControlList(tx *sql.Tx, uuid string, model *models.AccessContro
 }
 
 // DeleteAccessControlList deletes a resource
-func DeleteAccessControlList(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteAccessControlListQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteAccessControlList(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteAccessControlListQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

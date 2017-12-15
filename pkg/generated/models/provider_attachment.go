@@ -6,7 +6,6 @@ import "encoding/json"
 
 // ProviderAttachment
 type ProviderAttachment struct {
-	ParentType  string         `json:"parent_type"`
 	FQName      []string       `json:"fq_name"`
 	IDPerms     *IdPermsType   `json:"id_perms"`
 	DisplayName string         `json:"display_name"`
@@ -14,6 +13,7 @@ type ProviderAttachment struct {
 	Perms2      *PermType2     `json:"perms2"`
 	UUID        string         `json:"uuid"`
 	ParentUUID  string         `json:"parent_uuid"`
+	ParentType  string         `json:"parent_type"`
 
 	VirtualRouterRefs []*ProviderAttachmentVirtualRouterRef `json:"virtual_router_refs"`
 }
@@ -50,15 +50,6 @@ func MakeProviderAttachment() *ProviderAttachment {
 func InterfaceToProviderAttachment(iData interface{}) *ProviderAttachment {
 	data := iData.(map[string]interface{})
 	return &ProviderAttachment{
-		FQName: data["fq_name"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
-
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
-		DisplayName: data["display_name"].(string),
-
-		//{"type":"string"}
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
 		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
@@ -72,6 +63,15 @@ func InterfaceToProviderAttachment(iData interface{}) *ProviderAttachment {
 
 		//{"type":"string"}
 		ParentType: data["parent_type"].(string),
+
+		//{"type":"string"}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
+		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}
 

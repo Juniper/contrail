@@ -33,3 +33,14 @@ static_files:
 proxy:
     /contrail:
     - http://localhost:8082
+
+# Keystone configuraion
+keystone:
+    local: true # Enable local keystone v3. This is only for testing now.
+    assignment:
+        type: static
+        file: ./test_data/keystone.yml
+    store:
+        type: memory
+        expire: 3600
+    authurl: http://localhost:9091/v3

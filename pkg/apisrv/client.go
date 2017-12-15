@@ -10,6 +10,7 @@ import (
 	"net/http/httputil"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -17,8 +18,14 @@ import (
 
 // Client represents a client.
 type Client struct {
-	Endpoint   string
+	ID         string `yaml:"id"`
+	Password   string `yaml:"password"`
+	AuthURL    string `yaml:"authurl"`
+	Endpoint   string `yaml:"endpoint"`
 	httpClient *http.Client
+	AuthToken  string          `yaml:"-"`
+	InSecure   bool            `yaml:"insecure"`
+	Scope      *keystone.Scope `yaml:"scope"`
 }
 
 // Request represents API request to the server
@@ -30,27 +37,75 @@ type Request struct {
 	Output   interface{}
 }
 
-// NewClient makes api srv client
-func NewClient(endpoint string) *Client {
+// NewClient makes api srv client.
+func NewClient(endpoint, authURL, id, password string, scope *keystone.Scope) *Client {
+	c := &Client{
+		ID:       id,
+		Password: password,
+		AuthURL:  authURL,
+		Endpoint: endpoint,
+		Scope:    scope,
+	}
+	c.Init()
+	return c
+}
+
+//Init is used to initialize a client.
+func (c *Client) Init() {
 	tr := &http.Transport{
 		Dial: (&net.Dialer{
 			Timeout: 5 * time.Second,
 		}).Dial,
 		TLSHandshakeTimeout: 5 * time.Second,
-		TLSClientConfig:     &tls.Config{InsecureSkipVerify: true}, // nolint: gas
+		TLSClientConfig:     &tls.Config{InsecureSkipVerify: c.InSecure},
 	}
 	client := &http.Client{
 		Transport: tr,
 		Timeout:   time.Second * 10,
 	}
-	return &Client{
-		Endpoint:   endpoint,
-		httpClient: client,
-	}
+	c.httpClient = client
 }
 
 // Login refreshes authentication token
 func (c *Client) Login() error {
+	authURL := c.AuthURL + "/auth/tokens"
+	authRequest := &keystone.AuthRequest{
+		Auth: &keystone.Auth{
+			Identity: &keystone.Identity{
+				Methods: []string{"password"},
+				Password: &keystone.Password{
+					User: &keystone.User{
+						ID:       c.ID,
+						Password: c.Password,
+					},
+				},
+			},
+			Scope: c.Scope,
+		},
+	}
+	authResponse := &keystone.AuthResponse{}
+	dataJSON, err := json.Marshal(authRequest)
+	if err != nil {
+		return err
+	}
+	request, err := http.NewRequest("POST", authURL, bytes.NewBuffer(dataJSON))
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.httpClient.Do(request)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	err = checkStatusCode([]int{200}, resp.StatusCode)
+	if err != nil {
+		output, _ := httputil.DumpResponse(resp, true)
+		log.Println(string(output))
+		return err
+	}
+	err = json.NewDecoder(resp.Body).Decode(&authResponse)
+	if err != nil {
+		return err
+	}
+	c.AuthToken = resp.Header.Get("X-Subject-Token")
 	return nil
 }
 
@@ -111,7 +166,9 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 		return nil, err
 	}
 	request.Header.Set("Content-Type", "application/json")
-
+	if c.AuthToken != "" {
+		request.Header.Set("X-Auth-Token", c.AuthToken)
+	}
 	resp, err := c.httpClient.Do(request)
 	if err != nil {
 		return nil, err
@@ -138,7 +195,7 @@ func (c *Client) DoRequest(request *Request) (*http.Response, error) {
 	return c.Do(request.Method, request.Path, request.Data, &request.Output, request.Expected)
 }
 
-// Batch execution
+// Batch execution.
 func (c *Client) Batch(requests []*Request) error {
 	for i, request := range requests {
 		_, err := c.DoRequest(request)

@@ -31,15 +31,15 @@ func MakeStaticMirrorNhType() *StaticMirrorNhType {
 func InterfaceToStaticMirrorNhType(iData interface{}) *StaticMirrorNhType {
 	data := iData.(map[string]interface{})
 	return &StaticMirrorNhType{
-		VtepDSTIPAddress: data["vtep_dst_ip_address"].(string),
-
-		//{"description":"ip address of destination vtep","type":"string"}
 		VtepDSTMacAddress: data["vtep_dst_mac_address"].(string),
 
 		//{"description":"mac address of destination vtep","type":"string"}
 		Vni: InterfaceToVxlanNetworkIdentifierType(data["vni"]),
 
 		//{"description":"Vni of vtep","type":"integer","minimum":1,"maximum":16777215}
+		VtepDSTIPAddress: data["vtep_dst_ip_address"].(string),
+
+		//{"description":"ip address of destination vtep","type":"string"}
 
 	}
 }

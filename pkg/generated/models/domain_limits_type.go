@@ -21,9 +21,9 @@ func (model *DomainLimitsType) String() string {
 func MakeDomainLimitsType() *DomainLimitsType {
 	return &DomainLimitsType{
 		//TODO(nati): Apply default
-		VirtualNetworkLimit: 0,
 		SecurityGroupLimit:  0,
 		ProjectLimit:        0,
+		VirtualNetworkLimit: 0,
 	}
 }
 
@@ -31,15 +31,15 @@ func MakeDomainLimitsType() *DomainLimitsType {
 func InterfaceToDomainLimitsType(iData interface{}) *DomainLimitsType {
 	data := iData.(map[string]interface{})
 	return &DomainLimitsType{
+		SecurityGroupLimit: data["security_group_limit"].(int),
+
+		//{"description":"Maximum number of security groups allowed in this domain","type":"integer"}
 		ProjectLimit: data["project_limit"].(int),
 
 		//{"description":"Maximum number of projects allowed in this domain","type":"integer"}
 		VirtualNetworkLimit: data["virtual_network_limit"].(int),
 
 		//{"description":"Maximum number of virtual networks allowed in this domain","type":"integer"}
-		SecurityGroupLimit: data["security_group_limit"].(int),
-
-		//{"description":"Maximum number of security groups allowed in this domain","type":"integer"}
 
 	}
 }

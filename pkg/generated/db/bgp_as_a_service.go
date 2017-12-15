@@ -63,9 +63,9 @@ var BGPAsAServiceRefFields = map[string][]string{
 // BGPAsAServiceBackRefFields is db back reference fields for BGPAsAService
 var BGPAsAServiceBackRefFields = map[string][]string{}
 
-const insertBGPAsAServiceVirtualMachineInterfaceQuery = "insert into `ref_bgp_as_a_service_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
-
 const insertBGPAsAServiceServiceHealthCheckQuery = "insert into `ref_bgp_as_a_service_service_health_check` (`from`, `to` ) values (?, ?);"
+
+const insertBGPAsAServiceVirtualMachineInterfaceQuery = "insert into `ref_bgp_as_a_service_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateBGPAsAService inserts BGPAsAService to DB
 func CreateBGPAsAService(tx *sql.Tx, model *models.BGPAsAService) error {
@@ -433,9 +433,6 @@ func ListBGPAsAService(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPAsAServi
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanBGPAsAService(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -445,17 +442,6 @@ func ListBGPAsAService(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPAsAServi
 	return result, nil
 }
 
-// ShowBGPAsAService shows BGPAsAService resource
-func ShowBGPAsAService(tx *sql.Tx, uuid string) (*models.BGPAsAService, error) {
-	list, err := ListBGPAsAService(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateBGPAsAService updates a resource
 func UpdateBGPAsAService(tx *sql.Tx, uuid string, model *models.BGPAsAService) error {
 	//TODO(nati) support update
@@ -463,16 +449,21 @@ func UpdateBGPAsAService(tx *sql.Tx, uuid string, model *models.BGPAsAService) e
 }
 
 // DeleteBGPAsAService deletes a resource
-func DeleteBGPAsAService(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteBGPAsAServiceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteBGPAsAService(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteBGPAsAServiceQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
