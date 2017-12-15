@@ -6,7 +6,7 @@ import (
 
 //Cmd for utility command
 var Cmd = &cobra.Command{
-	Use:   "contrail_util",
+	Use:   "contrailutil",
 	Short: "Contrail Utility Command",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {

@@ -54,9 +54,65 @@ You can run API server using this command.
 go run cmd/contrail/main.go server -c tools/test_config.yml
 ```
 
+# Binary
+
+Dep, RPM and Binaries are stored in release page.
+
+(see https://github.com/Juniper/contrail/releases)
+
+# commands
+
+- contrail  command for running intent api server/intent compiler etc
+
+``` Shell
+Contrail command
+
+Usage:
+  contrail [flags]
+  contrail [command]
+
+Available Commands:
+  help        Help about any command
+  server      Start API Server
+
+Flags:
+  -c, --config string   Configuraion File
+  -h, --help            help for contrail
+
+Use "contrail [command] --help" for more information about a command.
+```
+
+- contrailutil utility command for help developments
+
+``` shell
+Contrail Utility Command
+
+Usage:
+  contrailutil [flags]
+  contrailutil [command]
+
+Available Commands:
+  generate    generate code from schema
+  help        Help about any command
+  package     make a dep and rpm package
+
+Flags:
+  -h, --help   help for contrailutil
+```
+
 # Packaging
 
-TBD
+(1) Install FPM (https://github.com/jordansissel/fpm)
+
+```
+gem install --no-ri --no-rdoc fpm
+```
+
+(2) make package
+
+```
+make package
+```
 
 # Dependency management
 

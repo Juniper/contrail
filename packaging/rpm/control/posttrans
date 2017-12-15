@@ -1,0 +1,26 @@
+#!/bin/sh
+
+set -e
+
+echo "POSTTRANS: Running script"
+
+[ -f /etc/sysconfig/contrail ] && . /etc/sysconfig/contrail
+
+# copy config files if missing
+if [ ! -f /etc/contrail/apisrv.yml ]; then
+  echo "POSTTRANS: Config file not found"
+
+  if [ -f /etc/contrail/apisrv.yml.rpmsave ]; then
+    echo "POSTTRANS: /etc/contrail/apisrv.yml.rpmsave config file found."
+    mv /etc/contrail/apisrv.yaml.rpmsave /etc/contrail/apisrv.yml
+    echo "POSTTRANS: /etc/contrail/apisrv.yml restored"
+
+    echo "POSTTRANS: Restoring config file permissions"
+    chown -Rh root:$contrail_GROUP /etc/contrail/*
+    chmod 755 /etc/contrail
+    find /etc/contrail -type f -exec chmod 640 {} ';'
+    find /etc/contrail -type d -exec chmod 755 {} ';'
+  fi
+fi
+
+

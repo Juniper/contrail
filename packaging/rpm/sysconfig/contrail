@@ -1,0 +1,20 @@
+CONTRAIL_USER=contrail
+
+CONTRAIL_GROUP=contrail
+
+CONTRAIL_HOME=/usr/share/contrail
+
+LOG_DIR=/var/log/contrail
+
+DATA_DIR=/var/lib/contrail
+
+MAX_OPEN_FILES=10000
+
+CONF_DIR=/etc/contrail
+
+CONF_FILE=/etc/contrail/apisrv.yml
+
+RESTART_ON_UPGRADE=true
+
+# Only used on systemd systems
+PID_FILE_DIR=/var/run/contrail

@@ -1,0 +1,35 @@
+# Database configuraion. Only MySQL supported
+database:
+    connection: "root:contrail123@tcp(localhost:3306)/contrail_test"
+    # Max Open Connections for MySQL Server
+    max_open_conn: 100
+
+# Log Level
+log_level: debug
+
+# Server configuraion
+server:
+    read_timeout: 10
+    write_timeout: 5
+
+# Bind addresss
+address: ":9091"
+
+# TLS Configuraion
+tls:
+    enabled: false
+    key_file: key
+    cert_file: cret
+
+# Static file config
+# key: URL path
+# value: file path. (absolute path recommended in production)
+static_files:
+    public: /usr/share/contrail/public
+
+# API Proxy configuraion
+# key: URL path
+# value: String list of backend host
+proxy:
+    /contrail:
+    - http://localhost:8082
