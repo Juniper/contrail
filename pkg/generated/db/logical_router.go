@@ -45,16 +45,6 @@ var LogicalRouterFields = []string{
 // LogicalRouterRefFields is db reference fields for LogicalRouter
 var LogicalRouterRefFields = map[string][]string{
 
-	"physical_router": {
-	// <common.Schema Value>
-
-	},
-
-	"bgpvpn": {
-	// <common.Schema Value>
-
-	},
-
 	"route_target": {
 	// <common.Schema Value>
 
@@ -79,12 +69,20 @@ var LogicalRouterRefFields = map[string][]string{
 	// <common.Schema Value>
 
 	},
+
+	"physical_router": {
+	// <common.Schema Value>
+
+	},
+
+	"bgpvpn": {
+	// <common.Schema Value>
+
+	},
 }
 
 // LogicalRouterBackRefFields is db back reference fields for LogicalRouter
 var LogicalRouterBackRefFields = map[string][]string{}
-
-const insertLogicalRouterPhysicalRouterQuery = "insert into `ref_logical_router_physical_router` (`from`, `to` ) values (?, ?);"
 
 const insertLogicalRouterBGPVPNQuery = "insert into `ref_logical_router_bgpvpn` (`from`, `to` ) values (?, ?);"
 
@@ -97,6 +95,8 @@ const insertLogicalRouterServiceInstanceQuery = "insert into `ref_logical_router
 const insertLogicalRouterRouteTableQuery = "insert into `ref_logical_router_route_table` (`from`, `to` ) values (?, ?);"
 
 const insertLogicalRouterVirtualNetworkQuery = "insert into `ref_logical_router_virtual_network` (`from`, `to` ) values (?, ?);"
+
+const insertLogicalRouterPhysicalRouterQuery = "insert into `ref_logical_router_physical_router` (`from`, `to` ) values (?, ?);"
 
 // CreateLogicalRouter inserts LogicalRouter to DB
 func CreateLogicalRouter(tx *sql.Tx, model *models.LogicalRouter) error {
@@ -413,63 +413,6 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 
 	}
 
-	if value, ok := values["ref_virtual_network"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			if referenceMap["to"] == "" {
-				continue
-			}
-			referenceModel := &models.LogicalRouterVirtualNetworkRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
-			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_physical_router"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			if referenceMap["to"] == "" {
-				continue
-			}
-			referenceModel := &models.LogicalRouterPhysicalRouterRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
-			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_bgpvpn"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			if referenceMap["to"] == "" {
-				continue
-			}
-			referenceModel := &models.LogicalRouterBGPVPNRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
-			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_route_target"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -546,6 +489,63 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 		}
 	}
 
+	if value, ok := values["ref_virtual_network"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterVirtualNetworkRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_physical_router"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterPhysicalRouterRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_bgpvpn"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterBGPVPNRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
+
+		}
+	}
+
 	return m, nil
 }
 
@@ -586,9 +586,6 @@ func ListLogicalRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.LogicalRout
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanLogicalRouter(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -598,17 +595,6 @@ func ListLogicalRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.LogicalRout
 	return result, nil
 }
 
-// ShowLogicalRouter shows LogicalRouter resource
-func ShowLogicalRouter(tx *sql.Tx, uuid string) (*models.LogicalRouter, error) {
-	list, err := ListLogicalRouter(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateLogicalRouter updates a resource
 func UpdateLogicalRouter(tx *sql.Tx, uuid string, model *models.LogicalRouter) error {
 	//TODO(nati) support update
@@ -616,16 +602,21 @@ func UpdateLogicalRouter(tx *sql.Tx, uuid string, model *models.LogicalRouter) e
 }
 
 // DeleteLogicalRouter deletes a resource
-func DeleteLogicalRouter(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteLogicalRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteLogicalRouter(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteLogicalRouterQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

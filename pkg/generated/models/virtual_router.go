@@ -6,22 +6,29 @@ import "encoding/json"
 
 // VirtualRouter
 type VirtualRouter struct {
-	DisplayName              string            `json:"display_name"`
-	VirtualRouterType        VirtualRouterType `json:"virtual_router_type"`
-	Annotations              *KeyValuePairs    `json:"annotations"`
-	Perms2                   *PermType2        `json:"perms2"`
-	ParentUUID               string            `json:"parent_uuid"`
-	FQName                   []string          `json:"fq_name"`
-	VirtualRouterDPDKEnabled bool              `json:"virtual_router_dpdk_enabled"`
 	VirtualRouterIPAddress   IpAddressType     `json:"virtual_router_ip_address"`
-	UUID                     string            `json:"uuid"`
+	ParentUUID               string            `json:"parent_uuid"`
 	ParentType               string            `json:"parent_type"`
+	DisplayName              string            `json:"display_name"`
+	Annotations              *KeyValuePairs    `json:"annotations"`
+	VirtualRouterDPDKEnabled bool              `json:"virtual_router_dpdk_enabled"`
+	FQName                   []string          `json:"fq_name"`
 	IDPerms                  *IdPermsType      `json:"id_perms"`
+	Perms2                   *PermType2        `json:"perms2"`
+	UUID                     string            `json:"uuid"`
+	VirtualRouterType        VirtualRouterType `json:"virtual_router_type"`
 
 	NetworkIpamRefs    []*VirtualRouterNetworkIpamRef    `json:"network_ipam_refs"`
 	VirtualMachineRefs []*VirtualRouterVirtualMachineRef `json:"virtual_machine_refs"`
 
 	VirtualMachineInterfaces []*VirtualMachineInterface `json:"virtual_machine_interfaces"`
+}
+
+// VirtualRouterVirtualMachineRef references each other
+type VirtualRouterVirtualMachineRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
 }
 
 // VirtualRouterNetworkIpamRef references each other
@@ -30,13 +37,6 @@ type VirtualRouterNetworkIpamRef struct {
 	To   []string `json:"to"` //FQDN
 
 	Attr *VirtualRouterNetworkIpamType
-}
-
-// VirtualRouterVirtualMachineRef references each other
-type VirtualRouterVirtualMachineRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
 }
 
 // String returns json representation of the object
@@ -49,17 +49,17 @@ func (model *VirtualRouter) String() string {
 func MakeVirtualRouter() *VirtualRouter {
 	return &VirtualRouter{
 		//TODO(nati): Apply default
-		UUID:                     "",
-		ParentType:               "",
-		IDPerms:                  MakeIdPermsType(),
+		DisplayName:              "",
+		Annotations:              MakeKeyValuePairs(),
 		VirtualRouterDPDKEnabled: false,
 		VirtualRouterIPAddress:   MakeIpAddressType(),
-		Perms2:                   MakePermType2(),
 		ParentUUID:               "",
-		FQName:                   []string{},
-		DisplayName:              "",
+		ParentType:               "",
+		UUID:                     "",
 		VirtualRouterType:        MakeVirtualRouterType(),
-		Annotations:              MakeKeyValuePairs(),
+		FQName:                   []string{},
+		IDPerms:                  MakeIdPermsType(),
+		Perms2:                   MakePermType2(),
 	}
 }
 
@@ -70,19 +70,16 @@ func InterfaceToVirtualRouter(iData interface{}) *VirtualRouter {
 		VirtualRouterType: InterfaceToVirtualRouterType(data["virtual_router_type"]),
 
 		//{"description":"Different types of the vrouters in the system.","type":"string","enum":["embedded","tor-agent","tor-service-node"]}
-		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
-
-		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		Perms2: InterfaceToPermType2(data["perms2"]),
-
-		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
-		ParentUUID: data["parent_uuid"].(string),
-
-		//{"type":"string"}
 		FQName: data["fq_name"].([]string),
 
 		//{"type":"array","item":{"type":"string"}}
-		DisplayName: data["display_name"].(string),
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
+		Perms2: InterfaceToPermType2(data["perms2"]),
+
+		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
+		UUID: data["uuid"].(string),
 
 		//{"type":"string"}
 		VirtualRouterDPDKEnabled: data["virtual_router_dpdk_enabled"].(bool),
@@ -91,15 +88,18 @@ func InterfaceToVirtualRouter(iData interface{}) *VirtualRouter {
 		VirtualRouterIPAddress: InterfaceToIpAddressType(data["virtual_router_ip_address"]),
 
 		//{"description":"Ip address of the virtual router.","type":"string"}
-		UUID: data["uuid"].(string),
+		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
 		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+		DisplayName: data["display_name"].(string),
 
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
+		//{"type":"string"}
+		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
+
+		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
 
 	}
 }

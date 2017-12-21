@@ -294,9 +294,6 @@ func ListRoutingInstance(tx *sql.Tx, spec *common.ListSpec) ([]*models.RoutingIn
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanRoutingInstance(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -306,17 +303,6 @@ func ListRoutingInstance(tx *sql.Tx, spec *common.ListSpec) ([]*models.RoutingIn
 	return result, nil
 }
 
-// ShowRoutingInstance shows RoutingInstance resource
-func ShowRoutingInstance(tx *sql.Tx, uuid string) (*models.RoutingInstance, error) {
-	list, err := ListRoutingInstance(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateRoutingInstance updates a resource
 func UpdateRoutingInstance(tx *sql.Tx, uuid string, model *models.RoutingInstance) error {
 	//TODO(nati) support update
@@ -324,16 +310,21 @@ func UpdateRoutingInstance(tx *sql.Tx, uuid string, model *models.RoutingInstanc
 }
 
 // DeleteRoutingInstance deletes a resource
-func DeleteRoutingInstance(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteRoutingInstanceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteRoutingInstance(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteRoutingInstanceQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

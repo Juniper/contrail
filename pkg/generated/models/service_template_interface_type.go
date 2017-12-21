@@ -21,9 +21,9 @@ func (model *ServiceTemplateInterfaceType) String() string {
 func MakeServiceTemplateInterfaceType() *ServiceTemplateInterfaceType {
 	return &ServiceTemplateInterfaceType{
 		//TODO(nati): Apply default
+		ServiceInterfaceType: MakeServiceInterfaceType(),
 		StaticRouteEnable:    false,
 		SharedIP:             false,
-		ServiceInterfaceType: MakeServiceInterfaceType(),
 	}
 }
 

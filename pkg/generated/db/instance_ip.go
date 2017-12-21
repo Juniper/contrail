@@ -53,6 +53,16 @@ var InstanceIPFields = []string{
 // InstanceIPRefFields is db reference fields for InstanceIP
 var InstanceIPRefFields = map[string][]string{
 
+	"virtual_router": {
+	// <common.Schema Value>
+
+	},
+
+	"network_ipam": {
+	// <common.Schema Value>
+
+	},
+
 	"virtual_network": {
 	// <common.Schema Value>
 
@@ -64,16 +74,6 @@ var InstanceIPRefFields = map[string][]string{
 	},
 
 	"physical_router": {
-	// <common.Schema Value>
-
-	},
-
-	"virtual_router": {
-	// <common.Schema Value>
-
-	},
-
-	"network_ipam": {
 	// <common.Schema Value>
 
 	},
@@ -487,25 +487,6 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 
 	}
 
-	if value, ok := values["ref_network_ipam"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			if referenceMap["to"] == "" {
-				continue
-			}
-			referenceModel := &models.InstanceIPNetworkIpamRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
-			m.NetworkIpamRefs = append(m.NetworkIpamRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_network"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -578,6 +559,25 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 			referenceModel := &models.InstanceIPVirtualRouterRef{}
 			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_network_ipam"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.InstanceIPNetworkIpamRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.NetworkIpamRefs = append(m.NetworkIpamRefs, referenceModel)
 
 		}
 	}
@@ -856,9 +856,6 @@ func ListInstanceIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.InstanceIP, er
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanInstanceIP(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -868,17 +865,6 @@ func ListInstanceIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.InstanceIP, er
 	return result, nil
 }
 
-// ShowInstanceIP shows InstanceIP resource
-func ShowInstanceIP(tx *sql.Tx, uuid string) (*models.InstanceIP, error) {
-	list, err := ListInstanceIP(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateInstanceIP updates a resource
 func UpdateInstanceIP(tx *sql.Tx, uuid string, model *models.InstanceIP) error {
 	//TODO(nati) support update
@@ -886,16 +872,21 @@ func UpdateInstanceIP(tx *sql.Tx, uuid string, model *models.InstanceIP) error {
 }
 
 // DeleteInstanceIP deletes a resource
-func DeleteInstanceIP(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteInstanceIPQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteInstanceIP(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteInstanceIPQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

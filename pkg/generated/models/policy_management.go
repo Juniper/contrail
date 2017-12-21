@@ -6,6 +6,7 @@ import "encoding/json"
 
 // PolicyManagement
 type PolicyManagement struct {
+	FQName      []string       `json:"fq_name"`
 	IDPerms     *IdPermsType   `json:"id_perms"`
 	DisplayName string         `json:"display_name"`
 	Annotations *KeyValuePairs `json:"annotations"`
@@ -13,7 +14,6 @@ type PolicyManagement struct {
 	UUID        string         `json:"uuid"`
 	ParentUUID  string         `json:"parent_uuid"`
 	ParentType  string         `json:"parent_type"`
-	FQName      []string       `json:"fq_name"`
 
 	AddressGroups         []*AddressGroup         `json:"address_groups"`
 	ApplicationPolicySets []*ApplicationPolicySet `json:"application_policy_sets"`
@@ -32,7 +32,6 @@ func (model *PolicyManagement) String() string {
 func MakePolicyManagement() *PolicyManagement {
 	return &PolicyManagement{
 		//TODO(nati): Apply default
-		ParentType:  "",
 		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
@@ -40,6 +39,7 @@ func MakePolicyManagement() *PolicyManagement {
 		Perms2:      MakePermType2(),
 		UUID:        "",
 		ParentUUID:  "",
+		ParentType:  "",
 	}
 }
 
@@ -47,6 +47,9 @@ func MakePolicyManagement() *PolicyManagement {
 func InterfaceToPolicyManagement(iData interface{}) *PolicyManagement {
 	data := iData.(map[string]interface{})
 	return &PolicyManagement{
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
 		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
 
 		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
@@ -68,9 +71,6 @@ func InterfaceToPolicyManagement(iData interface{}) *PolicyManagement {
 		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
-		FQName: data["fq_name"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
 
 	}
 }

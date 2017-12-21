@@ -142,6 +142,8 @@ var APIs = []common.RESTAPI{
 
 	&TagTypeRESTAPI{},
 
+	&UserRESTAPI{},
+
 	&VirtualDNSRecordRESTAPI{},
 
 	&VirtualDNSRESTAPI{},

@@ -21,9 +21,9 @@ func MakeVirtualRouterNetworkIpamType() *VirtualRouterNetworkIpamType {
 	return &VirtualRouterNetworkIpamType{
 		//TODO(nati): Apply default
 
-		AllocationPools: MakeAllocationPoolTypeSlice(),
-
 		Subnet: MakeSubnetTypeSlice(),
+
+		AllocationPools: MakeAllocationPoolTypeSlice(),
 	}
 }
 

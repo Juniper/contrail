@@ -314,9 +314,6 @@ func ListKubernetesCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.Kuberne
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanKubernetesCluster(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -326,17 +323,6 @@ func ListKubernetesCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.Kuberne
 	return result, nil
 }
 
-// ShowKubernetesCluster shows KubernetesCluster resource
-func ShowKubernetesCluster(tx *sql.Tx, uuid string) (*models.KubernetesCluster, error) {
-	list, err := ListKubernetesCluster(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateKubernetesCluster updates a resource
 func UpdateKubernetesCluster(tx *sql.Tx, uuid string, model *models.KubernetesCluster) error {
 	//TODO(nati) support update
@@ -344,16 +330,21 @@ func UpdateKubernetesCluster(tx *sql.Tx, uuid string, model *models.KubernetesCl
 }
 
 // DeleteKubernetesCluster deletes a resource
-func DeleteKubernetesCluster(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteKubernetesClusterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteKubernetesCluster(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteKubernetesClusterQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

@@ -6,14 +6,14 @@ import "encoding/json"
 
 // VirtualMachine
 type VirtualMachine struct {
+	Perms2      *PermType2     `json:"perms2"`
+	UUID        string         `json:"uuid"`
 	ParentUUID  string         `json:"parent_uuid"`
 	ParentType  string         `json:"parent_type"`
 	FQName      []string       `json:"fq_name"`
 	IDPerms     *IdPermsType   `json:"id_perms"`
 	DisplayName string         `json:"display_name"`
 	Annotations *KeyValuePairs `json:"annotations"`
-	Perms2      *PermType2     `json:"perms2"`
-	UUID        string         `json:"uuid"`
 
 	ServiceInstanceRefs []*VirtualMachineServiceInstanceRef `json:"service_instance_refs"`
 
@@ -37,14 +37,14 @@ func (model *VirtualMachine) String() string {
 func MakeVirtualMachine() *VirtualMachine {
 	return &VirtualMachine{
 		//TODO(nati): Apply default
+		IDPerms:     MakeIdPermsType(),
+		DisplayName: "",
+		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
 		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
-		DisplayName: "",
-		Annotations: MakeKeyValuePairs(),
 	}
 }
 

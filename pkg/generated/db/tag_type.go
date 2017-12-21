@@ -304,9 +304,6 @@ func ListTagType(tx *sql.Tx, spec *common.ListSpec) ([]*models.TagType, error) {
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanTagType(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -316,17 +313,6 @@ func ListTagType(tx *sql.Tx, spec *common.ListSpec) ([]*models.TagType, error) {
 	return result, nil
 }
 
-// ShowTagType shows TagType resource
-func ShowTagType(tx *sql.Tx, uuid string) (*models.TagType, error) {
-	list, err := ListTagType(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateTagType updates a resource
 func UpdateTagType(tx *sql.Tx, uuid string, model *models.TagType) error {
 	//TODO(nati) support update
@@ -334,16 +320,21 @@ func UpdateTagType(tx *sql.Tx, uuid string, model *models.TagType) error {
 }
 
 // DeleteTagType deletes a resource
-func DeleteTagType(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteTagTypeQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteTagType(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteTagTypeQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

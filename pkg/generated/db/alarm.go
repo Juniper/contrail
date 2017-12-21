@@ -320,9 +320,6 @@ func ListAlarm(tx *sql.Tx, spec *common.ListSpec) ([]*models.Alarm, error) {
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanAlarm(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -332,17 +329,6 @@ func ListAlarm(tx *sql.Tx, spec *common.ListSpec) ([]*models.Alarm, error) {
 	return result, nil
 }
 
-// ShowAlarm shows Alarm resource
-func ShowAlarm(tx *sql.Tx, uuid string) (*models.Alarm, error) {
-	list, err := ListAlarm(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateAlarm updates a resource
 func UpdateAlarm(tx *sql.Tx, uuid string, model *models.Alarm) error {
 	//TODO(nati) support update
@@ -350,16 +336,21 @@ func UpdateAlarm(tx *sql.Tx, uuid string, model *models.Alarm) error {
 }
 
 // DeleteAlarm deletes a resource
-func DeleteAlarm(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteAlarmQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteAlarm(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteAlarmQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

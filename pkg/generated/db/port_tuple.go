@@ -294,9 +294,6 @@ func ListPortTuple(tx *sql.Tx, spec *common.ListSpec) ([]*models.PortTuple, erro
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanPortTuple(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -306,17 +303,6 @@ func ListPortTuple(tx *sql.Tx, spec *common.ListSpec) ([]*models.PortTuple, erro
 	return result, nil
 }
 
-// ShowPortTuple shows PortTuple resource
-func ShowPortTuple(tx *sql.Tx, uuid string) (*models.PortTuple, error) {
-	list, err := ListPortTuple(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdatePortTuple updates a resource
 func UpdatePortTuple(tx *sql.Tx, uuid string, model *models.PortTuple) error {
 	//TODO(nati) support update
@@ -324,16 +310,21 @@ func UpdatePortTuple(tx *sql.Tx, uuid string, model *models.PortTuple) error {
 }
 
 // DeletePortTuple deletes a resource
-func DeletePortTuple(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deletePortTupleQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeletePortTuple(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deletePortTupleQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

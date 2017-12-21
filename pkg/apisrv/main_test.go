@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/spf13/viper"
+
 	"github.com/Juniper/contrail/pkg/common"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
@@ -16,7 +18,6 @@ import (
 var testServer *httptest.Server
 var server *Server
 var testURL string
-var client *Client
 
 func TestMain(m *testing.M) {
 	common.InitConfig()
@@ -26,15 +27,17 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer server.Close()
 
 	testServer = httptest.NewServer(server.Echo)
 	if err != nil {
 		log.Fatal(err)
 	}
-	testURL = testServer.URL
-	client = NewClient(testURL)
-
+	viper.Set("keystone.authurl", testServer.URL+"/v3")
+	err = server.Init()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer server.Close()
 	log.Info("starting test")
 	code := m.Run()
 	log.Info("finished test")
@@ -46,27 +49,31 @@ func RunTest(file string) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to load test data")
 	}
-	defer func() {
-		_, err := server.DB.Exec("SET FOREIGN_KEY_CHECKS=0;")
+	for _, table := range testData.Tables {
+		common.UseTable(server.DB, table)
+		defer common.ClearTable(server.DB, table)
+	}
+	clients := map[string]*Client{}
+	for key, client := range testData.Clients {
+		//Rewrite endpoint for test server
+		client.Endpoint = testServer.URL
+		client.AuthURL = testServer.URL + "/v3"
+		clients[key] = client
+
+		client.Init()
+		err := clients[key].Login()
 		if err != nil {
-			log.Error(err)
+			return errors.Wrap(err, fmt.Sprintf("client %s failed to login", key))
 		}
-		for _, table := range testData.Cleanup {
-			_, err := server.DB.Exec("truncate table " + table)
-			if err != nil {
-				log.Error(err)
-			}
-		}
-		_, err = server.DB.Exec("SET FOREIGN_KEY_CHECKS=1;")
-		if err != nil {
-			log.Error(err)
-		}
-		if r := recover(); r != nil {
-			log.Fatal("panic", r)
-		}
-	}()
+	}
 	for _, task := range testData.Workflow {
+		log.Debug("[Step] ", task.Name)
 		task.Request.Data = common.YAMLtoJSONCompat(task.Request.Data)
+		clientID := "default"
+		if task.Client != "" {
+			clientID = task.Client
+		}
+		client := clients[clientID]
 		_, err := client.DoRequest(task.Request)
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("task %v failed", task))
@@ -96,15 +103,17 @@ func LoadTest(file string) (*TestScenario, error) {
 
 type Task struct {
 	Name    string      `yaml:"name"`
+	Client  string      `yaml:"client"`
 	Request *Request    `yaml:"request"`
 	Expect  interface{} `yaml:"expect"`
 }
 
 type TestScenario struct {
-	Name        string   `yaml:"name"`
-	Description string   `yaml:"description"`
-	Cleanup     []string `yaml:"cleanup"`
-	Workflow    []*Task  `yaml:"workflow"`
+	Name        string             `yaml:"name"`
+	Description string             `yaml:"description"`
+	Tables      []string           `yaml:"tables"`
+	Clients     map[string]*Client `yaml:"clients"`
+	Workflow    []*Task            `yaml:"workflow"`
 }
 
 func checkDiff(path string, expected, actual interface{}) error {

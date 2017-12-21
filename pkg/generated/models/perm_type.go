@@ -35,12 +35,6 @@ func MakePermType() *PermType {
 func InterfaceToPermType(iData interface{}) *PermType {
 	data := iData.(map[string]interface{})
 	return &PermType{
-		Owner: data["owner"].(string),
-
-		//{"type":"string"}
-		OwnerAccess: InterfaceToAccessType(data["owner_access"]),
-
-		//{"type":"integer","minimum":0,"maximum":7}
 		OtherAccess: InterfaceToAccessType(data["other_access"]),
 
 		//{"type":"integer","minimum":0,"maximum":7}
@@ -48,6 +42,12 @@ func InterfaceToPermType(iData interface{}) *PermType {
 
 		//{"type":"string"}
 		GroupAccess: InterfaceToAccessType(data["group_access"]),
+
+		//{"type":"integer","minimum":0,"maximum":7}
+		Owner: data["owner"].(string),
+
+		//{"type":"string"}
+		OwnerAccess: InterfaceToAccessType(data["owner_access"]),
 
 		//{"type":"integer","minimum":0,"maximum":7}
 

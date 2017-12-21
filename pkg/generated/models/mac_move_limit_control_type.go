@@ -21,9 +21,9 @@ func (model *MACMoveLimitControlType) String() string {
 func MakeMACMoveLimitControlType() *MACMoveLimitControlType {
 	return &MACMoveLimitControlType{
 		//TODO(nati): Apply default
+		MacMoveTimeWindow:  MakeMACMoveTimeWindow(),
 		MacMoveLimit:       0,
 		MacMoveLimitAction: MakeMACLimitExceedActionType(),
-		MacMoveTimeWindow:  MakeMACMoveTimeWindow(),
 	}
 }
 

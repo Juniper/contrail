@@ -28,3 +28,13 @@ func CamelToSnake(s string) string {
 func SnakeToCamel(s string) string {
 	return strmangle.TitleCase(s)
 }
+
+//ContainsString check if a string is in a string list
+func ContainsString(list []string, a string) bool {
+	for _, b := range list {
+		if a == b {
+			return true
+		}
+	}
+	return false
+}

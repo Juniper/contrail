@@ -44,21 +44,7 @@ func TestServiceGroup(t *testing.T) {
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		model, err := ShowServiceGroup(tx, model.UUID)
-		if err != nil {
-			return err
-		}
-		if model == nil || model.UUID != "dummy_uuid" {
-			return fmt.Errorf("show failed")
-		}
-		return nil
-	})
-	if err != nil {
-		t.Fatal("show failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceGroup(tx, model.UUID)
+		return DeleteServiceGroup(tx, model.UUID, nil)
 	})
 	if err != nil {
 		t.Fatal("delete failed", err)

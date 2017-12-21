@@ -22,10 +22,10 @@ func (model *VirtualMachineInterfacePropertiesType) String() string {
 func MakeVirtualMachineInterfacePropertiesType() *VirtualMachineInterfacePropertiesType {
 	return &VirtualMachineInterfacePropertiesType{
 		//TODO(nati): Apply default
-		ServiceInterfaceType: MakeServiceInterfaceType(),
 		SubInterfaceVlanTag:  0,
 		LocalPreference:      0,
 		InterfaceMirror:      MakeInterfaceMirrorType(),
+		ServiceInterfaceType: MakeServiceInterfaceType(),
 	}
 }
 
@@ -33,9 +33,6 @@ func MakeVirtualMachineInterfacePropertiesType() *VirtualMachineInterfacePropert
 func InterfaceToVirtualMachineInterfacePropertiesType(iData interface{}) *VirtualMachineInterfacePropertiesType {
 	data := iData.(map[string]interface{})
 	return &VirtualMachineInterfacePropertiesType{
-		ServiceInterfaceType: InterfaceToServiceInterfaceType(data["service_interface_type"]),
-
-		//{"description":"This interface belongs to Service Instance and is tagged as left, right or other","type":"string"}
 		SubInterfaceVlanTag: data["sub_interface_vlan_tag"].(int),
 
 		//{"description":"802.1Q VLAN tag to be used if this interface is sub-interface for some other interface.","type":"integer"}
@@ -45,6 +42,9 @@ func InterfaceToVirtualMachineInterfacePropertiesType(iData interface{}) *Virtua
 		InterfaceMirror: InterfaceToInterfaceMirrorType(data["interface_mirror"]),
 
 		//{"description":"Interface Mirror configuration","type":"object","properties":{"mirror_to":{"type":"object","properties":{"analyzer_ip_address":{"type":"string"},"analyzer_mac_address":{"type":"string"},"analyzer_name":{"type":"string"},"encapsulation":{"type":"string"},"juniper_header":{"type":"boolean"},"nh_mode":{"type":"string","enum":["dynamic","static"]},"nic_assisted_mirroring":{"type":"boolean"},"nic_assisted_mirroring_vlan":{"type":"integer","minimum":1,"maximum":4094},"routing_instance":{"type":"string"},"static_nh_header":{"type":"object","properties":{"vni":{"type":"integer","minimum":1,"maximum":16777215},"vtep_dst_ip_address":{"type":"string"},"vtep_dst_mac_address":{"type":"string"}}},"udp_port":{"type":"integer"}}},"traffic_direction":{"default":"both","type":"string","enum":["ingress","egress","both"]}}}
+		ServiceInterfaceType: InterfaceToServiceInterfaceType(data["service_interface_type"]),
+
+		//{"description":"This interface belongs to Service Instance and is tagged as left, right or other","type":"string"}
 
 	}
 }

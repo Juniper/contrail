@@ -324,9 +324,6 @@ func ListQosQueue(tx *sql.Tx, spec *common.ListSpec) ([]*models.QosQueue, error)
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanQosQueue(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -336,17 +333,6 @@ func ListQosQueue(tx *sql.Tx, spec *common.ListSpec) ([]*models.QosQueue, error)
 	return result, nil
 }
 
-// ShowQosQueue shows QosQueue resource
-func ShowQosQueue(tx *sql.Tx, uuid string) (*models.QosQueue, error) {
-	list, err := ListQosQueue(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateQosQueue updates a resource
 func UpdateQosQueue(tx *sql.Tx, uuid string, model *models.QosQueue) error {
 	//TODO(nati) support update
@@ -354,16 +340,21 @@ func UpdateQosQueue(tx *sql.Tx, uuid string, model *models.QosQueue) error {
 }
 
 // DeleteQosQueue deletes a resource
-func DeleteQosQueue(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteQosQueueQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteQosQueue(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteQosQueueQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

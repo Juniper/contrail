@@ -50,17 +50,17 @@ var LoadbalancerFields = []string{
 // LoadbalancerRefFields is db reference fields for Loadbalancer
 var LoadbalancerRefFields = map[string][]string{
 
+	"service_instance": {
+	// <common.Schema Value>
+
+	},
+
 	"service_appliance_set": {
 	// <common.Schema Value>
 
 	},
 
 	"virtual_machine_interface": {
-	// <common.Schema Value>
-
-	},
-
-	"service_instance": {
 	// <common.Schema Value>
 
 	},
@@ -482,9 +482,6 @@ func ListLoadbalancer(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadbalancer
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanLoadbalancer(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -494,17 +491,6 @@ func ListLoadbalancer(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadbalancer
 	return result, nil
 }
 
-// ShowLoadbalancer shows Loadbalancer resource
-func ShowLoadbalancer(tx *sql.Tx, uuid string) (*models.Loadbalancer, error) {
-	list, err := ListLoadbalancer(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateLoadbalancer updates a resource
 func UpdateLoadbalancer(tx *sql.Tx, uuid string, model *models.Loadbalancer) error {
 	//TODO(nati) support update
@@ -512,16 +498,21 @@ func UpdateLoadbalancer(tx *sql.Tx, uuid string, model *models.Loadbalancer) err
 }
 
 // DeleteLoadbalancer deletes a resource
-func DeleteLoadbalancer(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteLoadbalancerQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteLoadbalancer(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteLoadbalancerQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

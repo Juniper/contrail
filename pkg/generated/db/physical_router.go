@@ -223,6 +223,19 @@ func CreatePhysicalRouter(tx *sql.Tx, model *models.PhysicalRouter) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtVirtualNetworkRef, err := tx.Prepare(insertPhysicalRouterVirtualNetworkQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
+	}
+	defer stmtVirtualNetworkRef.Close()
+	for _, ref := range model.VirtualNetworkRefs {
+
+		_, err = stmtVirtualNetworkRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs create failed")
+		}
+	}
+
 	stmtBGPRouterRef, err := tx.Prepare(insertPhysicalRouterBGPRouterQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing BGPRouterRefs create statement failed")
@@ -246,19 +259,6 @@ func CreatePhysicalRouter(tx *sql.Tx, model *models.PhysicalRouter) error {
 		_, err = stmtVirtualRouterRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualRouterRefs create failed")
-		}
-	}
-
-	stmtVirtualNetworkRef, err := tx.Prepare(insertPhysicalRouterVirtualNetworkQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
-	}
-	defer stmtVirtualNetworkRef.Close()
-	for _, ref := range model.VirtualNetworkRefs {
-
-		_, err = stmtVirtualNetworkRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs create failed")
 		}
 	}
 
@@ -1174,9 +1174,6 @@ func ListPhysicalRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.PhysicalRo
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanPhysicalRouter(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -1186,17 +1183,6 @@ func ListPhysicalRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.PhysicalRo
 	return result, nil
 }
 
-// ShowPhysicalRouter shows PhysicalRouter resource
-func ShowPhysicalRouter(tx *sql.Tx, uuid string) (*models.PhysicalRouter, error) {
-	list, err := ListPhysicalRouter(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdatePhysicalRouter updates a resource
 func UpdatePhysicalRouter(tx *sql.Tx, uuid string, model *models.PhysicalRouter) error {
 	//TODO(nati) support update
@@ -1204,16 +1190,21 @@ func UpdatePhysicalRouter(tx *sql.Tx, uuid string, model *models.PhysicalRouter)
 }
 
 // DeletePhysicalRouter deletes a resource
-func DeletePhysicalRouter(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deletePhysicalRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeletePhysicalRouter(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deletePhysicalRouterQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

@@ -46,15 +46,15 @@ var VirtualRouterFields = []string{
 // VirtualRouterRefFields is db reference fields for VirtualRouter
 var VirtualRouterRefFields = map[string][]string{
 
+	"virtual_machine": {
+	// <common.Schema Value>
+
+	},
+
 	"network_ipam": {
 		// <common.Schema Value>
 		"subnet",
 		"allocation_pools",
-	},
-
-	"virtual_machine": {
-	// <common.Schema Value>
-
 	},
 }
 
@@ -909,9 +909,6 @@ func ListVirtualRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualRout
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanVirtualRouter(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -921,17 +918,6 @@ func ListVirtualRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualRout
 	return result, nil
 }
 
-// ShowVirtualRouter shows VirtualRouter resource
-func ShowVirtualRouter(tx *sql.Tx, uuid string) (*models.VirtualRouter, error) {
-	list, err := ListVirtualRouter(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateVirtualRouter updates a resource
 func UpdateVirtualRouter(tx *sql.Tx, uuid string, model *models.VirtualRouter) error {
 	//TODO(nati) support update
@@ -939,16 +925,21 @@ func UpdateVirtualRouter(tx *sql.Tx, uuid string, model *models.VirtualRouter) e
 }
 
 // DeleteVirtualRouter deletes a resource
-func DeleteVirtualRouter(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteVirtualRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteVirtualRouter(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteVirtualRouterQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

@@ -374,9 +374,6 @@ func ListForwardingClass(tx *sql.Tx, spec *common.ListSpec) ([]*models.Forwardin
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanForwardingClass(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -386,17 +383,6 @@ func ListForwardingClass(tx *sql.Tx, spec *common.ListSpec) ([]*models.Forwardin
 	return result, nil
 }
 
-// ShowForwardingClass shows ForwardingClass resource
-func ShowForwardingClass(tx *sql.Tx, uuid string) (*models.ForwardingClass, error) {
-	list, err := ListForwardingClass(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateForwardingClass updates a resource
 func UpdateForwardingClass(tx *sql.Tx, uuid string, model *models.ForwardingClass) error {
 	//TODO(nati) support update
@@ -404,16 +390,21 @@ func UpdateForwardingClass(tx *sql.Tx, uuid string, model *models.ForwardingClas
 }
 
 // DeleteForwardingClass deletes a resource
-func DeleteForwardingClass(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteForwardingClassQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteForwardingClass(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteForwardingClassQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

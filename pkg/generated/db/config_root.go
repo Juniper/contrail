@@ -1193,9 +1193,6 @@ func ListConfigRoot(tx *sql.Tx, spec *common.ListSpec) ([]*models.ConfigRoot, er
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanConfigRoot(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -1205,17 +1202,6 @@ func ListConfigRoot(tx *sql.Tx, spec *common.ListSpec) ([]*models.ConfigRoot, er
 	return result, nil
 }
 
-// ShowConfigRoot shows ConfigRoot resource
-func ShowConfigRoot(tx *sql.Tx, uuid string) (*models.ConfigRoot, error) {
-	list, err := ListConfigRoot(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateConfigRoot updates a resource
 func UpdateConfigRoot(tx *sql.Tx, uuid string, model *models.ConfigRoot) error {
 	//TODO(nati) support update
@@ -1223,16 +1209,21 @@ func UpdateConfigRoot(tx *sql.Tx, uuid string, model *models.ConfigRoot) error {
 }
 
 // DeleteConfigRoot deletes a resource
-func DeleteConfigRoot(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteConfigRootQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteConfigRoot(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteConfigRootQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

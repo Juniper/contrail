@@ -6,15 +6,15 @@ import "encoding/json"
 
 // PeeringPolicy
 type PeeringPolicy struct {
-	PeeringService PeeringServiceType `json:"peering_service"`
 	Annotations    *KeyValuePairs     `json:"annotations"`
-	ParentType     string             `json:"parent_type"`
+	PeeringService PeeringServiceType `json:"peering_service"`
+	Perms2         *PermType2         `json:"perms2"`
+	DisplayName    string             `json:"display_name"`
 	FQName         []string           `json:"fq_name"`
 	IDPerms        *IdPermsType       `json:"id_perms"`
-	DisplayName    string             `json:"display_name"`
-	Perms2         *PermType2         `json:"perms2"`
 	UUID           string             `json:"uuid"`
 	ParentUUID     string             `json:"parent_uuid"`
+	ParentType     string             `json:"parent_type"`
 }
 
 // String returns json representation of the object
@@ -27,15 +27,15 @@ func (model *PeeringPolicy) String() string {
 func MakePeeringPolicy() *PeeringPolicy {
 	return &PeeringPolicy{
 		//TODO(nati): Apply default
-		PeeringService: MakePeeringServiceType(),
+		Perms2:         MakePermType2(),
+		DisplayName:    "",
 		Annotations:    MakeKeyValuePairs(),
-		UUID:           "",
+		PeeringService: MakePeeringServiceType(),
 		ParentUUID:     "",
 		ParentType:     "",
 		FQName:         []string{},
 		IDPerms:        MakeIdPermsType(),
-		DisplayName:    "",
-		Perms2:         MakePermType2(),
+		UUID:           "",
 	}
 }
 
@@ -43,12 +43,18 @@ func MakePeeringPolicy() *PeeringPolicy {
 func InterfaceToPeeringPolicy(iData interface{}) *PeeringPolicy {
 	data := iData.(map[string]interface{})
 	return &PeeringPolicy{
-		PeeringService: InterfaceToPeeringServiceType(data["peering_service"]),
+		Perms2: InterfaceToPermType2(data["perms2"]),
 
-		//{"description":"Peering policy service type.","type":"string","enum":["public-peering"]}
+		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
+		DisplayName: data["display_name"].(string),
+
+		//{"type":"string"}
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
 		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
+		PeeringService: InterfaceToPeeringServiceType(data["peering_service"]),
+
+		//{"description":"Peering policy service type.","type":"string","enum":["public-peering"]}
 		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
@@ -61,12 +67,6 @@ func InterfaceToPeeringPolicy(iData interface{}) *PeeringPolicy {
 		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
 
 		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
-		DisplayName: data["display_name"].(string),
-
-		//{"type":"string"}
-		Perms2: InterfaceToPermType2(data["perms2"]),
-
-		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
 		UUID: data["uuid"].(string),
 
 		//{"type":"string"}

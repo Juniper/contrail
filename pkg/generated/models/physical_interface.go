@@ -6,15 +6,15 @@ import "encoding/json"
 
 // PhysicalInterface
 type PhysicalInterface struct {
+	DisplayName               string         `json:"display_name"`
 	UUID                      string         `json:"uuid"`
 	FQName                    []string       `json:"fq_name"`
-	DisplayName               string         `json:"display_name"`
-	ParentType                string         `json:"parent_type"`
-	IDPerms                   *IdPermsType   `json:"id_perms"`
+	EthernetSegmentIdentifier string         `json:"ethernet_segment_identifier"`
 	Annotations               *KeyValuePairs `json:"annotations"`
 	Perms2                    *PermType2     `json:"perms2"`
-	EthernetSegmentIdentifier string         `json:"ethernet_segment_identifier"`
 	ParentUUID                string         `json:"parent_uuid"`
+	ParentType                string         `json:"parent_type"`
+	IDPerms                   *IdPermsType   `json:"id_perms"`
 
 	PhysicalInterfaceRefs []*PhysicalInterfacePhysicalInterfaceRef `json:"physical_interface_refs"`
 
@@ -38,15 +38,15 @@ func (model *PhysicalInterface) String() string {
 func MakePhysicalInterface() *PhysicalInterface {
 	return &PhysicalInterface{
 		//TODO(nati): Apply default
-		ParentType:  "",
-		IDPerms:     MakeIdPermsType(),
-		Annotations: MakeKeyValuePairs(),
-		Perms2:      MakePermType2(),
 		EthernetSegmentIdentifier: "",
-		ParentUUID:                "",
+		DisplayName:               "",
 		UUID:                      "",
 		FQName:                    []string{},
-		DisplayName:               "",
+		IDPerms:                   MakeIdPermsType(),
+		Annotations:               MakeKeyValuePairs(),
+		Perms2:                    MakePermType2(),
+		ParentUUID:                "",
+		ParentType:                "",
 	}
 }
 
@@ -54,18 +54,9 @@ func MakePhysicalInterface() *PhysicalInterface {
 func InterfaceToPhysicalInterface(iData interface{}) *PhysicalInterface {
 	data := iData.(map[string]interface{})
 	return &PhysicalInterface{
-		FQName: data["fq_name"].([]string),
+		Perms2: InterfaceToPermType2(data["perms2"]),
 
-		//{"type":"array","item":{"type":"string"}}
-		DisplayName: data["display_name"].(string),
-
-		//{"type":"string"}
-		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
-		EthernetSegmentIdentifier: data["ethernet_segment_identifier"].(string),
-
-		//{"description":"Ethernet Segment Id configured for the Physical Interface. In a multihomed environment, user should configure the peer Physical interface with the same ESI.","type":"string"}
+		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
 		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
@@ -78,9 +69,18 @@ func InterfaceToPhysicalInterface(iData interface{}) *PhysicalInterface {
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
 		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		Perms2: InterfaceToPermType2(data["perms2"]),
+		UUID: data["uuid"].(string),
 
-		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
+		//{"type":"string"}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
+		EthernetSegmentIdentifier: data["ethernet_segment_identifier"].(string),
+
+		//{"description":"Ethernet Segment Id configured for the Physical Interface. In a multihomed environment, user should configure the peer Physical interface with the same ESI.","type":"string"}
+		DisplayName: data["display_name"].(string),
+
+		//{"type":"string"}
 
 	}
 }

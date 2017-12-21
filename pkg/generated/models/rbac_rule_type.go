@@ -21,11 +21,10 @@ func (model *RbacRuleType) String() string {
 func MakeRbacRuleType() *RbacRuleType {
 	return &RbacRuleType{
 		//TODO(nati): Apply default
+		RuleField:  "",
 		RuleObject: "",
 
 		RulePerms: MakeRbacPermTypeSlice(),
-
-		RuleField: "",
 	}
 }
 

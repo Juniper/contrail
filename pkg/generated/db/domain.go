@@ -1800,9 +1800,6 @@ func ListDomain(tx *sql.Tx, spec *common.ListSpec) ([]*models.Domain, error) {
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanDomain(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -1812,17 +1809,6 @@ func ListDomain(tx *sql.Tx, spec *common.ListSpec) ([]*models.Domain, error) {
 	return result, nil
 }
 
-// ShowDomain shows Domain resource
-func ShowDomain(tx *sql.Tx, uuid string) (*models.Domain, error) {
-	list, err := ListDomain(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateDomain updates a resource
 func UpdateDomain(tx *sql.Tx, uuid string, model *models.Domain) error {
 	//TODO(nati) support update
@@ -1830,16 +1816,21 @@ func UpdateDomain(tx *sql.Tx, uuid string, model *models.Domain) error {
 }
 
 // DeleteDomain deletes a resource
-func DeleteDomain(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteDomainQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteDomain(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteDomainQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

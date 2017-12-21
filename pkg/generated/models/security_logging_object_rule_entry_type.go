@@ -20,8 +20,8 @@ func (model *SecurityLoggingObjectRuleEntryType) String() string {
 func MakeSecurityLoggingObjectRuleEntryType() *SecurityLoggingObjectRuleEntryType {
 	return &SecurityLoggingObjectRuleEntryType{
 		//TODO(nati): Apply default
-		RuleUUID: "",
 		Rate:     0,
+		RuleUUID: "",
 	}
 }
 

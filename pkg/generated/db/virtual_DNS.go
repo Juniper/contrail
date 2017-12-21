@@ -633,9 +633,6 @@ func ListVirtualDNS(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualDNS, er
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanVirtualDNS(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -645,17 +642,6 @@ func ListVirtualDNS(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualDNS, er
 	return result, nil
 }
 
-// ShowVirtualDNS shows VirtualDNS resource
-func ShowVirtualDNS(tx *sql.Tx, uuid string) (*models.VirtualDNS, error) {
-	list, err := ListVirtualDNS(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateVirtualDNS updates a resource
 func UpdateVirtualDNS(tx *sql.Tx, uuid string, model *models.VirtualDNS) error {
 	//TODO(nati) support update
@@ -663,16 +649,21 @@ func UpdateVirtualDNS(tx *sql.Tx, uuid string, model *models.VirtualDNS) error {
 }
 
 // DeleteVirtualDNS deletes a resource
-func DeleteVirtualDNS(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteVirtualDNSQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteVirtualDNS(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteVirtualDNSQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

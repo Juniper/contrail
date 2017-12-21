@@ -6,14 +6,14 @@ import "encoding/json"
 
 // AliasIPPool
 type AliasIPPool struct {
-	FQName      []string       `json:"fq_name"`
-	IDPerms     *IdPermsType   `json:"id_perms"`
-	DisplayName string         `json:"display_name"`
 	Annotations *KeyValuePairs `json:"annotations"`
 	Perms2      *PermType2     `json:"perms2"`
 	UUID        string         `json:"uuid"`
 	ParentUUID  string         `json:"parent_uuid"`
 	ParentType  string         `json:"parent_type"`
+	FQName      []string       `json:"fq_name"`
+	IDPerms     *IdPermsType   `json:"id_perms"`
+	DisplayName string         `json:"display_name"`
 
 	AliasIPs []*AliasIP `json:"alias_ips"`
 }
@@ -43,9 +43,6 @@ func MakeAliasIPPool() *AliasIPPool {
 func InterfaceToAliasIPPool(iData interface{}) *AliasIPPool {
 	data := iData.(map[string]interface{})
 	return &AliasIPPool{
-		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
 		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
@@ -67,6 +64,9 @@ func InterfaceToAliasIPPool(iData interface{}) *AliasIPPool {
 		Perms2: InterfaceToPermType2(data["perms2"]),
 
 		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
+		UUID: data["uuid"].(string),
+
+		//{"type":"string"}
 
 	}
 }

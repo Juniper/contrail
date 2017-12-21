@@ -344,9 +344,6 @@ func ListContrailAnalyticsNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.Con
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanContrailAnalyticsNode(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -356,17 +353,6 @@ func ListContrailAnalyticsNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.Con
 	return result, nil
 }
 
-// ShowContrailAnalyticsNode shows ContrailAnalyticsNode resource
-func ShowContrailAnalyticsNode(tx *sql.Tx, uuid string) (*models.ContrailAnalyticsNode, error) {
-	list, err := ListContrailAnalyticsNode(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateContrailAnalyticsNode updates a resource
 func UpdateContrailAnalyticsNode(tx *sql.Tx, uuid string, model *models.ContrailAnalyticsNode) error {
 	//TODO(nati) support update
@@ -374,16 +360,21 @@ func UpdateContrailAnalyticsNode(tx *sql.Tx, uuid string, model *models.Contrail
 }
 
 // DeleteContrailAnalyticsNode deletes a resource
-func DeleteContrailAnalyticsNode(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteContrailAnalyticsNodeQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteContrailAnalyticsNode(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteContrailAnalyticsNodeQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

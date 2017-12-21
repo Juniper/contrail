@@ -13772,6 +13772,160 @@
         },
         {},
         {
+            "id": "user",
+            "plural": "users",
+            "parents": {
+                "project": {
+                    "description": "Reference to a project of this user.",
+                    "operation": "CRUD",
+                    "presence": "optional",
+                    "Attr": {
+                        "type": "object",
+                        "properties": {
+                            "role": {
+                                "description": "User role for the project",
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "$ref": "types.json#definitions/MemberType"
+                }
+            },
+            "prefix": "/",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "annotations": {
+                        "type": "object",
+                        "properties": {
+                            "key_value_pair": {
+                                "type": "array",
+                                "item": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "display_name": {
+                        "type": "string"
+                    },
+                    "fq_name": {
+                        "type": "array",
+                        "item": {
+                            "type": "string"
+                        }
+                    },
+                    "id_perms": {
+                        "type": "object",
+                        "properties": {
+                            "created": {
+                                "type": "string"
+                            },
+                            "creator": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "enable": {
+                                "type": "boolean"
+                            },
+                            "last_modified": {
+                                "type": "string"
+                            },
+                            "permissions": {
+                                "type": "object",
+                                "properties": {
+                                    "group": {
+                                        "type": "string"
+                                    },
+                                    "group_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 7
+                                    },
+                                    "other_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 7
+                                    },
+                                    "owner": {
+                                        "type": "string"
+                                    },
+                                    "owner_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 7
+                                    }
+                                }
+                            },
+                            "user_visible": {
+                                "type": "boolean"
+                            }
+                        }
+                    },
+                    "parent_type": {
+                        "type": "string"
+                    },
+                    "parent_uuid": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "description": "Domain level quota, not currently implemented",
+                        "type": "string"
+                    },
+                    "perms2": {
+                        "type": "object",
+                        "properties": {
+                            "global_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 7
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "owner_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 7
+                            },
+                            "share": {
+                                "type": "array",
+                                "item": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tenant": {
+                                            "type": "string"
+                                        },
+                                        "tenant_access": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 7
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "uuid": {
+                        "type": "string"
+                    }
+                }
+            },
+            "extends": [
+                "base"
+            ]
+        },
+        {
             "id": "virtual_DNS_record",
             "plural": "virtual_DNS_records",
             "parents": {

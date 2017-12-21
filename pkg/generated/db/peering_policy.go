@@ -304,9 +304,6 @@ func ListPeeringPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.PeeringPoli
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanPeeringPolicy(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -316,17 +313,6 @@ func ListPeeringPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.PeeringPoli
 	return result, nil
 }
 
-// ShowPeeringPolicy shows PeeringPolicy resource
-func ShowPeeringPolicy(tx *sql.Tx, uuid string) (*models.PeeringPolicy, error) {
-	list, err := ListPeeringPolicy(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdatePeeringPolicy updates a resource
 func UpdatePeeringPolicy(tx *sql.Tx, uuid string, model *models.PeeringPolicy) error {
 	//TODO(nati) support update
@@ -334,16 +320,21 @@ func UpdatePeeringPolicy(tx *sql.Tx, uuid string, model *models.PeeringPolicy) e
 }
 
 // DeletePeeringPolicy deletes a resource
-func DeletePeeringPolicy(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deletePeeringPolicyQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeletePeeringPolicy(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deletePeeringPolicyQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

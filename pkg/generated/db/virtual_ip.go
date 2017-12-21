@@ -67,9 +67,9 @@ var VirtualIPRefFields = map[string][]string{
 // VirtualIPBackRefFields is db back reference fields for VirtualIP
 var VirtualIPBackRefFields = map[string][]string{}
 
-const insertVirtualIPVirtualMachineInterfaceQuery = "insert into `ref_virtual_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
-
 const insertVirtualIPLoadbalancerPoolQuery = "insert into `ref_virtual_ip_loadbalancer_pool` (`from`, `to` ) values (?, ?);"
+
+const insertVirtualIPVirtualMachineInterfaceQuery = "insert into `ref_virtual_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateVirtualIP inserts VirtualIP to DB
 func CreateVirtualIP(tx *sql.Tx, model *models.VirtualIP) error {
@@ -473,9 +473,6 @@ func ListVirtualIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualIP, erro
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanVirtualIP(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -485,17 +482,6 @@ func ListVirtualIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualIP, erro
 	return result, nil
 }
 
-// ShowVirtualIP shows VirtualIP resource
-func ShowVirtualIP(tx *sql.Tx, uuid string) (*models.VirtualIP, error) {
-	list, err := ListVirtualIP(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateVirtualIP updates a resource
 func UpdateVirtualIP(tx *sql.Tx, uuid string, model *models.VirtualIP) error {
 	//TODO(nati) support update
@@ -503,16 +489,21 @@ func UpdateVirtualIP(tx *sql.Tx, uuid string, model *models.VirtualIP) error {
 }
 
 // DeleteVirtualIP deletes a resource
-func DeleteVirtualIP(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteVirtualIPQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteVirtualIP(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteVirtualIPQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

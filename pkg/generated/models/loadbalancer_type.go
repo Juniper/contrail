@@ -6,12 +6,12 @@ import "encoding/json"
 
 // LoadbalancerType
 type LoadbalancerType struct {
+	Status             string         `json:"status"`
 	ProvisioningStatus string         `json:"provisioning_status"`
 	AdminState         bool           `json:"admin_state"`
 	VipAddress         IpAddressType  `json:"vip_address"`
 	VipSubnetID        UuidStringType `json:"vip_subnet_id"`
 	OperatingStatus    string         `json:"operating_status"`
-	Status             string         `json:"status"`
 }
 
 // String returns json representation of the object
@@ -37,12 +37,6 @@ func MakeLoadbalancerType() *LoadbalancerType {
 func InterfaceToLoadbalancerType(iData interface{}) *LoadbalancerType {
 	data := iData.(map[string]interface{})
 	return &LoadbalancerType{
-		VipSubnetID: InterfaceToUuidStringType(data["vip_subnet_id"]),
-
-		//{"description":"Subnet UUID of the subnet of VIP, representing virtual network.","type":"string"}
-		OperatingStatus: data["operating_status"].(string),
-
-		//{"description":"Operational status of the load balancer updated by system.","type":"string"}
 		Status: data["status"].(string),
 
 		//{"description":"Operational status of the load balancer updated by system.","type":"string"}
@@ -55,6 +49,12 @@ func InterfaceToLoadbalancerType(iData interface{}) *LoadbalancerType {
 		VipAddress: InterfaceToIpAddressType(data["vip_address"]),
 
 		//{"description":"Virtual ip for this LBaaS","type":"string"}
+		VipSubnetID: InterfaceToUuidStringType(data["vip_subnet_id"]),
+
+		//{"description":"Subnet UUID of the subnet of VIP, representing virtual network.","type":"string"}
+		OperatingStatus: data["operating_status"].(string),
+
+		//{"description":"Operational status of the load balancer updated by system.","type":"string"}
 
 	}
 }

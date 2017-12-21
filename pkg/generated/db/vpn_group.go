@@ -394,9 +394,6 @@ func ListVPNGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.VPNGroup, error)
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanVPNGroup(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -406,17 +403,6 @@ func ListVPNGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.VPNGroup, error)
 	return result, nil
 }
 
-// ShowVPNGroup shows VPNGroup resource
-func ShowVPNGroup(tx *sql.Tx, uuid string) (*models.VPNGroup, error) {
-	list, err := ListVPNGroup(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateVPNGroup updates a resource
 func UpdateVPNGroup(tx *sql.Tx, uuid string, model *models.VPNGroup) error {
 	//TODO(nati) support update
@@ -424,16 +410,21 @@ func UpdateVPNGroup(tx *sql.Tx, uuid string, model *models.VPNGroup) error {
 }
 
 // DeleteVPNGroup deletes a resource
-func DeleteVPNGroup(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteVPNGroupQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteVPNGroup(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteVPNGroupQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

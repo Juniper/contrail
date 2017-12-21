@@ -1062,9 +1062,6 @@ func ListLocation(tx *sql.Tx, spec *common.ListSpec) ([]*models.Location, error)
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanLocation(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -1074,17 +1071,6 @@ func ListLocation(tx *sql.Tx, spec *common.ListSpec) ([]*models.Location, error)
 	return result, nil
 }
 
-// ShowLocation shows Location resource
-func ShowLocation(tx *sql.Tx, uuid string) (*models.Location, error) {
-	list, err := ListLocation(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateLocation updates a resource
 func UpdateLocation(tx *sql.Tx, uuid string, model *models.Location) error {
 	//TODO(nati) support update
@@ -1092,16 +1078,21 @@ func UpdateLocation(tx *sql.Tx, uuid string, model *models.Location) error {
 }
 
 // DeleteLocation deletes a resource
-func DeleteLocation(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteLocationQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteLocation(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteLocationQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

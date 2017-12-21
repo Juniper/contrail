@@ -44,12 +44,12 @@ var E2ServiceProviderFields = []string{
 // E2ServiceProviderRefFields is db reference fields for E2ServiceProvider
 var E2ServiceProviderRefFields = map[string][]string{
 
-	"physical_router": {
+	"peering_policy": {
 	// <common.Schema Value>
 
 	},
 
-	"peering_policy": {
+	"physical_router": {
 	// <common.Schema Value>
 
 	},
@@ -100,19 +100,6 @@ func CreateE2ServiceProvider(tx *sql.Tx, model *models.E2ServiceProvider) error 
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtPeeringPolicyRef, err := tx.Prepare(insertE2ServiceProviderPeeringPolicyQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing PeeringPolicyRefs create statement failed")
-	}
-	defer stmtPeeringPolicyRef.Close()
-	for _, ref := range model.PeeringPolicyRefs {
-
-		_, err = stmtPeeringPolicyRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "PeeringPolicyRefs create failed")
-		}
-	}
-
 	stmtPhysicalRouterRef, err := tx.Prepare(insertE2ServiceProviderPhysicalRouterQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing PhysicalRouterRefs create statement failed")
@@ -123,6 +110,19 @@ func CreateE2ServiceProvider(tx *sql.Tx, model *models.E2ServiceProvider) error 
 		_, err = stmtPhysicalRouterRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PhysicalRouterRefs create failed")
+		}
+	}
+
+	stmtPeeringPolicyRef, err := tx.Prepare(insertE2ServiceProviderPeeringPolicyQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing PeeringPolicyRefs create statement failed")
+	}
+	defer stmtPeeringPolicyRef.Close()
+	for _, ref := range model.PeeringPolicyRefs {
+
+		_, err = stmtPeeringPolicyRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "PeeringPolicyRefs create failed")
 		}
 	}
 
@@ -305,25 +305,6 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 
 	}
 
-	if value, ok := values["ref_peering_policy"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			if referenceMap["to"] == "" {
-				continue
-			}
-			referenceModel := &models.E2ServiceProviderPeeringPolicyRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
-			m.PeeringPolicyRefs = append(m.PeeringPolicyRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_physical_router"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -339,6 +320,25 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 			referenceModel := &models.E2ServiceProviderPhysicalRouterRef{}
 			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_peering_policy"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.E2ServiceProviderPeeringPolicyRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.PeeringPolicyRefs = append(m.PeeringPolicyRefs, referenceModel)
 
 		}
 	}
@@ -383,9 +383,6 @@ func ListE2ServiceProvider(tx *sql.Tx, spec *common.ListSpec) ([]*models.E2Servi
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanE2ServiceProvider(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -395,17 +392,6 @@ func ListE2ServiceProvider(tx *sql.Tx, spec *common.ListSpec) ([]*models.E2Servi
 	return result, nil
 }
 
-// ShowE2ServiceProvider shows E2ServiceProvider resource
-func ShowE2ServiceProvider(tx *sql.Tx, uuid string) (*models.E2ServiceProvider, error) {
-	list, err := ListE2ServiceProvider(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateE2ServiceProvider updates a resource
 func UpdateE2ServiceProvider(tx *sql.Tx, uuid string, model *models.E2ServiceProvider) error {
 	//TODO(nati) support update
@@ -413,16 +399,21 @@ func UpdateE2ServiceProvider(tx *sql.Tx, uuid string, model *models.E2ServicePro
 }
 
 // DeleteE2ServiceProvider deletes a resource
-func DeleteE2ServiceProvider(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteE2ServiceProviderQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteE2ServiceProvider(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteE2ServiceProviderQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

@@ -6,14 +6,14 @@ import "encoding/json"
 
 // LoadbalancerPoolType
 type LoadbalancerPoolType struct {
-	Status                string                   `json:"status"`
-	Protocol              LoadbalancerProtocolType `json:"protocol"`
 	SubnetID              UuidStringType           `json:"subnet_id"`
 	SessionPersistence    SessionPersistenceType   `json:"session_persistence"`
 	AdminState            bool                     `json:"admin_state"`
 	PersistenceCookieName string                   `json:"persistence_cookie_name"`
 	StatusDescription     string                   `json:"status_description"`
 	LoadbalancerMethod    LoadbalancerMethodType   `json:"loadbalancer_method"`
+	Status                string                   `json:"status"`
+	Protocol              LoadbalancerProtocolType `json:"protocol"`
 }
 
 // String returns json representation of the object
@@ -26,7 +26,6 @@ func (model *LoadbalancerPoolType) String() string {
 func MakeLoadbalancerPoolType() *LoadbalancerPoolType {
 	return &LoadbalancerPoolType{
 		//TODO(nati): Apply default
-		PersistenceCookieName: "",
 		StatusDescription:     "",
 		LoadbalancerMethod:    MakeLoadbalancerMethodType(),
 		Status:                "",
@@ -34,6 +33,7 @@ func MakeLoadbalancerPoolType() *LoadbalancerPoolType {
 		SubnetID:              MakeUuidStringType(),
 		SessionPersistence:    MakeSessionPersistenceType(),
 		AdminState:            false,
+		PersistenceCookieName: "",
 	}
 }
 

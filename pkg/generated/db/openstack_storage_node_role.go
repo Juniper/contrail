@@ -384,9 +384,6 @@ func ListOpenstackStorageNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanOpenstackStorageNodeRole(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -396,17 +393,6 @@ func ListOpenstackStorageNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.
 	return result, nil
 }
 
-// ShowOpenstackStorageNodeRole shows OpenstackStorageNodeRole resource
-func ShowOpenstackStorageNodeRole(tx *sql.Tx, uuid string) (*models.OpenstackStorageNodeRole, error) {
-	list, err := ListOpenstackStorageNodeRole(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateOpenstackStorageNodeRole updates a resource
 func UpdateOpenstackStorageNodeRole(tx *sql.Tx, uuid string, model *models.OpenstackStorageNodeRole) error {
 	//TODO(nati) support update
@@ -414,16 +400,21 @@ func UpdateOpenstackStorageNodeRole(tx *sql.Tx, uuid string, model *models.Opens
 }
 
 // DeleteOpenstackStorageNodeRole deletes a resource
-func DeleteOpenstackStorageNodeRole(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteOpenstackStorageNodeRoleQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteOpenstackStorageNodeRole(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteOpenstackStorageNodeRoleQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

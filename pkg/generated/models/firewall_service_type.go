@@ -22,10 +22,10 @@ func (model *FirewallServiceType) String() string {
 func MakeFirewallServiceType() *FirewallServiceType {
 	return &FirewallServiceType{
 		//TODO(nati): Apply default
-		Protocol:   "",
 		DSTPorts:   MakePortType(),
 		SRCPorts:   MakePortType(),
 		ProtocolID: 0,
+		Protocol:   "",
 	}
 }
 
@@ -33,18 +33,18 @@ func MakeFirewallServiceType() *FirewallServiceType {
 func InterfaceToFirewallServiceType(iData interface{}) *FirewallServiceType {
 	data := iData.(map[string]interface{})
 	return &FirewallServiceType{
-		SRCPorts: InterfaceToPortType(data["src_ports"]),
-
-		//{"description":"Range of source port for layer 4 protocol","type":"object","properties":{"end_port":{"type":"integer","minimum":-1,"maximum":65535},"start_port":{"type":"integer","minimum":-1,"maximum":65535}}}
-		ProtocolID: data["protocol_id"].(int),
-
-		//{"description":"Layer 4 protocol id in ip packet","type":"integer"}
 		Protocol: data["protocol"].(string),
 
 		//{"description":"Layer 4 protocol in ip packet","type":"string"}
 		DSTPorts: InterfaceToPortType(data["dst_ports"]),
 
 		//{"description":"Range of destination port for layer 4 protocol","type":"object","properties":{"end_port":{"type":"integer","minimum":-1,"maximum":65535},"start_port":{"type":"integer","minimum":-1,"maximum":65535}}}
+		SRCPorts: InterfaceToPortType(data["src_ports"]),
+
+		//{"description":"Range of source port for layer 4 protocol","type":"object","properties":{"end_port":{"type":"integer","minimum":-1,"maximum":65535},"start_port":{"type":"integer","minimum":-1,"maximum":65535}}}
+		ProtocolID: data["protocol_id"].(int),
+
+		//{"description":"Layer 4 protocol id in ip packet","type":"integer"}
 
 	}
 }

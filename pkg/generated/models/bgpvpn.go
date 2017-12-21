@@ -6,18 +6,18 @@ import "encoding/json"
 
 // BGPVPN
 type BGPVPN struct {
-	IDPerms               *IdPermsType     `json:"id_perms"`
-	RouteTargetList       *RouteTargetList `json:"route_target_list"`
-	ImportRouteTargetList *RouteTargetList `json:"import_route_target_list"`
-	BGPVPNType            VpnType          `json:"bgpvpn_type"`
-	DisplayName           string           `json:"display_name"`
-	Annotations           *KeyValuePairs   `json:"annotations"`
-	ParentUUID            string           `json:"parent_uuid"`
-	ExportRouteTargetList *RouteTargetList `json:"export_route_target_list"`
-	Perms2                *PermType2       `json:"perms2"`
 	UUID                  string           `json:"uuid"`
-	ParentType            string           `json:"parent_type"`
+	ImportRouteTargetList *RouteTargetList `json:"import_route_target_list"`
+	ExportRouteTargetList *RouteTargetList `json:"export_route_target_list"`
+	ParentUUID            string           `json:"parent_uuid"`
 	FQName                []string         `json:"fq_name"`
+	Annotations           *KeyValuePairs   `json:"annotations"`
+	Perms2                *PermType2       `json:"perms2"`
+	RouteTargetList       *RouteTargetList `json:"route_target_list"`
+	BGPVPNType            VpnType          `json:"bgpvpn_type"`
+	ParentType            string           `json:"parent_type"`
+	IDPerms               *IdPermsType     `json:"id_perms"`
+	DisplayName           string           `json:"display_name"`
 }
 
 // String returns json representation of the object
@@ -30,18 +30,18 @@ func (model *BGPVPN) String() string {
 func MakeBGPVPN() *BGPVPN {
 	return &BGPVPN{
 		//TODO(nati): Apply default
-		DisplayName:           "",
-		Annotations:           MakeKeyValuePairs(),
-		ParentUUID:            "",
-		IDPerms:               MakeIdPermsType(),
-		RouteTargetList:       MakeRouteTargetList(),
 		ImportRouteTargetList: MakeRouteTargetList(),
+		ExportRouteTargetList: MakeRouteTargetList(),
+		ParentUUID:            "",
+		FQName:                []string{},
+		Annotations:           MakeKeyValuePairs(),
+		UUID:                  "",
+		RouteTargetList:       MakeRouteTargetList(),
 		BGPVPNType:            MakeVpnType(),
 		ParentType:            "",
-		FQName:                []string{},
-		ExportRouteTargetList: MakeRouteTargetList(),
+		IDPerms:               MakeIdPermsType(),
+		DisplayName:           "",
 		Perms2:                MakePermType2(),
-		UUID:                  "",
 	}
 }
 
@@ -49,42 +49,42 @@ func MakeBGPVPN() *BGPVPN {
 func InterfaceToBGPVPN(iData interface{}) *BGPVPN {
 	data := iData.(map[string]interface{})
 	return &BGPVPN{
-		ParentUUID: data["parent_uuid"].(string),
+		RouteTargetList: InterfaceToRouteTargetList(data["route_target_list"]),
+
+		//{"description":"List of route targets that are used as both import and export for this virtual network.","type":"object","properties":{"route_target":{"type":"array","item":{"type":"string"}}}}
+		BGPVPNType: InterfaceToVpnType(data["bgpvpn_type"]),
+
+		//{"description":"BGP VPN type selection between IP VPN (l3) and Ethernet VPN (l2) (default: l3).","default":"l3","type":"string","enum":["l2","l3"]}
+		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
 		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
 
 		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
-		RouteTargetList: InterfaceToRouteTargetList(data["route_target_list"]),
-
-		//{"description":"List of route targets that are used as both import and export for this virtual network.","type":"object","properties":{"route_target":{"type":"array","item":{"type":"string"}}}}
-		ImportRouteTargetList: InterfaceToRouteTargetList(data["import_route_target_list"]),
-
-		//{"description":"List of route targets that are used as import for this virtual network.","type":"object","properties":{"route_target":{"type":"array","item":{"type":"string"}}}}
-		BGPVPNType: InterfaceToVpnType(data["bgpvpn_type"]),
-
-		//{"description":"BGP VPN type selection between IP VPN (l3) and Ethernet VPN (l2) (default: l3).","default":"l3","type":"string","enum":["l2","l3"]}
 		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}
-		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
-
-		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		ExportRouteTargetList: InterfaceToRouteTargetList(data["export_route_target_list"]),
-
-		//{"description":"List of route targets that are used as export for this virtual network.","type":"object","properties":{"route_target":{"type":"array","item":{"type":"string"}}}}
 		Perms2: InterfaceToPermType2(data["perms2"]),
 
 		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
-		UUID: data["uuid"].(string),
+		ImportRouteTargetList: InterfaceToRouteTargetList(data["import_route_target_list"]),
 
-		//{"type":"string"}
-		ParentType: data["parent_type"].(string),
+		//{"description":"List of route targets that are used as import for this virtual network.","type":"object","properties":{"route_target":{"type":"array","item":{"type":"string"}}}}
+		ExportRouteTargetList: InterfaceToRouteTargetList(data["export_route_target_list"]),
+
+		//{"description":"List of route targets that are used as export for this virtual network.","type":"object","properties":{"route_target":{"type":"array","item":{"type":"string"}}}}
+		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
 		FQName: data["fq_name"].([]string),
 
 		//{"type":"array","item":{"type":"string"}}
+		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
+
+		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
+		UUID: data["uuid"].(string),
+
+		//{"type":"string"}
 
 	}
 }

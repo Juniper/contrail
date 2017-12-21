@@ -6,22 +6,22 @@ import "encoding/json"
 
 // Project
 type Project struct {
-	Quota        *QuotaType     `json:"quota"`
-	Perms2       *PermType2     `json:"perms2"`
-	UUID         string         `json:"uuid"`
-	ParentUUID   string         `json:"parent_uuid"`
-	IDPerms      *IdPermsType   `json:"id_perms"`
-	DisplayName  string         `json:"display_name"`
 	VxlanRouting bool           `json:"vxlan_routing"`
+	Quota        *QuotaType     `json:"quota"`
+	DisplayName  string         `json:"display_name"`
 	Annotations  *KeyValuePairs `json:"annotations"`
+	ParentUUID   string         `json:"parent_uuid"`
 	ParentType   string         `json:"parent_type"`
 	FQName       []string       `json:"fq_name"`
 	AlarmEnable  bool           `json:"alarm_enable"`
+	IDPerms      *IdPermsType   `json:"id_perms"`
+	Perms2       *PermType2     `json:"perms2"`
+	UUID         string         `json:"uuid"`
 
+	AliasIPPoolRefs          []*ProjectAliasIPPoolRef          `json:"alias_ip_pool_refs"`
 	NamespaceRefs            []*ProjectNamespaceRef            `json:"namespace_refs"`
 	ApplicationPolicySetRefs []*ProjectApplicationPolicySetRef `json:"application_policy_set_refs"`
 	FloatingIPPoolRefs       []*ProjectFloatingIPPoolRef       `json:"floating_ip_pool_refs"`
-	AliasIPPoolRefs          []*ProjectAliasIPPoolRef          `json:"alias_ip_pool_refs"`
 
 	AddressGroups              []*AddressGroup              `json:"address_groups"`
 	Alarms                     []*Alarm                     `json:"alarms"`
@@ -49,6 +49,7 @@ type Project struct {
 	ServiceHealthChecks        []*ServiceHealthCheck        `json:"service_health_checks"`
 	ServiceInstances           []*ServiceInstance           `json:"service_instances"`
 	Tags                       []*Tag                       `json:"tags"`
+	Users                      []*User                      `json:"users"`
 	VirtualIPs                 []*VirtualIP                 `json:"virtual_ips"`
 	VirtualMachineInterfaces   []*VirtualMachineInterface   `json:"virtual_machine_interfaces"`
 	VirtualNetworks            []*VirtualNetwork            `json:"virtual_networks"`
@@ -93,17 +94,17 @@ func (model *Project) String() string {
 func MakeProject() *Project {
 	return &Project{
 		//TODO(nati): Apply default
-		IDPerms:      MakeIdPermsType(),
-		DisplayName:  "",
-		VxlanRouting: false,
-		Quota:        MakeQuotaType(),
 		Perms2:       MakePermType2(),
 		UUID:         "",
-		ParentUUID:   "",
 		AlarmEnable:  false,
+		IDPerms:      MakeIdPermsType(),
+		DisplayName:  "",
 		Annotations:  MakeKeyValuePairs(),
+		ParentUUID:   "",
 		ParentType:   "",
 		FQName:       []string{},
+		VxlanRouting: false,
+		Quota:        MakeQuotaType(),
 	}
 }
 
@@ -111,12 +112,12 @@ func MakeProject() *Project {
 func InterfaceToProject(iData interface{}) *Project {
 	data := iData.(map[string]interface{})
 	return &Project{
-		AlarmEnable: data["alarm_enable"].(bool),
-
-		//{"description":"Flag to enable/disable alarms configured under global-system-config. True, if not set.","type":"boolean"}
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
 		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
+		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
 		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
@@ -129,21 +130,21 @@ func InterfaceToProject(iData interface{}) *Project {
 		Quota: InterfaceToQuotaType(data["quota"]),
 
 		//{"description":"Max instances limits for various objects under project.","type":"object","properties":{"access_control_list":{"type":"integer"},"bgp_router":{"type":"integer"},"defaults":{"type":"integer"},"floating_ip":{"type":"integer"},"floating_ip_pool":{"type":"integer"},"global_vrouter_config":{"type":"integer"},"instance_ip":{"type":"integer"},"loadbalancer_healthmonitor":{"type":"integer"},"loadbalancer_member":{"type":"integer"},"loadbalancer_pool":{"type":"integer"},"logical_router":{"type":"integer"},"network_ipam":{"type":"integer"},"network_policy":{"type":"integer"},"route_table":{"type":"integer"},"security_group":{"type":"integer"},"security_group_rule":{"type":"integer"},"security_logging_object":{"type":"integer"},"service_instance":{"type":"integer"},"service_template":{"type":"integer"},"subnet":{"type":"integer"},"virtual_DNS":{"type":"integer"},"virtual_DNS_record":{"type":"integer"},"virtual_ip":{"type":"integer"},"virtual_machine_interface":{"type":"integer"},"virtual_network":{"type":"integer"},"virtual_router":{"type":"integer"}}}
-		Perms2: InterfaceToPermType2(data["perms2"]),
-
-		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
-		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
-		ParentUUID: data["parent_uuid"].(string),
-
-		//{"type":"string"}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
-
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
 		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}
+		UUID: data["uuid"].(string),
+
+		//{"type":"string"}
+		AlarmEnable: data["alarm_enable"].(bool),
+
+		//{"description":"Flag to enable/disable alarms configured under global-system-config. True, if not set.","type":"boolean"}
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
+		Perms2: InterfaceToPermType2(data["perms2"]),
+
+		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
 
 	}
 }

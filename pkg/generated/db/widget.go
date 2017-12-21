@@ -324,9 +324,6 @@ func ListWidget(tx *sql.Tx, spec *common.ListSpec) ([]*models.Widget, error) {
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		log.WithFields(log.Fields{
-			"valuesMap": valuesMap,
-		}).Debug("valueMap")
 		m, err := scanWidget(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
@@ -336,17 +333,6 @@ func ListWidget(tx *sql.Tx, spec *common.ListSpec) ([]*models.Widget, error) {
 	return result, nil
 }
 
-// ShowWidget shows Widget resource
-func ShowWidget(tx *sql.Tx, uuid string) (*models.Widget, error) {
-	list, err := ListWidget(tx, &common.ListSpec{
-		Filter: map[string]interface{}{"uuid": uuid},
-		Limit:  1})
-	if len(list) == 0 {
-		return nil, errors.Wrap(err, "show query failed")
-	}
-	return list[0], err
-}
-
 // UpdateWidget updates a resource
 func UpdateWidget(tx *sql.Tx, uuid string, model *models.Widget) error {
 	//TODO(nati) support update
@@ -354,16 +340,21 @@ func UpdateWidget(tx *sql.Tx, uuid string, model *models.Widget) error {
 }
 
 // DeleteWidget deletes a resource
-func DeleteWidget(tx *sql.Tx, uuid string) error {
-	stmt, err := tx.Prepare(deleteWidgetQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing delete query failed")
+func DeleteWidget(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+	query := deleteWidgetQuery
+	var err error
+
+	if auth.IsAdmin() {
+		_, err = tx.Exec(query, uuid)
+	} else {
+		query += " and owner = ?"
+		_, err = tx.Exec(query, uuid, auth.ProjectID())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(uuid)
+
 	if err != nil {
 		return errors.Wrap(err, "delete failed")
 	}
+
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

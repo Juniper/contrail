@@ -6,7 +6,6 @@ import "encoding/json"
 
 // LoadbalancerHealthmonitorType
 type LoadbalancerHealthmonitorType struct {
-	MonitorType   HealthmonitorType `json:"monitor_type"`
 	Delay         int               `json:"delay"`
 	ExpectedCodes string            `json:"expected_codes"`
 	MaxRetries    int               `json:"max_retries"`
@@ -14,6 +13,7 @@ type LoadbalancerHealthmonitorType struct {
 	AdminState    bool              `json:"admin_state"`
 	Timeout       int               `json:"timeout"`
 	URLPath       string            `json:"url_path"`
+	MonitorType   HealthmonitorType `json:"monitor_type"`
 }
 
 // String returns json representation of the object
@@ -26,14 +26,14 @@ func (model *LoadbalancerHealthmonitorType) String() string {
 func MakeLoadbalancerHealthmonitorType() *LoadbalancerHealthmonitorType {
 	return &LoadbalancerHealthmonitorType{
 		//TODO(nati): Apply default
-		MaxRetries:    0,
-		HTTPMethod:    "",
-		AdminState:    false,
-		Timeout:       0,
 		URLPath:       "",
 		MonitorType:   MakeHealthmonitorType(),
 		Delay:         0,
 		ExpectedCodes: "",
+		MaxRetries:    0,
+		HTTPMethod:    "",
+		AdminState:    false,
+		Timeout:       0,
 	}
 }
 
@@ -41,9 +41,6 @@ func MakeLoadbalancerHealthmonitorType() *LoadbalancerHealthmonitorType {
 func InterfaceToLoadbalancerHealthmonitorType(iData interface{}) *LoadbalancerHealthmonitorType {
 	data := iData.(map[string]interface{})
 	return &LoadbalancerHealthmonitorType{
-		URLPath: data["url_path"].(string),
-
-		//{"description":"In case monitor protocol is HTTP, URL to be used. In case of ICMP, ip address","type":"string"}
 		MonitorType: InterfaceToHealthmonitorType(data["monitor_type"]),
 
 		//{"description":"Protocol used to monitor health, PING, HTTP, HTTPS or TCP","type":"string","enum":["PING","TCP","HTTP","HTTPS"]}
@@ -65,6 +62,9 @@ func InterfaceToLoadbalancerHealthmonitorType(iData interface{}) *LoadbalancerHe
 		Timeout: data["timeout"].(int),
 
 		//{"description":"Time in seconds to wait for response","type":"integer"}
+		URLPath: data["url_path"].(string),
+
+		//{"description":"In case monitor protocol is HTTP, URL to be used. In case of ICMP, ip address","type":"string"}
 
 	}
 }

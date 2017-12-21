@@ -1,9 +1,24 @@
 name: Virtual Network Test
 description:  basic virtual network test
-cleanup:
+tables:
 - routing_instance
 - virtual_network
 - network_policy
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        id: admin
+  bob:
+    id: bob
+    password: bob_password
+    insecure: true
+    scope:
+      project:
+        id: demo
 workflow:
 - name: create network policy
   request:
@@ -17,6 +32,23 @@ workflow:
   expect:
     network-policy:
       uuid: network_policy_uuid
+      perms2:
+        owner: admin
+- name: create network policy
+  client: bob
+  request:
+    path: /network-policys
+    method: POST
+    expected:
+    - 201
+    data:
+      network-policy:
+        uuid: network_policy_uuid2
+  expect:
+    network-policy:
+      uuid: network_policy_uuid2
+      perms2:
+        owner: demo
 - name: create virtual network
   request:
     path: /virtual-networks
@@ -61,6 +93,29 @@ workflow:
       routing_instances:
       - uuid: ri_uuid
         parent_uuid: vn_uuid
+- name: list network policy
+  request:
+    path: /network-policys
+    method: GET
+    expected:
+    - 200
+  expect:
+    network-policys:
+    - uuid: network_policy_uuid
+      perms2:
+        owner: admin
+- name: list network policy
+  client: bob
+  request:
+    path: /network-policys
+    method: GET
+    expected:
+    - 200
+  expect:
+    network-policys:
+    - uuid: network_policy_uuid2
+      perms2:
+        owner: demo
 - name: delete virtual network
   request:
     path: /virtual-network/vn_uuid

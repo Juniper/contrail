@@ -6,19 +6,19 @@ import "encoding/json"
 
 // BridgeDomain
 type BridgeDomain struct {
-	ParentType         string                   `json:"parent_type"`
-	FQName             []string                 `json:"fq_name"`
+	IDPerms            *IdPermsType             `json:"id_perms"`
 	DisplayName        string                   `json:"display_name"`
-	Annotations        *KeyValuePairs           `json:"annotations"`
-	Isid               IsidType                 `json:"isid"`
+	ParentUUID         string                   `json:"parent_uuid"`
+	ParentType         string                   `json:"parent_type"`
 	MacLearningEnabled bool                     `json:"mac_learning_enabled"`
 	MacLimitControl    *MACLimitControlType     `json:"mac_limit_control"`
-	IDPerms            *IdPermsType             `json:"id_perms"`
+	MacMoveControl     *MACMoveLimitControlType `json:"mac_move_control"`
+	FQName             []string                 `json:"fq_name"`
+	Annotations        *KeyValuePairs           `json:"annotations"`
 	Perms2             *PermType2               `json:"perms2"`
 	UUID               string                   `json:"uuid"`
 	MacAgingTime       MACAgingTime             `json:"mac_aging_time"`
-	MacMoveControl     *MACMoveLimitControlType `json:"mac_move_control"`
-	ParentUUID         string                   `json:"parent_uuid"`
+	Isid               IsidType                 `json:"isid"`
 }
 
 // String returns json representation of the object
@@ -31,19 +31,19 @@ func (model *BridgeDomain) String() string {
 func MakeBridgeDomain() *BridgeDomain {
 	return &BridgeDomain{
 		//TODO(nati): Apply default
-		UUID:               "",
 		MacAgingTime:       MakeMACAgingTime(),
-		MacMoveControl:     MakeMACMoveLimitControlType(),
-		ParentUUID:         "",
-		IDPerms:            MakeIdPermsType(),
-		Perms2:             MakePermType2(),
-		DisplayName:        "",
-		Annotations:        MakeKeyValuePairs(),
 		Isid:               MakeIsidType(),
+		MacMoveControl:     MakeMACMoveLimitControlType(),
+		FQName:             []string{},
+		Annotations:        MakeKeyValuePairs(),
+		Perms2:             MakePermType2(),
+		UUID:               "",
 		MacLearningEnabled: false,
 		MacLimitControl:    MakeMACLimitControlType(),
+		IDPerms:            MakeIdPermsType(),
+		DisplayName:        "",
+		ParentUUID:         "",
 		ParentType:         "",
-		FQName:             []string{},
 	}
 }
 
@@ -51,45 +51,45 @@ func MakeBridgeDomain() *BridgeDomain {
 func InterfaceToBridgeDomain(iData interface{}) *BridgeDomain {
 	data := iData.(map[string]interface{})
 	return &BridgeDomain{
-		MacAgingTime: InterfaceToMACAgingTime(data["mac_aging_time"]),
-
-		//{"description":"MAC aging time on the network","default":"300","type":"integer","minimum":0,"maximum":86400}
 		MacMoveControl: InterfaceToMACMoveLimitControlType(data["mac_move_control"]),
 
 		//{"description":"MAC move control on the network","type":"object","properties":{"mac_move_limit":{"type":"integer"},"mac_move_limit_action":{"type":"string","enum":["log","alarm","shutdown","drop"]},"mac_move_time_window":{"type":"integer","minimum":1,"maximum":60}}}
-		ParentUUID: data["parent_uuid"].(string),
+		FQName: data["fq_name"].([]string),
 
-		//{"type":"string"}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+		//{"type":"array","item":{"type":"string"}}
+		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
+		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
 		Perms2: InterfaceToPermType2(data["perms2"]),
 
 		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
 		UUID: data["uuid"].(string),
 
 		//{"type":"string"}
+		MacAgingTime: InterfaceToMACAgingTime(data["mac_aging_time"]),
+
+		//{"description":"MAC aging time on the network","default":"300","type":"integer","minimum":0,"maximum":86400}
 		Isid: InterfaceToIsidType(data["isid"]),
 
 		//{"description":"i-sid value","type":"integer","minimum":1,"maximum":16777215}
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
+		DisplayName: data["display_name"].(string),
+
+		//{"type":"string"}
+		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
+		ParentType: data["parent_type"].(string),
+
+		//{"type":"string"}
 		MacLearningEnabled: data["mac_learning_enabled"].(bool),
 
 		//{"description":"Enable MAC learning on the network","default":false,"type":"boolean"}
 		MacLimitControl: InterfaceToMACLimitControlType(data["mac_limit_control"]),
 
 		//{"description":"MAC limit control on the network","type":"object","properties":{"mac_limit":{"type":"integer"},"mac_limit_action":{"type":"string","enum":["log","alarm","shutdown","drop"]}}}
-		ParentType: data["parent_type"].(string),
-
-		//{"type":"string"}
-		FQName: data["fq_name"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
-		DisplayName: data["display_name"].(string),
-
-		//{"type":"string"}
-		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
-
-		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
 
 	}
 }
