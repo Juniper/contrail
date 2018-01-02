@@ -1,24 +1,29 @@
 all: deps lint test build
 
-deps:
+deps: ## Setup the go dependencies 
 	./tools/deps.sh
 
-lint:
+lint: ## Runs gometalinter on the source code
 	./tools/lint.sh
 
-test:
+test: ## Run go test with race and coverage args
 	./tools/test.sh
 
-build:
+build: ## Run go build
 	go build ./cmd/...
 
-generate:
+generate: ## Run the source code generator
 	go run cmd/contrailutil/main.go generate --schemas schemas --templates tools/templates/template_config.yaml --schema-output public/schema.json
 	./tools/fmt.sh
 
-package:
+package: ## Generate the packages
 	go run cmd/contrailutil/main.go package
 
-binaries:
+binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrail_{{.OS}}_{{.Arch}}" ./cmd/contrail
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailutil_{{.OS}}_{{.Arch}}" ./cmd/contrailutil
+
+help:
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+.DEFAULT_GOAL := help
