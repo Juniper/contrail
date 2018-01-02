@@ -1,72 +1,89 @@
 # Go code base for contrail projects
 
-# Important principal
+## Important principal
 
 - Apply lint tools
 - Go get must simply work
 - Follow best practices
   Effective Go: https://golang.org/doc/effective_go.html
 
-# How to build
+## Build pre-requistites
+
+The following software is required to build this project:
+
+- Install [git](https://www.atlassian.com/git/tutorials/install-git)
+- Install [go](https://golang.org/doc/install)
+- Install [dep](https://github.com/golang/dep)
+- Install [mysql](https://dev.mysql.com/doc/en/installing.html)
+- Install [fpm](https://github.com/jordansissel/fpm), only required if building packages (described below)
+  - Install [ruby](https://www.ruby-lang.org/en/documentation/installation/)
+  - Install [rubygems](https://rubygems.org/pages/download)
+
+## Retrieve the code (using go get)
 
 ``` shell
 go get github.com/Juniper/contrail
 ```
 
-# Generate Code
+## Generate Code
 
 ``` shell
 make generate
 ```
 
-Templates are stored in tools/templates
+Templates are stored in [tools/templates](tools/templates)
 You can add your template on template_config.yaml
 
-# Schema Files
+## Schema Files
 
 Note that schema stored here is just a cache for helping development.
 Developers should make sure download latest schema from http://github.com/Juniper/contrail-api-client
 
 JSON version stored in public/schema.json
 
-# Testing
+## Testing
 
-You need to run local mysql running with test configuraion.
+You need to run a local mysql instance running with test configuraion.
 
-ID: root
-Password: contrail123
-DataBase: contrail_test
+It is expected that the root password is 'contrail123', you can set this on an existing installation from the mysql prompt as follows:
 
-Init DB before test
-```
-./tool/reset_db.sh
+``` shell
+MariaDB [(none)]> ALTER USER 'root'@'localhost' IDENTIFIED BY 'contrail123';
 ```
 
+Executing the script below, will drop the contrail_test schema if it exists, recreate it and initialise this schema
+
+``` shell
+./tools/reset_db.sh
 ```
+
+At this point the tests can be executed
+
+``` shell
 make test
 ```
 
-# API Server
+## API Server
 
 You can run API server using this command.
 
-```
+``` shell
 go run cmd/contrail/main.go server -c packaging/apisrv.yml
 ```
 
-## Keystone Support
+### Keystone Support
 
 API Server supports Keystone V3 authentication and RBAC.
 API Server has minimal Keystone API V3 support for standalone usecase.
 see a configuraion example in tools/test_config.yml
 
-# Binary
+## Binary
 
 Dep, RPM and Binaries are stored in release page.
 
-(see https://github.com/Juniper/contrail/releases)
+See [releases](https://github.com/Juniper/contrail/releases)
 
-# commands
+## commands
 
 - contrail  command for running intent api server/intent compiler etc
 
@@ -106,25 +123,10 @@ Flags:
   -h, --help   help for contrailutil
 ```
 
-# Packaging
+## Packaging
 
-(1) Install FPM (https://github.com/jordansissel/fpm)
+Build the packages
 
-```
-gem install --no-ri --no-rdoc fpm
-```
-
-(2) make package
-
-```
+``` shell
 make package
-```
-
-# Dependency management
-
-We use golang standard dep tool for dependency management.
-(see https://github.com/golang/dep)
-
-```
-brew install dep
 ```
