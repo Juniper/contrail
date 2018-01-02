@@ -15,7 +15,7 @@ The following software is required to build this project:
 - Install [go](https://golang.org/doc/install)
 - Install [dep](https://github.com/golang/dep)
 - Install [mysql](https://dev.mysql.com/doc/en/installing.html)
-- Install [fpm](https://github.com/jordansissel/fpm)
+- Install [fpm](https://github.com/jordansissel/fpm), only required if building packages (described below)
   - Install [ruby](https://www.ruby-lang.org/en/documentation/installation/)
   - Install [rubygems](https://rubygems.org/pages/download)
 
@@ -51,7 +51,7 @@ It is expected that the root password is 'contrail123', you can set this on an e
 MariaDB [(none)]> ALTER USER 'root'@'localhost' IDENTIFIED BY 'contrail123';
 ```
 
-Executing the script below, will drop the contrail_test schema if it exists, recreated it and initialise this schema
+Executing the script below, will drop the contrail_test schema if it exists, recreate it and initialise this schema
 
 ``` shell
 ./tools/reset_db.sh
