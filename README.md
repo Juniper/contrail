@@ -52,7 +52,7 @@ DataBase: contrail_test
 Init DB before test
 
 ``` shell
-./tool/reset_db.sh
+./tools/reset_db.sh
 ```
 
 ``` shell
