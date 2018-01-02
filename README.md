@@ -7,7 +7,19 @@
 - Follow best practices
   Effective Go: https://golang.org/doc/effective_go.html
 
-## How to build
+## Build pre-requistites
+
+The following software is required to build this project:
+
+- Install [git](https://www.atlassian.com/git/tutorials/install-git)
+- Install [go](https://golang.org/doc/install)
+- Install [dep](https://github.com/golang/dep)
+- Install [mysql](https://dev.mysql.com/doc/en/installing.html)
+- Install [fpm](https://github.com/jordansissel/fpm)
+  - Install [ruby](https://www.ruby-lang.org/en/documentation/installation/)
+  - Install [rubygems](https://rubygems.org/pages/download)
+
+## Retrieve the code (using go get)
 
 ``` shell
 go get github.com/Juniper/contrail
@@ -19,7 +31,7 @@ go get github.com/Juniper/contrail
 make generate
 ```
 
-Templates are stored in tools/templates
+Templates are stored in [tools/templates](tools/templates)
 You can add your template on template_config.yaml
 
 ## Schema Files
@@ -65,7 +77,7 @@ see a configuraion example in tools/test_config.yml
 
 Dep, RPM and Binaries are stored in release page.
 
-(see https://github.com/Juniper/contrail/releases)
+See [releases](https://github.com/Juniper/contrail/releases)
 
 ## commands
 
@@ -109,23 +121,8 @@ Flags:
 
 ## Packaging
 
-(1) Install FPM (https://github.com/jordansissel/fpm)
-
-``` shell
-gem install --no-ri --no-rdoc fpm
-```
-
-(2) make package
+Build the packages
 
 ``` shell
 make package
-```
-
-## Dependency management
-
-We use golang standard dep tool for dependency management.
-(see https://github.com/golang/dep)
-
-``` shell
-brew install dep
 ```
