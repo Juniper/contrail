@@ -43,17 +43,21 @@ JSON version stored in public/schema.json
 
 ## Testing
 
-You need to run local mysql running with test configuraion.
+You need to run a local mysql instance running with test configuraion.
 
-ID: root
-Password: contrail123
-DataBase: contrail_test
+It is expected that the root password is 'contrail123', you can set this on an existing installation from the mysql prompt as follows:
 
-Init DB before test
+``` shell
+MariaDB [(none)]> ALTER USER 'root'@'localhost' IDENTIFIED BY 'contrail123';
+```
+
+Executing the script below, will drop the contrail_test schema if it exists, recreated it and initialise this schema
 
 ``` shell
 ./tools/reset_db.sh
 ```
+
+At this point the tests can be executed
 
 ``` shell
 make test
