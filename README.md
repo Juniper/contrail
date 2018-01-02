@@ -32,7 +32,8 @@ make generate
 ```
 
 Templates are stored in [tools/templates](tools/templates)
-You can add your template on template_config.yaml
+[Template configuraion](tools/templates/template_config.yaml)
+You can add your template on template_config.yaml.
 
 ## Schema Files
 
