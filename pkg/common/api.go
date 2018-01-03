@@ -2,6 +2,7 @@ package common
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/labstack/echo"
 )
@@ -28,6 +29,7 @@ func RegisterAPI(api RESTAPI) {
 //Routes registers routes
 func Routes(e *echo.Echo) {
 	for _, api := range apiRegistory {
+		fmt.Println(api.Path())
 		e.POST(api.Path(), api.Create)
 		e.PUT(api.LongPath(), api.Update)
 		e.DELETE(api.LongPath(), api.Delete)

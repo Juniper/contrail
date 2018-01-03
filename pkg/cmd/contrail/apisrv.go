@@ -23,6 +23,7 @@ var apiServerCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+		server.Init()
 		err = server.Run()
 		if err != nil {
 			log.Fatal(err)
