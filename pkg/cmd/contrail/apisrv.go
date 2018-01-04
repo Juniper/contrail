@@ -20,7 +20,8 @@ var apiServerCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		server, err := apisrv.NewServer()
-		if err != nil {
+		server.Init()
+                if err != nil {
 			log.Fatal(err)
 		}
 		server.Init()
@@ -30,3 +31,4 @@ var apiServerCmd = &cobra.Command{
 		}
 	},
 }
+
