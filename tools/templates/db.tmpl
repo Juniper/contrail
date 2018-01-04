@@ -52,12 +52,12 @@ const delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Query = "delete 
 
 // Create{{ schema.JSONSchema.GoName }} inserts {{ schema.JSONSchema.GoName }} to DB
 func Create{{ schema.JSONSchema.GoName }}(tx *sql.Tx, model *models.{{ schema.JSONSchema.GoName }}) error {
-    // Prepare statement for inserting data
-    stmt, err := tx.Prepare(insert{{ schema.JSONSchema.GoName }}Query)
-    if err != nil {
+	// Prepare statement for inserting data
+	stmt, err := tx.Prepare(insert{{ schema.JSONSchema.GoName }}Query)
+	if err != nil {
         return errors.Wrap(err, "preparing create statement failed")
-    }
-    defer stmt.Close()
+	}
+	defer stmt.Close()
     log.WithFields(log.Fields{
         "model": model,
         "query": insert{{ schema.JSONSchema.GoName }}Query,
@@ -328,4 +328,3 @@ func Delete{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string, auth *common.
     }).Debug("deleted")
     return nil
 }
-

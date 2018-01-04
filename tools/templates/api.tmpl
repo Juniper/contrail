@@ -9,8 +9,7 @@ import (
     "github.com/labstack/echo"
     "github.com/Juniper/contrail/pkg/common"
 
-    log "github.com/sirupsen/logrus"
-
+	log "github.com/sirupsen/logrus"
 )
 
 //{{ schema.JSONSchema.GoName }}RESTAPI
@@ -172,4 +171,3 @@ func (api *{{ schema.JSONSchema.GoName }}RESTAPI) List(c echo.Context) (error) {
         "{{ schema.PluralPath }}": result,
     })
 }
-
