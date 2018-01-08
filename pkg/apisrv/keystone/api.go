@@ -73,7 +73,7 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
 	user, err := keystone.Assignment.FetchUser(
-		authRequest.Auth.Identity.Password.User.ID,
+		authRequest.Auth.Identity.Password.User.Name,
 		authRequest.Auth.Identity.Password.User.Password,
 	)
 	if err != nil {

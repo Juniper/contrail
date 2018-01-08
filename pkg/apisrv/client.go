@@ -75,7 +75,7 @@ func (c *Client) Login() error {
 				Methods: []string{"password"},
 				Password: &keystone.Password{
 					User: &keystone.User{
-						ID:       c.ID,
+						Name:     c.ID,
 						Password: c.Password,
 					},
 				},

@@ -10,12 +10,14 @@ import (
 )
 
 //AuthMiddleware is a keystone v3 authentication middleware.
-func AuthMiddleware(authURL, skipPath string) echo.MiddlewareFunc {
+func AuthMiddleware(authURL string, skipPath []string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		auth := keystone.New(authURL)
 		return func(c echo.Context) error {
-			if strings.HasPrefix(c.Request().URL.Path, skipPath) {
-				return next(c)
+			for _, path := range skipPath {
+				if strings.HasPrefix(c.Request().URL.Path, path) {
+					return next(c)
+				}
 			}
 			tokenString := c.Request().Header.Get("X-Auth-Token")
 			if tokenString == "" {
