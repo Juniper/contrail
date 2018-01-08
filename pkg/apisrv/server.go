@@ -106,7 +106,10 @@ func (s *Server) Init() error {
 	}
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	if keystoneAuthURL != "" {
-		e.Use(keystone.AuthMiddleware(keystoneAuthURL, "/v3/auth/tokens"))
+		e.Use(keystone.AuthMiddleware(keystoneAuthURL,
+			[]string{
+				"/v3/auth/tokens",
+				"/public"}))
 	}
 	localKeystone := viper.GetBool("keystone.local")
 	if localKeystone {

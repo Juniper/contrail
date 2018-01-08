@@ -15,10 +15,10 @@ type StaticAssignment struct {
 }
 
 //FetchUser is used to fetch a user by ID and Password.
-func (assignment *StaticAssignment) FetchUser(id, password string) (*User, error) {
-	user, ok := assignment.Users[id]
+func (assignment *StaticAssignment) FetchUser(name, password string) (*User, error) {
+	user, ok := assignment.Users[name]
 	if !ok {
-		return nil, fmt.Errorf("User %s not found", id)
+		return nil, fmt.Errorf("User %s not found", name)
 	}
 	return user, nil
 }
