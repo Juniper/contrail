@@ -290,7 +290,8 @@ func scanAliasIPPool(values map[string]interface{}) (*models.AliasIPPool, error)
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeAliasIP()

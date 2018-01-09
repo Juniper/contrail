@@ -296,11 +296,12 @@ func scanInterfaceRouteTable(values map[string]interface{}) (*models.InterfaceRo
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.InterfaceRouteTableServiceInstanceRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
 
 			attr := models.MakeServiceInterfaceTag()

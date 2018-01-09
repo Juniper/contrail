@@ -320,7 +320,8 @@ func scanServiceApplianceSet(values map[string]interface{}) (*models.ServiceAppl
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeServiceAppliance()

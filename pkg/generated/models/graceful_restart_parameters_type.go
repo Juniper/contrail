@@ -37,12 +37,6 @@ func MakeGracefulRestartParametersType() *GracefulRestartParametersType {
 func InterfaceToGracefulRestartParametersType(iData interface{}) *GracefulRestartParametersType {
 	data := iData.(map[string]interface{})
 	return &GracefulRestartParametersType{
-		EndOfRibTimeout: InterfaceToEndOfRibTimeType(data["end_of_rib_timeout"]),
-
-		//{"description":"Maximum time (in seconds) to wait for EndOfRib reception/transmission","type":"integer","minimum":0,"maximum":4095}
-		BGPHelperEnable: data["bgp_helper_enable"].(bool),
-
-		//{"description":"Enable GR Helper mode for BGP peers in contrail-control","type":"boolean"}
 		XMPPHelperEnable: data["xmpp_helper_enable"].(bool),
 
 		//{"description":"Enable GR Helper mode for XMPP peers (agents) in contrail-control","type":"boolean"}
@@ -55,6 +49,12 @@ func InterfaceToGracefulRestartParametersType(iData interface{}) *GracefulRestar
 		Enable: data["enable"].(bool),
 
 		//{"description":"Enable/Disable knob for all GR parameters to take effect","type":"boolean"}
+		EndOfRibTimeout: InterfaceToEndOfRibTimeType(data["end_of_rib_timeout"]),
+
+		//{"description":"Maximum time (in seconds) to wait for EndOfRib reception/transmission","type":"integer","minimum":0,"maximum":4095}
+		BGPHelperEnable: data["bgp_helper_enable"].(bool),
+
+		//{"description":"Enable GR Helper mode for BGP peers in contrail-control","type":"boolean"}
 
 	}
 }

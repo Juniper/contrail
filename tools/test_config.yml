@@ -34,7 +34,7 @@ proxy:
     /contrail:
     - http://localhost:8082
 
-# Keystone configuraion
+#Keystone configuraion
 keystone:
     local: true # Enable local keystone v3. This is only for testing now.
     assignment:

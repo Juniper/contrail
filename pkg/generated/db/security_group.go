@@ -319,7 +319,8 @@ func scanSecurityGroup(values map[string]interface{}) (*models.SecurityGroup, er
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeAccessControlList()

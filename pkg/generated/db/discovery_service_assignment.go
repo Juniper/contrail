@@ -294,7 +294,8 @@ func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.Disc
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeDsaRule()

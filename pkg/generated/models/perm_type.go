@@ -6,11 +6,11 @@ import "encoding/json"
 
 // PermType
 type PermType struct {
+	Owner       string     `json:"owner"`
 	OwnerAccess AccessType `json:"owner_access"`
 	OtherAccess AccessType `json:"other_access"`
 	Group       string     `json:"group"`
 	GroupAccess AccessType `json:"group_access"`
-	Owner       string     `json:"owner"`
 }
 
 // String returns json representation of the object
@@ -35,6 +35,12 @@ func MakePermType() *PermType {
 func InterfaceToPermType(iData interface{}) *PermType {
 	data := iData.(map[string]interface{})
 	return &PermType{
+		Group: data["group"].(string),
+
+		//{"type":"string"}
+		GroupAccess: InterfaceToAccessType(data["group_access"]),
+
+		//{"type":"integer","minimum":0,"maximum":7}
 		Owner: data["owner"].(string),
 
 		//{"type":"string"}
@@ -42,12 +48,6 @@ func InterfaceToPermType(iData interface{}) *PermType {
 
 		//{"type":"integer","minimum":0,"maximum":7}
 		OtherAccess: InterfaceToAccessType(data["other_access"]),
-
-		//{"type":"integer","minimum":0,"maximum":7}
-		Group: data["group"].(string),
-
-		//{"type":"string"}
-		GroupAccess: InterfaceToAccessType(data["group_access"]),
 
 		//{"type":"integer","minimum":0,"maximum":7}
 

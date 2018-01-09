@@ -378,7 +378,8 @@ func scanGlobalQosConfig(values map[string]interface{}) (*models.GlobalQosConfig
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeForwardingClass()
@@ -590,7 +591,8 @@ func scanGlobalQosConfig(values map[string]interface{}) (*models.GlobalQosConfig
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeQosConfig()
@@ -804,7 +806,8 @@ func scanGlobalQosConfig(values map[string]interface{}) (*models.GlobalQosConfig
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeQosQueue()

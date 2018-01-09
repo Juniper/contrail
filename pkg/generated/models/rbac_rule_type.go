@@ -33,6 +33,9 @@ func MakeRbacRuleType() *RbacRuleType {
 func InterfaceToRbacRuleType(iData interface{}) *RbacRuleType {
 	data := iData.(map[string]interface{})
 	return &RbacRuleType{
+		RuleField: data["rule_field"].(string),
+
+		//{"description":"Name of the level one field (property) for this object, * represent all properties","type":"string"}
 		RuleObject: data["rule_object"].(string),
 
 		//{"description":"Name of the REST API (object) for this rule, * represent all objects","type":"string"}
@@ -40,9 +43,6 @@ func InterfaceToRbacRuleType(iData interface{}) *RbacRuleType {
 		RulePerms: InterfaceToRbacPermTypeSlice(data["rule_perms"]),
 
 		//{"description":"List of [(role, permissions),...]","type":"array","item":{"type":"object","properties":{"role_crud":{"type":"string"},"role_name":{"type":"string"}}}}
-		RuleField: data["rule_field"].(string),
-
-		//{"description":"Name of the level one field (property) for this object, * represent all properties","type":"string"}
 
 	}
 }

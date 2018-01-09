@@ -6,12 +6,12 @@ import "encoding/json"
 
 // FirewallRuleEndpointType
 type FirewallRuleEndpointType struct {
-	TagIds         []int       `json:"tag_ids"`
-	VirtualNetwork string      `json:"virtual_network"`
-	Any            bool        `json:"any"`
 	AddressGroup   string      `json:"address_group"`
 	Subnet         *SubnetType `json:"subnet"`
 	Tags           []string    `json:"tags"`
+	TagIds         []int       `json:"tag_ids"`
+	VirtualNetwork string      `json:"virtual_network"`
+	Any            bool        `json:"any"`
 }
 
 // String returns json representation of the object
@@ -24,6 +24,7 @@ func (model *FirewallRuleEndpointType) String() string {
 func MakeFirewallRuleEndpointType() *FirewallRuleEndpointType {
 	return &FirewallRuleEndpointType{
 		//TODO(nati): Apply default
+		Any:          false,
 		AddressGroup: "",
 		Subnet:       MakeSubnetType(),
 		Tags:         []string{},
@@ -31,7 +32,6 @@ func MakeFirewallRuleEndpointType() *FirewallRuleEndpointType {
 		TagIds: []int{},
 
 		VirtualNetwork: "",
-		Any:            false,
 	}
 }
 
@@ -39,10 +39,6 @@ func MakeFirewallRuleEndpointType() *FirewallRuleEndpointType {
 func InterfaceToFirewallRuleEndpointType(iData interface{}) *FirewallRuleEndpointType {
 	data := iData.(map[string]interface{})
 	return &FirewallRuleEndpointType{
-
-		TagIds: data["tag_ids"].([]int),
-
-		//{"description":"Any workload with tags ids matching all the tags ids in this list","type":"array","item":{"type":"integer"}}
 		VirtualNetwork: data["virtual_network"].(string),
 
 		//{"description":"Any workload that belongs to this virtual network ","type":"string"}
@@ -58,6 +54,10 @@ func InterfaceToFirewallRuleEndpointType(iData interface{}) *FirewallRuleEndpoin
 		Tags: data["tags"].([]string),
 
 		//{"description":"Any workload with tags matching tags in this list","type":"array","item":{"type":"string"}}
+
+		TagIds: data["tag_ids"].([]int),
+
+		//{"description":"Any workload with tags ids matching all the tags ids in this list","type":"array","item":{"type":"integer"}}
 
 	}
 }

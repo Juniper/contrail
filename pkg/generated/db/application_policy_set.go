@@ -318,11 +318,12 @@ func scanApplicationPolicySet(values map[string]interface{}) (*models.Applicatio
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.ApplicationPolicySetFirewallPolicyRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.FirewallPolicyRefs = append(m.FirewallPolicyRefs, referenceModel)
 
 			attr := models.MakeFirewallSequence()
@@ -340,11 +341,12 @@ func scanApplicationPolicySet(values map[string]interface{}) (*models.Applicatio
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.ApplicationPolicySetGlobalVrouterConfigRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.GlobalVrouterConfigRefs = append(m.GlobalVrouterConfigRefs, referenceModel)
 
 		}

@@ -29,12 +29,12 @@ func MakeSecurityLoggingObjectRuleEntryType() *SecurityLoggingObjectRuleEntryTyp
 func InterfaceToSecurityLoggingObjectRuleEntryType(iData interface{}) *SecurityLoggingObjectRuleEntryType {
 	data := iData.(map[string]interface{})
 	return &SecurityLoggingObjectRuleEntryType{
-		Rate: data["rate"].(int),
-
-		//{"description":"Rate at which sessions are logged. When rates are specified at multiple levels, the rate which specifies highest frequency is selected","type":"integer"}
 		RuleUUID: data["rule_uuid"].(string),
 
 		//{"description":"Rule UUID of network policy or security-group. When this is absent it implies all rules of security-group or network-policy","type":"string"}
+		Rate: data["rate"].(int),
+
+		//{"description":"Rate at which sessions are logged. When rates are specified at multiple levels, the rate which specifies highest frequency is selected","type":"integer"}
 
 	}
 }

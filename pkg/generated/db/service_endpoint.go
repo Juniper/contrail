@@ -62,11 +62,11 @@ var ServiceEndpointRefFields = map[string][]string{
 // ServiceEndpointBackRefFields is db back reference fields for ServiceEndpoint
 var ServiceEndpointBackRefFields = map[string][]string{}
 
+const insertServiceEndpointServiceObjectQuery = "insert into `ref_service_endpoint_service_object` (`from`, `to` ) values (?, ?);"
+
 const insertServiceEndpointServiceConnectionModuleQuery = "insert into `ref_service_endpoint_service_connection_module` (`from`, `to` ) values (?, ?);"
 
 const insertServiceEndpointPhysicalRouterQuery = "insert into `ref_service_endpoint_physical_router` (`from`, `to` ) values (?, ?);"
-
-const insertServiceEndpointServiceObjectQuery = "insert into `ref_service_endpoint_service_object` (`from`, `to` ) values (?, ?);"
 
 // CreateServiceEndpoint inserts ServiceEndpoint to DB
 func CreateServiceEndpoint(tx *sql.Tx, model *models.ServiceEndpoint) error {
@@ -105,6 +105,19 @@ func CreateServiceEndpoint(tx *sql.Tx, model *models.ServiceEndpoint) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtServiceObjectRef, err := tx.Prepare(insertServiceEndpointServiceObjectQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceObjectRefs create statement failed")
+	}
+	defer stmtServiceObjectRef.Close()
+	for _, ref := range model.ServiceObjectRefs {
+
+		_, err = stmtServiceObjectRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceObjectRefs create failed")
+		}
+	}
+
 	stmtServiceConnectionModuleRef, err := tx.Prepare(insertServiceEndpointServiceConnectionModuleQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ServiceConnectionModuleRefs create statement failed")
@@ -128,19 +141,6 @@ func CreateServiceEndpoint(tx *sql.Tx, model *models.ServiceEndpoint) error {
 		_, err = stmtPhysicalRouterRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PhysicalRouterRefs create failed")
-		}
-	}
-
-	stmtServiceObjectRef, err := tx.Prepare(insertServiceEndpointServiceObjectQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceObjectRefs create statement failed")
-	}
-	defer stmtServiceObjectRef.Close()
-	for _, ref := range model.ServiceObjectRefs {
-
-		_, err = stmtServiceObjectRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceObjectRefs create failed")
 		}
 	}
 
@@ -324,11 +324,12 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.ServiceEndpointServiceConnectionModuleRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.ServiceConnectionModuleRefs = append(m.ServiceConnectionModuleRefs, referenceModel)
 
 		}
@@ -343,11 +344,12 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.ServiceEndpointPhysicalRouterRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
 
 		}
@@ -362,11 +364,12 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.ServiceEndpointServiceObjectRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.ServiceObjectRefs = append(m.ServiceObjectRefs, referenceModel)
 
 		}

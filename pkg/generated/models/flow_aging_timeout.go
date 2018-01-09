@@ -21,9 +21,9 @@ func (model *FlowAgingTimeout) String() string {
 func MakeFlowAgingTimeout() *FlowAgingTimeout {
 	return &FlowAgingTimeout{
 		//TODO(nati): Apply default
+		TimeoutInSeconds: 0,
 		Protocol:         "",
 		Port:             0,
-		TimeoutInSeconds: 0,
 	}
 }
 

@@ -6,12 +6,12 @@ import "encoding/json"
 
 // MatchConditionType
 type MatchConditionType struct {
-	SRCPort    *PortType    `json:"src_port"`
 	SRCAddress *AddressType `json:"src_address"`
 	Ethertype  EtherType    `json:"ethertype"`
 	DSTAddress *AddressType `json:"dst_address"`
 	DSTPort    *PortType    `json:"dst_port"`
 	Protocol   string       `json:"protocol"`
+	SRCPort    *PortType    `json:"src_port"`
 }
 
 // String returns json representation of the object
@@ -24,12 +24,12 @@ func (model *MatchConditionType) String() string {
 func MakeMatchConditionType() *MatchConditionType {
 	return &MatchConditionType{
 		//TODO(nati): Apply default
-		SRCPort:    MakePortType(),
-		SRCAddress: MakeAddressType(),
 		Ethertype:  MakeEtherType(),
 		DSTAddress: MakeAddressType(),
 		DSTPort:    MakePortType(),
 		Protocol:   "",
+		SRCPort:    MakePortType(),
+		SRCAddress: MakeAddressType(),
 	}
 }
 
@@ -37,12 +37,6 @@ func MakeMatchConditionType() *MatchConditionType {
 func InterfaceToMatchConditionType(iData interface{}) *MatchConditionType {
 	data := iData.(map[string]interface{})
 	return &MatchConditionType{
-		SRCAddress: InterfaceToAddressType(data["src_address"]),
-
-		//{"description":"Source ip matching criteria","type":"object","properties":{"network_policy":{"type":"string"},"security_group":{"type":"string"},"subnet":{"type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}},"subnet_list":{"type":"array","item":{"type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}}},"virtual_network":{"type":"string"}}}
-		Ethertype: InterfaceToEtherType(data["ethertype"]),
-
-		//{"type":"string","enum":["IPv4","IPv6"]}
 		DSTAddress: InterfaceToAddressType(data["dst_address"]),
 
 		//{"description":"Destination ip matching criteria","type":"object","properties":{"network_policy":{"type":"string"},"security_group":{"type":"string"},"subnet":{"type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}},"subnet_list":{"type":"array","item":{"type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}}},"virtual_network":{"type":"string"}}}
@@ -55,6 +49,12 @@ func InterfaceToMatchConditionType(iData interface{}) *MatchConditionType {
 		SRCPort: InterfaceToPortType(data["src_port"]),
 
 		//{"description":"Range of source port for layer 4 protocol","type":"object","properties":{"end_port":{"type":"integer","minimum":-1,"maximum":65535},"start_port":{"type":"integer","minimum":-1,"maximum":65535}}}
+		SRCAddress: InterfaceToAddressType(data["src_address"]),
+
+		//{"description":"Source ip matching criteria","type":"object","properties":{"network_policy":{"type":"string"},"security_group":{"type":"string"},"subnet":{"type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}},"subnet_list":{"type":"array","item":{"type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}}},"virtual_network":{"type":"string"}}}
+		Ethertype: InterfaceToEtherType(data["ethertype"]),
+
+		//{"type":"string","enum":["IPv4","IPv6"]}
 
 	}
 }

@@ -284,11 +284,12 @@ func scanProviderAttachment(values map[string]interface{}) (*models.ProviderAtta
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.ProviderAttachmentVirtualRouterRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
 
 		}

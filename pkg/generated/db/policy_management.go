@@ -430,7 +430,8 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeAddressGroup()
@@ -616,7 +617,8 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeApplicationPolicySet()
@@ -804,7 +806,8 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeFirewallPolicy()
@@ -984,7 +987,8 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeFirewallRule()
@@ -1494,7 +1498,8 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeServiceGroup()

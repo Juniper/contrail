@@ -21,9 +21,9 @@ func (model *StaticMirrorNhType) String() string {
 func MakeStaticMirrorNhType() *StaticMirrorNhType {
 	return &StaticMirrorNhType{
 		//TODO(nati): Apply default
+		VtepDSTMacAddress: "",
 		Vni:               MakeVxlanNetworkIdentifierType(),
 		VtepDSTIPAddress:  "",
-		VtepDSTMacAddress: "",
 	}
 }
 

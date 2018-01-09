@@ -304,11 +304,12 @@ func scanSubnet(values map[string]interface{}) (*models.Subnet, error) {
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.SubnetVirtualMachineInterfaceRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
 
 		}

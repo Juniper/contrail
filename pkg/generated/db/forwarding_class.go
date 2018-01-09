@@ -324,11 +324,12 @@ func scanForwardingClass(values map[string]interface{}) (*models.ForwardingClass
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.ForwardingClassQosQueueRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.QosQueueRefs = append(m.QosQueueRefs, referenceModel)
 
 		}

@@ -6,15 +6,15 @@ import "encoding/json"
 
 // Namespace
 type Namespace struct {
-	Perms2        *PermType2     `json:"perms2"`
-	UUID          string         `json:"uuid"`
-	FQName        []string       `json:"fq_name"`
+	NamespaceCidr *SubnetType    `json:"namespace_cidr"`
 	IDPerms       *IdPermsType   `json:"id_perms"`
-	ParentType    string         `json:"parent_type"`
+	Perms2        *PermType2     `json:"perms2"`
+	ParentUUID    string         `json:"parent_uuid"`
+	FQName        []string       `json:"fq_name"`
 	DisplayName   string         `json:"display_name"`
 	Annotations   *KeyValuePairs `json:"annotations"`
-	NamespaceCidr *SubnetType    `json:"namespace_cidr"`
-	ParentUUID    string         `json:"parent_uuid"`
+	UUID          string         `json:"uuid"`
+	ParentType    string         `json:"parent_type"`
 }
 
 // String returns json representation of the object
@@ -27,15 +27,15 @@ func (model *Namespace) String() string {
 func MakeNamespace() *Namespace {
 	return &Namespace{
 		//TODO(nati): Apply default
-		UUID:          "",
+		ParentUUID:    "",
 		FQName:        []string{},
+		NamespaceCidr: MakeSubnetType(),
 		IDPerms:       MakeIdPermsType(),
 		Perms2:        MakePermType2(),
+		ParentType:    "",
 		DisplayName:   "",
 		Annotations:   MakeKeyValuePairs(),
-		NamespaceCidr: MakeSubnetType(),
-		ParentUUID:    "",
-		ParentType:    "",
+		UUID:          "",
 	}
 }
 
@@ -43,33 +43,33 @@ func MakeNamespace() *Namespace {
 func InterfaceToNamespace(iData interface{}) *Namespace {
 	data := iData.(map[string]interface{})
 	return &Namespace{
-		DisplayName: data["display_name"].(string),
-
-		//{"type":"string"}
-		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
-
-		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		NamespaceCidr: InterfaceToSubnetType(data["namespace_cidr"]),
-
-		//{"description":"All networks in this namespace belong to this list of Prefixes. Not implemented.","type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}}
-		ParentUUID: data["parent_uuid"].(string),
-
-		//{"type":"string"}
-		ParentType: data["parent_type"].(string),
-
-		//{"type":"string"}
-		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
 		FQName: data["fq_name"].([]string),
 
 		//{"type":"array","item":{"type":"string"}}
+		NamespaceCidr: InterfaceToSubnetType(data["namespace_cidr"]),
+
+		//{"description":"All networks in this namespace belong to this list of Prefixes. Not implemented.","type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}}
 		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
 
 		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
 		Perms2: InterfaceToPermType2(data["perms2"]),
 
 		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
+		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
+		DisplayName: data["display_name"].(string),
+
+		//{"type":"string"}
+		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
+
+		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
+		UUID: data["uuid"].(string),
+
+		//{"type":"string"}
+		ParentType: data["parent_type"].(string),
+
+		//{"type":"string"}
 
 	}
 }

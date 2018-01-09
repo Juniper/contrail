@@ -6,8 +6,8 @@ import "encoding/json"
 
 // VirtualRouterNetworkIpamType
 type VirtualRouterNetworkIpamType struct {
-	Subnet          []*SubnetType         `json:"subnet"`
 	AllocationPools []*AllocationPoolType `json:"allocation_pools"`
+	Subnet          []*SubnetType         `json:"subnet"`
 }
 
 // String returns json representation of the object
@@ -21,9 +21,9 @@ func MakeVirtualRouterNetworkIpamType() *VirtualRouterNetworkIpamType {
 	return &VirtualRouterNetworkIpamType{
 		//TODO(nati): Apply default
 
-		Subnet: MakeSubnetTypeSlice(),
-
 		AllocationPools: MakeAllocationPoolTypeSlice(),
+
+		Subnet: MakeSubnetTypeSlice(),
 	}
 }
 

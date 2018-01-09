@@ -25,13 +25,13 @@ func (model *IdPermsType) String() string {
 func MakeIdPermsType() *IdPermsType {
 	return &IdPermsType{
 		//TODO(nati): Apply default
-		UserVisible:  false,
-		LastModified: "",
-		Permissions:  MakePermType(),
 		Enable:       false,
 		Description:  "",
 		Created:      "",
 		Creator:      "",
+		UserVisible:  false,
+		LastModified: "",
+		Permissions:  MakePermType(),
 	}
 }
 

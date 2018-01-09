@@ -314,11 +314,12 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.E2ServiceProviderPhysicalRouterRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
 
 		}
@@ -333,11 +334,12 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.E2ServiceProviderPeeringPolicyRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.PeeringPolicyRefs = append(m.PeeringPolicyRefs, referenceModel)
 
 		}

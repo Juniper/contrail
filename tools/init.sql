@@ -3123,19 +3123,19 @@ create table ref_alias_ip_virtual_machine_interface (
 
 
 
-create table ref_application_policy_set_global_vrouter_config (
-    `from` varchar(255),
-    `to` varchar(255),
-     foreign key (`from`) references application_policy_set(uuid) on delete cascade, 
-    foreign key (`to`) references global_vrouter_config(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
 create table ref_application_policy_set_firewall_policy (
     `from` varchar(255),
     `to` varchar(255),
     `sequence` varchar(255),
      foreign key (`from`) references application_policy_set(uuid) on delete cascade, 
     foreign key (`to`) references firewall_policy(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+create table ref_application_policy_set_global_vrouter_config (
+    `from` varchar(255),
+    `to` varchar(255),
+     foreign key (`from`) references application_policy_set(uuid) on delete cascade, 
+    foreign key (`to`) references global_vrouter_config(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 
@@ -3412,6 +3412,13 @@ create table ref_loadbalancer_listener_loadbalancer (
 
 
 
+create table ref_loadbalancer_pool_loadbalancer_listener (
+    `from` varchar(255),
+    `to` varchar(255),
+     foreign key (`from`) references loadbalancer_pool(uuid) on delete cascade, 
+    foreign key (`to`) references loadbalancer_listener(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
 create table ref_loadbalancer_pool_service_instance (
     `from` varchar(255),
     `to` varchar(255),
@@ -3438,13 +3445,6 @@ create table ref_loadbalancer_pool_virtual_machine_interface (
     `to` varchar(255),
      foreign key (`from`) references loadbalancer_pool(uuid) on delete cascade, 
     foreign key (`to`) references virtual_machine_interface(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_loadbalancer_pool_loadbalancer_listener (
-    `from` varchar(255),
-    `to` varchar(255),
-     foreign key (`from`) references loadbalancer_pool(uuid) on delete cascade, 
-    foreign key (`to`) references loadbalancer_listener(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 
@@ -3487,6 +3487,20 @@ create table ref_logical_interface_virtual_machine_interface (
 
 
 
+create table ref_logical_router_service_instance (
+    `from` varchar(255),
+    `to` varchar(255),
+     foreign key (`from`) references logical_router(uuid) on delete cascade, 
+    foreign key (`to`) references service_instance(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+create table ref_logical_router_route_table (
+    `from` varchar(255),
+    `to` varchar(255),
+     foreign key (`from`) references logical_router(uuid) on delete cascade, 
+    foreign key (`to`) references route_table(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
 create table ref_logical_router_virtual_network (
     `from` varchar(255),
     `to` varchar(255),
@@ -3520,20 +3534,6 @@ create table ref_logical_router_virtual_machine_interface (
     `to` varchar(255),
      foreign key (`from`) references logical_router(uuid) on delete cascade, 
     foreign key (`to`) references virtual_machine_interface(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_logical_router_service_instance (
-    `from` varchar(255),
-    `to` varchar(255),
-     foreign key (`from`) references logical_router(uuid) on delete cascade, 
-    foreign key (`to`) references service_instance(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_logical_router_route_table (
-    `from` varchar(255),
-    `to` varchar(255),
-     foreign key (`from`) references logical_router(uuid) on delete cascade, 
-    foreign key (`to`) references route_table(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 
@@ -3585,6 +3585,13 @@ create table ref_physical_interface_physical_interface (
 
 
 
+create table ref_physical_router_virtual_router (
+    `from` varchar(255),
+    `to` varchar(255),
+     foreign key (`from`) references physical_router(uuid) on delete cascade, 
+    foreign key (`to`) references virtual_router(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
 create table ref_physical_router_virtual_network (
     `from` varchar(255),
     `to` varchar(255),
@@ -3597,13 +3604,6 @@ create table ref_physical_router_bgp_router (
     `to` varchar(255),
      foreign key (`from`) references physical_router(uuid) on delete cascade, 
     foreign key (`to`) references bgp_router(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_physical_router_virtual_router (
-    `from` varchar(255),
-    `to` varchar(255),
-     foreign key (`from`) references physical_router(uuid) on delete cascade, 
-    foreign key (`to`) references virtual_router(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 
@@ -3898,6 +3898,13 @@ create table ref_virtual_ip_virtual_machine_interface (
 
 
 
+create table ref_virtual_machine_interface_security_group (
+    `from` varchar(255),
+    `to` varchar(255),
+     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
+    foreign key (`to`) references security_group(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
 create table ref_virtual_machine_interface_security_logging_object (
     `from` varchar(255),
     `to` varchar(255),
@@ -3905,39 +3912,26 @@ create table ref_virtual_machine_interface_security_logging_object (
     foreign key (`to`) references security_logging_object(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
-create table ref_virtual_machine_interface_virtual_machine_interface (
+create table ref_virtual_machine_interface_routing_instance (
     `from` varchar(255),
     `to` varchar(255),
+    `direction` varchar(255),
+    `mpls_label` int,
+    `vlan_tag` int,
+    `src_mac` varchar(255),
+    `service_chain_address` varchar(255),
+    `dst_mac` varchar(255),
+    `protocol` varchar(255),
+    `ipv6_service_chain_address` varchar(255),
      foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references virtual_machine_interface(uuid),
+    foreign key (`to`) references routing_instance(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
-create table ref_virtual_machine_interface_virtual_machine (
+create table ref_virtual_machine_interface_port_tuple (
     `from` varchar(255),
     `to` varchar(255),
      foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references virtual_machine(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_virtual_machine_interface_bgp_router (
-    `from` varchar(255),
-    `to` varchar(255),
-     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references bgp_router(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_virtual_machine_interface_service_health_check (
-    `from` varchar(255),
-    `to` varchar(255),
-     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references service_health_check(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_virtual_machine_interface_virtual_network (
-    `from` varchar(255),
-    `to` varchar(255),
-     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references virtual_network(uuid),
+    foreign key (`to`) references port_tuple(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 create table ref_virtual_machine_interface_bridge_domain (
@@ -3948,26 +3942,18 @@ create table ref_virtual_machine_interface_bridge_domain (
     foreign key (`to`) references bridge_domain(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
-create table ref_virtual_machine_interface_interface_route_table (
+create table ref_virtual_machine_interface_service_endpoint (
     `from` varchar(255),
     `to` varchar(255),
      foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references interface_route_table(uuid),
+    foreign key (`to`) references service_endpoint(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
-create table ref_virtual_machine_interface_routing_instance (
+create table ref_virtual_machine_interface_virtual_machine (
     `from` varchar(255),
     `to` varchar(255),
-    `ipv6_service_chain_address` varchar(255),
-    `direction` varchar(255),
-    `mpls_label` int,
-    `vlan_tag` int,
-    `src_mac` varchar(255),
-    `service_chain_address` varchar(255),
-    `dst_mac` varchar(255),
-    `protocol` varchar(255),
      foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references routing_instance(uuid),
+    foreign key (`to`) references virtual_machine(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 create table ref_virtual_machine_interface_qos_config (
@@ -3977,6 +3963,20 @@ create table ref_virtual_machine_interface_qos_config (
     foreign key (`to`) references qos_config(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
+create table ref_virtual_machine_interface_virtual_network (
+    `from` varchar(255),
+    `to` varchar(255),
+     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
+    foreign key (`to`) references virtual_network(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+create table ref_virtual_machine_interface_bgp_router (
+    `from` varchar(255),
+    `to` varchar(255),
+     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
+    foreign key (`to`) references bgp_router(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
 create table ref_virtual_machine_interface_physical_interface (
     `from` varchar(255),
     `to` varchar(255),
@@ -3984,25 +3984,25 @@ create table ref_virtual_machine_interface_physical_interface (
     foreign key (`to`) references physical_interface(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
-create table ref_virtual_machine_interface_security_group (
+create table ref_virtual_machine_interface_virtual_machine_interface (
     `from` varchar(255),
     `to` varchar(255),
      foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references security_group(uuid),
+    foreign key (`to`) references virtual_machine_interface(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
-create table ref_virtual_machine_interface_port_tuple (
+create table ref_virtual_machine_interface_interface_route_table (
     `from` varchar(255),
     `to` varchar(255),
      foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references port_tuple(uuid),
+    foreign key (`to`) references interface_route_table(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
-create table ref_virtual_machine_interface_service_endpoint (
+create table ref_virtual_machine_interface_service_health_check (
     `from` varchar(255),
     `to` varchar(255),
      foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references service_endpoint(uuid),
+    foreign key (`to`) references service_health_check(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 
@@ -4020,13 +4020,20 @@ create table ref_virtual_machine_service_instance (
 
 
 
+create table ref_virtual_network_security_logging_object (
+    `from` varchar(255),
+    `to` varchar(255),
+     foreign key (`from`) references virtual_network(uuid) on delete cascade, 
+    foreign key (`to`) references security_logging_object(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
 create table ref_virtual_network_network_policy (
     `from` varchar(255),
     `to` varchar(255),
+    `start_time` varchar(255),
     `off_interval` varchar(255),
     `on_interval` varchar(255),
     `end_time` varchar(255),
-    `start_time` varchar(255),
     `major` int,
     `minor` int,
      foreign key (`from`) references virtual_network(uuid) on delete cascade, 
@@ -4068,13 +4075,6 @@ create table ref_virtual_network_network_ipam (
     `route` text,
      foreign key (`from`) references virtual_network(uuid) on delete cascade, 
     foreign key (`to`) references network_ipam(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_virtual_network_security_logging_object (
-    `from` varchar(255),
-    `to` varchar(255),
-     foreign key (`from`) references virtual_network(uuid) on delete cascade, 
-    foreign key (`to`) references security_logging_object(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 

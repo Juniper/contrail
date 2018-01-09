@@ -6,10 +6,10 @@ import "encoding/json"
 
 // FirewallServiceType
 type FirewallServiceType struct {
-	ProtocolID int       `json:"protocol_id"`
 	Protocol   string    `json:"protocol"`
 	DSTPorts   *PortType `json:"dst_ports"`
 	SRCPorts   *PortType `json:"src_ports"`
+	ProtocolID int       `json:"protocol_id"`
 }
 
 // String returns json representation of the object
@@ -22,10 +22,10 @@ func (model *FirewallServiceType) String() string {
 func MakeFirewallServiceType() *FirewallServiceType {
 	return &FirewallServiceType{
 		//TODO(nati): Apply default
+		ProtocolID: 0,
 		Protocol:   "",
 		DSTPorts:   MakePortType(),
 		SRCPorts:   MakePortType(),
-		ProtocolID: 0,
 	}
 }
 

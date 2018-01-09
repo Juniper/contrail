@@ -326,11 +326,12 @@ func scanServiceAppliance(values map[string]interface{}) (*models.ServiceApplian
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.ServiceAppliancePhysicalInterfaceRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.PhysicalInterfaceRefs = append(m.PhysicalInterfaceRefs, referenceModel)
 
 			attr := models.MakeServiceApplianceInterfaceType()

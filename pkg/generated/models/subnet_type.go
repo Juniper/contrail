@@ -6,8 +6,8 @@ import "encoding/json"
 
 // SubnetType
 type SubnetType struct {
-	IPPrefixLen int    `json:"ip_prefix_len"`
 	IPPrefix    string `json:"ip_prefix"`
+	IPPrefixLen int    `json:"ip_prefix_len"`
 }
 
 // String returns json representation of the object

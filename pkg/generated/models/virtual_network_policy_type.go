@@ -29,12 +29,12 @@ func MakeVirtualNetworkPolicyType() *VirtualNetworkPolicyType {
 func InterfaceToVirtualNetworkPolicyType(iData interface{}) *VirtualNetworkPolicyType {
 	data := iData.(map[string]interface{})
 	return &VirtualNetworkPolicyType{
-		Sequence: InterfaceToSequenceType(data["sequence"]),
-
-		//{"description":"Sequence number to specify order of policy attachment to network","type":"object","properties":{"major":{"type":"integer"},"minor":{"type":"integer"}}}
 		Timer: InterfaceToTimerType(data["timer"]),
 
 		//{"description":"Timer to specify when the policy can be active","type":"object","properties":{"end_time":{"type":"string"},"off_interval":{"type":"string"},"on_interval":{"type":"string"},"start_time":{"type":"string"}}}
+		Sequence: InterfaceToSequenceType(data["sequence"]),
+
+		//{"description":"Sequence number to specify order of policy attachment to network","type":"object","properties":{"major":{"type":"integer"},"minor":{"type":"integer"}}}
 
 	}
 }

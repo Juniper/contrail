@@ -591,7 +591,8 @@ func scanLocation(values map[string]interface{}) (*models.Location, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakePhysicalRouter()

@@ -24,12 +24,12 @@ func (model *LinklocalServiceEntryType) String() string {
 func MakeLinklocalServiceEntryType() *LinklocalServiceEntryType {
 	return &LinklocalServiceEntryType{
 		//TODO(nati): Apply default
-		IPFabricServicePort:    0,
-		IPFabricDNSServiceName: "",
-		LinklocalServicePort:   0,
 		IPFabricServiceIP:      []string{},
 		LinklocalServiceName:   "",
 		LinklocalServiceIP:     "",
+		IPFabricServicePort:    0,
+		IPFabricDNSServiceName: "",
+		LinklocalServicePort:   0,
 	}
 }
 
@@ -37,9 +37,6 @@ func MakeLinklocalServiceEntryType() *LinklocalServiceEntryType {
 func InterfaceToLinklocalServiceEntryType(iData interface{}) *LinklocalServiceEntryType {
 	data := iData.(map[string]interface{})
 	return &LinklocalServiceEntryType{
-		LinklocalServicePort: data["linklocal_service_port"].(int),
-
-		//{"description":"Destination TCP port number of link local service","type":"integer"}
 		IPFabricServiceIP: data["ip_fabric_service_ip"].([]string),
 
 		//{"description":"Destination ip address to which link local traffic will forwarded","type":"array","item":{"type":"string"}}
@@ -55,6 +52,9 @@ func InterfaceToLinklocalServiceEntryType(iData interface{}) *LinklocalServiceEn
 		IPFabricDNSServiceName: data["ip_fabric_DNS_service_name"].(string),
 
 		//{"description":"DNS name to which link local service will be proxied","type":"string"}
+		LinklocalServicePort: data["linklocal_service_port"].(int),
+
+		//{"description":"Destination TCP port number of link local service","type":"integer"}
 
 	}
 }

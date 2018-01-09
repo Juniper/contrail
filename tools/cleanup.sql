@@ -53,9 +53,9 @@ truncate table parent_alias_ip_pool_virtual_network;
 truncate table alias_ip;
 
 
-truncate table ref_alias_ip_project;
-
 truncate table ref_alias_ip_virtual_machine_interface;
+
+truncate table ref_alias_ip_project;
 
 
 
@@ -169,9 +169,9 @@ truncate table ref_config_root_tag;
 truncate table customer_attachment;
 
 
-truncate table ref_customer_attachment_virtual_machine_interface;
-
 truncate table ref_customer_attachment_floating_ip;
+
+truncate table ref_customer_attachment_virtual_machine_interface;
 
 
 
@@ -247,13 +247,13 @@ truncate table parent_firewall_policy_policy_management;
 truncate table firewall_rule;
 
 
-truncate table ref_firewall_rule_virtual_network;
-
 truncate table ref_firewall_rule_service_group;
 
 truncate table ref_firewall_rule_address_group;
 
 truncate table ref_firewall_rule_security_logging_object;
+
+truncate table ref_firewall_rule_virtual_network;
 
 
 
@@ -399,15 +399,15 @@ truncate table parent_loadbalancer_member_loadbalancer_pool;
 truncate table loadbalancer_pool;
 
 
-truncate table ref_loadbalancer_pool_loadbalancer_healthmonitor;
-
-truncate table ref_loadbalancer_pool_service_appliance_set;
-
 truncate table ref_loadbalancer_pool_virtual_machine_interface;
 
 truncate table ref_loadbalancer_pool_loadbalancer_listener;
 
 truncate table ref_loadbalancer_pool_service_instance;
+
+truncate table ref_loadbalancer_pool_loadbalancer_healthmonitor;
+
+truncate table ref_loadbalancer_pool_service_appliance_set;
 
 
 
@@ -449,6 +449,12 @@ truncate table parent_logical_interface_physical_interface;
 truncate table logical_router;
 
 
+truncate table ref_logical_router_route_target;
+
+truncate table ref_logical_router_virtual_machine_interface;
+
+truncate table ref_logical_router_service_instance;
+
 truncate table ref_logical_router_route_table;
 
 truncate table ref_logical_router_virtual_network;
@@ -456,12 +462,6 @@ truncate table ref_logical_router_virtual_network;
 truncate table ref_logical_router_physical_router;
 
 truncate table ref_logical_router_bgpvpn;
-
-truncate table ref_logical_router_route_target;
-
-truncate table ref_logical_router_virtual_machine_interface;
-
-truncate table ref_logical_router_service_instance;
 
 
 
@@ -535,17 +535,17 @@ truncate table parent_physical_interface_physical_router;
 truncate table physical_router;
 
 
-truncate table ref_physical_router_virtual_network;
-
 truncate table ref_physical_router_bgp_router;
 
 truncate table ref_physical_router_virtual_router;
 
+truncate table ref_physical_router_virtual_network;
 
 
-truncate table parent_physical_router_location;
 
 truncate table parent_physical_router_global_system_config;
+
+truncate table parent_physical_router_location;
 
 
 
@@ -603,9 +603,9 @@ truncate table ref_qos_config_global_system_config;
 
 
 
-truncate table parent_qos_config_global_qos_config;
-
 truncate table parent_qos_config_project;
+
+truncate table parent_qos_config_global_qos_config;
 
 
 
@@ -691,9 +691,9 @@ truncate table ref_security_logging_object_network_policy;
 
 
 
-truncate table parent_security_logging_object_project;
-
 truncate table parent_security_logging_object_global_vrouter_config;
+
+truncate table parent_security_logging_object_project;
 
 
 
@@ -882,41 +882,41 @@ truncate table parent_virtual_ip_project;
 truncate table virtual_machine_interface;
 
 
-truncate table ref_virtual_machine_interface_physical_interface;
-
-truncate table ref_virtual_machine_interface_security_group;
+truncate table ref_virtual_machine_interface_routing_instance;
 
 truncate table ref_virtual_machine_interface_port_tuple;
 
-truncate table ref_virtual_machine_interface_service_endpoint;
-
-truncate table ref_virtual_machine_interface_virtual_machine_interface;
-
-truncate table ref_virtual_machine_interface_virtual_machine;
-
-truncate table ref_virtual_machine_interface_bgp_router;
+truncate table ref_virtual_machine_interface_security_group;
 
 truncate table ref_virtual_machine_interface_security_logging_object;
 
-truncate table ref_virtual_machine_interface_interface_route_table;
-
-truncate table ref_virtual_machine_interface_routing_instance;
-
 truncate table ref_virtual_machine_interface_qos_config;
-
-truncate table ref_virtual_machine_interface_service_health_check;
 
 truncate table ref_virtual_machine_interface_virtual_network;
 
 truncate table ref_virtual_machine_interface_bridge_domain;
 
+truncate table ref_virtual_machine_interface_service_endpoint;
+
+truncate table ref_virtual_machine_interface_virtual_machine;
+
+truncate table ref_virtual_machine_interface_physical_interface;
+
+truncate table ref_virtual_machine_interface_bgp_router;
+
+truncate table ref_virtual_machine_interface_interface_route_table;
+
+truncate table ref_virtual_machine_interface_service_health_check;
+
+truncate table ref_virtual_machine_interface_virtual_machine_interface;
 
 
-truncate table parent_virtual_machine_interface_project;
 
 truncate table parent_virtual_machine_interface_virtual_machine;
 
 truncate table parent_virtual_machine_interface_virtual_router;
+
+truncate table parent_virtual_machine_interface_project;
 
 
 
@@ -934,6 +934,8 @@ truncate table ref_virtual_machine_service_instance;
 truncate table virtual_network;
 
 
+truncate table ref_virtual_network_qos_config;
+
 truncate table ref_virtual_network_route_table;
 
 truncate table ref_virtual_network_virtual_network;
@@ -946,8 +948,6 @@ truncate table ref_virtual_network_security_logging_object;
 
 truncate table ref_virtual_network_network_policy;
 
-truncate table ref_virtual_network_qos_config;
-
 
 
 truncate table parent_virtual_network_project;
@@ -958,9 +958,9 @@ truncate table parent_virtual_network_project;
 truncate table virtual_router;
 
 
-truncate table ref_virtual_router_virtual_machine;
-
 truncate table ref_virtual_router_network_ipam;
+
+truncate table ref_virtual_router_virtual_machine;
 
 
 

@@ -314,11 +314,12 @@ func scanTag(values map[string]interface{}) (*models.Tag, error) {
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.TagTagTypeRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.TagTypeRefs = append(m.TagTypeRefs, referenceModel)
 
 		}

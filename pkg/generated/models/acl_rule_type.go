@@ -6,10 +6,10 @@ import "encoding/json"
 
 // AclRuleType
 type AclRuleType struct {
-	ActionList     *ActionListType     `json:"action_list"`
 	RuleUUID       string              `json:"rule_uuid"`
 	MatchCondition *MatchConditionType `json:"match_condition"`
 	Direction      DirectionType       `json:"direction"`
+	ActionList     *ActionListType     `json:"action_list"`
 }
 
 // String returns json representation of the object
@@ -22,10 +22,10 @@ func (model *AclRuleType) String() string {
 func MakeAclRuleType() *AclRuleType {
 	return &AclRuleType{
 		//TODO(nati): Apply default
+		RuleUUID:       "",
 		MatchCondition: MakeMatchConditionType(),
 		Direction:      MakeDirectionType(),
 		ActionList:     MakeActionListType(),
-		RuleUUID:       "",
 	}
 }
 

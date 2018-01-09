@@ -801,11 +801,12 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.GlobalSystemConfigBGPRouterRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.BGPRouterRefs = append(m.BGPRouterRefs, referenceModel)
 
 		}
@@ -820,7 +821,8 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeAlarm()
@@ -1020,7 +1022,8 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeAnalyticsNode()
@@ -1208,7 +1211,8 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeAPIAccessList()
@@ -1394,7 +1398,8 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeConfigNode()
@@ -1582,7 +1587,8 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeDatabaseNode()
@@ -1770,7 +1776,8 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeGlobalQosConfig()
@@ -1974,7 +1981,8 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeGlobalVrouterConfig()
@@ -2252,7 +2260,8 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakePhysicalRouter()
@@ -2692,7 +2701,8 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeServiceApplianceSet()
@@ -2894,7 +2904,8 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeVirtualRouter()

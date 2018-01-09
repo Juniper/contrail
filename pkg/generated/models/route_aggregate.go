@@ -36,6 +36,7 @@ func (model *RouteAggregate) String() string {
 func MakeRouteAggregate() *RouteAggregate {
 	return &RouteAggregate{
 		//TODO(nati): Apply default
+		Perms2:      MakePermType2(),
 		UUID:        "",
 		ParentUUID:  "",
 		ParentType:  "",
@@ -43,7 +44,6 @@ func MakeRouteAggregate() *RouteAggregate {
 		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
-		Perms2:      MakePermType2(),
 	}
 }
 
@@ -51,18 +51,6 @@ func MakeRouteAggregate() *RouteAggregate {
 func InterfaceToRouteAggregate(iData interface{}) *RouteAggregate {
 	data := iData.(map[string]interface{})
 	return &RouteAggregate{
-		ParentType: data["parent_type"].(string),
-
-		//{"type":"string"}
-		FQName: data["fq_name"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
-
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
-		DisplayName: data["display_name"].(string),
-
-		//{"type":"string"}
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
 		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
@@ -73,6 +61,18 @@ func InterfaceToRouteAggregate(iData interface{}) *RouteAggregate {
 
 		//{"type":"string"}
 		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
+		ParentType: data["parent_type"].(string),
+
+		//{"type":"string"}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
+		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}
 

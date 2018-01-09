@@ -465,7 +465,8 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeAPIAccessList()
@@ -651,7 +652,8 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeNamespace()
@@ -847,7 +849,8 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeProject()
@@ -1251,7 +1254,8 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeServiceTemplate()
@@ -1525,7 +1529,8 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeVirtualDNS()

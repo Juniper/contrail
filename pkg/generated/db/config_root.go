@@ -385,11 +385,12 @@ func scanConfigRoot(values map[string]interface{}) (*models.ConfigRoot, error) {
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.ConfigRootTagRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.TagRefs = append(m.TagRefs, referenceModel)
 
 		}
@@ -404,7 +405,8 @@ func scanConfigRoot(values map[string]interface{}) (*models.ConfigRoot, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeDomain()
@@ -608,7 +610,8 @@ func scanConfigRoot(values map[string]interface{}) (*models.ConfigRoot, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeGlobalSystemConfig()
@@ -958,7 +961,8 @@ func scanConfigRoot(values map[string]interface{}) (*models.ConfigRoot, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeTag()

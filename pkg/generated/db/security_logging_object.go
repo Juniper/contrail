@@ -59,9 +59,9 @@ var SecurityLoggingObjectRefFields = map[string][]string{
 // SecurityLoggingObjectBackRefFields is db back reference fields for SecurityLoggingObject
 var SecurityLoggingObjectBackRefFields = map[string][]string{}
 
-const insertSecurityLoggingObjectNetworkPolicyQuery = "insert into `ref_security_logging_object_network_policy` (`from`, `to` ,`rule`) values (?, ?,?);"
-
 const insertSecurityLoggingObjectSecurityGroupQuery = "insert into `ref_security_logging_object_security_group` (`from`, `to` ,`rule`) values (?, ?,?);"
+
+const insertSecurityLoggingObjectNetworkPolicyQuery = "insert into `ref_security_logging_object_network_policy` (`from`, `to` ,`rule`) values (?, ?,?);"
 
 // CreateSecurityLoggingObject inserts SecurityLoggingObject to DB
 func CreateSecurityLoggingObject(tx *sql.Tx, model *models.SecurityLoggingObject) error {
@@ -330,11 +330,12 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.SecurityLoggingObjectSecurityGroupRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.SecurityGroupRefs = append(m.SecurityGroupRefs, referenceModel)
 
 			attr := models.MakeSecurityLoggingObjectRuleListType()
@@ -352,11 +353,12 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.SecurityLoggingObjectNetworkPolicyRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
 
 			attr := models.MakeSecurityLoggingObjectRuleListType()

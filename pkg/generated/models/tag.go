@@ -6,17 +6,17 @@ import "encoding/json"
 
 // Tag
 type Tag struct {
-	IDPerms     *IdPermsType   `json:"id_perms"`
-	Annotations *KeyValuePairs `json:"annotations"`
-	Perms2      *PermType2     `json:"perms2"`
-	TagValue    string         `json:"tag_value"`
-	ParentUUID  string         `json:"parent_uuid"`
-	ParentType  string         `json:"parent_type"`
-	FQName      []string       `json:"fq_name"`
-	DisplayName string         `json:"display_name"`
 	UUID        string         `json:"uuid"`
 	TagTypeName string         `json:"tag_type_name"`
+	TagValue    string         `json:"tag_value"`
+	ParentType  string         `json:"parent_type"`
+	FQName      []string       `json:"fq_name"`
+	IDPerms     *IdPermsType   `json:"id_perms"`
+	Annotations *KeyValuePairs `json:"annotations"`
 	TagID       U32BitHexInt   `json:"tag_id"`
+	DisplayName string         `json:"display_name"`
+	Perms2      *PermType2     `json:"perms2"`
+	ParentUUID  string         `json:"parent_uuid"`
 
 	TagTypeRefs []*TagTagTypeRef `json:"tag_type_refs"`
 }
@@ -38,17 +38,17 @@ func (model *Tag) String() string {
 func MakeTag() *Tag {
 	return &Tag{
 		//TODO(nati): Apply default
-		TagTypeName: "",
+		DisplayName: "",
+		Perms2:      MakePermType2(),
+		ParentUUID:  "",
 		TagID:       MakeU32BitHexInt(),
+		TagValue:    "",
 		ParentType:  "",
 		FQName:      []string{},
-		DisplayName: "",
-		UUID:        "",
-		TagValue:    "",
-		ParentUUID:  "",
 		IDPerms:     MakeIdPermsType(),
 		Annotations: MakeKeyValuePairs(),
-		Perms2:      MakePermType2(),
+		UUID:        "",
+		TagTypeName: "",
 	}
 }
 
@@ -56,39 +56,39 @@ func MakeTag() *Tag {
 func InterfaceToTag(iData interface{}) *Tag {
 	data := iData.(map[string]interface{})
 	return &Tag{
-		TagValue: data["tag_value"].(string),
-
-		//{"description":"Tag value string representation","type":"string"}
-		ParentUUID: data["parent_uuid"].(string),
-
-		//{"type":"string"}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
-
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
-		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
-
-		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		Perms2: InterfaceToPermType2(data["perms2"]),
-
-		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
-		TagTypeName: data["tag_type_name"].(string),
-
-		//{"description":"Tag type string representation","type":"string"}
 		TagID: InterfaceToU32BitHexInt(data["tag_id"]),
 
 		//{"description":"Internal Tag ID encapsulating tag type and value in                  hexadecimal fomat: 0xTTTTVVVV (T: type, V: value)","type":"string"}
+		DisplayName: data["display_name"].(string),
+
+		//{"type":"string"}
+		Perms2: InterfaceToPermType2(data["perms2"]),
+
+		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
+		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
+		UUID: data["uuid"].(string),
+
+		//{"type":"string"}
+		TagTypeName: data["tag_type_name"].(string),
+
+		//{"description":"Tag type string representation","type":"string"}
+		TagValue: data["tag_value"].(string),
+
+		//{"description":"Tag value string representation","type":"string"}
 		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
 		FQName: data["fq_name"].([]string),
 
 		//{"type":"array","item":{"type":"string"}}
-		DisplayName: data["display_name"].(string),
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
 
-		//{"type":"string"}
-		UUID: data["uuid"].(string),
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
+		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
-		//{"type":"string"}
+		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
 
 	}
 }

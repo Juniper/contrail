@@ -170,6 +170,32 @@ func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtLoadbalancerListenerRef, err := tx.Prepare(insertLoadbalancerPoolLoadbalancerListenerQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing LoadbalancerListenerRefs create statement failed")
+	}
+	defer stmtLoadbalancerListenerRef.Close()
+	for _, ref := range model.LoadbalancerListenerRefs {
+
+		_, err = stmtLoadbalancerListenerRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "LoadbalancerListenerRefs create failed")
+		}
+	}
+
+	stmtServiceInstanceRef, err := tx.Prepare(insertLoadbalancerPoolServiceInstanceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceInstanceRefs create statement failed")
+	}
+	defer stmtServiceInstanceRef.Close()
+	for _, ref := range model.ServiceInstanceRefs {
+
+		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceInstanceRefs create failed")
+		}
+	}
+
 	stmtLoadbalancerHealthmonitorRef, err := tx.Prepare(insertLoadbalancerPoolLoadbalancerHealthmonitorQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing LoadbalancerHealthmonitorRefs create statement failed")
@@ -206,32 +232,6 @@ func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
 		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
-	stmtLoadbalancerListenerRef, err := tx.Prepare(insertLoadbalancerPoolLoadbalancerListenerQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing LoadbalancerListenerRefs create statement failed")
-	}
-	defer stmtLoadbalancerListenerRef.Close()
-	for _, ref := range model.LoadbalancerListenerRefs {
-
-		_, err = stmtLoadbalancerListenerRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "LoadbalancerListenerRefs create failed")
-		}
-	}
-
-	stmtServiceInstanceRef, err := tx.Prepare(insertLoadbalancerPoolServiceInstanceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceInstanceRefs create statement failed")
-	}
-	defer stmtServiceInstanceRef.Close()
-	for _, ref := range model.ServiceInstanceRefs {
-
-		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceInstanceRefs create failed")
 		}
 	}
 
@@ -493,11 +493,12 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.LoadbalancerPoolServiceApplianceSetRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.ServiceApplianceSetRefs = append(m.ServiceApplianceSetRefs, referenceModel)
 
 		}
@@ -512,11 +513,12 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.LoadbalancerPoolVirtualMachineInterfaceRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
 
 		}
@@ -531,11 +533,12 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.LoadbalancerPoolLoadbalancerListenerRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.LoadbalancerListenerRefs = append(m.LoadbalancerListenerRefs, referenceModel)
 
 		}
@@ -550,11 +553,12 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.LoadbalancerPoolServiceInstanceRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
 
 		}
@@ -569,11 +573,12 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.LoadbalancerPoolLoadbalancerHealthmonitorRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.LoadbalancerHealthmonitorRefs = append(m.LoadbalancerHealthmonitorRefs, referenceModel)
 
 		}
@@ -588,7 +593,8 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeLoadbalancerMember()

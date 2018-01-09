@@ -374,7 +374,8 @@ func scanVirtualDNS(values map[string]interface{}) (*models.VirtualDNS, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeVirtualDNSRecord()

@@ -43,12 +43,12 @@ var CustomerAttachmentFields = []string{
 // CustomerAttachmentRefFields is db reference fields for CustomerAttachment
 var CustomerAttachmentRefFields = map[string][]string{
 
-	"virtual_machine_interface": {
+	"floating_ip": {
 	// <common.Schema Value>
 
 	},
 
-	"floating_ip": {
+	"virtual_machine_interface": {
 	// <common.Schema Value>
 
 	},
@@ -304,11 +304,12 @@ func scanCustomerAttachment(values map[string]interface{}) (*models.CustomerAtta
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.CustomerAttachmentVirtualMachineInterfaceRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
 
 		}
@@ -323,11 +324,12 @@ func scanCustomerAttachment(values map[string]interface{}) (*models.CustomerAtta
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.CustomerAttachmentFloatingIPRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.FloatingIPRefs = append(m.FloatingIPRefs, referenceModel)
 
 		}

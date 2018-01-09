@@ -459,11 +459,12 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.ServiceInstanceServiceTemplateRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.ServiceTemplateRefs = append(m.ServiceTemplateRefs, referenceModel)
 
 		}
@@ -478,11 +479,12 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.ServiceInstanceInstanceIPRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.InstanceIPRefs = append(m.InstanceIPRefs, referenceModel)
 
 			attr := models.MakeServiceInterfaceTag()
@@ -500,7 +502,8 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakePortTuple()
