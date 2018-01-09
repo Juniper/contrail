@@ -6,14 +6,14 @@ import "encoding/json"
 
 // RoutingInstance
 type RoutingInstance struct {
-	Annotations *KeyValuePairs `json:"annotations"`
-	Perms2      *PermType2     `json:"perms2"`
-	UUID        string         `json:"uuid"`
 	ParentUUID  string         `json:"parent_uuid"`
 	ParentType  string         `json:"parent_type"`
 	FQName      []string       `json:"fq_name"`
 	IDPerms     *IdPermsType   `json:"id_perms"`
 	DisplayName string         `json:"display_name"`
+	Annotations *KeyValuePairs `json:"annotations"`
+	Perms2      *PermType2     `json:"perms2"`
+	UUID        string         `json:"uuid"`
 }
 
 // String returns json representation of the object

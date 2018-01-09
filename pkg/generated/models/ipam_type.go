@@ -6,12 +6,12 @@ import "encoding/json"
 
 // IpamType
 type IpamType struct {
+	IpamDNSMethod  IpamDnsMethodType    `json:"ipam_dns_method"`
 	IpamDNSServer  *IpamDnsAddressType  `json:"ipam_dns_server"`
 	DHCPOptionList *DhcpOptionsListType `json:"dhcp_option_list"`
 	HostRoutes     *RouteTableType      `json:"host_routes"`
 	CidrBlock      *SubnetType          `json:"cidr_block"`
 	IpamMethod     IpamMethodType       `json:"ipam_method"`
-	IpamDNSMethod  IpamDnsMethodType    `json:"ipam_dns_method"`
 }
 
 // String returns json representation of the object
@@ -24,12 +24,12 @@ func (model *IpamType) String() string {
 func MakeIpamType() *IpamType {
 	return &IpamType{
 		//TODO(nati): Apply default
+		IpamMethod:     MakeIpamMethodType(),
 		IpamDNSMethod:  MakeIpamDnsMethodType(),
 		IpamDNSServer:  MakeIpamDnsAddressType(),
 		DHCPOptionList: MakeDhcpOptionsListType(),
 		HostRoutes:     MakeRouteTableType(),
 		CidrBlock:      MakeSubnetType(),
-		IpamMethod:     MakeIpamMethodType(),
 	}
 }
 
@@ -37,6 +37,12 @@ func MakeIpamType() *IpamType {
 func InterfaceToIpamType(iData interface{}) *IpamType {
 	data := iData.(map[string]interface{})
 	return &IpamType{
+		CidrBlock: InterfaceToSubnetType(data["cidr_block"]),
+
+		//{"type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}}
+		IpamMethod: InterfaceToIpamMethodType(data["ipam_method"]),
+
+		//{"type":"string","enum":["dhcp","fixed"]}
 		IpamDNSMethod: InterfaceToIpamDnsMethodType(data["ipam_dns_method"]),
 
 		//{"type":"string","enum":["none","default-dns-server","tenant-dns-server","virtual-dns-server"]}
@@ -49,12 +55,6 @@ func InterfaceToIpamType(iData interface{}) *IpamType {
 		HostRoutes: InterfaceToRouteTableType(data["host_routes"]),
 
 		//{"type":"object","properties":{"route":{"type":"array","item":{"type":"object","properties":{"community_attributes":{"type":"object","properties":{"community_attribute":{"type":"array"}}},"next_hop":{"type":"string"},"next_hop_type":{"type":"string","enum":["service-instance","ip-address"]},"prefix":{"type":"string"}}}}}}
-		CidrBlock: InterfaceToSubnetType(data["cidr_block"]),
-
-		//{"type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}}
-		IpamMethod: InterfaceToIpamMethodType(data["ipam_method"]),
-
-		//{"type":"string","enum":["dhcp","fixed"]}
 
 	}
 }

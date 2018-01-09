@@ -293,7 +293,9 @@ func ListWidget(tx *sql.Tx, spec *common.ListSpec) ([]*models.Widget, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "widget"
-	spec.Fields = WidgetFields
+	if spec.Fields == nil {
+		spec.Fields = WidgetFields
+	}
 	spec.RefFields = WidgetRefFields
 	spec.BackRefFields = WidgetBackRefFields
 	result := models.MakeWidgetSlice()

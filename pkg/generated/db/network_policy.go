@@ -271,7 +271,9 @@ func ListNetworkPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.NetworkPoli
 	var err error
 	//TODO (check input)
 	spec.Table = "network_policy"
-	spec.Fields = NetworkPolicyFields
+	if spec.Fields == nil {
+		spec.Fields = NetworkPolicyFields
+	}
 	spec.RefFields = NetworkPolicyRefFields
 	spec.BackRefFields = NetworkPolicyBackRefFields
 	result := models.MakeNetworkPolicySlice()

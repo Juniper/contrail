@@ -102,19 +102,6 @@ func CreateAliasIP(tx *sql.Tx, model *models.AliasIP) error {
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertAliasIPVirtualMachineInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
-	}
-	defer stmtVirtualMachineInterfaceRef.Close()
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
 	stmtProjectRef, err := tx.Prepare(insertAliasIPProjectQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ProjectRefs create statement failed")
@@ -125,6 +112,19 @@ func CreateAliasIP(tx *sql.Tx, model *models.AliasIP) error {
 		_, err = stmtProjectRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ProjectRefs create failed")
+		}
+	}
+
+	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertAliasIPVirtualMachineInterfaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
+	}
+	defer stmtVirtualMachineInterfaceRef.Close()
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
 	}
 
@@ -362,7 +362,9 @@ func ListAliasIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.AliasIP, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "alias_ip"
-	spec.Fields = AliasIPFields
+	if spec.Fields == nil {
+		spec.Fields = AliasIPFields
+	}
 	spec.RefFields = AliasIPRefFields
 	spec.BackRefFields = AliasIPBackRefFields
 	result := models.MakeAliasIPSlice()

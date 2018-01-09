@@ -273,7 +273,9 @@ func ListTagType(tx *sql.Tx, spec *common.ListSpec) ([]*models.TagType, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "tag_type"
-	spec.Fields = TagTypeFields
+	if spec.Fields == nil {
+		spec.Fields = TagTypeFields
+	}
 	spec.RefFields = TagTypeRefFields
 	spec.BackRefFields = TagTypeBackRefFields
 	result := models.MakeTagTypeSlice()

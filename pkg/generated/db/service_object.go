@@ -263,7 +263,9 @@ func ListServiceObject(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceObje
 	var err error
 	//TODO (check input)
 	spec.Table = "service_object"
-	spec.Fields = ServiceObjectFields
+	if spec.Fields == nil {
+		spec.Fields = ServiceObjectFields
+	}
 	spec.RefFields = ServiceObjectRefFields
 	spec.BackRefFields = ServiceObjectBackRefFields
 	result := models.MakeServiceObjectSlice()

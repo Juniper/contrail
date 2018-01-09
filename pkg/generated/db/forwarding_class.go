@@ -343,7 +343,9 @@ func ListForwardingClass(tx *sql.Tx, spec *common.ListSpec) ([]*models.Forwardin
 	var err error
 	//TODO (check input)
 	spec.Table = "forwarding_class"
-	spec.Fields = ForwardingClassFields
+	if spec.Fields == nil {
+		spec.Fields = ForwardingClassFields
+	}
 	spec.RefFields = ForwardingClassRefFields
 	spec.BackRefFields = ForwardingClassBackRefFields
 	result := models.MakeForwardingClassSlice()

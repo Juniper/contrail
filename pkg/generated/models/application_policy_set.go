@@ -6,13 +6,13 @@ import "encoding/json"
 
 // ApplicationPolicySet
 type ApplicationPolicySet struct {
-	ParentUUID      string         `json:"parent_uuid"`
-	IDPerms         *IdPermsType   `json:"id_perms"`
-	DisplayName     string         `json:"display_name"`
-	AllApplications bool           `json:"all_applications"`
-	UUID            string         `json:"uuid"`
-	ParentType      string         `json:"parent_type"`
 	FQName          []string       `json:"fq_name"`
+	IDPerms         *IdPermsType   `json:"id_perms"`
+	UUID            string         `json:"uuid"`
+	ParentUUID      string         `json:"parent_uuid"`
+	ParentType      string         `json:"parent_type"`
+	AllApplications bool           `json:"all_applications"`
+	DisplayName     string         `json:"display_name"`
 	Annotations     *KeyValuePairs `json:"annotations"`
 	Perms2          *PermType2     `json:"perms2"`
 
@@ -45,15 +45,15 @@ func (model *ApplicationPolicySet) String() string {
 func MakeApplicationPolicySet() *ApplicationPolicySet {
 	return &ApplicationPolicySet{
 		//TODO(nati): Apply default
-		ParentUUID:      "",
-		IDPerms:         MakeIdPermsType(),
-		DisplayName:     "",
 		AllApplications: false,
-		UUID:            "",
-		ParentType:      "",
-		FQName:          []string{},
+		DisplayName:     "",
 		Annotations:     MakeKeyValuePairs(),
 		Perms2:          MakePermType2(),
+		ParentType:      "",
+		FQName:          []string{},
+		IDPerms:         MakeIdPermsType(),
+		UUID:            "",
+		ParentUUID:      "",
 	}
 }
 
@@ -61,33 +61,33 @@ func MakeApplicationPolicySet() *ApplicationPolicySet {
 func InterfaceToApplicationPolicySet(iData interface{}) *ApplicationPolicySet {
 	data := iData.(map[string]interface{})
 	return &ApplicationPolicySet{
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
-
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
-		DisplayName: data["display_name"].(string),
+		UUID: data["uuid"].(string),
 
 		//{"type":"string"}
 		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
-		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
-		ParentType: data["parent_type"].(string),
-
-		//{"type":"string"}
 		FQName: data["fq_name"].([]string),
 
 		//{"type":"array","item":{"type":"string"}}
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
 		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
 		Perms2: InterfaceToPermType2(data["perms2"]),
 
 		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
+		ParentType: data["parent_type"].(string),
+
+		//{"type":"string"}
 		AllApplications: data["all_applications"].(bool),
 
 		//{"description":"If set, indicates application policy set to be applied to all application tags","default":false,"type":"boolean"}
+		DisplayName: data["display_name"].(string),
+
+		//{"type":"string"}
 
 	}
 }

@@ -273,7 +273,9 @@ func ListAnalyticsNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.AnalyticsNo
 	var err error
 	//TODO (check input)
 	spec.Table = "analytics_node"
-	spec.Fields = AnalyticsNodeFields
+	if spec.Fields == nil {
+		spec.Fields = AnalyticsNodeFields
+	}
 	spec.RefFields = AnalyticsNodeRefFields
 	spec.BackRefFields = AnalyticsNodeBackRefFields
 	result := models.MakeAnalyticsNodeSlice()

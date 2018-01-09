@@ -271,7 +271,9 @@ func ListRouteTable(tx *sql.Tx, spec *common.ListSpec) ([]*models.RouteTable, er
 	var err error
 	//TODO (check input)
 	spec.Table = "route_table"
-	spec.Fields = RouteTableFields
+	if spec.Fields == nil {
+		spec.Fields = RouteTableFields
+	}
 	spec.RefFields = RouteTableRefFields
 	spec.BackRefFields = RouteTableBackRefFields
 	result := models.MakeRouteTableSlice()

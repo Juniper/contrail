@@ -313,7 +313,9 @@ func ListContrailControllerNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*model
 	var err error
 	//TODO (check input)
 	spec.Table = "contrail_controller_node_role"
-	spec.Fields = ContrailControllerNodeRoleFields
+	if spec.Fields == nil {
+		spec.Fields = ContrailControllerNodeRoleFields
+	}
 	spec.RefFields = ContrailControllerNodeRoleRefFields
 	spec.BackRefFields = ContrailControllerNodeRoleBackRefFields
 	result := models.MakeContrailControllerNodeRoleSlice()

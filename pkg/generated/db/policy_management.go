@@ -1680,7 +1680,9 @@ func ListPolicyManagement(tx *sql.Tx, spec *common.ListSpec) ([]*models.PolicyMa
 	var err error
 	//TODO (check input)
 	spec.Table = "policy_management"
-	spec.Fields = PolicyManagementFields
+	if spec.Fields == nil {
+		spec.Fields = PolicyManagementFields
+	}
 	spec.RefFields = PolicyManagementRefFields
 	spec.BackRefFields = PolicyManagementBackRefFields
 	result := models.MakePolicyManagementSlice()

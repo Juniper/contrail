@@ -349,7 +349,9 @@ func ListFirewallPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.FirewallPo
 	var err error
 	//TODO (check input)
 	spec.Table = "firewall_policy"
-	spec.Fields = FirewallPolicyFields
+	if spec.Fields == nil {
+		spec.Fields = FirewallPolicyFields
+	}
 	spec.RefFields = FirewallPolicyRefFields
 	spec.BackRefFields = FirewallPolicyBackRefFields
 	result := models.MakeFirewallPolicySlice()

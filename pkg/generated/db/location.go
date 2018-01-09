@@ -1031,7 +1031,9 @@ func ListLocation(tx *sql.Tx, spec *common.ListSpec) ([]*models.Location, error)
 	var err error
 	//TODO (check input)
 	spec.Table = "location"
-	spec.Fields = LocationFields
+	if spec.Fields == nil {
+		spec.Fields = LocationFields
+	}
 	spec.RefFields = LocationRefFields
 	spec.BackRefFields = LocationBackRefFields
 	result := models.MakeLocationSlice()

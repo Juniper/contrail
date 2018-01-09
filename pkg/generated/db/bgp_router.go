@@ -263,7 +263,9 @@ func ListBGPRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPRouter, erro
 	var err error
 	//TODO (check input)
 	spec.Table = "bgp_router"
-	spec.Fields = BGPRouterFields
+	if spec.Fields == nil {
+		spec.Fields = BGPRouterFields
+	}
 	spec.RefFields = BGPRouterRefFields
 	spec.BackRefFields = BGPRouterBackRefFields
 	result := models.MakeBGPRouterSlice()

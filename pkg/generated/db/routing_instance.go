@@ -263,7 +263,9 @@ func ListRoutingInstance(tx *sql.Tx, spec *common.ListSpec) ([]*models.RoutingIn
 	var err error
 	//TODO (check input)
 	spec.Table = "routing_instance"
-	spec.Fields = RoutingInstanceFields
+	if spec.Fields == nil {
+		spec.Fields = RoutingInstanceFields
+	}
 	spec.RefFields = RoutingInstanceRefFields
 	spec.BackRefFields = RoutingInstanceBackRefFields
 	result := models.MakeRoutingInstanceSlice()

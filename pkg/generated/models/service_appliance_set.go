@@ -6,17 +6,17 @@ import "encoding/json"
 
 // ServiceApplianceSet
 type ServiceApplianceSet struct {
-	ServiceApplianceHaMode        string         `json:"service_appliance_ha_mode"`
-	ServiceApplianceDriver        string         `json:"service_appliance_driver"`
-	FQName                        []string       `json:"fq_name"`
-	IDPerms                       *IdPermsType   `json:"id_perms"`
-	ServiceApplianceSetProperties *KeyValuePairs `json:"service_appliance_set_properties"`
-	DisplayName                   string         `json:"display_name"`
-	Annotations                   *KeyValuePairs `json:"annotations"`
-	Perms2                        *PermType2     `json:"perms2"`
 	UUID                          string         `json:"uuid"`
 	ParentUUID                    string         `json:"parent_uuid"`
 	ParentType                    string         `json:"parent_type"`
+	IDPerms                       *IdPermsType   `json:"id_perms"`
+	Annotations                   *KeyValuePairs `json:"annotations"`
+	Perms2                        *PermType2     `json:"perms2"`
+	ServiceApplianceHaMode        string         `json:"service_appliance_ha_mode"`
+	ServiceApplianceDriver        string         `json:"service_appliance_driver"`
+	DisplayName                   string         `json:"display_name"`
+	ServiceApplianceSetProperties *KeyValuePairs `json:"service_appliance_set_properties"`
+	FQName                        []string       `json:"fq_name"`
 
 	ServiceAppliances []*ServiceAppliance `json:"service_appliances"`
 }
@@ -31,17 +31,17 @@ func (model *ServiceApplianceSet) String() string {
 func MakeServiceApplianceSet() *ServiceApplianceSet {
 	return &ServiceApplianceSet{
 		//TODO(nati): Apply default
+		Annotations:            MakeKeyValuePairs(),
+		Perms2:                 MakePermType2(),
 		ServiceApplianceHaMode: "",
 		ServiceApplianceDriver: "",
-		FQName:                 []string{},
-		IDPerms:                MakeIdPermsType(),
+		UUID:       "",
+		ParentUUID: "",
+		ParentType: "",
+		IDPerms:    MakeIdPermsType(),
 		ServiceApplianceSetProperties: MakeKeyValuePairs(),
-		DisplayName:                   "",
-		Annotations:                   MakeKeyValuePairs(),
-		Perms2:                        MakePermType2(),
-		UUID:                          "",
-		ParentUUID:                    "",
-		ParentType:                    "",
+		FQName:      []string{},
+		DisplayName: "",
 	}
 }
 
@@ -49,21 +49,18 @@ func MakeServiceApplianceSet() *ServiceApplianceSet {
 func InterfaceToServiceApplianceSet(iData interface{}) *ServiceApplianceSet {
 	data := iData.(map[string]interface{})
 	return &ServiceApplianceSet{
-		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
-		ParentUUID: data["parent_uuid"].(string),
-
-		//{"type":"string"}
-		ParentType: data["parent_type"].(string),
-
-		//{"type":"string"}
 		ServiceApplianceSetProperties: InterfaceToKeyValuePairs(data["service_appliance_set_properties"]),
 
 		//{"description":"List of Key:Value pairs that are used by the provider driver and opaque to system.","type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
 		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
 		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
@@ -76,12 +73,15 @@ func InterfaceToServiceApplianceSet(iData interface{}) *ServiceApplianceSet {
 		ServiceApplianceDriver: data["service_appliance_driver"].(string),
 
 		//{"description":"Name of the provider driver for this service appliance set.","type":"string"}
-		FQName: data["fq_name"].([]string),
+		UUID: data["uuid"].(string),
 
-		//{"type":"array","item":{"type":"string"}}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+		//{"type":"string"}
+		ParentUUID: data["parent_uuid"].(string),
 
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
+		//{"type":"string"}
+		ParentType: data["parent_type"].(string),
+
+		//{"type":"string"}
 
 	}
 }

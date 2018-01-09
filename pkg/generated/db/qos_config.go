@@ -347,7 +347,9 @@ func ListQosConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.QosConfig, erro
 	var err error
 	//TODO (check input)
 	spec.Table = "qos_config"
-	spec.Fields = QosConfigFields
+	if spec.Fields == nil {
+		spec.Fields = QosConfigFields
+	}
 	spec.RefFields = QosConfigRefFields
 	spec.BackRefFields = QosConfigBackRefFields
 	result := models.MakeQosConfigSlice()

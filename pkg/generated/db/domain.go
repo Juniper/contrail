@@ -1769,7 +1769,9 @@ func ListDomain(tx *sql.Tx, spec *common.ListSpec) ([]*models.Domain, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "domain"
-	spec.Fields = DomainFields
+	if spec.Fields == nil {
+		spec.Fields = DomainFields
+	}
 	spec.RefFields = DomainRefFields
 	spec.BackRefFields = DomainBackRefFields
 	result := models.MakeDomainSlice()

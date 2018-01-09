@@ -29,12 +29,12 @@ func MakeServiceScaleOutType() *ServiceScaleOutType {
 func InterfaceToServiceScaleOutType(iData interface{}) *ServiceScaleOutType {
 	data := iData.(map[string]interface{})
 	return &ServiceScaleOutType{
-		MaxInstances: data["max_instances"].(int),
-
-		//{"description":"Maximum number of scale out factor(virtual machines). can be changed dynamically","type":"integer"}
 		AutoScale: data["auto_scale"].(bool),
 
 		//{"description":"Automatically change the number of virtual machines. Not implemented","type":"boolean"}
+		MaxInstances: data["max_instances"].(int),
+
+		//{"description":"Maximum number of scale out factor(virtual machines). can be changed dynamically","type":"integer"}
 
 	}
 }

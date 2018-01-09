@@ -318,7 +318,9 @@ func ListInterfaceRouteTable(tx *sql.Tx, spec *common.ListSpec) ([]*models.Inter
 	var err error
 	//TODO (check input)
 	spec.Table = "interface_route_table"
-	spec.Fields = InterfaceRouteTableFields
+	if spec.Fields == nil {
+		spec.Fields = InterfaceRouteTableFields
+	}
 	spec.RefFields = InterfaceRouteTableRefFields
 	spec.BackRefFields = InterfaceRouteTableBackRefFields
 	result := models.MakeInterfaceRouteTableSlice()

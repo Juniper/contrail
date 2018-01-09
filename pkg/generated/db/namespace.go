@@ -283,7 +283,9 @@ func ListNamespace(tx *sql.Tx, spec *common.ListSpec) ([]*models.Namespace, erro
 	var err error
 	//TODO (check input)
 	spec.Table = "namespace"
-	spec.Fields = NamespaceFields
+	if spec.Fields == nil {
+		spec.Fields = NamespaceFields
+	}
 	spec.RefFields = NamespaceRefFields
 	spec.BackRefFields = NamespaceBackRefFields
 	result := models.MakeNamespaceSlice()

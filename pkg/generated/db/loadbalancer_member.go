@@ -323,7 +323,9 @@ func ListLoadbalancerMember(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadba
 	var err error
 	//TODO (check input)
 	spec.Table = "loadbalancer_member"
-	spec.Fields = LoadbalancerMemberFields
+	if spec.Fields == nil {
+		spec.Fields = LoadbalancerMemberFields
+	}
 	spec.RefFields = LoadbalancerMemberRefFields
 	spec.BackRefFields = LoadbalancerMemberBackRefFields
 	result := models.MakeLoadbalancerMemberSlice()

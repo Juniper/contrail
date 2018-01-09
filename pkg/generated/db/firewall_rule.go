@@ -86,16 +86,6 @@ var FirewallRuleFields = []string{
 // FirewallRuleRefFields is db reference fields for FirewallRule
 var FirewallRuleRefFields = map[string][]string{
 
-	"service_group": {
-	// <common.Schema Value>
-
-	},
-
-	"address_group": {
-	// <common.Schema Value>
-
-	},
-
 	"security_logging_object": {
 	// <common.Schema Value>
 
@@ -105,18 +95,28 @@ var FirewallRuleRefFields = map[string][]string{
 	// <common.Schema Value>
 
 	},
+
+	"service_group": {
+	// <common.Schema Value>
+
+	},
+
+	"address_group": {
+	// <common.Schema Value>
+
+	},
 }
 
 // FirewallRuleBackRefFields is db back reference fields for FirewallRule
 var FirewallRuleBackRefFields = map[string][]string{}
+
+const insertFirewallRuleServiceGroupQuery = "insert into `ref_firewall_rule_service_group` (`from`, `to` ) values (?, ?);"
 
 const insertFirewallRuleAddressGroupQuery = "insert into `ref_firewall_rule_address_group` (`from`, `to` ) values (?, ?);"
 
 const insertFirewallRuleSecurityLoggingObjectQuery = "insert into `ref_firewall_rule_security_logging_object` (`from`, `to` ) values (?, ?);"
 
 const insertFirewallRuleVirtualNetworkQuery = "insert into `ref_firewall_rule_virtual_network` (`from`, `to` ) values (?, ?);"
-
-const insertFirewallRuleServiceGroupQuery = "insert into `ref_firewall_rule_service_group` (`from`, `to` ) values (?, ?);"
 
 // CreateFirewallRule inserts FirewallRule to DB
 func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
@@ -198,6 +198,19 @@ func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtAddressGroupRef, err := tx.Prepare(insertFirewallRuleAddressGroupQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing AddressGroupRefs create statement failed")
+	}
+	defer stmtAddressGroupRef.Close()
+	for _, ref := range model.AddressGroupRefs {
+
+		_, err = stmtAddressGroupRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "AddressGroupRefs create failed")
+		}
+	}
+
 	stmtSecurityLoggingObjectRef, err := tx.Prepare(insertFirewallRuleSecurityLoggingObjectQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing SecurityLoggingObjectRefs create statement failed")
@@ -234,19 +247,6 @@ func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
 		_, err = stmtServiceGroupRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceGroupRefs create failed")
-		}
-	}
-
-	stmtAddressGroupRef, err := tx.Prepare(insertFirewallRuleAddressGroupQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing AddressGroupRefs create statement failed")
-	}
-	defer stmtAddressGroupRef.Close()
-	for _, ref := range model.AddressGroupRefs {
-
-		_, err = stmtAddressGroupRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "AddressGroupRefs create failed")
 		}
 	}
 
@@ -836,7 +836,9 @@ func ListFirewallRule(tx *sql.Tx, spec *common.ListSpec) ([]*models.FirewallRule
 	var err error
 	//TODO (check input)
 	spec.Table = "firewall_rule"
-	spec.Fields = FirewallRuleFields
+	if spec.Fields == nil {
+		spec.Fields = FirewallRuleFields
+	}
 	spec.RefFields = FirewallRuleRefFields
 	spec.BackRefFields = FirewallRuleBackRefFields
 	result := models.MakeFirewallRuleSlice()

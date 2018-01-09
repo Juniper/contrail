@@ -361,7 +361,9 @@ func ListLoadbalancerListener(tx *sql.Tx, spec *common.ListSpec) ([]*models.Load
 	var err error
 	//TODO (check input)
 	spec.Table = "loadbalancer_listener"
-	spec.Fields = LoadbalancerListenerFields
+	if spec.Fields == nil {
+		spec.Fields = LoadbalancerListenerFields
+	}
 	spec.RefFields = LoadbalancerListenerRefFields
 	spec.BackRefFields = LoadbalancerListenerBackRefFields
 	result := models.MakeLoadbalancerListenerSlice()

@@ -273,7 +273,9 @@ func ListUser(tx *sql.Tx, spec *common.ListSpec) ([]*models.User, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "user"
-	spec.Fields = UserFields
+	if spec.Fields == nil {
+		spec.Fields = UserFields
+	}
 	spec.RefFields = UserRefFields
 	spec.BackRefFields = UserBackRefFields
 	result := models.MakeUserSlice()

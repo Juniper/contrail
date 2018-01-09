@@ -323,7 +323,9 @@ func ListSubnet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Subnet, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "subnet"
-	spec.Fields = SubnetFields
+	if spec.Fields == nil {
+		spec.Fields = SubnetFields
+	}
 	spec.RefFields = SubnetRefFields
 	spec.BackRefFields = SubnetBackRefFields
 	result := models.MakeSubnetSlice()

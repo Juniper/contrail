@@ -1040,13 +1040,13 @@ var ProjectBackRefFields = map[string][]string{
 	},
 }
 
-const insertProjectFloatingIPPoolQuery = "insert into `ref_project_floating_ip_pool` (`from`, `to` ) values (?, ?);"
-
 const insertProjectAliasIPPoolQuery = "insert into `ref_project_alias_ip_pool` (`from`, `to` ) values (?, ?);"
 
 const insertProjectNamespaceQuery = "insert into `ref_project_namespace` (`from`, `to` ,`ip_prefix`,`ip_prefix_len`) values (?, ?,?,?);"
 
 const insertProjectApplicationPolicySetQuery = "insert into `ref_project_application_policy_set` (`from`, `to` ) values (?, ?);"
+
+const insertProjectFloatingIPPoolQuery = "insert into `ref_project_floating_ip_pool` (`from`, `to` ) values (?, ?);"
 
 // CreateProject inserts Project to DB
 func CreateProject(tx *sql.Tx, model *models.Project) error {
@@ -8755,7 +8755,9 @@ func ListProject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Project, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "project"
-	spec.Fields = ProjectFields
+	if spec.Fields == nil {
+		spec.Fields = ProjectFields
+	}
 	spec.RefFields = ProjectRefFields
 	spec.BackRefFields = ProjectBackRefFields
 	result := models.MakeProjectSlice()

@@ -3098,7 +3098,9 @@ func ListGlobalSystemConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Global
 	var err error
 	//TODO (check input)
 	spec.Table = "global_system_config"
-	spec.Fields = GlobalSystemConfigFields
+	if spec.Fields == nil {
+		spec.Fields = GlobalSystemConfigFields
+	}
 	spec.RefFields = GlobalSystemConfigRefFields
 	spec.BackRefFields = GlobalSystemConfigBackRefFields
 	result := models.MakeGlobalSystemConfigSlice()

@@ -6,8 +6,8 @@ import "encoding/json"
 
 // VirtualNetworkPolicyType
 type VirtualNetworkPolicyType struct {
-	Sequence *SequenceType `json:"sequence"`
 	Timer    *TimerType    `json:"timer"`
+	Sequence *SequenceType `json:"sequence"`
 }
 
 // String returns json representation of the object

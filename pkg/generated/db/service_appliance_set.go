@@ -530,7 +530,9 @@ func ListServiceApplianceSet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Servi
 	var err error
 	//TODO (check input)
 	spec.Table = "service_appliance_set"
-	spec.Fields = ServiceApplianceSetFields
+	if spec.Fields == nil {
+		spec.Fields = ServiceApplianceSetFields
+	}
 	spec.RefFields = ServiceApplianceSetRefFields
 	spec.BackRefFields = ServiceApplianceSetBackRefFields
 	result := models.MakeServiceApplianceSetSlice()

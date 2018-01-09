@@ -323,7 +323,9 @@ func ListLogicalInterface(tx *sql.Tx, spec *common.ListSpec) ([]*models.LogicalI
 	var err error
 	//TODO (check input)
 	spec.Table = "logical_interface"
-	spec.Fields = LogicalInterfaceFields
+	if spec.Fields == nil {
+		spec.Fields = LogicalInterfaceFields
+	}
 	spec.RefFields = LogicalInterfaceRefFields
 	spec.BackRefFields = LogicalInterfaceBackRefFields
 	result := models.MakeLogicalInterfaceSlice()

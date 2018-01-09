@@ -6,10 +6,10 @@ import "encoding/json"
 
 // DiscoveryPubSubEndPointType
 type DiscoveryPubSubEndPointType struct {
-	EpVersion string      `json:"ep_version"`
-	EpID      string      `json:"ep_id"`
 	EpType    string      `json:"ep_type"`
 	EpPrefix  *SubnetType `json:"ep_prefix"`
+	EpVersion string      `json:"ep_version"`
+	EpID      string      `json:"ep_id"`
 }
 
 // String returns json representation of the object
@@ -22,10 +22,10 @@ func (model *DiscoveryPubSubEndPointType) String() string {
 func MakeDiscoveryPubSubEndPointType() *DiscoveryPubSubEndPointType {
 	return &DiscoveryPubSubEndPointType{
 		//TODO(nati): Apply default
-		EpVersion: "",
-		EpID:      "",
 		EpType:    "",
 		EpPrefix:  MakeSubnetType(),
+		EpVersion: "",
+		EpID:      "",
 	}
 }
 
@@ -33,6 +33,9 @@ func MakeDiscoveryPubSubEndPointType() *DiscoveryPubSubEndPointType {
 func InterfaceToDiscoveryPubSubEndPointType(iData interface{}) *DiscoveryPubSubEndPointType {
 	data := iData.(map[string]interface{})
 	return &DiscoveryPubSubEndPointType{
+		EpPrefix: InterfaceToSubnetType(data["ep_prefix"]),
+
+		//{"description":"All  servers or clients whose ip match this prefix","type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}}
 		EpVersion: data["ep_version"].(string),
 
 		//{"description":"All  servers or clients whose version match this version","type":"string"}
@@ -42,9 +45,6 @@ func InterfaceToDiscoveryPubSubEndPointType(iData interface{}) *DiscoveryPubSubE
 		EpType: data["ep_type"].(string),
 
 		//{"description":"Type of service or client","type":"string"}
-		EpPrefix: InterfaceToSubnetType(data["ep_prefix"]),
-
-		//{"description":"All  servers or clients whose ip match this prefix","type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}}
 
 	}
 }

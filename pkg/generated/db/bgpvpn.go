@@ -297,7 +297,9 @@ func ListBGPVPN(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPVPN, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "bgpvpn"
-	spec.Fields = BGPVPNFields
+	if spec.Fields == nil {
+		spec.Fields = BGPVPNFields
+	}
 	spec.RefFields = BGPVPNRefFields
 	spec.BackRefFields = BGPVPNBackRefFields
 	result := models.MakeBGPVPNSlice()

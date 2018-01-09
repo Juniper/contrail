@@ -303,7 +303,9 @@ func ListProviderAttachment(tx *sql.Tx, spec *common.ListSpec) ([]*models.Provid
 	var err error
 	//TODO (check input)
 	spec.Table = "provider_attachment"
-	spec.Fields = ProviderAttachmentFields
+	if spec.Fields == nil {
+		spec.Fields = ProviderAttachmentFields
+	}
 	spec.RefFields = ProviderAttachmentRefFields
 	spec.BackRefFields = ProviderAttachmentBackRefFields
 	result := models.MakeProviderAttachmentSlice()

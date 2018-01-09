@@ -421,7 +421,9 @@ func ListServiceTemplate(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceTe
 	var err error
 	//TODO (check input)
 	spec.Table = "service_template"
-	spec.Fields = ServiceTemplateFields
+	if spec.Fields == nil {
+		spec.Fields = ServiceTemplateFields
+	}
 	spec.RefFields = ServiceTemplateRefFields
 	spec.BackRefFields = ServiceTemplateBackRefFields
 	result := models.MakeServiceTemplateSlice()

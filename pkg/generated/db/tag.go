@@ -333,7 +333,9 @@ func ListTag(tx *sql.Tx, spec *common.ListSpec) ([]*models.Tag, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "tag"
-	spec.Fields = TagFields
+	if spec.Fields == nil {
+		spec.Fields = TagFields
+	}
 	spec.RefFields = TagRefFields
 	spec.BackRefFields = TagBackRefFields
 	result := models.MakeTagSlice()

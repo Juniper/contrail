@@ -289,7 +289,9 @@ func ListAlarm(tx *sql.Tx, spec *common.ListSpec) ([]*models.Alarm, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "alarm"
-	spec.Fields = AlarmFields
+	if spec.Fields == nil {
+		spec.Fields = AlarmFields
+	}
 	spec.RefFields = AlarmRefFields
 	spec.BackRefFields = AlarmBackRefFields
 	result := models.MakeAlarmSlice()

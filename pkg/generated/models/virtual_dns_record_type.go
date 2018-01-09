@@ -6,12 +6,12 @@ import "encoding/json"
 
 // VirtualDnsRecordType
 type VirtualDnsRecordType struct {
+	RecordName         string             `json:"record_name"`
+	RecordClass        DnsRecordClassType `json:"record_class"`
 	RecordData         string             `json:"record_data"`
 	RecordType         DnsRecordTypeType  `json:"record_type"`
 	RecordTTLSeconds   int                `json:"record_ttl_seconds"`
 	RecordMXPreference int                `json:"record_mx_preference"`
-	RecordName         string             `json:"record_name"`
-	RecordClass        DnsRecordClassType `json:"record_class"`
 }
 
 // String returns json representation of the object
@@ -24,12 +24,12 @@ func (model *VirtualDnsRecordType) String() string {
 func MakeVirtualDnsRecordType() *VirtualDnsRecordType {
 	return &VirtualDnsRecordType{
 		//TODO(nati): Apply default
+		RecordData:         "",
+		RecordType:         MakeDnsRecordTypeType(),
 		RecordTTLSeconds:   0,
 		RecordMXPreference: 0,
 		RecordName:         "",
 		RecordClass:        MakeDnsRecordClassType(),
-		RecordData:         "",
-		RecordType:         MakeDnsRecordTypeType(),
 	}
 }
 
@@ -37,6 +37,9 @@ func MakeVirtualDnsRecordType() *VirtualDnsRecordType {
 func InterfaceToVirtualDnsRecordType(iData interface{}) *VirtualDnsRecordType {
 	data := iData.(map[string]interface{})
 	return &VirtualDnsRecordType{
+		RecordType: InterfaceToDnsRecordTypeType(data["record_type"]),
+
+		//{"description":"DNS record type can be A, AAAA, CNAME, PTR, NS and MX","type":"string","enum":["A","AAAA","CNAME","PTR","NS","MX"]}
 		RecordTTLSeconds: data["record_ttl_seconds"].(int),
 
 		//{"description":"Time To Live for this DNS record","type":"integer"}
@@ -52,9 +55,6 @@ func InterfaceToVirtualDnsRecordType(iData interface{}) *VirtualDnsRecordType {
 		RecordData: data["record_data"].(string),
 
 		//{"description":"DNS record data is either ip address or string depending on type","type":"string"}
-		RecordType: InterfaceToDnsRecordTypeType(data["record_type"]),
-
-		//{"description":"DNS record type can be A, AAAA, CNAME, PTR, NS and MX","type":"string","enum":["A","AAAA","CNAME","PTR","NS","MX"]}
 
 	}
 }

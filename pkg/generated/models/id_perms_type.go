@@ -6,13 +6,13 @@ import "encoding/json"
 
 // IdPermsType
 type IdPermsType struct {
-	UserVisible  bool      `json:"user_visible"`
-	LastModified string    `json:"last_modified"`
 	Permissions  *PermType `json:"permissions"`
 	Enable       bool      `json:"enable"`
 	Description  string    `json:"description"`
 	Created      string    `json:"created"`
 	Creator      string    `json:"creator"`
+	UserVisible  bool      `json:"user_visible"`
+	LastModified string    `json:"last_modified"`
 }
 
 // String returns json representation of the object
@@ -25,13 +25,13 @@ func (model *IdPermsType) String() string {
 func MakeIdPermsType() *IdPermsType {
 	return &IdPermsType{
 		//TODO(nati): Apply default
-		Description:  "",
-		Created:      "",
-		Creator:      "",
 		UserVisible:  false,
 		LastModified: "",
 		Permissions:  MakePermType(),
 		Enable:       false,
+		Description:  "",
+		Created:      "",
+		Creator:      "",
 	}
 }
 
@@ -39,12 +39,6 @@ func MakeIdPermsType() *IdPermsType {
 func InterfaceToIdPermsType(iData interface{}) *IdPermsType {
 	data := iData.(map[string]interface{})
 	return &IdPermsType{
-		LastModified: data["last_modified"].(string),
-
-		//{"description":"Time when this object was created","type":"string"}
-		Permissions: InterfaceToPermType(data["permissions"]),
-
-		//{"description":"No longer used, will be removed","type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}}
 		Enable: data["enable"].(bool),
 
 		//{"description":"Administratively Enable/Disable this object","type":"boolean"}
@@ -60,6 +54,12 @@ func InterfaceToIdPermsType(iData interface{}) *IdPermsType {
 		UserVisible: data["user_visible"].(bool),
 
 		//{"description":"System created internal objects will have this flag set and will not be visible","type":"boolean"}
+		LastModified: data["last_modified"].(string),
+
+		//{"description":"Time when this object was created","type":"string"}
+		Permissions: InterfaceToPermType(data["permissions"]),
+
+		//{"description":"No longer used, will be removed","type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}}
 
 	}
 }

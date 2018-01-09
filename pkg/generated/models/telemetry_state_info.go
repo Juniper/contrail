@@ -33,9 +33,6 @@ func MakeTelemetryStateInfo() *TelemetryStateInfo {
 func InterfaceToTelemetryStateInfo(iData interface{}) *TelemetryStateInfo {
 	data := iData.(map[string]interface{})
 	return &TelemetryStateInfo{
-		ServerPort: data["server_port"].(int),
-
-		//{"type":"integer"}
 		ServerIP: data["server_ip"].(string),
 
 		//{"type":"string"}
@@ -43,6 +40,9 @@ func InterfaceToTelemetryStateInfo(iData interface{}) *TelemetryStateInfo {
 		Resource: InterfaceToTelemetryResourceInfoSlice(data["resource"]),
 
 		//{"type":"array","item":{"type":"object","properties":{"name":{"type":"string"},"path":{"type":"string"},"rate":{"type":"string"}}}}
+		ServerPort: data["server_port"].(int),
+
+		//{"type":"integer"}
 
 	}
 }

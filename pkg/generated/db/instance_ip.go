@@ -53,11 +53,6 @@ var InstanceIPFields = []string{
 // InstanceIPRefFields is db reference fields for InstanceIP
 var InstanceIPRefFields = map[string][]string{
 
-	"virtual_router": {
-	// <common.Schema Value>
-
-	},
-
 	"network_ipam": {
 	// <common.Schema Value>
 
@@ -74,6 +69,11 @@ var InstanceIPRefFields = map[string][]string{
 	},
 
 	"physical_router": {
+	// <common.Schema Value>
+
+	},
+
+	"virtual_router": {
 	// <common.Schema Value>
 
 	},
@@ -171,6 +171,19 @@ func CreateInstanceIP(tx *sql.Tx, model *models.InstanceIP) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtVirtualRouterRef, err := tx.Prepare(insertInstanceIPVirtualRouterQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualRouterRefs create statement failed")
+	}
+	defer stmtVirtualRouterRef.Close()
+	for _, ref := range model.VirtualRouterRefs {
+
+		_, err = stmtVirtualRouterRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualRouterRefs create failed")
+		}
+	}
+
 	stmtNetworkIpamRef, err := tx.Prepare(insertInstanceIPNetworkIpamQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing NetworkIpamRefs create statement failed")
@@ -220,19 +233,6 @@ func CreateInstanceIP(tx *sql.Tx, model *models.InstanceIP) error {
 		_, err = stmtPhysicalRouterRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PhysicalRouterRefs create failed")
-		}
-	}
-
-	stmtVirtualRouterRef, err := tx.Prepare(insertInstanceIPVirtualRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualRouterRefs create statement failed")
-	}
-	defer stmtVirtualRouterRef.Close()
-	for _, ref := range model.VirtualRouterRefs {
-
-		_, err = stmtVirtualRouterRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualRouterRefs create failed")
 		}
 	}
 
@@ -487,6 +487,25 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 
 	}
 
+	if value, ok := values["ref_network_ipam"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.InstanceIPNetworkIpamRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.NetworkIpamRefs = append(m.NetworkIpamRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_virtual_network"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -559,25 +578,6 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 			referenceModel := &models.InstanceIPVirtualRouterRef{}
 			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
 			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_network_ipam"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			if referenceMap["to"] == "" {
-				continue
-			}
-			referenceModel := &models.InstanceIPNetworkIpamRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
-			m.NetworkIpamRefs = append(m.NetworkIpamRefs, referenceModel)
 
 		}
 	}
@@ -825,7 +825,9 @@ func ListInstanceIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.InstanceIP, er
 	var err error
 	//TODO (check input)
 	spec.Table = "instance_ip"
-	spec.Fields = InstanceIPFields
+	if spec.Fields == nil {
+		spec.Fields = InstanceIPFields
+	}
 	spec.RefFields = InstanceIPRefFields
 	spec.BackRefFields = InstanceIPBackRefFields
 	result := models.MakeInstanceIPSlice()

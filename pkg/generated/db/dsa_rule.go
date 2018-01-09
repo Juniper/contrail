@@ -321,7 +321,9 @@ func ListDsaRule(tx *sql.Tx, spec *common.ListSpec) ([]*models.DsaRule, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "dsa_rule"
-	spec.Fields = DsaRuleFields
+	if spec.Fields == nil {
+		spec.Fields = DsaRuleFields
+	}
 	spec.RefFields = DsaRuleRefFields
 	spec.BackRefFields = DsaRuleBackRefFields
 	result := models.MakeDsaRuleSlice()

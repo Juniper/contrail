@@ -343,7 +343,9 @@ func ListBridgeDomain(tx *sql.Tx, spec *common.ListSpec) ([]*models.BridgeDomain
 	var err error
 	//TODO (check input)
 	spec.Table = "bridge_domain"
-	spec.Fields = BridgeDomainFields
+	if spec.Fields == nil {
+		spec.Fields = BridgeDomainFields
+	}
 	spec.RefFields = BridgeDomainRefFields
 	spec.BackRefFields = BridgeDomainBackRefFields
 	result := models.MakeBridgeDomainSlice()

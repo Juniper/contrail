@@ -51,11 +51,11 @@ func (s *pgCache) Set(key string, x interface{}, ttl time.Duration) {
 		}()
 
 		if _, err = tx.Exec(fmt.Sprintf(`DELETE FROM "%s" WHERE key=$1`, s.table), key); err != nil {
-			fmt.Println("Failed to delete: ", err)
+			keystone.Log("Failed to delete: %v", err)
 			return
 		}
 		if _, err = tx.Exec(fmt.Sprintf(`INSERT INTO "%s" (key,value,valid_until) VALUES ($1,$2,$3)`, s.table), key, string(b), time.Now().Add(ttl)); err != nil {
-			fmt.Println("Failed to insert: ", err)
+			keystone.Log("Failed to insert: %v", err)
 			return
 		}
 	}

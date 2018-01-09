@@ -453,7 +453,9 @@ func ListOpenstackCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.Openstac
 	var err error
 	//TODO (check input)
 	spec.Table = "openstack_cluster"
-	spec.Fields = OpenstackClusterFields
+	if spec.Fields == nil {
+		spec.Fields = OpenstackClusterFields
+	}
 	spec.RefFields = OpenstackClusterRefFields
 	spec.BackRefFields = OpenstackClusterBackRefFields
 	result := models.MakeOpenstackClusterSlice()

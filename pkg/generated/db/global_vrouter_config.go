@@ -608,7 +608,9 @@ func ListGlobalVrouterConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Globa
 	var err error
 	//TODO (check input)
 	spec.Table = "global_vrouter_config"
-	spec.Fields = GlobalVrouterConfigFields
+	if spec.Fields == nil {
+		spec.Fields = GlobalVrouterConfigFields
+	}
 	spec.RefFields = GlobalVrouterConfigRefFields
 	spec.BackRefFields = GlobalVrouterConfigBackRefFields
 	result := models.MakeGlobalVrouterConfigSlice()

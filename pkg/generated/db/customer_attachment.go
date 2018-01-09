@@ -342,7 +342,9 @@ func ListCustomerAttachment(tx *sql.Tx, spec *common.ListSpec) ([]*models.Custom
 	var err error
 	//TODO (check input)
 	spec.Table = "customer_attachment"
-	spec.Fields = CustomerAttachmentFields
+	if spec.Fields == nil {
+		spec.Fields = CustomerAttachmentFields
+	}
 	spec.RefFields = CustomerAttachmentRefFields
 	spec.BackRefFields = CustomerAttachmentBackRefFields
 	result := models.MakeCustomerAttachmentSlice()

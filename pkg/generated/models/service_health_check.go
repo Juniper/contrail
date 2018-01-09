@@ -6,12 +6,12 @@ import "encoding/json"
 
 // ServiceHealthCheck
 type ServiceHealthCheck struct {
-	IDPerms                      *IdPermsType            `json:"id_perms"`
+	ParentType                   string                  `json:"parent_type"`
+	FQName                       []string                `json:"fq_name"`
 	DisplayName                  string                  `json:"display_name"`
 	Perms2                       *PermType2              `json:"perms2"`
 	ServiceHealthCheckProperties *ServiceHealthCheckType `json:"service_health_check_properties"`
-	ParentType                   string                  `json:"parent_type"`
-	FQName                       []string                `json:"fq_name"`
+	IDPerms                      *IdPermsType            `json:"id_perms"`
 	Annotations                  *KeyValuePairs          `json:"annotations"`
 	UUID                         string                  `json:"uuid"`
 	ParentUUID                   string                  `json:"parent_uuid"`
@@ -37,15 +37,15 @@ func (model *ServiceHealthCheck) String() string {
 func MakeServiceHealthCheck() *ServiceHealthCheck {
 	return &ServiceHealthCheck{
 		//TODO(nati): Apply default
+		Perms2: MakePermType2(),
 		ServiceHealthCheckProperties: MakeServiceHealthCheckType(),
 		ParentType:                   "",
 		FQName:                       []string{},
-		Annotations:                  MakeKeyValuePairs(),
-		UUID:                         "",
+		DisplayName:                  "",
 		ParentUUID:                   "",
 		IDPerms:                      MakeIdPermsType(),
-		DisplayName:                  "",
-		Perms2:                       MakePermType2(),
+		Annotations:                  MakeKeyValuePairs(),
+		UUID:                         "",
 	}
 }
 
@@ -54,6 +54,15 @@ func InterfaceToServiceHealthCheck(iData interface{}) *ServiceHealthCheck {
 	data := iData.(map[string]interface{})
 	return &ServiceHealthCheck{
 		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
+		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
+
+		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
+		UUID: data["uuid"].(string),
 
 		//{"type":"string"}
 		ServiceHealthCheckProperties: InterfaceToServiceHealthCheckType(data["service_health_check_properties"]),
@@ -65,15 +74,6 @@ func InterfaceToServiceHealthCheck(iData interface{}) *ServiceHealthCheck {
 		FQName: data["fq_name"].([]string),
 
 		//{"type":"array","item":{"type":"string"}}
-		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
-
-		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
-
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
 		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}

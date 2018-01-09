@@ -53,6 +53,16 @@ var LoadbalancerPoolFields = []string{
 // LoadbalancerPoolRefFields is db reference fields for LoadbalancerPool
 var LoadbalancerPoolRefFields = map[string][]string{
 
+	"service_appliance_set": {
+	// <common.Schema Value>
+
+	},
+
+	"virtual_machine_interface": {
+	// <common.Schema Value>
+
+	},
+
 	"loadbalancer_listener": {
 	// <common.Schema Value>
 
@@ -64,16 +74,6 @@ var LoadbalancerPoolRefFields = map[string][]string{
 	},
 
 	"loadbalancer_healthmonitor": {
-	// <common.Schema Value>
-
-	},
-
-	"service_appliance_set": {
-	// <common.Schema Value>
-
-	},
-
-	"virtual_machine_interface": {
 	// <common.Schema Value>
 
 	},
@@ -113,15 +113,15 @@ var LoadbalancerPoolBackRefFields = map[string][]string{
 	},
 }
 
-const insertLoadbalancerPoolServiceInstanceQuery = "insert into `ref_loadbalancer_pool_service_instance` (`from`, `to` ) values (?, ?);"
-
-const insertLoadbalancerPoolLoadbalancerHealthmonitorQuery = "insert into `ref_loadbalancer_pool_loadbalancer_healthmonitor` (`from`, `to` ) values (?, ?);"
-
 const insertLoadbalancerPoolServiceApplianceSetQuery = "insert into `ref_loadbalancer_pool_service_appliance_set` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerPoolVirtualMachineInterfaceQuery = "insert into `ref_loadbalancer_pool_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerPoolLoadbalancerListenerQuery = "insert into `ref_loadbalancer_pool_loadbalancer_listener` (`from`, `to` ) values (?, ?);"
+
+const insertLoadbalancerPoolServiceInstanceQuery = "insert into `ref_loadbalancer_pool_service_instance` (`from`, `to` ) values (?, ?);"
+
+const insertLoadbalancerPoolLoadbalancerHealthmonitorQuery = "insert into `ref_loadbalancer_pool_loadbalancer_healthmonitor` (`from`, `to` ) values (?, ?);"
 
 // CreateLoadbalancerPool inserts LoadbalancerPool to DB
 func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
@@ -168,6 +168,19 @@ func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
 		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
+	}
+
+	stmtLoadbalancerHealthmonitorRef, err := tx.Prepare(insertLoadbalancerPoolLoadbalancerHealthmonitorQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing LoadbalancerHealthmonitorRefs create statement failed")
+	}
+	defer stmtLoadbalancerHealthmonitorRef.Close()
+	for _, ref := range model.LoadbalancerHealthmonitorRefs {
+
+		_, err = stmtLoadbalancerHealthmonitorRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "LoadbalancerHealthmonitorRefs create failed")
+		}
 	}
 
 	stmtServiceApplianceSetRef, err := tx.Prepare(insertLoadbalancerPoolServiceApplianceSetQuery)
@@ -219,19 +232,6 @@ func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
 		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceInstanceRefs create failed")
-		}
-	}
-
-	stmtLoadbalancerHealthmonitorRef, err := tx.Prepare(insertLoadbalancerPoolLoadbalancerHealthmonitorQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing LoadbalancerHealthmonitorRefs create statement failed")
-	}
-	defer stmtLoadbalancerHealthmonitorRef.Close()
-	for _, ref := range model.LoadbalancerHealthmonitorRefs {
-
-		_, err = stmtLoadbalancerHealthmonitorRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "LoadbalancerHealthmonitorRefs create failed")
 		}
 	}
 
@@ -816,7 +816,9 @@ func ListLoadbalancerPool(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadbala
 	var err error
 	//TODO (check input)
 	spec.Table = "loadbalancer_pool"
-	spec.Fields = LoadbalancerPoolFields
+	if spec.Fields == nil {
+		spec.Fields = LoadbalancerPoolFields
+	}
 	spec.RefFields = LoadbalancerPoolRefFields
 	spec.BackRefFields = LoadbalancerPoolBackRefFields
 	result := models.MakeLoadbalancerPoolSlice()

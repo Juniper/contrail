@@ -353,7 +353,9 @@ func ListControllerNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.Contro
 	var err error
 	//TODO (check input)
 	spec.Table = "controller_node_role"
-	spec.Fields = ControllerNodeRoleFields
+	if spec.Fields == nil {
+		spec.Fields = ControllerNodeRoleFields
+	}
 	spec.RefFields = ControllerNodeRoleRefFields
 	spec.BackRefFields = ControllerNodeRoleBackRefFields
 	result := models.MakeControllerNodeRoleSlice()

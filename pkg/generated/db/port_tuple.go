@@ -263,7 +263,9 @@ func ListPortTuple(tx *sql.Tx, spec *common.ListSpec) ([]*models.PortTuple, erro
 	var err error
 	//TODO (check input)
 	spec.Table = "port_tuple"
-	spec.Fields = PortTupleFields
+	if spec.Fields == nil {
+		spec.Fields = PortTupleFields
+	}
 	spec.RefFields = PortTupleRefFields
 	spec.BackRefFields = PortTupleBackRefFields
 	result := models.MakePortTupleSlice()

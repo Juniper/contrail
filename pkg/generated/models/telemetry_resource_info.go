@@ -31,13 +31,13 @@ func MakeTelemetryResourceInfo() *TelemetryResourceInfo {
 func InterfaceToTelemetryResourceInfo(iData interface{}) *TelemetryResourceInfo {
 	data := iData.(map[string]interface{})
 	return &TelemetryResourceInfo{
+		Path: data["path"].(string),
+
+		//{"type":"string"}
 		Rate: data["rate"].(string),
 
 		//{"type":"string"}
 		Name: data["name"].(string),
-
-		//{"type":"string"}
-		Path: data["path"].(string),
 
 		//{"type":"string"}
 

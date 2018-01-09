@@ -312,7 +312,9 @@ func ListRoutingPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.RoutingPoli
 	var err error
 	//TODO (check input)
 	spec.Table = "routing_policy"
-	spec.Fields = RoutingPolicyFields
+	if spec.Fields == nil {
+		spec.Fields = RoutingPolicyFields
+	}
 	spec.RefFields = RoutingPolicyRefFields
 	spec.BackRefFields = RoutingPolicyBackRefFields
 	result := models.MakeRoutingPolicySlice()

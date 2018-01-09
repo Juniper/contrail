@@ -520,7 +520,9 @@ func ListDiscoveryServiceAssignment(tx *sql.Tx, spec *common.ListSpec) ([]*model
 	var err error
 	//TODO (check input)
 	spec.Table = "discovery_service_assignment"
-	spec.Fields = DiscoveryServiceAssignmentFields
+	if spec.Fields == nil {
+		spec.Fields = DiscoveryServiceAssignmentFields
+	}
 	spec.RefFields = DiscoveryServiceAssignmentRefFields
 	spec.BackRefFields = DiscoveryServiceAssignmentBackRefFields
 	result := models.MakeDiscoveryServiceAssignmentSlice()

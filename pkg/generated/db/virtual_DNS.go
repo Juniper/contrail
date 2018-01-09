@@ -602,7 +602,9 @@ func ListVirtualDNS(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualDNS, er
 	var err error
 	//TODO (check input)
 	spec.Table = "virtual_DNS"
-	spec.Fields = VirtualDNSFields
+	if spec.Fields == nil {
+		spec.Fields = VirtualDNSFields
+	}
 	spec.RefFields = VirtualDNSRefFields
 	spec.BackRefFields = VirtualDNSBackRefFields
 	result := models.MakeVirtualDNSSlice()

@@ -6,14 +6,14 @@ import "encoding/json"
 
 // RouteTable
 type RouteTable struct {
-	ParentType  string          `json:"parent_type"`
-	Routes      *RouteTableType `json:"routes"`
-	FQName      []string        `json:"fq_name"`
 	Annotations *KeyValuePairs  `json:"annotations"`
 	Perms2      *PermType2      `json:"perms2"`
-	UUID        string          `json:"uuid"`
+	ParentType  string          `json:"parent_type"`
+	FQName      []string        `json:"fq_name"`
 	IDPerms     *IdPermsType    `json:"id_perms"`
+	Routes      *RouteTableType `json:"routes"`
 	DisplayName string          `json:"display_name"`
+	UUID        string          `json:"uuid"`
 	ParentUUID  string          `json:"parent_uuid"`
 }
 
@@ -27,15 +27,15 @@ func (model *RouteTable) String() string {
 func MakeRouteTable() *RouteTable {
 	return &RouteTable{
 		//TODO(nati): Apply default
-		IDPerms:     MakeIdPermsType(),
-		DisplayName: "",
-		ParentUUID:  "",
-		Routes:      MakeRouteTableType(),
-		FQName:      []string{},
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
+		IDPerms:     MakeIdPermsType(),
+		Routes:      MakeRouteTableType(),
+		DisplayName: "",
 		UUID:        "",
+		ParentUUID:  "",
 		ParentType:  "",
+		FQName:      []string{},
 	}
 }
 
@@ -43,21 +43,6 @@ func MakeRouteTable() *RouteTable {
 func InterfaceToRouteTable(iData interface{}) *RouteTable {
 	data := iData.(map[string]interface{})
 	return &RouteTable{
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
-
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
-		DisplayName: data["display_name"].(string),
-
-		//{"type":"string"}
-		ParentUUID: data["parent_uuid"].(string),
-
-		//{"type":"string"}
-		Routes: InterfaceToRouteTableType(data["routes"]),
-
-		//{"description":"Routes in the route table are configured in following way.","type":"object","properties":{"route":{"type":"array","item":{"type":"object","properties":{"community_attributes":{"type":"object","properties":{"community_attribute":{"type":"array"}}},"next_hop":{"type":"string"},"next_hop_type":{"type":"string","enum":["service-instance","ip-address"]},"prefix":{"type":"string"}}}}}}
-		FQName: data["fq_name"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
 		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
@@ -67,7 +52,22 @@ func InterfaceToRouteTable(iData interface{}) *RouteTable {
 		UUID: data["uuid"].(string),
 
 		//{"type":"string"}
+		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
 		ParentType: data["parent_type"].(string),
+
+		//{"type":"string"}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
+		Routes: InterfaceToRouteTableType(data["routes"]),
+
+		//{"description":"Routes in the route table are configured in following way.","type":"object","properties":{"route":{"type":"array","item":{"type":"object","properties":{"community_attributes":{"type":"object","properties":{"community_attribute":{"type":"array"}}},"next_hop":{"type":"string"},"next_hop_type":{"type":"string","enum":["service-instance","ip-address"]},"prefix":{"type":"string"}}}}}}
+		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}
 

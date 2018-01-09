@@ -323,7 +323,9 @@ func ListVirtualDNSRecord(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualD
 	var err error
 	//TODO (check input)
 	spec.Table = "virtual_DNS_record"
-	spec.Fields = VirtualDNSRecordFields
+	if spec.Fields == nil {
+		spec.Fields = VirtualDNSRecordFields
+	}
 	spec.RefFields = VirtualDNSRecordRefFields
 	spec.BackRefFields = VirtualDNSRecordBackRefFields
 	result := models.MakeVirtualDNSRecordSlice()

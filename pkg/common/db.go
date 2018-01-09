@@ -24,14 +24,19 @@ type ListSpec struct {
 	Limit         int
 	Offset        int
 	Detail        bool
+	Count         bool
+	Shared        bool
+	ExcludeHrefs  bool
+	ParentFQName  []string
+	ParentType    string
+	ParentUUIDs   []string
+	BackrefUUIDs  []string
+	ObjectUUIDs   []string
 	Fields        []string
 	RefFields     map[string][]string
 	BackRefFields map[string][]string
 	Auth          *AuthContext
 }
-
-//Filter represents search filter.
-type Filter map[string]interface{}
 
 //Columns represents column index.
 type Columns map[string]int
@@ -47,6 +52,7 @@ func DoInTransaction(db *sql.DB, do func(tx *sql.Tx) error) error {
 			tx.Rollback()
 			panic(p)
 		} else if err != nil {
+			log.Error(err)
 			tx.Rollback()
 		} else {
 			err = tx.Commit()
@@ -105,9 +111,23 @@ func BuildListQuery(spec *ListSpec) (string, Columns, []interface{}) {
 	}
 	pagenationQuery := fmt.Sprintf(" limit %d offset %d ", spec.Limit, spec.Offset)
 
-	for key, value := range spec.Filter {
-		where = append(where, fmt.Sprintf("`%s`.`%s` = ?", spec.Table, key))
-		values = append(values, value)
+	for key, filterValues := range spec.Filter {
+		if len(filterValues) == 1 {
+			where = append(where, fmt.Sprintf("`%s`.`%s` = ?", spec.Table, key))
+			values = append(values, filterValues[0])
+		} else {
+			var filterQuery bytes.Buffer
+			filterQuery.WriteString("`%s`.`%s` in (")
+			last := len(filterValues) - 1
+			for _, value := range filterValues[:last] {
+				filterQuery.WriteString("?,")
+				values = append(values, value)
+			}
+			filterQuery.WriteString("?)")
+
+			where = append(where, filterQuery.String())
+			values = append(values, filterValues[last])
+		}
 	}
 
 	auth := spec.Auth
