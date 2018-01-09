@@ -26,14 +26,14 @@ func (model *PortTuple) String() string {
 func MakePortTuple() *PortTuple {
 	return &PortTuple{
 		//TODO(nati): Apply default
-		Annotations: MakeKeyValuePairs(),
-		Perms2:      MakePermType2(),
-		UUID:        "",
-		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
+		Annotations: MakeKeyValuePairs(),
+		Perms2:      MakePermType2(),
+		UUID:        "",
+		ParentUUID:  "",
 	}
 }
 
@@ -41,9 +41,6 @@ func MakePortTuple() *PortTuple {
 func InterfaceToPortTuple(iData interface{}) *PortTuple {
 	data := iData.(map[string]interface{})
 	return &PortTuple{
-		ParentType: data["parent_type"].(string),
-
-		//{"type":"string"}
 		FQName: data["fq_name"].([]string),
 
 		//{"type":"array","item":{"type":"string"}}
@@ -63,6 +60,9 @@ func InterfaceToPortTuple(iData interface{}) *PortTuple {
 
 		//{"type":"string"}
 		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
+		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
 

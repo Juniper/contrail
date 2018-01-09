@@ -6,14 +6,14 @@ import "encoding/json"
 
 // RouteTarget
 type RouteTarget struct {
+	UUID        string         `json:"uuid"`
+	ParentUUID  string         `json:"parent_uuid"`
 	ParentType  string         `json:"parent_type"`
 	FQName      []string       `json:"fq_name"`
 	IDPerms     *IdPermsType   `json:"id_perms"`
 	DisplayName string         `json:"display_name"`
 	Annotations *KeyValuePairs `json:"annotations"`
 	Perms2      *PermType2     `json:"perms2"`
-	UUID        string         `json:"uuid"`
-	ParentUUID  string         `json:"parent_uuid"`
 }
 
 // String returns json representation of the object
@@ -26,14 +26,14 @@ func (model *RouteTarget) String() string {
 func MakeRouteTarget() *RouteTarget {
 	return &RouteTarget{
 		//TODO(nati): Apply default
+		IDPerms:     MakeIdPermsType(),
+		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
 		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
-		DisplayName: "",
 	}
 }
 
@@ -41,6 +41,9 @@ func MakeRouteTarget() *RouteTarget {
 func InterfaceToRouteTarget(iData interface{}) *RouteTarget {
 	data := iData.(map[string]interface{})
 	return &RouteTarget{
+		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
+
+		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
 		Perms2: InterfaceToPermType2(data["perms2"]),
 
 		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
@@ -62,9 +65,6 @@ func InterfaceToRouteTarget(iData interface{}) *RouteTarget {
 		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}
-		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
-
-		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
 
 	}
 }

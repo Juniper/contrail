@@ -304,11 +304,12 @@ func scanServiceConnectionModule(values map[string]interface{}) (*models.Service
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.ServiceConnectionModuleServiceObjectRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.ServiceObjectRefs = append(m.ServiceObjectRefs, referenceModel)
 
 		}

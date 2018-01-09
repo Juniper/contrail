@@ -99,9 +99,9 @@ workflow:
     routing-instance:
       uuid: ri_uuid
       parent_uuid: vn_blue
-- name: list virtual networks
+- name: list virtual networks with detail
   request:
-    path: /virtual-networks
+    path: /virtual-networks?detail=true
     method: GET
     expected:
     - 200
@@ -118,7 +118,7 @@ workflow:
       display_name: red
       network_policy_refs:
       - uuid: network_policy_uuid
-- name: list virtual networks
+- name: list virtual networks with filters
   request:
     path: "/virtual-networks?filters=display_name==blue"
     method: GET
@@ -128,14 +128,9 @@ workflow:
     virtual-networks:
     - uuid: vn_blue
       display_name: blue
-      network_policy_refs:
-      - uuid: network_policy_uuid
-      routing_instances:
-      - uuid: ri_uuid
-        parent_uuid: vn_blue
-- name: list virtual networks
+- name: list virtual networks with page limit
   request:
-    path: "/virtual-networks?pageLimit=1"
+    path: "/virtual-networks?pageLimit=1&detail=true"
     method: GET
     expected:
     - 200

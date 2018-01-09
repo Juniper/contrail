@@ -6,12 +6,12 @@ import "encoding/json"
 
 // EcmpHashingIncludeFields
 type EcmpHashingIncludeFields struct {
+	DestinationIP     bool `json:"destination_ip"`
 	IPProtocol        bool `json:"ip_protocol"`
 	SourceIP          bool `json:"source_ip"`
 	HashingConfigured bool `json:"hashing_configured"`
 	SourcePort        bool `json:"source_port"`
 	DestinationPort   bool `json:"destination_port"`
-	DestinationIP     bool `json:"destination_ip"`
 }
 
 // String returns json representation of the object
@@ -24,12 +24,12 @@ func (model *EcmpHashingIncludeFields) String() string {
 func MakeEcmpHashingIncludeFields() *EcmpHashingIncludeFields {
 	return &EcmpHashingIncludeFields{
 		//TODO(nati): Apply default
-		DestinationPort:   false,
 		DestinationIP:     false,
 		IPProtocol:        false,
 		SourceIP:          false,
 		HashingConfigured: false,
 		SourcePort:        false,
+		DestinationPort:   false,
 	}
 }
 
@@ -37,12 +37,6 @@ func MakeEcmpHashingIncludeFields() *EcmpHashingIncludeFields {
 func InterfaceToEcmpHashingIncludeFields(iData interface{}) *EcmpHashingIncludeFields {
 	data := iData.(map[string]interface{})
 	return &EcmpHashingIncludeFields{
-		SourcePort: data["source_port"].(bool),
-
-		//{"description":"When false, do not use source port in the ECMP hash calculation","type":"boolean"}
-		DestinationPort: data["destination_port"].(bool),
-
-		//{"description":"When false, do not use destination port in the ECMP hash calculation","type":"boolean"}
 		DestinationIP: data["destination_ip"].(bool),
 
 		//{"description":"When false, do not use destination ip in the ECMP hash calculation","type":"boolean"}
@@ -55,6 +49,12 @@ func InterfaceToEcmpHashingIncludeFields(iData interface{}) *EcmpHashingIncludeF
 		HashingConfigured: data["hashing_configured"].(bool),
 
 		//{"description":"When True, Packet header fields used in calculating ECMP hash is decided by following flags","type":"boolean"}
+		SourcePort: data["source_port"].(bool),
+
+		//{"description":"When false, do not use source port in the ECMP hash calculation","type":"boolean"}
+		DestinationPort: data["destination_port"].(bool),
+
+		//{"description":"When false, do not use destination port in the ECMP hash calculation","type":"boolean"}
 
 	}
 }

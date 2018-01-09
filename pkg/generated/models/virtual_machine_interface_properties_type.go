@@ -6,10 +6,10 @@ import "encoding/json"
 
 // VirtualMachineInterfacePropertiesType
 type VirtualMachineInterfacePropertiesType struct {
-	ServiceInterfaceType ServiceInterfaceType `json:"service_interface_type"`
 	SubInterfaceVlanTag  int                  `json:"sub_interface_vlan_tag"`
 	LocalPreference      int                  `json:"local_preference"`
 	InterfaceMirror      *InterfaceMirrorType `json:"interface_mirror"`
+	ServiceInterfaceType ServiceInterfaceType `json:"service_interface_type"`
 }
 
 // String returns json representation of the object
@@ -22,10 +22,10 @@ func (model *VirtualMachineInterfacePropertiesType) String() string {
 func MakeVirtualMachineInterfacePropertiesType() *VirtualMachineInterfacePropertiesType {
 	return &VirtualMachineInterfacePropertiesType{
 		//TODO(nati): Apply default
+		SubInterfaceVlanTag:  0,
 		LocalPreference:      0,
 		InterfaceMirror:      MakeInterfaceMirrorType(),
 		ServiceInterfaceType: MakeServiceInterfaceType(),
-		SubInterfaceVlanTag:  0,
 	}
 }
 

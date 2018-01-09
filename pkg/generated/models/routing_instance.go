@@ -6,14 +6,14 @@ import "encoding/json"
 
 // RoutingInstance
 type RoutingInstance struct {
-	ParentUUID  string         `json:"parent_uuid"`
-	ParentType  string         `json:"parent_type"`
-	FQName      []string       `json:"fq_name"`
-	IDPerms     *IdPermsType   `json:"id_perms"`
 	DisplayName string         `json:"display_name"`
 	Annotations *KeyValuePairs `json:"annotations"`
 	Perms2      *PermType2     `json:"perms2"`
 	UUID        string         `json:"uuid"`
+	ParentUUID  string         `json:"parent_uuid"`
+	ParentType  string         `json:"parent_type"`
+	FQName      []string       `json:"fq_name"`
+	IDPerms     *IdPermsType   `json:"id_perms"`
 }
 
 // String returns json representation of the object
@@ -41,9 +41,6 @@ func MakeRoutingInstance() *RoutingInstance {
 func InterfaceToRoutingInstance(iData interface{}) *RoutingInstance {
 	data := iData.(map[string]interface{})
 	return &RoutingInstance{
-		ParentUUID: data["parent_uuid"].(string),
-
-		//{"type":"string"}
 		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
@@ -63,6 +60,9 @@ func InterfaceToRoutingInstance(iData interface{}) *RoutingInstance {
 
 		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
 		UUID: data["uuid"].(string),
+
+		//{"type":"string"}
+		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
 

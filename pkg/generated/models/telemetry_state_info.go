@@ -21,11 +21,10 @@ func (model *TelemetryStateInfo) String() string {
 func MakeTelemetryStateInfo() *TelemetryStateInfo {
 	return &TelemetryStateInfo{
 		//TODO(nati): Apply default
-
-		Resource: MakeTelemetryResourceInfoSlice(),
-
 		ServerPort: 0,
 		ServerIP:   "",
+
+		Resource: MakeTelemetryResourceInfoSlice(),
 	}
 }
 
@@ -33,9 +32,6 @@ func MakeTelemetryStateInfo() *TelemetryStateInfo {
 func InterfaceToTelemetryStateInfo(iData interface{}) *TelemetryStateInfo {
 	data := iData.(map[string]interface{})
 	return &TelemetryStateInfo{
-		ServerIP: data["server_ip"].(string),
-
-		//{"type":"string"}
 
 		Resource: InterfaceToTelemetryResourceInfoSlice(data["resource"]),
 
@@ -43,6 +39,9 @@ func InterfaceToTelemetryStateInfo(iData interface{}) *TelemetryStateInfo {
 		ServerPort: data["server_port"].(int),
 
 		//{"type":"integer"}
+		ServerIP: data["server_ip"].(string),
+
+		//{"type":"string"}
 
 	}
 }

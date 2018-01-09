@@ -343,11 +343,12 @@ func scanVirtualMachine(values map[string]interface{}) (*models.VirtualMachine, 
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.VirtualMachineServiceInstanceRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
 
 		}
@@ -362,7 +363,8 @@ func scanVirtualMachine(values map[string]interface{}) (*models.VirtualMachine, 
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeVirtualMachineInterface()

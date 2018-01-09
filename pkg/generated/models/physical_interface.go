@@ -6,15 +6,15 @@ import "encoding/json"
 
 // PhysicalInterface
 type PhysicalInterface struct {
-	ParentUUID                string         `json:"parent_uuid"`
+	ParentType                string         `json:"parent_type"`
 	FQName                    []string       `json:"fq_name"`
 	DisplayName               string         `json:"display_name"`
-	Annotations               *KeyValuePairs `json:"annotations"`
+	Perms2                    *PermType2     `json:"perms2"`
 	UUID                      string         `json:"uuid"`
-	ParentType                string         `json:"parent_type"`
+	ParentUUID                string         `json:"parent_uuid"`
 	EthernetSegmentIdentifier string         `json:"ethernet_segment_identifier"`
 	IDPerms                   *IdPermsType   `json:"id_perms"`
-	Perms2                    *PermType2     `json:"perms2"`
+	Annotations               *KeyValuePairs `json:"annotations"`
 
 	PhysicalInterfaceRefs []*PhysicalInterfacePhysicalInterfaceRef `json:"physical_interface_refs"`
 
@@ -38,15 +38,15 @@ func (model *PhysicalInterface) String() string {
 func MakePhysicalInterface() *PhysicalInterface {
 	return &PhysicalInterface{
 		//TODO(nati): Apply default
-		FQName:                    []string{},
-		DisplayName:               "",
-		Annotations:               MakeKeyValuePairs(),
-		ParentUUID:                "",
 		EthernetSegmentIdentifier: "",
 		IDPerms:                   MakeIdPermsType(),
+		Annotations:               MakeKeyValuePairs(),
+		DisplayName:               "",
 		Perms2:                    MakePermType2(),
 		UUID:                      "",
+		ParentUUID:                "",
 		ParentType:                "",
+		FQName:                    []string{},
 	}
 }
 
@@ -54,10 +54,16 @@ func MakePhysicalInterface() *PhysicalInterface {
 func InterfaceToPhysicalInterface(iData interface{}) *PhysicalInterface {
 	data := iData.(map[string]interface{})
 	return &PhysicalInterface{
+		EthernetSegmentIdentifier: data["ethernet_segment_identifier"].(string),
+
+		//{"description":"Ethernet Segment Id configured for the Physical Interface. In a multihomed environment, user should configure the peer Physical interface with the same ESI.","type":"string"}
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
 		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		ParentUUID: data["parent_uuid"].(string),
+		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
 		FQName: data["fq_name"].([]string),
@@ -72,15 +78,9 @@ func InterfaceToPhysicalInterface(iData interface{}) *PhysicalInterface {
 		UUID: data["uuid"].(string),
 
 		//{"type":"string"}
-		ParentType: data["parent_type"].(string),
+		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
-		EthernetSegmentIdentifier: data["ethernet_segment_identifier"].(string),
-
-		//{"description":"Ethernet Segment Id configured for the Physical Interface. In a multihomed environment, user should configure the peer Physical interface with the same ESI.","type":"string"}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
-
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
 
 	}
 }

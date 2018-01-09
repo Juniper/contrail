@@ -21,9 +21,9 @@ func (model *PortMap) String() string {
 func MakePortMap() *PortMap {
 	return &PortMap{
 		//TODO(nati): Apply default
+		SRCPort:  0,
 		Protocol: "",
 		DSTPort:  0,
-		SRCPort:  0,
 	}
 }
 

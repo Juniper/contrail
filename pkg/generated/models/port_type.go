@@ -20,8 +20,8 @@ func (model *PortType) String() string {
 func MakePortType() *PortType {
 	return &PortType{
 		//TODO(nati): Apply default
-		EndPort:   MakeL4PortType(),
 		StartPort: MakeL4PortType(),
+		EndPort:   MakeL4PortType(),
 	}
 }
 

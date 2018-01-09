@@ -71,11 +71,6 @@ var ProjectFields = []string{
 // ProjectRefFields is db reference fields for Project
 var ProjectRefFields = map[string][]string{
 
-	"floating_ip_pool": {
-	// <common.Schema Value>
-
-	},
-
 	"alias_ip_pool": {
 	// <common.Schema Value>
 
@@ -88,6 +83,11 @@ var ProjectRefFields = map[string][]string{
 	},
 
 	"application_policy_set": {
+	// <common.Schema Value>
+
+	},
+
+	"floating_ip_pool": {
 	// <common.Schema Value>
 
 	},
@@ -1574,11 +1574,12 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.ProjectAliasIPPoolRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.AliasIPPoolRefs = append(m.AliasIPPoolRefs, referenceModel)
 
 		}
@@ -1593,11 +1594,12 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.ProjectNamespaceRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.NamespaceRefs = append(m.NamespaceRefs, referenceModel)
 
 			attr := models.MakeSubnetType()
@@ -1615,11 +1617,12 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.ProjectApplicationPolicySetRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.ApplicationPolicySetRefs = append(m.ApplicationPolicySetRefs, referenceModel)
 
 		}
@@ -1634,11 +1637,12 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.ProjectFloatingIPPoolRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.FloatingIPPoolRefs = append(m.FloatingIPPoolRefs, referenceModel)
 
 		}
@@ -1653,7 +1657,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeAddressGroup()
@@ -1839,7 +1844,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeAlarm()
@@ -2039,7 +2045,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeAPIAccessList()
@@ -2225,7 +2232,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeApplicationPolicySet()
@@ -2413,7 +2421,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeBGPAsAService()
@@ -2641,7 +2650,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeBGPVPN()
@@ -2847,7 +2857,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeFirewallPolicy()
@@ -3027,7 +3038,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeFirewallRule()
@@ -3537,7 +3549,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeInterfaceRouteTable()
@@ -3723,7 +3736,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeLoadbalancerHealthmonitor()
@@ -3967,7 +3981,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeLoadbalancerListener()
@@ -4193,7 +4208,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeLoadbalancerPool()
@@ -4451,7 +4467,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeLoadbalancer()
@@ -4687,7 +4704,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeLogicalRouter()
@@ -4881,7 +4899,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeNetworkIpam()
@@ -5135,7 +5154,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeNetworkPolicy()
@@ -5321,7 +5341,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeQosConfig()
@@ -5535,7 +5556,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeRouteAggregate()
@@ -5715,7 +5737,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeRouteTable()
@@ -5901,7 +5924,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeRoutingPolicy()
@@ -6081,7 +6105,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeSecurityGroup()
@@ -6283,7 +6308,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeSecurityLoggingObject()
@@ -6477,7 +6503,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeServiceGroup()
@@ -6663,7 +6690,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeServiceHealthCheck()
@@ -6931,7 +6959,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeServiceInstance()
@@ -7211,7 +7240,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeTag()
@@ -7415,7 +7445,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeUser()
@@ -7603,7 +7634,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeVirtualIP()
@@ -7863,7 +7895,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeVirtualMachineInterface()
@@ -8301,7 +8334,8 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeVirtualNetwork()

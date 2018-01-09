@@ -6,14 +6,14 @@ import "encoding/json"
 
 // ConfigRoot
 type ConfigRoot struct {
+	Annotations *KeyValuePairs `json:"annotations"`
+	Perms2      *PermType2     `json:"perms2"`
 	UUID        string         `json:"uuid"`
 	ParentUUID  string         `json:"parent_uuid"`
 	ParentType  string         `json:"parent_type"`
 	FQName      []string       `json:"fq_name"`
 	IDPerms     *IdPermsType   `json:"id_perms"`
 	DisplayName string         `json:"display_name"`
-	Annotations *KeyValuePairs `json:"annotations"`
-	Perms2      *PermType2     `json:"perms2"`
 
 	TagRefs []*ConfigRootTagRef `json:"tag_refs"`
 
@@ -39,7 +39,6 @@ func (model *ConfigRoot) String() string {
 func MakeConfigRoot() *ConfigRoot {
 	return &ConfigRoot{
 		//TODO(nati): Apply default
-		UUID:        "",
 		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
@@ -47,6 +46,7 @@ func MakeConfigRoot() *ConfigRoot {
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
+		UUID:        "",
 	}
 }
 
@@ -54,9 +54,6 @@ func MakeConfigRoot() *ConfigRoot {
 func InterfaceToConfigRoot(iData interface{}) *ConfigRoot {
 	data := iData.(map[string]interface{})
 	return &ConfigRoot{
-		ParentType: data["parent_type"].(string),
-
-		//{"type":"string"}
 		FQName: data["fq_name"].([]string),
 
 		//{"type":"array","item":{"type":"string"}}
@@ -76,6 +73,9 @@ func InterfaceToConfigRoot(iData interface{}) *ConfigRoot {
 
 		//{"type":"string"}
 		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
+		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
 

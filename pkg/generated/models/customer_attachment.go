@@ -6,14 +6,14 @@ import "encoding/json"
 
 // CustomerAttachment
 type CustomerAttachment struct {
-	IDPerms     *IdPermsType   `json:"id_perms"`
-	DisplayName string         `json:"display_name"`
-	Annotations *KeyValuePairs `json:"annotations"`
 	Perms2      *PermType2     `json:"perms2"`
 	UUID        string         `json:"uuid"`
 	ParentUUID  string         `json:"parent_uuid"`
 	ParentType  string         `json:"parent_type"`
 	FQName      []string       `json:"fq_name"`
+	IDPerms     *IdPermsType   `json:"id_perms"`
+	DisplayName string         `json:"display_name"`
+	Annotations *KeyValuePairs `json:"annotations"`
 
 	VirtualMachineInterfaceRefs []*CustomerAttachmentVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs"`
 	FloatingIPRefs              []*CustomerAttachmentFloatingIPRef              `json:"floating_ip_refs"`
@@ -43,14 +43,14 @@ func (model *CustomerAttachment) String() string {
 func MakeCustomerAttachment() *CustomerAttachment {
 	return &CustomerAttachment{
 		//TODO(nati): Apply default
+		IDPerms:     MakeIdPermsType(),
+		DisplayName: "",
+		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
 		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
-		DisplayName: "",
-		Annotations: MakeKeyValuePairs(),
 	}
 }
 
@@ -58,6 +58,15 @@ func MakeCustomerAttachment() *CustomerAttachment {
 func InterfaceToCustomerAttachment(iData interface{}) *CustomerAttachment {
 	data := iData.(map[string]interface{})
 	return &CustomerAttachment{
+		UUID: data["uuid"].(string),
+
+		//{"type":"string"}
+		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
+		ParentType: data["parent_type"].(string),
+
+		//{"type":"string"}
 		FQName: data["fq_name"].([]string),
 
 		//{"type":"array","item":{"type":"string"}}
@@ -73,15 +82,6 @@ func InterfaceToCustomerAttachment(iData interface{}) *CustomerAttachment {
 		Perms2: InterfaceToPermType2(data["perms2"]),
 
 		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
-		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
-		ParentUUID: data["parent_uuid"].(string),
-
-		//{"type":"string"}
-		ParentType: data["parent_type"].(string),
-
-		//{"type":"string"}
 
 	}
 }

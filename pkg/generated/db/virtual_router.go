@@ -164,6 +164,19 @@ func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtVirtualMachineRef, err := tx.Prepare(insertVirtualRouterVirtualMachineQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineRefs create statement failed")
+	}
+	defer stmtVirtualMachineRef.Close()
+	for _, ref := range model.VirtualMachineRefs {
+
+		_, err = stmtVirtualMachineRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineRefs create failed")
+		}
+	}
+
 	stmtNetworkIpamRef, err := tx.Prepare(insertVirtualRouterNetworkIpamQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing NetworkIpamRefs create statement failed")
@@ -179,19 +192,6 @@ func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
 			common.MustJSON(ref.Attr.AllocationPools))
 		if err != nil {
 			return errors.Wrap(err, "NetworkIpamRefs create failed")
-		}
-	}
-
-	stmtVirtualMachineRef, err := tx.Prepare(insertVirtualRouterVirtualMachineQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineRefs create statement failed")
-	}
-	defer stmtVirtualMachineRef.Close()
-	for _, ref := range model.VirtualMachineRefs {
-
-		_, err = stmtVirtualMachineRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineRefs create failed")
 		}
 	}
 
@@ -390,28 +390,6 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 
 	}
 
-	if value, ok := values["ref_network_ipam"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			if referenceMap["to"] == "" {
-				continue
-			}
-			referenceModel := &models.VirtualRouterNetworkIpamRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
-			m.NetworkIpamRefs = append(m.NetworkIpamRefs, referenceModel)
-
-			attr := models.MakeVirtualRouterNetworkIpamType()
-			referenceModel.Attr = attr
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -421,12 +399,36 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.VirtualRouterVirtualMachineRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.VirtualMachineRefs = append(m.VirtualMachineRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_network_ipam"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualRouterNetworkIpamRef{}
+			referenceModel.UUID = uuid
+			m.NetworkIpamRefs = append(m.NetworkIpamRefs, referenceModel)
+
+			attr := models.MakeVirtualRouterNetworkIpamType()
+			referenceModel.Attr = attr
 
 		}
 	}
@@ -440,7 +442,8 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeVirtualMachineInterface()

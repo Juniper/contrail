@@ -6,14 +6,14 @@ import "encoding/json"
 
 // ActionListType
 type ActionListType struct {
-	MirrorTo              *MirrorActionType `json:"mirror_to"`
-	SimpleAction          SimpleActionType  `json:"simple_action"`
-	ApplyService          []string          `json:"apply_service"`
-	GatewayName           string            `json:"gateway_name"`
 	Log                   bool              `json:"log"`
 	Alert                 bool              `json:"alert"`
 	QosAction             string            `json:"qos_action"`
 	AssignRoutingInstance string            `json:"assign_routing_instance"`
+	MirrorTo              *MirrorActionType `json:"mirror_to"`
+	SimpleAction          SimpleActionType  `json:"simple_action"`
+	ApplyService          []string          `json:"apply_service"`
+	GatewayName           string            `json:"gateway_name"`
 }
 
 // String returns json representation of the object
@@ -26,7 +26,6 @@ func (model *ActionListType) String() string {
 func MakeActionListType() *ActionListType {
 	return &ActionListType{
 		//TODO(nati): Apply default
-		QosAction:             "",
 		AssignRoutingInstance: "",
 		MirrorTo:              MakeMirrorActionType(),
 		SimpleAction:          MakeSimpleActionType(),
@@ -34,6 +33,7 @@ func MakeActionListType() *ActionListType {
 		GatewayName:           "",
 		Log:                   false,
 		Alert:                 false,
+		QosAction:             "",
 	}
 }
 
@@ -41,9 +41,6 @@ func MakeActionListType() *ActionListType {
 func InterfaceToActionListType(iData interface{}) *ActionListType {
 	data := iData.(map[string]interface{})
 	return &ActionListType{
-		GatewayName: data["gateway_name"].(string),
-
-		//{"description":"For internal use only","type":"string"}
 		Log: data["log"].(bool),
 
 		//{"description":"Flow records for traffic matching this rule are sent at higher priority","type":"boolean"}
@@ -65,6 +62,9 @@ func InterfaceToActionListType(iData interface{}) *ActionListType {
 		ApplyService: data["apply_service"].([]string),
 
 		//{"description":"Ordered list of service instances in service chain applied to traffic matching the rule","type":"array","item":{"type":"string"}}
+		GatewayName: data["gateway_name"].(string),
+
+		//{"description":"For internal use only","type":"string"}
 
 	}
 }

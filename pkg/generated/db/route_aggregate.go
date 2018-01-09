@@ -288,11 +288,12 @@ func scanRouteAggregate(values map[string]interface{}) (*models.RouteAggregate, 
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.RouteAggregateServiceInstanceRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
 
 			attr := models.MakeServiceInterfaceTag()

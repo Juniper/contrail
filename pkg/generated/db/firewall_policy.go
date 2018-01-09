@@ -308,11 +308,12 @@ func scanFirewallPolicy(values map[string]interface{}) (*models.FirewallPolicy, 
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.FirewallPolicyFirewallRuleRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.FirewallRuleRefs = append(m.FirewallRuleRefs, referenceModel)
 
 			attr := models.MakeFirewallSequence()
@@ -330,11 +331,12 @@ func scanFirewallPolicy(values map[string]interface{}) (*models.FirewallPolicy, 
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.FirewallPolicySecurityLoggingObjectRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.SecurityLoggingObjectRefs = append(m.SecurityLoggingObjectRefs, referenceModel)
 
 		}

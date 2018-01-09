@@ -328,11 +328,12 @@ func scanQosConfig(values map[string]interface{}) (*models.QosConfig, error) {
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.QosConfigGlobalSystemConfigRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.GlobalSystemConfigRefs = append(m.GlobalSystemConfigRefs, referenceModel)
 
 		}

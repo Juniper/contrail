@@ -303,7 +303,8 @@ func scanFloatingIPPool(values map[string]interface{}) (*models.FloatingIPPool, 
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeFloatingIP()

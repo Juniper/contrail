@@ -6,16 +6,16 @@ import "encoding/json"
 
 // AliasIP
 type AliasIP struct {
-	ParentUUID           string              `json:"parent_uuid"`
 	ParentType           string              `json:"parent_type"`
-	FQName               []string            `json:"fq_name"`
-	AliasIPAddress       IpAddressType       `json:"alias_ip_address"`
-	DisplayName          string              `json:"display_name"`
-	UUID                 string              `json:"uuid"`
-	Perms2               *PermType2          `json:"perms2"`
-	AliasIPAddressFamily IpAddressFamilyType `json:"alias_ip_address_family"`
 	IDPerms              *IdPermsType        `json:"id_perms"`
+	DisplayName          string              `json:"display_name"`
+	AliasIPAddress       IpAddressType       `json:"alias_ip_address"`
+	AliasIPAddressFamily IpAddressFamilyType `json:"alias_ip_address_family"`
 	Annotations          *KeyValuePairs      `json:"annotations"`
+	Perms2               *PermType2          `json:"perms2"`
+	UUID                 string              `json:"uuid"`
+	ParentUUID           string              `json:"parent_uuid"`
+	FQName               []string            `json:"fq_name"`
 
 	ProjectRefs                 []*AliasIPProjectRef                 `json:"project_refs"`
 	VirtualMachineInterfaceRefs []*AliasIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs"`
@@ -45,16 +45,16 @@ func (model *AliasIP) String() string {
 func MakeAliasIP() *AliasIP {
 	return &AliasIP{
 		//TODO(nati): Apply default
-		AliasIPAddress:       MakeIpAddressType(),
-		DisplayName:          "",
-		UUID:                 "",
-		ParentUUID:           "",
 		ParentType:           "",
-		FQName:               []string{},
-		AliasIPAddressFamily: MakeIpAddressFamilyType(),
 		IDPerms:              MakeIdPermsType(),
+		AliasIPAddress:       MakeIpAddressType(),
+		AliasIPAddressFamily: MakeIpAddressFamilyType(),
 		Annotations:          MakeKeyValuePairs(),
 		Perms2:               MakePermType2(),
+		UUID:                 "",
+		ParentUUID:           "",
+		FQName:               []string{},
+		DisplayName:          "",
 	}
 }
 
@@ -62,24 +62,9 @@ func MakeAliasIP() *AliasIP {
 func InterfaceToAliasIP(iData interface{}) *AliasIP {
 	data := iData.(map[string]interface{})
 	return &AliasIP{
-		DisplayName: data["display_name"].(string),
-
-		//{"type":"string"}
-		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
-		ParentUUID: data["parent_uuid"].(string),
-
-		//{"type":"string"}
 		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
-		FQName: data["fq_name"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
-		AliasIPAddress: InterfaceToIpAddressType(data["alias_ip_address"]),
-
-		//{"description":"Alias ip address.","type":"string"}
 		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
 
 		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
@@ -89,6 +74,21 @@ func InterfaceToAliasIP(iData interface{}) *AliasIP {
 		Perms2: InterfaceToPermType2(data["perms2"]),
 
 		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
+		UUID: data["uuid"].(string),
+
+		//{"type":"string"}
+		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
+		DisplayName: data["display_name"].(string),
+
+		//{"type":"string"}
+		AliasIPAddress: InterfaceToIpAddressType(data["alias_ip_address"]),
+
+		//{"description":"Alias ip address.","type":"string"}
 		AliasIPAddressFamily: InterfaceToIpAddressFamilyType(data["alias_ip_address_family"]),
 
 		//{"description":"Ip address family of the alias ip, IpV4 or IpV6","type":"string","enum":["v4","v6"]}

@@ -76,17 +76,17 @@ var PhysicalRouterFields = []string{
 // PhysicalRouterRefFields is db reference fields for PhysicalRouter
 var PhysicalRouterRefFields = map[string][]string{
 
+	"virtual_network": {
+	// <common.Schema Value>
+
+	},
+
 	"bgp_router": {
 	// <common.Schema Value>
 
 	},
 
 	"virtual_router": {
-	// <common.Schema Value>
-
-	},
-
-	"virtual_network": {
 	// <common.Schema Value>
 
 	},
@@ -702,11 +702,12 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.PhysicalRouterVirtualNetworkRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
 
 		}
@@ -721,11 +722,12 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.PhysicalRouterBGPRouterRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.BGPRouterRefs = append(m.BGPRouterRefs, referenceModel)
 
 		}
@@ -740,11 +742,12 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.PhysicalRouterVirtualRouterRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
 
 		}
@@ -759,7 +762,8 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakeLogicalInterface()
@@ -955,7 +959,8 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 			if !ok {
 				continue
 			}
-			if childResourceMap["uuid"] == "" {
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
 				continue
 			}
 			childModel := models.MakePhysicalInterface()

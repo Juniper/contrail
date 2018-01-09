@@ -344,11 +344,12 @@ func scanVPNGroup(values map[string]interface{}) (*models.VPNGroup, error) {
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.VPNGroupLocationRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.LocationRefs = append(m.LocationRefs, referenceModel)
 
 		}

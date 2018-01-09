@@ -342,11 +342,12 @@ func scanLoadbalancerListener(values map[string]interface{}) (*models.Loadbalanc
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.LoadbalancerListenerLoadbalancerRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.LoadbalancerRefs = append(m.LoadbalancerRefs, referenceModel)
 
 		}

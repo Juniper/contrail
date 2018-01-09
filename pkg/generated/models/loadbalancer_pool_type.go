@@ -26,6 +26,7 @@ func (model *LoadbalancerPoolType) String() string {
 func MakeLoadbalancerPoolType() *LoadbalancerPoolType {
 	return &LoadbalancerPoolType{
 		//TODO(nati): Apply default
+		SessionPersistence:    MakeSessionPersistenceType(),
 		AdminState:            false,
 		PersistenceCookieName: "",
 		StatusDescription:     "",
@@ -33,7 +34,6 @@ func MakeLoadbalancerPoolType() *LoadbalancerPoolType {
 		Status:                "",
 		Protocol:              MakeLoadbalancerProtocolType(),
 		SubnetID:              MakeUuidStringType(),
-		SessionPersistence:    MakeSessionPersistenceType(),
 	}
 }
 
@@ -41,6 +41,15 @@ func MakeLoadbalancerPoolType() *LoadbalancerPoolType {
 func InterfaceToLoadbalancerPoolType(iData interface{}) *LoadbalancerPoolType {
 	data := iData.(map[string]interface{})
 	return &LoadbalancerPoolType{
+		SubnetID: InterfaceToUuidStringType(data["subnet_id"]),
+
+		//{"description":"UUID of the subnet from where the members of the pool are reachable.","type":"string"}
+		SessionPersistence: InterfaceToSessionPersistenceType(data["session_persistence"]),
+
+		//{"description":"Method for persistence. HTTP_COOKIE, SOURCE_IP or APP_COOKIE.","type":"string","enum":["SOURCE_IP","HTTP_COOKIE","APP_COOKIE"]}
+		AdminState: data["admin_state"].(bool),
+
+		//{"description":"Administrative up or down","type":"boolean"}
 		PersistenceCookieName: data["persistence_cookie_name"].(string),
 
 		//{"description":"To Be Added","type":"string"}
@@ -56,15 +65,6 @@ func InterfaceToLoadbalancerPoolType(iData interface{}) *LoadbalancerPoolType {
 		Protocol: InterfaceToLoadbalancerProtocolType(data["protocol"]),
 
 		//{"description":"IP protocol string like http, https or tcp.","type":"string","enum":["HTTP","HTTPS","TCP","UDP","TERMINATED_HTTPS"]}
-		SubnetID: InterfaceToUuidStringType(data["subnet_id"]),
-
-		//{"description":"UUID of the subnet from where the members of the pool are reachable.","type":"string"}
-		SessionPersistence: InterfaceToSessionPersistenceType(data["session_persistence"]),
-
-		//{"description":"Method for persistence. HTTP_COOKIE, SOURCE_IP or APP_COOKIE.","type":"string","enum":["SOURCE_IP","HTTP_COOKIE","APP_COOKIE"]}
-		AdminState: data["admin_state"].(bool),
-
-		//{"description":"Administrative up or down","type":"boolean"}
 
 	}
 }

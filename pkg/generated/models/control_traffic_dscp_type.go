@@ -6,9 +6,9 @@ import "encoding/json"
 
 // ControlTrafficDscpType
 type ControlTrafficDscpType struct {
-	Control   DscpValueType `json:"control"`
 	Analytics DscpValueType `json:"analytics"`
 	DNS       DscpValueType `json:"dns"`
+	Control   DscpValueType `json:"control"`
 }
 
 // String returns json representation of the object
@@ -21,9 +21,9 @@ func (model *ControlTrafficDscpType) String() string {
 func MakeControlTrafficDscpType() *ControlTrafficDscpType {
 	return &ControlTrafficDscpType{
 		//TODO(nati): Apply default
+		DNS:       MakeDscpValueType(),
 		Control:   MakeDscpValueType(),
 		Analytics: MakeDscpValueType(),
-		DNS:       MakeDscpValueType(),
 	}
 }
 
@@ -31,15 +31,15 @@ func MakeControlTrafficDscpType() *ControlTrafficDscpType {
 func InterfaceToControlTrafficDscpType(iData interface{}) *ControlTrafficDscpType {
 	data := iData.(map[string]interface{})
 	return &ControlTrafficDscpType{
+		DNS: InterfaceToDscpValueType(data["dns"]),
+
+		//{"description":"DSCP value for DNS traffic","type":"integer","minimum":0,"maximum":63}
 		Control: InterfaceToDscpValueType(data["control"]),
 
 		//{"description":"DSCP value for control protocols traffic","type":"integer","minimum":0,"maximum":63}
 		Analytics: InterfaceToDscpValueType(data["analytics"]),
 
 		//{"description":"DSCP value for traffic towards analytics","type":"integer","minimum":0,"maximum":63}
-		DNS: InterfaceToDscpValueType(data["dns"]),
-
-		//{"description":"DSCP value for DNS traffic","type":"integer","minimum":0,"maximum":63}
 
 	}
 }

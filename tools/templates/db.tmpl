@@ -126,11 +126,12 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
             if !ok {
                 continue
             }
-            if referenceMap["to"] == "" {
+            uuid := common.InterfaceToString(referenceMap["to"])
+            if uuid == "" {
                 continue
             }
             referenceModel := &models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{}
-            referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+            referenceModel.UUID = uuid
             m.{{ reference.GoName }}Refs = append(m.{{ reference.GoName }}Refs, referenceModel)
             {% if reference.RefType %}
             attr := models.Make{{reference.RefType}}()
@@ -171,7 +172,8 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
             if !ok {
                 continue
             }
-            if childResourceMap["uuid"] == "" {
+            uuid := common.InterfaceToString(childResourceMap["uuid"])
+            if uuid == "" {
                 continue
             }
             childModel := models.Make{{ child.JSONSchema.GoName }}()

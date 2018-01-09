@@ -378,11 +378,12 @@ func scanNetworkIpam(values map[string]interface{}) (*models.NetworkIpam, error)
 			if !ok {
 				continue
 			}
-			if referenceMap["to"] == "" {
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.NetworkIpamVirtualDNSRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			referenceModel.UUID = uuid
 			m.VirtualDNSRefs = append(m.VirtualDNSRefs, referenceModel)
 
 		}

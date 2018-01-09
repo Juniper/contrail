@@ -20,8 +20,8 @@ func (model *KeyValuePair) String() string {
 func MakeKeyValuePair() *KeyValuePair {
 	return &KeyValuePair{
 		//TODO(nati): Apply default
-		Value: "",
 		Key:   "",
+		Value: "",
 	}
 }
 

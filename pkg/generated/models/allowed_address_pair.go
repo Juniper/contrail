@@ -6,9 +6,9 @@ import "encoding/json"
 
 // AllowedAddressPair
 type AllowedAddressPair struct {
-	AddressMode AddressMode `json:"address_mode"`
 	IP          *SubnetType `json:"ip"`
 	Mac         string      `json:"mac"`
+	AddressMode AddressMode `json:"address_mode"`
 }
 
 // String returns json representation of the object

@@ -6,12 +6,12 @@ import "encoding/json"
 
 // IpamType
 type IpamType struct {
+	IpamMethod     IpamMethodType       `json:"ipam_method"`
 	IpamDNSMethod  IpamDnsMethodType    `json:"ipam_dns_method"`
 	IpamDNSServer  *IpamDnsAddressType  `json:"ipam_dns_server"`
 	DHCPOptionList *DhcpOptionsListType `json:"dhcp_option_list"`
 	HostRoutes     *RouteTableType      `json:"host_routes"`
 	CidrBlock      *SubnetType          `json:"cidr_block"`
-	IpamMethod     IpamMethodType       `json:"ipam_method"`
 }
 
 // String returns json representation of the object
@@ -24,12 +24,12 @@ func (model *IpamType) String() string {
 func MakeIpamType() *IpamType {
 	return &IpamType{
 		//TODO(nati): Apply default
-		IpamMethod:     MakeIpamMethodType(),
-		IpamDNSMethod:  MakeIpamDnsMethodType(),
 		IpamDNSServer:  MakeIpamDnsAddressType(),
 		DHCPOptionList: MakeDhcpOptionsListType(),
 		HostRoutes:     MakeRouteTableType(),
 		CidrBlock:      MakeSubnetType(),
+		IpamMethod:     MakeIpamMethodType(),
+		IpamDNSMethod:  MakeIpamDnsMethodType(),
 	}
 }
 
