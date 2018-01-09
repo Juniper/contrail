@@ -420,7 +420,9 @@ func ListServiceHealthCheck(tx *sql.Tx, spec *common.ListSpec) ([]*models.Servic
 	var err error
 	//TODO (check input)
 	spec.Table = "service_health_check"
-	spec.Fields = ServiceHealthCheckFields
+	if spec.Fields == nil {
+		spec.Fields = ServiceHealthCheckFields
+	}
 	spec.RefFields = ServiceHealthCheckRefFields
 	spec.BackRefFields = ServiceHealthCheckBackRefFields
 	result := models.MakeServiceHealthCheckSlice()

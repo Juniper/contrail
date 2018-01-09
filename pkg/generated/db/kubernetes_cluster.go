@@ -283,7 +283,9 @@ func ListKubernetesCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.Kuberne
 	var err error
 	//TODO (check input)
 	spec.Table = "kubernetes_cluster"
-	spec.Fields = KubernetesClusterFields
+	if spec.Fields == nil {
+		spec.Fields = KubernetesClusterFields
+	}
 	spec.RefFields = KubernetesClusterRefFields
 	spec.BackRefFields = KubernetesClusterBackRefFields
 	result := models.MakeKubernetesClusterSlice()

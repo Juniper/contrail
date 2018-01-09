@@ -1143,7 +1143,9 @@ func ListPhysicalRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.PhysicalRo
 	var err error
 	//TODO (check input)
 	spec.Table = "physical_router"
-	spec.Fields = PhysicalRouterFields
+	if spec.Fields == nil {
+		spec.Fields = PhysicalRouterFields
+	}
 	spec.RefFields = PhysicalRouterRefFields
 	spec.BackRefFields = PhysicalRouterBackRefFields
 	result := models.MakePhysicalRouterSlice()

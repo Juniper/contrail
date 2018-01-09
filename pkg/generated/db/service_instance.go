@@ -56,14 +56,14 @@ var ServiceInstanceFields = []string{
 // ServiceInstanceRefFields is db reference fields for ServiceInstance
 var ServiceInstanceRefFields = map[string][]string{
 
-	"instance_ip": {
-		// <common.Schema Value>
-		"interface_type",
-	},
-
 	"service_template": {
 	// <common.Schema Value>
 
+	},
+
+	"instance_ip": {
+		// <common.Schema Value>
+		"interface_type",
 	},
 }
 
@@ -680,7 +680,9 @@ func ListServiceInstance(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceIn
 	var err error
 	//TODO (check input)
 	spec.Table = "service_instance"
-	spec.Fields = ServiceInstanceFields
+	if spec.Fields == nil {
+		spec.Fields = ServiceInstanceFields
+	}
 	spec.RefFields = ServiceInstanceRefFields
 	spec.BackRefFields = ServiceInstanceBackRefFields
 	result := models.MakeServiceInstanceSlice()

@@ -313,7 +313,9 @@ func ListAppformixNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.Appform
 	var err error
 	//TODO (check input)
 	spec.Table = "appformix_node_role"
-	spec.Fields = AppformixNodeRoleFields
+	if spec.Fields == nil {
+		spec.Fields = AppformixNodeRoleFields
+	}
 	spec.RefFields = AppformixNodeRoleRefFields
 	spec.BackRefFields = AppformixNodeRoleBackRefFields
 	result := models.MakeAppformixNodeRoleSlice()

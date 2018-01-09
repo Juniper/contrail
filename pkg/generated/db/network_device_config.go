@@ -303,7 +303,9 @@ func ListNetworkDeviceConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Netwo
 	var err error
 	//TODO (check input)
 	spec.Table = "network_device_config"
-	spec.Fields = NetworkDeviceConfigFields
+	if spec.Fields == nil {
+		spec.Fields = NetworkDeviceConfigFields
+	}
 	spec.RefFields = NetworkDeviceConfigRefFields
 	spec.BackRefFields = NetworkDeviceConfigBackRefFields
 	result := models.MakeNetworkDeviceConfigSlice()

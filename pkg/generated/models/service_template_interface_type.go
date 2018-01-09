@@ -21,9 +21,9 @@ func (model *ServiceTemplateInterfaceType) String() string {
 func MakeServiceTemplateInterfaceType() *ServiceTemplateInterfaceType {
 	return &ServiceTemplateInterfaceType{
 		//TODO(nati): Apply default
-		ServiceInterfaceType: MakeServiceInterfaceType(),
 		StaticRouteEnable:    false,
 		SharedIP:             false,
+		ServiceInterfaceType: MakeServiceInterfaceType(),
 	}
 }
 
@@ -31,15 +31,15 @@ func MakeServiceTemplateInterfaceType() *ServiceTemplateInterfaceType {
 func InterfaceToServiceTemplateInterfaceType(iData interface{}) *ServiceTemplateInterfaceType {
 	data := iData.(map[string]interface{})
 	return &ServiceTemplateInterfaceType{
+		ServiceInterfaceType: InterfaceToServiceInterfaceType(data["service_interface_type"]),
+
+		//{"description":"Type of service interface supported by this template left, right or other.","type":"string"}
 		StaticRouteEnable: data["static_route_enable"].(bool),
 
 		//{"description":"Static routes configured required on this interface of service instance (Only V1)","type":"boolean"}
 		SharedIP: data["shared_ip"].(bool),
 
 		//{"description":"Shared ip is required on this interface when service instance is scaled out (Only V1)","type":"boolean"}
-		ServiceInterfaceType: InterfaceToServiceInterfaceType(data["service_interface_type"]),
-
-		//{"description":"Type of service interface supported by this template left, right or other.","type":"string"}
 
 	}
 }

@@ -105,7 +105,7 @@ func (api *AddressGroupRESTAPI) Show(c echo.Context) error {
 				Limit: 1000,
 				Auth:  auth,
 				Filter: common.Filter{
-					"uuid": id,
+					"uuid": []string{id},
 				},
 			})
 			return err
@@ -122,13 +122,12 @@ func (api *AddressGroupRESTAPI) List(c echo.Context) error {
 	var result []*models.AddressGroup
 	var err error
 	auth := common.GetAuthContext(c)
+	listSpec := common.GetListSpec(c)
+	listSpec.Auth = auth
 	if err := common.DoInTransaction(
 		api.DB,
 		func(tx *sql.Tx) error {
-			result, err = db.ListAddressGroup(tx, &common.ListSpec{
-				Limit: 1000,
-				Auth:  auth,
-			})
+			result, err = db.ListAddressGroup(tx, listSpec)
 			return err
 		}); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")

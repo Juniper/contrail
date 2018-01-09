@@ -6,16 +6,16 @@ import "encoding/json"
 
 // SecurityLoggingObject
 type SecurityLoggingObject struct {
-	ParentType                 string                             `json:"parent_type"`
-	IDPerms                    *IdPermsType                       `json:"id_perms"`
-	DisplayName                string                             `json:"display_name"`
+	ParentUUID                 string                             `json:"parent_uuid"`
+	FQName                     []string                           `json:"fq_name"`
+	SecurityLoggingObjectRules *SecurityLoggingObjectRuleListType `json:"security_logging_object_rules"`
 	Annotations                *KeyValuePairs                     `json:"annotations"`
 	Perms2                     *PermType2                         `json:"perms2"`
 	UUID                       string                             `json:"uuid"`
-	SecurityLoggingObjectRules *SecurityLoggingObjectRuleListType `json:"security_logging_object_rules"`
-	FQName                     []string                           `json:"fq_name"`
-	ParentUUID                 string                             `json:"parent_uuid"`
 	SecurityLoggingObjectRate  int                                `json:"security_logging_object_rate"`
+	DisplayName                string                             `json:"display_name"`
+	ParentType                 string                             `json:"parent_type"`
+	IDPerms                    *IdPermsType                       `json:"id_perms"`
 
 	SecurityGroupRefs []*SecurityLoggingObjectSecurityGroupRef `json:"security_group_refs"`
 	NetworkPolicyRefs []*SecurityLoggingObjectNetworkPolicyRef `json:"network_policy_refs"`
@@ -47,16 +47,16 @@ func (model *SecurityLoggingObject) String() string {
 func MakeSecurityLoggingObject() *SecurityLoggingObject {
 	return &SecurityLoggingObject{
 		//TODO(nati): Apply default
-		SecurityLoggingObjectRate: 0,
-		FQName:     []string{},
-		ParentUUID: "",
-		Perms2:     MakePermType2(),
-		UUID:       "",
 		SecurityLoggingObjectRules: MakeSecurityLoggingObjectRuleListType(),
-		ParentType:                 "",
-		IDPerms:                    MakeIdPermsType(),
-		DisplayName:                "",
 		Annotations:                MakeKeyValuePairs(),
+		Perms2:                     MakePermType2(),
+		UUID:                       "",
+		ParentUUID:                 "",
+		FQName:                     []string{},
+		SecurityLoggingObjectRate: 0,
+		DisplayName:               "",
+		ParentType:                "",
+		IDPerms:                   MakeIdPermsType(),
 	}
 }
 
@@ -64,18 +64,6 @@ func MakeSecurityLoggingObject() *SecurityLoggingObject {
 func InterfaceToSecurityLoggingObject(iData interface{}) *SecurityLoggingObject {
 	data := iData.(map[string]interface{})
 	return &SecurityLoggingObject{
-		SecurityLoggingObjectRules: InterfaceToSecurityLoggingObjectRuleListType(data["security_logging_object_rules"]),
-
-		//{"description":"Security logging object rules derived internally.","type":"object","properties":{"rule":{"type":"array","item":{"type":"object","properties":{"rate":{"type":"integer"},"rule_uuid":{"type":"string"}}}}}}
-		ParentType: data["parent_type"].(string),
-
-		//{"type":"string"}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
-
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
-		DisplayName: data["display_name"].(string),
-
-		//{"type":"string"}
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
 		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
@@ -85,15 +73,27 @@ func InterfaceToSecurityLoggingObject(iData interface{}) *SecurityLoggingObject 
 		UUID: data["uuid"].(string),
 
 		//{"type":"string"}
-		SecurityLoggingObjectRate: data["security_logging_object_rate"].(int),
-
-		//{"description":"Security logging object rate defining rate of session logging","default":"100","type":"integer"}
-		FQName: data["fq_name"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
 		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
+		SecurityLoggingObjectRules: InterfaceToSecurityLoggingObjectRuleListType(data["security_logging_object_rules"]),
+
+		//{"description":"Security logging object rules derived internally.","type":"object","properties":{"rule":{"type":"array","item":{"type":"object","properties":{"rate":{"type":"integer"},"rule_uuid":{"type":"string"}}}}}}
+		DisplayName: data["display_name"].(string),
+
+		//{"type":"string"}
+		ParentType: data["parent_type"].(string),
+
+		//{"type":"string"}
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
+		SecurityLoggingObjectRate: data["security_logging_object_rate"].(int),
+
+		//{"description":"Security logging object rate defining rate of session logging","default":"100","type":"integer"}
 
 	}
 }

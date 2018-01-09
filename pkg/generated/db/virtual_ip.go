@@ -67,9 +67,9 @@ var VirtualIPRefFields = map[string][]string{
 // VirtualIPBackRefFields is db back reference fields for VirtualIP
 var VirtualIPBackRefFields = map[string][]string{}
 
-const insertVirtualIPLoadbalancerPoolQuery = "insert into `ref_virtual_ip_loadbalancer_pool` (`from`, `to` ) values (?, ?);"
-
 const insertVirtualIPVirtualMachineInterfaceQuery = "insert into `ref_virtual_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
+
+const insertVirtualIPLoadbalancerPoolQuery = "insert into `ref_virtual_ip_loadbalancer_pool` (`from`, `to` ) values (?, ?);"
 
 // CreateVirtualIP inserts VirtualIP to DB
 func CreateVirtualIP(tx *sql.Tx, model *models.VirtualIP) error {
@@ -395,25 +395,6 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 
 	}
 
-	if value, ok := values["ref_loadbalancer_pool"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			if referenceMap["to"] == "" {
-				continue
-			}
-			referenceModel := &models.VirtualIPLoadbalancerPoolRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
-			m.LoadbalancerPoolRefs = append(m.LoadbalancerPoolRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -433,6 +414,25 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 		}
 	}
 
+	if value, ok := values["ref_loadbalancer_pool"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.VirtualIPLoadbalancerPoolRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.LoadbalancerPoolRefs = append(m.LoadbalancerPoolRefs, referenceModel)
+
+		}
+	}
+
 	return m, nil
 }
 
@@ -442,7 +442,9 @@ func ListVirtualIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualIP, erro
 	var err error
 	//TODO (check input)
 	spec.Table = "virtual_ip"
-	spec.Fields = VirtualIPFields
+	if spec.Fields == nil {
+		spec.Fields = VirtualIPFields
+	}
 	spec.RefFields = VirtualIPRefFields
 	spec.BackRefFields = VirtualIPBackRefFields
 	result := models.MakeVirtualIPSlice()

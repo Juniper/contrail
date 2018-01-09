@@ -343,7 +343,9 @@ func ListContrailCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.ContrailC
 	var err error
 	//TODO (check input)
 	spec.Table = "contrail_cluster"
-	spec.Fields = ContrailClusterFields
+	if spec.Fields == nil {
+		spec.Fields = ContrailClusterFields
+	}
 	spec.RefFields = ContrailClusterRefFields
 	spec.BackRefFields = ContrailClusterBackRefFields
 	result := models.MakeContrailClusterSlice()

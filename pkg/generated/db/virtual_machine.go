@@ -800,7 +800,9 @@ func ListVirtualMachine(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualMac
 	var err error
 	//TODO (check input)
 	spec.Table = "virtual_machine"
-	spec.Fields = VirtualMachineFields
+	if spec.Fields == nil {
+		spec.Fields = VirtualMachineFields
+	}
 	spec.RefFields = VirtualMachineRefFields
 	spec.BackRefFields = VirtualMachineBackRefFields
 	result := models.MakeVirtualMachineSlice()

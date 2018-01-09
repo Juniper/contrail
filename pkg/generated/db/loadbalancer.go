@@ -50,17 +50,17 @@ var LoadbalancerFields = []string{
 // LoadbalancerRefFields is db reference fields for Loadbalancer
 var LoadbalancerRefFields = map[string][]string{
 
-	"service_instance": {
-	// <common.Schema Value>
-
-	},
-
 	"service_appliance_set": {
 	// <common.Schema Value>
 
 	},
 
 	"virtual_machine_interface": {
+	// <common.Schema Value>
+
+	},
+
+	"service_instance": {
 	// <common.Schema Value>
 
 	},
@@ -451,7 +451,9 @@ func ListLoadbalancer(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadbalancer
 	var err error
 	//TODO (check input)
 	spec.Table = "loadbalancer"
-	spec.Fields = LoadbalancerFields
+	if spec.Fields == nil {
+		spec.Fields = LoadbalancerFields
+	}
 	spec.RefFields = LoadbalancerRefFields
 	spec.BackRefFields = LoadbalancerBackRefFields
 	result := models.MakeLoadbalancerSlice()

@@ -19,6 +19,10 @@ var okHandler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) 
 	w.Write([]byte(ok))
 })
 
+func init() {
+	Log = func(f string, a ...interface{}) {}
+}
+
 func newRequest(method, url string) *http.Request {
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {

@@ -343,7 +343,9 @@ func ListLoadbalancerHealthmonitor(tx *sql.Tx, spec *common.ListSpec) ([]*models
 	var err error
 	//TODO (check input)
 	spec.Table = "loadbalancer_healthmonitor"
-	spec.Fields = LoadbalancerHealthmonitorFields
+	if spec.Fields == nil {
+		spec.Fields = LoadbalancerHealthmonitorFields
+	}
 	spec.RefFields = LoadbalancerHealthmonitorRefFields
 	spec.BackRefFields = LoadbalancerHealthmonitorBackRefFields
 	result := models.MakeLoadbalancerHealthmonitorSlice()

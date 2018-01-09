@@ -289,7 +289,9 @@ func ListAccessControlList(tx *sql.Tx, spec *common.ListSpec) ([]*models.AccessC
 	var err error
 	//TODO (check input)
 	spec.Table = "access_control_list"
-	spec.Fields = AccessControlListFields
+	if spec.Fields == nil {
+		spec.Fields = AccessControlListFields
+	}
 	spec.RefFields = AccessControlListRefFields
 	spec.BackRefFields = AccessControlListBackRefFields
 	result := models.MakeAccessControlListSlice()

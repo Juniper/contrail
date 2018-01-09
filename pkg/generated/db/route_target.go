@@ -263,7 +263,9 @@ func ListRouteTarget(tx *sql.Tx, spec *common.ListSpec) ([]*models.RouteTarget, 
 	var err error
 	//TODO (check input)
 	spec.Table = "route_target"
-	spec.Fields = RouteTargetFields
+	if spec.Fields == nil {
+		spec.Fields = RouteTargetFields
+	}
 	spec.RefFields = RouteTargetRefFields
 	spec.BackRefFields = RouteTargetBackRefFields
 	result := models.MakeRouteTargetSlice()

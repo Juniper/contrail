@@ -313,7 +313,9 @@ func ListContrailAnalyticsNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.Con
 	var err error
 	//TODO (check input)
 	spec.Table = "contrail_analytics_node"
-	spec.Fields = ContrailAnalyticsNodeFields
+	if spec.Fields == nil {
+		spec.Fields = ContrailAnalyticsNodeFields
+	}
 	spec.RefFields = ContrailAnalyticsNodeRefFields
 	spec.BackRefFields = ContrailAnalyticsNodeBackRefFields
 	result := models.MakeContrailAnalyticsNodeSlice()

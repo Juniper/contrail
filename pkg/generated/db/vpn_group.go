@@ -363,7 +363,9 @@ func ListVPNGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.VPNGroup, error)
 	var err error
 	//TODO (check input)
 	spec.Table = "vpn_group"
-	spec.Fields = VPNGroupFields
+	if spec.Fields == nil {
+		spec.Fields = VPNGroupFields
+	}
 	spec.RefFields = VPNGroupRefFields
 	spec.BackRefFields = VPNGroupBackRefFields
 	result := models.MakeVPNGroupSlice()

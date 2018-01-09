@@ -6,8 +6,8 @@ import "encoding/json"
 
 // ProtocolType
 type ProtocolType struct {
-	Port     int    `json:"port"`
 	Protocol string `json:"protocol"`
+	Port     int    `json:"port"`
 }
 
 // String returns json representation of the object

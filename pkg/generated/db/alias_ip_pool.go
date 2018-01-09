@@ -486,7 +486,9 @@ func ListAliasIPPool(tx *sql.Tx, spec *common.ListSpec) ([]*models.AliasIPPool, 
 	var err error
 	//TODO (check input)
 	spec.Table = "alias_ip_pool"
-	spec.Fields = AliasIPPoolFields
+	if spec.Fields == nil {
+		spec.Fields = AliasIPPoolFields
+	}
 	spec.RefFields = AliasIPPoolRefFields
 	spec.BackRefFields = AliasIPPoolBackRefFields
 	result := models.MakeAliasIPPoolSlice()

@@ -537,7 +537,9 @@ func ListFloatingIPPool(tx *sql.Tx, spec *common.ListSpec) ([]*models.FloatingIP
 	var err error
 	//TODO (check input)
 	spec.Table = "floating_ip_pool"
-	spec.Fields = FloatingIPPoolFields
+	if spec.Fields == nil {
+		spec.Fields = FloatingIPPoolFields
+	}
 	spec.RefFields = FloatingIPPoolRefFields
 	spec.BackRefFields = FloatingIPPoolBackRefFields
 	result := models.MakeFloatingIPPoolSlice()

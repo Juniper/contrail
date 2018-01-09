@@ -59,9 +59,9 @@ var SecurityLoggingObjectRefFields = map[string][]string{
 // SecurityLoggingObjectBackRefFields is db back reference fields for SecurityLoggingObject
 var SecurityLoggingObjectBackRefFields = map[string][]string{}
 
-const insertSecurityLoggingObjectSecurityGroupQuery = "insert into `ref_security_logging_object_security_group` (`from`, `to` ,`rule`) values (?, ?,?);"
-
 const insertSecurityLoggingObjectNetworkPolicyQuery = "insert into `ref_security_logging_object_network_policy` (`from`, `to` ,`rule`) values (?, ?,?);"
+
+const insertSecurityLoggingObjectSecurityGroupQuery = "insert into `ref_security_logging_object_security_group` (`from`, `to` ,`rule`) values (?, ?,?);"
 
 // CreateSecurityLoggingObject inserts SecurityLoggingObject to DB
 func CreateSecurityLoggingObject(tx *sql.Tx, model *models.SecurityLoggingObject) error {
@@ -321,28 +321,6 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 
 	}
 
-	if value, ok := values["ref_network_policy"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			if referenceMap["to"] == "" {
-				continue
-			}
-			referenceModel := &models.SecurityLoggingObjectNetworkPolicyRef{}
-			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
-			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
-
-			attr := models.MakeSecurityLoggingObjectRuleListType()
-			referenceModel.Attr = attr
-
-		}
-	}
-
 	if value, ok := values["ref_security_group"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -365,6 +343,28 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 		}
 	}
 
+	if value, ok := values["ref_network_policy"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if referenceMap["to"] == "" {
+				continue
+			}
+			referenceModel := &models.SecurityLoggingObjectNetworkPolicyRef{}
+			referenceModel.UUID = common.InterfaceToString(referenceMap["to"])
+			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
+
+			attr := models.MakeSecurityLoggingObjectRuleListType()
+			referenceModel.Attr = attr
+
+		}
+	}
+
 	return m, nil
 }
 
@@ -374,7 +374,9 @@ func ListSecurityLoggingObject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Sec
 	var err error
 	//TODO (check input)
 	spec.Table = "security_logging_object"
-	spec.Fields = SecurityLoggingObjectFields
+	if spec.Fields == nil {
+		spec.Fields = SecurityLoggingObjectFields
+	}
 	spec.RefFields = SecurityLoggingObjectRefFields
 	spec.BackRefFields = SecurityLoggingObjectBackRefFields
 	result := models.MakeSecurityLoggingObjectSlice()

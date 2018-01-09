@@ -293,7 +293,9 @@ func ListQosQueue(tx *sql.Tx, spec *common.ListSpec) ([]*models.QosQueue, error)
 	var err error
 	//TODO (check input)
 	spec.Table = "qos_queue"
-	spec.Fields = QosQueueFields
+	if spec.Fields == nil {
+		spec.Fields = QosQueueFields
+	}
 	spec.RefFields = QosQueueRefFields
 	spec.BackRefFields = QosQueueBackRefFields
 	result := models.MakeQosQueueSlice()

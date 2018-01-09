@@ -211,7 +211,9 @@ func List{{ schema.JSONSchema.GoName }}(tx *sql.Tx, spec *common.ListSpec) ([]*m
     var err error
     //TODO (check input)
     spec.Table = "{{ schema.ID }}"
-    spec.Fields = {{ schema.JSONSchema.GoName }}Fields
+    if spec.Fields == nil {
+        spec.Fields = {{ schema.JSONSchema.GoName }}Fields
+    }
     spec.RefFields = {{ schema.JSONSchema.GoName }}RefFields
     spec.BackRefFields = {{ schema.JSONSchema.GoName }}BackRefFields
     result := models.Make{{ schema.JSONSchema.GoName }}Slice()

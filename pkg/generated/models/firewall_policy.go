@@ -6,24 +6,17 @@ import "encoding/json"
 
 // FirewallPolicy
 type FirewallPolicy struct {
-	ParentUUID  string         `json:"parent_uuid"`
-	ParentType  string         `json:"parent_type"`
 	FQName      []string       `json:"fq_name"`
 	IDPerms     *IdPermsType   `json:"id_perms"`
 	DisplayName string         `json:"display_name"`
 	Annotations *KeyValuePairs `json:"annotations"`
 	Perms2      *PermType2     `json:"perms2"`
 	UUID        string         `json:"uuid"`
+	ParentUUID  string         `json:"parent_uuid"`
+	ParentType  string         `json:"parent_type"`
 
 	FirewallRuleRefs          []*FirewallPolicyFirewallRuleRef          `json:"firewall_rule_refs"`
 	SecurityLoggingObjectRefs []*FirewallPolicySecurityLoggingObjectRef `json:"security_logging_object_refs"`
-}
-
-// FirewallPolicySecurityLoggingObjectRef references each other
-type FirewallPolicySecurityLoggingObjectRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
 }
 
 // FirewallPolicyFirewallRuleRef references each other
@@ -32,6 +25,13 @@ type FirewallPolicyFirewallRuleRef struct {
 	To   []string `json:"to"` //FQDN
 
 	Attr *FirewallSequence
+}
+
+// FirewallPolicySecurityLoggingObjectRef references each other
+type FirewallPolicySecurityLoggingObjectRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
 }
 
 // String returns json representation of the object
@@ -44,14 +44,14 @@ func (model *FirewallPolicy) String() string {
 func MakeFirewallPolicy() *FirewallPolicy {
 	return &FirewallPolicy{
 		//TODO(nati): Apply default
+		FQName:      []string{},
+		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
 		ParentUUID:  "",
 		ParentType:  "",
-		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
 	}
 }
 
@@ -59,6 +59,12 @@ func MakeFirewallPolicy() *FirewallPolicy {
 func InterfaceToFirewallPolicy(iData interface{}) *FirewallPolicy {
 	data := iData.(map[string]interface{})
 	return &FirewallPolicy{
+		Perms2: InterfaceToPermType2(data["perms2"]),
+
+		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
+		UUID: data["uuid"].(string),
+
+		//{"type":"string"}
 		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
@@ -77,12 +83,6 @@ func InterfaceToFirewallPolicy(iData interface{}) *FirewallPolicy {
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
 		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		Perms2: InterfaceToPermType2(data["perms2"]),
-
-		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
-		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
 
 	}
 }

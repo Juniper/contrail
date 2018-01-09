@@ -6,15 +6,15 @@ import "encoding/json"
 
 // ServiceTemplate
 type ServiceTemplate struct {
-	ServiceTemplateProperties *ServiceTemplateType `json:"service_template_properties"`
-	ParentType                string               `json:"parent_type"`
-	Annotations               *KeyValuePairs       `json:"annotations"`
-	UUID                      string               `json:"uuid"`
-	FQName                    []string             `json:"fq_name"`
 	IDPerms                   *IdPermsType         `json:"id_perms"`
 	DisplayName               string               `json:"display_name"`
+	ServiceTemplateProperties *ServiceTemplateType `json:"service_template_properties"`
+	UUID                      string               `json:"uuid"`
+	ParentType                string               `json:"parent_type"`
+	FQName                    []string             `json:"fq_name"`
 	Perms2                    *PermType2           `json:"perms2"`
 	ParentUUID                string               `json:"parent_uuid"`
+	Annotations               *KeyValuePairs       `json:"annotations"`
 
 	ServiceApplianceSetRefs []*ServiceTemplateServiceApplianceSetRef `json:"service_appliance_set_refs"`
 }
@@ -36,15 +36,15 @@ func (model *ServiceTemplate) String() string {
 func MakeServiceTemplate() *ServiceTemplate {
 	return &ServiceTemplate{
 		//TODO(nati): Apply default
-		ServiceTemplateProperties: MakeServiceTemplateType(),
-		ParentType:                "",
-		Annotations:               MakeKeyValuePairs(),
-		UUID:                      "",
 		FQName:                    []string{},
 		IDPerms:                   MakeIdPermsType(),
 		DisplayName:               "",
-		Perms2:                    MakePermType2(),
-		ParentUUID:                "",
+		ServiceTemplateProperties: MakeServiceTemplateType(),
+		UUID:        "",
+		ParentType:  "",
+		Perms2:      MakePermType2(),
+		ParentUUID:  "",
+		Annotations: MakeKeyValuePairs(),
 	}
 }
 
@@ -52,6 +52,18 @@ func MakeServiceTemplate() *ServiceTemplate {
 func InterfaceToServiceTemplate(iData interface{}) *ServiceTemplate {
 	data := iData.(map[string]interface{})
 	return &ServiceTemplate{
+		ServiceTemplateProperties: InterfaceToServiceTemplateType(data["service_template_properties"]),
+
+		//{"description":"Service template configuration parameters.","type":"object","properties":{"availability_zone_enable":{"type":"boolean"},"flavor":{"type":"string"},"image_name":{"type":"string"},"instance_data":{"type":"string"},"interface_type":{"type":"array","item":{"type":"object","properties":{"service_interface_type":{"type":"string"},"shared_ip":{"type":"boolean"},"static_route_enable":{"type":"boolean"}}}},"ordered_interfaces":{"type":"boolean"},"service_mode":{"type":"string","enum":["transparent","in-network","in-network-nat"]},"service_scaling":{"type":"boolean"},"service_type":{"type":"string","enum":["firewall","analyzer","source-nat","loadbalancer"]},"service_virtualization_type":{"type":"string","enum":["virtual-machine","network-namespace","vrouter-instance","physical-device"]},"version":{"type":"integer"},"vrouter_instance_type":{"type":"string","enum":["libvirt-qemu","docker"]}}}
+		UUID: data["uuid"].(string),
+
+		//{"type":"string"}
+		ParentType: data["parent_type"].(string),
+
+		//{"type":"string"}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
 		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
 
 		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
@@ -64,21 +76,9 @@ func InterfaceToServiceTemplate(iData interface{}) *ServiceTemplate {
 		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
-		FQName: data["fq_name"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
-		ParentType: data["parent_type"].(string),
-
-		//{"type":"string"}
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
 		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
-		ServiceTemplateProperties: InterfaceToServiceTemplateType(data["service_template_properties"]),
-
-		//{"description":"Service template configuration parameters.","type":"object","properties":{"availability_zone_enable":{"type":"boolean"},"flavor":{"type":"string"},"image_name":{"type":"string"},"instance_data":{"type":"string"},"interface_type":{"type":"array","item":{"type":"object","properties":{"service_interface_type":{"type":"string"},"shared_ip":{"type":"boolean"},"static_route_enable":{"type":"boolean"}}}},"ordered_interfaces":{"type":"boolean"},"service_mode":{"type":"string","enum":["transparent","in-network","in-network-nat"]},"service_scaling":{"type":"boolean"},"service_type":{"type":"string","enum":["firewall","analyzer","source-nat","loadbalancer"]},"service_virtualization_type":{"type":"string","enum":["virtual-machine","network-namespace","vrouter-instance","physical-device"]},"version":{"type":"integer"},"vrouter_instance_type":{"type":"string","enum":["libvirt-qemu","docker"]}}}
 
 	}
 }

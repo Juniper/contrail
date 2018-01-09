@@ -37,7 +37,6 @@ func (model *VirtualMachine) String() string {
 func MakeVirtualMachine() *VirtualMachine {
 	return &VirtualMachine{
 		//TODO(nati): Apply default
-		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
@@ -45,6 +44,7 @@ func MakeVirtualMachine() *VirtualMachine {
 		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
+		IDPerms:     MakeIdPermsType(),
 	}
 }
 
@@ -52,6 +52,9 @@ func MakeVirtualMachine() *VirtualMachine {
 func InterfaceToVirtualMachine(iData interface{}) *VirtualMachine {
 	data := iData.(map[string]interface{})
 	return &VirtualMachine{
+		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
+
+		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
 		Perms2: InterfaceToPermType2(data["perms2"]),
 
 		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
@@ -73,9 +76,6 @@ func InterfaceToVirtualMachine(iData interface{}) *VirtualMachine {
 		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}
-		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
-
-		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
 
 	}
 }

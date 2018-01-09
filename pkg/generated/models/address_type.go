@@ -6,11 +6,11 @@ import "encoding/json"
 
 // AddressType
 type AddressType struct {
+	SecurityGroup  string        `json:"security_group"`
 	Subnet         *SubnetType   `json:"subnet"`
 	NetworkPolicy  string        `json:"network_policy"`
 	SubnetList     []*SubnetType `json:"subnet_list"`
 	VirtualNetwork string        `json:"virtual_network"`
-	SecurityGroup  string        `json:"security_group"`
 }
 
 // String returns json representation of the object
@@ -23,13 +23,12 @@ func (model *AddressType) String() string {
 func MakeAddressType() *AddressType {
 	return &AddressType{
 		//TODO(nati): Apply default
-		Subnet:        MakeSubnetType(),
-		NetworkPolicy: "",
-
-		SubnetList: MakeSubnetTypeSlice(),
-
 		VirtualNetwork: "",
 		SecurityGroup:  "",
+		Subnet:         MakeSubnetType(),
+		NetworkPolicy:  "",
+
+		SubnetList: MakeSubnetTypeSlice(),
 	}
 }
 
@@ -37,6 +36,13 @@ func MakeAddressType() *AddressType {
 func InterfaceToAddressType(iData interface{}) *AddressType {
 	data := iData.(map[string]interface{})
 	return &AddressType{
+
+		SubnetList: InterfaceToSubnetTypeSlice(data["subnet_list"]),
+
+		//{"description":"Any address that belongs to any one of subnet in this list","type":"array","item":{"type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}}}
+		VirtualNetwork: data["virtual_network"].(string),
+
+		//{"description":"Any address that belongs to this virtual network ","type":"string"}
 		SecurityGroup: data["security_group"].(string),
 
 		//{"description":"Any address that belongs to interface with this security-group","type":"string"}
@@ -46,13 +52,6 @@ func InterfaceToAddressType(iData interface{}) *AddressType {
 		NetworkPolicy: data["network_policy"].(string),
 
 		//{"description":"Any address that belongs to virtual network which has this policy attached","type":"string"}
-
-		SubnetList: InterfaceToSubnetTypeSlice(data["subnet_list"]),
-
-		//{"description":"Any address that belongs to any one of subnet in this list","type":"array","item":{"type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}}}
-		VirtualNetwork: data["virtual_network"].(string),
-
-		//{"description":"Any address that belongs to this virtual network ","type":"string"}
 
 	}
 }

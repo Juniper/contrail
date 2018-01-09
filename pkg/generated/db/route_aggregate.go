@@ -310,7 +310,9 @@ func ListRouteAggregate(tx *sql.Tx, spec *common.ListSpec) ([]*models.RouteAggre
 	var err error
 	//TODO (check input)
 	spec.Table = "route_aggregate"
-	spec.Fields = RouteAggregateFields
+	if spec.Fields == nil {
+		spec.Fields = RouteAggregateFields
+	}
 	spec.RefFields = RouteAggregateRefFields
 	spec.BackRefFields = RouteAggregateBackRefFields
 	result := models.MakeRouteAggregateSlice()

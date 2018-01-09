@@ -6,8 +6,7 @@ import (
 	"time"
 
 	"github.com/pmylund/go-cache"
-
-	"github.com/databus23/keystone"
+	"github.com/bugroger/keystone"
 )
 
 type memoryCache struct {

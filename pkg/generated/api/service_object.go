@@ -105,7 +105,7 @@ func (api *ServiceObjectRESTAPI) Show(c echo.Context) error {
 				Limit: 1000,
 				Auth:  auth,
 				Filter: common.Filter{
-					"uuid": id,
+					"uuid": []string{id},
 				},
 			})
 			return err
@@ -122,13 +122,12 @@ func (api *ServiceObjectRESTAPI) List(c echo.Context) error {
 	var result []*models.ServiceObject
 	var err error
 	auth := common.GetAuthContext(c)
+	listSpec := common.GetListSpec(c)
+	listSpec.Auth = auth
 	if err := common.DoInTransaction(
 		api.DB,
 		func(tx *sql.Tx) error {
-			result, err = db.ListServiceObject(tx, &common.ListSpec{
-				Limit: 1000,
-				Auth:  auth,
-			})
+			result, err = db.ListServiceObject(tx, listSpec)
 			return err
 		}); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")

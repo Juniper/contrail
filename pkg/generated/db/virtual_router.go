@@ -46,15 +46,15 @@ var VirtualRouterFields = []string{
 // VirtualRouterRefFields is db reference fields for VirtualRouter
 var VirtualRouterRefFields = map[string][]string{
 
-	"virtual_machine": {
-	// <common.Schema Value>
-
-	},
-
 	"network_ipam": {
 		// <common.Schema Value>
 		"subnet",
 		"allocation_pools",
+	},
+
+	"virtual_machine": {
+	// <common.Schema Value>
+
 	},
 }
 
@@ -120,9 +120,9 @@ var VirtualRouterBackRefFields = map[string][]string{
 	},
 }
 
-const insertVirtualRouterVirtualMachineQuery = "insert into `ref_virtual_router_virtual_machine` (`from`, `to` ) values (?, ?);"
-
 const insertVirtualRouterNetworkIpamQuery = "insert into `ref_virtual_router_network_ipam` (`from`, `to` ,`subnet`,`allocation_pools`) values (?, ?,?,?);"
+
+const insertVirtualRouterVirtualMachineQuery = "insert into `ref_virtual_router_virtual_machine` (`from`, `to` ) values (?, ?);"
 
 // CreateVirtualRouter inserts VirtualRouter to DB
 func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
@@ -878,7 +878,9 @@ func ListVirtualRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualRout
 	var err error
 	//TODO (check input)
 	spec.Table = "virtual_router"
-	spec.Fields = VirtualRouterFields
+	if spec.Fields == nil {
+		spec.Fields = VirtualRouterFields
+	}
 	spec.RefFields = VirtualRouterRefFields
 	spec.BackRefFields = VirtualRouterBackRefFields
 	result := models.MakeVirtualRouterSlice()

@@ -271,7 +271,9 @@ func ListServiceGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceGroup
 	var err error
 	//TODO (check input)
 	spec.Table = "service_group"
-	spec.Fields = ServiceGroupFields
+	if spec.Fields == nil {
+		spec.Fields = ServiceGroupFields
+	}
 	spec.RefFields = ServiceGroupRefFields
 	spec.BackRefFields = ServiceGroupBackRefFields
 	result := models.MakeServiceGroupSlice()

@@ -6,9 +6,9 @@ import "encoding/json"
 
 // PortMap
 type PortMap struct {
-	DSTPort  int    `json:"dst_port"`
 	SRCPort  int    `json:"src_port"`
 	Protocol string `json:"protocol"`
+	DSTPort  int    `json:"dst_port"`
 }
 
 // String returns json representation of the object
@@ -21,9 +21,9 @@ func (model *PortMap) String() string {
 func MakePortMap() *PortMap {
 	return &PortMap{
 		//TODO(nati): Apply default
-		SRCPort:  0,
 		Protocol: "",
 		DSTPort:  0,
+		SRCPort:  0,
 	}
 }
 

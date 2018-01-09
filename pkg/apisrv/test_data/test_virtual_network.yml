@@ -49,7 +49,7 @@ workflow:
       uuid: network_policy_uuid2
       perms2:
         owner: demo
-- name: create virtual network
+- name: create virtual network blue
   request:
     path: /virtual-networks
     method: POST
@@ -57,12 +57,32 @@ workflow:
     - 201
     data:
       virtual-network:
-        uuid: vn_uuid
+        uuid: vn_blue
+        display_name: blue
         network_policy_refs:
         - uuid: network_policy_uuid
   expect:
     virtual-network:
-      uuid: vn_uuid
+      uuid: vn_blue
+      display_name: blue
+      network_policy_refs:
+      - uuid: network_policy_uuid
+- name: create virtual network red
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 201
+    data:
+      virtual-network:
+        uuid: vn_red 
+        display_name: red
+        network_policy_refs:
+        - uuid: network_policy_uuid
+  expect:
+    virtual-network:
+      uuid: vn_red
+      display_name: red
       network_policy_refs:
       - uuid: network_policy_uuid
 - name: create routing instance
@@ -74,11 +94,11 @@ workflow:
     data:
       routing-instance:
         uuid: ri_uuid
-        parent_uuid: vn_uuid
+        parent_uuid: vn_blue
   expect:
     routing-instance:
       uuid: ri_uuid
-      parent_uuid: vn_uuid
+      parent_uuid: vn_blue
 - name: list virtual networks
   request:
     path: /virtual-networks
@@ -87,12 +107,47 @@ workflow:
     - 200
   expect:
     virtual-networks:
-    - uuid: vn_uuid
+    - uuid: vn_blue
+      display_name: blue
       network_policy_refs:
       - uuid: network_policy_uuid
       routing_instances:
       - uuid: ri_uuid
-        parent_uuid: vn_uuid
+        parent_uuid: vn_blue
+    - uuid: vn_red
+      display_name: red
+      network_policy_refs:
+      - uuid: network_policy_uuid
+- name: list virtual networks
+  request:
+    path: "/virtual-networks?filters=display_name==blue"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - uuid: vn_blue
+      display_name: blue
+      network_policy_refs:
+      - uuid: network_policy_uuid
+      routing_instances:
+      - uuid: ri_uuid
+        parent_uuid: vn_blue
+- name: list virtual networks
+  request:
+    path: "/virtual-networks?pageLimit=1"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - uuid: vn_blue
+      display_name: blue
+      network_policy_refs:
+      - uuid: network_policy_uuid
+      routing_instances:
+      - uuid: ri_uuid
+        parent_uuid: vn_blue
 - name: list network policy
   request:
     path: /network-policys
@@ -118,7 +173,14 @@ workflow:
         owner: demo
 - name: delete virtual network
   request:
-    path: /virtual-network/vn_uuid
+    path: /virtual-network/vn_blue
+    method: DELETE
+    expected:
+    - 204
+  expect: null
+- name: delete virtual network
+  request:
+    path: /virtual-network/vn_red
     method: DELETE
     expected:
     - 204

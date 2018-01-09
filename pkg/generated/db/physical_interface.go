@@ -536,7 +536,9 @@ func ListPhysicalInterface(tx *sql.Tx, spec *common.ListSpec) ([]*models.Physica
 	var err error
 	//TODO (check input)
 	spec.Table = "physical_interface"
-	spec.Fields = PhysicalInterfaceFields
+	if spec.Fields == nil {
+		spec.Fields = PhysicalInterfaceFields
+	}
 	spec.RefFields = PhysicalInterfaceRefFields
 	spec.BackRefFields = PhysicalInterfaceBackRefFields
 	result := models.MakePhysicalInterfaceSlice()

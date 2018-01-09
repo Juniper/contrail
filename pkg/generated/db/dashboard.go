@@ -273,7 +273,9 @@ func ListDashboard(tx *sql.Tx, spec *common.ListSpec) ([]*models.Dashboard, erro
 	var err error
 	//TODO (check input)
 	spec.Table = "dashboard"
-	spec.Fields = DashboardFields
+	if spec.Fields == nil {
+		spec.Fields = DashboardFields
+	}
 	spec.RefFields = DashboardRefFields
 	spec.BackRefFields = DashboardBackRefFields
 	result := models.MakeDashboardSlice()

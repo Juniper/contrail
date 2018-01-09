@@ -271,7 +271,9 @@ func ListAddressGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.AddressGroup
 	var err error
 	//TODO (check input)
 	spec.Table = "address_group"
-	spec.Fields = AddressGroupFields
+	if spec.Fields == nil {
+		spec.Fields = AddressGroupFields
+	}
 	spec.RefFields = AddressGroupRefFields
 	spec.BackRefFields = AddressGroupBackRefFields
 	result := models.MakeAddressGroupSlice()

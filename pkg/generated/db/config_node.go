@@ -273,7 +273,9 @@ func ListConfigNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.ConfigNode, er
 	var err error
 	//TODO (check input)
 	spec.Table = "config_node"
-	spec.Fields = ConfigNodeFields
+	if spec.Fields == nil {
+		spec.Fields = ConfigNodeFields
+	}
 	spec.RefFields = ConfigNodeRefFields
 	spec.BackRefFields = ConfigNodeBackRefFields
 	result := models.MakeConfigNodeSlice()

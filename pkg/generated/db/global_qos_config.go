@@ -1008,7 +1008,9 @@ func ListGlobalQosConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.GlobalQos
 	var err error
 	//TODO (check input)
 	spec.Table = "global_qos_config"
-	spec.Fields = GlobalQosConfigFields
+	if spec.Fields == nil {
+		spec.Fields = GlobalQosConfigFields
+	}
 	spec.RefFields = GlobalQosConfigRefFields
 	spec.BackRefFields = GlobalQosConfigBackRefFields
 	result := models.MakeGlobalQosConfigSlice()

@@ -359,7 +359,9 @@ func ListApplicationPolicySet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Appl
 	var err error
 	//TODO (check input)
 	spec.Table = "application_policy_set"
-	spec.Fields = ApplicationPolicySetFields
+	if spec.Fields == nil {
+		spec.Fields = ApplicationPolicySetFields
+	}
 	spec.RefFields = ApplicationPolicySetRefFields
 	spec.BackRefFields = ApplicationPolicySetBackRefFields
 	result := models.MakeApplicationPolicySetSlice()

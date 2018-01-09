@@ -519,7 +519,9 @@ func ListSecurityGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.SecurityGro
 	var err error
 	//TODO (check input)
 	spec.Table = "security_group"
-	spec.Fields = SecurityGroupFields
+	if spec.Fields == nil {
+		spec.Fields = SecurityGroupFields
+	}
 	spec.RefFields = SecurityGroupRefFields
 	spec.BackRefFields = SecurityGroupBackRefFields
 	result := models.MakeSecurityGroupSlice()

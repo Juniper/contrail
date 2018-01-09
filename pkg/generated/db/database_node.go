@@ -273,7 +273,9 @@ func ListDatabaseNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.DatabaseNode
 	var err error
 	//TODO (check input)
 	spec.Table = "database_node"
-	spec.Fields = DatabaseNodeFields
+	if spec.Fields == nil {
+		spec.Fields = DatabaseNodeFields
+	}
 	spec.RefFields = DatabaseNodeRefFields
 	spec.BackRefFields = DatabaseNodeBackRefFields
 	result := models.MakeDatabaseNodeSlice()

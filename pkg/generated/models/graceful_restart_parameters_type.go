@@ -6,12 +6,12 @@ import "encoding/json"
 
 // GracefulRestartParametersType
 type GracefulRestartParametersType struct {
+	Enable               bool                             `json:"enable"`
+	EndOfRibTimeout      EndOfRibTimeType                 `json:"end_of_rib_timeout"`
 	BGPHelperEnable      bool                             `json:"bgp_helper_enable"`
 	XMPPHelperEnable     bool                             `json:"xmpp_helper_enable"`
 	RestartTime          GracefulRestartTimeType          `json:"restart_time"`
 	LongLivedRestartTime LongLivedGracefulRestartTimeType `json:"long_lived_restart_time"`
-	Enable               bool                             `json:"enable"`
-	EndOfRibTimeout      EndOfRibTimeType                 `json:"end_of_rib_timeout"`
 }
 
 // String returns json representation of the object
@@ -24,12 +24,12 @@ func (model *GracefulRestartParametersType) String() string {
 func MakeGracefulRestartParametersType() *GracefulRestartParametersType {
 	return &GracefulRestartParametersType{
 		//TODO(nati): Apply default
+		EndOfRibTimeout:      MakeEndOfRibTimeType(),
 		BGPHelperEnable:      false,
 		XMPPHelperEnable:     false,
 		RestartTime:          MakeGracefulRestartTimeType(),
 		LongLivedRestartTime: MakeLongLivedGracefulRestartTimeType(),
 		Enable:               false,
-		EndOfRibTimeout:      MakeEndOfRibTimeType(),
 	}
 }
 
@@ -37,9 +37,6 @@ func MakeGracefulRestartParametersType() *GracefulRestartParametersType {
 func InterfaceToGracefulRestartParametersType(iData interface{}) *GracefulRestartParametersType {
 	data := iData.(map[string]interface{})
 	return &GracefulRestartParametersType{
-		Enable: data["enable"].(bool),
-
-		//{"description":"Enable/Disable knob for all GR parameters to take effect","type":"boolean"}
 		EndOfRibTimeout: InterfaceToEndOfRibTimeType(data["end_of_rib_timeout"]),
 
 		//{"description":"Maximum time (in seconds) to wait for EndOfRib reception/transmission","type":"integer","minimum":0,"maximum":4095}
@@ -55,6 +52,9 @@ func InterfaceToGracefulRestartParametersType(iData interface{}) *GracefulRestar
 		LongLivedRestartTime: InterfaceToLongLivedGracefulRestartTimeType(data["long_lived_restart_time"]),
 
 		//{"description":"Extended Time (in seconds) taken by the restarting speaker after restart-time to get back to stable state","type":"integer","minimum":0,"maximum":16777215}
+		Enable: data["enable"].(bool),
+
+		//{"description":"Enable/Disable knob for all GR parameters to take effect","type":"boolean"}
 
 	}
 }

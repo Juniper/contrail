@@ -6,14 +6,14 @@ import "encoding/json"
 
 // PolicyBasedForwardingRuleType
 type PolicyBasedForwardingRuleType struct {
-	Ipv6ServiceChainAddress IpAddressType        `json:"ipv6_service_chain_address"`
-	Direction               TrafficDirectionType `json:"direction"`
-	MPLSLabel               int                  `json:"mpls_label"`
 	VlanTag                 int                  `json:"vlan_tag"`
 	SRCMac                  string               `json:"src_mac"`
 	ServiceChainAddress     string               `json:"service_chain_address"`
 	DSTMac                  string               `json:"dst_mac"`
 	Protocol                string               `json:"protocol"`
+	Ipv6ServiceChainAddress IpAddressType        `json:"ipv6_service_chain_address"`
+	Direction               TrafficDirectionType `json:"direction"`
+	MPLSLabel               int                  `json:"mpls_label"`
 }
 
 // String returns json representation of the object
@@ -41,15 +41,6 @@ func MakePolicyBasedForwardingRuleType() *PolicyBasedForwardingRuleType {
 func InterfaceToPolicyBasedForwardingRuleType(iData interface{}) *PolicyBasedForwardingRuleType {
 	data := iData.(map[string]interface{})
 	return &PolicyBasedForwardingRuleType{
-		SRCMac: data["src_mac"].(string),
-
-		//{"type":"string"}
-		ServiceChainAddress: data["service_chain_address"].(string),
-
-		//{"type":"string"}
-		DSTMac: data["dst_mac"].(string),
-
-		//{"type":"string"}
 		Protocol: data["protocol"].(string),
 
 		//{"type":"string"}
@@ -65,6 +56,15 @@ func InterfaceToPolicyBasedForwardingRuleType(iData interface{}) *PolicyBasedFor
 		VlanTag: data["vlan_tag"].(int),
 
 		//{"type":"integer"}
+		SRCMac: data["src_mac"].(string),
+
+		//{"type":"string"}
+		ServiceChainAddress: data["service_chain_address"].(string),
+
+		//{"type":"string"}
+		DSTMac: data["dst_mac"].(string),
+
+		//{"type":"string"}
 
 	}
 }

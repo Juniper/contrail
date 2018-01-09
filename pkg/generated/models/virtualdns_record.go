@@ -6,15 +6,15 @@ import "encoding/json"
 
 // VirtualDNSRecord
 type VirtualDNSRecord struct {
-	UUID                 string                `json:"uuid"`
+	Annotations          *KeyValuePairs        `json:"annotations"`
+	Perms2               *PermType2            `json:"perms2"`
+	ParentUUID           string                `json:"parent_uuid"`
 	ParentType           string                `json:"parent_type"`
+	DisplayName          string                `json:"display_name"`
+	UUID                 string                `json:"uuid"`
+	VirtualDNSRecordData *VirtualDnsRecordType `json:"virtual_DNS_record_data"`
 	FQName               []string              `json:"fq_name"`
 	IDPerms              *IdPermsType          `json:"id_perms"`
-	DisplayName          string                `json:"display_name"`
-	Annotations          *KeyValuePairs        `json:"annotations"`
-	VirtualDNSRecordData *VirtualDnsRecordType `json:"virtual_DNS_record_data"`
-	ParentUUID           string                `json:"parent_uuid"`
-	Perms2               *PermType2            `json:"perms2"`
 }
 
 // String returns json representation of the object
@@ -27,15 +27,15 @@ func (model *VirtualDNSRecord) String() string {
 func MakeVirtualDNSRecord() *VirtualDNSRecord {
 	return &VirtualDNSRecord{
 		//TODO(nati): Apply default
-		Perms2:               MakePermType2(),
-		ParentUUID:           "",
-		Annotations:          MakeKeyValuePairs(),
 		VirtualDNSRecordData: MakeVirtualDnsRecordType(),
-		UUID:                 "",
-		ParentType:           "",
 		FQName:               []string{},
 		IDPerms:              MakeIdPermsType(),
+		UUID:                 "",
+		Perms2:               MakePermType2(),
+		ParentUUID:           "",
+		ParentType:           "",
 		DisplayName:          "",
+		Annotations:          MakeKeyValuePairs(),
 	}
 }
 
@@ -43,31 +43,31 @@ func MakeVirtualDNSRecord() *VirtualDNSRecord {
 func InterfaceToVirtualDNSRecord(iData interface{}) *VirtualDNSRecord {
 	data := iData.(map[string]interface{})
 	return &VirtualDNSRecord{
+		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
 		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
-		FQName: data["fq_name"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
-
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
 		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
 		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		VirtualDNSRecordData: InterfaceToVirtualDnsRecordType(data["virtual_DNS_record_data"]),
-
-		//{"description":"DNS record data has configuration like type, name, ip address, loadbalancing etc.","type":"object","properties":{"record_class":{"type":"string","enum":["IN"]},"record_data":{"type":"string"},"record_mx_preference":{"type":"integer"},"record_name":{"type":"string"},"record_ttl_seconds":{"type":"integer"},"record_type":{"type":"string","enum":["A","AAAA","CNAME","PTR","NS","MX"]}}}
-		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
 		Perms2: InterfaceToPermType2(data["perms2"]),
 
 		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
-		ParentUUID: data["parent_uuid"].(string),
+		VirtualDNSRecordData: InterfaceToVirtualDnsRecordType(data["virtual_DNS_record_data"]),
+
+		//{"description":"DNS record data has configuration like type, name, ip address, loadbalancing etc.","type":"object","properties":{"record_class":{"type":"string","enum":["IN"]},"record_data":{"type":"string"},"record_mx_preference":{"type":"integer"},"record_name":{"type":"string"},"record_ttl_seconds":{"type":"integer"},"record_type":{"type":"string","enum":["A","AAAA","CNAME","PTR","NS","MX"]}}}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
+		UUID: data["uuid"].(string),
 
 		//{"type":"string"}
 

@@ -273,7 +273,9 @@ func ListPeeringPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.PeeringPoli
 	var err error
 	//TODO (check input)
 	spec.Table = "peering_policy"
-	spec.Fields = PeeringPolicyFields
+	if spec.Fields == nil {
+		spec.Fields = PeeringPolicyFields
+	}
 	spec.RefFields = PeeringPolicyRefFields
 	spec.BackRefFields = PeeringPolicyBackRefFields
 	result := models.MakePeeringPolicySlice()

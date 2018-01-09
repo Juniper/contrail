@@ -20,8 +20,8 @@ func (model *ShareType) String() string {
 func MakeShareType() *ShareType {
 	return &ShareType{
 		//TODO(nati): Apply default
-		TenantAccess: MakeAccessType(),
 		Tenant:       "",
+		TenantAccess: MakeAccessType(),
 	}
 }
 
@@ -29,12 +29,12 @@ func MakeShareType() *ShareType {
 func InterfaceToShareType(iData interface{}) *ShareType {
 	data := iData.(map[string]interface{})
 	return &ShareType{
-		TenantAccess: InterfaceToAccessType(data["tenant_access"]),
-
-		//{"description":"Allowed permissions in sharing","type":"integer","minimum":0,"maximum":7}
 		Tenant: data["tenant"].(string),
 
 		//{"description":"Name of tenant with whom the object is shared","type":"string"}
+		TenantAccess: InterfaceToAccessType(data["tenant_access"]),
+
+		//{"description":"Allowed permissions in sharing","type":"integer","minimum":0,"maximum":7}
 
 	}
 }

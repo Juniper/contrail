@@ -397,7 +397,9 @@ func ListNetworkIpam(tx *sql.Tx, spec *common.ListSpec) ([]*models.NetworkIpam, 
 	var err error
 	//TODO (check input)
 	spec.Table = "network_ipam"
-	spec.Fields = NetworkIpamFields
+	if spec.Fields == nil {
+		spec.Fields = NetworkIpamFields
+	}
 	spec.RefFields = NetworkIpamRefFields
 	spec.BackRefFields = NetworkIpamBackRefFields
 	result := models.MakeNetworkIpamSlice()

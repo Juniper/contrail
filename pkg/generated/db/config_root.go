@@ -1162,7 +1162,9 @@ func ListConfigRoot(tx *sql.Tx, spec *common.ListSpec) ([]*models.ConfigRoot, er
 	var err error
 	//TODO (check input)
 	spec.Table = "config_root"
-	spec.Fields = ConfigRootFields
+	if spec.Fields == nil {
+		spec.Fields = ConfigRootFields
+	}
 	spec.RefFields = ConfigRootRefFields
 	spec.BackRefFields = ConfigRootBackRefFields
 	result := models.MakeConfigRootSlice()

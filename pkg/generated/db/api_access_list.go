@@ -271,7 +271,9 @@ func ListAPIAccessList(tx *sql.Tx, spec *common.ListSpec) ([]*models.APIAccessLi
 	var err error
 	//TODO (check input)
 	spec.Table = "api_access_list"
-	spec.Fields = APIAccessListFields
+	if spec.Fields == nil {
+		spec.Fields = APIAccessListFields
+	}
 	spec.RefFields = APIAccessListRefFields
 	spec.BackRefFields = APIAccessListBackRefFields
 	result := models.MakeAPIAccessListSlice()

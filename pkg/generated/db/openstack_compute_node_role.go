@@ -353,7 +353,9 @@ func ListOpenstackComputeNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.
 	var err error
 	//TODO (check input)
 	spec.Table = "openstack_compute_node_role"
-	spec.Fields = OpenstackComputeNodeRoleFields
+	if spec.Fields == nil {
+		spec.Fields = OpenstackComputeNodeRoleFields
+	}
 	spec.RefFields = OpenstackComputeNodeRoleRefFields
 	spec.BackRefFields = OpenstackComputeNodeRoleBackRefFields
 	result := models.MakeOpenstackComputeNodeRoleSlice()

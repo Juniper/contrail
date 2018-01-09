@@ -381,7 +381,9 @@ func ListServiceEndpoint(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceEn
 	var err error
 	//TODO (check input)
 	spec.Table = "service_endpoint"
-	spec.Fields = ServiceEndpointFields
+	if spec.Fields == nil {
+		spec.Fields = ServiceEndpointFields
+	}
 	spec.RefFields = ServiceEndpointRefFields
 	spec.BackRefFields = ServiceEndpointBackRefFields
 	result := models.MakeServiceEndpointSlice()

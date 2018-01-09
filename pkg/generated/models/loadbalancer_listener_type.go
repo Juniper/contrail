@@ -6,12 +6,12 @@ import "encoding/json"
 
 // LoadbalancerListenerType
 type LoadbalancerListenerType struct {
-	DefaultTLSContainer string                   `json:"default_tls_container"`
-	Protocol            LoadbalancerProtocolType `json:"protocol"`
 	ConnectionLimit     int                      `json:"connection_limit"`
 	AdminState          bool                     `json:"admin_state"`
 	SniContainers       []string                 `json:"sni_containers"`
 	ProtocolPort        int                      `json:"protocol_port"`
+	DefaultTLSContainer string                   `json:"default_tls_container"`
+	Protocol            LoadbalancerProtocolType `json:"protocol"`
 }
 
 // String returns json representation of the object
@@ -37,6 +37,12 @@ func MakeLoadbalancerListenerType() *LoadbalancerListenerType {
 func InterfaceToLoadbalancerListenerType(iData interface{}) *LoadbalancerListenerType {
 	data := iData.(map[string]interface{})
 	return &LoadbalancerListenerType{
+		DefaultTLSContainer: data["default_tls_container"].(string),
+
+		//{"type":"string"}
+		Protocol: InterfaceToLoadbalancerProtocolType(data["protocol"]),
+
+		//{"type":"string","enum":["HTTP","HTTPS","TCP","UDP","TERMINATED_HTTPS"]}
 		ConnectionLimit: data["connection_limit"].(int),
 
 		//{"type":"integer"}
@@ -49,12 +55,6 @@ func InterfaceToLoadbalancerListenerType(iData interface{}) *LoadbalancerListene
 		ProtocolPort: data["protocol_port"].(int),
 
 		//{"type":"integer"}
-		DefaultTLSContainer: data["default_tls_container"].(string),
-
-		//{"type":"string"}
-		Protocol: InterfaceToLoadbalancerProtocolType(data["protocol"]),
-
-		//{"type":"string","enum":["HTTP","HTTPS","TCP","UDP","TERMINATED_HTTPS"]}
 
 	}
 }

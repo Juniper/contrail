@@ -313,7 +313,9 @@ func ListKubernetesNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.Kubernetes
 	var err error
 	//TODO (check input)
 	spec.Table = "kubernetes_node"
-	spec.Fields = KubernetesNodeFields
+	if spec.Fields == nil {
+		spec.Fields = KubernetesNodeFields
+	}
 	spec.RefFields = KubernetesNodeRefFields
 	spec.BackRefFields = KubernetesNodeBackRefFields
 	result := models.MakeKubernetesNodeSlice()

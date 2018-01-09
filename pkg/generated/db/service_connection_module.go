@@ -323,7 +323,9 @@ func ListServiceConnectionModule(tx *sql.Tx, spec *common.ListSpec) ([]*models.S
 	var err error
 	//TODO (check input)
 	spec.Table = "service_connection_module"
-	spec.Fields = ServiceConnectionModuleFields
+	if spec.Fields == nil {
+		spec.Fields = ServiceConnectionModuleFields
+	}
 	spec.RefFields = ServiceConnectionModuleRefFields
 	spec.BackRefFields = ServiceConnectionModuleBackRefFields
 	result := models.MakeServiceConnectionModuleSlice()
