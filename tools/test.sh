@@ -1,6 +1,35 @@
 
 #!/usr/bin/env bash
 
-TOP=$(dirname "$0")
+TOP=$(cd $(dirname "$0") && cd ../ && pwd)
 
-go test -race -cover $(go list ./... | grep -v /vendor/)
+echo "mode: count" > $TOP/profile.cov
+
+cd $TOP
+
+for dir in $(find ./pkg -maxdepth 10 -not -path '*/test_data/*' -type d); 
+do
+cd $TOP
+
+ls $dir/*.go && result=1
+echo $result
+
+if [ $result -eq 1 ]; then
+    echo $dir
+    cd $dir
+    go test -race -covermode=atomic -coverprofile=profile.tmp .
+    result=$?
+    if [ $result -ne 0 ]; then
+        echo "failed"
+        exit $result
+    fi
+
+    if [ -f profile.tmp ]
+    then
+        cat profile.tmp | tail -n +2 >> $TOP/profile.cov
+        rm profile.tmp
+    fi
+fi
+done
+
+go tool cover -func $TOP/profile.cov

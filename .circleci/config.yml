@@ -28,6 +28,9 @@ jobs:
     - run:
         name: Run Test
         command: make test
+    - run:
+        name: coverall
+        command: /go/bin/goveralls -coverprofile=profile.cov -service=circle-ci -repotoken=$COVERALLS_TOKEN
   deploy-job:
     docker:
       - image: circleci/golang:1.9
