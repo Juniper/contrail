@@ -17,11 +17,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	retryDB     = 10
-	retryDBWait = 10
-)
-
 //Server represents Intent API Server.
 type Server struct {
 	Echo *echo.Echo

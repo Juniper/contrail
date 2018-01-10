@@ -10,7 +10,7 @@
 - Follow best practices
   Effective Go: https://golang.org/doc/effective_go.html
 
-## Build pre-requistites
+## Build pre-requisites
 
 The following software is required to build this project:
 
@@ -35,7 +35,7 @@ make generate
 ```
 
 Templates are stored in [tools/templates](tools/templates)
-[Template configuraion](tools/templates/template_config.yaml)
+[Template configuration](tools/templates/template_config.yaml)
 You can add your template on template_config.yaml.
 
 ## Schema Files
@@ -47,9 +47,10 @@ JSON version stored in public/schema.json
 
 ## Testing
 
-You need to run a local mysql instance running with test configuraion.
+You need to run a local mysql instance running with test configuration.
 
-It is expected that the root password is 'contrail123', you can set this on an existing installation from the mysql prompt as follows:
+It is expected that the root password is 'contrail123', you can set this on an existing installation
+from the mysql prompt as follows:
 
 ``` shell
 MariaDB [(none)]> ALTER USER 'root'@'localhost' IDENTIFIED BY 'contrail123';
@@ -78,16 +79,16 @@ go run cmd/contrail/main.go server -c packaging/apisrv.yml
 ### Keystone Support
 
 API Server supports Keystone V3 authentication and RBAC.
-API Server has minimal Keystone API V3 support for standalone usecase.
-see a configuraion example in tools/test_config.yml
+API Server has minimal Keystone API V3 support for standalone use case.
+See a configuration example in tools/test_config.yml
 
 ## Binary
 
-Dep, RPM and Binaries are stored in release page.
+Deb, RPM and Binaries are stored in release page.
 
 See [releases](https://github.com/Juniper/contrail/releases)
 
-## commands
+## Commands
 
 - contrail  command for running intent api server/intent compiler etc
 
@@ -103,7 +104,7 @@ Available Commands:
   server      Start API Server
 
 Flags:
-  -c, --config string   Configuraion File
+  -c, --config string   Configuration File
   -h, --help            help for contrail
 
 Use "contrail [command] --help" for more information about a command.
@@ -121,7 +122,7 @@ Usage:
 Available Commands:
   generate    generate code from schema
   help        Help about any command
-  package     make a dep and rpm package
+  package     make a deb and rpm package
 
 Flags:
   -h, --help   help for contrailutil

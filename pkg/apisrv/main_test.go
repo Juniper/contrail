@@ -17,7 +17,6 @@ import (
 
 var testServer *httptest.Server
 var server *Server
-var testURL string
 
 func TestMain(m *testing.M) {
 	common.InitConfig()
@@ -29,9 +28,7 @@ func TestMain(m *testing.M) {
 	}
 
 	testServer = httptest.NewServer(server.Echo)
-	if err != nil {
-		log.Fatal(err)
-	}
+
 	viper.Set("keystone.authurl", testServer.URL+"/v3")
 	err = server.Init()
 	if err != nil {

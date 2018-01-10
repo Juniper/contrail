@@ -25,7 +25,8 @@ func TestGetValueByPathSingleDeep(t *testing.T) {
 }
 
 func TestGetValueByPathDeepDeep(t *testing.T) {
-	current := map[string]interface{}{"one": map[string]interface{}{"two": map[string]interface{}{"three": map[string]interface{}{"four": 4}}}}
+	current := map[string]interface{}{"one": map[string]interface{}{"two": map[string]interface{}{
+		"three": map[string]interface{}{"four": 4}}}}
 	result, ok := GetValueByPath(current, "one.two.three.four", ".")
 	assert.Equal(t, true, ok)
 	assert.Equal(t, 4, result)
@@ -63,5 +64,6 @@ func TestSetValueByPathDeepDeep(t *testing.T) {
 	current := map[string]interface{}{"one": map[string]interface{}{}}
 	ok := SetValueByPath(current, "one.two.three.four", ".", 4)
 	assert.Equal(t, true, ok)
-	assert.Equal(t, 4, current["one"].(map[string]interface{})["two"].(map[string]interface{})["three"].(map[string]interface{})["four"])
+	assert.Equal(t, 4, current["one"].(map[string]interface{})["two"].(map[string]interface {
+	})["three"].(map[string]interface{})["four"])
 }

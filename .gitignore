@@ -14,5 +14,7 @@
 .AppleDouble
 .LSOverride
 
-dist
+# Project specific paths
+dist/
 profile.cov
+tmp/

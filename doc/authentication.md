@@ -3,16 +3,16 @@
 API Server support OpenStack Keystone v3 authentiation.
 Keystone supports various backend such as LDAP etc.
 
-Configuraion Example
+Configuration Example
 
 ```
-# Keystone configuraion
+# Keystone configuration
 keystone:
     authurl: http://localhost:5000/v3
 ```
 
 ```
-# Keystone configuraion
+# Keystone configuration
 keystone:
     local: true # Enable local keystone v3. This is only for testing now.
     assignment:

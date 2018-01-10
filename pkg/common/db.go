@@ -17,7 +17,7 @@ const (
 	retryDBWait = 10
 )
 
-//ListSpec is configuraion option for select query.
+//ListSpec is configuration option for select query.
 type ListSpec struct {
 	Table           string
 	Filter          Filter
@@ -196,7 +196,14 @@ func (spec *ListSpec) buildRefQuery() {
 		for _, field := range refFields {
 			refColumns = append(refColumns, fmt.Sprintf("'%s', `%s`.`%s`", field, refTable, field))
 		}
-		spec.columnParts = append(spec.columnParts, fmt.Sprintf("group_concat(distinct JSON_OBJECT(%s)) as `%s_ref`", strings.Join(refColumns, ","), refTable))
+		spec.columnParts = append(
+			spec.columnParts,
+			fmt.Sprintf(
+				"group_concat(distinct JSON_OBJECT(%s)) as `%s_ref`",
+				strings.Join(refColumns, ","),
+				refTable,
+			),
+		)
 		spec.Columns["ref_"+linkTo] = len(spec.Columns)
 		spec.joins = append(spec.joins,
 			fmt.Sprintf("left join `%s` on `%s`.`uuid` = `%s`.`from`",
@@ -215,7 +222,14 @@ func (spec *ListSpec) buildBackRefQuery() {
 			refColumns = append(refColumns, fmt.Sprintf("'%s', `%s`.`%s`", field, refTable, field))
 		}
 		if spec.Detail {
-			spec.columnParts = append(spec.columnParts, fmt.Sprintf("group_concat(distinct JSON_OBJECT(%s)) as `%s_ref`", strings.Join(refColumns, ","), refTable))
+			spec.columnParts = append(
+				spec.columnParts,
+				fmt.Sprintf(
+					"group_concat(distinct JSON_OBJECT(%s)) as `%s_ref`",
+					strings.Join(refColumns, ","),
+					refTable,
+				),
+			)
 			spec.Columns["backref_"+refTable] = len(spec.Columns)
 		}
 		if spec.Detail || len(spec.BackRefUUIDs) > 0 {

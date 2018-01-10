@@ -2,16 +2,12 @@ package contrail
 
 import (
 	"github.com/Juniper/contrail/pkg/apisrv"
-	"github.com/spf13/cobra"
-
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
-var conf string
-
 func init() {
-	cobra.OnInitialize()
-	Cmd.AddCommand(apiServerCmd)
+	Contrail.AddCommand(apiServerCmd)
 }
 
 var apiServerCmd = &cobra.Command{
@@ -23,9 +19,12 @@ var apiServerCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		server.Init()
-		err = server.Run()
-		if err != nil {
+
+		if err = server.Init(); err != nil {
+			log.Fatal(err)
+		}
+
+		if err = server.Run(); err != nil {
 			log.Fatal(err)
 		}
 	},

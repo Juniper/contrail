@@ -1,6 +1,6 @@
 all: deps lint test build
 
-deps: ## Setup the go dependencies 
+deps: ## Setup the go dependencies
 	./tools/deps.sh
 
 lint: ## Runs gometalinter on the source code

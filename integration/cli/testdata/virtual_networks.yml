@@ -1,0 +1,72 @@
+- kind: virtual_network
+  data:
+  - virtual-network:
+      annotations: {}
+      ecmp_hashing_include_fields:
+        destination_ip: false
+        destination_port: false
+        hashing_configured: false
+        ip_protocol: false
+        source_ip: false
+        source_port: false
+      export_route_target_list: {}
+      external_ipam: false
+      flood_unknown_unicast: false
+      id_perms:
+        enable: false
+        permissions: {}
+        user_visible: false
+      import_route_target_list: {}
+      is_shared: false
+      layer2_control_word: false
+      mac_learning_enabled: false
+      mac_limit_control: {}
+      mac_move_control: {}
+      multi_policy_service_chains_enabled: false
+      pbb_etree_enable: false
+      pbb_evpn_enable: false
+      perms2:
+        owner: admin
+      port_security_enabled: false
+      provider_properties: {}
+      route_target_list: {}
+      router_external: false
+#      uuid: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+      virtual_network_properties:
+        allow_transit: false
+        mirror_destination: false
+#  - virtual-network:
+#      annotations: {}
+#      ecmp_hashing_include_fields:
+#        destination_ip: false
+#        destination_port: false
+#        hashing_configured: false
+#        ip_protocol: false
+#        source_ip: false
+#        source_port: false
+#      export_route_target_list: {}
+#      external_ipam: false
+#      flood_unknown_unicast: false
+#      id_perms:
+#        enable: false
+#        permissions: {}
+#        user_visible: false
+#      import_route_target_list: {}
+#      is_shared: false
+#      layer2_control_word: false
+#      mac_learning_enabled: false
+#      mac_limit_control: {}
+#      mac_move_control: {}
+#      multi_policy_service_chains_enabled: false
+#      pbb_etree_enable: false
+#      pbb_evpn_enable: false
+#      perms2:
+#        owner: admin
+#      port_security_enabled: false
+#      provider_properties: {}
+#      route_target_list: {}
+#      router_external: false
+#      uuid: bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb
+#      virtual_network_properties:
+#        allow_transit: false
+#        mirror_destination: false

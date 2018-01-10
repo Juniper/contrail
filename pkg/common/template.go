@@ -9,7 +9,7 @@ import (
 	"github.com/flosch/pongo2"
 )
 
-//TemplateConfig is configuraion option for templates.
+//TemplateConfig is configuration option for templates.
 type TemplateConfig struct {
 	TemplateType string `yaml:"type"`
 	TemplatePath string `yaml:"template_path"`
