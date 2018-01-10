@@ -120,6 +120,12 @@ var VirtualRouterBackRefFields = map[string][]string{
 	},
 }
 
+// VirtualRouterParentTypes is possible parents for VirtualRouter
+var VirtualRouterParents = []string{
+
+	"global_system_config",
+}
+
 const insertVirtualRouterNetworkIpamQuery = "insert into `ref_virtual_router_network_ipam` (`from`, `to` ,`subnet`,`allocation_pools`) values (?, ?,?,?);"
 
 const insertVirtualRouterVirtualMachineQuery = "insert into `ref_virtual_router_virtual_machine` (`from`, `to` ) values (?, ?);"
@@ -164,19 +170,6 @@ func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtVirtualMachineRef, err := tx.Prepare(insertVirtualRouterVirtualMachineQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineRefs create statement failed")
-	}
-	defer stmtVirtualMachineRef.Close()
-	for _, ref := range model.VirtualMachineRefs {
-
-		_, err = stmtVirtualMachineRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineRefs create failed")
-		}
-	}
-
 	stmtNetworkIpamRef, err := tx.Prepare(insertVirtualRouterNetworkIpamQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing NetworkIpamRefs create statement failed")
@@ -195,6 +188,25 @@ func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
 		}
 	}
 
+	stmtVirtualMachineRef, err := tx.Prepare(insertVirtualRouterVirtualMachineQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineRefs create statement failed")
+	}
+	defer stmtVirtualMachineRef.Close()
+	for _, ref := range model.VirtualMachineRefs {
+
+		_, err = stmtVirtualMachineRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineRefs create failed")
+		}
+	}
+
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "virtual_router",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -390,26 +402,6 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 
 	}
 
-	if value, ok := values["ref_virtual_machine"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualRouterVirtualMachineRef{}
-			referenceModel.UUID = uuid
-			m.VirtualMachineRefs = append(m.VirtualMachineRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_network_ipam"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -429,6 +421,26 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 
 			attr := models.MakeVirtualRouterNetworkIpamType()
 			referenceModel.Attr = attr
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_machine"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualRouterVirtualMachineRef{}
+			referenceModel.UUID = uuid
+			m.VirtualMachineRefs = append(m.VirtualMachineRefs, referenceModel)
 
 		}
 	}
@@ -887,6 +899,15 @@ func ListVirtualRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualRout
 	spec.RefFields = VirtualRouterRefFields
 	spec.BackRefFields = VirtualRouterBackRefFields
 	result := models.MakeVirtualRouterSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -945,8 +966,9 @@ func DeleteVirtualRouter(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

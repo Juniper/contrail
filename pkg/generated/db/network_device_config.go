@@ -52,6 +52,9 @@ var NetworkDeviceConfigRefFields = map[string][]string{
 // NetworkDeviceConfigBackRefFields is db back reference fields for NetworkDeviceConfig
 var NetworkDeviceConfigBackRefFields = map[string][]string{}
 
+// NetworkDeviceConfigParentTypes is possible parents for NetworkDeviceConfig
+var NetworkDeviceConfigParents = []string{}
+
 const insertNetworkDeviceConfigPhysicalRouterQuery = "insert into `ref_network_device_config_physical_router` (`from`, `to` ) values (?, ?);"
 
 // CreateNetworkDeviceConfig inserts NetworkDeviceConfig to DB
@@ -104,6 +107,12 @@ func CreateNetworkDeviceConfig(tx *sql.Tx, model *models.NetworkDeviceConfig) er
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "network_device_config",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -310,6 +319,15 @@ func ListNetworkDeviceConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Netwo
 	spec.RefFields = NetworkDeviceConfigRefFields
 	spec.BackRefFields = NetworkDeviceConfigBackRefFields
 	result := models.MakeNetworkDeviceConfigSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -368,8 +386,9 @@ func DeleteNetworkDeviceConfig(tx *sql.Tx, uuid string, auth *common.AuthContext
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

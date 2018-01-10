@@ -20,7 +20,8 @@ func TestTag(t *testing.T) {
 		}
 	}()
 	model := models.MakeTag()
-	model.UUID = "dummy_uuid"
+	model.UUID = "tag_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "tag_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateTag(tx, model)

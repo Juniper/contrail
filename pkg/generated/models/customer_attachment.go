@@ -6,14 +6,14 @@ import "encoding/json"
 
 // CustomerAttachment
 type CustomerAttachment struct {
-	Perms2      *PermType2     `json:"perms2"`
-	UUID        string         `json:"uuid"`
-	ParentUUID  string         `json:"parent_uuid"`
 	ParentType  string         `json:"parent_type"`
 	FQName      []string       `json:"fq_name"`
 	IDPerms     *IdPermsType   `json:"id_perms"`
 	DisplayName string         `json:"display_name"`
 	Annotations *KeyValuePairs `json:"annotations"`
+	Perms2      *PermType2     `json:"perms2"`
+	UUID        string         `json:"uuid"`
+	ParentUUID  string         `json:"parent_uuid"`
 
 	VirtualMachineInterfaceRefs []*CustomerAttachmentVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs"`
 	FloatingIPRefs              []*CustomerAttachmentFloatingIPRef              `json:"floating_ip_refs"`
@@ -58,6 +58,15 @@ func MakeCustomerAttachment() *CustomerAttachment {
 func InterfaceToCustomerAttachment(iData interface{}) *CustomerAttachment {
 	data := iData.(map[string]interface{})
 	return &CustomerAttachment{
+		DisplayName: data["display_name"].(string),
+
+		//{"type":"string"}
+		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
+
+		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
+		Perms2: InterfaceToPermType2(data["perms2"]),
+
+		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
 		UUID: data["uuid"].(string),
 
 		//{"type":"string"}
@@ -73,15 +82,6 @@ func InterfaceToCustomerAttachment(iData interface{}) *CustomerAttachment {
 		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
 
 		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
-		DisplayName: data["display_name"].(string),
-
-		//{"type":"string"}
-		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
-
-		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		Perms2: InterfaceToPermType2(data["perms2"]),
-
-		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
 
 	}
 }

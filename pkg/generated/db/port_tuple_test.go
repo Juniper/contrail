@@ -20,7 +20,8 @@ func TestPortTuple(t *testing.T) {
 		}
 	}()
 	model := models.MakePortTuple()
-	model.UUID = "dummy_uuid"
+	model.UUID = "port_tuple_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "port_tuple_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreatePortTuple(tx, model)

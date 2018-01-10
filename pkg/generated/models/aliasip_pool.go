@@ -6,6 +6,7 @@ import "encoding/json"
 
 // AliasIPPool
 type AliasIPPool struct {
+	ParentType  string         `json:"parent_type"`
 	FQName      []string       `json:"fq_name"`
 	IDPerms     *IdPermsType   `json:"id_perms"`
 	DisplayName string         `json:"display_name"`
@@ -13,7 +14,6 @@ type AliasIPPool struct {
 	Perms2      *PermType2     `json:"perms2"`
 	UUID        string         `json:"uuid"`
 	ParentUUID  string         `json:"parent_uuid"`
-	ParentType  string         `json:"parent_type"`
 
 	AliasIPs []*AliasIP `json:"alias_ips"`
 }
@@ -28,6 +28,7 @@ func (model *AliasIPPool) String() string {
 func MakeAliasIPPool() *AliasIPPool {
 	return &AliasIPPool{
 		//TODO(nati): Apply default
+		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
@@ -35,7 +36,6 @@ func MakeAliasIPPool() *AliasIPPool {
 		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
 	}
 }
 
@@ -43,12 +43,6 @@ func MakeAliasIPPool() *AliasIPPool {
 func InterfaceToAliasIPPool(iData interface{}) *AliasIPPool {
 	data := iData.(map[string]interface{})
 	return &AliasIPPool{
-		Perms2: InterfaceToPermType2(data["perms2"]),
-
-		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
-		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
 		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
@@ -67,6 +61,12 @@ func InterfaceToAliasIPPool(iData interface{}) *AliasIPPool {
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
 		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
+		Perms2: InterfaceToPermType2(data["perms2"]),
+
+		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
+		UUID: data["uuid"].(string),
+
+		//{"type":"string"}
 
 	}
 }

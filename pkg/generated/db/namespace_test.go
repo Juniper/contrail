@@ -20,7 +20,8 @@ func TestNamespace(t *testing.T) {
 		}
 	}()
 	model := models.MakeNamespace()
-	model.UUID = "dummy_uuid"
+	model.UUID = "namespace_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "namespace_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateNamespace(tx, model)

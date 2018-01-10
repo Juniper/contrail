@@ -114,6 +114,11 @@ var InstanceIPBackRefFields = map[string][]string{
 	},
 }
 
+// InstanceIPParentTypes is possible parents for InstanceIP
+var InstanceIPParents = []string{}
+
+const insertInstanceIPVirtualMachineInterfaceQuery = "insert into `ref_instance_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
+
 const insertInstanceIPPhysicalRouterQuery = "insert into `ref_instance_ip_physical_router` (`from`, `to` ) values (?, ?);"
 
 const insertInstanceIPVirtualRouterQuery = "insert into `ref_instance_ip_virtual_router` (`from`, `to` ) values (?, ?);"
@@ -121,8 +126,6 @@ const insertInstanceIPVirtualRouterQuery = "insert into `ref_instance_ip_virtual
 const insertInstanceIPNetworkIpamQuery = "insert into `ref_instance_ip_network_ipam` (`from`, `to` ) values (?, ?);"
 
 const insertInstanceIPVirtualNetworkQuery = "insert into `ref_instance_ip_virtual_network` (`from`, `to` ) values (?, ?);"
-
-const insertInstanceIPVirtualMachineInterfaceQuery = "insert into `ref_instance_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateInstanceIP inserts InstanceIP to DB
 func CreateInstanceIP(tx *sql.Tx, model *models.InstanceIP) error {
@@ -171,32 +174,6 @@ func CreateInstanceIP(tx *sql.Tx, model *models.InstanceIP) error {
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtVirtualRouterRef, err := tx.Prepare(insertInstanceIPVirtualRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualRouterRefs create statement failed")
-	}
-	defer stmtVirtualRouterRef.Close()
-	for _, ref := range model.VirtualRouterRefs {
-
-		_, err = stmtVirtualRouterRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualRouterRefs create failed")
-		}
-	}
-
-	stmtNetworkIpamRef, err := tx.Prepare(insertInstanceIPNetworkIpamQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing NetworkIpamRefs create statement failed")
-	}
-	defer stmtNetworkIpamRef.Close()
-	for _, ref := range model.NetworkIpamRefs {
-
-		_, err = stmtNetworkIpamRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "NetworkIpamRefs create failed")
-		}
-	}
-
 	stmtVirtualNetworkRef, err := tx.Prepare(insertInstanceIPVirtualNetworkQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
@@ -236,6 +213,38 @@ func CreateInstanceIP(tx *sql.Tx, model *models.InstanceIP) error {
 		}
 	}
 
+	stmtVirtualRouterRef, err := tx.Prepare(insertInstanceIPVirtualRouterQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualRouterRefs create statement failed")
+	}
+	defer stmtVirtualRouterRef.Close()
+	for _, ref := range model.VirtualRouterRefs {
+
+		_, err = stmtVirtualRouterRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualRouterRefs create failed")
+		}
+	}
+
+	stmtNetworkIpamRef, err := tx.Prepare(insertInstanceIPNetworkIpamQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing NetworkIpamRefs create statement failed")
+	}
+	defer stmtNetworkIpamRef.Close()
+	for _, ref := range model.NetworkIpamRefs {
+
+		_, err = stmtNetworkIpamRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "NetworkIpamRefs create failed")
+		}
+	}
+
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "instance_ip",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -487,46 +496,6 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 
 	}
 
-	if value, ok := values["ref_network_ipam"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.InstanceIPNetworkIpamRef{}
-			referenceModel.UUID = uuid
-			m.NetworkIpamRefs = append(m.NetworkIpamRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_virtual_network"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.InstanceIPVirtualNetworkRef{}
-			referenceModel.UUID = uuid
-			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -583,6 +552,46 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 			referenceModel := &models.InstanceIPVirtualRouterRef{}
 			referenceModel.UUID = uuid
 			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_network_ipam"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.InstanceIPNetworkIpamRef{}
+			referenceModel.UUID = uuid
+			m.NetworkIpamRefs = append(m.NetworkIpamRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_network"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.InstanceIPVirtualNetworkRef{}
+			referenceModel.UUID = uuid
+			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
 
 		}
 	}
@@ -837,6 +846,15 @@ func ListInstanceIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.InstanceIP, er
 	spec.RefFields = InstanceIPRefFields
 	spec.BackRefFields = InstanceIPBackRefFields
 	result := models.MakeInstanceIPSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -895,8 +913,9 @@ func DeleteInstanceIP(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

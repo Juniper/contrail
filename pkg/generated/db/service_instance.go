@@ -95,6 +95,12 @@ var ServiceInstanceBackRefFields = map[string][]string{
 	},
 }
 
+// ServiceInstanceParentTypes is possible parents for ServiceInstance
+var ServiceInstanceParents = []string{
+
+	"project",
+}
+
 const insertServiceInstanceServiceTemplateQuery = "insert into `ref_service_instance_service_template` (`from`, `to` ) values (?, ?);"
 
 const insertServiceInstanceInstanceIPQuery = "insert into `ref_service_instance_instance_ip` (`from`, `to` ,`interface_type`) values (?, ?,?);"
@@ -179,6 +185,12 @@ func CreateServiceInstance(tx *sql.Tx, model *models.ServiceInstance) error {
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "service_instance",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -689,6 +701,15 @@ func ListServiceInstance(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceIn
 	spec.RefFields = ServiceInstanceRefFields
 	spec.BackRefFields = ServiceInstanceBackRefFields
 	result := models.MakeServiceInstanceSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -747,8 +768,9 @@ func DeleteServiceInstance(tx *sql.Tx, uuid string, auth *common.AuthContext) er
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

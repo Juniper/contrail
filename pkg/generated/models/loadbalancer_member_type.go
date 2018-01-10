@@ -6,12 +6,12 @@ import "encoding/json"
 
 // LoadbalancerMemberType
 type LoadbalancerMemberType struct {
-	AdminState        bool          `json:"admin_state"`
-	Address           IpAddressType `json:"address"`
 	ProtocolPort      int           `json:"protocol_port"`
 	Status            string        `json:"status"`
 	StatusDescription string        `json:"status_description"`
 	Weight            int           `json:"weight"`
+	AdminState        bool          `json:"admin_state"`
+	Address           IpAddressType `json:"address"`
 }
 
 // String returns json representation of the object
@@ -24,12 +24,12 @@ func (model *LoadbalancerMemberType) String() string {
 func MakeLoadbalancerMemberType() *LoadbalancerMemberType {
 	return &LoadbalancerMemberType{
 		//TODO(nati): Apply default
+		StatusDescription: "",
+		Weight:            0,
 		AdminState:        false,
 		Address:           MakeIpAddressType(),
 		ProtocolPort:      0,
 		Status:            "",
-		StatusDescription: "",
-		Weight:            0,
 	}
 }
 
@@ -37,9 +37,6 @@ func MakeLoadbalancerMemberType() *LoadbalancerMemberType {
 func InterfaceToLoadbalancerMemberType(iData interface{}) *LoadbalancerMemberType {
 	data := iData.(map[string]interface{})
 	return &LoadbalancerMemberType{
-		ProtocolPort: data["protocol_port"].(int),
-
-		//{"description":"Destination port for the application on the member.","type":"integer"}
 		Status: data["status"].(string),
 
 		//{"description":"Operational status of the member.","type":"string"}
@@ -55,6 +52,9 @@ func InterfaceToLoadbalancerMemberType(iData interface{}) *LoadbalancerMemberTyp
 		Address: InterfaceToIpAddressType(data["address"]),
 
 		//{"description":"Ip address of the member","type":"string"}
+		ProtocolPort: data["protocol_port"].(int),
+
+		//{"description":"Destination port for the application on the member.","type":"integer"}
 
 	}
 }

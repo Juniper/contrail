@@ -20,7 +20,8 @@ func TestContrailControllerNodeRole(t *testing.T) {
 		}
 	}()
 	model := models.MakeContrailControllerNodeRole()
-	model.UUID = "dummy_uuid"
+	model.UUID = "contrail_controller_node_role_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "contrail_controller_node_role_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateContrailControllerNodeRole(tx, model)

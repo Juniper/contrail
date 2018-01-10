@@ -20,7 +20,8 @@ func TestForwardingClass(t *testing.T) {
 		}
 	}()
 	model := models.MakeForwardingClass()
-	model.UUID = "dummy_uuid"
+	model.UUID = "forwarding_class_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "forwarding_class_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateForwardingClass(tx, model)

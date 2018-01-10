@@ -20,7 +20,8 @@ func TestAlarm(t *testing.T) {
 		}
 	}()
 	model := models.MakeAlarm()
-	model.UUID = "dummy_uuid"
+	model.UUID = "alarm_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "alarm_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateAlarm(tx, model)

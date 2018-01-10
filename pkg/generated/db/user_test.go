@@ -20,7 +20,8 @@ func TestUser(t *testing.T) {
 		}
 	}()
 	model := models.MakeUser()
-	model.UUID = "dummy_uuid"
+	model.UUID = "user_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "user_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateUser(tx, model)

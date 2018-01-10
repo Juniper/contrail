@@ -20,7 +20,8 @@ func TestPhysicalInterface(t *testing.T) {
 		}
 	}()
 	model := models.MakePhysicalInterface()
-	model.UUID = "dummy_uuid"
+	model.UUID = "physical_interface_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "physical_interface_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreatePhysicalInterface(tx, model)

@@ -20,7 +20,8 @@ func TestLoadbalancerMember(t *testing.T) {
 		}
 	}()
 	model := models.MakeLoadbalancerMember()
-	model.UUID = "dummy_uuid"
+	model.UUID = "loadbalancer_member_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "loadbalancer_member_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateLoadbalancerMember(tx, model)

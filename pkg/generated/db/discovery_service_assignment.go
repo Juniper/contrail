@@ -77,6 +77,9 @@ var DiscoveryServiceAssignmentBackRefFields = map[string][]string{
 	},
 }
 
+// DiscoveryServiceAssignmentParentTypes is possible parents for DiscoveryServiceAssignment
+var DiscoveryServiceAssignmentParents = []string{}
+
 // CreateDiscoveryServiceAssignment inserts DiscoveryServiceAssignment to DB
 func CreateDiscoveryServiceAssignment(tx *sql.Tx, model *models.DiscoveryServiceAssignment) error {
 	// Prepare statement for inserting data
@@ -114,6 +117,12 @@ func CreateDiscoveryServiceAssignment(tx *sql.Tx, model *models.DiscoveryService
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "discovery_service_assignment",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -527,6 +536,15 @@ func ListDiscoveryServiceAssignment(tx *sql.Tx, spec *common.ListSpec) ([]*model
 	spec.RefFields = DiscoveryServiceAssignmentRefFields
 	spec.BackRefFields = DiscoveryServiceAssignmentBackRefFields
 	result := models.MakeDiscoveryServiceAssignmentSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -585,8 +603,9 @@ func DeleteDiscoveryServiceAssignment(tx *sql.Tx, uuid string, auth *common.Auth
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

@@ -20,7 +20,8 @@ func TestLogicalInterface(t *testing.T) {
 		}
 	}()
 	model := models.MakeLogicalInterface()
-	model.UUID = "dummy_uuid"
+	model.UUID = "logical_interface_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "logical_interface_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateLogicalInterface(tx, model)

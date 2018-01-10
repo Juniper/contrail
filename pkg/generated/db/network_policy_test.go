@@ -20,7 +20,8 @@ func TestNetworkPolicy(t *testing.T) {
 		}
 	}()
 	model := models.MakeNetworkPolicy()
-	model.UUID = "dummy_uuid"
+	model.UUID = "network_policy_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "network_policy_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateNetworkPolicy(tx, model)

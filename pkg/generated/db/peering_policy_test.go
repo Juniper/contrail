@@ -20,7 +20,8 @@ func TestPeeringPolicy(t *testing.T) {
 		}
 	}()
 	model := models.MakePeeringPolicy()
-	model.UUID = "dummy_uuid"
+	model.UUID = "peering_policy_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "peering_policy_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreatePeeringPolicy(tx, model)

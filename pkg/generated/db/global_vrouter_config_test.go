@@ -20,7 +20,8 @@ func TestGlobalVrouterConfig(t *testing.T) {
 		}
 	}()
 	model := models.MakeGlobalVrouterConfig()
-	model.UUID = "dummy_uuid"
+	model.UUID = "global_vrouter_config_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "global_vrouter_config_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateGlobalVrouterConfig(tx, model)

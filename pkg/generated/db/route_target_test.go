@@ -20,7 +20,8 @@ func TestRouteTarget(t *testing.T) {
 		}
 	}()
 	model := models.MakeRouteTarget()
-	model.UUID = "dummy_uuid"
+	model.UUID = "route_target_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "route_target_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateRouteTarget(tx, model)

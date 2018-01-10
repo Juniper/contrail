@@ -47,6 +47,14 @@ var AddressGroupRefFields = map[string][]string{}
 // AddressGroupBackRefFields is db back reference fields for AddressGroup
 var AddressGroupBackRefFields = map[string][]string{}
 
+// AddressGroupParentTypes is possible parents for AddressGroup
+var AddressGroupParents = []string{
+
+	"project",
+
+	"policy_management",
+}
+
 // CreateAddressGroup inserts AddressGroup to DB
 func CreateAddressGroup(tx *sql.Tx, model *models.AddressGroup) error {
 	// Prepare statement for inserting data
@@ -85,6 +93,12 @@ func CreateAddressGroup(tx *sql.Tx, model *models.AddressGroup) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "address_group",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -277,6 +291,15 @@ func ListAddressGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.AddressGroup
 	spec.RefFields = AddressGroupRefFields
 	spec.BackRefFields = AddressGroupBackRefFields
 	result := models.MakeAddressGroupSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -335,8 +358,9 @@ func DeleteAddressGroup(tx *sql.Tx, uuid string, auth *common.AuthContext) error
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

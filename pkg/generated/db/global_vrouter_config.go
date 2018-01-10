@@ -86,6 +86,12 @@ var GlobalVrouterConfigBackRefFields = map[string][]string{
 	},
 }
 
+// GlobalVrouterConfigParentTypes is possible parents for GlobalVrouterConfig
+var GlobalVrouterConfigParents = []string{
+
+	"global_system_config",
+}
+
 // CreateGlobalVrouterConfig inserts GlobalVrouterConfig to DB
 func CreateGlobalVrouterConfig(tx *sql.Tx, model *models.GlobalVrouterConfig) error {
 	// Prepare statement for inserting data
@@ -136,6 +142,12 @@ func CreateGlobalVrouterConfig(tx *sql.Tx, model *models.GlobalVrouterConfig) er
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "global_vrouter_config",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -615,6 +627,15 @@ func ListGlobalVrouterConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Globa
 	spec.RefFields = GlobalVrouterConfigRefFields
 	spec.BackRefFields = GlobalVrouterConfigBackRefFields
 	result := models.MakeGlobalVrouterConfigSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -673,8 +694,9 @@ func DeleteGlobalVrouterConfig(tx *sql.Tx, uuid string, auth *common.AuthContext
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

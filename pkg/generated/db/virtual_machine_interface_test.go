@@ -20,7 +20,8 @@ func TestVirtualMachineInterface(t *testing.T) {
 		}
 	}()
 	model := models.MakeVirtualMachineInterface()
-	model.UUID = "dummy_uuid"
+	model.UUID = "virtual_machine_interface_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "virtual_machine_interface_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateVirtualMachineInterface(tx, model)

@@ -55,6 +55,14 @@ var TagRefFields = map[string][]string{
 // TagBackRefFields is db back reference fields for Tag
 var TagBackRefFields = map[string][]string{}
 
+// TagParentTypes is possible parents for Tag
+var TagParents = []string{
+
+	"config_root",
+
+	"project",
+}
+
 const insertTagTagTypeQuery = "insert into `ref_tag_tag_type` (`from`, `to` ) values (?, ?);"
 
 // CreateTag inserts Tag to DB
@@ -110,6 +118,12 @@ func CreateTag(tx *sql.Tx, model *models.Tag) error {
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "tag",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -340,6 +354,15 @@ func ListTag(tx *sql.Tx, spec *common.ListSpec) ([]*models.Tag, error) {
 	spec.RefFields = TagRefFields
 	spec.BackRefFields = TagBackRefFields
 	result := models.MakeTagSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -398,8 +421,9 @@ func DeleteTag(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

@@ -23,11 +23,11 @@ func (model *PermType) String() string {
 func MakePermType() *PermType {
 	return &PermType{
 		//TODO(nati): Apply default
+		Group:       "",
+		GroupAccess: MakeAccessType(),
 		Owner:       "",
 		OwnerAccess: MakeAccessType(),
 		OtherAccess: MakeAccessType(),
-		Group:       "",
-		GroupAccess: MakeAccessType(),
 	}
 }
 
@@ -35,9 +35,6 @@ func MakePermType() *PermType {
 func InterfaceToPermType(iData interface{}) *PermType {
 	data := iData.(map[string]interface{})
 	return &PermType{
-		Group: data["group"].(string),
-
-		//{"type":"string"}
 		GroupAccess: InterfaceToAccessType(data["group_access"]),
 
 		//{"type":"integer","minimum":0,"maximum":7}
@@ -50,6 +47,9 @@ func InterfaceToPermType(iData interface{}) *PermType {
 		OtherAccess: InterfaceToAccessType(data["other_access"]),
 
 		//{"type":"integer","minimum":0,"maximum":7}
+		Group: data["group"].(string),
+
+		//{"type":"string"}
 
 	}
 }

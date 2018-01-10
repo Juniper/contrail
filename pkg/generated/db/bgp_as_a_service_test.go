@@ -20,7 +20,8 @@ func TestBGPAsAService(t *testing.T) {
 		}
 	}()
 	model := models.MakeBGPAsAService()
-	model.UUID = "dummy_uuid"
+	model.UUID = "bgp_as_a_service_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "bgp_as_a_service_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateBGPAsAService(tx, model)

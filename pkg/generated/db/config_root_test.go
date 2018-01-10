@@ -20,7 +20,8 @@ func TestConfigRoot(t *testing.T) {
 		}
 	}()
 	model := models.MakeConfigRoot()
-	model.UUID = "dummy_uuid"
+	model.UUID = "config_root_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "config_root_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateConfigRoot(tx, model)

@@ -20,7 +20,8 @@ func TestVirtualIP(t *testing.T) {
 		}
 	}()
 	model := models.MakeVirtualIP()
-	model.UUID = "dummy_uuid"
+	model.UUID = "virtual_ip_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "virtual_ip_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateVirtualIP(tx, model)

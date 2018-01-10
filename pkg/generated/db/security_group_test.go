@@ -20,7 +20,8 @@ func TestSecurityGroup(t *testing.T) {
 		}
 	}()
 	model := models.MakeSecurityGroup()
-	model.UUID = "dummy_uuid"
+	model.UUID = "security_group_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "security_group_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateSecurityGroup(tx, model)

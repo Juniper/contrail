@@ -20,7 +20,8 @@ func TestControllerNodeRole(t *testing.T) {
 		}
 	}()
 	model := models.MakeControllerNodeRole()
-	model.UUID = "dummy_uuid"
+	model.UUID = "controller_node_role_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "controller_node_role_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateControllerNodeRole(tx, model)

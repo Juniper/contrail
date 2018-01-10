@@ -20,7 +20,8 @@ func TestAccessControlList(t *testing.T) {
 		}
 	}()
 	model := models.MakeAccessControlList()
-	model.UUID = "dummy_uuid"
+	model.UUID = "access_control_list_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "access_control_list_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateAccessControlList(tx, model)

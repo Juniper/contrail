@@ -54,6 +54,9 @@ var ServiceConnectionModuleRefFields = map[string][]string{
 // ServiceConnectionModuleBackRefFields is db back reference fields for ServiceConnectionModule
 var ServiceConnectionModuleBackRefFields = map[string][]string{}
 
+// ServiceConnectionModuleParentTypes is possible parents for ServiceConnectionModule
+var ServiceConnectionModuleParents = []string{}
+
 const insertServiceConnectionModuleServiceObjectQuery = "insert into `ref_service_connection_module_service_object` (`from`, `to` ) values (?, ?);"
 
 // CreateServiceConnectionModule inserts ServiceConnectionModule to DB
@@ -108,6 +111,12 @@ func CreateServiceConnectionModule(tx *sql.Tx, model *models.ServiceConnectionMo
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "service_connection_module",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -330,6 +339,15 @@ func ListServiceConnectionModule(tx *sql.Tx, spec *common.ListSpec) ([]*models.S
 	spec.RefFields = ServiceConnectionModuleRefFields
 	spec.BackRefFields = ServiceConnectionModuleBackRefFields
 	result := models.MakeServiceConnectionModuleSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -388,8 +406,9 @@ func DeleteServiceConnectionModule(tx *sql.Tx, uuid string, auth *common.AuthCon
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

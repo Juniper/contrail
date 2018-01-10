@@ -47,6 +47,12 @@ var AnalyticsNodeRefFields = map[string][]string{}
 // AnalyticsNodeBackRefFields is db back reference fields for AnalyticsNode
 var AnalyticsNodeBackRefFields = map[string][]string{}
 
+// AnalyticsNodeParentTypes is possible parents for AnalyticsNode
+var AnalyticsNodeParents = []string{
+
+	"global_system_config",
+}
+
 // CreateAnalyticsNode inserts AnalyticsNode to DB
 func CreateAnalyticsNode(tx *sql.Tx, model *models.AnalyticsNode) error {
 	// Prepare statement for inserting data
@@ -85,6 +91,12 @@ func CreateAnalyticsNode(tx *sql.Tx, model *models.AnalyticsNode) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "analytics_node",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -279,6 +291,15 @@ func ListAnalyticsNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.AnalyticsNo
 	spec.RefFields = AnalyticsNodeRefFields
 	spec.BackRefFields = AnalyticsNodeBackRefFields
 	result := models.MakeAnalyticsNodeSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -337,8 +358,9 @@ func DeleteAnalyticsNode(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

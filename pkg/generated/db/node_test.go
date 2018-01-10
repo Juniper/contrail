@@ -20,7 +20,8 @@ func TestNode(t *testing.T) {
 		}
 	}()
 	model := models.MakeNode()
-	model.UUID = "dummy_uuid"
+	model.UUID = "node_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "node_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateNode(tx, model)

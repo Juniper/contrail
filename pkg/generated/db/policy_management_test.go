@@ -20,7 +20,8 @@ func TestPolicyManagement(t *testing.T) {
 		}
 	}()
 	model := models.MakePolicyManagement()
-	model.UUID = "dummy_uuid"
+	model.UUID = "policy_management_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "policy_management_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreatePolicyManagement(tx, model)

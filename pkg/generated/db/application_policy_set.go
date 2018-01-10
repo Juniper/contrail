@@ -58,6 +58,14 @@ var ApplicationPolicySetRefFields = map[string][]string{
 // ApplicationPolicySetBackRefFields is db back reference fields for ApplicationPolicySet
 var ApplicationPolicySetBackRefFields = map[string][]string{}
 
+// ApplicationPolicySetParentTypes is possible parents for ApplicationPolicySet
+var ApplicationPolicySetParents = []string{
+
+	"project",
+
+	"policy_management",
+}
+
 const insertApplicationPolicySetFirewallPolicyQuery = "insert into `ref_application_policy_set_firewall_policy` (`from`, `to` ,`sequence`) values (?, ?,?);"
 
 const insertApplicationPolicySetGlobalVrouterConfigQuery = "insert into `ref_application_policy_set_global_vrouter_config` (`from`, `to` ) values (?, ?);"
@@ -130,6 +138,12 @@ func CreateApplicationPolicySet(tx *sql.Tx, model *models.ApplicationPolicySet) 
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "application_policy_set",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -367,6 +381,15 @@ func ListApplicationPolicySet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Appl
 	spec.RefFields = ApplicationPolicySetRefFields
 	spec.BackRefFields = ApplicationPolicySetBackRefFields
 	result := models.MakeApplicationPolicySetSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -425,8 +448,9 @@ func DeleteApplicationPolicySet(tx *sql.Tx, uuid string, auth *common.AuthContex
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

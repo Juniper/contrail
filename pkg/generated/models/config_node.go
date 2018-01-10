@@ -6,15 +6,15 @@ import "encoding/json"
 
 // ConfigNode
 type ConfigNode struct {
+	ConfigNodeIPAddress IpAddressType  `json:"config_node_ip_address"`
 	ParentUUID          string         `json:"parent_uuid"`
 	ParentType          string         `json:"parent_type"`
+	Annotations         *KeyValuePairs `json:"annotations"`
+	UUID                string         `json:"uuid"`
 	FQName              []string       `json:"fq_name"`
 	IDPerms             *IdPermsType   `json:"id_perms"`
-	Annotations         *KeyValuePairs `json:"annotations"`
-	ConfigNodeIPAddress IpAddressType  `json:"config_node_ip_address"`
 	DisplayName         string         `json:"display_name"`
 	Perms2              *PermType2     `json:"perms2"`
-	UUID                string         `json:"uuid"`
 }
 
 // String returns json representation of the object
@@ -27,15 +27,15 @@ func (model *ConfigNode) String() string {
 func MakeConfigNode() *ConfigNode {
 	return &ConfigNode{
 		//TODO(nati): Apply default
-		ConfigNodeIPAddress: MakeIpAddressType(),
-		DisplayName:         "",
-		Perms2:              MakePermType2(),
-		UUID:                "",
-		Annotations:         MakeKeyValuePairs(),
-		ParentUUID:          "",
-		ParentType:          "",
 		FQName:              []string{},
 		IDPerms:             MakeIdPermsType(),
+		DisplayName:         "",
+		Perms2:              MakePermType2(),
+		ConfigNodeIPAddress: MakeIpAddressType(),
+		ParentUUID:          "",
+		ParentType:          "",
+		Annotations:         MakeKeyValuePairs(),
+		UUID:                "",
 	}
 }
 
@@ -43,33 +43,33 @@ func MakeConfigNode() *ConfigNode {
 func InterfaceToConfigNode(iData interface{}) *ConfigNode {
 	data := iData.(map[string]interface{})
 	return &ConfigNode{
-		ConfigNodeIPAddress: InterfaceToIpAddressType(data["config_node_ip_address"]),
-
-		//{"description":"Ip address of the config node, set while provisioning.","type":"string"}
-		DisplayName: data["display_name"].(string),
-
-		//{"type":"string"}
-		Perms2: InterfaceToPermType2(data["perms2"]),
-
-		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
-		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
-		ParentUUID: data["parent_uuid"].(string),
-
-		//{"type":"string"}
-		ParentType: data["parent_type"].(string),
-
-		//{"type":"string"}
 		FQName: data["fq_name"].([]string),
 
 		//{"type":"array","item":{"type":"string"}}
 		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
 
 		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
+		DisplayName: data["display_name"].(string),
+
+		//{"type":"string"}
+		Perms2: InterfaceToPermType2(data["perms2"]),
+
+		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
+		ConfigNodeIPAddress: InterfaceToIpAddressType(data["config_node_ip_address"]),
+
+		//{"description":"Ip address of the config node, set while provisioning.","type":"string"}
+		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
+		ParentType: data["parent_type"].(string),
+
+		//{"type":"string"}
 		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
 		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
+		UUID: data["uuid"].(string),
+
+		//{"type":"string"}
 
 	}
 }

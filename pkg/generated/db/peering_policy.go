@@ -47,6 +47,9 @@ var PeeringPolicyRefFields = map[string][]string{}
 // PeeringPolicyBackRefFields is db back reference fields for PeeringPolicy
 var PeeringPolicyBackRefFields = map[string][]string{}
 
+// PeeringPolicyParentTypes is possible parents for PeeringPolicy
+var PeeringPolicyParents = []string{}
+
 // CreatePeeringPolicy inserts PeeringPolicy to DB
 func CreatePeeringPolicy(tx *sql.Tx, model *models.PeeringPolicy) error {
 	// Prepare statement for inserting data
@@ -85,6 +88,12 @@ func CreatePeeringPolicy(tx *sql.Tx, model *models.PeeringPolicy) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "peering_policy",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -279,6 +288,15 @@ func ListPeeringPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.PeeringPoli
 	spec.RefFields = PeeringPolicyRefFields
 	spec.BackRefFields = PeeringPolicyBackRefFields
 	result := models.MakePeeringPolicySlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -337,8 +355,9 @@ func DeletePeeringPolicy(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

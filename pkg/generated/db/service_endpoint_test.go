@@ -20,7 +20,8 @@ func TestServiceEndpoint(t *testing.T) {
 		}
 	}()
 	model := models.MakeServiceEndpoint()
-	model.UUID = "dummy_uuid"
+	model.UUID = "service_endpoint_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "service_endpoint_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateServiceEndpoint(tx, model)

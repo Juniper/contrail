@@ -20,7 +20,8 @@ func TestVirtualDNS(t *testing.T) {
 		}
 	}()
 	model := models.MakeVirtualDNS()
-	model.UUID = "dummy_uuid"
+	model.UUID = "virtual_DNS_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "virtual_DNS_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateVirtualDNS(tx, model)

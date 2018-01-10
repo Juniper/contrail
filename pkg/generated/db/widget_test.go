@@ -20,7 +20,8 @@ func TestWidget(t *testing.T) {
 		}
 	}()
 	model := models.MakeWidget()
-	model.UUID = "dummy_uuid"
+	model.UUID = "widget_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "widget_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateWidget(tx, model)

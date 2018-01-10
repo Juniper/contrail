@@ -20,7 +20,8 @@ func TestQosQueue(t *testing.T) {
 		}
 	}()
 	model := models.MakeQosQueue()
-	model.UUID = "dummy_uuid"
+	model.UUID = "qos_queue_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "qos_queue_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateQosQueue(tx, model)

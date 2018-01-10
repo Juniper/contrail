@@ -49,6 +49,9 @@ var WidgetRefFields = map[string][]string{}
 // WidgetBackRefFields is db back reference fields for Widget
 var WidgetBackRefFields = map[string][]string{}
 
+// WidgetParentTypes is possible parents for Widget
+var WidgetParents = []string{}
+
 // CreateWidget inserts Widget to DB
 func CreateWidget(tx *sql.Tx, model *models.Widget) error {
 	// Prepare statement for inserting data
@@ -89,6 +92,12 @@ func CreateWidget(tx *sql.Tx, model *models.Widget) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "widget",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -299,6 +308,15 @@ func ListWidget(tx *sql.Tx, spec *common.ListSpec) ([]*models.Widget, error) {
 	spec.RefFields = WidgetRefFields
 	spec.BackRefFields = WidgetBackRefFields
 	result := models.MakeWidgetSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -357,8 +375,9 @@ func DeleteWidget(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

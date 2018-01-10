@@ -20,7 +20,8 @@ func TestBridgeDomain(t *testing.T) {
 		}
 	}()
 	model := models.MakeBridgeDomain()
-	model.UUID = "dummy_uuid"
+	model.UUID = "bridge_domain_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "bridge_domain_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateBridgeDomain(tx, model)

@@ -6,15 +6,15 @@ import "encoding/json"
 
 // VirtualDNS
 type VirtualDNS struct {
-	ParentUUID     string          `json:"parent_uuid"`
 	IDPerms        *IdPermsType    `json:"id_perms"`
 	DisplayName    string          `json:"display_name"`
-	VirtualDNSData *VirtualDnsType `json:"virtual_DNS_data"`
 	Annotations    *KeyValuePairs  `json:"annotations"`
 	UUID           string          `json:"uuid"`
-	Perms2         *PermType2      `json:"perms2"`
 	ParentType     string          `json:"parent_type"`
 	FQName         []string        `json:"fq_name"`
+	Perms2         *PermType2      `json:"perms2"`
+	VirtualDNSData *VirtualDnsType `json:"virtual_DNS_data"`
+	ParentUUID     string          `json:"parent_uuid"`
 
 	VirtualDNSRecords []*VirtualDNSRecord `json:"virtual_DNS_records"`
 }
@@ -29,15 +29,15 @@ func (model *VirtualDNS) String() string {
 func MakeVirtualDNS() *VirtualDNS {
 	return &VirtualDNS{
 		//TODO(nati): Apply default
-		DisplayName:    "",
-		VirtualDNSData: MakeVirtualDnsType(),
-		Annotations:    MakeKeyValuePairs(),
-		UUID:           "",
-		ParentUUID:     "",
-		IDPerms:        MakeIdPermsType(),
-		Perms2:         MakePermType2(),
 		ParentType:     "",
 		FQName:         []string{},
+		IDPerms:        MakeIdPermsType(),
+		DisplayName:    "",
+		Annotations:    MakeKeyValuePairs(),
+		UUID:           "",
+		VirtualDNSData: MakeVirtualDnsType(),
+		ParentUUID:     "",
+		Perms2:         MakePermType2(),
 	}
 }
 
@@ -45,15 +45,12 @@ func MakeVirtualDNS() *VirtualDNS {
 func InterfaceToVirtualDNS(iData interface{}) *VirtualDNS {
 	data := iData.(map[string]interface{})
 	return &VirtualDNS{
+		Perms2: InterfaceToPermType2(data["perms2"]),
+
+		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
 		VirtualDNSData: InterfaceToVirtualDnsType(data["virtual_DNS_data"]),
 
 		//{"description":"Virtual DNS data has configuration for virtual DNS like domain, dynamic records etc.","type":"object","properties":{"default_ttl_seconds":{"type":"integer"},"domain_name":{"type":"string"},"dynamic_records_from_client":{"type":"boolean"},"external_visible":{"type":"boolean"},"floating_ip_record":{"type":"string","enum":["dashed-ip","dashed-ip-tenant-name","vm-name","vm-name-tenant-name"]},"next_virtual_DNS":{"type":"string"},"record_order":{"type":"string","enum":["fixed","random","round-robin"]},"reverse_resolution":{"type":"boolean"}}}
-		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
-
-		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
 		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
@@ -63,9 +60,12 @@ func InterfaceToVirtualDNS(iData interface{}) *VirtualDNS {
 		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}
-		Perms2: InterfaceToPermType2(data["perms2"]),
+		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
-		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
+		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
+		UUID: data["uuid"].(string),
+
+		//{"type":"string"}
 		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}

@@ -6,18 +6,18 @@ import "encoding/json"
 
 // ServiceTemplateType
 type ServiceTemplateType struct {
-	Version                   int                             `json:"version"`
-	VrouterInstanceType       VRouterInstanceType             `json:"vrouter_instance_type"`
+	InstanceData              string                          `json:"instance_data"`
 	ServiceVirtualizationType ServiceVirtualizationType       `json:"service_virtualization_type"`
+	ServiceScaling            bool                            `json:"service_scaling"`
+	Flavor                    string                          `json:"flavor"`
+	AvailabilityZoneEnable    bool                            `json:"availability_zone_enable"`
+	OrderedInterfaces         bool                            `json:"ordered_interfaces"`
 	InterfaceType             []*ServiceTemplateInterfaceType `json:"interface_type"`
 	ImageName                 string                          `json:"image_name"`
 	ServiceMode               ServiceModeType                 `json:"service_mode"`
+	Version                   int                             `json:"version"`
 	ServiceType               ServiceType                     `json:"service_type"`
-	AvailabilityZoneEnable    bool                            `json:"availability_zone_enable"`
-	InstanceData              string                          `json:"instance_data"`
-	OrderedInterfaces         bool                            `json:"ordered_interfaces"`
-	Flavor                    string                          `json:"flavor"`
-	ServiceScaling            bool                            `json:"service_scaling"`
+	VrouterInstanceType       VRouterInstanceType             `json:"vrouter_instance_type"`
 }
 
 // String returns json representation of the object
@@ -30,20 +30,20 @@ func (model *ServiceTemplateType) String() string {
 func MakeServiceTemplateType() *ServiceTemplateType {
 	return &ServiceTemplateType{
 		//TODO(nati): Apply default
+		ServiceVirtualizationType: MakeServiceVirtualizationType(),
+		ServiceScaling:            false,
+		InstanceData:              "",
+		OrderedInterfaces:         false,
 
 		InterfaceType: MakeServiceTemplateInterfaceTypeSlice(),
 
-		ImageName:                 "",
-		ServiceMode:               MakeServiceModeType(),
-		ServiceType:               MakeServiceType(),
-		AvailabilityZoneEnable:    false,
-		InstanceData:              "",
-		OrderedInterfaces:         false,
-		ServiceVirtualizationType: MakeServiceVirtualizationType(),
-		Flavor:              "",
-		ServiceScaling:      false,
-		Version:             0,
-		VrouterInstanceType: MakeVRouterInstanceType(),
+		ImageName:              "",
+		ServiceMode:            MakeServiceModeType(),
+		Version:                0,
+		ServiceType:            MakeServiceType(),
+		Flavor:                 "",
+		AvailabilityZoneEnable: false,
+		VrouterInstanceType:    MakeVRouterInstanceType(),
 	}
 }
 
@@ -51,24 +51,15 @@ func MakeServiceTemplateType() *ServiceTemplateType {
 func InterfaceToServiceTemplateType(iData interface{}) *ServiceTemplateType {
 	data := iData.(map[string]interface{})
 	return &ServiceTemplateType{
-		ServiceMode: InterfaceToServiceModeType(data["service_mode"]),
+		Flavor: data["flavor"].(string),
 
-		//{"description":"Service instance mode decides how packets are forwarded across the service","type":"string","enum":["transparent","in-network","in-network-nat"]}
-		ServiceType: InterfaceToServiceType(data["service_type"]),
-
-		//{"description":"Service instance mode decides how routing happens across the service","type":"string","enum":["firewall","analyzer","source-nat","loadbalancer"]}
+		//{"description":"Nova flavor used for service virtual machines, Version 1 only","type":"string"}
 		AvailabilityZoneEnable: data["availability_zone_enable"].(bool),
 
 		//{"description":"Enable availability zone for version 1 service instances","type":"boolean"}
-		InstanceData: data["instance_data"].(string),
-
-		//{"description":"Opaque string (typically in json format) used to spawn a vrouter-instance.","type":"string"}
 		OrderedInterfaces: data["ordered_interfaces"].(bool),
 
 		//{"description":"Deprecated","type":"boolean"}
-		ServiceVirtualizationType: InterfaceToServiceVirtualizationType(data["service_virtualization_type"]),
-
-		//{"description":"Service virtualization type decides how individual service instances are instantiated","type":"string","enum":["virtual-machine","network-namespace","vrouter-instance","physical-device"]}
 
 		InterfaceType: InterfaceToServiceTemplateInterfaceTypeSlice(data["interface_type"]),
 
@@ -76,18 +67,27 @@ func InterfaceToServiceTemplateType(iData interface{}) *ServiceTemplateType {
 		ImageName: data["image_name"].(string),
 
 		//{"description":"Glance image name for the service virtual machine, Version 1 only","type":"string"}
-		Flavor: data["flavor"].(string),
+		ServiceMode: InterfaceToServiceModeType(data["service_mode"]),
 
-		//{"description":"Nova flavor used for service virtual machines, Version 1 only","type":"string"}
-		ServiceScaling: data["service_scaling"].(bool),
-
-		//{"description":"Enable scaling of service virtual machines, Version 1 only","type":"boolean"}
+		//{"description":"Service instance mode decides how packets are forwarded across the service","type":"string","enum":["transparent","in-network","in-network-nat"]}
 		Version: data["version"].(int),
 
 		//{"type":"integer"}
+		ServiceType: InterfaceToServiceType(data["service_type"]),
+
+		//{"description":"Service instance mode decides how routing happens across the service","type":"string","enum":["firewall","analyzer","source-nat","loadbalancer"]}
 		VrouterInstanceType: InterfaceToVRouterInstanceType(data["vrouter_instance_type"]),
 
 		//{"description":"Mechanism used to spawn service instance, when vrouter is spawning instances.Allowed values libvirt-qemu, docker or netns","type":"string","enum":["libvirt-qemu","docker"]}
+		InstanceData: data["instance_data"].(string),
+
+		//{"description":"Opaque string (typically in json format) used to spawn a vrouter-instance.","type":"string"}
+		ServiceVirtualizationType: InterfaceToServiceVirtualizationType(data["service_virtualization_type"]),
+
+		//{"description":"Service virtualization type decides how individual service instances are instantiated","type":"string","enum":["virtual-machine","network-namespace","vrouter-instance","physical-device"]}
+		ServiceScaling: data["service_scaling"].(bool),
+
+		//{"description":"Enable scaling of service virtual machines, Version 1 only","type":"boolean"}
 
 	}
 }

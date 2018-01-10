@@ -20,7 +20,8 @@ func TestE2ServiceProvider(t *testing.T) {
 		}
 	}()
 	model := models.MakeE2ServiceProvider()
-	model.UUID = "dummy_uuid"
+	model.UUID = "e2_service_provider_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "e2_service_provider_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateE2ServiceProvider(tx, model)

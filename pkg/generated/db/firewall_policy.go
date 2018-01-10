@@ -57,6 +57,14 @@ var FirewallPolicyRefFields = map[string][]string{
 // FirewallPolicyBackRefFields is db back reference fields for FirewallPolicy
 var FirewallPolicyBackRefFields = map[string][]string{}
 
+// FirewallPolicyParentTypes is possible parents for FirewallPolicy
+var FirewallPolicyParents = []string{
+
+	"project",
+
+	"policy_management",
+}
+
 const insertFirewallPolicyFirewallRuleQuery = "insert into `ref_firewall_policy_firewall_rule` (`from`, `to` ,`sequence`) values (?, ?,?);"
 
 const insertFirewallPolicySecurityLoggingObjectQuery = "insert into `ref_firewall_policy_security_logging_object` (`from`, `to` ) values (?, ?);"
@@ -128,6 +136,12 @@ func CreateFirewallPolicy(tx *sql.Tx, model *models.FirewallPolicy) error {
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "firewall_policy",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -357,6 +371,15 @@ func ListFirewallPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.FirewallPo
 	spec.RefFields = FirewallPolicyRefFields
 	spec.BackRefFields = FirewallPolicyBackRefFields
 	result := models.MakeFirewallPolicySlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -415,8 +438,9 @@ func DeleteFirewallPolicy(tx *sql.Tx, uuid string, auth *common.AuthContext) err
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

@@ -20,7 +20,8 @@ func TestLogicalRouter(t *testing.T) {
 		}
 	}()
 	model := models.MakeLogicalRouter()
-	model.UUID = "dummy_uuid"
+	model.UUID = "logical_router_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "logical_router_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateLogicalRouter(tx, model)

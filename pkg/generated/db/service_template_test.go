@@ -20,7 +20,8 @@ func TestServiceTemplate(t *testing.T) {
 		}
 	}()
 	model := models.MakeServiceTemplate()
-	model.UUID = "dummy_uuid"
+	model.UUID = "service_template_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "service_template_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateServiceTemplate(tx, model)

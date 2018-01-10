@@ -113,15 +113,21 @@ var LoadbalancerPoolBackRefFields = map[string][]string{
 	},
 }
 
-const insertLoadbalancerPoolServiceApplianceSetQuery = "insert into `ref_loadbalancer_pool_service_appliance_set` (`from`, `to` ) values (?, ?);"
+// LoadbalancerPoolParentTypes is possible parents for LoadbalancerPool
+var LoadbalancerPoolParents = []string{
 
-const insertLoadbalancerPoolVirtualMachineInterfaceQuery = "insert into `ref_loadbalancer_pool_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
+	"project",
+}
 
 const insertLoadbalancerPoolLoadbalancerListenerQuery = "insert into `ref_loadbalancer_pool_loadbalancer_listener` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerPoolServiceInstanceQuery = "insert into `ref_loadbalancer_pool_service_instance` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerPoolLoadbalancerHealthmonitorQuery = "insert into `ref_loadbalancer_pool_loadbalancer_healthmonitor` (`from`, `to` ) values (?, ?);"
+
+const insertLoadbalancerPoolServiceApplianceSetQuery = "insert into `ref_loadbalancer_pool_service_appliance_set` (`from`, `to` ) values (?, ?);"
+
+const insertLoadbalancerPoolVirtualMachineInterfaceQuery = "insert into `ref_loadbalancer_pool_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateLoadbalancerPool inserts LoadbalancerPool to DB
 func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
@@ -170,6 +176,32 @@ func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtServiceApplianceSetRef, err := tx.Prepare(insertLoadbalancerPoolServiceApplianceSetQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceApplianceSetRefs create statement failed")
+	}
+	defer stmtServiceApplianceSetRef.Close()
+	for _, ref := range model.ServiceApplianceSetRefs {
+
+		_, err = stmtServiceApplianceSetRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
+		}
+	}
+
+	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertLoadbalancerPoolVirtualMachineInterfaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
+	}
+	defer stmtVirtualMachineInterfaceRef.Close()
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
+	}
+
 	stmtLoadbalancerListenerRef, err := tx.Prepare(insertLoadbalancerPoolLoadbalancerListenerQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing LoadbalancerListenerRefs create statement failed")
@@ -209,32 +241,12 @@ func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
 		}
 	}
 
-	stmtServiceApplianceSetRef, err := tx.Prepare(insertLoadbalancerPoolServiceApplianceSetQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceApplianceSetRefs create statement failed")
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "loadbalancer_pool",
+		FQName: model.FQName,
 	}
-	defer stmtServiceApplianceSetRef.Close()
-	for _, ref := range model.ServiceApplianceSetRefs {
-
-		_, err = stmtServiceApplianceSetRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
-		}
-	}
-
-	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertLoadbalancerPoolVirtualMachineInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
-	}
-	defer stmtVirtualMachineInterfaceRef.Close()
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -828,6 +840,15 @@ func ListLoadbalancerPool(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadbala
 	spec.RefFields = LoadbalancerPoolRefFields
 	spec.BackRefFields = LoadbalancerPoolBackRefFields
 	result := models.MakeLoadbalancerPoolSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -886,8 +907,9 @@ func DeleteLoadbalancerPool(tx *sql.Tx, uuid string, auth *common.AuthContext) e
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

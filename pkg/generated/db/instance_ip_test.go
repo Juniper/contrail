@@ -20,7 +20,8 @@ func TestInstanceIP(t *testing.T) {
 		}
 	}()
 	model := models.MakeInstanceIP()
-	model.UUID = "dummy_uuid"
+	model.UUID = "instance_ip_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "instance_ip_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateInstanceIP(tx, model)

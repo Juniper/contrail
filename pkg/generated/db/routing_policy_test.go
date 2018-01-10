@@ -20,7 +20,8 @@ func TestRoutingPolicy(t *testing.T) {
 		}
 	}()
 	model := models.MakeRoutingPolicy()
-	model.UUID = "dummy_uuid"
+	model.UUID = "routing_policy_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "routing_policy_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateRoutingPolicy(tx, model)

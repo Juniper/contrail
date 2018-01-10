@@ -76,17 +76,17 @@ var PhysicalRouterFields = []string{
 // PhysicalRouterRefFields is db reference fields for PhysicalRouter
 var PhysicalRouterRefFields = map[string][]string{
 
+	"virtual_router": {
+	// <common.Schema Value>
+
+	},
+
 	"virtual_network": {
 	// <common.Schema Value>
 
 	},
 
 	"bgp_router": {
-	// <common.Schema Value>
-
-	},
-
-	"virtual_router": {
 	// <common.Schema Value>
 
 	},
@@ -145,6 +145,14 @@ var PhysicalRouterBackRefFields = map[string][]string{
 		"display_name",
 		"key_value_pair",
 	},
+}
+
+// PhysicalRouterParentTypes is possible parents for PhysicalRouter
+var PhysicalRouterParents = []string{
+
+	"global_system_config",
+
+	"location",
 }
 
 const insertPhysicalRouterVirtualNetworkQuery = "insert into `ref_physical_router_virtual_network` (`from`, `to` ) values (?, ?);"
@@ -262,6 +270,12 @@ func CreatePhysicalRouter(tx *sql.Tx, model *models.PhysicalRouter) error {
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "physical_router",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -1154,6 +1168,15 @@ func ListPhysicalRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.PhysicalRo
 	spec.RefFields = PhysicalRouterRefFields
 	spec.BackRefFields = PhysicalRouterBackRefFields
 	result := models.MakePhysicalRouterSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -1212,8 +1235,9 @@ func DeletePhysicalRouter(tx *sql.Tx, uuid string, auth *common.AuthContext) err
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

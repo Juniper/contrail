@@ -22,10 +22,10 @@ func (model *FirewallServiceType) String() string {
 func MakeFirewallServiceType() *FirewallServiceType {
 	return &FirewallServiceType{
 		//TODO(nati): Apply default
-		ProtocolID: 0,
 		Protocol:   "",
 		DSTPorts:   MakePortType(),
 		SRCPorts:   MakePortType(),
+		ProtocolID: 0,
 	}
 }
 

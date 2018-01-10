@@ -69,11 +69,17 @@ var LoadbalancerRefFields = map[string][]string{
 // LoadbalancerBackRefFields is db back reference fields for Loadbalancer
 var LoadbalancerBackRefFields = map[string][]string{}
 
-const insertLoadbalancerServiceApplianceSetQuery = "insert into `ref_loadbalancer_service_appliance_set` (`from`, `to` ) values (?, ?);"
+// LoadbalancerParentTypes is possible parents for Loadbalancer
+var LoadbalancerParents = []string{
+
+	"project",
+}
 
 const insertLoadbalancerVirtualMachineInterfaceQuery = "insert into `ref_loadbalancer_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerServiceInstanceQuery = "insert into `ref_loadbalancer_service_instance` (`from`, `to` ) values (?, ?);"
+
+const insertLoadbalancerServiceApplianceSetQuery = "insert into `ref_loadbalancer_service_appliance_set` (`from`, `to` ) values (?, ?);"
 
 // CreateLoadbalancer inserts Loadbalancer to DB
 func CreateLoadbalancer(tx *sql.Tx, model *models.Loadbalancer) error {
@@ -158,6 +164,12 @@ func CreateLoadbalancer(tx *sql.Tx, model *models.Loadbalancer) error {
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "loadbalancer",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -460,6 +472,15 @@ func ListLoadbalancer(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadbalancer
 	spec.RefFields = LoadbalancerRefFields
 	spec.BackRefFields = LoadbalancerBackRefFields
 	result := models.MakeLoadbalancerSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -518,8 +539,9 @@ func DeleteLoadbalancer(tx *sql.Tx, uuid string, auth *common.AuthContext) error
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

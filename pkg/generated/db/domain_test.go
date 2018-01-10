@@ -20,7 +20,8 @@ func TestDomain(t *testing.T) {
 		}
 	}()
 	model := models.MakeDomain()
-	model.UUID = "dummy_uuid"
+	model.UUID = "domain_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "domain_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateDomain(tx, model)

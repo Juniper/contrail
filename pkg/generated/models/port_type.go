@@ -6,8 +6,8 @@ import "encoding/json"
 
 // PortType
 type PortType struct {
-	EndPort   L4PortType `json:"end_port"`
 	StartPort L4PortType `json:"start_port"`
+	EndPort   L4PortType `json:"end_port"`
 }
 
 // String returns json representation of the object
@@ -20,8 +20,8 @@ func (model *PortType) String() string {
 func MakePortType() *PortType {
 	return &PortType{
 		//TODO(nati): Apply default
-		StartPort: MakeL4PortType(),
 		EndPort:   MakeL4PortType(),
+		StartPort: MakeL4PortType(),
 	}
 }
 

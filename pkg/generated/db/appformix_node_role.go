@@ -51,6 +51,9 @@ var AppformixNodeRoleRefFields = map[string][]string{}
 // AppformixNodeRoleBackRefFields is db back reference fields for AppformixNodeRole
 var AppformixNodeRoleBackRefFields = map[string][]string{}
 
+// AppformixNodeRoleParentTypes is possible parents for AppformixNodeRole
+var AppformixNodeRoleParents = []string{}
+
 // CreateAppformixNodeRole inserts AppformixNodeRole to DB
 func CreateAppformixNodeRole(tx *sql.Tx, model *models.AppformixNodeRole) error {
 	// Prepare statement for inserting data
@@ -93,6 +96,12 @@ func CreateAppformixNodeRole(tx *sql.Tx, model *models.AppformixNodeRole) error 
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "appformix_node_role",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -319,6 +328,15 @@ func ListAppformixNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.Appform
 	spec.RefFields = AppformixNodeRoleRefFields
 	spec.BackRefFields = AppformixNodeRoleBackRefFields
 	result := models.MakeAppformixNodeRoleSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -377,8 +395,9 @@ func DeleteAppformixNodeRole(tx *sql.Tx, uuid string, auth *common.AuthContext) 
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

@@ -54,6 +54,9 @@ var SubnetRefFields = map[string][]string{
 // SubnetBackRefFields is db back reference fields for Subnet
 var SubnetBackRefFields = map[string][]string{}
 
+// SubnetParentTypes is possible parents for Subnet
+var SubnetParents = []string{}
+
 const insertSubnetVirtualMachineInterfaceQuery = "insert into `ref_subnet_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateSubnet inserts Subnet to DB
@@ -108,6 +111,12 @@ func CreateSubnet(tx *sql.Tx, model *models.Subnet) error {
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "subnet",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -330,6 +339,15 @@ func ListSubnet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Subnet, error) {
 	spec.RefFields = SubnetRefFields
 	spec.BackRefFields = SubnetBackRefFields
 	result := models.MakeSubnetSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -388,8 +406,9 @@ func DeleteSubnet(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

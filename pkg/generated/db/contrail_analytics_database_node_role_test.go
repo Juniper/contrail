@@ -20,7 +20,8 @@ func TestContrailAnalyticsDatabaseNodeRole(t *testing.T) {
 		}
 	}()
 	model := models.MakeContrailAnalyticsDatabaseNodeRole()
-	model.UUID = "dummy_uuid"
+	model.UUID = "contrail_analytics_database_node_role_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "contrail_analytics_database_node_role_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateContrailAnalyticsDatabaseNodeRole(tx, model)

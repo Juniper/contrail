@@ -67,6 +67,12 @@ var VirtualIPRefFields = map[string][]string{
 // VirtualIPBackRefFields is db back reference fields for VirtualIP
 var VirtualIPBackRefFields = map[string][]string{}
 
+// VirtualIPParentTypes is possible parents for VirtualIP
+var VirtualIPParents = []string{
+
+	"project",
+}
+
 const insertVirtualIPLoadbalancerPoolQuery = "insert into `ref_virtual_ip_loadbalancer_pool` (`from`, `to` ) values (?, ?);"
 
 const insertVirtualIPVirtualMachineInterfaceQuery = "insert into `ref_virtual_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
@@ -144,6 +150,12 @@ func CreateVirtualIP(tx *sql.Tx, model *models.VirtualIP) error {
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "virtual_ip",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -450,6 +462,15 @@ func ListVirtualIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualIP, erro
 	spec.RefFields = VirtualIPRefFields
 	spec.BackRefFields = VirtualIPBackRefFields
 	result := models.MakeVirtualIPSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -508,8 +529,9 @@ func DeleteVirtualIP(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

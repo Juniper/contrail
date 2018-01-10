@@ -58,6 +58,12 @@ var LoadbalancerListenerRefFields = map[string][]string{
 // LoadbalancerListenerBackRefFields is db back reference fields for LoadbalancerListener
 var LoadbalancerListenerBackRefFields = map[string][]string{}
 
+// LoadbalancerListenerParentTypes is possible parents for LoadbalancerListener
+var LoadbalancerListenerParents = []string{
+
+	"project",
+}
+
 const insertLoadbalancerListenerLoadbalancerQuery = "insert into `ref_loadbalancer_listener_loadbalancer` (`from`, `to` ) values (?, ?);"
 
 // CreateLoadbalancerListener inserts LoadbalancerListener to DB
@@ -116,6 +122,12 @@ func CreateLoadbalancerListener(tx *sql.Tx, model *models.LoadbalancerListener) 
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "loadbalancer_listener",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -368,6 +380,15 @@ func ListLoadbalancerListener(tx *sql.Tx, spec *common.ListSpec) ([]*models.Load
 	spec.RefFields = LoadbalancerListenerRefFields
 	spec.BackRefFields = LoadbalancerListenerBackRefFields
 	result := models.MakeLoadbalancerListenerSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -426,8 +447,9 @@ func DeleteLoadbalancerListener(tx *sql.Tx, uuid string, auth *common.AuthContex
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

@@ -6,6 +6,7 @@ import "encoding/json"
 
 // ConfigRoot
 type ConfigRoot struct {
+	DisplayName string         `json:"display_name"`
 	Annotations *KeyValuePairs `json:"annotations"`
 	Perms2      *PermType2     `json:"perms2"`
 	UUID        string         `json:"uuid"`
@@ -13,7 +14,6 @@ type ConfigRoot struct {
 	ParentType  string         `json:"parent_type"`
 	FQName      []string       `json:"fq_name"`
 	IDPerms     *IdPermsType   `json:"id_perms"`
-	DisplayName string         `json:"display_name"`
 
 	TagRefs []*ConfigRootTagRef `json:"tag_refs"`
 
@@ -39,14 +39,14 @@ func (model *ConfigRoot) String() string {
 func MakeConfigRoot() *ConfigRoot {
 	return &ConfigRoot{
 		//TODO(nati): Apply default
-		ParentUUID:  "",
-		ParentType:  "",
-		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
+		ParentUUID:  "",
+		ParentType:  "",
+		FQName:      []string{},
+		IDPerms:     MakeIdPermsType(),
 	}
 }
 
@@ -54,12 +54,6 @@ func MakeConfigRoot() *ConfigRoot {
 func InterfaceToConfigRoot(iData interface{}) *ConfigRoot {
 	data := iData.(map[string]interface{})
 	return &ConfigRoot{
-		FQName: data["fq_name"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
-
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
 		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}
@@ -78,6 +72,12 @@ func InterfaceToConfigRoot(iData interface{}) *ConfigRoot {
 		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
 
 	}
 }

@@ -6,12 +6,12 @@ import "encoding/json"
 
 // LoadbalancerListenerType
 type LoadbalancerListenerType struct {
-	ProtocolPort        int                      `json:"protocol_port"`
 	DefaultTLSContainer string                   `json:"default_tls_container"`
 	Protocol            LoadbalancerProtocolType `json:"protocol"`
 	ConnectionLimit     int                      `json:"connection_limit"`
 	AdminState          bool                     `json:"admin_state"`
 	SniContainers       []string                 `json:"sni_containers"`
+	ProtocolPort        int                      `json:"protocol_port"`
 }
 
 // String returns json representation of the object
@@ -24,12 +24,12 @@ func (model *LoadbalancerListenerType) String() string {
 func MakeLoadbalancerListenerType() *LoadbalancerListenerType {
 	return &LoadbalancerListenerType{
 		//TODO(nati): Apply default
+		Protocol:            MakeLoadbalancerProtocolType(),
+		ConnectionLimit:     0,
 		AdminState:          false,
 		SniContainers:       []string{},
 		ProtocolPort:        0,
 		DefaultTLSContainer: "",
-		Protocol:            MakeLoadbalancerProtocolType(),
-		ConnectionLimit:     0,
 	}
 }
 
@@ -37,6 +37,9 @@ func MakeLoadbalancerListenerType() *LoadbalancerListenerType {
 func InterfaceToLoadbalancerListenerType(iData interface{}) *LoadbalancerListenerType {
 	data := iData.(map[string]interface{})
 	return &LoadbalancerListenerType{
+		AdminState: data["admin_state"].(bool),
+
+		//{"type":"boolean"}
 		SniContainers: data["sni_containers"].([]string),
 
 		//{"type":"array","item":{"type":"string"}}
@@ -52,9 +55,6 @@ func InterfaceToLoadbalancerListenerType(iData interface{}) *LoadbalancerListene
 		ConnectionLimit: data["connection_limit"].(int),
 
 		//{"type":"integer"}
-		AdminState: data["admin_state"].(bool),
-
-		//{"type":"boolean"}
 
 	}
 }

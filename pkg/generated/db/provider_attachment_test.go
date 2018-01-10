@@ -20,7 +20,8 @@ func TestProviderAttachment(t *testing.T) {
 		}
 	}()
 	model := models.MakeProviderAttachment()
-	model.UUID = "dummy_uuid"
+	model.UUID = "provider_attachment_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "provider_attachment_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateProviderAttachment(tx, model)

@@ -45,12 +45,12 @@ var AliasIPFields = []string{
 // AliasIPRefFields is db reference fields for AliasIP
 var AliasIPRefFields = map[string][]string{
 
-	"project": {
+	"virtual_machine_interface": {
 	// <common.Schema Value>
 
 	},
 
-	"virtual_machine_interface": {
+	"project": {
 	// <common.Schema Value>
 
 	},
@@ -59,9 +59,15 @@ var AliasIPRefFields = map[string][]string{
 // AliasIPBackRefFields is db back reference fields for AliasIP
 var AliasIPBackRefFields = map[string][]string{}
 
-const insertAliasIPVirtualMachineInterfaceQuery = "insert into `ref_alias_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
+// AliasIPParentTypes is possible parents for AliasIP
+var AliasIPParents = []string{
+
+	"alias_ip_pool",
+}
 
 const insertAliasIPProjectQuery = "insert into `ref_alias_ip_project` (`from`, `to` ) values (?, ?);"
+
+const insertAliasIPVirtualMachineInterfaceQuery = "insert into `ref_alias_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateAliasIP inserts AliasIP to DB
 func CreateAliasIP(tx *sql.Tx, model *models.AliasIP) error {
@@ -128,6 +134,12 @@ func CreateAliasIP(tx *sql.Tx, model *models.AliasIP) error {
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "alias_ip",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -315,26 +327,6 @@ func scanAliasIP(values map[string]interface{}) (*models.AliasIP, error) {
 
 	}
 
-	if value, ok := values["ref_project"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.AliasIPProjectRef{}
-			referenceModel.UUID = uuid
-			m.ProjectRefs = append(m.ProjectRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -355,6 +347,26 @@ func scanAliasIP(values map[string]interface{}) (*models.AliasIP, error) {
 		}
 	}
 
+	if value, ok := values["ref_project"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.AliasIPProjectRef{}
+			referenceModel.UUID = uuid
+			m.ProjectRefs = append(m.ProjectRefs, referenceModel)
+
+		}
+	}
+
 	return m, nil
 }
 
@@ -370,6 +382,15 @@ func ListAliasIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.AliasIP, error) {
 	spec.RefFields = AliasIPRefFields
 	spec.BackRefFields = AliasIPBackRefFields
 	result := models.MakeAliasIPSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -428,8 +449,9 @@ func DeleteAliasIP(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

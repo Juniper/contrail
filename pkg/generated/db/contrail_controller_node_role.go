@@ -51,6 +51,9 @@ var ContrailControllerNodeRoleRefFields = map[string][]string{}
 // ContrailControllerNodeRoleBackRefFields is db back reference fields for ContrailControllerNodeRole
 var ContrailControllerNodeRoleBackRefFields = map[string][]string{}
 
+// ContrailControllerNodeRoleParentTypes is possible parents for ContrailControllerNodeRole
+var ContrailControllerNodeRoleParents = []string{}
+
 // CreateContrailControllerNodeRole inserts ContrailControllerNodeRole to DB
 func CreateContrailControllerNodeRole(tx *sql.Tx, model *models.ContrailControllerNodeRole) error {
 	// Prepare statement for inserting data
@@ -93,6 +96,12 @@ func CreateContrailControllerNodeRole(tx *sql.Tx, model *models.ContrailControll
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "contrail_controller_node_role",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -319,6 +328,15 @@ func ListContrailControllerNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*model
 	spec.RefFields = ContrailControllerNodeRoleRefFields
 	spec.BackRefFields = ContrailControllerNodeRoleBackRefFields
 	result := models.MakeContrailControllerNodeRoleSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -377,8 +395,9 @@ func DeleteContrailControllerNodeRole(tx *sql.Tx, uuid string, auth *common.Auth
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

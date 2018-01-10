@@ -20,7 +20,8 @@ func TestOpenstackStorageNodeRole(t *testing.T) {
 		}
 	}()
 	model := models.MakeOpenstackStorageNodeRole()
-	model.UUID = "dummy_uuid"
+	model.UUID = "openstack_storage_node_role_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "openstack_storage_node_role_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateOpenstackStorageNodeRole(tx, model)

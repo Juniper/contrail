@@ -6,15 +6,15 @@ import "encoding/json"
 
 // AnalyticsNode
 type AnalyticsNode struct {
-	Perms2                 *PermType2     `json:"perms2"`
-	UUID                   string         `json:"uuid"`
-	ParentType             string         `json:"parent_type"`
 	FQName                 []string       `json:"fq_name"`
-	DisplayName            string         `json:"display_name"`
 	Annotations            *KeyValuePairs `json:"annotations"`
 	ParentUUID             string         `json:"parent_uuid"`
 	AnalyticsNodeIPAddress IpAddressType  `json:"analytics_node_ip_address"`
+	ParentType             string         `json:"parent_type"`
+	Perms2                 *PermType2     `json:"perms2"`
+	UUID                   string         `json:"uuid"`
 	IDPerms                *IdPermsType   `json:"id_perms"`
+	DisplayName            string         `json:"display_name"`
 }
 
 // String returns json representation of the object
@@ -27,15 +27,15 @@ func (model *AnalyticsNode) String() string {
 func MakeAnalyticsNode() *AnalyticsNode {
 	return &AnalyticsNode{
 		//TODO(nati): Apply default
+		IDPerms:     MakeIdPermsType(),
+		DisplayName: "",
+		Perms2:      MakePermType2(),
+		UUID:        "",
 		AnalyticsNodeIPAddress: MakeIpAddressType(),
-		IDPerms:                MakeIdPermsType(),
+		ParentType:             "",
+		FQName:                 []string{},
 		Annotations:            MakeKeyValuePairs(),
 		ParentUUID:             "",
-		FQName:                 []string{},
-		DisplayName:            "",
-		Perms2:                 MakePermType2(),
-		UUID:                   "",
-		ParentType:             "",
 	}
 }
 
@@ -43,21 +43,9 @@ func MakeAnalyticsNode() *AnalyticsNode {
 func InterfaceToAnalyticsNode(iData interface{}) *AnalyticsNode {
 	data := iData.(map[string]interface{})
 	return &AnalyticsNode{
-		AnalyticsNodeIPAddress: InterfaceToIpAddressType(data["analytics_node_ip_address"]),
-
-		//{"description":"Ip address of the analytics node, set while provisioning.","type":"string"}
 		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
 
 		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
-		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
-
-		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		ParentUUID: data["parent_uuid"].(string),
-
-		//{"type":"string"}
-		FQName: data["fq_name"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
 		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}
@@ -67,7 +55,19 @@ func InterfaceToAnalyticsNode(iData interface{}) *AnalyticsNode {
 		UUID: data["uuid"].(string),
 
 		//{"type":"string"}
+		AnalyticsNodeIPAddress: InterfaceToIpAddressType(data["analytics_node_ip_address"]),
+
+		//{"description":"Ip address of the analytics node, set while provisioning.","type":"string"}
 		ParentType: data["parent_type"].(string),
+
+		//{"type":"string"}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
+		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
+
+		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
+		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
 

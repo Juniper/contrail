@@ -20,7 +20,8 @@ func TestAnalyticsNode(t *testing.T) {
 		}
 	}()
 	model := models.MakeAnalyticsNode()
-	model.UUID = "dummy_uuid"
+	model.UUID = "analytics_node_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "analytics_node_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateAnalyticsNode(tx, model)

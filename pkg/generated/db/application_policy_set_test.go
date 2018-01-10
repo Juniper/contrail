@@ -20,7 +20,8 @@ func TestApplicationPolicySet(t *testing.T) {
 		}
 	}()
 	model := models.MakeApplicationPolicySet()
-	model.UUID = "dummy_uuid"
+	model.UUID = "application_policy_set_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "application_policy_set_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateApplicationPolicySet(tx, model)

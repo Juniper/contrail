@@ -20,7 +20,8 @@ func TestProject(t *testing.T) {
 		}
 	}()
 	model := models.MakeProject()
-	model.UUID = "dummy_uuid"
+	model.UUID = "project_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "project_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateProject(tx, model)

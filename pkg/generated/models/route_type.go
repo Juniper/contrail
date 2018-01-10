@@ -6,10 +6,10 @@ import "encoding/json"
 
 // RouteType
 type RouteType struct {
+	Prefix              string               `json:"prefix"`
 	NextHop             string               `json:"next_hop"`
 	CommunityAttributes *CommunityAttributes `json:"community_attributes"`
 	NextHopType         RouteNextHopType     `json:"next_hop_type"`
-	Prefix              string               `json:"prefix"`
 }
 
 // String returns json representation of the object
@@ -22,10 +22,10 @@ func (model *RouteType) String() string {
 func MakeRouteType() *RouteType {
 	return &RouteType{
 		//TODO(nati): Apply default
-		Prefix:              "",
-		NextHop:             "",
 		CommunityAttributes: MakeCommunityAttributes(),
 		NextHopType:         MakeRouteNextHopType(),
+		Prefix:              "",
+		NextHop:             "",
 	}
 }
 
@@ -33,18 +33,18 @@ func MakeRouteType() *RouteType {
 func InterfaceToRouteType(iData interface{}) *RouteType {
 	data := iData.(map[string]interface{})
 	return &RouteType{
-		Prefix: data["prefix"].(string),
-
-		//{"description":"Ip prefix/len format prefix","type":"string"}
-		NextHop: data["next_hop"].(string),
-
-		//{"description":"Ip address or service instance name.","type":"string"}
 		CommunityAttributes: InterfaceToCommunityAttributes(data["community_attributes"]),
 
 		//{"type":"object","properties":{"community_attribute":{"type":"array"}}}
 		NextHopType: InterfaceToRouteNextHopType(data["next_hop_type"]),
 
 		//{"type":"string","enum":["service-instance","ip-address"]}
+		Prefix: data["prefix"].(string),
+
+		//{"description":"Ip prefix/len format prefix","type":"string"}
+		NextHop: data["next_hop"].(string),
+
+		//{"description":"Ip address or service instance name.","type":"string"}
 
 	}
 }

@@ -20,7 +20,8 @@ func TestContrailCluster(t *testing.T) {
 		}
 	}()
 	model := models.MakeContrailCluster()
-	model.UUID = "dummy_uuid"
+	model.UUID = "contrail_cluster_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "contrail_cluster_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateContrailCluster(tx, model)

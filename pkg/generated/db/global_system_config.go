@@ -377,6 +377,12 @@ var GlobalSystemConfigBackRefFields = map[string][]string{
 	},
 }
 
+// GlobalSystemConfigParentTypes is possible parents for GlobalSystemConfig
+var GlobalSystemConfigParents = []string{
+
+	"config_root",
+}
+
 const insertGlobalSystemConfigBGPRouterQuery = "insert into `ref_global_system_config_bgp_router` (`from`, `to` ) values (?, ?);"
 
 // CreateGlobalSystemConfig inserts GlobalSystemConfig to DB
@@ -451,6 +457,12 @@ func CreateGlobalSystemConfig(tx *sql.Tx, model *models.GlobalSystemConfig) erro
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "global_system_config",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -3115,6 +3127,15 @@ func ListGlobalSystemConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Global
 	spec.RefFields = GlobalSystemConfigRefFields
 	spec.BackRefFields = GlobalSystemConfigBackRefFields
 	result := models.MakeGlobalSystemConfigSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -3173,8 +3194,9 @@ func DeleteGlobalSystemConfig(tx *sql.Tx, uuid string, auth *common.AuthContext)
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

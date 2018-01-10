@@ -20,7 +20,8 @@ func TestServiceInstance(t *testing.T) {
 		}
 	}()
 	model := models.MakeServiceInstance()
-	model.UUID = "dummy_uuid"
+	model.UUID = "service_instance_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "service_instance_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateServiceInstance(tx, model)
