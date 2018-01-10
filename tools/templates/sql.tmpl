@@ -1,5 +1,13 @@
 SET GLOBAL group_concat_max_len=100000;
 
+create table metadata (
+    `uuid` varchar(255),
+    `type` varchar(255),
+    `fq_name` varchar(255) unique,
+    primary key (`uuid`),
+    index fq_name_index (`fq_name`)
+ ) CHARACTER SET utf8mb4;
+
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 create table {{schema.ID }} (
     {% for column in schema.Columns %}`{{column.Column}}` {{column.Type}},

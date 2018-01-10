@@ -20,7 +20,8 @@ func TestServiceApplianceSet(t *testing.T) {
 		}
 	}()
 	model := models.MakeServiceApplianceSet()
-	model.UUID = "dummy_uuid"
+	model.UUID = "service_appliance_set_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "service_appliance_set_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateServiceApplianceSet(tx, model)

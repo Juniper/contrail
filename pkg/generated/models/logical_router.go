@@ -6,31 +6,24 @@ import "encoding/json"
 
 // LogicalRouter
 type LogicalRouter struct {
-	ParentUUID                string           `json:"parent_uuid"`
-	ParentType                string           `json:"parent_type"`
-	Perms2                    *PermType2       `json:"perms2"`
-	UUID                      string           `json:"uuid"`
 	Annotations               *KeyValuePairs   `json:"annotations"`
-	FQName                    []string         `json:"fq_name"`
+	ParentUUID                string           `json:"parent_uuid"`
 	IDPerms                   *IdPermsType     `json:"id_perms"`
-	DisplayName               string           `json:"display_name"`
+	ParentType                string           `json:"parent_type"`
+	FQName                    []string         `json:"fq_name"`
 	VxlanNetworkIdentifier    string           `json:"vxlan_network_identifier"`
 	ConfiguredRouteTargetList *RouteTargetList `json:"configured_route_target_list"`
+	DisplayName               string           `json:"display_name"`
+	Perms2                    *PermType2       `json:"perms2"`
+	UUID                      string           `json:"uuid"`
 
-	ServiceInstanceRefs         []*LogicalRouterServiceInstanceRef         `json:"service_instance_refs"`
-	RouteTableRefs              []*LogicalRouterRouteTableRef              `json:"route_table_refs"`
-	VirtualNetworkRefs          []*LogicalRouterVirtualNetworkRef          `json:"virtual_network_refs"`
 	PhysicalRouterRefs          []*LogicalRouterPhysicalRouterRef          `json:"physical_router_refs"`
 	BGPVPNRefs                  []*LogicalRouterBGPVPNRef                  `json:"bgpvpn_refs"`
 	RouteTargetRefs             []*LogicalRouterRouteTargetRef             `json:"route_target_refs"`
 	VirtualMachineInterfaceRefs []*LogicalRouterVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs"`
-}
-
-// LogicalRouterVirtualMachineInterfaceRef references each other
-type LogicalRouterVirtualMachineInterfaceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
+	ServiceInstanceRefs         []*LogicalRouterServiceInstanceRef         `json:"service_instance_refs"`
+	RouteTableRefs              []*LogicalRouterRouteTableRef              `json:"route_table_refs"`
+	VirtualNetworkRefs          []*LogicalRouterVirtualNetworkRef          `json:"virtual_network_refs"`
 }
 
 // LogicalRouterServiceInstanceRef references each other
@@ -75,6 +68,13 @@ type LogicalRouterRouteTargetRef struct {
 
 }
 
+// LogicalRouterVirtualMachineInterfaceRef references each other
+type LogicalRouterVirtualMachineInterfaceRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
 // String returns json representation of the object
 func (model *LogicalRouter) String() string {
 	b, _ := json.Marshal(model)
@@ -85,16 +85,16 @@ func (model *LogicalRouter) String() string {
 func MakeLogicalRouter() *LogicalRouter {
 	return &LogicalRouter{
 		//TODO(nati): Apply default
-		ParentUUID:                "",
-		ParentType:                "",
-		Perms2:                    MakePermType2(),
-		UUID:                      "",
 		Annotations:               MakeKeyValuePairs(),
-		FQName:                    []string{},
+		ParentUUID:                "",
 		IDPerms:                   MakeIdPermsType(),
-		DisplayName:               "",
 		VxlanNetworkIdentifier:    "",
 		ConfiguredRouteTargetList: MakeRouteTargetList(),
+		DisplayName:               "",
+		Perms2:                    MakePermType2(),
+		UUID:                      "",
+		ParentType:                "",
+		FQName:                    []string{},
 	}
 }
 
@@ -102,36 +102,36 @@ func MakeLogicalRouter() *LogicalRouter {
 func InterfaceToLogicalRouter(iData interface{}) *LogicalRouter {
 	data := iData.(map[string]interface{})
 	return &LogicalRouter{
-		UUID: data["uuid"].(string),
+		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
 
-		//{"type":"string"}
+		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
 		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
 		ParentType: data["parent_type"].(string),
+
+		//{"type":"string"}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
+		VxlanNetworkIdentifier: data["vxlan_network_identifier"].(string),
+
+		//{"description":"The VNI that needs to be associated with the internal VN if vxlan_routing mode is enabled.","type":"string"}
+		ConfiguredRouteTargetList: InterfaceToRouteTargetList(data["configured_route_target_list"]),
+
+		//{"description":"List of route targets that represent this logical router, all virtual networks connected to this logical router will have this as their route target list.","type":"object","properties":{"route_target":{"type":"array","item":{"type":"string"}}}}
+		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}
 		Perms2: InterfaceToPermType2(data["perms2"]),
 
 		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
-		ConfiguredRouteTargetList: InterfaceToRouteTargetList(data["configured_route_target_list"]),
-
-		//{"description":"List of route targets that represent this logical router, all virtual networks connected to this logical router will have this as their route target list.","type":"object","properties":{"route_target":{"type":"array","item":{"type":"string"}}}}
-		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
-
-		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		FQName: data["fq_name"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
-
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
-		DisplayName: data["display_name"].(string),
+		UUID: data["uuid"].(string),
 
 		//{"type":"string"}
-		VxlanNetworkIdentifier: data["vxlan_network_identifier"].(string),
-
-		//{"description":"The VNI that needs to be associated with the internal VN if vxlan_routing mode is enabled.","type":"string"}
 
 	}
 }

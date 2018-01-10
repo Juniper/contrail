@@ -20,8 +20,8 @@ func (model *UserCredentials) String() string {
 func MakeUserCredentials() *UserCredentials {
 	return &UserCredentials{
 		//TODO(nati): Apply default
-		Username: "",
 		Password: "",
+		Username: "",
 	}
 }
 

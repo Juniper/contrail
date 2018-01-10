@@ -47,6 +47,9 @@ var DashboardRefFields = map[string][]string{}
 // DashboardBackRefFields is db back reference fields for Dashboard
 var DashboardBackRefFields = map[string][]string{}
 
+// DashboardParentTypes is possible parents for Dashboard
+var DashboardParents = []string{}
+
 // CreateDashboard inserts Dashboard to DB
 func CreateDashboard(tx *sql.Tx, model *models.Dashboard) error {
 	// Prepare statement for inserting data
@@ -85,6 +88,12 @@ func CreateDashboard(tx *sql.Tx, model *models.Dashboard) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "dashboard",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -279,6 +288,15 @@ func ListDashboard(tx *sql.Tx, spec *common.ListSpec) ([]*models.Dashboard, erro
 	spec.RefFields = DashboardRefFields
 	spec.BackRefFields = DashboardBackRefFields
 	result := models.MakeDashboardSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -337,8 +355,9 @@ func DeleteDashboard(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

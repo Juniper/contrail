@@ -20,7 +20,8 @@ func TestSecurityLoggingObject(t *testing.T) {
 		}
 	}()
 	model := models.MakeSecurityLoggingObject()
-	model.UUID = "dummy_uuid"
+	model.UUID = "security_logging_object_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "security_logging_object_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateSecurityLoggingObject(tx, model)

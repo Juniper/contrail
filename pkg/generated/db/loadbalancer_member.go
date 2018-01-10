@@ -52,6 +52,12 @@ var LoadbalancerMemberRefFields = map[string][]string{}
 // LoadbalancerMemberBackRefFields is db back reference fields for LoadbalancerMember
 var LoadbalancerMemberBackRefFields = map[string][]string{}
 
+// LoadbalancerMemberParentTypes is possible parents for LoadbalancerMember
+var LoadbalancerMemberParents = []string{
+
+	"loadbalancer_pool",
+}
+
 // CreateLoadbalancerMember inserts LoadbalancerMember to DB
 func CreateLoadbalancerMember(tx *sql.Tx, model *models.LoadbalancerMember) error {
 	// Prepare statement for inserting data
@@ -95,6 +101,12 @@ func CreateLoadbalancerMember(tx *sql.Tx, model *models.LoadbalancerMember) erro
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "loadbalancer_member",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -329,6 +341,15 @@ func ListLoadbalancerMember(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadba
 	spec.RefFields = LoadbalancerMemberRefFields
 	spec.BackRefFields = LoadbalancerMemberBackRefFields
 	result := models.MakeLoadbalancerMemberSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -387,8 +408,9 @@ func DeleteLoadbalancerMember(tx *sql.Tx, uuid string, auth *common.AuthContext)
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

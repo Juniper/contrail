@@ -20,7 +20,8 @@ func TestAddressGroup(t *testing.T) {
 		}
 	}()
 	model := models.MakeAddressGroup()
-	model.UUID = "dummy_uuid"
+	model.UUID = "address_group_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "address_group_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateAddressGroup(tx, model)

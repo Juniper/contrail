@@ -31,13 +31,13 @@ func MakePortMap() *PortMap {
 func InterfaceToPortMap(iData interface{}) *PortMap {
 	data := iData.(map[string]interface{})
 	return &PortMap{
-		SRCPort: data["src_port"].(int),
-
-		//{"type":"integer"}
 		Protocol: data["protocol"].(string),
 
 		//{"type":"string"}
 		DSTPort: data["dst_port"].(int),
+
+		//{"type":"integer"}
+		SRCPort: data["src_port"].(int),
 
 		//{"type":"integer"}
 

@@ -20,7 +20,8 @@ func TestAPIAccessList(t *testing.T) {
 		}
 	}()
 	model := models.MakeAPIAccessList()
-	model.UUID = "dummy_uuid"
+	model.UUID = "api_access_list_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "api_access_list_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateAPIAccessList(tx, model)

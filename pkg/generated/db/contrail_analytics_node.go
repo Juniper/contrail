@@ -51,6 +51,9 @@ var ContrailAnalyticsNodeRefFields = map[string][]string{}
 // ContrailAnalyticsNodeBackRefFields is db back reference fields for ContrailAnalyticsNode
 var ContrailAnalyticsNodeBackRefFields = map[string][]string{}
 
+// ContrailAnalyticsNodeParentTypes is possible parents for ContrailAnalyticsNode
+var ContrailAnalyticsNodeParents = []string{}
+
 // CreateContrailAnalyticsNode inserts ContrailAnalyticsNode to DB
 func CreateContrailAnalyticsNode(tx *sql.Tx, model *models.ContrailAnalyticsNode) error {
 	// Prepare statement for inserting data
@@ -93,6 +96,12 @@ func CreateContrailAnalyticsNode(tx *sql.Tx, model *models.ContrailAnalyticsNode
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "contrail_analytics_node",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -319,6 +328,15 @@ func ListContrailAnalyticsNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.Con
 	spec.RefFields = ContrailAnalyticsNodeRefFields
 	spec.BackRefFields = ContrailAnalyticsNodeBackRefFields
 	result := models.MakeContrailAnalyticsNodeSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -377,8 +395,9 @@ func DeleteContrailAnalyticsNode(tx *sql.Tx, uuid string, auth *common.AuthConte
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

@@ -20,7 +20,8 @@ func TestCustomerAttachment(t *testing.T) {
 		}
 	}()
 	model := models.MakeCustomerAttachment()
-	model.UUID = "dummy_uuid"
+	model.UUID = "customer_attachment_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "customer_attachment_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateCustomerAttachment(tx, model)

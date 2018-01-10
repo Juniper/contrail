@@ -20,7 +20,8 @@ func TestServiceGroup(t *testing.T) {
 		}
 	}()
 	model := models.MakeServiceGroup()
-	model.UUID = "dummy_uuid"
+	model.UUID = "service_group_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "service_group_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateServiceGroup(tx, model)

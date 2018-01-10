@@ -20,7 +20,8 @@ func TestRoutingInstance(t *testing.T) {
 		}
 	}()
 	model := models.MakeRoutingInstance()
-	model.UUID = "dummy_uuid"
+	model.UUID = "routing_instance_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "routing_instance_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateRoutingInstance(tx, model)

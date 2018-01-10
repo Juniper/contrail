@@ -6,9 +6,9 @@ import "encoding/json"
 
 // ControlTrafficDscpType
 type ControlTrafficDscpType struct {
-	Analytics DscpValueType `json:"analytics"`
 	DNS       DscpValueType `json:"dns"`
 	Control   DscpValueType `json:"control"`
+	Analytics DscpValueType `json:"analytics"`
 }
 
 // String returns json representation of the object
@@ -21,9 +21,9 @@ func (model *ControlTrafficDscpType) String() string {
 func MakeControlTrafficDscpType() *ControlTrafficDscpType {
 	return &ControlTrafficDscpType{
 		//TODO(nati): Apply default
-		DNS:       MakeDscpValueType(),
 		Control:   MakeDscpValueType(),
 		Analytics: MakeDscpValueType(),
+		DNS:       MakeDscpValueType(),
 	}
 }
 

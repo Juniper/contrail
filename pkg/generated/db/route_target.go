@@ -46,6 +46,9 @@ var RouteTargetRefFields = map[string][]string{}
 // RouteTargetBackRefFields is db back reference fields for RouteTarget
 var RouteTargetBackRefFields = map[string][]string{}
 
+// RouteTargetParentTypes is possible parents for RouteTarget
+var RouteTargetParents = []string{}
+
 // CreateRouteTarget inserts RouteTarget to DB
 func CreateRouteTarget(tx *sql.Tx, model *models.RouteTarget) error {
 	// Prepare statement for inserting data
@@ -83,6 +86,12 @@ func CreateRouteTarget(tx *sql.Tx, model *models.RouteTarget) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "route_target",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -269,6 +278,15 @@ func ListRouteTarget(tx *sql.Tx, spec *common.ListSpec) ([]*models.RouteTarget, 
 	spec.RefFields = RouteTargetRefFields
 	spec.BackRefFields = RouteTargetBackRefFields
 	result := models.MakeRouteTargetSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -327,8 +345,9 @@ func DeleteRouteTarget(tx *sql.Tx, uuid string, auth *common.AuthContext) error 
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

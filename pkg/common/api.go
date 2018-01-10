@@ -21,8 +21,23 @@ type RESTAPI interface {
 	Show(c echo.Context) error
 }
 
-//Filter is used to filter API response
+//Filter is used to filter API response.
 type Filter map[string][]string
+
+//AppendValues appends filter values for key.
+func (filter Filter) AppendValues(key string, values []string) {
+	if filter == nil {
+		return
+	}
+	if values == nil {
+		return
+	}
+	f, ok := filter[key]
+	if !ok {
+		f = []string{}
+	}
+	filter[key] = append(f, values...)
+}
 
 var apiRegistory = map[string]RESTAPI{}
 
@@ -79,7 +94,7 @@ func GetListSpec(c echo.Context) *ListSpec {
 	shared := parseBool(c.QueryParam("shared"))
 	excludeHrefs := parseFlag(c.QueryParam("exclude_hrefs"))
 	parentType := c.QueryParam("parent_type")
-	parentFQName := strings.Split(c.QueryParam("parent_fq_name_str"), ":")
+	parentFQName := ParseFQName(c.QueryParam("parent_fq_name_str"))
 	parentUUIDs := parseStringList(c.QueryParam("parent_id"))
 	backrefUUIDs := parseStringList(c.QueryParam("back_ref_id"))
 	objectUUIDs := parseStringList(c.QueryParam("obj_uuids"))

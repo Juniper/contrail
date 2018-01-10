@@ -20,7 +20,8 @@ func TestNetworkDeviceConfig(t *testing.T) {
 		}
 	}()
 	model := models.MakeNetworkDeviceConfig()
-	model.UUID = "dummy_uuid"
+	model.UUID = "network_device_config_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "network_device_config_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateNetworkDeviceConfig(tx, model)

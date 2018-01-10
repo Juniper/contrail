@@ -6,12 +6,12 @@ import "encoding/json"
 
 // VirtualDnsRecordType
 type VirtualDnsRecordType struct {
-	RecordMXPreference int                `json:"record_mx_preference"`
-	RecordName         string             `json:"record_name"`
-	RecordClass        DnsRecordClassType `json:"record_class"`
 	RecordData         string             `json:"record_data"`
 	RecordType         DnsRecordTypeType  `json:"record_type"`
 	RecordTTLSeconds   int                `json:"record_ttl_seconds"`
+	RecordMXPreference int                `json:"record_mx_preference"`
+	RecordName         string             `json:"record_name"`
+	RecordClass        DnsRecordClassType `json:"record_class"`
 }
 
 // String returns json representation of the object
@@ -24,12 +24,12 @@ func (model *VirtualDnsRecordType) String() string {
 func MakeVirtualDnsRecordType() *VirtualDnsRecordType {
 	return &VirtualDnsRecordType{
 		//TODO(nati): Apply default
+		RecordName:         "",
 		RecordClass:        MakeDnsRecordClassType(),
 		RecordData:         "",
 		RecordType:         MakeDnsRecordTypeType(),
 		RecordTTLSeconds:   0,
 		RecordMXPreference: 0,
-		RecordName:         "",
 	}
 }
 
@@ -37,12 +37,6 @@ func MakeVirtualDnsRecordType() *VirtualDnsRecordType {
 func InterfaceToVirtualDnsRecordType(iData interface{}) *VirtualDnsRecordType {
 	data := iData.(map[string]interface{})
 	return &VirtualDnsRecordType{
-		RecordName: data["record_name"].(string),
-
-		//{"description":"DNS name to be resolved","type":"string"}
-		RecordClass: InterfaceToDnsRecordClassType(data["record_class"]),
-
-		//{"description":"DNS record class supported is IN","type":"string","enum":["IN"]}
 		RecordData: data["record_data"].(string),
 
 		//{"description":"DNS record data is either ip address or string depending on type","type":"string"}
@@ -55,6 +49,12 @@ func InterfaceToVirtualDnsRecordType(iData interface{}) *VirtualDnsRecordType {
 		RecordMXPreference: data["record_mx_preference"].(int),
 
 		//{"type":"integer"}
+		RecordName: data["record_name"].(string),
+
+		//{"description":"DNS name to be resolved","type":"string"}
+		RecordClass: InterfaceToDnsRecordClassType(data["record_class"]),
+
+		//{"description":"DNS record class supported is IN","type":"string","enum":["IN"]}
 
 	}
 }

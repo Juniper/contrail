@@ -20,7 +20,8 @@ func TestServiceHealthCheck(t *testing.T) {
 		}
 	}()
 	model := models.MakeServiceHealthCheck()
-	model.UUID = "dummy_uuid"
+	model.UUID = "service_health_check_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "service_health_check_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateServiceHealthCheck(tx, model)

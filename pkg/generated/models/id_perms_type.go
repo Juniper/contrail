@@ -6,13 +6,13 @@ import "encoding/json"
 
 // IdPermsType
 type IdPermsType struct {
-	Permissions  *PermType `json:"permissions"`
-	Enable       bool      `json:"enable"`
-	Description  string    `json:"description"`
 	Created      string    `json:"created"`
 	Creator      string    `json:"creator"`
 	UserVisible  bool      `json:"user_visible"`
 	LastModified string    `json:"last_modified"`
+	Permissions  *PermType `json:"permissions"`
+	Enable       bool      `json:"enable"`
+	Description  string    `json:"description"`
 }
 
 // String returns json representation of the object
@@ -25,13 +25,13 @@ func (model *IdPermsType) String() string {
 func MakeIdPermsType() *IdPermsType {
 	return &IdPermsType{
 		//TODO(nati): Apply default
+		UserVisible:  false,
+		LastModified: "",
+		Permissions:  MakePermType(),
 		Enable:       false,
 		Description:  "",
 		Created:      "",
 		Creator:      "",
-		UserVisible:  false,
-		LastModified: "",
-		Permissions:  MakePermType(),
 	}
 }
 
@@ -39,15 +39,6 @@ func MakeIdPermsType() *IdPermsType {
 func InterfaceToIdPermsType(iData interface{}) *IdPermsType {
 	data := iData.(map[string]interface{})
 	return &IdPermsType{
-		Enable: data["enable"].(bool),
-
-		//{"description":"Administratively Enable/Disable this object","type":"boolean"}
-		Description: data["description"].(string),
-
-		//{"description":"User provided text","type":"string"}
-		Created: data["created"].(string),
-
-		//{"description":"Time when this object was created","type":"string"}
 		Creator: data["creator"].(string),
 
 		//{"description":"Id of tenant who created this object","type":"string"}
@@ -60,6 +51,15 @@ func InterfaceToIdPermsType(iData interface{}) *IdPermsType {
 		Permissions: InterfaceToPermType(data["permissions"]),
 
 		//{"description":"No longer used, will be removed","type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}}
+		Enable: data["enable"].(bool),
+
+		//{"description":"Administratively Enable/Disable this object","type":"boolean"}
+		Description: data["description"].(string),
+
+		//{"description":"User provided text","type":"string"}
+		Created: data["created"].(string),
+
+		//{"description":"Time when this object was created","type":"string"}
 
 	}
 }

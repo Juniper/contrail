@@ -6,12 +6,12 @@ import "encoding/json"
 
 // EcmpHashingIncludeFields
 type EcmpHashingIncludeFields struct {
-	DestinationIP     bool `json:"destination_ip"`
-	IPProtocol        bool `json:"ip_protocol"`
 	SourceIP          bool `json:"source_ip"`
 	HashingConfigured bool `json:"hashing_configured"`
 	SourcePort        bool `json:"source_port"`
 	DestinationPort   bool `json:"destination_port"`
+	DestinationIP     bool `json:"destination_ip"`
+	IPProtocol        bool `json:"ip_protocol"`
 }
 
 // String returns json representation of the object
@@ -37,6 +37,9 @@ func MakeEcmpHashingIncludeFields() *EcmpHashingIncludeFields {
 func InterfaceToEcmpHashingIncludeFields(iData interface{}) *EcmpHashingIncludeFields {
 	data := iData.(map[string]interface{})
 	return &EcmpHashingIncludeFields{
+		DestinationPort: data["destination_port"].(bool),
+
+		//{"description":"When false, do not use destination port in the ECMP hash calculation","type":"boolean"}
 		DestinationIP: data["destination_ip"].(bool),
 
 		//{"description":"When false, do not use destination ip in the ECMP hash calculation","type":"boolean"}
@@ -52,9 +55,6 @@ func InterfaceToEcmpHashingIncludeFields(iData interface{}) *EcmpHashingIncludeF
 		SourcePort: data["source_port"].(bool),
 
 		//{"description":"When false, do not use source port in the ECMP hash calculation","type":"boolean"}
-		DestinationPort: data["destination_port"].(bool),
-
-		//{"description":"When false, do not use destination port in the ECMP hash calculation","type":"boolean"}
 
 	}
 }

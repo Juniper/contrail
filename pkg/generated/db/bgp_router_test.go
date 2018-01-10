@@ -20,7 +20,8 @@ func TestBGPRouter(t *testing.T) {
 		}
 	}()
 	model := models.MakeBGPRouter()
-	model.UUID = "dummy_uuid"
+	model.UUID = "bgp_router_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "bgp_router_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateBGPRouter(tx, model)

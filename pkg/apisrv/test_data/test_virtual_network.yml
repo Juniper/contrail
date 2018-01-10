@@ -1,6 +1,8 @@
 name: Virtual Network Test
 description:  basic virtual network test
 tables:
+- metadata
+- project
 - routing_instance
 - virtual_network
 - network_policy
@@ -20,6 +22,34 @@ clients:
       project:
         id: demo
 workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 201
+    data:
+      project:
+        fq_name: ["default", "admin"]
+        uuid: admin_project_uuid
+  expect:
+    project:
+      fq_name: ["default", "admin"]
+      uuid: admin_project_uuid
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 201
+    data:
+      project:
+        fq_name: ["default", "demo"]
+        uuid: demo_project_uuid
+  expect:
+    project:
+      fq_name: ["default", "demo"]
+      uuid: demo_project_uuid
 - name: create network policy
   request:
     path: /network-policys
@@ -28,10 +58,16 @@ workflow:
     - 201
     data:
       network-policy:
+        fq_name: ["default", "admin", "policy1"]
         uuid: network_policy_uuid
+        parent_type: project
+        parent_uuid: admin_project_uuid
   expect:
     network-policy:
       uuid: network_policy_uuid
+      fq_name: ["default", "admin", "policy1"]
+      parent_type: project
+      parent_uuid: admin_project_uuid
       perms2:
         owner: admin
 - name: create network policy
@@ -43,10 +79,16 @@ workflow:
     - 201
     data:
       network-policy:
+        fq_name: ["default", "demo", "policy2"]
         uuid: network_policy_uuid2
+        parent_type: project
+        parent_uuid: demo_project_uuid
   expect:
     network-policy:
       uuid: network_policy_uuid2
+      fq_name: ["default", "demo", "policy2"]
+      parent_type: project
+      parent_uuid: demo_project_uuid
       perms2:
         owner: demo
 - name: create virtual network blue
@@ -57,14 +99,20 @@ workflow:
     - 201
     data:
       virtual-network:
+        fq_name: ["default", "admin", "vn_blue"]
         uuid: vn_blue
         display_name: blue
+        parent_type: project
+        parent_uuid: admin_project_uuid
         network_policy_refs:
         - uuid: network_policy_uuid
   expect:
     virtual-network:
       uuid: vn_blue
+      fq_name: ["default", "admin", "vn_blue"]
       display_name: blue
+      parent_type: project
+      parent_uuid: admin_project_uuid
       network_policy_refs:
       - uuid: network_policy_uuid
 - name: create virtual network red
@@ -77,12 +125,18 @@ workflow:
       virtual-network:
         uuid: vn_red 
         display_name: red
+        fq_name: ["default", "admin", "vn_red"]
+        parent_type: project
+        parent_uuid: admin_project_uuid
         network_policy_refs:
         - uuid: network_policy_uuid
   expect:
     virtual-network:
       uuid: vn_red
+      fq_name: ["default", "admin", "vn_red"]
       display_name: red
+      parent_type: project
+      parent_uuid: admin_project_uuid
       network_policy_refs:
       - uuid: network_policy_uuid
 - name: create routing instance
@@ -94,14 +148,78 @@ workflow:
     data:
       routing-instance:
         uuid: ri_uuid
+        fq_name: ["default", "admin", "ri1"]
+        parent_type: virtual-network
         parent_uuid: vn_blue
   expect:
     routing-instance:
       uuid: ri_uuid
+      fq_name: ["default", "admin", "ri1"]
+      parent_type: virtual-network
       parent_uuid: vn_blue
 - name: list virtual networks with detail
   request:
     path: /virtual-networks?detail=true
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - uuid: vn_blue
+      display_name: blue
+      fq_name: ["default", "admin", "vn_blue"]
+      network_policy_refs:
+      - uuid: network_policy_uuid
+      routing_instances:
+      - uuid: ri_uuid
+        parent_uuid: vn_blue
+    - uuid: vn_red
+      display_name: red
+      fq_name: ["default", "admin", "vn_red"]
+      network_policy_refs:
+      - uuid: network_policy_uuid
+- name: list virtual networks with filters
+  request:
+    path: "/virtual-networks?filters=display_name==blue"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - uuid: vn_blue
+      fq_name: ["default", "admin", "vn_blue"]
+      display_name: blue
+- name: list virtual networks with parent_id
+  request:
+    path: "/virtual-networks?parent_id=admin_project_uuid"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - uuid: vn_blue
+      fq_name: ["default", "admin", "vn_blue"]
+      display_name: blue
+    - uuid: vn_red
+      display_name: red
+      fq_name: ["default", "admin", "vn_red"]
+- name: list virtual networks with parent_fq_name_str
+  request:
+    path: "/virtual-networks?parent_fq_name_str=default:admin"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - uuid: vn_blue
+      fq_name: ["default", "admin", "vn_blue"]
+      display_name: blue
+    - uuid: vn_red
+      display_name: red
+      fq_name: ["default", "admin", "vn_red"]
+- name: list virtual networks with page limit
+  request:
+    path: "/virtual-networks?pageLimit=1&detail=true"
     method: GET
     expected:
     - 200
@@ -114,23 +232,9 @@ workflow:
       routing_instances:
       - uuid: ri_uuid
         parent_uuid: vn_blue
-    - uuid: vn_red
-      display_name: red
-      network_policy_refs:
-      - uuid: network_policy_uuid
-- name: list virtual networks with filters
+- name: list virtual networks with obj_uuids
   request:
-    path: "/virtual-networks?filters=display_name==blue"
-    method: GET
-    expected:
-    - 200
-  expect:
-    virtual-networks:
-    - uuid: vn_blue
-      display_name: blue
-- name: list virtual networks with page limit
-  request:
-    path: "/virtual-networks?pageLimit=1&detail=true"
+    path: "/virtual-networks?obj_uuids=vn_blue&detail=true"
     method: GET
     expected:
     - 200

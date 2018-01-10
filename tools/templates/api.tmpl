@@ -52,6 +52,11 @@ func (api *{{ schema.JSONSchema.GoName }}RESTAPI) Create(c echo.Context) error {
     if model.UUID == "" {
         model.UUID = uuid.NewV4().String()
     }
+    
+    if model.FQName == nil {
+       return echo.NewHTTPError(http.StatusBadRequest, "Missing FQName")
+    } 
+
     auth := common.GetAuthContext(c)
     model.Perms2.Owner = auth.ProjectID()
     if err := common.DoInTransaction(

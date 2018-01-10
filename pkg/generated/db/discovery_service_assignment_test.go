@@ -20,7 +20,8 @@ func TestDiscoveryServiceAssignment(t *testing.T) {
 		}
 	}()
 	model := models.MakeDiscoveryServiceAssignment()
-	model.UUID = "dummy_uuid"
+	model.UUID = "discovery_service_assignment_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "discovery_service_assignment_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateDiscoveryServiceAssignment(tx, model)

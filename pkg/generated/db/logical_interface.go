@@ -54,6 +54,14 @@ var LogicalInterfaceRefFields = map[string][]string{
 // LogicalInterfaceBackRefFields is db back reference fields for LogicalInterface
 var LogicalInterfaceBackRefFields = map[string][]string{}
 
+// LogicalInterfaceParentTypes is possible parents for LogicalInterface
+var LogicalInterfaceParents = []string{
+
+	"physical_router",
+
+	"physical_interface",
+}
+
 const insertLogicalInterfaceVirtualMachineInterfaceQuery = "insert into `ref_logical_interface_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateLogicalInterface inserts LogicalInterface to DB
@@ -108,6 +116,12 @@ func CreateLogicalInterface(tx *sql.Tx, model *models.LogicalInterface) error {
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "logical_interface",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -330,6 +344,15 @@ func ListLogicalInterface(tx *sql.Tx, spec *common.ListSpec) ([]*models.LogicalI
 	spec.RefFields = LogicalInterfaceRefFields
 	spec.BackRefFields = LogicalInterfaceBackRefFields
 	result := models.MakeLogicalInterfaceSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -388,8 +411,9 @@ func DeleteLogicalInterface(tx *sql.Tx, uuid string, auth *common.AuthContext) e
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

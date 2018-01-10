@@ -49,6 +49,14 @@ var AccessControlListRefFields = map[string][]string{}
 // AccessControlListBackRefFields is db back reference fields for AccessControlList
 var AccessControlListBackRefFields = map[string][]string{}
 
+// AccessControlListParentTypes is possible parents for AccessControlList
+var AccessControlListParents = []string{
+
+	"security_group",
+
+	"virtual_network",
+}
+
 // CreateAccessControlList inserts AccessControlList to DB
 func CreateAccessControlList(tx *sql.Tx, model *models.AccessControlList) error {
 	// Prepare statement for inserting data
@@ -89,6 +97,12 @@ func CreateAccessControlList(tx *sql.Tx, model *models.AccessControlList) error 
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "access_control_list",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -295,6 +309,15 @@ func ListAccessControlList(tx *sql.Tx, spec *common.ListSpec) ([]*models.AccessC
 	spec.RefFields = AccessControlListRefFields
 	spec.BackRefFields = AccessControlListBackRefFields
 	result := models.MakeAccessControlListSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -353,8 +376,9 @@ func DeleteAccessControlList(tx *sql.Tx, uuid string, auth *common.AuthContext) 
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

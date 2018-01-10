@@ -20,7 +20,8 @@ func TestServiceConnectionModule(t *testing.T) {
 		}
 	}()
 	model := models.MakeServiceConnectionModule()
-	model.UUID = "dummy_uuid"
+	model.UUID = "service_connection_module_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "service_connection_module_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateServiceConnectionModule(tx, model)

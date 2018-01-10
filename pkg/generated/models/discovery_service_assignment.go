@@ -6,14 +6,14 @@ import "encoding/json"
 
 // DiscoveryServiceAssignment
 type DiscoveryServiceAssignment struct {
+	UUID        string         `json:"uuid"`
+	ParentUUID  string         `json:"parent_uuid"`
 	ParentType  string         `json:"parent_type"`
 	FQName      []string       `json:"fq_name"`
 	IDPerms     *IdPermsType   `json:"id_perms"`
 	DisplayName string         `json:"display_name"`
 	Annotations *KeyValuePairs `json:"annotations"`
 	Perms2      *PermType2     `json:"perms2"`
-	UUID        string         `json:"uuid"`
-	ParentUUID  string         `json:"parent_uuid"`
 
 	DsaRules []*DsaRule `json:"dsa_rules"`
 }
@@ -28,6 +28,7 @@ func (model *DiscoveryServiceAssignment) String() string {
 func MakeDiscoveryServiceAssignment() *DiscoveryServiceAssignment {
 	return &DiscoveryServiceAssignment{
 		//TODO(nati): Apply default
+		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
@@ -35,7 +36,6 @@ func MakeDiscoveryServiceAssignment() *DiscoveryServiceAssignment {
 		ParentType:  "",
 		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
-		DisplayName: "",
 	}
 }
 

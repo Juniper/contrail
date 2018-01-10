@@ -20,7 +20,8 @@ func TestGlobalSystemConfig(t *testing.T) {
 		}
 	}()
 	model := models.MakeGlobalSystemConfig()
-	model.UUID = "dummy_uuid"
+	model.UUID = "global_system_config_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "global_system_config_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateGlobalSystemConfig(tx, model)

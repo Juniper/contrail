@@ -6,10 +6,10 @@ import "encoding/json"
 
 // VirtualMachineInterfacePropertiesType
 type VirtualMachineInterfacePropertiesType struct {
-	SubInterfaceVlanTag  int                  `json:"sub_interface_vlan_tag"`
-	LocalPreference      int                  `json:"local_preference"`
 	InterfaceMirror      *InterfaceMirrorType `json:"interface_mirror"`
 	ServiceInterfaceType ServiceInterfaceType `json:"service_interface_type"`
+	SubInterfaceVlanTag  int                  `json:"sub_interface_vlan_tag"`
+	LocalPreference      int                  `json:"local_preference"`
 }
 
 // String returns json representation of the object

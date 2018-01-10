@@ -20,7 +20,8 @@ func TestFirewallPolicy(t *testing.T) {
 		}
 	}()
 	model := models.MakeFirewallPolicy()
-	model.UUID = "dummy_uuid"
+	model.UUID = "firewall_policy_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "firewall_policy_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateFirewallPolicy(tx, model)

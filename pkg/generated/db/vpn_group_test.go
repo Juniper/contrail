@@ -20,7 +20,8 @@ func TestVPNGroup(t *testing.T) {
 		}
 	}()
 	model := models.MakeVPNGroup()
-	model.UUID = "dummy_uuid"
+	model.UUID = "vpn_group_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "vpn_group_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateVPNGroup(tx, model)

@@ -47,6 +47,12 @@ var NetworkPolicyRefFields = map[string][]string{}
 // NetworkPolicyBackRefFields is db back reference fields for NetworkPolicy
 var NetworkPolicyBackRefFields = map[string][]string{}
 
+// NetworkPolicyParentTypes is possible parents for NetworkPolicy
+var NetworkPolicyParents = []string{
+
+	"project",
+}
+
 // CreateNetworkPolicy inserts NetworkPolicy to DB
 func CreateNetworkPolicy(tx *sql.Tx, model *models.NetworkPolicy) error {
 	// Prepare statement for inserting data
@@ -85,6 +91,12 @@ func CreateNetworkPolicy(tx *sql.Tx, model *models.NetworkPolicy) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "network_policy",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -277,6 +289,15 @@ func ListNetworkPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.NetworkPoli
 	spec.RefFields = NetworkPolicyRefFields
 	spec.BackRefFields = NetworkPolicyBackRefFields
 	result := models.MakeNetworkPolicySlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -335,8 +356,9 @@ func DeleteNetworkPolicy(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

@@ -20,7 +20,8 @@ func TestVirtualDNSRecord(t *testing.T) {
 		}
 	}()
 	model := models.MakeVirtualDNSRecord()
-	model.UUID = "dummy_uuid"
+	model.UUID = "virtual_DNS_record_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "virtual_DNS_record_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateVirtualDNSRecord(tx, model)

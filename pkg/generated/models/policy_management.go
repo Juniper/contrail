@@ -6,14 +6,14 @@ import "encoding/json"
 
 // PolicyManagement
 type PolicyManagement struct {
-	DisplayName string         `json:"display_name"`
-	Annotations *KeyValuePairs `json:"annotations"`
-	Perms2      *PermType2     `json:"perms2"`
 	UUID        string         `json:"uuid"`
 	ParentUUID  string         `json:"parent_uuid"`
 	ParentType  string         `json:"parent_type"`
 	FQName      []string       `json:"fq_name"`
 	IDPerms     *IdPermsType   `json:"id_perms"`
+	DisplayName string         `json:"display_name"`
+	Annotations *KeyValuePairs `json:"annotations"`
+	Perms2      *PermType2     `json:"perms2"`
 
 	AddressGroups         []*AddressGroup         `json:"address_groups"`
 	ApplicationPolicySets []*ApplicationPolicySet `json:"application_policy_sets"`
@@ -32,6 +32,7 @@ func (model *PolicyManagement) String() string {
 func MakePolicyManagement() *PolicyManagement {
 	return &PolicyManagement{
 		//TODO(nati): Apply default
+		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
@@ -39,7 +40,6 @@ func MakePolicyManagement() *PolicyManagement {
 		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
 	}
 }
 
@@ -47,6 +47,9 @@ func MakePolicyManagement() *PolicyManagement {
 func InterfaceToPolicyManagement(iData interface{}) *PolicyManagement {
 	data := iData.(map[string]interface{})
 	return &PolicyManagement{
+		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
 		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
@@ -66,9 +69,6 @@ func InterfaceToPolicyManagement(iData interface{}) *PolicyManagement {
 
 		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
 		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
-		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
 

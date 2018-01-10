@@ -20,7 +20,8 @@ func TestFirewallRule(t *testing.T) {
 		}
 	}()
 	model := models.MakeFirewallRule()
-	model.UUID = "dummy_uuid"
+	model.UUID = "firewall_rule_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "firewall_rule_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateFirewallRule(tx, model)

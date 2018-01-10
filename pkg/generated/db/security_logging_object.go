@@ -59,6 +59,14 @@ var SecurityLoggingObjectRefFields = map[string][]string{
 // SecurityLoggingObjectBackRefFields is db back reference fields for SecurityLoggingObject
 var SecurityLoggingObjectBackRefFields = map[string][]string{}
 
+// SecurityLoggingObjectParentTypes is possible parents for SecurityLoggingObject
+var SecurityLoggingObjectParents = []string{
+
+	"project",
+
+	"global_vrouter_config",
+}
+
 const insertSecurityLoggingObjectSecurityGroupQuery = "insert into `ref_security_logging_object_security_group` (`from`, `to` ,`rule`) values (?, ?,?);"
 
 const insertSecurityLoggingObjectNetworkPolicyQuery = "insert into `ref_security_logging_object_network_policy` (`from`, `to` ,`rule`) values (?, ?,?);"
@@ -136,6 +144,12 @@ func CreateSecurityLoggingObject(tx *sql.Tx, model *models.SecurityLoggingObject
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "security_logging_object",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -382,6 +396,15 @@ func ListSecurityLoggingObject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Sec
 	spec.RefFields = SecurityLoggingObjectRefFields
 	spec.BackRefFields = SecurityLoggingObjectBackRefFields
 	result := models.MakeSecurityLoggingObjectSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -440,8 +463,9 @@ func DeleteSecurityLoggingObject(tx *sql.Tx, uuid string, auth *common.AuthConte
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

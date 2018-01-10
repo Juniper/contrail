@@ -6,7 +6,6 @@ import "encoding/json"
 
 // ActionListType
 type ActionListType struct {
-	Log                   bool              `json:"log"`
 	Alert                 bool              `json:"alert"`
 	QosAction             string            `json:"qos_action"`
 	AssignRoutingInstance string            `json:"assign_routing_instance"`
@@ -14,6 +13,7 @@ type ActionListType struct {
 	SimpleAction          SimpleActionType  `json:"simple_action"`
 	ApplyService          []string          `json:"apply_service"`
 	GatewayName           string            `json:"gateway_name"`
+	Log                   bool              `json:"log"`
 }
 
 // String returns json representation of the object
@@ -26,14 +26,14 @@ func (model *ActionListType) String() string {
 func MakeActionListType() *ActionListType {
 	return &ActionListType{
 		//TODO(nati): Apply default
+		Alert:                 false,
+		QosAction:             "",
 		AssignRoutingInstance: "",
 		MirrorTo:              MakeMirrorActionType(),
 		SimpleAction:          MakeSimpleActionType(),
 		ApplyService:          []string{},
 		GatewayName:           "",
 		Log:                   false,
-		Alert:                 false,
-		QosAction:             "",
 	}
 }
 
@@ -41,12 +41,6 @@ func MakeActionListType() *ActionListType {
 func InterfaceToActionListType(iData interface{}) *ActionListType {
 	data := iData.(map[string]interface{})
 	return &ActionListType{
-		Log: data["log"].(bool),
-
-		//{"description":"Flow records for traffic matching this rule are sent at higher priority","type":"boolean"}
-		Alert: data["alert"].(bool),
-
-		//{"description":"For internal use only","type":"boolean"}
 		QosAction: data["qos_action"].(string),
 
 		//{"description":"FQN of Qos configuration object for QoS marking","type":"string"}
@@ -65,6 +59,12 @@ func InterfaceToActionListType(iData interface{}) *ActionListType {
 		GatewayName: data["gateway_name"].(string),
 
 		//{"description":"For internal use only","type":"string"}
+		Log: data["log"].(bool),
+
+		//{"description":"Flow records for traffic matching this rule are sent at higher priority","type":"boolean"}
+		Alert: data["alert"].(bool),
+
+		//{"description":"For internal use only","type":"boolean"}
 
 	}
 }

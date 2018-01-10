@@ -20,7 +20,8 @@ func TestOpenstackComputeNodeRole(t *testing.T) {
 		}
 	}()
 	model := models.MakeOpenstackComputeNodeRole()
-	model.UUID = "dummy_uuid"
+	model.UUID = "openstack_compute_node_role_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "openstack_compute_node_role_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateOpenstackComputeNodeRole(tx, model)

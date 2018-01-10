@@ -20,7 +20,8 @@ func TestConfigNode(t *testing.T) {
 		}
 	}()
 	model := models.MakeConfigNode()
-	model.UUID = "dummy_uuid"
+	model.UUID = "config_node_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "config_node_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateConfigNode(tx, model)

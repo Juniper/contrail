@@ -20,7 +20,8 @@ func TestFloatingIP(t *testing.T) {
 		}
 	}()
 	model := models.MakeFloatingIP()
-	model.UUID = "dummy_uuid"
+	model.UUID = "floating_ip_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "floating_ip_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateFloatingIP(tx, model)

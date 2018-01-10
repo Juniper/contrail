@@ -20,7 +20,8 @@ func TestPhysicalRouter(t *testing.T) {
 		}
 	}()
 	model := models.MakePhysicalRouter()
-	model.UUID = "dummy_uuid"
+	model.UUID = "physical_router_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "physical_router_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreatePhysicalRouter(tx, model)

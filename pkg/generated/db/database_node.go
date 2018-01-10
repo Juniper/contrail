@@ -47,6 +47,12 @@ var DatabaseNodeRefFields = map[string][]string{}
 // DatabaseNodeBackRefFields is db back reference fields for DatabaseNode
 var DatabaseNodeBackRefFields = map[string][]string{}
 
+// DatabaseNodeParentTypes is possible parents for DatabaseNode
+var DatabaseNodeParents = []string{
+
+	"global_system_config",
+}
+
 // CreateDatabaseNode inserts DatabaseNode to DB
 func CreateDatabaseNode(tx *sql.Tx, model *models.DatabaseNode) error {
 	// Prepare statement for inserting data
@@ -85,6 +91,12 @@ func CreateDatabaseNode(tx *sql.Tx, model *models.DatabaseNode) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "database_node",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -279,6 +291,15 @@ func ListDatabaseNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.DatabaseNode
 	spec.RefFields = DatabaseNodeRefFields
 	spec.BackRefFields = DatabaseNodeBackRefFields
 	result := models.MakeDatabaseNodeSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -337,8 +358,9 @@ func DeleteDatabaseNode(tx *sql.Tx, uuid string, auth *common.AuthContext) error
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

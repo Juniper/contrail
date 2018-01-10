@@ -6,12 +6,12 @@ import "encoding/json"
 
 // MatchConditionType
 type MatchConditionType struct {
-	SRCAddress *AddressType `json:"src_address"`
 	Ethertype  EtherType    `json:"ethertype"`
 	DSTAddress *AddressType `json:"dst_address"`
 	DSTPort    *PortType    `json:"dst_port"`
 	Protocol   string       `json:"protocol"`
 	SRCPort    *PortType    `json:"src_port"`
+	SRCAddress *AddressType `json:"src_address"`
 }
 
 // String returns json representation of the object
@@ -37,15 +37,6 @@ func MakeMatchConditionType() *MatchConditionType {
 func InterfaceToMatchConditionType(iData interface{}) *MatchConditionType {
 	data := iData.(map[string]interface{})
 	return &MatchConditionType{
-		DSTAddress: InterfaceToAddressType(data["dst_address"]),
-
-		//{"description":"Destination ip matching criteria","type":"object","properties":{"network_policy":{"type":"string"},"security_group":{"type":"string"},"subnet":{"type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}},"subnet_list":{"type":"array","item":{"type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}}},"virtual_network":{"type":"string"}}}
-		DSTPort: InterfaceToPortType(data["dst_port"]),
-
-		//{"description":"Range of destination  port for layer 4 protocol","type":"object","properties":{"end_port":{"type":"integer","minimum":-1,"maximum":65535},"start_port":{"type":"integer","minimum":-1,"maximum":65535}}}
-		Protocol: data["protocol"].(string),
-
-		//{"description":"Layer 4 protocol in ip packet","type":"string"}
 		SRCPort: InterfaceToPortType(data["src_port"]),
 
 		//{"description":"Range of source port for layer 4 protocol","type":"object","properties":{"end_port":{"type":"integer","minimum":-1,"maximum":65535},"start_port":{"type":"integer","minimum":-1,"maximum":65535}}}
@@ -55,6 +46,15 @@ func InterfaceToMatchConditionType(iData interface{}) *MatchConditionType {
 		Ethertype: InterfaceToEtherType(data["ethertype"]),
 
 		//{"type":"string","enum":["IPv4","IPv6"]}
+		DSTAddress: InterfaceToAddressType(data["dst_address"]),
+
+		//{"description":"Destination ip matching criteria","type":"object","properties":{"network_policy":{"type":"string"},"security_group":{"type":"string"},"subnet":{"type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}},"subnet_list":{"type":"array","item":{"type":"object","properties":{"ip_prefix":{"type":"string"},"ip_prefix_len":{"type":"integer"}}}},"virtual_network":{"type":"string"}}}
+		DSTPort: InterfaceToPortType(data["dst_port"]),
+
+		//{"description":"Range of destination  port for layer 4 protocol","type":"object","properties":{"end_port":{"type":"integer","minimum":-1,"maximum":65535},"start_port":{"type":"integer","minimum":-1,"maximum":65535}}}
+		Protocol: data["protocol"].(string),
+
+		//{"description":"Layer 4 protocol in ip packet","type":"string"}
 
 	}
 }

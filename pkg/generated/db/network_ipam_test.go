@@ -20,7 +20,8 @@ func TestNetworkIpam(t *testing.T) {
 		}
 	}()
 	model := models.MakeNetworkIpam()
-	model.UUID = "dummy_uuid"
+	model.UUID = "network_ipam_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "network_ipam_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateNetworkIpam(tx, model)

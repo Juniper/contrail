@@ -20,7 +20,8 @@ func TestAppformixNodeRole(t *testing.T) {
 		}
 	}()
 	model := models.MakeAppformixNodeRole()
-	model.UUID = "dummy_uuid"
+	model.UUID = "appformix_node_role_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "appformix_node_role_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateAppformixNodeRole(tx, model)

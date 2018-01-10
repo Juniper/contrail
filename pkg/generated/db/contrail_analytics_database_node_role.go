@@ -51,6 +51,9 @@ var ContrailAnalyticsDatabaseNodeRoleRefFields = map[string][]string{}
 // ContrailAnalyticsDatabaseNodeRoleBackRefFields is db back reference fields for ContrailAnalyticsDatabaseNodeRole
 var ContrailAnalyticsDatabaseNodeRoleBackRefFields = map[string][]string{}
 
+// ContrailAnalyticsDatabaseNodeRoleParentTypes is possible parents for ContrailAnalyticsDatabaseNodeRole
+var ContrailAnalyticsDatabaseNodeRoleParents = []string{}
+
 // CreateContrailAnalyticsDatabaseNodeRole inserts ContrailAnalyticsDatabaseNodeRole to DB
 func CreateContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, model *models.ContrailAnalyticsDatabaseNodeRole) error {
 	// Prepare statement for inserting data
@@ -93,6 +96,12 @@ func CreateContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, model *models.ContrailA
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "contrail_analytics_database_node_role",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -319,6 +328,15 @@ func ListContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, spec *common.ListSpec) ([
 	spec.RefFields = ContrailAnalyticsDatabaseNodeRoleRefFields
 	spec.BackRefFields = ContrailAnalyticsDatabaseNodeRoleBackRefFields
 	result := models.MakeContrailAnalyticsDatabaseNodeRoleSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -377,8 +395,9 @@ func DeleteContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, uuid string, auth *comm
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

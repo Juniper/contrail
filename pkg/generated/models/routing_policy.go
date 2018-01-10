@@ -6,14 +6,14 @@ import "encoding/json"
 
 // RoutingPolicy
 type RoutingPolicy struct {
+	ParentType  string         `json:"parent_type"`
+	FQName      []string       `json:"fq_name"`
 	IDPerms     *IdPermsType   `json:"id_perms"`
 	DisplayName string         `json:"display_name"`
 	Annotations *KeyValuePairs `json:"annotations"`
 	Perms2      *PermType2     `json:"perms2"`
 	UUID        string         `json:"uuid"`
 	ParentUUID  string         `json:"parent_uuid"`
-	ParentType  string         `json:"parent_type"`
-	FQName      []string       `json:"fq_name"`
 
 	ServiceInstanceRefs []*RoutingPolicyServiceInstanceRef `json:"service_instance_refs"`
 }
@@ -36,14 +36,14 @@ func (model *RoutingPolicy) String() string {
 func MakeRoutingPolicy() *RoutingPolicy {
 	return &RoutingPolicy{
 		//TODO(nati): Apply default
-		IDPerms:     MakeIdPermsType(),
-		DisplayName: "",
-		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
 		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
+		IDPerms:     MakeIdPermsType(),
+		DisplayName: "",
+		Annotations: MakeKeyValuePairs(),
 	}
 }
 

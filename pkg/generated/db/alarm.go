@@ -49,6 +49,14 @@ var AlarmRefFields = map[string][]string{}
 // AlarmBackRefFields is db back reference fields for Alarm
 var AlarmBackRefFields = map[string][]string{}
 
+// AlarmParentTypes is possible parents for Alarm
+var AlarmParents = []string{
+
+	"global_system_config",
+
+	"project",
+}
+
 // CreateAlarm inserts Alarm to DB
 func CreateAlarm(tx *sql.Tx, model *models.Alarm) error {
 	// Prepare statement for inserting data
@@ -89,6 +97,12 @@ func CreateAlarm(tx *sql.Tx, model *models.Alarm) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "alarm",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -295,6 +309,15 @@ func ListAlarm(tx *sql.Tx, spec *common.ListSpec) ([]*models.Alarm, error) {
 	spec.RefFields = AlarmRefFields
 	spec.BackRefFields = AlarmBackRefFields
 	result := models.MakeAlarmSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -353,8 +376,9 @@ func DeleteAlarm(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

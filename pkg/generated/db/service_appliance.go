@@ -56,6 +56,12 @@ var ServiceApplianceRefFields = map[string][]string{
 // ServiceApplianceBackRefFields is db back reference fields for ServiceAppliance
 var ServiceApplianceBackRefFields = map[string][]string{}
 
+// ServiceApplianceParentTypes is possible parents for ServiceAppliance
+var ServiceApplianceParents = []string{
+
+	"service_appliance_set",
+}
+
 const insertServiceAppliancePhysicalInterfaceQuery = "insert into `ref_service_appliance_physical_interface` (`from`, `to` ,`interface_type`) values (?, ?,?);"
 
 // CreateServiceAppliance inserts ServiceAppliance to DB
@@ -116,6 +122,12 @@ func CreateServiceAppliance(tx *sql.Tx, model *models.ServiceAppliance) error {
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "service_appliance",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -355,6 +367,15 @@ func ListServiceAppliance(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceA
 	spec.RefFields = ServiceApplianceRefFields
 	spec.BackRefFields = ServiceApplianceBackRefFields
 	result := models.MakeServiceApplianceSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -413,8 +434,9 @@ func DeleteServiceAppliance(tx *sql.Tx, uuid string, auth *common.AuthContext) e
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

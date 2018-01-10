@@ -63,6 +63,12 @@ var BGPAsAServiceRefFields = map[string][]string{
 // BGPAsAServiceBackRefFields is db back reference fields for BGPAsAService
 var BGPAsAServiceBackRefFields = map[string][]string{}
 
+// BGPAsAServiceParentTypes is possible parents for BGPAsAService
+var BGPAsAServiceParents = []string{
+
+	"project",
+}
+
 const insertBGPAsAServiceVirtualMachineInterfaceQuery = "insert into `ref_bgp_as_a_service_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 const insertBGPAsAServiceServiceHealthCheckQuery = "insert into `ref_bgp_as_a_service_service_health_check` (`from`, `to` ) values (?, ?);"
@@ -136,6 +142,12 @@ func CreateBGPAsAService(tx *sql.Tx, model *models.BGPAsAService) error {
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "bgp_as_a_service",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -410,6 +422,15 @@ func ListBGPAsAService(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPAsAServi
 	spec.RefFields = BGPAsAServiceRefFields
 	spec.BackRefFields = BGPAsAServiceBackRefFields
 	result := models.MakeBGPAsAServiceSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -468,8 +489,9 @@ func DeleteBGPAsAService(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

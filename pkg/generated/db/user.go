@@ -47,6 +47,12 @@ var UserRefFields = map[string][]string{}
 // UserBackRefFields is db back reference fields for User
 var UserBackRefFields = map[string][]string{}
 
+// UserParentTypes is possible parents for User
+var UserParents = []string{
+
+	"project",
+}
+
 // CreateUser inserts User to DB
 func CreateUser(tx *sql.Tx, model *models.User) error {
 	// Prepare statement for inserting data
@@ -85,6 +91,12 @@ func CreateUser(tx *sql.Tx, model *models.User) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "user",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -279,6 +291,15 @@ func ListUser(tx *sql.Tx, spec *common.ListSpec) ([]*models.User, error) {
 	spec.RefFields = UserRefFields
 	spec.BackRefFields = UserBackRefFields
 	result := models.MakeUserSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -337,8 +358,9 @@ func DeleteUser(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

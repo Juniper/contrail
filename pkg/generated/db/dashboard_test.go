@@ -20,7 +20,8 @@ func TestDashboard(t *testing.T) {
 		}
 	}()
 	model := models.MakeDashboard()
-	model.UUID = "dummy_uuid"
+	model.UUID = "dashboard_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "dashboard_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateDashboard(tx, model)

@@ -20,7 +20,8 @@ func TestVirtualMachine(t *testing.T) {
 		}
 	}()
 	model := models.MakeVirtualMachine()
-	model.UUID = "dummy_uuid"
+	model.UUID = "virtual_machine_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "virtual_machine_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateVirtualMachine(tx, model)

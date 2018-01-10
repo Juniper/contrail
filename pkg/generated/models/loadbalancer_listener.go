@@ -7,14 +7,14 @@ import "encoding/json"
 // LoadbalancerListener
 type LoadbalancerListener struct {
 	ParentType                     string                    `json:"parent_type"`
+	FQName                         []string                  `json:"fq_name"`
+	IDPerms                        *IdPermsType              `json:"id_perms"`
+	Perms2                         *PermType2                `json:"perms2"`
+	LoadbalancerListenerProperties *LoadbalancerListenerType `json:"loadbalancer_listener_properties"`
 	ParentUUID                     string                    `json:"parent_uuid"`
 	DisplayName                    string                    `json:"display_name"`
 	Annotations                    *KeyValuePairs            `json:"annotations"`
-	Perms2                         *PermType2                `json:"perms2"`
 	UUID                           string                    `json:"uuid"`
-	FQName                         []string                  `json:"fq_name"`
-	IDPerms                        *IdPermsType              `json:"id_perms"`
-	LoadbalancerListenerProperties *LoadbalancerListenerType `json:"loadbalancer_listener_properties"`
 
 	LoadbalancerRefs []*LoadbalancerListenerLoadbalancerRef `json:"loadbalancer_refs"`
 }
@@ -37,14 +37,14 @@ func MakeLoadbalancerListener() *LoadbalancerListener {
 	return &LoadbalancerListener{
 		//TODO(nati): Apply default
 		IDPerms: MakeIdPermsType(),
+		Perms2:  MakePermType2(),
 		LoadbalancerListenerProperties: MakeLoadbalancerListenerType(),
-		DisplayName:                    "",
-		Annotations:                    MakeKeyValuePairs(),
-		Perms2:                         MakePermType2(),
-		UUID:                           "",
-		FQName:                         []string{},
-		ParentUUID:                     "",
 		ParentType:                     "",
+		FQName:                         []string{},
+		Annotations:                    MakeKeyValuePairs(),
+		UUID:                           "",
+		ParentUUID:                     "",
+		DisplayName:                    "",
 	}
 }
 
@@ -52,15 +52,12 @@ func MakeLoadbalancerListener() *LoadbalancerListener {
 func InterfaceToLoadbalancerListener(iData interface{}) *LoadbalancerListener {
 	data := iData.(map[string]interface{})
 	return &LoadbalancerListener{
+		UUID: data["uuid"].(string),
+
+		//{"type":"string"}
 		ParentUUID: data["parent_uuid"].(string),
 
 		//{"type":"string"}
-		ParentType: data["parent_type"].(string),
-
-		//{"type":"string"}
-		LoadbalancerListenerProperties: InterfaceToLoadbalancerListenerType(data["loadbalancer_listener_properties"]),
-
-		//{"type":"object","properties":{"admin_state":{"type":"boolean"},"connection_limit":{"type":"integer"},"default_tls_container":{"type":"string"},"protocol":{"type":"string","enum":["HTTP","HTTPS","TCP","UDP","TERMINATED_HTTPS"]},"protocol_port":{"type":"integer"},"sni_containers":{"type":"array","item":{"type":"string"}}}}
 		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}
@@ -70,7 +67,10 @@ func InterfaceToLoadbalancerListener(iData interface{}) *LoadbalancerListener {
 		Perms2: InterfaceToPermType2(data["perms2"]),
 
 		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
-		UUID: data["uuid"].(string),
+		LoadbalancerListenerProperties: InterfaceToLoadbalancerListenerType(data["loadbalancer_listener_properties"]),
+
+		//{"type":"object","properties":{"admin_state":{"type":"boolean"},"connection_limit":{"type":"integer"},"default_tls_container":{"type":"string"},"protocol":{"type":"string","enum":["HTTP","HTTPS","TCP","UDP","TERMINATED_HTTPS"]},"protocol_port":{"type":"integer"},"sni_containers":{"type":"array","item":{"type":"string"}}}}
+		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
 		FQName: data["fq_name"].([]string),

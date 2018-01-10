@@ -20,7 +20,8 @@ func TestOpenstackCluster(t *testing.T) {
 		}
 	}()
 	model := models.MakeOpenstackCluster()
-	model.UUID = "dummy_uuid"
+	model.UUID = "openstack_cluster_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "openstack_cluster_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateOpenstackCluster(tx, model)

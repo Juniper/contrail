@@ -20,7 +20,8 @@ func TestRouteTable(t *testing.T) {
 		}
 	}()
 	model := models.MakeRouteTable()
-	model.UUID = "dummy_uuid"
+	model.UUID = "route_table_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "route_table_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateRouteTable(tx, model)

@@ -58,6 +58,9 @@ var VPNGroupRefFields = map[string][]string{
 // VPNGroupBackRefFields is db back reference fields for VPNGroup
 var VPNGroupBackRefFields = map[string][]string{}
 
+// VPNGroupParentTypes is possible parents for VPNGroup
+var VPNGroupParents = []string{}
+
 const insertVPNGroupLocationQuery = "insert into `ref_vpn_group_location` (`from`, `to` ) values (?, ?);"
 
 // CreateVPNGroup inserts VPNGroup to DB
@@ -116,6 +119,12 @@ func CreateVPNGroup(tx *sql.Tx, model *models.VPNGroup) error {
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "vpn_group",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -370,6 +379,15 @@ func ListVPNGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.VPNGroup, error)
 	spec.RefFields = VPNGroupRefFields
 	spec.BackRefFields = VPNGroupBackRefFields
 	result := models.MakeVPNGroupSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -428,8 +446,9 @@ func DeleteVPNGroup(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

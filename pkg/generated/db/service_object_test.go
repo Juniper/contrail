@@ -20,7 +20,8 @@ func TestServiceObject(t *testing.T) {
 		}
 	}()
 	model := models.MakeServiceObject()
-	model.UUID = "dummy_uuid"
+	model.UUID = "service_object_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "service_object_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateServiceObject(tx, model)

@@ -20,7 +20,8 @@ func TestRouteAggregate(t *testing.T) {
 		}
 	}()
 	model := models.MakeRouteAggregate()
-	model.UUID = "dummy_uuid"
+	model.UUID = "route_aggregate_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "route_aggregate_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateRouteAggregate(tx, model)

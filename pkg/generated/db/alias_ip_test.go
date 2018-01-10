@@ -20,7 +20,8 @@ func TestAliasIP(t *testing.T) {
 		}
 	}()
 	model := models.MakeAliasIP()
-	model.UUID = "dummy_uuid"
+	model.UUID = "alias_ip_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "alias_ip_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateAliasIP(tx, model)

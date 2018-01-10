@@ -54,6 +54,9 @@ var ContrailClusterRefFields = map[string][]string{}
 // ContrailClusterBackRefFields is db back reference fields for ContrailCluster
 var ContrailClusterBackRefFields = map[string][]string{}
 
+// ContrailClusterParentTypes is possible parents for ContrailCluster
+var ContrailClusterParents = []string{}
+
 // CreateContrailCluster inserts ContrailCluster to DB
 func CreateContrailCluster(tx *sql.Tx, model *models.ContrailCluster) error {
 	// Prepare statement for inserting data
@@ -99,6 +102,12 @@ func CreateContrailCluster(tx *sql.Tx, model *models.ContrailCluster) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "contrail_cluster",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -349,6 +358,15 @@ func ListContrailCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.ContrailC
 	spec.RefFields = ContrailClusterRefFields
 	spec.BackRefFields = ContrailClusterBackRefFields
 	result := models.MakeContrailClusterSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -407,8 +425,9 @@ func DeleteContrailCluster(tx *sql.Tx, uuid string, auth *common.AuthContext) er
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

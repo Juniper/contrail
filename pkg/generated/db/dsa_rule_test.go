@@ -20,7 +20,8 @@ func TestDsaRule(t *testing.T) {
 		}
 	}()
 	model := models.MakeDsaRule()
-	model.UUID = "dummy_uuid"
+	model.UUID = "dsa_rule_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "dsa_rule_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateDsaRule(tx, model)

@@ -55,6 +55,9 @@ var ControllerNodeRoleRefFields = map[string][]string{}
 // ControllerNodeRoleBackRefFields is db back reference fields for ControllerNodeRole
 var ControllerNodeRoleBackRefFields = map[string][]string{}
 
+// ControllerNodeRoleParentTypes is possible parents for ControllerNodeRole
+var ControllerNodeRoleParents = []string{}
+
 // CreateControllerNodeRole inserts ControllerNodeRole to DB
 func CreateControllerNodeRole(tx *sql.Tx, model *models.ControllerNodeRole) error {
 	// Prepare statement for inserting data
@@ -101,6 +104,12 @@ func CreateControllerNodeRole(tx *sql.Tx, model *models.ControllerNodeRole) erro
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "controller_node_role",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -359,6 +368,15 @@ func ListControllerNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.Contro
 	spec.RefFields = ControllerNodeRoleRefFields
 	spec.BackRefFields = ControllerNodeRoleBackRefFields
 	result := models.MakeControllerNodeRoleSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -417,8 +435,9 @@ func DeleteControllerNodeRole(tx *sql.Tx, uuid string, auth *common.AuthContext)
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

@@ -20,7 +20,8 @@ func TestLoadbalancerListener(t *testing.T) {
 		}
 	}()
 	model := models.MakeLoadbalancerListener()
-	model.UUID = "dummy_uuid"
+	model.UUID = "loadbalancer_listener_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "loadbalancer_listener_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateLoadbalancerListener(tx, model)

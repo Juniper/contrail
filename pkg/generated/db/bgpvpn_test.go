@@ -20,7 +20,8 @@ func TestBGPVPN(t *testing.T) {
 		}
 	}()
 	model := models.MakeBGPVPN()
-	model.UUID = "dummy_uuid"
+	model.UUID = "bgpvpn_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "bgpvpn_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateBGPVPN(tx, model)

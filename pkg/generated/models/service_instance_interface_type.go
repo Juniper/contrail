@@ -6,10 +6,10 @@ import "encoding/json"
 
 // ServiceInstanceInterfaceType
 type ServiceInstanceInterfaceType struct {
+	VirtualNetwork      string               `json:"virtual_network"`
 	IPAddress           IpAddressType        `json:"ip_address"`
 	AllowedAddressPairs *AllowedAddressPairs `json:"allowed_address_pairs"`
 	StaticRoutes        *RouteTableType      `json:"static_routes"`
-	VirtualNetwork      string               `json:"virtual_network"`
 }
 
 // String returns json representation of the object
@@ -22,10 +22,10 @@ func (model *ServiceInstanceInterfaceType) String() string {
 func MakeServiceInstanceInterfaceType() *ServiceInstanceInterfaceType {
 	return &ServiceInstanceInterfaceType{
 		//TODO(nati): Apply default
-		VirtualNetwork:      "",
 		IPAddress:           MakeIpAddressType(),
 		AllowedAddressPairs: MakeAllowedAddressPairs(),
 		StaticRoutes:        MakeRouteTableType(),
+		VirtualNetwork:      "",
 	}
 }
 
@@ -33,6 +33,9 @@ func MakeServiceInstanceInterfaceType() *ServiceInstanceInterfaceType {
 func InterfaceToServiceInstanceInterfaceType(iData interface{}) *ServiceInstanceInterfaceType {
 	data := iData.(map[string]interface{})
 	return &ServiceInstanceInterfaceType{
+		VirtualNetwork: data["virtual_network"].(string),
+
+		//{"description":"Interface belongs to this virtual network.","type":"string"}
 		IPAddress: InterfaceToIpAddressType(data["ip_address"]),
 
 		//{"description":"Shared ip for this interface (Only V1)","type":"string"}
@@ -42,9 +45,6 @@ func InterfaceToServiceInstanceInterfaceType(iData interface{}) *ServiceInstance
 		StaticRoutes: InterfaceToRouteTableType(data["static_routes"]),
 
 		//{"description":"Static routes for this interface (Only V1)","type":"object","properties":{"route":{"type":"array","item":{"type":"object","properties":{"community_attributes":{"type":"object","properties":{"community_attribute":{"type":"array"}}},"next_hop":{"type":"string"},"next_hop_type":{"type":"string","enum":["service-instance","ip-address"]},"prefix":{"type":"string"}}}}}}
-		VirtualNetwork: data["virtual_network"].(string),
-
-		//{"description":"Interface belongs to this virtual network.","type":"string"}
 
 	}
 }

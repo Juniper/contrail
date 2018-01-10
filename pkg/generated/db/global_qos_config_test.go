@@ -20,7 +20,8 @@ func TestGlobalQosConfig(t *testing.T) {
 		}
 	}()
 	model := models.MakeGlobalQosConfig()
-	model.UUID = "dummy_uuid"
+	model.UUID = "global_qos_config_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "global_qos_config_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateGlobalQosConfig(tx, model)

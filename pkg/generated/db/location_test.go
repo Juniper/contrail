@@ -20,7 +20,8 @@ func TestLocation(t *testing.T) {
 		}
 	}()
 	model := models.MakeLocation()
-	model.UUID = "dummy_uuid"
+	model.UUID = "location_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "location_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateLocation(tx, model)

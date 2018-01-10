@@ -53,6 +53,12 @@ var InterfaceRouteTableRefFields = map[string][]string{
 // InterfaceRouteTableBackRefFields is db back reference fields for InterfaceRouteTable
 var InterfaceRouteTableBackRefFields = map[string][]string{}
 
+// InterfaceRouteTableParentTypes is possible parents for InterfaceRouteTable
+var InterfaceRouteTableParents = []string{
+
+	"project",
+}
+
 const insertInterfaceRouteTableServiceInstanceQuery = "insert into `ref_interface_route_table_service_instance` (`from`, `to` ,`interface_type`) values (?, ?,?);"
 
 // CreateInterfaceRouteTable inserts InterfaceRouteTable to DB
@@ -110,6 +116,12 @@ func CreateInterfaceRouteTable(tx *sql.Tx, model *models.InterfaceRouteTable) er
 		}
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "interface_route_table",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -325,6 +337,15 @@ func ListInterfaceRouteTable(tx *sql.Tx, spec *common.ListSpec) ([]*models.Inter
 	spec.RefFields = InterfaceRouteTableRefFields
 	spec.BackRefFields = InterfaceRouteTableBackRefFields
 	result := models.MakeInterfaceRouteTableSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -383,8 +404,9 @@ func DeleteInterfaceRouteTable(tx *sql.Tx, uuid string, auth *common.AuthContext
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

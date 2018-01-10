@@ -20,7 +20,8 @@ func TestSubnet(t *testing.T) {
 		}
 	}()
 	model := models.MakeSubnet()
-	model.UUID = "dummy_uuid"
+	model.UUID = "subnet_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "subnet_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateSubnet(tx, model)

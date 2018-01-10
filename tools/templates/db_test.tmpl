@@ -17,7 +17,8 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
 		}
     }()
     model := models.Make{{ schema.JSONSchema.GoName }}()
-    model.UUID = "dummy_uuid"
+    model.UUID = "{{ schema.ID }}_dummy_uuid"
+    model.FQName = []string{"default", "default-domain", "{{ schema.ID }}_dummy"}
 
     err := common.DoInTransaction(db, func (tx *sql.Tx) error {
         return Create{{ schema.JSONSchema.GoName }}(tx, model)

@@ -79,6 +79,12 @@ var FloatingIPPoolBackRefFields = map[string][]string{
 	},
 }
 
+// FloatingIPPoolParentTypes is possible parents for FloatingIPPool
+var FloatingIPPoolParents = []string{
+
+	"virtual_network",
+}
+
 // CreateFloatingIPPool inserts FloatingIPPool to DB
 func CreateFloatingIPPool(tx *sql.Tx, model *models.FloatingIPPool) error {
 	// Prepare statement for inserting data
@@ -117,6 +123,12 @@ func CreateFloatingIPPool(tx *sql.Tx, model *models.FloatingIPPool) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "floating_ip_pool",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -544,6 +556,15 @@ func ListFloatingIPPool(tx *sql.Tx, spec *common.ListSpec) ([]*models.FloatingIP
 	spec.RefFields = FloatingIPPoolRefFields
 	spec.BackRefFields = FloatingIPPoolBackRefFields
 	result := models.MakeFloatingIPPoolSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -602,8 +623,9 @@ func DeleteFloatingIPPool(tx *sql.Tx, uuid string, auth *common.AuthContext) err
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

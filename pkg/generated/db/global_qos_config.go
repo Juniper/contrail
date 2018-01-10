@@ -134,6 +134,12 @@ var GlobalQosConfigBackRefFields = map[string][]string{
 	},
 }
 
+// GlobalQosConfigParentTypes is possible parents for GlobalQosConfig
+var GlobalQosConfigParents = []string{
+
+	"global_system_config",
+}
+
 // CreateGlobalQosConfig inserts GlobalQosConfig to DB
 func CreateGlobalQosConfig(tx *sql.Tx, model *models.GlobalQosConfig) error {
 	// Prepare statement for inserting data
@@ -174,6 +180,12 @@ func CreateGlobalQosConfig(tx *sql.Tx, model *models.GlobalQosConfig) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "global_qos_config",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -1017,6 +1029,15 @@ func ListGlobalQosConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.GlobalQos
 	spec.RefFields = GlobalQosConfigRefFields
 	spec.BackRefFields = GlobalQosConfigBackRefFields
 	result := models.MakeGlobalQosConfigSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -1075,8 +1096,9 @@ func DeleteGlobalQosConfig(tx *sql.Tx, uuid string, auth *common.AuthContext) er
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

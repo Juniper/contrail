@@ -20,7 +20,8 @@ func TestVirtualNetwork(t *testing.T) {
 		}
 	}()
 	model := models.MakeVirtualNetwork()
-	model.UUID = "dummy_uuid"
+	model.UUID = "virtual_network_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "virtual_network_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateVirtualNetwork(tx, model)

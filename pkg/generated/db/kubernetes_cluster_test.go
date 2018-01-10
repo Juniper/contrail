@@ -20,7 +20,8 @@ func TestKubernetesCluster(t *testing.T) {
 		}
 	}()
 	model := models.MakeKubernetesCluster()
-	model.UUID = "dummy_uuid"
+	model.UUID = "kubernetes_cluster_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "kubernetes_cluster_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateKubernetesCluster(tx, model)

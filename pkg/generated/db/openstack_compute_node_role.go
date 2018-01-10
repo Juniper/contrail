@@ -55,6 +55,9 @@ var OpenstackComputeNodeRoleRefFields = map[string][]string{}
 // OpenstackComputeNodeRoleBackRefFields is db back reference fields for OpenstackComputeNodeRole
 var OpenstackComputeNodeRoleBackRefFields = map[string][]string{}
 
+// OpenstackComputeNodeRoleParentTypes is possible parents for OpenstackComputeNodeRole
+var OpenstackComputeNodeRoleParents = []string{}
+
 // CreateOpenstackComputeNodeRole inserts OpenstackComputeNodeRole to DB
 func CreateOpenstackComputeNodeRole(tx *sql.Tx, model *models.OpenstackComputeNodeRole) error {
 	// Prepare statement for inserting data
@@ -101,6 +104,12 @@ func CreateOpenstackComputeNodeRole(tx *sql.Tx, model *models.OpenstackComputeNo
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "openstack_compute_node_role",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -359,6 +368,15 @@ func ListOpenstackComputeNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.
 	spec.RefFields = OpenstackComputeNodeRoleRefFields
 	spec.BackRefFields = OpenstackComputeNodeRoleBackRefFields
 	result := models.MakeOpenstackComputeNodeRoleSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -417,8 +435,9 @@ func DeleteOpenstackComputeNodeRole(tx *sql.Tx, uuid string, auth *common.AuthCo
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

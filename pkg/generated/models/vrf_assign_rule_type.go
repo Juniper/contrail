@@ -33,6 +33,9 @@ func MakeVrfAssignRuleType() *VrfAssignRuleType {
 func InterfaceToVrfAssignRuleType(iData interface{}) *VrfAssignRuleType {
 	data := iData.(map[string]interface{})
 	return &VrfAssignRuleType{
+		IgnoreACL: data["ignore_acl"].(bool),
+
+		//{"type":"boolean"}
 		RoutingInstance: data["routing_instance"].(string),
 
 		//{"type":"string"}
@@ -42,9 +45,6 @@ func InterfaceToVrfAssignRuleType(iData interface{}) *VrfAssignRuleType {
 		VlanTag: data["vlan_tag"].(int),
 
 		//{"type":"integer"}
-		IgnoreACL: data["ignore_acl"].(bool),
-
-		//{"type":"boolean"}
 
 	}
 }

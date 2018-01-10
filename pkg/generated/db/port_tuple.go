@@ -46,6 +46,12 @@ var PortTupleRefFields = map[string][]string{}
 // PortTupleBackRefFields is db back reference fields for PortTuple
 var PortTupleBackRefFields = map[string][]string{}
 
+// PortTupleParentTypes is possible parents for PortTuple
+var PortTupleParents = []string{
+
+	"service_instance",
+}
+
 // CreatePortTuple inserts PortTuple to DB
 func CreatePortTuple(tx *sql.Tx, model *models.PortTuple) error {
 	// Prepare statement for inserting data
@@ -83,6 +89,12 @@ func CreatePortTuple(tx *sql.Tx, model *models.PortTuple) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	metaData := &common.MetaData{
+		UUID:   model.UUID,
+		Type:   "port_tuple",
+		FQName: model.FQName,
+	}
+	err = common.CreateMetaData(tx, metaData)
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
@@ -269,6 +281,15 @@ func ListPortTuple(tx *sql.Tx, spec *common.ListSpec) ([]*models.PortTuple, erro
 	spec.RefFields = PortTupleRefFields
 	spec.BackRefFields = PortTupleBackRefFields
 	result := models.MakePortTupleSlice()
+
+	if spec.ParentFQName != nil {
+		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+		if err != nil {
+			return nil, errors.Wrap(err, "can't find parents")
+		}
+		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+	}
+
 	query, columns, values := common.BuildListQuery(spec)
 	log.WithFields(log.Fields{
 		"listSpec": spec,
@@ -327,8 +348,9 @@ func DeletePortTuple(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		return errors.Wrap(err, "delete failed")
 	}
 
+	err = common.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
-	return nil
+	return err
 }

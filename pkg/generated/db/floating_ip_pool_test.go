@@ -20,7 +20,8 @@ func TestFloatingIPPool(t *testing.T) {
 		}
 	}()
 	model := models.MakeFloatingIPPool()
-	model.UUID = "dummy_uuid"
+	model.UUID = "floating_ip_pool_dummy_uuid"
+	model.FQName = []string{"default", "default-domain", "floating_ip_pool_dummy"}
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateFloatingIPPool(tx, model)

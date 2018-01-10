@@ -6,22 +6,22 @@ import "encoding/json"
 
 // Project
 type Project struct {
-	VxlanRouting bool           `json:"vxlan_routing"`
-	IDPerms      *IdPermsType   `json:"id_perms"`
-	Annotations  *KeyValuePairs `json:"annotations"`
+	DisplayName  string         `json:"display_name"`
 	Perms2       *PermType2     `json:"perms2"`
-	ParentUUID   string         `json:"parent_uuid"`
-	ParentType   string         `json:"parent_type"`
+	UUID         string         `json:"uuid"`
+	IDPerms      *IdPermsType   `json:"id_perms"`
+	VxlanRouting bool           `json:"vxlan_routing"`
 	AlarmEnable  bool           `json:"alarm_enable"`
 	Quota        *QuotaType     `json:"quota"`
+	Annotations  *KeyValuePairs `json:"annotations"`
+	ParentUUID   string         `json:"parent_uuid"`
+	ParentType   string         `json:"parent_type"`
 	FQName       []string       `json:"fq_name"`
-	DisplayName  string         `json:"display_name"`
-	UUID         string         `json:"uuid"`
 
-	AliasIPPoolRefs          []*ProjectAliasIPPoolRef          `json:"alias_ip_pool_refs"`
 	NamespaceRefs            []*ProjectNamespaceRef            `json:"namespace_refs"`
 	ApplicationPolicySetRefs []*ProjectApplicationPolicySetRef `json:"application_policy_set_refs"`
 	FloatingIPPoolRefs       []*ProjectFloatingIPPoolRef       `json:"floating_ip_pool_refs"`
+	AliasIPPoolRefs          []*ProjectAliasIPPoolRef          `json:"alias_ip_pool_refs"`
 
 	AddressGroups              []*AddressGroup              `json:"address_groups"`
 	Alarms                     []*Alarm                     `json:"alarms"`
@@ -55,13 +55,6 @@ type Project struct {
 	VirtualNetworks            []*VirtualNetwork            `json:"virtual_networks"`
 }
 
-// ProjectFloatingIPPoolRef references each other
-type ProjectFloatingIPPoolRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
 // ProjectAliasIPPoolRef references each other
 type ProjectAliasIPPoolRef struct {
 	UUID string   `json:"uuid"`
@@ -84,6 +77,13 @@ type ProjectApplicationPolicySetRef struct {
 
 }
 
+// ProjectFloatingIPPoolRef references each other
+type ProjectFloatingIPPoolRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
 // String returns json representation of the object
 func (model *Project) String() string {
 	b, _ := json.Marshal(model)
@@ -94,17 +94,17 @@ func (model *Project) String() string {
 func MakeProject() *Project {
 	return &Project{
 		//TODO(nati): Apply default
-		UUID:         "",
-		ParentUUID:   "",
-		ParentType:   "",
+		IDPerms:      MakeIdPermsType(),
+		VxlanRouting: false,
 		AlarmEnable:  false,
 		Quota:        MakeQuotaType(),
+		Annotations:  MakeKeyValuePairs(),
+		ParentUUID:   "",
+		ParentType:   "",
 		FQName:       []string{},
 		DisplayName:  "",
-		VxlanRouting: false,
-		IDPerms:      MakeIdPermsType(),
-		Annotations:  MakeKeyValuePairs(),
 		Perms2:       MakePermType2(),
+		UUID:         "",
 	}
 }
 
@@ -112,39 +112,39 @@ func MakeProject() *Project {
 func InterfaceToProject(iData interface{}) *Project {
 	data := iData.(map[string]interface{})
 	return &Project{
-		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
-
-		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		Perms2: InterfaceToPermType2(data["perms2"]),
-
-		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
-		VxlanRouting: data["vxlan_routing"].(bool),
-
-		//{"description":"When this knob is enabled for a project, an internal system VN (VN-Int) is created for every logical router in the project.","type":"boolean"}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
-
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
-		FQName: data["fq_name"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
 		DisplayName: data["display_name"].(string),
 
 		//{"type":"string"}
-		UUID: data["uuid"].(string),
+		Perms2: InterfaceToPermType2(data["perms2"]),
 
-		//{"type":"string"}
-		ParentUUID: data["parent_uuid"].(string),
+		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
+		UUID: data["uuid"].(string),
 
 		//{"type":"string"}
 		ParentType: data["parent_type"].(string),
 
 		//{"type":"string"}
+		FQName: data["fq_name"].([]string),
+
+		//{"type":"array","item":{"type":"string"}}
+		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
+
+		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
+		VxlanRouting: data["vxlan_routing"].(bool),
+
+		//{"description":"When this knob is enabled for a project, an internal system VN (VN-Int) is created for every logical router in the project.","type":"boolean"}
 		AlarmEnable: data["alarm_enable"].(bool),
 
 		//{"description":"Flag to enable/disable alarms configured under global-system-config. True, if not set.","type":"boolean"}
 		Quota: InterfaceToQuotaType(data["quota"]),
 
 		//{"description":"Max instances limits for various objects under project.","type":"object","properties":{"access_control_list":{"type":"integer"},"bgp_router":{"type":"integer"},"defaults":{"type":"integer"},"floating_ip":{"type":"integer"},"floating_ip_pool":{"type":"integer"},"global_vrouter_config":{"type":"integer"},"instance_ip":{"type":"integer"},"loadbalancer_healthmonitor":{"type":"integer"},"loadbalancer_member":{"type":"integer"},"loadbalancer_pool":{"type":"integer"},"logical_router":{"type":"integer"},"network_ipam":{"type":"integer"},"network_policy":{"type":"integer"},"route_table":{"type":"integer"},"security_group":{"type":"integer"},"security_group_rule":{"type":"integer"},"security_logging_object":{"type":"integer"},"service_instance":{"type":"integer"},"service_template":{"type":"integer"},"subnet":{"type":"integer"},"virtual_DNS":{"type":"integer"},"virtual_DNS_record":{"type":"integer"},"virtual_ip":{"type":"integer"},"virtual_machine_interface":{"type":"integer"},"virtual_network":{"type":"integer"},"virtual_router":{"type":"integer"}}}
+		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
+
+		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
+		ParentUUID: data["parent_uuid"].(string),
+
+		//{"type":"string"}
 
 	}
 }
