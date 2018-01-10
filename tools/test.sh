@@ -12,7 +12,6 @@ do
 cd $TOP
 
 ls $dir/*.go && result=1
-echo $result
 
 if [ $result -eq 1 ]; then
     echo $dir
