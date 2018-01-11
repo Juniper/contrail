@@ -6,9 +6,9 @@ import "encoding/json"
 
 // FlowAgingTimeout
 type FlowAgingTimeout struct {
-	Protocol         string `json:"protocol"`
 	Port             int    `json:"port"`
 	TimeoutInSeconds int    `json:"timeout_in_seconds"`
+	Protocol         string `json:"protocol"`
 }
 
 // String returns json representation of the object
@@ -21,37 +21,10 @@ func (model *FlowAgingTimeout) String() string {
 func MakeFlowAgingTimeout() *FlowAgingTimeout {
 	return &FlowAgingTimeout{
 		//TODO(nati): Apply default
+		TimeoutInSeconds: 0,
 		Protocol:         "",
 		Port:             0,
-		TimeoutInSeconds: 0,
 	}
-}
-
-// InterfaceToFlowAgingTimeout makes FlowAgingTimeout from interface
-func InterfaceToFlowAgingTimeout(iData interface{}) *FlowAgingTimeout {
-	data := iData.(map[string]interface{})
-	return &FlowAgingTimeout{
-		TimeoutInSeconds: data["timeout_in_seconds"].(int),
-
-		//{"type":"integer"}
-		Protocol: data["protocol"].(string),
-
-		//{"type":"string"}
-		Port: data["port"].(int),
-
-		//{"type":"integer"}
-
-	}
-}
-
-// InterfaceToFlowAgingTimeoutSlice makes a slice of FlowAgingTimeout from interface
-func InterfaceToFlowAgingTimeoutSlice(data interface{}) []*FlowAgingTimeout {
-	list := data.([]interface{})
-	result := MakeFlowAgingTimeoutSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToFlowAgingTimeout(item))
-	}
-	return result
 }
 
 // MakeFlowAgingTimeoutSlice() makes a slice of FlowAgingTimeout

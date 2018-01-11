@@ -6,15 +6,15 @@ import "encoding/json"
 
 // Domain
 type Domain struct {
-	IDPerms      *IdPermsType      `json:"id_perms"`
-	DomainLimits *DomainLimitsType `json:"domain_limits"`
-	DisplayName  string            `json:"display_name"`
-	UUID         string            `json:"uuid"`
-	ParentType   string            `json:"parent_type"`
-	Annotations  *KeyValuePairs    `json:"annotations"`
 	Perms2       *PermType2        `json:"perms2"`
+	UUID         string            `json:"uuid"`
 	ParentUUID   string            `json:"parent_uuid"`
+	IDPerms      *IdPermsType      `json:"id_perms"`
+	DisplayName  string            `json:"display_name"`
+	Annotations  *KeyValuePairs    `json:"annotations"`
+	ParentType   string            `json:"parent_type"`
 	FQName       []string          `json:"fq_name"`
+	DomainLimits *DomainLimitsType `json:"domain_limits"`
 
 	APIAccessLists   []*APIAccessList   `json:"api_access_lists"`
 	Namespaces       []*Namespace       `json:"namespaces"`
@@ -33,61 +33,16 @@ func (model *Domain) String() string {
 func MakeDomain() *Domain {
 	return &Domain{
 		//TODO(nati): Apply default
-		Perms2:       MakePermType2(),
-		ParentUUID:   "",
+		DomainLimits: MakeDomainLimitsType(),
+		ParentType:   "",
 		FQName:       []string{},
 		Annotations:  MakeKeyValuePairs(),
-		DisplayName:  "",
+		Perms2:       MakePermType2(),
 		UUID:         "",
-		ParentType:   "",
+		ParentUUID:   "",
 		IDPerms:      MakeIdPermsType(),
-		DomainLimits: MakeDomainLimitsType(),
+		DisplayName:  "",
 	}
-}
-
-// InterfaceToDomain makes Domain from interface
-func InterfaceToDomain(iData interface{}) *Domain {
-	data := iData.(map[string]interface{})
-	return &Domain{
-		Annotations: InterfaceToKeyValuePairs(data["annotations"]),
-
-		//{"type":"object","properties":{"key_value_pair":{"type":"array","item":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}}}}}}
-		Perms2: InterfaceToPermType2(data["perms2"]),
-
-		//{"type":"object","properties":{"global_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7},"share":{"type":"array","item":{"type":"object","properties":{"tenant":{"type":"string"},"tenant_access":{"type":"integer","minimum":0,"maximum":7}}}}}}
-		ParentUUID: data["parent_uuid"].(string),
-
-		//{"type":"string"}
-		FQName: data["fq_name"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
-		DomainLimits: InterfaceToDomainLimitsType(data["domain_limits"]),
-
-		//{"description":"Domain level quota, not currently implemented","type":"object","properties":{"project_limit":{"type":"integer"},"security_group_limit":{"type":"integer"},"virtual_network_limit":{"type":"integer"}}}
-		DisplayName: data["display_name"].(string),
-
-		//{"type":"string"}
-		UUID: data["uuid"].(string),
-
-		//{"type":"string"}
-		ParentType: data["parent_type"].(string),
-
-		//{"type":"string"}
-		IDPerms: InterfaceToIdPermsType(data["id_perms"]),
-
-		//{"type":"object","properties":{"created":{"type":"string"},"creator":{"type":"string"},"description":{"type":"string"},"enable":{"type":"boolean"},"last_modified":{"type":"string"},"permissions":{"type":"object","properties":{"group":{"type":"string"},"group_access":{"type":"integer","minimum":0,"maximum":7},"other_access":{"type":"integer","minimum":0,"maximum":7},"owner":{"type":"string"},"owner_access":{"type":"integer","minimum":0,"maximum":7}}},"user_visible":{"type":"boolean"}}}
-
-	}
-}
-
-// InterfaceToDomainSlice makes a slice of Domain from interface
-func InterfaceToDomainSlice(data interface{}) []*Domain {
-	list := data.([]interface{})
-	result := MakeDomainSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToDomain(item))
-	}
-	return result
 }
 
 // MakeDomainSlice() makes a slice of Domain

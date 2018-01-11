@@ -66,9 +66,9 @@ var ApplicationPolicySetParents = []string{
 	"policy_management",
 }
 
-const insertApplicationPolicySetFirewallPolicyQuery = "insert into `ref_application_policy_set_firewall_policy` (`from`, `to` ,`sequence`) values (?, ?,?);"
-
 const insertApplicationPolicySetGlobalVrouterConfigQuery = "insert into `ref_application_policy_set_global_vrouter_config` (`from`, `to` ) values (?, ?);"
+
+const insertApplicationPolicySetFirewallPolicyQuery = "insert into `ref_application_policy_set_firewall_policy` (`from`, `to` ,`sequence`) values (?, ?,?);"
 
 // CreateApplicationPolicySet inserts ApplicationPolicySet to DB
 func CreateApplicationPolicySet(tx *sql.Tx, model *models.ApplicationPolicySet) error {
@@ -375,9 +375,7 @@ func ListApplicationPolicySet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Appl
 	var err error
 	//TODO (check input)
 	spec.Table = "application_policy_set"
-	if spec.Fields == nil {
-		spec.Fields = ApplicationPolicySetFields
-	}
+	spec.Fields = ApplicationPolicySetFields
 	spec.RefFields = ApplicationPolicySetRefFields
 	spec.BackRefFields = ApplicationPolicySetBackRefFields
 	result := models.MakeApplicationPolicySetSlice()
@@ -390,7 +388,9 @@ func ListApplicationPolicySet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Appl
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

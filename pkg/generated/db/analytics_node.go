@@ -285,9 +285,7 @@ func ListAnalyticsNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.AnalyticsNo
 	var err error
 	//TODO (check input)
 	spec.Table = "analytics_node"
-	if spec.Fields == nil {
-		spec.Fields = AnalyticsNodeFields
-	}
+	spec.Fields = AnalyticsNodeFields
 	spec.RefFields = AnalyticsNodeRefFields
 	spec.BackRefFields = AnalyticsNodeBackRefFields
 	result := models.MakeAnalyticsNodeSlice()
@@ -300,7 +298,9 @@ func ListAnalyticsNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.AnalyticsNo
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

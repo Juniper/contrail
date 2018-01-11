@@ -432,9 +432,7 @@ func ListNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.Node, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "node"
-	if spec.Fields == nil {
-		spec.Fields = NodeFields
-	}
+	spec.Fields = NodeFields
 	spec.RefFields = NodeRefFields
 	spec.BackRefFields = NodeBackRefFields
 	result := models.MakeNodeSlice()
@@ -447,7 +445,9 @@ func ListNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.Node, error) {
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

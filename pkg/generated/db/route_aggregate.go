@@ -323,9 +323,7 @@ func ListRouteAggregate(tx *sql.Tx, spec *common.ListSpec) ([]*models.RouteAggre
 	var err error
 	//TODO (check input)
 	spec.Table = "route_aggregate"
-	if spec.Fields == nil {
-		spec.Fields = RouteAggregateFields
-	}
+	spec.Fields = RouteAggregateFields
 	spec.RefFields = RouteAggregateRefFields
 	spec.BackRefFields = RouteAggregateBackRefFields
 	result := models.MakeRouteAggregateSlice()
@@ -338,7 +336,9 @@ func ListRouteAggregate(tx *sql.Tx, spec *common.ListSpec) ([]*models.RouteAggre
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

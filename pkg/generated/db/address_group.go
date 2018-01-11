@@ -285,9 +285,7 @@ func ListAddressGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.AddressGroup
 	var err error
 	//TODO (check input)
 	spec.Table = "address_group"
-	if spec.Fields == nil {
-		spec.Fields = AddressGroupFields
-	}
+	spec.Fields = AddressGroupFields
 	spec.RefFields = AddressGroupRefFields
 	spec.BackRefFields = AddressGroupBackRefFields
 	result := models.MakeAddressGroupSlice()
@@ -300,7 +298,9 @@ func ListAddressGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.AddressGroup
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

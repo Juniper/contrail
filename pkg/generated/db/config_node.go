@@ -285,9 +285,7 @@ func ListConfigNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.ConfigNode, er
 	var err error
 	//TODO (check input)
 	spec.Table = "config_node"
-	if spec.Fields == nil {
-		spec.Fields = ConfigNodeFields
-	}
+	spec.Fields = ConfigNodeFields
 	spec.RefFields = ConfigNodeRefFields
 	spec.BackRefFields = ConfigNodeBackRefFields
 	result := models.MakeConfigNodeSlice()
@@ -300,7 +298,9 @@ func ListConfigNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.ConfigNode, er
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

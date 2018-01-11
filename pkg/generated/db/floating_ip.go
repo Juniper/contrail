@@ -67,9 +67,9 @@ var FloatingIPBackRefFields = map[string][]string{}
 // FloatingIPParentTypes is possible parents for FloatingIP
 var FloatingIPParents = []string{
 
-	"floating_ip_pool",
-
 	"instance_ip",
+
+	"floating_ip_pool",
 }
 
 const insertFloatingIPProjectQuery = "insert into `ref_floating_ip_project` (`from`, `to` ) values (?, ?);"
@@ -426,9 +426,7 @@ func ListFloatingIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.FloatingIP, er
 	var err error
 	//TODO (check input)
 	spec.Table = "floating_ip"
-	if spec.Fields == nil {
-		spec.Fields = FloatingIPFields
-	}
+	spec.Fields = FloatingIPFields
 	spec.RefFields = FloatingIPRefFields
 	spec.BackRefFields = FloatingIPBackRefFields
 	result := models.MakeFloatingIPSlice()
@@ -441,7 +439,9 @@ func ListFloatingIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.FloatingIP, er
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

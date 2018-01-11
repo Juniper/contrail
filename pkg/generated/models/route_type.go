@@ -22,41 +22,11 @@ func (model *RouteType) String() string {
 func MakeRouteType() *RouteType {
 	return &RouteType{
 		//TODO(nati): Apply default
-		CommunityAttributes: MakeCommunityAttributes(),
-		NextHopType:         MakeRouteNextHopType(),
 		Prefix:              "",
 		NextHop:             "",
+		CommunityAttributes: MakeCommunityAttributes(),
+		NextHopType:         MakeRouteNextHopType(),
 	}
-}
-
-// InterfaceToRouteType makes RouteType from interface
-func InterfaceToRouteType(iData interface{}) *RouteType {
-	data := iData.(map[string]interface{})
-	return &RouteType{
-		CommunityAttributes: InterfaceToCommunityAttributes(data["community_attributes"]),
-
-		//{"type":"object","properties":{"community_attribute":{"type":"array"}}}
-		NextHopType: InterfaceToRouteNextHopType(data["next_hop_type"]),
-
-		//{"type":"string","enum":["service-instance","ip-address"]}
-		Prefix: data["prefix"].(string),
-
-		//{"description":"Ip prefix/len format prefix","type":"string"}
-		NextHop: data["next_hop"].(string),
-
-		//{"description":"Ip address or service instance name.","type":"string"}
-
-	}
-}
-
-// InterfaceToRouteTypeSlice makes a slice of RouteType from interface
-func InterfaceToRouteTypeSlice(data interface{}) []*RouteType {
-	list := data.([]interface{})
-	result := MakeRouteTypeSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToRouteType(item))
-	}
-	return result
 }
 
 // MakeRouteTypeSlice() makes a slice of RouteType

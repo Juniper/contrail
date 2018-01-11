@@ -24,28 +24,6 @@ func MakeRbacRuleEntriesType() *RbacRuleEntriesType {
 	}
 }
 
-// InterfaceToRbacRuleEntriesType makes RbacRuleEntriesType from interface
-func InterfaceToRbacRuleEntriesType(iData interface{}) *RbacRuleEntriesType {
-	data := iData.(map[string]interface{})
-	return &RbacRuleEntriesType{
-
-		RbacRule: InterfaceToRbacRuleTypeSlice(data["rbac_rule"]),
-
-		//{"type":"array","item":{"type":"object","properties":{"rule_field":{"type":"string"},"rule_object":{"type":"string"},"rule_perms":{"type":"array","item":{"type":"object","properties":{"role_crud":{"type":"string"},"role_name":{"type":"string"}}}}}}}
-
-	}
-}
-
-// InterfaceToRbacRuleEntriesTypeSlice makes a slice of RbacRuleEntriesType from interface
-func InterfaceToRbacRuleEntriesTypeSlice(data interface{}) []*RbacRuleEntriesType {
-	list := data.([]interface{})
-	result := MakeRbacRuleEntriesTypeSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToRbacRuleEntriesType(item))
-	}
-	return result
-}
-
 // MakeRbacRuleEntriesTypeSlice() makes a slice of RbacRuleEntriesType
 func MakeRbacRuleEntriesTypeSlice() []*RbacRuleEntriesType {
 	return []*RbacRuleEntriesType{}

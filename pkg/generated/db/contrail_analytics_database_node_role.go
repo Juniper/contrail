@@ -322,9 +322,7 @@ func ListContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, spec *common.ListSpec) ([
 	var err error
 	//TODO (check input)
 	spec.Table = "contrail_analytics_database_node_role"
-	if spec.Fields == nil {
-		spec.Fields = ContrailAnalyticsDatabaseNodeRoleFields
-	}
+	spec.Fields = ContrailAnalyticsDatabaseNodeRoleFields
 	spec.RefFields = ContrailAnalyticsDatabaseNodeRoleRefFields
 	spec.BackRefFields = ContrailAnalyticsDatabaseNodeRoleBackRefFields
 	result := models.MakeContrailAnalyticsDatabaseNodeRoleSlice()
@@ -337,7 +335,9 @@ func ListContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, spec *common.ListSpec) ([
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

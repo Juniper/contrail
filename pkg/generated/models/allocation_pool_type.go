@@ -27,33 +27,6 @@ func MakeAllocationPoolType() *AllocationPoolType {
 	}
 }
 
-// InterfaceToAllocationPoolType makes AllocationPoolType from interface
-func InterfaceToAllocationPoolType(iData interface{}) *AllocationPoolType {
-	data := iData.(map[string]interface{})
-	return &AllocationPoolType{
-		VrouterSpecificPool: data["vrouter_specific_pool"].(bool),
-
-		//{"type":"boolean"}
-		Start: data["start"].(string),
-
-		//{"type":"string"}
-		End: data["end"].(string),
-
-		//{"type":"string"}
-
-	}
-}
-
-// InterfaceToAllocationPoolTypeSlice makes a slice of AllocationPoolType from interface
-func InterfaceToAllocationPoolTypeSlice(data interface{}) []*AllocationPoolType {
-	list := data.([]interface{})
-	result := MakeAllocationPoolTypeSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToAllocationPoolType(item))
-	}
-	return result
-}
-
 // MakeAllocationPoolTypeSlice() makes a slice of AllocationPoolType
 func MakeAllocationPoolTypeSlice() []*AllocationPoolType {
 	return []*AllocationPoolType{}

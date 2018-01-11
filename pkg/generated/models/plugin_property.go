@@ -25,30 +25,6 @@ func MakePluginProperty() *PluginProperty {
 	}
 }
 
-// InterfaceToPluginProperty makes PluginProperty from interface
-func InterfaceToPluginProperty(iData interface{}) *PluginProperty {
-	data := iData.(map[string]interface{})
-	return &PluginProperty{
-		Property: data["property"].(string),
-
-		//{"type":"string"}
-		Value: data["value"].(string),
-
-		//{"type":"string"}
-
-	}
-}
-
-// InterfaceToPluginPropertySlice makes a slice of PluginProperty from interface
-func InterfaceToPluginPropertySlice(data interface{}) []*PluginProperty {
-	list := data.([]interface{})
-	result := MakePluginPropertySlice()
-	for _, item := range list {
-		result = append(result, InterfaceToPluginProperty(item))
-	}
-	return result
-}
-
 // MakePluginPropertySlice() makes a slice of PluginProperty
 func MakePluginPropertySlice() []*PluginProperty {
 	return []*PluginProperty{}

@@ -123,7 +123,7 @@ workflow:
     - 201
     data:
       virtual-network:
-        uuid: vn_red 
+        uuid: vn_red
         display_name: red
         fq_name: ["default", "admin", "vn_red"]
         parent_type: project
@@ -181,6 +181,17 @@ workflow:
 - name: list virtual networks with filters
   request:
     path: "/virtual-networks?filters=display_name==blue"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - uuid: vn_blue
+      fq_name: ["default", "admin", "vn_blue"]
+      display_name: blue
+- name: list virtual networks with back_ref_id
+  request:
+    path: "/virtual-networks?back_ref_id=ri_uuid"
     method: GET
     expected:
     - 200

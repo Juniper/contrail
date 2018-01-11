@@ -23,27 +23,6 @@ func MakeMemberType() *MemberType {
 	}
 }
 
-// InterfaceToMemberType makes MemberType from interface
-func InterfaceToMemberType(iData interface{}) *MemberType {
-	data := iData.(map[string]interface{})
-	return &MemberType{
-		Role: data["role"].(string),
-
-		//{"description":"User role for the project","type":"string"}
-
-	}
-}
-
-// InterfaceToMemberTypeSlice makes a slice of MemberType from interface
-func InterfaceToMemberTypeSlice(data interface{}) []*MemberType {
-	list := data.([]interface{})
-	result := MakeMemberTypeSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToMemberType(item))
-	}
-	return result
-}
-
 // MakeMemberTypeSlice() makes a slice of MemberType
 func MakeMemberTypeSlice() []*MemberType {
 	return []*MemberType{}

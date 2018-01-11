@@ -313,9 +313,7 @@ func ListProviderAttachment(tx *sql.Tx, spec *common.ListSpec) ([]*models.Provid
 	var err error
 	//TODO (check input)
 	spec.Table = "provider_attachment"
-	if spec.Fields == nil {
-		spec.Fields = ProviderAttachmentFields
-	}
+	spec.Fields = ProviderAttachmentFields
 	spec.RefFields = ProviderAttachmentRefFields
 	spec.BackRefFields = ProviderAttachmentBackRefFields
 	result := models.MakeProviderAttachmentSlice()
@@ -328,7 +326,9 @@ func ListProviderAttachment(tx *sql.Tx, spec *common.ListSpec) ([]*models.Provid
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

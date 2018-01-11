@@ -100,19 +100,19 @@ func GetListSpec(c echo.Context) *ListSpec {
 	objectUUIDs := parseStringList(c.QueryParam("obj_uuids"))
 	fields := parseStringList(c.QueryParam("fields"))
 	return &ListSpec{
-		Filter:       filter,
-		Fields:       fields,
-		ParentType:   parentType,
-		ParentFQName: parentFQName,
-		Limit:        pageLimit,
-		Offset:       pageMarker,
-		Detail:       detail,
-		Count:        count,
-		ExcludeHrefs: excludeHrefs,
-		Shared:       shared,
-		ParentUUIDs:  parentUUIDs,
-		BackrefUUIDs: backrefUUIDs,
-		ObjectUUIDs:  objectUUIDs,
+		Filter:          filter,
+		RequestedFields: fields,
+		ParentType:      parentType,
+		ParentFQName:    parentFQName,
+		Limit:           pageLimit,
+		Offset:          pageMarker,
+		Detail:          detail,
+		Count:           count,
+		ExcludeHrefs:    excludeHrefs,
+		Shared:          shared,
+		ParentUUIDs:     parentUUIDs,
+		BackRefUUIDs:    backrefUUIDs,
+		ObjectUUIDs:     objectUUIDs,
 	}
 }
 

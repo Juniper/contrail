@@ -26,57 +26,15 @@ func (model *VirtualDnsType) String() string {
 func MakeVirtualDnsType() *VirtualDnsType {
 	return &VirtualDnsType{
 		//TODO(nati): Apply default
-		FloatingIPRecord:         MakeFloatingIpDnsNotation(),
-		DomainName:               "",
 		ExternalVisible:          false,
 		NextVirtualDNS:           "",
 		DynamicRecordsFromClient: false,
 		ReverseResolution:        false,
 		DefaultTTLSeconds:        0,
 		RecordOrder:              MakeDnsRecordOrderType(),
+		FloatingIPRecord:         MakeFloatingIpDnsNotation(),
+		DomainName:               "",
 	}
-}
-
-// InterfaceToVirtualDnsType makes VirtualDnsType from interface
-func InterfaceToVirtualDnsType(iData interface{}) *VirtualDnsType {
-	data := iData.(map[string]interface{})
-	return &VirtualDnsType{
-		DynamicRecordsFromClient: data["dynamic_records_from_client"].(bool),
-
-		//{"description":"Allow automatic addition of records on VM launch, default is True","type":"boolean"}
-		ReverseResolution: data["reverse_resolution"].(bool),
-
-		//{"description":"Allow reverse DNS resolution, ip to name mapping","type":"boolean"}
-		DefaultTTLSeconds: data["default_ttl_seconds"].(int),
-
-		//{"description":"Default Time To Live for DNS records","type":"integer"}
-		RecordOrder: InterfaceToDnsRecordOrderType(data["record_order"]),
-
-		//{"description":"Order of DNS load balancing, fixed, random, round-robin. Default is random","type":"string","enum":["fixed","random","round-robin"]}
-		FloatingIPRecord: InterfaceToFloatingIpDnsNotation(data["floating_ip_record"]),
-
-		//{"description":"Decides how floating ip records are added","type":"string","enum":["dashed-ip","dashed-ip-tenant-name","vm-name","vm-name-tenant-name"]}
-		DomainName: data["domain_name"].(string),
-
-		//{"description":"Default domain name for this virtual DNS server","type":"string"}
-		ExternalVisible: data["external_visible"].(bool),
-
-		//{"description":"Currently this option is not supported","type":"boolean"}
-		NextVirtualDNS: data["next_virtual_DNS"].(string),
-
-		//{"description":"Next virtual DNS server to lookup if record is not found. Default is proxy to infrastructure DNS","type":"string"}
-
-	}
-}
-
-// InterfaceToVirtualDnsTypeSlice makes a slice of VirtualDnsType from interface
-func InterfaceToVirtualDnsTypeSlice(data interface{}) []*VirtualDnsType {
-	list := data.([]interface{})
-	result := MakeVirtualDnsTypeSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToVirtualDnsType(item))
-	}
-	return result
 }
 
 // MakeVirtualDnsTypeSlice() makes a slice of VirtualDnsType

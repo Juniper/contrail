@@ -309,9 +309,7 @@ func ListBGPVPN(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPVPN, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "bgpvpn"
-	if spec.Fields == nil {
-		spec.Fields = BGPVPNFields
-	}
+	spec.Fields = BGPVPNFields
 	spec.RefFields = BGPVPNRefFields
 	spec.BackRefFields = BGPVPNBackRefFields
 	result := models.MakeBGPVPNSlice()
@@ -324,7 +322,9 @@ func ListBGPVPN(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPVPN, error) {
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

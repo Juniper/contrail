@@ -462,9 +462,7 @@ func ListOpenstackCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.Openstac
 	var err error
 	//TODO (check input)
 	spec.Table = "openstack_cluster"
-	if spec.Fields == nil {
-		spec.Fields = OpenstackClusterFields
-	}
+	spec.Fields = OpenstackClusterFields
 	spec.RefFields = OpenstackClusterRefFields
 	spec.BackRefFields = OpenstackClusterBackRefFields
 	result := models.MakeOpenstackClusterSlice()
@@ -477,7 +475,9 @@ func ListOpenstackCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.Openstac
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

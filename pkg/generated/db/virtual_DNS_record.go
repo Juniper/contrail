@@ -335,9 +335,7 @@ func ListVirtualDNSRecord(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualD
 	var err error
 	//TODO (check input)
 	spec.Table = "virtual_DNS_record"
-	if spec.Fields == nil {
-		spec.Fields = VirtualDNSRecordFields
-	}
+	spec.Fields = VirtualDNSRecordFields
 	spec.RefFields = VirtualDNSRecordRefFields
 	spec.BackRefFields = VirtualDNSRecordBackRefFields
 	result := models.MakeVirtualDNSRecordSlice()
@@ -350,7 +348,9 @@ func ListVirtualDNSRecord(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualD
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

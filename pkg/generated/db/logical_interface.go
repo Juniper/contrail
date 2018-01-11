@@ -57,9 +57,9 @@ var LogicalInterfaceBackRefFields = map[string][]string{}
 // LogicalInterfaceParentTypes is possible parents for LogicalInterface
 var LogicalInterfaceParents = []string{
 
-	"physical_router",
-
 	"physical_interface",
+
+	"physical_router",
 }
 
 const insertLogicalInterfaceVirtualMachineInterfaceQuery = "insert into `ref_logical_interface_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
@@ -338,9 +338,7 @@ func ListLogicalInterface(tx *sql.Tx, spec *common.ListSpec) ([]*models.LogicalI
 	var err error
 	//TODO (check input)
 	spec.Table = "logical_interface"
-	if spec.Fields == nil {
-		spec.Fields = LogicalInterfaceFields
-	}
+	spec.Fields = LogicalInterfaceFields
 	spec.RefFields = LogicalInterfaceRefFields
 	spec.BackRefFields = LogicalInterfaceBackRefFields
 	result := models.MakeLogicalInterfaceSlice()
@@ -353,7 +351,9 @@ func ListLogicalInterface(tx *sql.Tx, spec *common.ListSpec) ([]*models.LogicalI
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

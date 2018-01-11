@@ -283,9 +283,7 @@ func ListRouteTable(tx *sql.Tx, spec *common.ListSpec) ([]*models.RouteTable, er
 	var err error
 	//TODO (check input)
 	spec.Table = "route_table"
-	if spec.Fields == nil {
-		spec.Fields = RouteTableFields
-	}
+	spec.Fields = RouteTableFields
 	spec.RefFields = RouteTableRefFields
 	spec.BackRefFields = RouteTableBackRefFields
 	result := models.MakeRouteTableSlice()
@@ -298,7 +296,9 @@ func ListRouteTable(tx *sql.Tx, spec *common.ListSpec) ([]*models.RouteTable, er
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

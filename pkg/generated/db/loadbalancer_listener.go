@@ -374,9 +374,7 @@ func ListLoadbalancerListener(tx *sql.Tx, spec *common.ListSpec) ([]*models.Load
 	var err error
 	//TODO (check input)
 	spec.Table = "loadbalancer_listener"
-	if spec.Fields == nil {
-		spec.Fields = LoadbalancerListenerFields
-	}
+	spec.Fields = LoadbalancerListenerFields
 	spec.RefFields = LoadbalancerListenerRefFields
 	spec.BackRefFields = LoadbalancerListenerBackRefFields
 	result := models.MakeLoadbalancerListenerSlice()
@@ -389,7 +387,9 @@ func ListLoadbalancerListener(tx *sql.Tx, spec *common.ListSpec) ([]*models.Load
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

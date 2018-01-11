@@ -362,9 +362,7 @@ func ListOpenstackStorageNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.
 	var err error
 	//TODO (check input)
 	spec.Table = "openstack_storage_node_role"
-	if spec.Fields == nil {
-		spec.Fields = OpenstackStorageNodeRoleFields
-	}
+	spec.Fields = OpenstackStorageNodeRoleFields
 	spec.RefFields = OpenstackStorageNodeRoleRefFields
 	spec.BackRefFields = OpenstackStorageNodeRoleBackRefFields
 	result := models.MakeOpenstackStorageNodeRoleSlice()
@@ -377,7 +375,9 @@ func ListOpenstackStorageNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

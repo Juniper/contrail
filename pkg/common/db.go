@@ -19,23 +19,43 @@ const (
 
 //ListSpec is configuraion option for select query.
 type ListSpec struct {
-	Table         string
-	Filter        Filter
-	Limit         int
-	Offset        int
-	Detail        bool
-	Count         bool
-	Shared        bool
-	ExcludeHrefs  bool
-	ParentFQName  []string
-	ParentType    string
-	ParentUUIDs   []string
-	BackrefUUIDs  []string
-	ObjectUUIDs   []string
-	Fields        []string
-	RefFields     map[string][]string
-	BackRefFields map[string][]string
-	Auth          *AuthContext
+	Table           string
+	Filter          Filter
+	Limit           int
+	Offset          int
+	Detail          bool
+	Count           bool
+	Shared          bool
+	ExcludeHrefs    bool
+	ParentFQName    []string
+	ParentType      string
+	ParentUUIDs     []string
+	BackRefUUIDs    []string
+	ObjectUUIDs     []string
+	RequestedFields []string
+	Fields          []string
+	RefFields       map[string][]string
+	BackRefFields   map[string][]string
+	Auth            *AuthContext
+	Values          []interface{}
+	Columns         Columns
+	columnParts     []string
+	where           []string
+	joins           []string
+	groupBy         []string
+	query           *bytes.Buffer
+}
+
+//Init initializes ListSpec.
+func (spec *ListSpec) Init() {
+	var query bytes.Buffer
+	spec.query = &query
+	spec.Columns = Columns{}
+	spec.columnParts = []string{}
+	spec.Values = []interface{}{}
+	spec.where = []string{}
+	spec.joins = []string{}
+	spec.groupBy = []string{}
 }
 
 //Columns represents column index.
@@ -62,101 +82,93 @@ func DoInTransaction(db *sql.DB, do func(tx *sql.Tx) error) error {
 	return err
 }
 
-func buildFilterQuery(spec *ListSpec, where []string, values []interface{}) ([]string, []interface{}) {
+func (spec *ListSpec) buildFilterParts(column string, filterValues []string) string {
+	var where string
+	if len(filterValues) == 1 {
+		where = column + " = ?"
+		spec.Values = append(spec.Values, filterValues[0])
+	} else {
+		var filterQuery bytes.Buffer
+		filterQuery.WriteString(column)
+		filterQuery.WriteString(" in (")
+		last := len(filterValues) - 1
+		for _, value := range filterValues[:last] {
+			filterQuery.WriteString("?,")
+			spec.Values = append(spec.Values, value)
+		}
+		filterQuery.WriteString("?)")
+
+		where = filterQuery.String()
+		spec.Values = append(spec.Values, filterValues[last])
+	}
+	return where
+}
+
+func (spec *ListSpec) buildFilterQuery() {
 	filter := spec.Filter
 	filter.AppendValues("uuid", spec.ObjectUUIDs)
 	filter.AppendValues("parent_uuid", spec.ParentUUIDs)
 	if spec.ParentType != "" {
 		filter.AppendValues("parent_type", []string{spec.ParentType})
 	}
-
 	for key, filterValues := range filter {
-		if len(filterValues) == 1 {
-			where = append(where, fmt.Sprintf("`%s`.`%s` = ?", spec.Table, key))
-			values = append(values, filterValues[0])
-		} else {
-			var filterQuery bytes.Buffer
-			filterQuery.WriteString("`%s`.`%s` in (")
-			last := len(filterValues) - 1
-			for _, value := range filterValues[:last] {
-				filterQuery.WriteString("?,")
-				values = append(values, value)
-			}
-			filterQuery.WriteString("?)")
-
-			where = append(where, filterQuery.String())
-			values = append(values, filterValues[last])
+		if !spec.isValidField(key) {
+			continue
 		}
+		column := fmt.Sprintf("`%s`.`%s`", spec.Table, key)
+		where := spec.buildFilterParts(column, filterValues)
+		spec.where = append(spec.where, where)
 	}
-	return where, values
+	if len(spec.BackRefUUIDs) > 0 {
+		where := []string{}
+		for refTable := range spec.BackRefFields {
+			column := fmt.Sprintf("`%s`.`uuid`", refTable)
+			wherePart := spec.buildFilterParts(column, spec.BackRefUUIDs)
+			where = append(where, wherePart)
+		}
+		spec.where = append(spec.where, "("+strings.Join(where, " or ")+")")
+	}
 }
 
-func buildAuthQuery(spec *ListSpec, where []string, values []interface{}) ([]string, []interface{}) {
+func (spec *ListSpec) buildAuthQuery() {
 	auth := spec.Auth
 	if !auth.IsAdmin() {
-		where = append(where, fmt.Sprintf("`%s`.`%s` = ?", spec.Table, "owner"))
-		values = append(values, auth.ProjectID())
+		spec.where = append(spec.where, fmt.Sprintf("`%s`.`%s` = ?", spec.Table, "owner"))
+		spec.Values = append(spec.Values, auth.ProjectID())
 	}
-	return where, values
 }
 
-func buildQuery(spec *ListSpec, columns Columns, columnParts []string, where []string, values []interface{}, joins []string, groupBy []string) (string, Columns, []interface{}) {
-	var query bytes.Buffer
-
-	where, values = buildFilterQuery(spec, where, values)
-	where, values = buildAuthQuery(spec, where, values)
+func (spec *ListSpec) buildQuery() {
+	query := spec.query
 
 	query.WriteString("select ")
-	if len(columnParts) != len(columns) {
+	if len(spec.columnParts) != len(spec.Columns) {
 		log.Fatal("unmatch")
 	}
-	query.WriteString(strings.Join(columnParts, ","))
+	query.WriteString(strings.Join(spec.columnParts, ","))
 	query.WriteString(" from ")
 	query.WriteString(spec.Table)
 	query.WriteRune(' ')
-	if len(joins) > 0 {
-		query.WriteString(strings.Join(joins, " "))
+	if len(spec.joins) > 0 {
+		query.WriteString(strings.Join(spec.joins, " "))
 	}
-	if len(where) > 0 {
+	if len(spec.where) > 0 {
 		query.WriteString(" where ")
-		query.WriteString(strings.Join(where, " and "))
+		query.WriteString(strings.Join(spec.where, " and "))
 	}
-	if len(groupBy) > 0 {
+	if len(spec.groupBy) > 0 {
 		query.WriteString(" group by ")
-		query.WriteString(strings.Join(groupBy, ","))
+		query.WriteString(strings.Join(spec.groupBy, ","))
 	}
 	query.WriteRune(' ')
 	pagenationQuery := fmt.Sprintf(" limit %d offset %d ", spec.Limit, spec.Offset)
 	query.WriteString(pagenationQuery)
-	return query.String(), columns, values
 }
 
-func buildSimpleQuery(spec *ListSpec) (string, Columns, []interface{}) {
-	values := []interface{}{}
-	columns := Columns{}
-	columnParts := []string{}
-	where := []string{}
-
-	for _, column := range spec.Fields {
-		columns[column] = len(columns)
-		columnParts = append(columnParts, fmt.Sprintf("`%s`.`%s`", spec.Table, column))
+func (spec *ListSpec) buildRefQuery() {
+	if !spec.Detail {
+		return
 	}
-
-	return buildQuery(spec, columns, columnParts, where, values, nil, nil)
-}
-
-func buildDetailQuery(spec *ListSpec) (string, Columns, []interface{}) {
-	values := []interface{}{}
-	columns := Columns{}
-	columnParts := []string{}
-	where := []string{}
-	joins := []string{}
-	groupBy := []string{}
-	for _, column := range spec.Fields {
-		columns[column] = len(columns)
-		columnParts = append(columnParts, fmt.Sprintf("ANY_VALUE(`%s`.`%s`)", spec.Table, column))
-	}
-
 	for linkTo, refFields := range spec.RefFields {
 		refColumns := []string{}
 		refTable := "ref_" + spec.Table + "_" + linkTo
@@ -165,60 +177,90 @@ func buildDetailQuery(spec *ListSpec) (string, Columns, []interface{}) {
 		for _, field := range refFields {
 			refColumns = append(refColumns, fmt.Sprintf("'%s', `%s`.`%s`", field, refTable, field))
 		}
-		columnParts = append(columnParts, fmt.Sprintf("group_concat(distinct JSON_OBJECT(%s)) as `%s_ref`", strings.Join(refColumns, ","), refTable))
-		columns["ref_"+linkTo] = len(columns)
-		joins = append(joins,
+		spec.columnParts = append(spec.columnParts, fmt.Sprintf("group_concat(distinct JSON_OBJECT(%s)) as `%s_ref`", strings.Join(refColumns, ","), refTable))
+		spec.Columns["ref_"+linkTo] = len(spec.Columns)
+		spec.joins = append(spec.joins,
 			fmt.Sprintf("left join `%s` on `%s`.`uuid` = `%s`.`from`",
 				refTable,
 				spec.Table,
 				refTable,
 			))
-		groupBy = append(groupBy, refTable+".`from`")
+		spec.groupBy = append(spec.groupBy, refTable+".`from`")
 	}
+}
+
+func (spec *ListSpec) buildBackRefQuery() {
 	for refTable, refFields := range spec.BackRefFields {
 		refColumns := []string{}
 		for _, field := range refFields {
 			refColumns = append(refColumns, fmt.Sprintf("'%s', `%s`.`%s`", field, refTable, field))
 		}
-		columnParts = append(columnParts, fmt.Sprintf("group_concat(distinct JSON_OBJECT(%s)) as `%s_ref`", strings.Join(refColumns, ","), refTable))
-		columns["backref_"+refTable] = len(columns)
-		joins = append(joins,
-			fmt.Sprintf("left join `%s` on `%s`.`uuid` = `%s`.`parent_uuid`",
-				refTable,
-				spec.Table,
-				refTable,
-			))
-		groupBy = append(groupBy, refTable+".`uuid`")
+		if spec.Detail {
+			spec.columnParts = append(spec.columnParts, fmt.Sprintf("group_concat(distinct JSON_OBJECT(%s)) as `%s_ref`", strings.Join(refColumns, ","), refTable))
+			spec.Columns["backref_"+refTable] = len(spec.Columns)
+		}
+		if spec.Detail || len(spec.BackRefUUIDs) > 0 {
+			spec.joins = append(spec.joins,
+				fmt.Sprintf("left join `%s` on `%s`.`uuid` = `%s`.`parent_uuid`",
+					refTable,
+					spec.Table,
+					refTable,
+				))
+			spec.groupBy = append(spec.groupBy, refTable+".`uuid`")
+		}
 	}
 
-	return buildQuery(spec, columns, columnParts, where, values, joins, groupBy)
 }
 
-//BuildListQuery makes query using list spec.
-func BuildListQuery(spec *ListSpec) (string, Columns, []interface{}) {
-	if spec.Detail {
-		return buildDetailQuery(spec)
+func (spec *ListSpec) isValidField(requestedField string) bool {
+	for _, field := range spec.Fields {
+		if field == requestedField {
+			return true
+		}
 	}
-	return buildSimpleQuery(spec)
+	return false
 }
 
-//SetLogLevel set global log level using viper configuraion.
-func SetLogLevel() {
-	logLevel := viper.GetString("log_level")
-	switch logLevel {
-	case "panic":
-		log.SetLevel(log.PanicLevel)
-	case "fatal":
-		log.SetLevel(log.FatalLevel)
-	case "error":
-		log.SetLevel(log.ErrorLevel)
-	case "warn":
-		log.SetLevel(log.WarnLevel)
-	case "debug":
-		log.SetLevel(log.DebugLevel)
-	default:
-		log.SetLevel(log.InfoLevel)
+func (spec *ListSpec) checkRequestedFields() bool {
+	if len(spec.RequestedFields) == 0 {
+		return false
 	}
+	for _, requestedField := range spec.RequestedFields {
+		if !spec.isValidField(requestedField) {
+			return false
+		}
+	}
+	return true
+}
+
+func (spec *ListSpec) buildColumns() {
+	columnTemplate := "`%s`.`%s`"
+	if spec.Detail || len(spec.BackRefUUIDs) > 0 {
+		columnTemplate = "ANY_VALUE(`%s`.`%s`)"
+	}
+
+	fields := spec.Fields
+
+	if spec.checkRequestedFields() {
+		fields = spec.RequestedFields
+	}
+
+	for _, column := range fields {
+		spec.Columns[column] = len(spec.Columns)
+		spec.columnParts = append(spec.columnParts, fmt.Sprintf(columnTemplate, spec.Table, column))
+	}
+}
+
+//BuildQuery makes sql query.
+func (spec *ListSpec) BuildQuery() string {
+	spec.Init()
+	spec.buildColumns()
+	spec.buildFilterQuery()
+	spec.buildAuthQuery()
+	spec.buildRefQuery()
+	spec.buildBackRefQuery()
+	spec.buildQuery()
+	return spec.query.String()
 }
 
 //ConnectDB connect to the db based on viper configuration.
@@ -241,61 +283,4 @@ func ConnectDB() (*sql.DB, error) {
 		log.Printf("Retrying db connection... (%s)", err)
 	}
 	return nil, fmt.Errorf("failed to open db connection")
-}
-
-//MetaData represents resource meta data.
-type MetaData struct {
-	UUID   string
-	FQName []string
-	Type   string
-}
-
-//FQNameToString returns string representaion of FQName.
-func FQNameToString(fqName []string) string {
-	return strings.Join(fqName, ":")
-}
-
-//ParseFQName parse string representaion of FQName.
-func ParseFQName(fqNameString string) []string {
-	if fqNameString == "" {
-		return nil
-	}
-	return strings.Split(fqNameString, ":")
-}
-
-//CreateMetaData creates fqname, uuid pair with type.
-func CreateMetaData(tx *sql.Tx, metaData *MetaData) error {
-	_, err := tx.Exec("insert into `metadata` (`uuid`,`type`,`fq_name`) values (?,?,?);",
-		metaData.UUID, metaData.Type, FQNameToString(metaData.FQName))
-	return errors.Wrap(err, "failed to create metadata")
-}
-
-//GetMetaData gets metadata from database.
-func GetMetaData(tx *sql.Tx, uuid string, fqName []string) (*MetaData, error) {
-	var query bytes.Buffer
-	query.WriteString("select `uuid`,`type`,`fq_name` from `metadata` where ")
-	var row *sql.Row
-
-	log.Debug(fqName)
-	if uuid != "" {
-		query.WriteString("uuid = ?")
-		row = tx.QueryRow(query.String(), uuid)
-	} else if fqName != nil {
-		query.WriteString("fq_name = ?")
-		log.Debug(query.String())
-		row = tx.QueryRow(query.String(), FQNameToString(fqName))
-	} else {
-		return nil, fmt.Errorf("uuid and fqName unspecified ")
-	}
-	metaData := &MetaData{}
-	var fqNameString string
-	err := row.Scan(&metaData.UUID, &metaData.Type, &fqNameString)
-	metaData.FQName = ParseFQName(fqNameString)
-	return metaData, errors.Wrap(err, "failed to get metadata")
-}
-
-//DeleteMetaData deltes metadata by uuid.
-func DeleteMetaData(tx *sql.Tx, uuid string) error {
-	_, err := tx.Exec("delete from `metadata` where uuid = ?", uuid)
-	return errors.Wrap(err, "failed to delete metadata")
 }

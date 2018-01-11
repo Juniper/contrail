@@ -530,9 +530,7 @@ func ListDiscoveryServiceAssignment(tx *sql.Tx, spec *common.ListSpec) ([]*model
 	var err error
 	//TODO (check input)
 	spec.Table = "discovery_service_assignment"
-	if spec.Fields == nil {
-		spec.Fields = DiscoveryServiceAssignmentFields
-	}
+	spec.Fields = DiscoveryServiceAssignmentFields
 	spec.RefFields = DiscoveryServiceAssignmentRefFields
 	spec.BackRefFields = DiscoveryServiceAssignmentBackRefFields
 	result := models.MakeDiscoveryServiceAssignmentSlice()
@@ -545,7 +543,9 @@ func ListDiscoveryServiceAssignment(tx *sql.Tx, spec *common.ListSpec) ([]*model
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

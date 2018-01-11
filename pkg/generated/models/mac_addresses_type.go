@@ -23,27 +23,6 @@ func MakeMacAddressesType() *MacAddressesType {
 	}
 }
 
-// InterfaceToMacAddressesType makes MacAddressesType from interface
-func InterfaceToMacAddressesType(iData interface{}) *MacAddressesType {
-	data := iData.(map[string]interface{})
-	return &MacAddressesType{
-		MacAddress: data["mac_address"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
-
-	}
-}
-
-// InterfaceToMacAddressesTypeSlice makes a slice of MacAddressesType from interface
-func InterfaceToMacAddressesTypeSlice(data interface{}) []*MacAddressesType {
-	list := data.([]interface{})
-	result := MakeMacAddressesTypeSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToMacAddressesType(item))
-	}
-	return result
-}
-
 // MakeMacAddressesTypeSlice() makes a slice of MacAddressesType
 func MakeMacAddressesTypeSlice() []*MacAddressesType {
 	return []*MacAddressesType{}

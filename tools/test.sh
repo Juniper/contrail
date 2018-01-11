@@ -7,14 +7,13 @@ echo "mode: count" > $TOP/profile.cov
 
 cd $TOP
 
-for dir in $(find ./pkg -maxdepth 10 -not -path '*/test_data/*' -type d); 
+for dir in $(find ./pkg -maxdepth 10 -not -path '*/test_data/*' -type d);
 do
 cd $TOP
 
-ls $dir/*.go && result=1
+ls $dir/*.go && result=1 || result=0
 
 if [ $result -eq 1 ]; then
-    echo $dir
     cd $dir
     go test -race -covermode=atomic -coverprofile=profile.tmp .
     result=$?

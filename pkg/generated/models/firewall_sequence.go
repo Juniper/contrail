@@ -23,27 +23,6 @@ func MakeFirewallSequence() *FirewallSequence {
 	}
 }
 
-// InterfaceToFirewallSequence makes FirewallSequence from interface
-func InterfaceToFirewallSequence(iData interface{}) *FirewallSequence {
-	data := iData.(map[string]interface{})
-	return &FirewallSequence{
-		Sequence: data["sequence"].(string),
-
-		//{"type":"string"}
-
-	}
-}
-
-// InterfaceToFirewallSequenceSlice makes a slice of FirewallSequence from interface
-func InterfaceToFirewallSequenceSlice(data interface{}) []*FirewallSequence {
-	list := data.([]interface{})
-	result := MakeFirewallSequenceSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToFirewallSequence(item))
-	}
-	return result
-}
-
 // MakeFirewallSequenceSlice() makes a slice of FirewallSequence
 func MakeFirewallSequenceSlice() []*FirewallSequence {
 	return []*FirewallSequence{}

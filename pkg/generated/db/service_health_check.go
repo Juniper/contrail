@@ -433,9 +433,7 @@ func ListServiceHealthCheck(tx *sql.Tx, spec *common.ListSpec) ([]*models.Servic
 	var err error
 	//TODO (check input)
 	spec.Table = "service_health_check"
-	if spec.Fields == nil {
-		spec.Fields = ServiceHealthCheckFields
-	}
+	spec.Fields = ServiceHealthCheckFields
 	spec.RefFields = ServiceHealthCheckRefFields
 	spec.BackRefFields = ServiceHealthCheckBackRefFields
 	result := models.MakeServiceHealthCheckSlice()
@@ -448,7 +446,9 @@ func ListServiceHealthCheck(tx *sql.Tx, spec *common.ListSpec) ([]*models.Servic
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

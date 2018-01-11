@@ -695,9 +695,7 @@ func ListServiceInstance(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceIn
 	var err error
 	//TODO (check input)
 	spec.Table = "service_instance"
-	if spec.Fields == nil {
-		spec.Fields = ServiceInstanceFields
-	}
+	spec.Fields = ServiceInstanceFields
 	spec.RefFields = ServiceInstanceRefFields
 	spec.BackRefFields = ServiceInstanceBackRefFields
 	result := models.MakeServiceInstanceSlice()
@@ -710,7 +708,9 @@ func ListServiceInstance(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceIn
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

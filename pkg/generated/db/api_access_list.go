@@ -287,9 +287,7 @@ func ListAPIAccessList(tx *sql.Tx, spec *common.ListSpec) ([]*models.APIAccessLi
 	var err error
 	//TODO (check input)
 	spec.Table = "api_access_list"
-	if spec.Fields == nil {
-		spec.Fields = APIAccessListFields
-	}
+	spec.Fields = APIAccessListFields
 	spec.RefFields = APIAccessListRefFields
 	spec.BackRefFields = APIAccessListBackRefFields
 	result := models.MakeAPIAccessListSlice()
@@ -302,7 +300,9 @@ func ListAPIAccessList(tx *sql.Tx, spec *common.ListSpec) ([]*models.APIAccessLi
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

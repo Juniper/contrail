@@ -1119,19 +1119,6 @@ func CreateProject(tx *sql.Tx, model *models.Project) error {
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtAliasIPPoolRef, err := tx.Prepare(insertProjectAliasIPPoolQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing AliasIPPoolRefs create statement failed")
-	}
-	defer stmtAliasIPPoolRef.Close()
-	for _, ref := range model.AliasIPPoolRefs {
-
-		_, err = stmtAliasIPPoolRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "AliasIPPoolRefs create failed")
-		}
-	}
-
 	stmtNamespaceRef, err := tx.Prepare(insertProjectNamespaceQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing NamespaceRefs create statement failed")
@@ -1173,6 +1160,19 @@ func CreateProject(tx *sql.Tx, model *models.Project) error {
 		_, err = stmtFloatingIPPoolRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "FloatingIPPoolRefs create failed")
+		}
+	}
+
+	stmtAliasIPPoolRef, err := tx.Prepare(insertProjectAliasIPPoolQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing AliasIPPoolRefs create statement failed")
+	}
+	defer stmtAliasIPPoolRef.Close()
+	for _, ref := range model.AliasIPPoolRefs {
+
+		_, err = stmtAliasIPPoolRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "AliasIPPoolRefs create failed")
 		}
 	}
 
@@ -1577,6 +1577,26 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 
 	}
 
+	if value, ok := values["ref_floating_ip_pool"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ProjectFloatingIPPoolRef{}
+			referenceModel.UUID = uuid
+			m.FloatingIPPoolRefs = append(m.FloatingIPPoolRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_alias_ip_pool"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -1636,26 +1656,6 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			referenceModel := &models.ProjectApplicationPolicySetRef{}
 			referenceModel.UUID = uuid
 			m.ApplicationPolicySetRefs = append(m.ApplicationPolicySetRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_floating_ip_pool"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ProjectFloatingIPPoolRef{}
-			referenceModel.UUID = uuid
-			m.FloatingIPPoolRefs = append(m.FloatingIPPoolRefs, referenceModel)
 
 		}
 	}
@@ -8801,9 +8801,7 @@ func ListProject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Project, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "project"
-	if spec.Fields == nil {
-		spec.Fields = ProjectFields
-	}
+	spec.Fields = ProjectFields
 	spec.RefFields = ProjectRefFields
 	spec.BackRefFields = ProjectBackRefFields
 	result := models.MakeProjectSlice()
@@ -8816,7 +8814,9 @@ func ListProject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Project, error) {
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

@@ -1175,9 +1175,7 @@ func ListConfigRoot(tx *sql.Tx, spec *common.ListSpec) ([]*models.ConfigRoot, er
 	var err error
 	//TODO (check input)
 	spec.Table = "config_root"
-	if spec.Fields == nil {
-		spec.Fields = ConfigRootFields
-	}
+	spec.Fields = ConfigRootFields
 	spec.RefFields = ConfigRootRefFields
 	spec.BackRefFields = ConfigRootBackRefFields
 	result := models.MakeConfigRootSlice()
@@ -1190,7 +1188,9 @@ func ListConfigRoot(tx *sql.Tx, spec *common.ListSpec) ([]*models.ConfigRoot, er
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

@@ -20,33 +20,9 @@ func (model *ShareType) String() string {
 func MakeShareType() *ShareType {
 	return &ShareType{
 		//TODO(nati): Apply default
-		TenantAccess: MakeAccessType(),
 		Tenant:       "",
+		TenantAccess: MakeAccessType(),
 	}
-}
-
-// InterfaceToShareType makes ShareType from interface
-func InterfaceToShareType(iData interface{}) *ShareType {
-	data := iData.(map[string]interface{})
-	return &ShareType{
-		TenantAccess: InterfaceToAccessType(data["tenant_access"]),
-
-		//{"description":"Allowed permissions in sharing","type":"integer","minimum":0,"maximum":7}
-		Tenant: data["tenant"].(string),
-
-		//{"description":"Name of tenant with whom the object is shared","type":"string"}
-
-	}
-}
-
-// InterfaceToShareTypeSlice makes a slice of ShareType from interface
-func InterfaceToShareTypeSlice(data interface{}) []*ShareType {
-	list := data.([]interface{})
-	result := MakeShareTypeSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToShareType(item))
-	}
-	return result
 }
 
 // MakeShareTypeSlice() makes a slice of ShareType
