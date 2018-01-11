@@ -25,30 +25,6 @@ func MakeUserDefinedLogStat() *UserDefinedLogStat {
 	}
 }
 
-// InterfaceToUserDefinedLogStat makes UserDefinedLogStat from interface
-func InterfaceToUserDefinedLogStat(iData interface{}) *UserDefinedLogStat {
-	data := iData.(map[string]interface{})
-	return &UserDefinedLogStat{
-		Pattern: data["pattern"].(string),
-
-		//{"description":"Perl type regular expression pattern to match","type":"string"}
-		Name: data["name"].(string),
-
-		//{"description":"Name of the stat","type":"string"}
-
-	}
-}
-
-// InterfaceToUserDefinedLogStatSlice makes a slice of UserDefinedLogStat from interface
-func InterfaceToUserDefinedLogStatSlice(data interface{}) []*UserDefinedLogStat {
-	list := data.([]interface{})
-	result := MakeUserDefinedLogStatSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToUserDefinedLogStat(item))
-	}
-	return result
-}
-
 // MakeUserDefinedLogStatSlice() makes a slice of UserDefinedLogStat
 func MakeUserDefinedLogStatSlice() []*UserDefinedLogStat {
 	return []*UserDefinedLogStat{}

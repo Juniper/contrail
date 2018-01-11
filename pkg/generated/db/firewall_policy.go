@@ -65,9 +65,9 @@ var FirewallPolicyParents = []string{
 	"policy_management",
 }
 
-const insertFirewallPolicyFirewallRuleQuery = "insert into `ref_firewall_policy_firewall_rule` (`from`, `to` ,`sequence`) values (?, ?,?);"
-
 const insertFirewallPolicySecurityLoggingObjectQuery = "insert into `ref_firewall_policy_security_logging_object` (`from`, `to` ) values (?, ?);"
+
+const insertFirewallPolicyFirewallRuleQuery = "insert into `ref_firewall_policy_firewall_rule` (`from`, `to` ,`sequence`) values (?, ?,?);"
 
 // CreateFirewallPolicy inserts FirewallPolicy to DB
 func CreateFirewallPolicy(tx *sql.Tx, model *models.FirewallPolicy) error {
@@ -365,9 +365,7 @@ func ListFirewallPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.FirewallPo
 	var err error
 	//TODO (check input)
 	spec.Table = "firewall_policy"
-	if spec.Fields == nil {
-		spec.Fields = FirewallPolicyFields
-	}
+	spec.Fields = FirewallPolicyFields
 	spec.RefFields = FirewallPolicyRefFields
 	spec.BackRefFields = FirewallPolicyBackRefFields
 	result := models.MakeFirewallPolicySlice()
@@ -380,7 +378,9 @@ func ListFirewallPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.FirewallPo
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

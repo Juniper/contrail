@@ -621,9 +621,7 @@ func ListGlobalVrouterConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Globa
 	var err error
 	//TODO (check input)
 	spec.Table = "global_vrouter_config"
-	if spec.Fields == nil {
-		spec.Fields = GlobalVrouterConfigFields
-	}
+	spec.Fields = GlobalVrouterConfigFields
 	spec.RefFields = GlobalVrouterConfigRefFields
 	spec.BackRefFields = GlobalVrouterConfigBackRefFields
 	result := models.MakeGlobalVrouterConfigSlice()
@@ -636,7 +634,9 @@ func ListGlobalVrouterConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Globa
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

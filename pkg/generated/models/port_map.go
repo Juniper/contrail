@@ -27,33 +27,6 @@ func MakePortMap() *PortMap {
 	}
 }
 
-// InterfaceToPortMap makes PortMap from interface
-func InterfaceToPortMap(iData interface{}) *PortMap {
-	data := iData.(map[string]interface{})
-	return &PortMap{
-		Protocol: data["protocol"].(string),
-
-		//{"type":"string"}
-		DSTPort: data["dst_port"].(int),
-
-		//{"type":"integer"}
-		SRCPort: data["src_port"].(int),
-
-		//{"type":"integer"}
-
-	}
-}
-
-// InterfaceToPortMapSlice makes a slice of PortMap from interface
-func InterfaceToPortMapSlice(data interface{}) []*PortMap {
-	list := data.([]interface{})
-	result := MakePortMapSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToPortMap(item))
-	}
-	return result
-}
-
 // MakePortMapSlice() makes a slice of PortMap
 func MakePortMapSlice() []*PortMap {
 	return []*PortMap{}

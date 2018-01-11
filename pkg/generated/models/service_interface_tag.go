@@ -23,27 +23,6 @@ func MakeServiceInterfaceTag() *ServiceInterfaceTag {
 	}
 }
 
-// InterfaceToServiceInterfaceTag makes ServiceInterfaceTag from interface
-func InterfaceToServiceInterfaceTag(iData interface{}) *ServiceInterfaceTag {
-	data := iData.(map[string]interface{})
-	return &ServiceInterfaceTag{
-		InterfaceType: InterfaceToServiceInterfaceType(data["interface_type"]),
-
-		//{"type":"string"}
-
-	}
-}
-
-// InterfaceToServiceInterfaceTagSlice makes a slice of ServiceInterfaceTag from interface
-func InterfaceToServiceInterfaceTagSlice(data interface{}) []*ServiceInterfaceTag {
-	list := data.([]interface{})
-	result := MakeServiceInterfaceTagSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToServiceInterfaceTag(item))
-	}
-	return result
-}
-
 // MakeServiceInterfaceTagSlice() makes a slice of ServiceInterfaceTag
 func MakeServiceInterfaceTagSlice() []*ServiceInterfaceTag {
 	return []*ServiceInterfaceTag{}

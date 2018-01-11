@@ -352,9 +352,7 @@ func ListContrailCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.ContrailC
 	var err error
 	//TODO (check input)
 	spec.Table = "contrail_cluster"
-	if spec.Fields == nil {
-		spec.Fields = ContrailClusterFields
-	}
+	spec.Fields = ContrailClusterFields
 	spec.RefFields = ContrailClusterRefFields
 	spec.BackRefFields = ContrailClusterBackRefFields
 	result := models.MakeContrailClusterSlice()
@@ -367,7 +365,9 @@ func ListContrailCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.ContrailC
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

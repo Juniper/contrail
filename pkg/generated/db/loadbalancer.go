@@ -75,11 +75,11 @@ var LoadbalancerParents = []string{
 	"project",
 }
 
+const insertLoadbalancerServiceApplianceSetQuery = "insert into `ref_loadbalancer_service_appliance_set` (`from`, `to` ) values (?, ?);"
+
 const insertLoadbalancerVirtualMachineInterfaceQuery = "insert into `ref_loadbalancer_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerServiceInstanceQuery = "insert into `ref_loadbalancer_service_instance` (`from`, `to` ) values (?, ?);"
-
-const insertLoadbalancerServiceApplianceSetQuery = "insert into `ref_loadbalancer_service_appliance_set` (`from`, `to` ) values (?, ?);"
 
 // CreateLoadbalancer inserts Loadbalancer to DB
 func CreateLoadbalancer(tx *sql.Tx, model *models.Loadbalancer) error {
@@ -466,9 +466,7 @@ func ListLoadbalancer(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadbalancer
 	var err error
 	//TODO (check input)
 	spec.Table = "loadbalancer"
-	if spec.Fields == nil {
-		spec.Fields = LoadbalancerFields
-	}
+	spec.Fields = LoadbalancerFields
 	spec.RefFields = LoadbalancerRefFields
 	spec.BackRefFields = LoadbalancerBackRefFields
 	result := models.MakeLoadbalancerSlice()
@@ -481,7 +479,9 @@ func ListLoadbalancer(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadbalancer
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

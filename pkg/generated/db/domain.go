@@ -1786,9 +1786,7 @@ func ListDomain(tx *sql.Tx, spec *common.ListSpec) ([]*models.Domain, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "domain"
-	if spec.Fields == nil {
-		spec.Fields = DomainFields
-	}
+	spec.Fields = DomainFields
 	spec.RefFields = DomainRefFields
 	spec.BackRefFields = DomainBackRefFields
 	result := models.MakeDomainSlice()
@@ -1801,7 +1799,9 @@ func ListDomain(tx *sql.Tx, spec *common.ListSpec) ([]*models.Domain, error) {
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

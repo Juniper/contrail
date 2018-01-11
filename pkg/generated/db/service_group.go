@@ -50,9 +50,9 @@ var ServiceGroupBackRefFields = map[string][]string{}
 // ServiceGroupParentTypes is possible parents for ServiceGroup
 var ServiceGroupParents = []string{
 
-	"project",
-
 	"policy_management",
+
+	"project",
 }
 
 // CreateServiceGroup inserts ServiceGroup to DB
@@ -285,9 +285,7 @@ func ListServiceGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceGroup
 	var err error
 	//TODO (check input)
 	spec.Table = "service_group"
-	if spec.Fields == nil {
-		spec.Fields = ServiceGroupFields
-	}
+	spec.Fields = ServiceGroupFields
 	spec.RefFields = ServiceGroupRefFields
 	spec.BackRefFields = ServiceGroupBackRefFields
 	result := models.MakeServiceGroupSlice()
@@ -300,7 +298,9 @@ func ListServiceGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceGroup
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

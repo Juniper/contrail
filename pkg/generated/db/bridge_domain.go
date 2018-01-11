@@ -355,9 +355,7 @@ func ListBridgeDomain(tx *sql.Tx, spec *common.ListSpec) ([]*models.BridgeDomain
 	var err error
 	//TODO (check input)
 	spec.Table = "bridge_domain"
-	if spec.Fields == nil {
-		spec.Fields = BridgeDomainFields
-	}
+	spec.Fields = BridgeDomainFields
 	spec.RefFields = BridgeDomainRefFields
 	spec.BackRefFields = BridgeDomainBackRefFields
 	result := models.MakeBridgeDomainSlice()
@@ -370,7 +368,9 @@ func ListBridgeDomain(tx *sql.Tx, spec *common.ListSpec) ([]*models.BridgeDomain
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

@@ -23,27 +23,6 @@ func MakeBridgeDomainMembershipType() *BridgeDomainMembershipType {
 	}
 }
 
-// InterfaceToBridgeDomainMembershipType makes BridgeDomainMembershipType from interface
-func InterfaceToBridgeDomainMembershipType(iData interface{}) *BridgeDomainMembershipType {
-	data := iData.(map[string]interface{})
-	return &BridgeDomainMembershipType{
-		VlanTag: InterfaceToDot1QTagType(data["vlan_tag"]),
-
-		//{"description":"VLAN tag of the incoming packet that maps the                      virtual-machine-interface to bridge domain","type":"integer","minimum":0,"maximum":4094}
-
-	}
-}
-
-// InterfaceToBridgeDomainMembershipTypeSlice makes a slice of BridgeDomainMembershipType from interface
-func InterfaceToBridgeDomainMembershipTypeSlice(data interface{}) []*BridgeDomainMembershipType {
-	list := data.([]interface{})
-	result := MakeBridgeDomainMembershipTypeSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToBridgeDomainMembershipType(item))
-	}
-	return result
-}
-
 // MakeBridgeDomainMembershipTypeSlice() makes a slice of BridgeDomainMembershipType
 func MakeBridgeDomainMembershipTypeSlice() []*BridgeDomainMembershipType {
 	return []*BridgeDomainMembershipType{}

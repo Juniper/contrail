@@ -367,26 +367,6 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 
 	}
 
-	if value, ok := values["ref_virtual_machine_interface"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.BGPAsAServiceVirtualMachineInterfaceRef{}
-			referenceModel.UUID = uuid
-			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_service_health_check"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -407,6 +387,26 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 		}
 	}
 
+	if value, ok := values["ref_virtual_machine_interface"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.BGPAsAServiceVirtualMachineInterfaceRef{}
+			referenceModel.UUID = uuid
+			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
 	return m, nil
 }
 
@@ -416,9 +416,7 @@ func ListBGPAsAService(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPAsAServi
 	var err error
 	//TODO (check input)
 	spec.Table = "bgp_as_a_service"
-	if spec.Fields == nil {
-		spec.Fields = BGPAsAServiceFields
-	}
+	spec.Fields = BGPAsAServiceFields
 	spec.RefFields = BGPAsAServiceRefFields
 	spec.BackRefFields = BGPAsAServiceBackRefFields
 	result := models.MakeBGPAsAServiceSlice()
@@ -431,7 +429,9 @@ func ListBGPAsAService(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPAsAServi
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

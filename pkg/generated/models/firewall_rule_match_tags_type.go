@@ -23,27 +23,6 @@ func MakeFirewallRuleMatchTagsType() *FirewallRuleMatchTagsType {
 	}
 }
 
-// InterfaceToFirewallRuleMatchTagsType makes FirewallRuleMatchTagsType from interface
-func InterfaceToFirewallRuleMatchTagsType(iData interface{}) *FirewallRuleMatchTagsType {
-	data := iData.(map[string]interface{})
-	return &FirewallRuleMatchTagsType{
-		TagList: data["tag_list"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
-
-	}
-}
-
-// InterfaceToFirewallRuleMatchTagsTypeSlice makes a slice of FirewallRuleMatchTagsType from interface
-func InterfaceToFirewallRuleMatchTagsTypeSlice(data interface{}) []*FirewallRuleMatchTagsType {
-	list := data.([]interface{})
-	result := MakeFirewallRuleMatchTagsTypeSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToFirewallRuleMatchTagsType(item))
-	}
-	return result
-}
-
 // MakeFirewallRuleMatchTagsTypeSlice() makes a slice of FirewallRuleMatchTagsType
 func MakeFirewallRuleMatchTagsTypeSlice() []*FirewallRuleMatchTagsType {
 	return []*FirewallRuleMatchTagsType{}

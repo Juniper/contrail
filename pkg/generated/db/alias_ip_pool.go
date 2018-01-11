@@ -499,9 +499,7 @@ func ListAliasIPPool(tx *sql.Tx, spec *common.ListSpec) ([]*models.AliasIPPool, 
 	var err error
 	//TODO (check input)
 	spec.Table = "alias_ip_pool"
-	if spec.Fields == nil {
-		spec.Fields = AliasIPPoolFields
-	}
+	spec.Fields = AliasIPPoolFields
 	spec.RefFields = AliasIPPoolRefFields
 	spec.BackRefFields = AliasIPPoolBackRefFields
 	result := models.MakeAliasIPPoolSlice()
@@ -514,7 +512,9 @@ func ListAliasIPPool(tx *sql.Tx, spec *common.ListSpec) ([]*models.AliasIPPool, 
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

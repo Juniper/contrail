@@ -25,30 +25,6 @@ func MakeServiceScaleOutType() *ServiceScaleOutType {
 	}
 }
 
-// InterfaceToServiceScaleOutType makes ServiceScaleOutType from interface
-func InterfaceToServiceScaleOutType(iData interface{}) *ServiceScaleOutType {
-	data := iData.(map[string]interface{})
-	return &ServiceScaleOutType{
-		AutoScale: data["auto_scale"].(bool),
-
-		//{"description":"Automatically change the number of virtual machines. Not implemented","type":"boolean"}
-		MaxInstances: data["max_instances"].(int),
-
-		//{"description":"Maximum number of scale out factor(virtual machines). can be changed dynamically","type":"integer"}
-
-	}
-}
-
-// InterfaceToServiceScaleOutTypeSlice makes a slice of ServiceScaleOutType from interface
-func InterfaceToServiceScaleOutTypeSlice(data interface{}) []*ServiceScaleOutType {
-	list := data.([]interface{})
-	result := MakeServiceScaleOutTypeSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToServiceScaleOutType(item))
-	}
-	return result
-}
-
 // MakeServiceScaleOutTypeSlice() makes a slice of ServiceScaleOutType
 func MakeServiceScaleOutTypeSlice() []*ServiceScaleOutType {
 	return []*ServiceScaleOutType{}

@@ -23,45 +23,12 @@ func (model *PermType) String() string {
 func MakePermType() *PermType {
 	return &PermType{
 		//TODO(nati): Apply default
-		Group:       "",
-		GroupAccess: MakeAccessType(),
 		Owner:       "",
 		OwnerAccess: MakeAccessType(),
 		OtherAccess: MakeAccessType(),
+		Group:       "",
+		GroupAccess: MakeAccessType(),
 	}
-}
-
-// InterfaceToPermType makes PermType from interface
-func InterfaceToPermType(iData interface{}) *PermType {
-	data := iData.(map[string]interface{})
-	return &PermType{
-		GroupAccess: InterfaceToAccessType(data["group_access"]),
-
-		//{"type":"integer","minimum":0,"maximum":7}
-		Owner: data["owner"].(string),
-
-		//{"type":"string"}
-		OwnerAccess: InterfaceToAccessType(data["owner_access"]),
-
-		//{"type":"integer","minimum":0,"maximum":7}
-		OtherAccess: InterfaceToAccessType(data["other_access"]),
-
-		//{"type":"integer","minimum":0,"maximum":7}
-		Group: data["group"].(string),
-
-		//{"type":"string"}
-
-	}
-}
-
-// InterfaceToPermTypeSlice makes a slice of PermType from interface
-func InterfaceToPermTypeSlice(data interface{}) []*PermType {
-	list := data.([]interface{})
-	result := MakePermTypeSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToPermType(item))
-	}
-	return result
 }
 
 // MakePermTypeSlice() makes a slice of PermType

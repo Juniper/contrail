@@ -275,9 +275,7 @@ func ListPortTuple(tx *sql.Tx, spec *common.ListSpec) ([]*models.PortTuple, erro
 	var err error
 	//TODO (check input)
 	spec.Table = "port_tuple"
-	if spec.Fields == nil {
-		spec.Fields = PortTupleFields
-	}
+	spec.Fields = PortTupleFields
 	spec.RefFields = PortTupleRefFields
 	spec.BackRefFields = PortTupleBackRefFields
 	result := models.MakePortTupleSlice()
@@ -290,7 +288,9 @@ func ListPortTuple(tx *sql.Tx, spec *common.ListSpec) ([]*models.PortTuple, erro
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

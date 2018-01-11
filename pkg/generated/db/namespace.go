@@ -295,9 +295,7 @@ func ListNamespace(tx *sql.Tx, spec *common.ListSpec) ([]*models.Namespace, erro
 	var err error
 	//TODO (check input)
 	spec.Table = "namespace"
-	if spec.Fields == nil {
-		spec.Fields = NamespaceFields
-	}
+	spec.Fields = NamespaceFields
 	spec.RefFields = NamespaceRefFields
 	spec.BackRefFields = NamespaceBackRefFields
 	result := models.MakeNamespaceSlice()
@@ -310,7 +308,9 @@ func ListNamespace(tx *sql.Tx, spec *common.ListSpec) ([]*models.Namespace, erro
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

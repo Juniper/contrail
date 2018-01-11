@@ -44,12 +44,12 @@ var E2ServiceProviderFields = []string{
 // E2ServiceProviderRefFields is db reference fields for E2ServiceProvider
 var E2ServiceProviderRefFields = map[string][]string{
 
-	"peering_policy": {
+	"physical_router": {
 	// <common.Schema Value>
 
 	},
 
-	"physical_router": {
+	"peering_policy": {
 	// <common.Schema Value>
 
 	},
@@ -363,9 +363,7 @@ func ListE2ServiceProvider(tx *sql.Tx, spec *common.ListSpec) ([]*models.E2Servi
 	var err error
 	//TODO (check input)
 	spec.Table = "e2_service_provider"
-	if spec.Fields == nil {
-		spec.Fields = E2ServiceProviderFields
-	}
+	spec.Fields = E2ServiceProviderFields
 	spec.RefFields = E2ServiceProviderRefFields
 	spec.BackRefFields = E2ServiceProviderBackRefFields
 	result := models.MakeE2ServiceProviderSlice()
@@ -378,7 +376,9 @@ func ListE2ServiceProvider(tx *sql.Tx, spec *common.ListSpec) ([]*models.E2Servi
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

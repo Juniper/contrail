@@ -76,17 +76,17 @@ var PhysicalRouterFields = []string{
 // PhysicalRouterRefFields is db reference fields for PhysicalRouter
 var PhysicalRouterRefFields = map[string][]string{
 
-	"virtual_router": {
-	// <common.Schema Value>
-
-	},
-
 	"virtual_network": {
 	// <common.Schema Value>
 
 	},
 
 	"bgp_router": {
+	// <common.Schema Value>
+
+	},
+
+	"virtual_router": {
 	// <common.Schema Value>
 
 	},
@@ -1162,9 +1162,7 @@ func ListPhysicalRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.PhysicalRo
 	var err error
 	//TODO (check input)
 	spec.Table = "physical_router"
-	if spec.Fields == nil {
-		spec.Fields = PhysicalRouterFields
-	}
+	spec.Fields = PhysicalRouterFields
 	spec.RefFields = PhysicalRouterRefFields
 	spec.BackRefFields = PhysicalRouterBackRefFields
 	result := models.MakePhysicalRouterSlice()
@@ -1177,7 +1175,9 @@ func ListPhysicalRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.PhysicalRo
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

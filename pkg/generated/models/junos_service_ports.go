@@ -23,27 +23,6 @@ func MakeJunosServicePorts() *JunosServicePorts {
 	}
 }
 
-// InterfaceToJunosServicePorts makes JunosServicePorts from interface
-func InterfaceToJunosServicePorts(iData interface{}) *JunosServicePorts {
-	data := iData.(map[string]interface{})
-	return &JunosServicePorts{
-		ServicePort: data["service_port"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
-
-	}
-}
-
-// InterfaceToJunosServicePortsSlice makes a slice of JunosServicePorts from interface
-func InterfaceToJunosServicePortsSlice(data interface{}) []*JunosServicePorts {
-	list := data.([]interface{})
-	result := MakeJunosServicePortsSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToJunosServicePorts(item))
-	}
-	return result
-}
-
 // MakeJunosServicePortsSlice() makes a slice of JunosServicePorts
 func MakeJunosServicePortsSlice() []*JunosServicePorts {
 	return []*JunosServicePorts{}

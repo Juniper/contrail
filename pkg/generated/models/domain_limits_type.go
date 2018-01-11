@@ -21,37 +21,10 @@ func (model *DomainLimitsType) String() string {
 func MakeDomainLimitsType() *DomainLimitsType {
 	return &DomainLimitsType{
 		//TODO(nati): Apply default
+		SecurityGroupLimit:  0,
 		ProjectLimit:        0,
 		VirtualNetworkLimit: 0,
-		SecurityGroupLimit:  0,
 	}
-}
-
-// InterfaceToDomainLimitsType makes DomainLimitsType from interface
-func InterfaceToDomainLimitsType(iData interface{}) *DomainLimitsType {
-	data := iData.(map[string]interface{})
-	return &DomainLimitsType{
-		ProjectLimit: data["project_limit"].(int),
-
-		//{"description":"Maximum number of projects allowed in this domain","type":"integer"}
-		VirtualNetworkLimit: data["virtual_network_limit"].(int),
-
-		//{"description":"Maximum number of virtual networks allowed in this domain","type":"integer"}
-		SecurityGroupLimit: data["security_group_limit"].(int),
-
-		//{"description":"Maximum number of security groups allowed in this domain","type":"integer"}
-
-	}
-}
-
-// InterfaceToDomainLimitsTypeSlice makes a slice of DomainLimitsType from interface
-func InterfaceToDomainLimitsTypeSlice(data interface{}) []*DomainLimitsType {
-	list := data.([]interface{})
-	result := MakeDomainLimitsTypeSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToDomainLimitsType(item))
-	}
-	return result
 }
 
 // MakeDomainLimitsTypeSlice() makes a slice of DomainLimitsType

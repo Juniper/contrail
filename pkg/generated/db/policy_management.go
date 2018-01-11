@@ -1694,9 +1694,7 @@ func ListPolicyManagement(tx *sql.Tx, spec *common.ListSpec) ([]*models.PolicyMa
 	var err error
 	//TODO (check input)
 	spec.Table = "policy_management"
-	if spec.Fields == nil {
-		spec.Fields = PolicyManagementFields
-	}
+	spec.Fields = PolicyManagementFields
 	spec.RefFields = PolicyManagementRefFields
 	spec.BackRefFields = PolicyManagementBackRefFields
 	result := models.MakePolicyManagementSlice()
@@ -1709,7 +1707,9 @@ func ListPolicyManagement(tx *sql.Tx, spec *common.ListSpec) ([]*models.PolicyMa
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

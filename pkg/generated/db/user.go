@@ -285,9 +285,7 @@ func ListUser(tx *sql.Tx, spec *common.ListSpec) ([]*models.User, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "user"
-	if spec.Fields == nil {
-		spec.Fields = UserFields
-	}
+	spec.Fields = UserFields
 	spec.RefFields = UserRefFields
 	spec.BackRefFields = UserBackRefFields
 	result := models.MakeUserSlice()
@@ -300,7 +298,9 @@ func ListUser(tx *sql.Tx, spec *common.ListSpec) ([]*models.User, error) {
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

@@ -313,9 +313,7 @@ func ListNetworkDeviceConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Netwo
 	var err error
 	//TODO (check input)
 	spec.Table = "network_device_config"
-	if spec.Fields == nil {
-		spec.Fields = NetworkDeviceConfigFields
-	}
+	spec.Fields = NetworkDeviceConfigFields
 	spec.RefFields = NetworkDeviceConfigRefFields
 	spec.BackRefFields = NetworkDeviceConfigBackRefFields
 	result := models.MakeNetworkDeviceConfigSlice()
@@ -328,7 +326,9 @@ func ListNetworkDeviceConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Netwo
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

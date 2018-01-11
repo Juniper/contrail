@@ -23,27 +23,6 @@ func MakeUveKeysType() *UveKeysType {
 	}
 }
 
-// InterfaceToUveKeysType makes UveKeysType from interface
-func InterfaceToUveKeysType(iData interface{}) *UveKeysType {
-	data := iData.(map[string]interface{})
-	return &UveKeysType{
-		UveKey: data["uve_key"].([]string),
-
-		//{"description":"List of UVE tables where this alarm config should be applied","type":"array","item":{"type":"string"}}
-
-	}
-}
-
-// InterfaceToUveKeysTypeSlice makes a slice of UveKeysType from interface
-func InterfaceToUveKeysTypeSlice(data interface{}) []*UveKeysType {
-	list := data.([]interface{})
-	result := MakeUveKeysTypeSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToUveKeysType(item))
-	}
-	return result
-}
-
 // MakeUveKeysTypeSlice() makes a slice of UveKeysType
 func MakeUveKeysTypeSlice() []*UveKeysType {
 	return []*UveKeysType{}

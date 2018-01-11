@@ -23,27 +23,6 @@ func MakeRouteTargetList() *RouteTargetList {
 	}
 }
 
-// InterfaceToRouteTargetList makes RouteTargetList from interface
-func InterfaceToRouteTargetList(iData interface{}) *RouteTargetList {
-	data := iData.(map[string]interface{})
-	return &RouteTargetList{
-		RouteTarget: data["route_target"].([]string),
-
-		//{"type":"array","item":{"type":"string"}}
-
-	}
-}
-
-// InterfaceToRouteTargetListSlice makes a slice of RouteTargetList from interface
-func InterfaceToRouteTargetListSlice(data interface{}) []*RouteTargetList {
-	list := data.([]interface{})
-	result := MakeRouteTargetListSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToRouteTargetList(item))
-	}
-	return result
-}
-
 // MakeRouteTargetListSlice() makes a slice of RouteTargetList
 func MakeRouteTargetListSlice() []*RouteTargetList {
 	return []*RouteTargetList{}

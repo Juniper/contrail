@@ -303,9 +303,7 @@ func ListAccessControlList(tx *sql.Tx, spec *common.ListSpec) ([]*models.AccessC
 	var err error
 	//TODO (check input)
 	spec.Table = "access_control_list"
-	if spec.Fields == nil {
-		spec.Fields = AccessControlListFields
-	}
+	spec.Fields = AccessControlListFields
 	spec.RefFields = AccessControlListRefFields
 	spec.BackRefFields = AccessControlListBackRefFields
 	result := models.MakeAccessControlListSlice()
@@ -318,7 +316,9 @@ func ListAccessControlList(tx *sql.Tx, spec *common.ListSpec) ([]*models.AccessC
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

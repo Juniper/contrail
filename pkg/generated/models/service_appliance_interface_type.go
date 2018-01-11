@@ -23,27 +23,6 @@ func MakeServiceApplianceInterfaceType() *ServiceApplianceInterfaceType {
 	}
 }
 
-// InterfaceToServiceApplianceInterfaceType makes ServiceApplianceInterfaceType from interface
-func InterfaceToServiceApplianceInterfaceType(iData interface{}) *ServiceApplianceInterfaceType {
-	data := iData.(map[string]interface{})
-	return &ServiceApplianceInterfaceType{
-		InterfaceType: InterfaceToServiceInterfaceType(data["interface_type"]),
-
-		//{"type":"string"}
-
-	}
-}
-
-// InterfaceToServiceApplianceInterfaceTypeSlice makes a slice of ServiceApplianceInterfaceType from interface
-func InterfaceToServiceApplianceInterfaceTypeSlice(data interface{}) []*ServiceApplianceInterfaceType {
-	list := data.([]interface{})
-	result := MakeServiceApplianceInterfaceTypeSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToServiceApplianceInterfaceType(item))
-	}
-	return result
-}
-
 // MakeServiceApplianceInterfaceTypeSlice() makes a slice of ServiceApplianceInterfaceType
 func MakeServiceApplianceInterfaceTypeSlice() []*ServiceApplianceInterfaceType {
 	return []*ServiceApplianceInterfaceType{}

@@ -1023,9 +1023,7 @@ func ListGlobalQosConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.GlobalQos
 	var err error
 	//TODO (check input)
 	spec.Table = "global_qos_config"
-	if spec.Fields == nil {
-		spec.Fields = GlobalQosConfigFields
-	}
+	spec.Fields = GlobalQosConfigFields
 	spec.RefFields = GlobalQosConfigRefFields
 	spec.BackRefFields = GlobalQosConfigBackRefFields
 	result := models.MakeGlobalQosConfigSlice()
@@ -1038,7 +1036,9 @@ func ListGlobalQosConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.GlobalQos
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

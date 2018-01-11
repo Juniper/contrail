@@ -58,9 +58,9 @@ var TagBackRefFields = map[string][]string{}
 // TagParentTypes is possible parents for Tag
 var TagParents = []string{
 
-	"config_root",
-
 	"project",
+
+	"config_root",
 }
 
 const insertTagTagTypeQuery = "insert into `ref_tag_tag_type` (`from`, `to` ) values (?, ?);"
@@ -348,9 +348,7 @@ func ListTag(tx *sql.Tx, spec *common.ListSpec) ([]*models.Tag, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "tag"
-	if spec.Fields == nil {
-		spec.Fields = TagFields
-	}
+	spec.Fields = TagFields
 	spec.RefFields = TagRefFields
 	spec.BackRefFields = TagBackRefFields
 	result := models.MakeTagSlice()
@@ -363,7 +361,9 @@ func ListTag(tx *sql.Tx, spec *common.ListSpec) ([]*models.Tag, error) {
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

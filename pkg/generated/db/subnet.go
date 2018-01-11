@@ -333,9 +333,7 @@ func ListSubnet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Subnet, error) {
 	var err error
 	//TODO (check input)
 	spec.Table = "subnet"
-	if spec.Fields == nil {
-		spec.Fields = SubnetFields
-	}
+	spec.Fields = SubnetFields
 	spec.RefFields = SubnetRefFields
 	spec.BackRefFields = SubnetBackRefFields
 	result := models.MakeSubnetSlice()
@@ -348,7 +346,9 @@ func ListSubnet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Subnet, error) {
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

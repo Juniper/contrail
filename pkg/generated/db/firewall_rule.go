@@ -206,6 +206,19 @@ func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtServiceGroupRef, err := tx.Prepare(insertFirewallRuleServiceGroupQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceGroupRefs create statement failed")
+	}
+	defer stmtServiceGroupRef.Close()
+	for _, ref := range model.ServiceGroupRefs {
+
+		_, err = stmtServiceGroupRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceGroupRefs create failed")
+		}
+	}
+
 	stmtAddressGroupRef, err := tx.Prepare(insertFirewallRuleAddressGroupQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing AddressGroupRefs create statement failed")
@@ -242,19 +255,6 @@ func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
 		_, err = stmtVirtualNetworkRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualNetworkRefs create failed")
-		}
-	}
-
-	stmtServiceGroupRef, err := tx.Prepare(insertFirewallRuleServiceGroupQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceGroupRefs create statement failed")
-	}
-	defer stmtServiceGroupRef.Close()
-	for _, ref := range model.ServiceGroupRefs {
-
-		_, err = stmtServiceGroupRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceGroupRefs create failed")
 		}
 	}
 
@@ -854,9 +854,7 @@ func ListFirewallRule(tx *sql.Tx, spec *common.ListSpec) ([]*models.FirewallRule
 	var err error
 	//TODO (check input)
 	spec.Table = "firewall_rule"
-	if spec.Fields == nil {
-		spec.Fields = FirewallRuleFields
-	}
+	spec.Fields = FirewallRuleFields
 	spec.RefFields = FirewallRuleRefFields
 	spec.BackRefFields = FirewallRuleBackRefFields
 	result := models.MakeFirewallRuleSlice()
@@ -869,7 +867,9 @@ func ListFirewallRule(tx *sql.Tx, spec *common.ListSpec) ([]*models.FirewallRule
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

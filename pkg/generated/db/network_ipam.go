@@ -410,9 +410,7 @@ func ListNetworkIpam(tx *sql.Tx, spec *common.ListSpec) ([]*models.NetworkIpam, 
 	var err error
 	//TODO (check input)
 	spec.Table = "network_ipam"
-	if spec.Fields == nil {
-		spec.Fields = NetworkIpamFields
-	}
+	spec.Fields = NetworkIpamFields
 	spec.RefFields = NetworkIpamRefFields
 	spec.BackRefFields = NetworkIpamBackRefFields
 	result := models.MakeNetworkIpamSlice()
@@ -425,7 +423,9 @@ func ListNetworkIpam(tx *sql.Tx, spec *common.ListSpec) ([]*models.NetworkIpam, 
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

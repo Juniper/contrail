@@ -108,6 +108,19 @@ func CreateServiceEndpoint(tx *sql.Tx, model *models.ServiceEndpoint) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtServiceConnectionModuleRef, err := tx.Prepare(insertServiceEndpointServiceConnectionModuleQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceConnectionModuleRefs create statement failed")
+	}
+	defer stmtServiceConnectionModuleRef.Close()
+	for _, ref := range model.ServiceConnectionModuleRefs {
+
+		_, err = stmtServiceConnectionModuleRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceConnectionModuleRefs create failed")
+		}
+	}
+
 	stmtPhysicalRouterRef, err := tx.Prepare(insertServiceEndpointPhysicalRouterQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing PhysicalRouterRefs create statement failed")
@@ -131,19 +144,6 @@ func CreateServiceEndpoint(tx *sql.Tx, model *models.ServiceEndpoint) error {
 		_, err = stmtServiceObjectRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceObjectRefs create failed")
-		}
-	}
-
-	stmtServiceConnectionModuleRef, err := tx.Prepare(insertServiceEndpointServiceConnectionModuleQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceConnectionModuleRefs create statement failed")
-	}
-	defer stmtServiceConnectionModuleRef.Close()
-	for _, ref := range model.ServiceConnectionModuleRefs {
-
-		_, err = stmtServiceConnectionModuleRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceConnectionModuleRefs create failed")
 		}
 	}
 
@@ -324,26 +324,6 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	}
 
-	if value, ok := values["ref_service_object"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ServiceEndpointServiceObjectRef{}
-			referenceModel.UUID = uuid
-			m.ServiceObjectRefs = append(m.ServiceObjectRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_service_connection_module"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -384,6 +364,26 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 		}
 	}
 
+	if value, ok := values["ref_service_object"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ServiceEndpointServiceObjectRef{}
+			referenceModel.UUID = uuid
+			m.ServiceObjectRefs = append(m.ServiceObjectRefs, referenceModel)
+
+		}
+	}
+
 	return m, nil
 }
 
@@ -393,9 +393,7 @@ func ListServiceEndpoint(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceEn
 	var err error
 	//TODO (check input)
 	spec.Table = "service_endpoint"
-	if spec.Fields == nil {
-		spec.Fields = ServiceEndpointFields
-	}
+	spec.Fields = ServiceEndpointFields
 	spec.RefFields = ServiceEndpointRefFields
 	spec.BackRefFields = ServiceEndpointBackRefFields
 	result := models.MakeServiceEndpointSlice()
@@ -408,7 +406,9 @@ func ListServiceEndpoint(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceEn
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

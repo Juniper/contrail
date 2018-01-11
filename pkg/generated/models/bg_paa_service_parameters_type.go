@@ -20,33 +20,9 @@ func (model *BGPaaServiceParametersType) String() string {
 func MakeBGPaaServiceParametersType() *BGPaaServiceParametersType {
 	return &BGPaaServiceParametersType{
 		//TODO(nati): Apply default
-		PortEnd:   MakeL4PortType(),
 		PortStart: MakeL4PortType(),
+		PortEnd:   MakeL4PortType(),
 	}
-}
-
-// InterfaceToBGPaaServiceParametersType makes BGPaaServiceParametersType from interface
-func InterfaceToBGPaaServiceParametersType(iData interface{}) *BGPaaServiceParametersType {
-	data := iData.(map[string]interface{})
-	return &BGPaaServiceParametersType{
-		PortStart: InterfaceToL4PortType(data["port_start"]),
-
-		//{"type":"integer","minimum":-1,"maximum":65535}
-		PortEnd: InterfaceToL4PortType(data["port_end"]),
-
-		//{"type":"integer","minimum":-1,"maximum":65535}
-
-	}
-}
-
-// InterfaceToBGPaaServiceParametersTypeSlice makes a slice of BGPaaServiceParametersType from interface
-func InterfaceToBGPaaServiceParametersTypeSlice(data interface{}) []*BGPaaServiceParametersType {
-	list := data.([]interface{})
-	result := MakeBGPaaServiceParametersTypeSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToBGPaaServiceParametersType(item))
-	}
-	return result
 }
 
 // MakeBGPaaServiceParametersTypeSlice() makes a slice of BGPaaServiceParametersType

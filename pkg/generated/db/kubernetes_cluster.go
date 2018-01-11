@@ -292,9 +292,7 @@ func ListKubernetesCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.Kuberne
 	var err error
 	//TODO (check input)
 	spec.Table = "kubernetes_cluster"
-	if spec.Fields == nil {
-		spec.Fields = KubernetesClusterFields
-	}
+	spec.Fields = KubernetesClusterFields
 	spec.RefFields = KubernetesClusterRefFields
 	spec.BackRefFields = KubernetesClusterBackRefFields
 	result := models.MakeKubernetesClusterSlice()
@@ -307,7 +305,9 @@ func ListKubernetesCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.Kuberne
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query, columns, values := common.BuildListQuery(spec)
+	query := spec.BuildQuery()
+	columns := spec.Columns
+	values := spec.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,

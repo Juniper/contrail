@@ -23,27 +23,6 @@ func MakeIpAddressesType() *IpAddressesType {
 	}
 }
 
-// InterfaceToIpAddressesType makes IpAddressesType from interface
-func InterfaceToIpAddressesType(iData interface{}) *IpAddressesType {
-	data := iData.(map[string]interface{})
-	return &IpAddressesType{
-		IPAddress: InterfaceToIpAddressType(data["ip_address"]),
-
-		//{"type":"string"}
-
-	}
-}
-
-// InterfaceToIpAddressesTypeSlice makes a slice of IpAddressesType from interface
-func InterfaceToIpAddressesTypeSlice(data interface{}) []*IpAddressesType {
-	list := data.([]interface{})
-	result := MakeIpAddressesTypeSlice()
-	for _, item := range list {
-		result = append(result, InterfaceToIpAddressesType(item))
-	}
-	return result
-}
-
 // MakeIpAddressesTypeSlice() makes a slice of IpAddressesType
 func MakeIpAddressesTypeSlice() []*IpAddressesType {
 	return []*IpAddressesType{}

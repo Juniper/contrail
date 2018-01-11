@@ -25,30 +25,6 @@ func MakeAlarmOperand2() *AlarmOperand2 {
 	}
 }
 
-// InterfaceToAlarmOperand2 makes AlarmOperand2 from interface
-func InterfaceToAlarmOperand2(iData interface{}) *AlarmOperand2 {
-	data := iData.(map[string]interface{})
-	return &AlarmOperand2{
-		UveAttribute: data["uve_attribute"].(string),
-
-		//{"description":"UVE attribute specified in the dotted format. Example: NodeStatus.process_info.process_state","type":"string"}
-		JSONValue: data["json_value"].(string),
-
-		//{"description":"json value as string","type":"string"}
-
-	}
-}
-
-// InterfaceToAlarmOperand2Slice makes a slice of AlarmOperand2 from interface
-func InterfaceToAlarmOperand2Slice(data interface{}) []*AlarmOperand2 {
-	list := data.([]interface{})
-	result := MakeAlarmOperand2Slice()
-	for _, item := range list {
-		result = append(result, InterfaceToAlarmOperand2(item))
-	}
-	return result
-}
-
 // MakeAlarmOperand2Slice() makes a slice of AlarmOperand2
 func MakeAlarmOperand2Slice() []*AlarmOperand2 {
 	return []*AlarmOperand2{}
