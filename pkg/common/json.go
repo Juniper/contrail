@@ -13,12 +13,12 @@ func MustJSON(data interface{}) string {
 
 // access method iterates the dataSource map and returns the sub map for the given path.
 // in case of isSet set to true, sub map will be created for the path.
-func access(dataSource map[string]interface{}, path []string, ok *bool, isSet bool) (map[string]interface{}){
-	if len(path)==0 {
+func access(dataSource map[string]interface{}, path []string, ok *bool, isSet bool) map[string]interface{} {
+	var currentSource map[string]interface{} = nil
+	if len(path) == 0 {
 		*ok = true
 		return dataSource
 	}
-	var currentSource map[string]interface{} = nil
 	currentAttr := CamelToSnake(path[0])
 	path = path[1:]
 	if mapValue, found := dataSource[currentAttr]; found {
@@ -56,7 +56,7 @@ func GetValueByPath(dataSource map[string]interface{}, path string, delimiter st
 	pathAsList, attributeName := getPathAsList(path, delimiter)
 	dataSourceRef := access(dataSource, pathAsList, &ok, false)
 	if ok {
-		value = dataSourceRef[attributeName]
+		value, ok = dataSourceRef[attributeName]
 	}
 	return
 }
@@ -77,7 +77,7 @@ func getPathAsList(path string, delimiter string) ([]string, string) {
 	if pathAsList[0] == "" {
 		pathAsList = pathAsList[1:] //ignore the leading empty string on split of .a.b.c
 	}
-	attributeName := pathAsList[len(pathAsList)-1]
+	attributeName := CamelToSnake(pathAsList[len(pathAsList)-1])
 	pathAsList = pathAsList[:len(pathAsList)-1]
 	return pathAsList, attributeName
 }
