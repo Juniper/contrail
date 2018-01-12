@@ -12,6 +12,8 @@ func InterfaceToInt(i interface{}) int {
 		return t
 	case int64:
 		return int(t)
+	case float64:
+		return int(t)
 	}
 	return 0
 }
