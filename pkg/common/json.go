@@ -14,7 +14,7 @@ func MustJSON(data interface{}) string {
 // access method iterates the dataSource map and returns the sub map for the given path.
 // in case of isSet set to true, sub map will be created for the path.
 func access(dataSource map[string]interface{}, path []string, ok *bool, isSet bool) map[string]interface{} {
-	var currentSource map[string]interface{} = nil
+	var currentSource map[string]interface{}
 	if len(path) == 0 {
 		*ok = true
 		return dataSource
