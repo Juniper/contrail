@@ -6,16 +6,16 @@ import "encoding/json"
 
 // VirtualIpType
 type VirtualIpType struct {
-	Protocol              LoadbalancerProtocolType `json:"protocol"`
-	SubnetID              UuidStringType           `json:"subnet_id"`
-	PersistenceCookieName string                   `json:"persistence_cookie_name"`
-	ConnectionLimit       int                      `json:"connection_limit"`
-	ProtocolPort          int                      `json:"protocol_port"`
-	Status                string                   `json:"status"`
-	StatusDescription     string                   `json:"status_description"`
-	PersistenceType       SessionPersistenceType   `json:"persistence_type"`
-	AdminState            bool                     `json:"admin_state"`
-	Address               IpAddressType            `json:"address"`
+	PersistenceCookieName string                   `json:"persistence_cookie_name,omitempty"`
+	PersistenceType       SessionPersistenceType   `json:"persistence_type,omitempty"`
+	ProtocolPort          int                      `json:"protocol_port,omitempty"`
+	Status                string                   `json:"status,omitempty"`
+	Protocol              LoadbalancerProtocolType `json:"protocol,omitempty"`
+	SubnetID              UuidStringType           `json:"subnet_id,omitempty"`
+	ConnectionLimit       int                      `json:"connection_limit,omitempty"`
+	AdminState            bool                     `json:"admin_state,omitempty"`
+	Address               IpAddressType            `json:"address,omitempty"`
+	StatusDescription     string                   `json:"status_description,omitempty"`
 }
 
 // String returns json representation of the object
@@ -28,16 +28,16 @@ func (model *VirtualIpType) String() string {
 func MakeVirtualIpType() *VirtualIpType {
 	return &VirtualIpType{
 		//TODO(nati): Apply default
-		Status:                "",
-		StatusDescription:     "",
-		PersistenceType:       MakeSessionPersistenceType(),
+		ConnectionLimit:       0,
 		AdminState:            false,
 		Address:               MakeIpAddressType(),
+		StatusDescription:     "",
 		Protocol:              MakeLoadbalancerProtocolType(),
 		SubnetID:              MakeUuidStringType(),
-		PersistenceCookieName: "",
-		ConnectionLimit:       0,
 		ProtocolPort:          0,
+		Status:                "",
+		PersistenceCookieName: "",
+		PersistenceType:       MakeSessionPersistenceType(),
 	}
 }
 

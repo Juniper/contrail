@@ -101,10 +101,17 @@ func CreateAPIAccessList(tx *sql.Tx, model *models.APIAccessList) error {
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "api_access_list", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanAPIAccessList(values map[string]interface{}) (*models.APIAccessList, error) {
@@ -346,14 +353,33 @@ func UpdateAPIAccessList(tx *sql.Tx, uuid string, model *models.APIAccessList) e
 
 // DeleteAPIAccessList deletes a resource
 func DeleteAPIAccessList(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteAPIAccessListQuery
+	deleteQuery := deleteAPIAccessListQuery
+	selectQuery := "select count(uuid) from api_access_list where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

@@ -6,7 +6,7 @@ import "encoding/json"
 
 // DhcpOptionsListType
 type DhcpOptionsListType struct {
-	DHCPOption []*DhcpOptionType `json:"dhcp_option"`
+	DHCPOption []*DhcpOptionType `json:"dhcp_option,omitempty"`
 }
 
 // String returns json representation of the object

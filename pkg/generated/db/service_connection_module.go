@@ -117,10 +117,17 @@ func CreateServiceConnectionModule(tx *sql.Tx, model *models.ServiceConnectionMo
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "service_connection_module", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanServiceConnectionModule(values map[string]interface{}) (*models.ServiceConnectionModule, error) {
@@ -392,14 +399,33 @@ func UpdateServiceConnectionModule(tx *sql.Tx, uuid string, model *models.Servic
 
 // DeleteServiceConnectionModule deletes a resource
 func DeleteServiceConnectionModule(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteServiceConnectionModuleQuery
+	deleteQuery := deleteServiceConnectionModuleQuery
+	selectQuery := "select count(uuid) from service_connection_module where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

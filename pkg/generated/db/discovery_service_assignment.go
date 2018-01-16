@@ -123,10 +123,17 @@ func CreateDiscoveryServiceAssignment(tx *sql.Tx, model *models.DiscoveryService
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "discovery_service_assignment", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.DiscoveryServiceAssignment, error) {
@@ -589,14 +596,33 @@ func UpdateDiscoveryServiceAssignment(tx *sql.Tx, uuid string, model *models.Dis
 
 // DeleteDiscoveryServiceAssignment deletes a resource
 func DeleteDiscoveryServiceAssignment(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteDiscoveryServiceAssignmentQuery
+	deleteQuery := deleteDiscoveryServiceAssignmentQuery
+	selectQuery := "select count(uuid) from discovery_service_assignment where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

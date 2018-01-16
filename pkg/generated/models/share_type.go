@@ -6,8 +6,8 @@ import "encoding/json"
 
 // ShareType
 type ShareType struct {
-	TenantAccess AccessType `json:"tenant_access"`
-	Tenant       string     `json:"tenant"`
+	TenantAccess AccessType `json:"tenant_access,omitempty"`
+	Tenant       string     `json:"tenant,omitempty"`
 }
 
 // String returns json representation of the object
@@ -20,8 +20,8 @@ func (model *ShareType) String() string {
 func MakeShareType() *ShareType {
 	return &ShareType{
 		//TODO(nati): Apply default
-		Tenant:       "",
 		TenantAccess: MakeAccessType(),
+		Tenant:       "",
 	}
 }
 

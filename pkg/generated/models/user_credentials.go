@@ -6,8 +6,8 @@ import "encoding/json"
 
 // UserCredentials
 type UserCredentials struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
 // String returns json representation of the object
@@ -20,8 +20,8 @@ func (model *UserCredentials) String() string {
 func MakeUserCredentials() *UserCredentials {
 	return &UserCredentials{
 		//TODO(nati): Apply default
-		Username: "",
 		Password: "",
+		Username: "",
 	}
 }
 

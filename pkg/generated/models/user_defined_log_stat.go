@@ -6,8 +6,8 @@ import "encoding/json"
 
 // UserDefinedLogStat
 type UserDefinedLogStat struct {
-	Pattern string `json:"pattern"`
-	Name    string `json:"name"`
+	Pattern string `json:"pattern,omitempty"`
+	Name    string `json:"name,omitempty"`
 }
 
 // String returns json representation of the object

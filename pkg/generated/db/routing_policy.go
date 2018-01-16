@@ -45,8 +45,8 @@ var RoutingPolicyRefFields = map[string][]string{
 
 	"service_instance": {
 		// <common.Schema Value>
-		"left_sequence",
 		"right_sequence",
+		"left_sequence",
 	},
 }
 
@@ -59,7 +59,7 @@ var RoutingPolicyParents = []string{
 	"project",
 }
 
-const insertRoutingPolicyServiceInstanceQuery = "insert into `ref_routing_policy_service_instance` (`from`, `to` ,`left_sequence`,`right_sequence`) values (?, ?,?,?);"
+const insertRoutingPolicyServiceInstanceQuery = "insert into `ref_routing_policy_service_instance` (`from`, `to` ,`right_sequence`,`left_sequence`) values (?, ?,?,?);"
 
 // CreateRoutingPolicy inserts RoutingPolicy to DB
 func CreateRoutingPolicy(tx *sql.Tx, model *models.RoutingPolicy) error {
@@ -109,8 +109,8 @@ func CreateRoutingPolicy(tx *sql.Tx, model *models.RoutingPolicy) error {
 			ref.Attr = models.MakeRoutingPolicyServiceInstanceType()
 		}
 
-		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID, string(ref.Attr.LeftSequence),
-			string(ref.Attr.RightSequence))
+		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID, string(ref.Attr.RightSequence),
+			string(ref.Attr.LeftSequence))
 		if err != nil {
 			return errors.Wrap(err, "ServiceInstanceRefs create failed")
 		}
@@ -122,10 +122,17 @@ func CreateRoutingPolicy(tx *sql.Tx, model *models.RoutingPolicy) error {
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "routing_policy", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanRoutingPolicy(values map[string]interface{}) (*models.RoutingPolicy, error) {
@@ -384,14 +391,33 @@ func UpdateRoutingPolicy(tx *sql.Tx, uuid string, model *models.RoutingPolicy) e
 
 // DeleteRoutingPolicy deletes a resource
 func DeleteRoutingPolicy(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteRoutingPolicyQuery
+	deleteQuery := deleteRoutingPolicyQuery
+	selectQuery := "select count(uuid) from routing_policy where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

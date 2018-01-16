@@ -6,9 +6,9 @@ import "encoding/json"
 
 // DhcpOptionType
 type DhcpOptionType struct {
-	DHCPOptionName       string `json:"dhcp_option_name"`
-	DHCPOptionValue      string `json:"dhcp_option_value"`
-	DHCPOptionValueBytes string `json:"dhcp_option_value_bytes"`
+	DHCPOptionValue      string `json:"dhcp_option_value,omitempty"`
+	DHCPOptionValueBytes string `json:"dhcp_option_value_bytes,omitempty"`
+	DHCPOptionName       string `json:"dhcp_option_name,omitempty"`
 }
 
 // String returns json representation of the object
@@ -21,9 +21,9 @@ func (model *DhcpOptionType) String() string {
 func MakeDhcpOptionType() *DhcpOptionType {
 	return &DhcpOptionType{
 		//TODO(nati): Apply default
-		DHCPOptionValue:      "",
 		DHCPOptionValueBytes: "",
 		DHCPOptionName:       "",
+		DHCPOptionValue:      "",
 	}
 }
 

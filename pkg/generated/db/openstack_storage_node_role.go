@@ -110,10 +110,17 @@ func CreateOpenstackStorageNodeRole(tx *sql.Tx, model *models.OpenstackStorageNo
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "openstack_storage_node_role", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanOpenstackStorageNodeRole(values map[string]interface{}) (*models.OpenstackStorageNodeRole, error) {
@@ -421,14 +428,33 @@ func UpdateOpenstackStorageNodeRole(tx *sql.Tx, uuid string, model *models.Opens
 
 // DeleteOpenstackStorageNodeRole deletes a resource
 func DeleteOpenstackStorageNodeRole(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteOpenstackStorageNodeRoleQuery
+	deleteQuery := deleteOpenstackStorageNodeRoleQuery
+	selectQuery := "select count(uuid) from openstack_storage_node_role where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

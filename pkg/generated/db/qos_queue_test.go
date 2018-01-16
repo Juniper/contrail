@@ -12,9 +12,11 @@ import (
 func TestQosQueue(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "qos_queue")
 	defer func() {
 		common.ClearTable(db, "qos_queue")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestQosQueue(t *testing.T) {
 	model := models.MakeQosQueue()
 	model.UUID = "qos_queue_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "qos_queue_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateQosQueue(tx, model)
@@ -42,6 +45,15 @@ func TestQosQueue(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteQosQueue(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

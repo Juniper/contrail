@@ -6,7 +6,7 @@ import "encoding/json"
 
 // RbacRuleEntriesType
 type RbacRuleEntriesType struct {
-	RbacRule []*RbacRuleType `json:"rbac_rule"`
+	RbacRule []*RbacRuleType `json:"rbac_rule,omitempty"`
 }
 
 // String returns json representation of the object

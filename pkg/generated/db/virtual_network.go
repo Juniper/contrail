@@ -78,6 +78,16 @@ var VirtualNetworkFields = []string{
 // VirtualNetworkRefFields is db reference fields for VirtualNetwork
 var VirtualNetworkRefFields = map[string][]string{
 
+	"qos_config": {
+	// <common.Schema Value>
+
+	},
+
+	"route_table": {
+	// <common.Schema Value>
+
+	},
+
 	"virtual_network": {
 	// <common.Schema Value>
 
@@ -90,8 +100,8 @@ var VirtualNetworkRefFields = map[string][]string{
 
 	"network_ipam": {
 		// <common.Schema Value>
-		"ipam_subnets",
 		"route",
+		"ipam_subnets",
 	},
 
 	"security_logging_object": {
@@ -101,22 +111,12 @@ var VirtualNetworkRefFields = map[string][]string{
 
 	"network_policy": {
 		// <common.Schema Value>
-		"off_interval",
-		"on_interval",
-		"end_time",
-		"start_time",
 		"major",
 		"minor",
-	},
-
-	"qos_config": {
-	// <common.Schema Value>
-
-	},
-
-	"route_table": {
-	// <common.Schema Value>
-
+		"end_time",
+		"start_time",
+		"off_interval",
+		"on_interval",
 	},
 }
 
@@ -262,11 +262,11 @@ var VirtualNetworkParents = []string{
 	"project",
 }
 
-const insertVirtualNetworkNetworkIpamQuery = "insert into `ref_virtual_network_network_ipam` (`from`, `to` ,`ipam_subnets`,`route`) values (?, ?,?,?);"
+const insertVirtualNetworkNetworkIpamQuery = "insert into `ref_virtual_network_network_ipam` (`from`, `to` ,`route`,`ipam_subnets`) values (?, ?,?,?);"
 
 const insertVirtualNetworkSecurityLoggingObjectQuery = "insert into `ref_virtual_network_security_logging_object` (`from`, `to` ) values (?, ?);"
 
-const insertVirtualNetworkNetworkPolicyQuery = "insert into `ref_virtual_network_network_policy` (`from`, `to` ,`off_interval`,`on_interval`,`end_time`,`start_time`,`major`,`minor`) values (?, ?,?,?,?,?,?,?);"
+const insertVirtualNetworkNetworkPolicyQuery = "insert into `ref_virtual_network_network_policy` (`from`, `to` ,`major`,`minor`,`end_time`,`start_time`,`off_interval`,`on_interval`) values (?, ?,?,?,?,?,?,?);"
 
 const insertVirtualNetworkQosConfigQuery = "insert into `ref_virtual_network_qos_config` (`from`, `to` ) values (?, ?);"
 
@@ -348,6 +348,19 @@ func CreateVirtualNetwork(tx *sql.Tx, model *models.VirtualNetwork) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtRouteTableRef, err := tx.Prepare(insertVirtualNetworkRouteTableQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing RouteTableRefs create statement failed")
+	}
+	defer stmtRouteTableRef.Close()
+	for _, ref := range model.RouteTableRefs {
+
+		_, err = stmtRouteTableRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "RouteTableRefs create failed")
+		}
+	}
+
 	stmtVirtualNetworkRef, err := tx.Prepare(insertVirtualNetworkVirtualNetworkQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
@@ -385,8 +398,8 @@ func CreateVirtualNetwork(tx *sql.Tx, model *models.VirtualNetwork) error {
 			ref.Attr = models.MakeVnSubnetsType()
 		}
 
-		_, err = stmtNetworkIpamRef.Exec(model.UUID, ref.UUID, common.MustJSON(ref.Attr.IpamSubnets),
-			common.MustJSON(ref.Attr.HostRoutes.Route))
+		_, err = stmtNetworkIpamRef.Exec(model.UUID, ref.UUID, common.MustJSON(ref.Attr.HostRoutes.Route),
+			common.MustJSON(ref.Attr.IpamSubnets))
 		if err != nil {
 			return errors.Wrap(err, "NetworkIpamRefs create failed")
 		}
@@ -416,12 +429,12 @@ func CreateVirtualNetwork(tx *sql.Tx, model *models.VirtualNetwork) error {
 			ref.Attr = models.MakeVirtualNetworkPolicyType()
 		}
 
-		_, err = stmtNetworkPolicyRef.Exec(model.UUID, ref.UUID, string(ref.Attr.Timer.OffInterval),
-			string(ref.Attr.Timer.OnInterval),
+		_, err = stmtNetworkPolicyRef.Exec(model.UUID, ref.UUID, int(ref.Attr.Sequence.Major),
+			int(ref.Attr.Sequence.Minor),
 			string(ref.Attr.Timer.EndTime),
 			string(ref.Attr.Timer.StartTime),
-			int(ref.Attr.Sequence.Major),
-			int(ref.Attr.Sequence.Minor))
+			string(ref.Attr.Timer.OffInterval),
+			string(ref.Attr.Timer.OnInterval))
 		if err != nil {
 			return errors.Wrap(err, "NetworkPolicyRefs create failed")
 		}
@@ -440,29 +453,23 @@ func CreateVirtualNetwork(tx *sql.Tx, model *models.VirtualNetwork) error {
 		}
 	}
 
-	stmtRouteTableRef, err := tx.Prepare(insertVirtualNetworkRouteTableQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing RouteTableRefs create statement failed")
-	}
-	defer stmtRouteTableRef.Close()
-	for _, ref := range model.RouteTableRefs {
-
-		_, err = stmtRouteTableRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "RouteTableRefs create failed")
-		}
-	}
-
 	metaData := &common.MetaData{
 		UUID:   model.UUID,
 		Type:   "virtual_network",
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "virtual_network", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, error) {
@@ -904,26 +911,6 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 	}
 
-	if value, ok := values["ref_virtual_network"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkVirtualNetworkRef{}
-			referenceModel.UUID = uuid
-			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_bgpvpn"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -1046,6 +1033,26 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 			referenceModel := &models.VirtualNetworkRouteTableRef{}
 			referenceModel.UUID = uuid
 			m.RouteTableRefs = append(m.RouteTableRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_network"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkVirtualNetworkRef{}
+			referenceModel.UUID = uuid
+			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
 
 		}
 	}
@@ -2113,14 +2120,33 @@ func UpdateVirtualNetwork(tx *sql.Tx, uuid string, model *models.VirtualNetwork)
 
 // DeleteVirtualNetwork deletes a resource
 func DeleteVirtualNetwork(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteVirtualNetworkQuery
+	deleteQuery := deleteVirtualNetworkQuery
+	selectQuery := "select count(uuid) from virtual_network where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

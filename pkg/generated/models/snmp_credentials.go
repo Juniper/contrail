@@ -6,23 +6,23 @@ import "encoding/json"
 
 // SNMPCredentials
 type SNMPCredentials struct {
-	V3SecurityEngineID       string `json:"v3_security_engine_id"`
-	V3EngineBoots            int    `json:"v3_engine_boots"`
-	V3SecurityLevel          string `json:"v3_security_level"`
-	V3SecurityName           string `json:"v3_security_name"`
-	V2Community              string `json:"v2_community"`
-	LocalPort                int    `json:"local_port"`
-	V3AuthenticationProtocol string `json:"v3_authentication_protocol"`
-	Version                  int    `json:"version"`
-	Retries                  int    `json:"retries"`
-	V3AuthenticationPassword string `json:"v3_authentication_password"`
-	V3EngineTime             int    `json:"v3_engine_time"`
-	V3PrivacyProtocol        string `json:"v3_privacy_protocol"`
-	V3Context                string `json:"v3_context"`
-	Timeout                  int    `json:"timeout"`
-	V3EngineID               string `json:"v3_engine_id"`
-	V3ContextEngineID        string `json:"v3_context_engine_id"`
-	V3PrivacyPassword        string `json:"v3_privacy_password"`
+	V3PrivacyProtocol        string `json:"v3_privacy_protocol,omitempty"`
+	LocalPort                int    `json:"local_port,omitempty"`
+	Version                  int    `json:"version,omitempty"`
+	Retries                  int    `json:"retries,omitempty"`
+	V3Context                string `json:"v3_context,omitempty"`
+	V2Community              string `json:"v2_community,omitempty"`
+	Timeout                  int    `json:"timeout,omitempty"`
+	V3AuthenticationProtocol string `json:"v3_authentication_protocol,omitempty"`
+	V3SecurityEngineID       string `json:"v3_security_engine_id,omitempty"`
+	V3PrivacyPassword        string `json:"v3_privacy_password,omitempty"`
+	V3SecurityName           string `json:"v3_security_name,omitempty"`
+	V3ContextEngineID        string `json:"v3_context_engine_id,omitempty"`
+	V3EngineBoots            int    `json:"v3_engine_boots,omitempty"`
+	V3AuthenticationPassword string `json:"v3_authentication_password,omitempty"`
+	V3EngineTime             int    `json:"v3_engine_time,omitempty"`
+	V3EngineID               string `json:"v3_engine_id,omitempty"`
+	V3SecurityLevel          string `json:"v3_security_level,omitempty"`
 }
 
 // String returns json representation of the object
@@ -35,23 +35,23 @@ func (model *SNMPCredentials) String() string {
 func MakeSNMPCredentials() *SNMPCredentials {
 	return &SNMPCredentials{
 		//TODO(nati): Apply default
-		V3PrivacyProtocol:        "",
-		V3Context:                "",
-		Timeout:                  0,
-		V3EngineID:               "",
-		V3ContextEngineID:        "",
-		V3PrivacyPassword:        "",
-		V3SecurityLevel:          "",
-		V3SecurityName:           "",
-		V2Community:              "",
+		V3AuthenticationProtocol: "",
 		V3SecurityEngineID:       "",
-		V3EngineBoots:            0,
-		Version:                  0,
-		Retries:                  0,
+		V3PrivacyPassword:        "",
 		V3AuthenticationPassword: "",
 		V3EngineTime:             0,
+		V3EngineID:               "",
+		V3SecurityLevel:          "",
+		V3SecurityName:           "",
+		V3ContextEngineID:        "",
+		V3EngineBoots:            0,
+		V3PrivacyProtocol:        "",
 		LocalPort:                0,
-		V3AuthenticationProtocol: "",
+		Version:                  0,
+		Retries:                  0,
+		V3Context:                "",
+		V2Community:              "",
+		Timeout:                  0,
 	}
 }
 

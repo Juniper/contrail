@@ -6,19 +6,19 @@ import "encoding/json"
 
 // ContrailAnalyticsNode
 type ContrailAnalyticsNode struct {
-	FQName                    []string       `json:"fq_name"`
-	UUID                      string         `json:"uuid"`
-	ParentType                string         `json:"parent_type"`
-	IDPerms                   *IdPermsType   `json:"id_perms"`
-	DisplayName               string         `json:"display_name"`
-	Annotations               *KeyValuePairs `json:"annotations"`
-	Perms2                    *PermType2     `json:"perms2"`
-	ProvisioningProgressStage string         `json:"provisioning_progress_stage"`
-	ProvisioningStartTime     string         `json:"provisioning_start_time"`
-	ProvisioningState         string         `json:"provisioning_state"`
-	ParentUUID                string         `json:"parent_uuid"`
-	ProvisioningProgress      int            `json:"provisioning_progress"`
-	ProvisioningLog           string         `json:"provisioning_log"`
+	DisplayName               string         `json:"display_name,omitempty"`
+	Perms2                    *PermType2     `json:"perms2,omitempty"`
+	ProvisioningProgress      int            `json:"provisioning_progress,omitempty"`
+	ProvisioningState         string         `json:"provisioning_state,omitempty"`
+	UUID                      string         `json:"uuid,omitempty"`
+	ParentUUID                string         `json:"parent_uuid,omitempty"`
+	FQName                    []string       `json:"fq_name,omitempty"`
+	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
+	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
+	ParentType                string         `json:"parent_type,omitempty"`
+	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
+	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
+	ProvisioningProgressStage string         `json:"provisioning_progress_stage,omitempty"`
 }
 
 // String returns json representation of the object
@@ -31,19 +31,19 @@ func (model *ContrailAnalyticsNode) String() string {
 func MakeContrailAnalyticsNode() *ContrailAnalyticsNode {
 	return &ContrailAnalyticsNode{
 		//TODO(nati): Apply default
-		ParentUUID:  "",
-		IDPerms:     MakeIdPermsType(),
-		DisplayName: "",
-		Annotations: MakeKeyValuePairs(),
-		Perms2:      MakePermType2(),
+		ParentType:                "",
+		Annotations:               MakeKeyValuePairs(),
+		ProvisioningLog:           "",
 		ProvisioningProgressStage: "",
 		ProvisioningStartTime:     "",
 		ProvisioningState:         "",
-		ProvisioningLog:           "",
-		ProvisioningProgress:      0,
-		ParentType:                "",
-		FQName:                    []string{},
 		UUID:                      "",
+		ParentUUID:                "",
+		FQName:                    []string{},
+		IDPerms:                   MakeIdPermsType(),
+		DisplayName:               "",
+		Perms2:                    MakePermType2(),
+		ProvisioningProgress:      0,
 	}
 }
 

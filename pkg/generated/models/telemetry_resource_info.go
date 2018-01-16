@@ -6,9 +6,9 @@ import "encoding/json"
 
 // TelemetryResourceInfo
 type TelemetryResourceInfo struct {
-	Path string `json:"path"`
-	Rate string `json:"rate"`
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
+	Path string `json:"path,omitempty"`
+	Rate string `json:"rate,omitempty"`
 }
 
 // String returns json representation of the object

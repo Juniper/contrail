@@ -6,19 +6,19 @@ import "encoding/json"
 
 // ServiceApplianceSet
 type ServiceApplianceSet struct {
-	ParentType                    string         `json:"parent_type"`
-	FQName                        []string       `json:"fq_name"`
-	ServiceApplianceSetProperties *KeyValuePairs `json:"service_appliance_set_properties"`
-	ServiceApplianceHaMode        string         `json:"service_appliance_ha_mode"`
-	ServiceApplianceDriver        string         `json:"service_appliance_driver"`
-	Annotations                   *KeyValuePairs `json:"annotations"`
-	Perms2                        *PermType2     `json:"perms2"`
-	ParentUUID                    string         `json:"parent_uuid"`
-	DisplayName                   string         `json:"display_name"`
-	UUID                          string         `json:"uuid"`
-	IDPerms                       *IdPermsType   `json:"id_perms"`
+	ServiceApplianceHaMode        string         `json:"service_appliance_ha_mode,omitempty"`
+	FQName                        []string       `json:"fq_name,omitempty"`
+	DisplayName                   string         `json:"display_name,omitempty"`
+	Annotations                   *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2                        *PermType2     `json:"perms2,omitempty"`
+	ParentUUID                    string         `json:"parent_uuid,omitempty"`
+	ParentType                    string         `json:"parent_type,omitempty"`
+	ServiceApplianceSetProperties *KeyValuePairs `json:"service_appliance_set_properties,omitempty"`
+	ServiceApplianceDriver        string         `json:"service_appliance_driver,omitempty"`
+	IDPerms                       *IdPermsType   `json:"id_perms,omitempty"`
+	UUID                          string         `json:"uuid,omitempty"`
 
-	ServiceAppliances []*ServiceAppliance `json:"service_appliances"`
+	ServiceAppliances []*ServiceAppliance `json:"service_appliances,omitempty"`
 }
 
 // String returns json representation of the object
@@ -31,17 +31,17 @@ func (model *ServiceApplianceSet) String() string {
 func MakeServiceApplianceSet() *ServiceApplianceSet {
 	return &ServiceApplianceSet{
 		//TODO(nati): Apply default
-		DisplayName: "",
-		UUID:        "",
-		IDPerms:     MakeIdPermsType(),
-		Annotations: MakeKeyValuePairs(),
-		Perms2:      MakePermType2(),
-		ParentUUID:  "",
-		ParentType:  "",
-		FQName:      []string{},
+		ServiceApplianceDriver: "",
+		IDPerms:                MakeIdPermsType(),
+		UUID:                   "",
 		ServiceApplianceSetProperties: MakeKeyValuePairs(),
-		ServiceApplianceHaMode:        "",
-		ServiceApplianceDriver:        "",
+		FQName:                 []string{},
+		DisplayName:            "",
+		Annotations:            MakeKeyValuePairs(),
+		Perms2:                 MakePermType2(),
+		ParentUUID:             "",
+		ParentType:             "",
+		ServiceApplianceHaMode: "",
 	}
 }
 

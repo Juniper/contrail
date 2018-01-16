@@ -142,10 +142,17 @@ func CreateServiceHealthCheck(tx *sql.Tx, model *models.ServiceHealthCheck) erro
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "service_health_check", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanServiceHealthCheck(values map[string]interface{}) (*models.ServiceHealthCheck, error) {
@@ -492,14 +499,33 @@ func UpdateServiceHealthCheck(tx *sql.Tx, uuid string, model *models.ServiceHeal
 
 // DeleteServiceHealthCheck deletes a resource
 func DeleteServiceHealthCheck(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteServiceHealthCheckQuery
+	deleteQuery := deleteServiceHealthCheckQuery
+	selectQuery := "select count(uuid) from service_health_check where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

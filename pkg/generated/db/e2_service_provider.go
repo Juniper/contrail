@@ -44,12 +44,12 @@ var E2ServiceProviderFields = []string{
 // E2ServiceProviderRefFields is db reference fields for E2ServiceProvider
 var E2ServiceProviderRefFields = map[string][]string{
 
-	"physical_router": {
+	"peering_policy": {
 	// <common.Schema Value>
 
 	},
 
-	"peering_policy": {
+	"physical_router": {
 	// <common.Schema Value>
 
 	},
@@ -61,9 +61,9 @@ var E2ServiceProviderBackRefFields = map[string][]string{}
 // E2ServiceProviderParentTypes is possible parents for E2ServiceProvider
 var E2ServiceProviderParents = []string{}
 
-const insertE2ServiceProviderPhysicalRouterQuery = "insert into `ref_e2_service_provider_physical_router` (`from`, `to` ) values (?, ?);"
-
 const insertE2ServiceProviderPeeringPolicyQuery = "insert into `ref_e2_service_provider_peering_policy` (`from`, `to` ) values (?, ?);"
+
+const insertE2ServiceProviderPhysicalRouterQuery = "insert into `ref_e2_service_provider_physical_router` (`from`, `to` ) values (?, ?);"
 
 // CreateE2ServiceProvider inserts E2ServiceProvider to DB
 func CreateE2ServiceProvider(tx *sql.Tx, model *models.E2ServiceProvider) error {
@@ -135,10 +135,17 @@ func CreateE2ServiceProvider(tx *sql.Tx, model *models.E2ServiceProvider) error 
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "e2_service_provider", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProvider, error) {
@@ -422,14 +429,33 @@ func UpdateE2ServiceProvider(tx *sql.Tx, uuid string, model *models.E2ServicePro
 
 // DeleteE2ServiceProvider deletes a resource
 func DeleteE2ServiceProvider(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteE2ServiceProviderQuery
+	deleteQuery := deleteE2ServiceProviderQuery
+	selectQuery := "select count(uuid) from e2_service_provider where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

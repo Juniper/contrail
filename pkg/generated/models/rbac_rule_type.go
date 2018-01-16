@@ -6,9 +6,9 @@ import "encoding/json"
 
 // RbacRuleType
 type RbacRuleType struct {
-	RuleObject string          `json:"rule_object"`
-	RulePerms  []*RbacPermType `json:"rule_perms"`
-	RuleField  string          `json:"rule_field"`
+	RuleObject string          `json:"rule_object,omitempty"`
+	RulePerms  []*RbacPermType `json:"rule_perms,omitempty"`
+	RuleField  string          `json:"rule_field,omitempty"`
 }
 
 // String returns json representation of the object
@@ -21,10 +21,11 @@ func (model *RbacRuleType) String() string {
 func MakeRbacRuleType() *RbacRuleType {
 	return &RbacRuleType{
 		//TODO(nati): Apply default
-		RuleField:  "",
 		RuleObject: "",
 
 		RulePerms: MakeRbacPermTypeSlice(),
+
+		RuleField: "",
 	}
 }
 

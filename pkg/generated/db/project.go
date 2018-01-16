@@ -1119,24 +1119,6 @@ func CreateProject(tx *sql.Tx, model *models.Project) error {
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtNamespaceRef, err := tx.Prepare(insertProjectNamespaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing NamespaceRefs create statement failed")
-	}
-	defer stmtNamespaceRef.Close()
-	for _, ref := range model.NamespaceRefs {
-
-		if ref.Attr == nil {
-			ref.Attr = models.MakeSubnetType()
-		}
-
-		_, err = stmtNamespaceRef.Exec(model.UUID, ref.UUID, string(ref.Attr.IPPrefix),
-			int(ref.Attr.IPPrefixLen))
-		if err != nil {
-			return errors.Wrap(err, "NamespaceRefs create failed")
-		}
-	}
-
 	stmtApplicationPolicySetRef, err := tx.Prepare(insertProjectApplicationPolicySetQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ApplicationPolicySetRefs create statement failed")
@@ -1176,16 +1158,41 @@ func CreateProject(tx *sql.Tx, model *models.Project) error {
 		}
 	}
 
+	stmtNamespaceRef, err := tx.Prepare(insertProjectNamespaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing NamespaceRefs create statement failed")
+	}
+	defer stmtNamespaceRef.Close()
+	for _, ref := range model.NamespaceRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = models.MakeSubnetType()
+		}
+
+		_, err = stmtNamespaceRef.Exec(model.UUID, ref.UUID, string(ref.Attr.IPPrefix),
+			int(ref.Attr.IPPrefixLen))
+		if err != nil {
+			return errors.Wrap(err, "NamespaceRefs create failed")
+		}
+	}
+
 	metaData := &common.MetaData{
 		UUID:   model.UUID,
 		Type:   "project",
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "project", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanProject(values map[string]interface{}) (*models.Project, error) {
@@ -1577,46 +1584,6 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 
 	}
 
-	if value, ok := values["ref_floating_ip_pool"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ProjectFloatingIPPoolRef{}
-			referenceModel.UUID = uuid
-			m.FloatingIPPoolRefs = append(m.FloatingIPPoolRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_alias_ip_pool"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ProjectAliasIPPoolRef{}
-			referenceModel.UUID = uuid
-			m.AliasIPPoolRefs = append(m.AliasIPPoolRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_namespace"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -1656,6 +1623,46 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			referenceModel := &models.ProjectApplicationPolicySetRef{}
 			referenceModel.UUID = uuid
 			m.ApplicationPolicySetRefs = append(m.ApplicationPolicySetRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_floating_ip_pool"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ProjectFloatingIPPoolRef{}
+			referenceModel.UUID = uuid
+			m.FloatingIPPoolRefs = append(m.FloatingIPPoolRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_alias_ip_pool"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ProjectAliasIPPoolRef{}
+			referenceModel.UUID = uuid
+			m.AliasIPPoolRefs = append(m.AliasIPPoolRefs, referenceModel)
 
 		}
 	}
@@ -8860,14 +8867,33 @@ func UpdateProject(tx *sql.Tx, uuid string, model *models.Project) error {
 
 // DeleteProject deletes a resource
 func DeleteProject(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteProjectQuery
+	deleteQuery := deleteProjectQuery
+	selectQuery := "select count(uuid) from project where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

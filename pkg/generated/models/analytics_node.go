@@ -6,15 +6,15 @@ import "encoding/json"
 
 // AnalyticsNode
 type AnalyticsNode struct {
-	AnalyticsNodeIPAddress IpAddressType  `json:"analytics_node_ip_address"`
-	Perms2                 *PermType2     `json:"perms2"`
-	ParentUUID             string         `json:"parent_uuid"`
-	IDPerms                *IdPermsType   `json:"id_perms"`
-	DisplayName            string         `json:"display_name"`
-	Annotations            *KeyValuePairs `json:"annotations"`
-	UUID                   string         `json:"uuid"`
-	ParentType             string         `json:"parent_type"`
-	FQName                 []string       `json:"fq_name"`
+	DisplayName            string         `json:"display_name,omitempty"`
+	Perms2                 *PermType2     `json:"perms2,omitempty"`
+	UUID                   string         `json:"uuid,omitempty"`
+	FQName                 []string       `json:"fq_name,omitempty"`
+	IDPerms                *IdPermsType   `json:"id_perms,omitempty"`
+	Annotations            *KeyValuePairs `json:"annotations,omitempty"`
+	AnalyticsNodeIPAddress IpAddressType  `json:"analytics_node_ip_address,omitempty"`
+	ParentUUID             string         `json:"parent_uuid,omitempty"`
+	ParentType             string         `json:"parent_type,omitempty"`
 }
 
 // String returns json representation of the object
@@ -28,14 +28,14 @@ func MakeAnalyticsNode() *AnalyticsNode {
 	return &AnalyticsNode{
 		//TODO(nati): Apply default
 		AnalyticsNodeIPAddress: MakeIpAddressType(),
-		Perms2:                 MakePermType2(),
 		ParentUUID:             "",
+		ParentType:             "",
 		FQName:                 []string{},
 		IDPerms:                MakeIdPermsType(),
-		DisplayName:            "",
 		Annotations:            MakeKeyValuePairs(),
+		DisplayName:            "",
+		Perms2:                 MakePermType2(),
 		UUID:                   "",
-		ParentType:             "",
 	}
 }
 

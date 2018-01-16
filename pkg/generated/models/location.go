@@ -6,43 +6,43 @@ import "encoding/json"
 
 // Location
 type Location struct {
-	Perms2                           *PermType2     `json:"perms2"`
-	Annotations                      *KeyValuePairs `json:"annotations"`
-	ProvisioningStartTime            string         `json:"provisioning_start_time"`
-	PrivateOspdVMRAMMB               string         `json:"private_ospd_vm_ram_mb"`
-	PrivateRedhatSubscriptionPasword string         `json:"private_redhat_subscription_pasword"`
-	GCPRegion                        string         `json:"gcp_region"`
-	GCPSubnet                        string         `json:"gcp_subnet"`
-	PrivateOspdVMVcpus               string         `json:"private_ospd_vm_vcpus"`
-	PrivateRedhatPoolID              string         `json:"private_redhat_pool_id"`
-	PrivateRedhatSubscriptionKey     string         `json:"private_redhat_subscription_key"`
-	UUID                             string         `json:"uuid"`
-	PrivateOspdPackageURL            string         `json:"private_ospd_package_url"`
-	AwsSecretKey                     string         `json:"aws_secret_key"`
-	AwsAccessKey                     string         `json:"aws_access_key"`
-	AwsSubnet                        string         `json:"aws_subnet"`
-	FQName                           []string       `json:"fq_name"`
-	PrivateOspdVMName                string         `json:"private_ospd_vm_name"`
-	GCPAsn                           int            `json:"gcp_asn"`
-	AwsRegion                        string         `json:"aws_region"`
-	ParentUUID                       string         `json:"parent_uuid"`
-	PrivateDNSServers                string         `json:"private_dns_servers"`
-	PrivateOspdUserName              string         `json:"private_ospd_user_name"`
-	PrivateOspdUserPassword          string         `json:"private_ospd_user_password"`
-	PrivateOspdVMDiskGB              string         `json:"private_ospd_vm_disk_gb"`
-	ProvisioningProgress             int            `json:"provisioning_progress"`
-	ProvisioningProgressStage        string         `json:"provisioning_progress_stage"`
-	Type                             string         `json:"type"`
-	ParentType                       string         `json:"parent_type"`
-	IDPerms                          *IdPermsType   `json:"id_perms"`
-	ProvisioningState                string         `json:"provisioning_state"`
-	ProvisioningLog                  string         `json:"provisioning_log"`
-	PrivateNTPHosts                  string         `json:"private_ntp_hosts"`
-	PrivateRedhatSubscriptionUser    string         `json:"private_redhat_subscription_user"`
-	GCPAccountInfo                   string         `json:"gcp_account_info"`
-	DisplayName                      string         `json:"display_name"`
+	PrivateOspdUserName              string         `json:"private_ospd_user_name,omitempty"`
+	PrivateOspdUserPassword          string         `json:"private_ospd_user_password,omitempty"`
+	PrivateRedhatSubscriptionPasword string         `json:"private_redhat_subscription_pasword,omitempty"`
+	Type                             string         `json:"type,omitempty"`
+	PrivateOspdVMRAMMB               string         `json:"private_ospd_vm_ram_mb,omitempty"`
+	GCPAccountInfo                   string         `json:"gcp_account_info,omitempty"`
+	FQName                           []string       `json:"fq_name,omitempty"`
+	ParentUUID                       string         `json:"parent_uuid,omitempty"`
+	AwsRegion                        string         `json:"aws_region,omitempty"`
+	Annotations                      *KeyValuePairs `json:"annotations,omitempty"`
+	ProvisioningStartTime            string         `json:"provisioning_start_time,omitempty"`
+	PrivateOspdVMVcpus               string         `json:"private_ospd_vm_vcpus,omitempty"`
+	ProvisioningState                string         `json:"provisioning_state,omitempty"`
+	ProvisioningProgress             int            `json:"provisioning_progress,omitempty"`
+	ProvisioningProgressStage        string         `json:"provisioning_progress_stage,omitempty"`
+	ProvisioningLog                  string         `json:"provisioning_log,omitempty"`
+	PrivateDNSServers                string         `json:"private_dns_servers,omitempty"`
+	PrivateNTPHosts                  string         `json:"private_ntp_hosts,omitempty"`
+	PrivateOspdVMName                string         `json:"private_ospd_vm_name,omitempty"`
+	PrivateRedhatPoolID              string         `json:"private_redhat_pool_id,omitempty"`
+	PrivateRedhatSubscriptionKey     string         `json:"private_redhat_subscription_key,omitempty"`
+	GCPSubnet                        string         `json:"gcp_subnet,omitempty"`
+	AwsSecretKey                     string         `json:"aws_secret_key,omitempty"`
+	AwsSubnet                        string         `json:"aws_subnet,omitempty"`
+	UUID                             string         `json:"uuid,omitempty"`
+	IDPerms                          *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName                      string         `json:"display_name,omitempty"`
+	PrivateOspdVMDiskGB              string         `json:"private_ospd_vm_disk_gb,omitempty"`
+	PrivateRedhatSubscriptionUser    string         `json:"private_redhat_subscription_user,omitempty"`
+	GCPAsn                           int            `json:"gcp_asn,omitempty"`
+	GCPRegion                        string         `json:"gcp_region,omitempty"`
+	AwsAccessKey                     string         `json:"aws_access_key,omitempty"`
+	ParentType                       string         `json:"parent_type,omitempty"`
+	Perms2                           *PermType2     `json:"perms2,omitempty"`
+	PrivateOspdPackageURL            string         `json:"private_ospd_package_url,omitempty"`
 
-	PhysicalRouters []*PhysicalRouter `json:"physical_routers"`
+	PhysicalRouters []*PhysicalRouter `json:"physical_routers,omitempty"`
 }
 
 // String returns json representation of the object
@@ -55,41 +55,41 @@ func (model *Location) String() string {
 func MakeLocation() *Location {
 	return &Location{
 		//TODO(nati): Apply default
-		AwsAccessKey:              "",
-		AwsSubnet:                 "",
-		FQName:                    []string{},
-		PrivateDNSServers:         "",
-		PrivateOspdUserName:       "",
-		PrivateOspdUserPassword:   "",
-		PrivateOspdVMDiskGB:       "",
-		PrivateOspdVMName:         "",
-		GCPAsn:                    0,
-		AwsRegion:                 "",
-		ParentUUID:                "",
-		ProvisioningProgress:      0,
-		ProvisioningProgressStage: "",
-		Type:                             "",
-		ParentType:                       "",
-		IDPerms:                          MakeIdPermsType(),
-		PrivateNTPHosts:                  "",
-		PrivateRedhatSubscriptionUser:    "",
-		GCPAccountInfo:                   "",
-		DisplayName:                      "",
-		ProvisioningState:                "",
-		ProvisioningLog:                  "",
-		PrivateOspdVMRAMMB:               "",
+		PrivateOspdUserName:              "",
+		PrivateOspdUserPassword:          "",
 		PrivateRedhatSubscriptionPasword: "",
-		GCPRegion:                        "",
-		GCPSubnet:                        "",
-		Perms2:                           MakePermType2(),
-		Annotations:                      MakeKeyValuePairs(),
-		ProvisioningStartTime:            "",
-		PrivateOspdVMVcpus:               "",
-		PrivateRedhatPoolID:              "",
-		PrivateRedhatSubscriptionKey:     "",
-		UUID: "",
+		Type:                          "",
+		PrivateOspdVMRAMMB:            "",
+		GCPAccountInfo:                "",
+		FQName:                        []string{},
+		ParentUUID:                    "",
+		AwsRegion:                     "",
+		Annotations:                   MakeKeyValuePairs(),
+		ProvisioningStartTime:         "",
+		PrivateOspdVMVcpus:            "",
+		ProvisioningState:             "",
+		ProvisioningProgress:          0,
+		ProvisioningProgressStage:     "",
+		PrivateDNSServers:             "",
+		PrivateNTPHosts:               "",
+		PrivateOspdVMName:             "",
+		PrivateRedhatPoolID:           "",
+		PrivateRedhatSubscriptionKey:  "",
+		GCPSubnet:                     "",
+		ProvisioningLog:               "",
+		AwsSecretKey:                  "",
+		AwsSubnet:                     "",
+		UUID:                          "",
+		PrivateOspdVMDiskGB:           "",
+		PrivateRedhatSubscriptionUser: "",
+		GCPAsn:                0,
+		GCPRegion:             "",
+		AwsAccessKey:          "",
+		ParentType:            "",
+		IDPerms:               MakeIdPermsType(),
+		DisplayName:           "",
+		Perms2:                MakePermType2(),
 		PrivateOspdPackageURL: "",
-		AwsSecretKey:          "",
 	}
 }
 

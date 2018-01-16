@@ -6,17 +6,17 @@ import "encoding/json"
 
 // QosQueue
 type QosQueue struct {
-	FQName             []string       `json:"fq_name"`
-	IDPerms            *IdPermsType   `json:"id_perms"`
-	DisplayName        string         `json:"display_name"`
-	UUID               string         `json:"uuid"`
-	QosQueueIdentifier int            `json:"qos_queue_identifier"`
-	MinBandwidth       int            `json:"min_bandwidth"`
-	ParentUUID         string         `json:"parent_uuid"`
-	Perms2             *PermType2     `json:"perms2"`
-	MaxBandwidth       int            `json:"max_bandwidth"`
-	ParentType         string         `json:"parent_type"`
-	Annotations        *KeyValuePairs `json:"annotations"`
+	FQName             []string       `json:"fq_name,omitempty"`
+	QosQueueIdentifier int            `json:"qos_queue_identifier,omitempty"`
+	IDPerms            *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName        string         `json:"display_name,omitempty"`
+	Annotations        *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2             *PermType2     `json:"perms2,omitempty"`
+	ParentUUID         string         `json:"parent_uuid,omitempty"`
+	ParentType         string         `json:"parent_type,omitempty"`
+	MaxBandwidth       int            `json:"max_bandwidth,omitempty"`
+	MinBandwidth       int            `json:"min_bandwidth,omitempty"`
+	UUID               string         `json:"uuid,omitempty"`
 }
 
 // String returns json representation of the object
@@ -29,17 +29,17 @@ func (model *QosQueue) String() string {
 func MakeQosQueue() *QosQueue {
 	return &QosQueue{
 		//TODO(nati): Apply default
-		MinBandwidth:       0,
+		Perms2:             MakePermType2(),
 		ParentUUID:         "",
+		ParentType:         "",
 		FQName:             []string{},
+		QosQueueIdentifier: 0,
 		IDPerms:            MakeIdPermsType(),
 		DisplayName:        "",
-		UUID:               "",
-		QosQueueIdentifier: 0,
-		ParentType:         "",
 		Annotations:        MakeKeyValuePairs(),
-		Perms2:             MakePermType2(),
 		MaxBandwidth:       0,
+		MinBandwidth:       0,
+		UUID:               "",
 	}
 }
 

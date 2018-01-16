@@ -12,9 +12,11 @@ import (
 func TestGlobalQosConfig(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "global_qos_config")
 	defer func() {
 		common.ClearTable(db, "global_qos_config")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestGlobalQosConfig(t *testing.T) {
 	model := models.MakeGlobalQosConfig()
 	model.UUID = "global_qos_config_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "global_qos_config_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateGlobalQosConfig(tx, model)
@@ -42,6 +45,15 @@ func TestGlobalQosConfig(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteGlobalQosConfig(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

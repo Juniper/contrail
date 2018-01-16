@@ -6,8 +6,8 @@ import "encoding/json"
 
 // RbacPermType
 type RbacPermType struct {
-	RoleCrud string `json:"role_crud"`
-	RoleName string `json:"role_name"`
+	RoleCrud string `json:"role_crud,omitempty"`
+	RoleName string `json:"role_name,omitempty"`
 }
 
 // String returns json representation of the object

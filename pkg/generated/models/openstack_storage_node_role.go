@@ -6,23 +6,23 @@ import "encoding/json"
 
 // OpenstackStorageNodeRole
 type OpenstackStorageNodeRole struct {
-	Perms2                             *PermType2     `json:"perms2"`
-	ProvisioningState                  string         `json:"provisioning_state"`
-	ParentType                         string         `json:"parent_type"`
-	IDPerms                            *IdPermsType   `json:"id_perms"`
-	DisplayName                        string         `json:"display_name"`
-	ProvisioningProgressStage          string         `json:"provisioning_progress_stage"`
-	JournalDrives                      string         `json:"journal_drives"`
-	ParentUUID                         string         `json:"parent_uuid"`
-	ProvisioningLog                    string         `json:"provisioning_log"`
-	ProvisioningProgress               int            `json:"provisioning_progress"`
-	FQName                             []string       `json:"fq_name"`
-	UUID                               string         `json:"uuid"`
-	ProvisioningStartTime              string         `json:"provisioning_start_time"`
-	Annotations                        *KeyValuePairs `json:"annotations"`
-	OsdDrives                          string         `json:"osd_drives"`
-	StorageAccessBondInterfaceMembers  string         `json:"storage_access_bond_interface_members"`
-	StorageBackendBondInterfaceMembers string         `json:"storage_backend_bond_interface_members"`
+	Annotations                        *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2                             *PermType2     `json:"perms2,omitempty"`
+	ProvisioningProgress               int            `json:"provisioning_progress,omitempty"`
+	ParentType                         string         `json:"parent_type,omitempty"`
+	ProvisioningProgressStage          string         `json:"provisioning_progress_stage,omitempty"`
+	ProvisioningStartTime              string         `json:"provisioning_start_time,omitempty"`
+	ProvisioningState                  string         `json:"provisioning_state,omitempty"`
+	OsdDrives                          string         `json:"osd_drives,omitempty"`
+	StorageAccessBondInterfaceMembers  string         `json:"storage_access_bond_interface_members,omitempty"`
+	IDPerms                            *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName                        string         `json:"display_name,omitempty"`
+	UUID                               string         `json:"uuid,omitempty"`
+	ProvisioningLog                    string         `json:"provisioning_log,omitempty"`
+	ParentUUID                         string         `json:"parent_uuid,omitempty"`
+	JournalDrives                      string         `json:"journal_drives,omitempty"`
+	StorageBackendBondInterfaceMembers string         `json:"storage_backend_bond_interface_members,omitempty"`
+	FQName                             []string       `json:"fq_name,omitempty"`
 }
 
 // String returns json representation of the object
@@ -35,23 +35,23 @@ func (model *OpenstackStorageNodeRole) String() string {
 func MakeOpenstackStorageNodeRole() *OpenstackStorageNodeRole {
 	return &OpenstackStorageNodeRole{
 		//TODO(nati): Apply default
-		ProvisioningProgress: 0,
-		FQName:               []string{},
-		UUID:                 "",
-		ProvisioningStartTime:              "",
-		Annotations:                        MakeKeyValuePairs(),
-		OsdDrives:                          "",
-		StorageAccessBondInterfaceMembers:  "",
+		DisplayName:                        "",
+		UUID:                               "",
+		ProvisioningLog:                    "",
+		ParentUUID:                         "",
+		JournalDrives:                      "",
 		StorageBackendBondInterfaceMembers: "",
-		Perms2:                    MakePermType2(),
-		ProvisioningState:         "",
-		ParentType:                "",
-		IDPerms:                   MakeIdPermsType(),
-		DisplayName:               "",
-		ProvisioningProgressStage: "",
-		JournalDrives:             "",
-		ParentUUID:                "",
-		ProvisioningLog:           "",
+		FQName:                            []string{},
+		Annotations:                       MakeKeyValuePairs(),
+		Perms2:                            MakePermType2(),
+		ProvisioningProgress:              0,
+		ParentType:                        "",
+		ProvisioningProgressStage:         "",
+		ProvisioningStartTime:             "",
+		ProvisioningState:                 "",
+		OsdDrives:                         "",
+		StorageAccessBondInterfaceMembers: "",
+		IDPerms: MakeIdPermsType(),
 	}
 }
 

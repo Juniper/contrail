@@ -6,7 +6,7 @@ import "encoding/json"
 
 // RouteTableType
 type RouteTableType struct {
-	Route []*RouteType `json:"route"`
+	Route []*RouteType `json:"route,omitempty"`
 }
 
 // String returns json representation of the object

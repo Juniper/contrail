@@ -6,7 +6,7 @@ import "encoding/json"
 
 // VrfAssignTableType
 type VrfAssignTableType struct {
-	VRFAssignRule []*VrfAssignRuleType `json:"vrf_assign_rule"`
+	VRFAssignRule []*VrfAssignRuleType `json:"vrf_assign_rule,omitempty"`
 }
 
 // String returns json representation of the object

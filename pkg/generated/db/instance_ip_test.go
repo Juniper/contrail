@@ -12,9 +12,11 @@ import (
 func TestInstanceIP(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "instance_ip")
 	defer func() {
 		common.ClearTable(db, "instance_ip")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestInstanceIP(t *testing.T) {
 	model := models.MakeInstanceIP()
 	model.UUID = "instance_ip_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "instance_ip_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateInstanceIP(tx, model)
@@ -42,6 +45,15 @@ func TestInstanceIP(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteInstanceIP(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

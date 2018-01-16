@@ -12,9 +12,11 @@ import (
 func TestE2ServiceProvider(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "e2_service_provider")
 	defer func() {
 		common.ClearTable(db, "e2_service_provider")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestE2ServiceProvider(t *testing.T) {
 	model := models.MakeE2ServiceProvider()
 	model.UUID = "e2_service_provider_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "e2_service_provider_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateE2ServiceProvider(tx, model)
@@ -42,6 +45,15 @@ func TestE2ServiceProvider(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteE2ServiceProvider(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

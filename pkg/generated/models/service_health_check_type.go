@@ -6,17 +6,17 @@ import "encoding/json"
 
 // ServiceHealthCheckType
 type ServiceHealthCheckType struct {
-	Enabled         bool                    `json:"enabled"`
-	Delay           int                     `json:"delay"`
-	ExpectedCodes   string                  `json:"expected_codes"`
-	MaxRetries      int                     `json:"max_retries"`
-	URLPath         string                  `json:"url_path"`
-	MonitorType     HealthCheckProtocolType `json:"monitor_type"`
-	DelayUsecs      int                     `json:"delayUsecs"`
-	HealthCheckType HealthCheckType         `json:"health_check_type"`
-	HTTPMethod      string                  `json:"http_method"`
-	Timeout         int                     `json:"timeout"`
-	TimeoutUsecs    int                     `json:"timeoutUsecs"`
+	DelayUsecs      int                     `json:"delayUsecs,omitempty"`
+	Enabled         bool                    `json:"enabled,omitempty"`
+	Delay           int                     `json:"delay,omitempty"`
+	ExpectedCodes   string                  `json:"expected_codes,omitempty"`
+	HealthCheckType HealthCheckType         `json:"health_check_type,omitempty"`
+	HTTPMethod      string                  `json:"http_method,omitempty"`
+	TimeoutUsecs    int                     `json:"timeoutUsecs,omitempty"`
+	MaxRetries      int                     `json:"max_retries,omitempty"`
+	Timeout         int                     `json:"timeout,omitempty"`
+	URLPath         string                  `json:"url_path,omitempty"`
+	MonitorType     HealthCheckProtocolType `json:"monitor_type,omitempty"`
 }
 
 // String returns json representation of the object
@@ -29,17 +29,17 @@ func (model *ServiceHealthCheckType) String() string {
 func MakeServiceHealthCheckType() *ServiceHealthCheckType {
 	return &ServiceHealthCheckType{
 		//TODO(nati): Apply default
-		Timeout:         0,
+		MonitorType:     MakeHealthCheckProtocolType(),
 		TimeoutUsecs:    0,
+		MaxRetries:      0,
+		Timeout:         0,
+		URLPath:         "",
 		HealthCheckType: MakeHealthCheckType(),
 		HTTPMethod:      "",
-		ExpectedCodes:   "",
-		MaxRetries:      0,
-		URLPath:         "",
-		MonitorType:     MakeHealthCheckProtocolType(),
 		DelayUsecs:      0,
 		Enabled:         false,
 		Delay:           0,
+		ExpectedCodes:   "",
 	}
 }
 

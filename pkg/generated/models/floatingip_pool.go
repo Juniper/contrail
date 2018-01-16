@@ -6,17 +6,17 @@ import "encoding/json"
 
 // FloatingIPPool
 type FloatingIPPool struct {
-	DisplayName           string                    `json:"display_name"`
-	Annotations           *KeyValuePairs            `json:"annotations"`
-	Perms2                *PermType2                `json:"perms2"`
-	FQName                []string                  `json:"fq_name"`
-	ParentUUID            string                    `json:"parent_uuid"`
-	ParentType            string                    `json:"parent_type"`
-	IDPerms               *IdPermsType              `json:"id_perms"`
-	FloatingIPPoolSubnets *FloatingIpPoolSubnetType `json:"floating_ip_pool_subnets"`
-	UUID                  string                    `json:"uuid"`
+	IDPerms               *IdPermsType              `json:"id_perms,omitempty"`
+	DisplayName           string                    `json:"display_name,omitempty"`
+	Annotations           *KeyValuePairs            `json:"annotations,omitempty"`
+	FloatingIPPoolSubnets *FloatingIpPoolSubnetType `json:"floating_ip_pool_subnets,omitempty"`
+	ParentType            string                    `json:"parent_type,omitempty"`
+	FQName                []string                  `json:"fq_name,omitempty"`
+	Perms2                *PermType2                `json:"perms2,omitempty"`
+	UUID                  string                    `json:"uuid,omitempty"`
+	ParentUUID            string                    `json:"parent_uuid,omitempty"`
 
-	FloatingIPs []*FloatingIP `json:"floating_ips"`
+	FloatingIPs []*FloatingIP `json:"floating_ips,omitempty"`
 }
 
 // String returns json representation of the object
@@ -30,14 +30,14 @@ func MakeFloatingIPPool() *FloatingIPPool {
 	return &FloatingIPPool{
 		//TODO(nati): Apply default
 		Perms2:                MakePermType2(),
+		UUID:                  "",
+		ParentUUID:            "",
 		FQName:                []string{},
 		DisplayName:           "",
 		Annotations:           MakeKeyValuePairs(),
-		IDPerms:               MakeIdPermsType(),
 		FloatingIPPoolSubnets: MakeFloatingIpPoolSubnetType(),
-		UUID:       "",
-		ParentUUID: "",
-		ParentType: "",
+		ParentType:            "",
+		IDPerms:               MakeIdPermsType(),
 	}
 }
 

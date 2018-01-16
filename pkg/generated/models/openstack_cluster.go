@@ -6,33 +6,33 @@ import "encoding/json"
 
 // OpenstackCluster
 type OpenstackCluster struct {
-	ProvisioningProgress                      int            `json:"provisioning_progress"`
-	OpenstackWebui                            string         `json:"openstack_webui"`
-	PublicGateway                             string         `json:"public_gateway"`
-	PublicIP                                  string         `json:"public_ip"`
-	Perms2                                    *PermType2     `json:"perms2"`
-	UUID                                      string         `json:"uuid"`
-	DefaultOsdDrives                          string         `json:"default_osd_drives"`
-	FQName                                    []string       `json:"fq_name"`
-	IDPerms                                   *IdPermsType   `json:"id_perms"`
-	ProvisioningStartTime                     string         `json:"provisioning_start_time"`
-	DisplayName                               string         `json:"display_name"`
-	DefaultJournalDrives                      string         `json:"default_journal_drives"`
-	DefaultPerformanceDrives                  string         `json:"default_performance_drives"`
-	ExternalAllocationPoolStart               string         `json:"external_allocation_pool_start"`
-	AdminPassword                             string         `json:"admin_password"`
-	DefaultCapacityDrives                     string         `json:"default_capacity_drives"`
-	ExternalAllocationPoolEnd                 string         `json:"external_allocation_pool_end"`
-	Annotations                               *KeyValuePairs `json:"annotations"`
-	ParentUUID                                string         `json:"parent_uuid"`
-	ProvisioningLog                           string         `json:"provisioning_log"`
-	ProvisioningProgressStage                 string         `json:"provisioning_progress_stage"`
-	DefaultStorageBackendBondInterfaceMembers string         `json:"default_storage_backend_bond_interface_members"`
-	ExternalNetCidr                           string         `json:"external_net_cidr"`
-	ParentType                                string         `json:"parent_type"`
-	ProvisioningState                         string         `json:"provisioning_state"`
-	ContrailClusterID                         string         `json:"contrail_cluster_id"`
-	DefaultStorageAccessBondInterfaceMembers  string         `json:"default_storage_access_bond_interface_members"`
+	DefaultStorageAccessBondInterfaceMembers  string         `json:"default_storage_access_bond_interface_members,omitempty"`
+	ExternalAllocationPoolStart               string         `json:"external_allocation_pool_start,omitempty"`
+	IDPerms                                   *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName                               string         `json:"display_name,omitempty"`
+	ParentUUID                                string         `json:"parent_uuid,omitempty"`
+	ContrailClusterID                         string         `json:"contrail_cluster_id,omitempty"`
+	DefaultStorageBackendBondInterfaceMembers string         `json:"default_storage_backend_bond_interface_members,omitempty"`
+	PublicIP                                  string         `json:"public_ip,omitempty"`
+	ParentType                                string         `json:"parent_type,omitempty"`
+	AdminPassword                             string         `json:"admin_password,omitempty"`
+	DefaultJournalDrives                      string         `json:"default_journal_drives,omitempty"`
+	ProvisioningLog                           string         `json:"provisioning_log,omitempty"`
+	ProvisioningStartTime                     string         `json:"provisioning_start_time,omitempty"`
+	DefaultCapacityDrives                     string         `json:"default_capacity_drives,omitempty"`
+	DefaultOsdDrives                          string         `json:"default_osd_drives,omitempty"`
+	DefaultPerformanceDrives                  string         `json:"default_performance_drives,omitempty"`
+	OpenstackWebui                            string         `json:"openstack_webui,omitempty"`
+	ProvisioningProgressStage                 string         `json:"provisioning_progress_stage,omitempty"`
+	ProvisioningState                         string         `json:"provisioning_state,omitempty"`
+	UUID                                      string         `json:"uuid,omitempty"`
+	FQName                                    []string       `json:"fq_name,omitempty"`
+	ProvisioningProgress                      int            `json:"provisioning_progress,omitempty"`
+	PublicGateway                             string         `json:"public_gateway,omitempty"`
+	Annotations                               *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2                                    *PermType2     `json:"perms2,omitempty"`
+	ExternalAllocationPoolEnd                 string         `json:"external_allocation_pool_end,omitempty"`
+	ExternalNetCidr                           string         `json:"external_net_cidr,omitempty"`
 }
 
 // String returns json representation of the object
@@ -45,33 +45,33 @@ func (model *OpenstackCluster) String() string {
 func MakeOpenstackCluster() *OpenstackCluster {
 	return &OpenstackCluster{
 		//TODO(nati): Apply default
-		ParentUUID:                                "",
-		AdminPassword:                             "",
-		DefaultCapacityDrives:                     "",
-		ExternalAllocationPoolEnd:                 "",
-		Annotations:                               MakeKeyValuePairs(),
-		ProvisioningLog:                           "",
-		ProvisioningProgressStage:                 "",
-		DefaultStorageBackendBondInterfaceMembers: "",
-		ExternalNetCidr:                           "",
-		ParentType:                                "",
-		ProvisioningState:                         "",
-		ContrailClusterID:                         "",
-		DefaultStorageAccessBondInterfaceMembers:  "",
-		UUID:                        "",
-		ProvisioningProgress:        0,
-		OpenstackWebui:              "",
-		PublicGateway:               "",
-		PublicIP:                    "",
-		Perms2:                      MakePermType2(),
 		DefaultOsdDrives:            "",
-		FQName:                      []string{},
-		IDPerms:                     MakeIdPermsType(),
-		ProvisioningStartTime:       "",
-		ExternalAllocationPoolStart: "",
-		DisplayName:                 "",
-		DefaultJournalDrives:        "",
 		DefaultPerformanceDrives:    "",
+		OpenstackWebui:              "",
+		ProvisioningProgressStage:   "",
+		ProvisioningState:           "",
+		DefaultCapacityDrives:       "",
+		FQName:                      []string{},
+		ProvisioningProgress:        0,
+		UUID:                        "",
+		Annotations:                 MakeKeyValuePairs(),
+		Perms2:                      MakePermType2(),
+		PublicGateway:               "",
+		ExternalAllocationPoolEnd:   "",
+		ExternalNetCidr:             "",
+		ExternalAllocationPoolStart: "",
+		IDPerms:                     MakeIdPermsType(),
+		DisplayName:                 "",
+		ParentUUID:                  "",
+		DefaultStorageAccessBondInterfaceMembers:  "",
+		DefaultStorageBackendBondInterfaceMembers: "",
+		ContrailClusterID:                         "",
+		PublicIP:                                  "",
+		ParentType:                                "",
+		DefaultJournalDrives:                      "",
+		ProvisioningLog:                           "",
+		ProvisioningStartTime:                     "",
+		AdminPassword:                             "",
 	}
 }
 

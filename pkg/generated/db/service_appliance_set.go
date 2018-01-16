@@ -130,10 +130,17 @@ func CreateServiceApplianceSet(tx *sql.Tx, model *models.ServiceApplianceSet) er
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "service_appliance_set", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanServiceApplianceSet(values map[string]interface{}) (*models.ServiceApplianceSet, error) {
@@ -602,14 +609,33 @@ func UpdateServiceApplianceSet(tx *sql.Tx, uuid string, model *models.ServiceApp
 
 // DeleteServiceApplianceSet deletes a resource
 func DeleteServiceApplianceSet(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteServiceApplianceSetQuery
+	deleteQuery := deleteServiceApplianceSetQuery
+	selectQuery := "select count(uuid) from service_appliance_set where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

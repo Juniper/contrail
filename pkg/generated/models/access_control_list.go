@@ -6,16 +6,16 @@ import "encoding/json"
 
 // AccessControlList
 type AccessControlList struct {
-	IDPerms                  *IdPermsType           `json:"id_perms"`
-	DisplayName              string                 `json:"display_name"`
-	AccessControlListHash    map[string]interface{} `json:"access_control_list_hash"`
-	AccessControlListEntries *AclEntriesType        `json:"access_control_list_entries"`
-	Annotations              *KeyValuePairs         `json:"annotations"`
-	Perms2                   *PermType2             `json:"perms2"`
-	ParentUUID               string                 `json:"parent_uuid"`
-	UUID                     string                 `json:"uuid"`
-	ParentType               string                 `json:"parent_type"`
-	FQName                   []string               `json:"fq_name"`
+	AccessControlListHash    map[string]interface{} `json:"access_control_list_hash,omitempty"`
+	AccessControlListEntries *AclEntriesType        `json:"access_control_list_entries,omitempty"`
+	IDPerms                  *IdPermsType           `json:"id_perms,omitempty"`
+	FQName                   []string               `json:"fq_name,omitempty"`
+	DisplayName              string                 `json:"display_name,omitempty"`
+	Annotations              *KeyValuePairs         `json:"annotations,omitempty"`
+	Perms2                   *PermType2             `json:"perms2,omitempty"`
+	UUID                     string                 `json:"uuid,omitempty"`
+	ParentUUID               string                 `json:"parent_uuid,omitempty"`
+	ParentType               string                 `json:"parent_type,omitempty"`
 }
 
 // String returns json representation of the object
@@ -28,16 +28,16 @@ func (model *AccessControlList) String() string {
 func MakeAccessControlList() *AccessControlList {
 	return &AccessControlList{
 		//TODO(nati): Apply default
-		Perms2:                   MakePermType2(),
-		ParentUUID:               "",
-		IDPerms:                  MakeIdPermsType(),
-		DisplayName:              "",
 		AccessControlListHash:    map[string]interface{}{},
 		AccessControlListEntries: MakeAclEntriesType(),
-		Annotations:              MakeKeyValuePairs(),
-		UUID:                     "",
-		ParentType:               "",
+		IDPerms:                  MakeIdPermsType(),
 		FQName:                   []string{},
+		ParentUUID:               "",
+		ParentType:               "",
+		DisplayName:              "",
+		Annotations:              MakeKeyValuePairs(),
+		Perms2:                   MakePermType2(),
+		UUID:                     "",
 	}
 }
 

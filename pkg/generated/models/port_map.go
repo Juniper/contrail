@@ -6,9 +6,9 @@ import "encoding/json"
 
 // PortMap
 type PortMap struct {
-	SRCPort  int    `json:"src_port"`
-	Protocol string `json:"protocol"`
-	DSTPort  int    `json:"dst_port"`
+	SRCPort  int    `json:"src_port,omitempty"`
+	Protocol string `json:"protocol,omitempty"`
+	DSTPort  int    `json:"dst_port,omitempty"`
 }
 
 // String returns json representation of the object

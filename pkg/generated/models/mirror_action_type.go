@@ -6,17 +6,17 @@ import "encoding/json"
 
 // MirrorActionType
 type MirrorActionType struct {
-	AnalyzerMacAddress       string              `json:"analyzer_mac_address"`
-	NicAssistedMirroring     bool                `json:"nic_assisted_mirroring"`
-	NicAssistedMirroringVlan VlanIdType          `json:"nic_assisted_mirroring_vlan"`
-	RoutingInstance          string              `json:"routing_instance"`
-	AnalyzerIPAddress        string              `json:"analyzer_ip_address"`
-	Encapsulation            string              `json:"encapsulation"`
-	StaticNHHeader           *StaticMirrorNhType `json:"static_nh_header"`
-	AnalyzerName             string              `json:"analyzer_name"`
-	NHMode                   NHModeType          `json:"nh_mode"`
-	JuniperHeader            bool                `json:"juniper_header"`
-	UDPPort                  int                 `json:"udp_port"`
+	AnalyzerMacAddress       string              `json:"analyzer_mac_address,omitempty"`
+	NicAssistedMirroring     bool                `json:"nic_assisted_mirroring,omitempty"`
+	AnalyzerName             string              `json:"analyzer_name,omitempty"`
+	JuniperHeader            bool                `json:"juniper_header,omitempty"`
+	UDPPort                  int                 `json:"udp_port,omitempty"`
+	StaticNHHeader           *StaticMirrorNhType `json:"static_nh_header,omitempty"`
+	AnalyzerIPAddress        string              `json:"analyzer_ip_address,omitempty"`
+	NicAssistedMirroringVlan VlanIdType          `json:"nic_assisted_mirroring_vlan,omitempty"`
+	NHMode                   NHModeType          `json:"nh_mode,omitempty"`
+	RoutingInstance          string              `json:"routing_instance,omitempty"`
+	Encapsulation            string              `json:"encapsulation,omitempty"`
 }
 
 // String returns json representation of the object
@@ -29,17 +29,17 @@ func (model *MirrorActionType) String() string {
 func MakeMirrorActionType() *MirrorActionType {
 	return &MirrorActionType{
 		//TODO(nati): Apply default
-		AnalyzerName:             "",
-		NHMode:                   MakeNHModeType(),
-		JuniperHeader:            false,
 		UDPPort:                  0,
 		StaticNHHeader:           MakeStaticMirrorNhType(),
-		NicAssistedMirroring:     false,
-		NicAssistedMirroringVlan: MakeVlanIdType(),
-		RoutingInstance:          "",
 		AnalyzerIPAddress:        "",
-		Encapsulation:            "",
 		AnalyzerMacAddress:       "",
+		NicAssistedMirroring:     false,
+		AnalyzerName:             "",
+		JuniperHeader:            false,
+		RoutingInstance:          "",
+		Encapsulation:            "",
+		NicAssistedMirroringVlan: MakeVlanIdType(),
+		NHMode: MakeNHModeType(),
 	}
 }
 

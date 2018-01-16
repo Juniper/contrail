@@ -6,7 +6,7 @@ import "encoding/json"
 
 // UveKeysType
 type UveKeysType struct {
-	UveKey []string `json:"uve_key"`
+	UveKey []string `json:"uve_key,omitempty"`
 }
 
 // String returns json representation of the object

@@ -12,9 +12,11 @@ import (
 func TestOpenstackStorageNodeRole(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "openstack_storage_node_role")
 	defer func() {
 		common.ClearTable(db, "openstack_storage_node_role")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestOpenstackStorageNodeRole(t *testing.T) {
 	model := models.MakeOpenstackStorageNodeRole()
 	model.UUID = "openstack_storage_node_role_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "openstack_storage_node_role_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateOpenstackStorageNodeRole(tx, model)
@@ -42,6 +45,15 @@ func TestOpenstackStorageNodeRole(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteOpenstackStorageNodeRole(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

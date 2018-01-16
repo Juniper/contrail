@@ -6,7 +6,7 @@ import "encoding/json"
 
 // LinklocalServicesTypes
 type LinklocalServicesTypes struct {
-	LinklocalServiceEntry []*LinklocalServiceEntryType `json:"linklocal_service_entry"`
+	LinklocalServiceEntry []*LinklocalServiceEntryType `json:"linklocal_service_entry,omitempty"`
 }
 
 // String returns json representation of the object

@@ -6,19 +6,19 @@ import "encoding/json"
 
 // AppformixNodeRole
 type AppformixNodeRole struct {
-	UUID                      string         `json:"uuid"`
-	ParentUUID                string         `json:"parent_uuid"`
-	FQName                    []string       `json:"fq_name"`
-	ProvisioningLog           string         `json:"provisioning_log"`
-	ParentType                string         `json:"parent_type"`
-	IDPerms                   *IdPermsType   `json:"id_perms"`
-	DisplayName               string         `json:"display_name"`
-	Annotations               *KeyValuePairs `json:"annotations"`
-	Perms2                    *PermType2     `json:"perms2"`
-	ProvisioningProgress      int            `json:"provisioning_progress"`
-	ProvisioningProgressStage string         `json:"provisioning_progress_stage"`
-	ProvisioningStartTime     string         `json:"provisioning_start_time"`
-	ProvisioningState         string         `json:"provisioning_state"`
+	Perms2                    *PermType2     `json:"perms2,omitempty"`
+	ParentUUID                string         `json:"parent_uuid,omitempty"`
+	ParentType                string         `json:"parent_type,omitempty"`
+	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
+	ProvisioningProgress      int            `json:"provisioning_progress,omitempty"`
+	ProvisioningProgressStage string         `json:"provisioning_progress_stage,omitempty"`
+	ProvisioningState         string         `json:"provisioning_state,omitempty"`
+	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName               string         `json:"display_name,omitempty"`
+	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
+	UUID                      string         `json:"uuid,omitempty"`
+	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
+	FQName                    []string       `json:"fq_name,omitempty"`
 }
 
 // String returns json representation of the object
@@ -31,19 +31,19 @@ func (model *AppformixNodeRole) String() string {
 func MakeAppformixNodeRole() *AppformixNodeRole {
 	return &AppformixNodeRole{
 		//TODO(nati): Apply default
+		ProvisioningState:         "",
+		IDPerms:                   MakeIdPermsType(),
 		Perms2:                    MakePermType2(),
+		ParentUUID:                "",
+		ParentType:                "",
+		ProvisioningLog:           "",
 		ProvisioningProgress:      0,
 		ProvisioningProgressStage: "",
-		ProvisioningStartTime:     "",
-		ParentType:                "",
-		IDPerms:                   MakeIdPermsType(),
-		DisplayName:               "",
-		Annotations:               MakeKeyValuePairs(),
-		ProvisioningState:         "",
-		UUID:                      "",
-		ParentUUID:                "",
-		FQName:                    []string{},
-		ProvisioningLog:           "",
+		FQName:      []string{},
+		DisplayName: "",
+		Annotations: MakeKeyValuePairs(),
+		UUID:        "",
+		ProvisioningStartTime: "",
 	}
 }
 

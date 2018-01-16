@@ -6,8 +6,8 @@ import "encoding/json"
 
 // MACLimitControlType
 type MACLimitControlType struct {
-	MacLimitAction MACLimitExceedActionType `json:"mac_limit_action"`
-	MacLimit       int                      `json:"mac_limit"`
+	MacLimit       int                      `json:"mac_limit,omitempty"`
+	MacLimitAction MACLimitExceedActionType `json:"mac_limit_action,omitempty"`
 }
 
 // String returns json representation of the object
