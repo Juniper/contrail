@@ -6,27 +6,27 @@ import "encoding/json"
 
 // GlobalSystemConfig
 type GlobalSystemConfig struct {
-	BGPAlwaysCompareMed       bool                           `json:"bgp_always_compare_med,omitempty"`
-	IPFabricSubnets           *SubnetListType                `json:"ip_fabric_subnets,omitempty"`
-	ParentType                string                         `json:"parent_type,omitempty"`
-	DisplayName               string                         `json:"display_name,omitempty"`
-	BgpaasParameters          *BGPaaServiceParametersType    `json:"bgpaas_parameters,omitempty"`
-	Annotations               *KeyValuePairs                 `json:"annotations,omitempty"`
-	ParentUUID                string                         `json:"parent_uuid,omitempty"`
-	PluginTuning              *PluginProperties              `json:"plugin_tuning,omitempty"`
-	AlarmEnable               bool                           `json:"alarm_enable,omitempty"`
-	UserDefinedLogStatistics  *UserDefinedLogStatList        `json:"user_defined_log_statistics,omitempty"`
-	MacLimitControl           *MACLimitControlType           `json:"mac_limit_control,omitempty"`
-	FQName                    []string                       `json:"fq_name,omitempty"`
 	Perms2                    *PermType2                     `json:"perms2,omitempty"`
-	UUID                      string                         `json:"uuid,omitempty"`
 	ConfigVersion             string                         `json:"config_version,omitempty"`
-	IbgpAutoMesh              bool                           `json:"ibgp_auto_mesh,omitempty"`
-	MacAgingTime              MACAgingTime                   `json:"mac_aging_time,omitempty"`
-	GracefulRestartParameters *GracefulRestartParametersType `json:"graceful_restart_parameters,omitempty"`
+	BgpaasParameters          *BGPaaServiceParametersType    `json:"bgpaas_parameters,omitempty"`
+	AlarmEnable               bool                           `json:"alarm_enable,omitempty"`
+	Annotations               *KeyValuePairs                 `json:"annotations,omitempty"`
+	FQName                    []string                       `json:"fq_name,omitempty"`
+	PluginTuning              *PluginProperties              `json:"plugin_tuning,omitempty"`
+	MacLimitControl           *MACLimitControlType           `json:"mac_limit_control,omitempty"`
+	UUID                      string                         `json:"uuid,omitempty"`
+	ParentType                string                         `json:"parent_type,omitempty"`
 	AutonomousSystem          AutonomousSystemType           `json:"autonomous_system,omitempty"`
 	IDPerms                   *IdPermsType                   `json:"id_perms,omitempty"`
+	DisplayName               string                         `json:"display_name,omitempty"`
+	IbgpAutoMesh              bool                           `json:"ibgp_auto_mesh,omitempty"`
+	UserDefinedLogStatistics  *UserDefinedLogStatList        `json:"user_defined_log_statistics,omitempty"`
+	GracefulRestartParameters *GracefulRestartParametersType `json:"graceful_restart_parameters,omitempty"`
+	IPFabricSubnets           *SubnetListType                `json:"ip_fabric_subnets,omitempty"`
 	MacMoveControl            *MACMoveLimitControlType       `json:"mac_move_control,omitempty"`
+	MacAgingTime              MACAgingTime                   `json:"mac_aging_time,omitempty"`
+	BGPAlwaysCompareMed       bool                           `json:"bgp_always_compare_med,omitempty"`
+	ParentUUID                string                         `json:"parent_uuid,omitempty"`
 
 	BGPRouterRefs []*GlobalSystemConfigBGPRouterRef `json:"bgp_router_refs,omitempty"`
 
@@ -59,27 +59,27 @@ func (model *GlobalSystemConfig) String() string {
 func MakeGlobalSystemConfig() *GlobalSystemConfig {
 	return &GlobalSystemConfig{
 		//TODO(nati): Apply default
-		IbgpAutoMesh:              false,
+		ParentUUID:                "",
+		MacMoveControl:            MakeMACMoveLimitControlType(),
 		MacAgingTime:              MakeMACAgingTime(),
-		GracefulRestartParameters: MakeGracefulRestartParametersType(),
+		BGPAlwaysCompareMed:       false,
+		Annotations:               MakeKeyValuePairs(),
+		Perms2:                    MakePermType2(),
+		ConfigVersion:             "",
+		BgpaasParameters:          MakeBGPaaServiceParametersType(),
+		AlarmEnable:               false,
+		ParentType:                "",
+		FQName:                    []string{},
+		PluginTuning:              MakePluginProperties(),
+		MacLimitControl:           MakeMACLimitControlType(),
+		UUID:                      "",
+		IPFabricSubnets:           MakeSubnetListType(),
 		AutonomousSystem:          MakeAutonomousSystemType(),
 		IDPerms:                   MakeIdPermsType(),
-		MacMoveControl:            MakeMACMoveLimitControlType(),
-		BGPAlwaysCompareMed:       false,
-		IPFabricSubnets:           MakeSubnetListType(),
-		ParentType:                "",
 		DisplayName:               "",
-		BgpaasParameters:          MakeBGPaaServiceParametersType(),
-		Annotations:               MakeKeyValuePairs(),
-		ParentUUID:                "",
-		PluginTuning:              MakePluginProperties(),
-		AlarmEnable:               false,
+		IbgpAutoMesh:              false,
 		UserDefinedLogStatistics:  MakeUserDefinedLogStatList(),
-		MacLimitControl:           MakeMACLimitControlType(),
-		FQName:                    []string{},
-		Perms2:                    MakePermType2(),
-		UUID:                      "",
-		ConfigVersion:             "",
+		GracefulRestartParameters: MakeGracefulRestartParametersType(),
 	}
 }
 

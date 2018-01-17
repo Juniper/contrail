@@ -6,15 +6,15 @@ import "encoding/json"
 
 // ServiceGroup
 type ServiceGroup struct {
-	ParentUUID                      string                    `json:"parent_uuid,omitempty"`
-	ParentType                      string                    `json:"parent_type,omitempty"`
-	FQName                          []string                  `json:"fq_name,omitempty"`
-	DisplayName                     string                    `json:"display_name,omitempty"`
-	Annotations                     *KeyValuePairs            `json:"annotations,omitempty"`
 	ServiceGroupFirewallServiceList *FirewallServiceGroupType `json:"service_group_firewall_service_list,omitempty"`
+	Annotations                     *KeyValuePairs            `json:"annotations,omitempty"`
+	ParentType                      string                    `json:"parent_type,omitempty"`
 	IDPerms                         *IdPermsType              `json:"id_perms,omitempty"`
+	DisplayName                     string                    `json:"display_name,omitempty"`
 	Perms2                          *PermType2                `json:"perms2,omitempty"`
 	UUID                            string                    `json:"uuid,omitempty"`
+	ParentUUID                      string                    `json:"parent_uuid,omitempty"`
+	FQName                          []string                  `json:"fq_name,omitempty"`
 }
 
 // String returns json representation of the object
@@ -27,15 +27,15 @@ func (model *ServiceGroup) String() string {
 func MakeServiceGroup() *ServiceGroup {
 	return &ServiceGroup{
 		//TODO(nati): Apply default
-		UUID: "",
-		ServiceGroupFirewallServiceList: MakeFirewallServiceGroupType(),
-		IDPerms:     MakeIdPermsType(),
-		Perms2:      MakePermType2(),
-		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
-		ParentUUID:  "",
 		ParentType:  "",
+		IDPerms:     MakeIdPermsType(),
+		ServiceGroupFirewallServiceList: MakeFirewallServiceGroupType(),
+		Perms2:      MakePermType2(),
+		UUID:        "",
+		ParentUUID:  "",
 		FQName:      []string{},
+		DisplayName: "",
 	}
 }
 

@@ -6,21 +6,21 @@ import "encoding/json"
 
 // FloatingIP
 type FloatingIP struct {
-	FloatingIPIsVirtualIP        bool                 `json:"floating_ip_is_virtual_ip,omitempty"`
-	FloatingIPPortMappingsEnable bool                 `json:"floating_ip_port_mappings_enable,omitempty"`
 	FloatingIPFixedIPAddress     IpAddressType        `json:"floating_ip_fixed_ip_address,omitempty"`
 	FloatingIPTrafficDirection   TrafficDirectionType `json:"floating_ip_traffic_direction,omitempty"`
-	FQName                       []string             `json:"fq_name,omitempty"`
-	Annotations                  *KeyValuePairs       `json:"annotations,omitempty"`
-	FloatingIPPortMappings       *PortMappings        `json:"floating_ip_port_mappings,omitempty"`
-	IDPerms                      *IdPermsType         `json:"id_perms,omitempty"`
 	FloatingIPAddressFamily      IpAddressFamilyType  `json:"floating_ip_address_family,omitempty"`
+	FloatingIPAddress            IpAddressType        `json:"floating_ip_address,omitempty"`
+	FloatingIPPortMappingsEnable bool                 `json:"floating_ip_port_mappings_enable,omitempty"`
 	DisplayName                  string               `json:"display_name,omitempty"`
-	Perms2                       *PermType2           `json:"perms2,omitempty"`
+	Annotations                  *KeyValuePairs       `json:"annotations,omitempty"`
+	ParentType                   string               `json:"parent_type,omitempty"`
+	FQName                       []string             `json:"fq_name,omitempty"`
+	IDPerms                      *IdPermsType         `json:"id_perms,omitempty"`
+	FloatingIPPortMappings       *PortMappings        `json:"floating_ip_port_mappings,omitempty"`
 	UUID                         string               `json:"uuid,omitempty"`
 	ParentUUID                   string               `json:"parent_uuid,omitempty"`
-	ParentType                   string               `json:"parent_type,omitempty"`
-	FloatingIPAddress            IpAddressType        `json:"floating_ip_address,omitempty"`
+	FloatingIPIsVirtualIP        bool                 `json:"floating_ip_is_virtual_ip,omitempty"`
+	Perms2                       *PermType2           `json:"perms2,omitempty"`
 
 	ProjectRefs                 []*FloatingIPProjectRef                 `json:"project_refs,omitempty"`
 	VirtualMachineInterfaceRefs []*FloatingIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
@@ -50,21 +50,21 @@ func (model *FloatingIP) String() string {
 func MakeFloatingIP() *FloatingIP {
 	return &FloatingIP{
 		//TODO(nati): Apply default
-		FloatingIPAddress:            MakeIpAddressType(),
-		DisplayName:                  "",
-		Perms2:                       MakePermType2(),
-		UUID:                         "",
-		ParentUUID:                   "",
-		ParentType:                   "",
-		Annotations:                  MakeKeyValuePairs(),
-		FloatingIPPortMappings:       MakePortMappings(),
-		FloatingIPIsVirtualIP:        false,
-		FloatingIPPortMappingsEnable: false,
-		FloatingIPFixedIPAddress:     MakeIpAddressType(),
 		FloatingIPTrafficDirection:   MakeTrafficDirectionType(),
-		FQName:                  []string{},
-		FloatingIPAddressFamily: MakeIpAddressFamilyType(),
-		IDPerms:                 MakeIdPermsType(),
+		FloatingIPFixedIPAddress:     MakeIpAddressType(),
+		FloatingIPAddress:            MakeIpAddressType(),
+		FloatingIPPortMappingsEnable: false,
+		DisplayName:                  "",
+		Annotations:                  MakeKeyValuePairs(),
+		ParentType:                   "",
+		FQName:                       []string{},
+		IDPerms:                      MakeIdPermsType(),
+		FloatingIPAddressFamily:      MakeIpAddressFamilyType(),
+		UUID:                   "",
+		ParentUUID:             "",
+		FloatingIPPortMappings: MakePortMappings(),
+		Perms2:                 MakePermType2(),
+		FloatingIPIsVirtualIP:  false,
 	}
 }
 

@@ -6,22 +6,22 @@ import "encoding/json"
 
 // InstanceIP
 type InstanceIP struct {
-	ParentType            string              `json:"parent_type,omitempty"`
 	SecondaryIPTrackingIP *SubnetType         `json:"secondary_ip_tracking_ip,omitempty"`
-	InstanceIPAddress     IpAddressType       `json:"instance_ip_address,omitempty"`
+	SubnetUUID            string              `json:"subnet_uuid,omitempty"`
+	ServiceHealthCheckIP  bool                `json:"service_health_check_ip,omitempty"`
+	InstanceIPMode        AddressMode         `json:"instance_ip_mode,omitempty"`
+	InstanceIPFamily      IpAddressFamilyType `json:"instance_ip_family,omitempty"`
+	ServiceInstanceIP     bool                `json:"service_instance_ip,omitempty"`
+	DisplayName           string              `json:"display_name,omitempty"`
 	InstanceIPSecondary   bool                `json:"instance_ip_secondary,omitempty"`
+	UUID                  string              `json:"uuid,omitempty"`
+	ParentType            string              `json:"parent_type,omitempty"`
+	FQName                []string            `json:"fq_name,omitempty"`
+	InstanceIPAddress     IpAddressType       `json:"instance_ip_address,omitempty"`
+	InstanceIPLocalIP     bool                `json:"instance_ip_local_ip,omitempty"`
+	Perms2                *PermType2          `json:"perms2,omitempty"`
 	ParentUUID            string              `json:"parent_uuid,omitempty"`
 	IDPerms               *IdPermsType        `json:"id_perms,omitempty"`
-	InstanceIPFamily      IpAddressFamilyType `json:"instance_ip_family,omitempty"`
-	InstanceIPLocalIP     bool                `json:"instance_ip_local_ip,omitempty"`
-	ServiceInstanceIP     bool                `json:"service_instance_ip,omitempty"`
-	UUID                  string              `json:"uuid,omitempty"`
-	FQName                []string            `json:"fq_name,omitempty"`
-	DisplayName           string              `json:"display_name,omitempty"`
-	ServiceHealthCheckIP  bool                `json:"service_health_check_ip,omitempty"`
-	SubnetUUID            string              `json:"subnet_uuid,omitempty"`
-	Perms2                *PermType2          `json:"perms2,omitempty"`
-	InstanceIPMode        AddressMode         `json:"instance_ip_mode,omitempty"`
 	Annotations           *KeyValuePairs      `json:"annotations,omitempty"`
 
 	NetworkIpamRefs             []*InstanceIPNetworkIpamRef             `json:"network_ipam_refs,omitempty"`
@@ -31,20 +31,6 @@ type InstanceIP struct {
 	VirtualRouterRefs           []*InstanceIPVirtualRouterRef           `json:"virtual_router_refs,omitempty"`
 
 	FloatingIPs []*FloatingIP `json:"floating_ips,omitempty"`
-}
-
-// InstanceIPNetworkIpamRef references each other
-type InstanceIPNetworkIpamRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// InstanceIPVirtualNetworkRef references each other
-type InstanceIPVirtualNetworkRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
 }
 
 // InstanceIPVirtualMachineInterfaceRef references each other
@@ -68,6 +54,20 @@ type InstanceIPVirtualRouterRef struct {
 
 }
 
+// InstanceIPNetworkIpamRef references each other
+type InstanceIPNetworkIpamRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
+// InstanceIPVirtualNetworkRef references each other
+type InstanceIPVirtualNetworkRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
 // String returns json representation of the object
 func (model *InstanceIP) String() string {
 	b, _ := json.Marshal(model)
@@ -78,23 +78,23 @@ func (model *InstanceIP) String() string {
 func MakeInstanceIP() *InstanceIP {
 	return &InstanceIP{
 		//TODO(nati): Apply default
-		FQName:                []string{},
-		DisplayName:           "",
-		ServiceHealthCheckIP:  false,
+		SecondaryIPTrackingIP: MakeSubnetType(),
 		SubnetUUID:            "",
 		ServiceInstanceIP:     false,
-		UUID:                  "",
+		DisplayName:           "",
+		ServiceHealthCheckIP:  false,
 		InstanceIPMode:        MakeAddressMode(),
-		Annotations:           MakeKeyValuePairs(),
-		Perms2:                MakePermType2(),
-		SecondaryIPTrackingIP: MakeSubnetType(),
-		InstanceIPAddress:     MakeIpAddressType(),
-		ParentType:            "",
-		IDPerms:               MakeIdPermsType(),
 		InstanceIPFamily:      MakeIpAddressFamilyType(),
-		InstanceIPLocalIP:     false,
+		FQName:                []string{},
 		InstanceIPSecondary:   false,
+		UUID:                  "",
+		ParentType:            "",
 		ParentUUID:            "",
+		IDPerms:               MakeIdPermsType(),
+		Annotations:           MakeKeyValuePairs(),
+		InstanceIPAddress:     MakeIpAddressType(),
+		InstanceIPLocalIP:     false,
+		Perms2:                MakePermType2(),
 	}
 }
 

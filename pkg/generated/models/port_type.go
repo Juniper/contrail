@@ -6,8 +6,8 @@ import "encoding/json"
 
 // PortType
 type PortType struct {
-	EndPort   L4PortType `json:"end_port,omitempty"`
 	StartPort L4PortType `json:"start_port,omitempty"`
+	EndPort   L4PortType `json:"end_port,omitempty"`
 }
 
 // String returns json representation of the object

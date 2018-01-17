@@ -6,17 +6,17 @@ import "encoding/json"
 
 // Project
 type Project struct {
-	ParentType   string         `json:"parent_type,omitempty"`
+	VxlanRouting bool           `json:"vxlan_routing,omitempty"`
+	AlarmEnable  bool           `json:"alarm_enable,omitempty"`
 	FQName       []string       `json:"fq_name,omitempty"`
+	DisplayName  string         `json:"display_name,omitempty"`
+	UUID         string         `json:"uuid,omitempty"`
+	Quota        *QuotaType     `json:"quota,omitempty"`
+	ParentUUID   string         `json:"parent_uuid,omitempty"`
+	ParentType   string         `json:"parent_type,omitempty"`
 	IDPerms      *IdPermsType   `json:"id_perms,omitempty"`
 	Annotations  *KeyValuePairs `json:"annotations,omitempty"`
 	Perms2       *PermType2     `json:"perms2,omitempty"`
-	VxlanRouting bool           `json:"vxlan_routing,omitempty"`
-	AlarmEnable  bool           `json:"alarm_enable,omitempty"`
-	ParentUUID   string         `json:"parent_uuid,omitempty"`
-	DisplayName  string         `json:"display_name,omitempty"`
-	Quota        *QuotaType     `json:"quota,omitempty"`
-	UUID         string         `json:"uuid,omitempty"`
 
 	AliasIPPoolRefs          []*ProjectAliasIPPoolRef          `json:"alias_ip_pool_refs,omitempty"`
 	NamespaceRefs            []*ProjectNamespaceRef            `json:"namespace_refs,omitempty"`
@@ -95,16 +95,16 @@ func MakeProject() *Project {
 	return &Project{
 		//TODO(nati): Apply default
 		Quota:        MakeQuotaType(),
-		UUID:         "",
 		ParentUUID:   "",
-		DisplayName:  "",
-		VxlanRouting: false,
-		AlarmEnable:  false,
 		ParentType:   "",
-		FQName:       []string{},
 		IDPerms:      MakeIdPermsType(),
 		Annotations:  MakeKeyValuePairs(),
 		Perms2:       MakePermType2(),
+		UUID:         "",
+		VxlanRouting: false,
+		AlarmEnable:  false,
+		FQName:       []string{},
+		DisplayName:  "",
 	}
 }
 

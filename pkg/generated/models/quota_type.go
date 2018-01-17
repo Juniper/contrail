@@ -6,32 +6,32 @@ import "encoding/json"
 
 // QuotaType
 type QuotaType struct {
-	NetworkPolicy             int `json:"network_policy,omitempty"`
+	VirtualRouter             int `json:"virtual_router,omitempty"`
 	LoadbalancerPool          int `json:"loadbalancer_pool,omitempty"`
-	VirtualDNSRecord          int `json:"virtual_DNS_record,omitempty"`
-	LogicalRouter             int `json:"logical_router,omitempty"`
-	InstanceIP                int `json:"instance_ip,omitempty"`
-	SecurityLoggingObject     int `json:"security_logging_object,omitempty"`
-	VirtualNetwork            int `json:"virtual_network,omitempty"`
-	VirtualDNS                int `json:"virtual_DNS,omitempty"`
-	LoadbalancerMember        int `json:"loadbalancer_member,omitempty"`
+	SecurityGroupRule         int `json:"security_group_rule,omitempty"`
 	AccessControlList         int `json:"access_control_list,omitempty"`
 	GlobalVrouterConfig       int `json:"global_vrouter_config,omitempty"`
-	LoadbalancerHealthmonitor int `json:"loadbalancer_healthmonitor,omitempty"`
+	SecurityLoggingObject     int `json:"security_logging_object,omitempty"`
 	VirtualIP                 int `json:"virtual_ip,omitempty"`
-	Defaults                  int `json:"defaults,omitempty"`
-	VirtualRouter             int `json:"virtual_router,omitempty"`
-	Subnet                    int `json:"subnet,omitempty"`
+	VirtualNetwork            int `json:"virtual_network,omitempty"`
 	NetworkIpam               int `json:"network_ipam,omitempty"`
-	SecurityGroupRule         int `json:"security_group_rule,omitempty"`
+	ServiceTemplate           int `json:"service_template,omitempty"`
 	BGPRouter                 int `json:"bgp_router,omitempty"`
+	SecurityGroup             int `json:"security_group,omitempty"`
+	NetworkPolicy             int `json:"network_policy,omitempty"`
+	RouteTable                int `json:"route_table,omitempty"`
+	Subnet                    int `json:"subnet,omitempty"`
+	VirtualDNSRecord          int `json:"virtual_DNS_record,omitempty"`
+	LogicalRouter             int `json:"logical_router,omitempty"`
 	FloatingIP                int `json:"floating_ip,omitempty"`
 	VirtualMachineInterface   int `json:"virtual_machine_interface,omitempty"`
-	RouteTable                int `json:"route_table,omitempty"`
+	InstanceIP                int `json:"instance_ip,omitempty"`
+	LoadbalancerHealthmonitor int `json:"loadbalancer_healthmonitor,omitempty"`
+	Defaults                  int `json:"defaults,omitempty"`
+	VirtualDNS                int `json:"virtual_DNS,omitempty"`
 	ServiceInstance           int `json:"service_instance,omitempty"`
-	ServiceTemplate           int `json:"service_template,omitempty"`
 	FloatingIPPool            int `json:"floating_ip_pool,omitempty"`
-	SecurityGroup             int `json:"security_group,omitempty"`
+	LoadbalancerMember        int `json:"loadbalancer_member,omitempty"`
 }
 
 // String returns json representation of the object
@@ -44,31 +44,31 @@ func (model *QuotaType) String() string {
 func MakeQuotaType() *QuotaType {
 	return &QuotaType{
 		//TODO(nati): Apply default
-		VirtualNetwork:            0,
-		NetworkPolicy:             0,
-		LoadbalancerPool:          0,
-		VirtualDNSRecord:          0,
 		LogicalRouter:             0,
+		FloatingIP:                0,
+		VirtualMachineInterface:   0,
 		InstanceIP:                0,
-		SecurityLoggingObject:     0,
+		NetworkPolicy:             0,
+		RouteTable:                0,
+		Subnet:                    0,
+		VirtualDNSRecord:          0,
+		LoadbalancerHealthmonitor: 0,
 		Defaults:                  0,
 		VirtualDNS:                0,
-		LoadbalancerMember:        0,
-		AccessControlList:         0,
-		GlobalVrouterConfig:       0,
-		LoadbalancerHealthmonitor: 0,
-		VirtualIP:                 0,
-		VirtualMachineInterface:   0,
-		VirtualRouter:             0,
-		Subnet:                    0,
-		NetworkIpam:               0,
-		SecurityGroupRule:         0,
-		BGPRouter:                 0,
-		FloatingIP:                0,
-		RouteTable:                0,
 		ServiceInstance:           0,
-		ServiceTemplate:           0,
 		FloatingIPPool:            0,
+		LoadbalancerMember:        0,
+		GlobalVrouterConfig:       0,
+		SecurityLoggingObject:     0,
+		VirtualIP:                 0,
+		VirtualNetwork:            0,
+		VirtualRouter:             0,
+		LoadbalancerPool:          0,
+		SecurityGroupRule:         0,
+		AccessControlList:         0,
+		NetworkIpam:               0,
+		ServiceTemplate:           0,
+		BGPRouter:                 0,
 		SecurityGroup:             0,
 	}
 }

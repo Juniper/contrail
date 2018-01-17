@@ -26,14 +26,14 @@ func (model *LoadbalancerPoolType) String() string {
 func MakeLoadbalancerPoolType() *LoadbalancerPoolType {
 	return &LoadbalancerPoolType{
 		//TODO(nati): Apply default
-		Protocol:              MakeLoadbalancerProtocolType(),
-		SubnetID:              MakeUuidStringType(),
 		SessionPersistence:    MakeSessionPersistenceType(),
 		AdminState:            false,
 		PersistenceCookieName: "",
 		StatusDescription:     "",
 		LoadbalancerMethod:    MakeLoadbalancerMethodType(),
 		Status:                "",
+		Protocol:              MakeLoadbalancerProtocolType(),
+		SubnetID:              MakeUuidStringType(),
 	}
 }
 

@@ -21,9 +21,9 @@ func (model *AllowedAddressPair) String() string {
 func MakeAllowedAddressPair() *AllowedAddressPair {
 	return &AllowedAddressPair{
 		//TODO(nati): Apply default
+		IP:          MakeSubnetType(),
 		Mac:         "",
 		AddressMode: MakeAddressMode(),
-		IP:          MakeSubnetType(),
 	}
 }
 

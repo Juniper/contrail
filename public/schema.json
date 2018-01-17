@@ -22,7 +22,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -43,7 +43,7 @@
                     "fq_name": {
                         "description": "FQ Name of the object",
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -124,7 +124,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -265,7 +265,7 @@
                         "properties": {
                             "acl_rule": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "action_list": {
@@ -276,7 +276,7 @@
                                                 },
                                                 "apply_service": {
                                                     "type": "array",
-                                                    "item": {
+                                                    "items": {
                                                         "type": "string"
                                                     }
                                                 },
@@ -390,7 +390,7 @@
                                                         },
                                                         "subnet_list": {
                                                             "type": "array",
-                                                            "item": {
+                                                            "items": {
                                                                 "type": "object",
                                                                 "properties": {
                                                                     "ip_prefix": {
@@ -454,7 +454,7 @@
                                                         },
                                                         "subnet_list": {
                                                             "type": "array",
-                                                            "item": {
+                                                            "items": {
                                                                 "type": "object",
                                                                 "properties": {
                                                                     "ip_prefix": {
@@ -508,7 +508,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -527,7 +527,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -604,7 +604,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -656,7 +656,7 @@
                         "properties": {
                             "subnet": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "ip_prefix": {
@@ -675,7 +675,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -694,7 +694,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -771,7 +771,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -823,12 +823,12 @@
                         "properties": {
                             "or_list": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "and_list": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "operand1": {
@@ -863,7 +863,7 @@
                                                     },
                                                     "variables": {
                                                         "type": "array",
-                                                        "item": {
+                                                        "items": {
                                                             "type": "string"
                                                         }
                                                     }
@@ -886,7 +886,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -905,7 +905,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -982,7 +982,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -1007,7 +1007,7 @@
                         "properties": {
                             "uve_key": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "string"
                                 }
                             }
@@ -1039,7 +1039,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -1058,7 +1058,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -1135,7 +1135,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -1206,7 +1206,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -1225,7 +1225,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -1302,7 +1302,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -1351,7 +1351,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -1370,7 +1370,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -1447,7 +1447,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -1504,7 +1504,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -1524,7 +1524,7 @@
                         "properties": {
                             "rbac_rule": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "rule_field": {
@@ -1535,7 +1535,7 @@
                                         },
                                         "rule_perms": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "role_crud": {
@@ -1557,7 +1557,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -1634,7 +1634,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -1712,7 +1712,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -1731,7 +1731,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -1808,7 +1808,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -1867,7 +1867,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -1913,7 +1913,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -1990,7 +1990,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -2027,7 +2027,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -2046,7 +2046,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -2123,7 +2123,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -2168,7 +2168,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -2200,7 +2200,7 @@
                         "properties": {
                             "route_target": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "string"
                                 }
                             }
@@ -2208,7 +2208,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -2267,7 +2267,7 @@
                         "properties": {
                             "route_target": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "string"
                                 }
                             }
@@ -2297,7 +2297,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -2319,7 +2319,7 @@
                         "properties": {
                             "route_target": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "string"
                                 }
                             }
@@ -2354,7 +2354,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -2373,7 +2373,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -2509,7 +2509,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -2554,7 +2554,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -2577,7 +2577,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -2654,7 +2654,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -2699,7 +2699,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -2718,7 +2718,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -2795,7 +2795,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -2846,7 +2846,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -2865,7 +2865,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -2942,7 +2942,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -2987,7 +2987,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -3010,7 +3010,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -3087,7 +3087,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -3124,7 +3124,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -3143,7 +3143,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -3220,7 +3220,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -3265,7 +3265,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -3299,7 +3299,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -3376,7 +3376,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -3421,7 +3421,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -3469,7 +3469,7 @@
                             },
                             "subscriber": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "ep_id": {
@@ -3499,7 +3499,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -3576,7 +3576,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -3627,7 +3627,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -3650,7 +3650,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -3727,7 +3727,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -3800,7 +3800,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -3819,7 +3819,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -3896,7 +3896,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -3977,7 +3977,7 @@
                             },
                             "apply_service": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "string"
                                 }
                             },
@@ -4064,7 +4064,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -4113,13 +4113,13 @@
                             },
                             "tag_ids": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "integer"
                                 }
                             },
                             "tags": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "string"
                                 }
                             },
@@ -4151,13 +4151,13 @@
                             },
                             "tag_ids": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "integer"
                                 }
                             },
                             "tags": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "string"
                                 }
                             },
@@ -4168,7 +4168,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -4227,7 +4227,7 @@
                         "properties": {
                             "tag_type": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "integer"
                                 }
                             }
@@ -4239,7 +4239,7 @@
                         "properties": {
                             "tag_list": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "string"
                                 }
                             }
@@ -4269,7 +4269,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -4356,7 +4356,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -4379,7 +4379,7 @@
                         "properties": {
                             "subnet_uuid": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "string"
                                 }
                             }
@@ -4387,7 +4387,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -4464,7 +4464,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -4529,7 +4529,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -4572,7 +4572,7 @@
                         "properties": {
                             "port_mappings": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "dst_port": {
@@ -4606,7 +4606,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -4683,7 +4683,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -4736,7 +4736,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -4780,7 +4780,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -4857,7 +4857,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -4902,7 +4902,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -4942,7 +4942,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -5019,7 +5019,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -5076,7 +5076,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -5125,7 +5125,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -5218,7 +5218,7 @@
                         "properties": {
                             "subnet": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "ip_prefix": {
@@ -5304,7 +5304,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -5326,7 +5326,7 @@
                         "properties": {
                             "plugin_property": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "property": {
@@ -5346,7 +5346,7 @@
                         "properties": {
                             "statlist": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "name": {
@@ -5389,7 +5389,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -5450,7 +5450,7 @@
                         "properties": {
                             "flow_aging_timeout": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "port": {
@@ -5482,7 +5482,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -5541,7 +5541,7 @@
                         "properties": {
                             "linklocal_service_entry": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "ip_fabric_DNS_service_name": {
@@ -5549,7 +5549,7 @@
                                         },
                                         "ip_fabric_service_ip": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "string"
                                             }
                                         },
@@ -5594,7 +5594,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -5670,7 +5670,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -5689,7 +5689,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -5796,7 +5796,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -5883,7 +5883,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -5902,7 +5902,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -5961,7 +5961,7 @@
                         "properties": {
                             "route": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "community_attributes": {
@@ -6014,7 +6014,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -6059,7 +6059,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -6078,7 +6078,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -6191,7 +6191,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -6243,7 +6243,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -6262,7 +6262,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -6342,7 +6342,7 @@
                             },
                             "sni_containers": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "string"
                                 }
                             }
@@ -6372,7 +6372,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -6417,7 +6417,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -6436,7 +6436,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -6537,7 +6537,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -6613,7 +6613,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -6632,7 +6632,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -6691,7 +6691,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -6780,7 +6780,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -6844,7 +6844,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -6863,7 +6863,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -6968,7 +6968,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -7027,7 +7027,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -7046,7 +7046,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -7134,7 +7134,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -7223,7 +7223,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -7243,7 +7243,7 @@
                         "properties": {
                             "route_target": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "string"
                                 }
                             }
@@ -7254,7 +7254,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -7331,7 +7331,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -7380,7 +7380,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -7399,7 +7399,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -7488,7 +7488,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -7533,7 +7533,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -7552,7 +7552,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -7629,7 +7629,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -7682,7 +7682,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -7701,7 +7701,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -7769,7 +7769,7 @@
                         "properties": {
                             "subnets": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "addr_from_start": {
@@ -7780,7 +7780,7 @@
                                         },
                                         "allocation_pools": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "end": {
@@ -7806,7 +7806,7 @@
                                             "properties": {
                                                 "dhcp_option": {
                                                     "type": "array",
-                                                    "item": {
+                                                    "items": {
                                                         "type": "object",
                                                         "properties": {
                                                             "dhcp_option_name": {
@@ -7825,7 +7825,7 @@
                                         },
                                         "dns_nameservers": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "string"
                                             }
                                         },
@@ -7840,7 +7840,7 @@
                                             "properties": {
                                                 "route": {
                                                     "type": "array",
-                                                    "item": {
+                                                    "items": {
                                                         "type": "object",
                                                         "properties": {
                                                             "community_attributes": {
@@ -7914,7 +7914,7 @@
                                 "properties": {
                                     "dhcp_option": {
                                         "type": "array",
-                                        "item": {
+                                        "items": {
                                             "type": "object",
                                             "properties": {
                                                 "dhcp_option_name": {
@@ -7936,7 +7936,7 @@
                                 "properties": {
                                     "route": {
                                         "type": "array",
-                                        "item": {
+                                        "items": {
                                             "type": "object",
                                             "properties": {
                                                 "community_attributes": {
@@ -8023,7 +8023,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -8068,7 +8068,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -8087,7 +8087,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -8146,7 +8146,7 @@
                         "properties": {
                             "policy_rule": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "action_list": {
@@ -8157,7 +8157,7 @@
                                                 },
                                                 "apply_service": {
                                                     "type": "array",
-                                                    "item": {
+                                                    "items": {
                                                         "type": "string"
                                                     }
                                                 },
@@ -8241,7 +8241,7 @@
                                         },
                                         "application": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "string"
                                             }
                                         },
@@ -8257,7 +8257,7 @@
                                         },
                                         "dst_addresses": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "network_policy": {
@@ -8279,7 +8279,7 @@
                                                     },
                                                     "subnet_list": {
                                                         "type": "array",
-                                                        "item": {
+                                                        "items": {
                                                             "type": "object",
                                                             "properties": {
                                                                 "ip_prefix": {
@@ -8299,7 +8299,7 @@
                                         },
                                         "dst_ports": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "end_port": {
@@ -8344,7 +8344,7 @@
                                         },
                                         "src_addresses": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "network_policy": {
@@ -8366,7 +8366,7 @@
                                                     },
                                                     "subnet_list": {
                                                         "type": "array",
-                                                        "item": {
+                                                        "items": {
                                                             "type": "object",
                                                             "properties": {
                                                                 "ip_prefix": {
@@ -8386,7 +8386,7 @@
                                         },
                                         "src_ports": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "end_port": {
@@ -8431,7 +8431,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -8468,7 +8468,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -8487,7 +8487,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -8571,7 +8571,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -8624,7 +8624,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -8647,7 +8647,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -8724,7 +8724,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -8795,7 +8795,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -8814,7 +8814,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -8891,7 +8891,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -8921,7 +8921,7 @@
                         "properties": {
                             "service_port": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "string"
                                 }
                             }
@@ -9042,7 +9042,7 @@
                         "properties": {
                             "resource": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "name": {
@@ -9086,7 +9086,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -9105,7 +9105,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -9182,7 +9182,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -9226,7 +9226,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -9245,7 +9245,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -9322,7 +9322,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -9408,7 +9408,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -9427,7 +9427,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -9504,7 +9504,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -9637,7 +9637,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -9656,7 +9656,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -9733,7 +9733,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -9791,7 +9791,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -9821,7 +9821,7 @@
                         "properties": {
                             "qos_id_forwarding_class_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "forwarding_class_id": {
@@ -9840,7 +9840,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -9899,7 +9899,7 @@
                         "properties": {
                             "qos_id_forwarding_class_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "forwarding_class_id": {
@@ -9940,7 +9940,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -9974,7 +9974,7 @@
                         "properties": {
                             "qos_id_forwarding_class_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "forwarding_class_id": {
@@ -10017,7 +10017,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -10036,7 +10036,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -10121,7 +10121,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -10186,7 +10186,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -10205,7 +10205,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -10282,7 +10282,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -10327,7 +10327,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -10346,7 +10346,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -10423,7 +10423,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -10445,7 +10445,7 @@
                         "properties": {
                             "route": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "community_attributes": {
@@ -10495,7 +10495,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -10514,7 +10514,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -10591,7 +10591,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -10636,7 +10636,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -10655,7 +10655,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -10732,7 +10732,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -10796,7 +10796,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -10815,7 +10815,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -10892,7 +10892,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -10937,7 +10937,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -10963,7 +10963,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -11040,7 +11040,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -11062,7 +11062,7 @@
                         "properties": {
                             "policy_rule": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "action_list": {
@@ -11073,7 +11073,7 @@
                                                 },
                                                 "apply_service": {
                                                     "type": "array",
-                                                    "item": {
+                                                    "items": {
                                                         "type": "string"
                                                     }
                                                 },
@@ -11157,7 +11157,7 @@
                                         },
                                         "application": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "string"
                                             }
                                         },
@@ -11173,7 +11173,7 @@
                                         },
                                         "dst_addresses": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "network_policy": {
@@ -11195,7 +11195,7 @@
                                                     },
                                                     "subnet_list": {
                                                         "type": "array",
-                                                        "item": {
+                                                        "items": {
                                                             "type": "object",
                                                             "properties": {
                                                                 "ip_prefix": {
@@ -11215,7 +11215,7 @@
                                         },
                                         "dst_ports": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "end_port": {
@@ -11260,7 +11260,7 @@
                                         },
                                         "src_addresses": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "network_policy": {
@@ -11282,7 +11282,7 @@
                                                     },
                                                     "subnet_list": {
                                                         "type": "array",
-                                                        "item": {
+                                                        "items": {
                                                             "type": "object",
                                                             "properties": {
                                                                 "ip_prefix": {
@@ -11302,7 +11302,7 @@
                                         },
                                         "src_ports": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "end_port": {
@@ -11366,7 +11366,7 @@
                             "rule": {
                                 "description": "List of rules along with logging rate for each rule. Both rule-uuid and rate are optional. When rule-uuid is absent then it means all rules of associated SG or network-policy",
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "rate": {
@@ -11392,7 +11392,7 @@
                             "rule": {
                                 "description": "List of rules along with logging rate for each rule. Both rule-uuid and rate are optional. When rule-uuid is absent then it means all rules of associated SG or network-policy",
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "rate": {
@@ -11418,7 +11418,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -11437,7 +11437,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -11514,7 +11514,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -11541,7 +11541,7 @@
                         "properties": {
                             "rule": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "rate": {
@@ -11600,7 +11600,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -11619,7 +11619,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -11696,7 +11696,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -11722,7 +11722,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -11776,7 +11776,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -11795,7 +11795,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -11872,7 +11872,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -11902,7 +11902,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -11945,7 +11945,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -11973,7 +11973,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -12050,7 +12050,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -12117,7 +12117,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -12136,7 +12136,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -12213,7 +12213,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -12264,7 +12264,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -12283,7 +12283,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -12360,7 +12360,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -12382,7 +12382,7 @@
                         "properties": {
                             "firewall_service": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "dst_ports": {
@@ -12471,7 +12471,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -12490,7 +12490,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -12567,7 +12567,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -12683,7 +12683,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -12702,7 +12702,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -12779,7 +12779,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -12801,7 +12801,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -12834,7 +12834,7 @@
                             },
                             "interface_list": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "allowed_address_pairs": {
@@ -12842,7 +12842,7 @@
                                             "properties": {
                                                 "allowed_address_pair": {
                                                     "type": "array",
-                                                    "item": {
+                                                    "items": {
                                                         "type": "object",
                                                         "properties": {
                                                             "address_mode": {
@@ -12879,7 +12879,7 @@
                                             "properties": {
                                                 "route": {
                                                     "type": "array",
-                                                    "item": {
+                                                    "items": {
                                                         "type": "object",
                                                         "properties": {
                                                             "community_attributes": {
@@ -12966,7 +12966,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -12985,7 +12985,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -13062,7 +13062,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -13115,7 +13115,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -13134,7 +13134,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -13211,7 +13211,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -13245,7 +13245,7 @@
                             },
                             "interface_type": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "service_interface_type": {
@@ -13333,7 +13333,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -13352,7 +13352,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -13429,7 +13429,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -13500,7 +13500,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -13519,7 +13519,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -13596,7 +13596,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -13645,7 +13645,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -13664,7 +13664,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -13741,7 +13741,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -13800,7 +13800,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -13819,7 +13819,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -13900,7 +13900,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -13945,7 +13945,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -13964,7 +13964,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -14041,7 +14041,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -14121,7 +14121,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -14140,7 +14140,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -14217,7 +14217,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -14317,7 +14317,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -14336,7 +14336,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -14413,7 +14413,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -14649,7 +14649,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -14692,7 +14692,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -14769,7 +14769,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -14799,7 +14799,7 @@
                         "properties": {
                             "allowed_address_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "address_mode": {
@@ -14834,7 +14834,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -14858,7 +14858,7 @@
                         "properties": {
                             "dhcp_option": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "dhcp_option_name": {
@@ -14886,7 +14886,7 @@
                         "properties": {
                             "fat_flow_protocol": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "port": {
@@ -14906,7 +14906,7 @@
                         "properties": {
                             "route": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "community_attributes": {
@@ -14941,7 +14941,7 @@
                         "properties": {
                             "mac_address": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "string"
                                 }
                             }
@@ -15044,7 +15044,7 @@
                         "properties": {
                             "vrf_assign_rule": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "ignore_acl": {
@@ -15075,7 +15075,7 @@
                                                         },
                                                         "subnet_list": {
                                                             "type": "array",
-                                                            "item": {
+                                                            "items": {
                                                                 "type": "object",
                                                                 "properties": {
                                                                     "ip_prefix": {
@@ -15139,7 +15139,7 @@
                                                         },
                                                         "subnet_list": {
                                                             "type": "array",
-                                                            "item": {
+                                                            "items": {
                                                                 "type": "object",
                                                                 "properties": {
                                                                     "ip_prefix": {
@@ -15210,7 +15210,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -15229,7 +15229,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -15306,7 +15306,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -15362,7 +15362,7 @@
                                 "properties": {
                                     "route": {
                                         "type": "array",
-                                        "item": {
+                                        "items": {
                                             "type": "object",
                                             "properties": {
                                                 "community_attributes": {
@@ -15393,7 +15393,7 @@
                             },
                             "ipam_subnets": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "addr_from_start": {
@@ -15404,7 +15404,7 @@
                                         },
                                         "allocation_pools": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "end": {
@@ -15430,7 +15430,7 @@
                                             "properties": {
                                                 "dhcp_option": {
                                                     "type": "array",
-                                                    "item": {
+                                                    "items": {
                                                         "type": "object",
                                                         "properties": {
                                                             "dhcp_option_name": {
@@ -15449,7 +15449,7 @@
                                         },
                                         "dns_nameservers": {
                                             "type": "array",
-                                            "item": {
+                                            "items": {
                                                 "type": "string"
                                             }
                                         },
@@ -15464,7 +15464,7 @@
                                             "properties": {
                                                 "route": {
                                                     "type": "array",
-                                                    "item": {
+                                                    "items": {
                                                         "type": "object",
                                                         "properties": {
                                                             "community_attributes": {
@@ -15605,7 +15605,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -15652,7 +15652,7 @@
                         "properties": {
                             "route_target": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "string"
                                 }
                             }
@@ -15669,7 +15669,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -15728,7 +15728,7 @@
                         "properties": {
                             "route_target": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "string"
                                 }
                             }
@@ -15833,7 +15833,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -15874,7 +15874,7 @@
                         "properties": {
                             "route_target": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "string"
                                 }
                             }
@@ -15956,7 +15956,7 @@
                             "allocation_pools": {
                                 "description": "List of ranges of ip address for vrouter specific allocation",
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "end": {
@@ -15974,7 +15974,7 @@
                             "subnet": {
                                 "description": "List of ip prefix and length for vrouter specific subnets",
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "ip_prefix": {
@@ -16006,7 +16006,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -16025,7 +16025,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -16102,7 +16102,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -16158,7 +16158,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -16177,7 +16177,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -16254,7 +16254,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -16349,7 +16349,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -16368,7 +16368,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -16445,7 +16445,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -16540,7 +16540,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -16559,7 +16559,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -16636,7 +16636,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -16731,7 +16731,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -16819,7 +16819,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -16896,7 +16896,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -16946,7 +16946,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -16965,7 +16965,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -17042,7 +17042,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -17137,7 +17137,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -17166,7 +17166,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -17263,7 +17263,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -17368,7 +17368,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -17395,7 +17395,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -17472,7 +17472,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -17511,7 +17511,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -17539,7 +17539,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -17625,7 +17625,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -17664,7 +17664,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -17683,7 +17683,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -17760,7 +17760,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -17855,7 +17855,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -17909,7 +17909,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -18023,7 +18023,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -18261,7 +18261,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -18298,7 +18298,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -18433,7 +18433,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -18574,7 +18574,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -18692,7 +18692,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -18778,7 +18778,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -18892,7 +18892,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -18921,7 +18921,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -18998,7 +18998,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -19127,7 +19127,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -19146,7 +19146,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -19243,7 +19243,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -19366,7 +19366,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -19385,7 +19385,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -19462,7 +19462,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {
@@ -19562,7 +19562,7 @@
                         "properties": {
                             "key_value_pair": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "key": {
@@ -19597,7 +19597,7 @@
                     },
                     "fq_name": {
                         "type": "array",
-                        "item": {
+                        "items": {
                             "type": "string"
                         }
                     },
@@ -19682,7 +19682,7 @@
                             },
                             "share": {
                                 "type": "array",
-                                "item": {
+                                "items": {
                                     "type": "object",
                                     "properties": {
                                         "tenant": {

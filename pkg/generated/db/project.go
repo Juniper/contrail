@@ -1119,19 +1119,6 @@ func CreateProject(tx *sql.Tx, model *models.Project) error {
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtApplicationPolicySetRef, err := tx.Prepare(insertProjectApplicationPolicySetQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ApplicationPolicySetRefs create statement failed")
-	}
-	defer stmtApplicationPolicySetRef.Close()
-	for _, ref := range model.ApplicationPolicySetRefs {
-
-		_, err = stmtApplicationPolicySetRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ApplicationPolicySetRefs create failed")
-		}
-	}
-
 	stmtFloatingIPPoolRef, err := tx.Prepare(insertProjectFloatingIPPoolQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing FloatingIPPoolRefs create statement failed")
@@ -1173,6 +1160,19 @@ func CreateProject(tx *sql.Tx, model *models.Project) error {
 			int(ref.Attr.IPPrefixLen))
 		if err != nil {
 			return errors.Wrap(err, "NamespaceRefs create failed")
+		}
+	}
+
+	stmtApplicationPolicySetRef, err := tx.Prepare(insertProjectApplicationPolicySetQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ApplicationPolicySetRefs create statement failed")
+	}
+	defer stmtApplicationPolicySetRef.Close()
+	for _, ref := range model.ApplicationPolicySetRefs {
+
+		_, err = stmtApplicationPolicySetRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ApplicationPolicySetRefs create failed")
 		}
 	}
 
@@ -1584,29 +1584,6 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 
 	}
 
-	if value, ok := values["ref_namespace"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ProjectNamespaceRef{}
-			referenceModel.UUID = uuid
-			m.NamespaceRefs = append(m.NamespaceRefs, referenceModel)
-
-			attr := models.MakeSubnetType()
-			referenceModel.Attr = attr
-
-		}
-	}
-
 	if value, ok := values["ref_application_policy_set"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -1663,6 +1640,29 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			referenceModel := &models.ProjectAliasIPPoolRef{}
 			referenceModel.UUID = uuid
 			m.AliasIPPoolRefs = append(m.AliasIPPoolRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_namespace"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ProjectNamespaceRef{}
+			referenceModel.UUID = uuid
+			m.NamespaceRefs = append(m.NamespaceRefs, referenceModel)
+
+			attr := models.MakeSubnetType()
+			referenceModel.Attr = attr
 
 		}
 	}

@@ -6,10 +6,10 @@ import "encoding/json"
 
 // DiscoveryPubSubEndPointType
 type DiscoveryPubSubEndPointType struct {
-	EpVersion string      `json:"ep_version,omitempty"`
 	EpID      string      `json:"ep_id,omitempty"`
 	EpType    string      `json:"ep_type,omitempty"`
 	EpPrefix  *SubnetType `json:"ep_prefix,omitempty"`
+	EpVersion string      `json:"ep_version,omitempty"`
 }
 
 // String returns json representation of the object

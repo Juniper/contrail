@@ -22,10 +22,10 @@ func (model *VrfAssignRuleType) String() string {
 func MakeVrfAssignRuleType() *VrfAssignRuleType {
 	return &VrfAssignRuleType{
 		//TODO(nati): Apply default
-		VlanTag:         0,
-		IgnoreACL:       false,
 		RoutingInstance: "",
 		MatchCondition:  MakeMatchConditionType(),
+		VlanTag:         0,
+		IgnoreACL:       false,
 	}
 }
 

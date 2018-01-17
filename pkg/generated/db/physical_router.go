@@ -231,6 +231,19 @@ func CreatePhysicalRouter(tx *sql.Tx, model *models.PhysicalRouter) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtVirtualRouterRef, err := tx.Prepare(insertPhysicalRouterVirtualRouterQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualRouterRefs create statement failed")
+	}
+	defer stmtVirtualRouterRef.Close()
+	for _, ref := range model.VirtualRouterRefs {
+
+		_, err = stmtVirtualRouterRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualRouterRefs create failed")
+		}
+	}
+
 	stmtVirtualNetworkRef, err := tx.Prepare(insertPhysicalRouterVirtualNetworkQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
@@ -254,19 +267,6 @@ func CreatePhysicalRouter(tx *sql.Tx, model *models.PhysicalRouter) error {
 		_, err = stmtBGPRouterRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "BGPRouterRefs create failed")
-		}
-	}
-
-	stmtVirtualRouterRef, err := tx.Prepare(insertPhysicalRouterVirtualRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualRouterRefs create statement failed")
-	}
-	defer stmtVirtualRouterRef.Close()
-	for _, ref := range model.VirtualRouterRefs {
-
-		_, err = stmtVirtualRouterRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualRouterRefs create failed")
 		}
 	}
 
@@ -714,26 +714,6 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 
 	}
 
-	if value, ok := values["ref_virtual_router"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.PhysicalRouterVirtualRouterRef{}
-			referenceModel.UUID = uuid
-			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_network"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -770,6 +750,26 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 			referenceModel := &models.PhysicalRouterBGPRouterRef{}
 			referenceModel.UUID = uuid
 			m.BGPRouterRefs = append(m.BGPRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_router"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.PhysicalRouterVirtualRouterRef{}
+			referenceModel.UUID = uuid
+			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
 
 		}
 	}

@@ -45,8 +45,8 @@ var RoutingPolicyRefFields = map[string][]string{
 
 	"service_instance": {
 		// <common.Schema Value>
-		"right_sequence",
 		"left_sequence",
+		"right_sequence",
 	},
 }
 
@@ -59,7 +59,7 @@ var RoutingPolicyParents = []string{
 	"project",
 }
 
-const insertRoutingPolicyServiceInstanceQuery = "insert into `ref_routing_policy_service_instance` (`from`, `to` ,`right_sequence`,`left_sequence`) values (?, ?,?,?);"
+const insertRoutingPolicyServiceInstanceQuery = "insert into `ref_routing_policy_service_instance` (`from`, `to` ,`left_sequence`,`right_sequence`) values (?, ?,?,?);"
 
 // CreateRoutingPolicy inserts RoutingPolicy to DB
 func CreateRoutingPolicy(tx *sql.Tx, model *models.RoutingPolicy) error {
@@ -109,8 +109,8 @@ func CreateRoutingPolicy(tx *sql.Tx, model *models.RoutingPolicy) error {
 			ref.Attr = models.MakeRoutingPolicyServiceInstanceType()
 		}
 
-		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID, string(ref.Attr.RightSequence),
-			string(ref.Attr.LeftSequence))
+		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID, string(ref.Attr.LeftSequence),
+			string(ref.Attr.RightSequence))
 		if err != nil {
 			return errors.Wrap(err, "ServiceInstanceRefs create failed")
 		}

@@ -35,14 +35,14 @@ func (model *NetworkDeviceConfig) String() string {
 func MakeNetworkDeviceConfig() *NetworkDeviceConfig {
 	return &NetworkDeviceConfig{
 		//TODO(nati): Apply default
-		Perms2:      MakePermType2(),
-		UUID:        "",
-		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
+		Perms2:      MakePermType2(),
+		UUID:        "",
+		ParentUUID:  "",
 	}
 }
 

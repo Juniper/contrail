@@ -56,14 +56,14 @@ var ServiceInstanceFields = []string{
 // ServiceInstanceRefFields is db reference fields for ServiceInstance
 var ServiceInstanceRefFields = map[string][]string{
 
-	"service_template": {
-	// <common.Schema Value>
-
-	},
-
 	"instance_ip": {
 		// <common.Schema Value>
 		"interface_type",
+	},
+
+	"service_template": {
+	// <common.Schema Value>
+
 	},
 }
 
@@ -101,9 +101,9 @@ var ServiceInstanceParents = []string{
 	"project",
 }
 
-const insertServiceInstanceInstanceIPQuery = "insert into `ref_service_instance_instance_ip` (`from`, `to` ,`interface_type`) values (?, ?,?);"
-
 const insertServiceInstanceServiceTemplateQuery = "insert into `ref_service_instance_service_template` (`from`, `to` ) values (?, ?);"
+
+const insertServiceInstanceInstanceIPQuery = "insert into `ref_service_instance_instance_ip` (`from`, `to` ,`interface_type`) values (?, ?,?);"
 
 // CreateServiceInstance inserts ServiceInstance to DB
 func CreateServiceInstance(tx *sql.Tx, model *models.ServiceInstance) error {
