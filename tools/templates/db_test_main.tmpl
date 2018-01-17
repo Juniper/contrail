@@ -14,7 +14,7 @@ var testDB *sql.DB
 
 func TestMain(m *testing.M) {
     common.InitConfig()
-   	common.SetLogLevel()
+   	common.SetLogLevel() 
     var err error
     testDB, err = common.ConnectDB()
     if err != nil {
