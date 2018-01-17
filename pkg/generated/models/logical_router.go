@@ -6,16 +6,16 @@ import "encoding/json"
 
 // LogicalRouter
 type LogicalRouter struct {
-	ParentType                string           `json:"parent_type,omitempty"`
-	FQName                    []string         `json:"fq_name,omitempty"`
+	UUID                      string           `json:"uuid,omitempty"`
+	VxlanNetworkIdentifier    string           `json:"vxlan_network_identifier,omitempty"`
 	IDPerms                   *IdPermsType     `json:"id_perms,omitempty"`
 	DisplayName               string           `json:"display_name,omitempty"`
-	UUID                      string           `json:"uuid,omitempty"`
-	ParentUUID                string           `json:"parent_uuid,omitempty"`
-	VxlanNetworkIdentifier    string           `json:"vxlan_network_identifier,omitempty"`
+	Perms2                    *PermType2       `json:"perms2,omitempty"`
+	FQName                    []string         `json:"fq_name,omitempty"`
 	ConfiguredRouteTargetList *RouteTargetList `json:"configured_route_target_list,omitempty"`
 	Annotations               *KeyValuePairs   `json:"annotations,omitempty"`
-	Perms2                    *PermType2       `json:"perms2,omitempty"`
+	ParentUUID                string           `json:"parent_uuid,omitempty"`
+	ParentType                string           `json:"parent_type,omitempty"`
 
 	VirtualNetworkRefs          []*LogicalRouterVirtualNetworkRef          `json:"virtual_network_refs,omitempty"`
 	PhysicalRouterRefs          []*LogicalRouterPhysicalRouterRef          `json:"physical_router_refs,omitempty"`
@@ -24,27 +24,6 @@ type LogicalRouter struct {
 	VirtualMachineInterfaceRefs []*LogicalRouterVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 	ServiceInstanceRefs         []*LogicalRouterServiceInstanceRef         `json:"service_instance_refs,omitempty"`
 	RouteTableRefs              []*LogicalRouterRouteTableRef              `json:"route_table_refs,omitempty"`
-}
-
-// LogicalRouterRouteTargetRef references each other
-type LogicalRouterRouteTargetRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// LogicalRouterVirtualMachineInterfaceRef references each other
-type LogicalRouterVirtualMachineInterfaceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// LogicalRouterServiceInstanceRef references each other
-type LogicalRouterServiceInstanceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
 }
 
 // LogicalRouterRouteTableRef references each other
@@ -75,6 +54,27 @@ type LogicalRouterBGPVPNRef struct {
 
 }
 
+// LogicalRouterRouteTargetRef references each other
+type LogicalRouterRouteTargetRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
+// LogicalRouterVirtualMachineInterfaceRef references each other
+type LogicalRouterVirtualMachineInterfaceRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
+// LogicalRouterServiceInstanceRef references each other
+type LogicalRouterServiceInstanceRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
 // String returns json representation of the object
 func (model *LogicalRouter) String() string {
 	b, _ := json.Marshal(model)
@@ -85,16 +85,16 @@ func (model *LogicalRouter) String() string {
 func MakeLogicalRouter() *LogicalRouter {
 	return &LogicalRouter{
 		//TODO(nati): Apply default
-		DisplayName:               "",
-		UUID:                      "",
-		ParentUUID:                "",
-		ParentType:                "",
-		FQName:                    []string{},
-		IDPerms:                   MakeIdPermsType(),
+		DisplayName: "",
+		Perms2:      MakePermType2(),
+		UUID:        "",
+		VxlanNetworkIdentifier: "",
+		IDPerms:                MakeIdPermsType(),
+		ParentUUID:             "",
+		ParentType:             "",
+		FQName:                 []string{},
 		ConfiguredRouteTargetList: MakeRouteTargetList(),
 		Annotations:               MakeKeyValuePairs(),
-		Perms2:                    MakePermType2(),
-		VxlanNetworkIdentifier:    "",
 	}
 }
 

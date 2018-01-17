@@ -6,10 +6,10 @@ import "encoding/json"
 
 // RouteType
 type RouteType struct {
-	Prefix              string               `json:"prefix,omitempty"`
 	NextHop             string               `json:"next_hop,omitempty"`
 	CommunityAttributes *CommunityAttributes `json:"community_attributes,omitempty"`
 	NextHopType         RouteNextHopType     `json:"next_hop_type,omitempty"`
+	Prefix              string               `json:"prefix,omitempty"`
 }
 
 // String returns json representation of the object

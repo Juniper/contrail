@@ -6,7 +6,6 @@ import "encoding/json"
 
 // VirtualDnsType
 type VirtualDnsType struct {
-	DefaultTTLSeconds        int                   `json:"default_ttl_seconds,omitempty"`
 	RecordOrder              DnsRecordOrderType    `json:"record_order,omitempty"`
 	FloatingIPRecord         FloatingIpDnsNotation `json:"floating_ip_record,omitempty"`
 	DomainName               string                `json:"domain_name,omitempty"`
@@ -14,6 +13,7 @@ type VirtualDnsType struct {
 	NextVirtualDNS           string                `json:"next_virtual_DNS,omitempty"`
 	DynamicRecordsFromClient bool                  `json:"dynamic_records_from_client,omitempty"`
 	ReverseResolution        bool                  `json:"reverse_resolution,omitempty"`
+	DefaultTTLSeconds        int                   `json:"default_ttl_seconds,omitempty"`
 }
 
 // String returns json representation of the object

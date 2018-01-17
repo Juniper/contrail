@@ -44,12 +44,12 @@ var E2ServiceProviderFields = []string{
 // E2ServiceProviderRefFields is db reference fields for E2ServiceProvider
 var E2ServiceProviderRefFields = map[string][]string{
 
-	"peering_policy": {
+	"physical_router": {
 	// <common.Schema Value>
 
 	},
 
-	"physical_router": {
+	"peering_policy": {
 	// <common.Schema Value>
 
 	},
@@ -61,9 +61,9 @@ var E2ServiceProviderBackRefFields = map[string][]string{}
 // E2ServiceProviderParentTypes is possible parents for E2ServiceProvider
 var E2ServiceProviderParents = []string{}
 
-const insertE2ServiceProviderPeeringPolicyQuery = "insert into `ref_e2_service_provider_peering_policy` (`from`, `to` ) values (?, ?);"
-
 const insertE2ServiceProviderPhysicalRouterQuery = "insert into `ref_e2_service_provider_physical_router` (`from`, `to` ) values (?, ?);"
+
+const insertE2ServiceProviderPeeringPolicyQuery = "insert into `ref_e2_service_provider_peering_policy` (`from`, `to` ) values (?, ?);"
 
 // CreateE2ServiceProvider inserts E2ServiceProvider to DB
 func CreateE2ServiceProvider(tx *sql.Tx, model *models.E2ServiceProvider) error {
@@ -321,26 +321,6 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 
 	}
 
-	if value, ok := values["ref_physical_router"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.E2ServiceProviderPhysicalRouterRef{}
-			referenceModel.UUID = uuid
-			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_peering_policy"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -357,6 +337,26 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 			referenceModel := &models.E2ServiceProviderPeeringPolicyRef{}
 			referenceModel.UUID = uuid
 			m.PeeringPolicyRefs = append(m.PeeringPolicyRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_physical_router"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.E2ServiceProviderPhysicalRouterRef{}
+			referenceModel.UUID = uuid
+			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
 
 		}
 	}

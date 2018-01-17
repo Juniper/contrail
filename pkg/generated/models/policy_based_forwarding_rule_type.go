@@ -6,6 +6,7 @@ import "encoding/json"
 
 // PolicyBasedForwardingRuleType
 type PolicyBasedForwardingRuleType struct {
+	MPLSLabel               int                  `json:"mpls_label,omitempty"`
 	VlanTag                 int                  `json:"vlan_tag,omitempty"`
 	SRCMac                  string               `json:"src_mac,omitempty"`
 	ServiceChainAddress     string               `json:"service_chain_address,omitempty"`
@@ -13,7 +14,6 @@ type PolicyBasedForwardingRuleType struct {
 	Protocol                string               `json:"protocol,omitempty"`
 	Ipv6ServiceChainAddress IpAddressType        `json:"ipv6_service_chain_address,omitempty"`
 	Direction               TrafficDirectionType `json:"direction,omitempty"`
-	MPLSLabel               int                  `json:"mpls_label,omitempty"`
 }
 
 // String returns json representation of the object
@@ -26,7 +26,6 @@ func (model *PolicyBasedForwardingRuleType) String() string {
 func MakePolicyBasedForwardingRuleType() *PolicyBasedForwardingRuleType {
 	return &PolicyBasedForwardingRuleType{
 		//TODO(nati): Apply default
-		ServiceChainAddress:     "",
 		DSTMac:                  "",
 		Protocol:                "",
 		Ipv6ServiceChainAddress: MakeIpAddressType(),
@@ -34,6 +33,7 @@ func MakePolicyBasedForwardingRuleType() *PolicyBasedForwardingRuleType {
 		MPLSLabel:               0,
 		VlanTag:                 0,
 		SRCMac:                  "",
+		ServiceChainAddress:     "",
 	}
 }
 

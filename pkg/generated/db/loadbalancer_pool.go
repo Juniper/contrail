@@ -53,6 +53,16 @@ var LoadbalancerPoolFields = []string{
 // LoadbalancerPoolRefFields is db reference fields for LoadbalancerPool
 var LoadbalancerPoolRefFields = map[string][]string{
 
+	"service_instance": {
+	// <common.Schema Value>
+
+	},
+
+	"loadbalancer_healthmonitor": {
+	// <common.Schema Value>
+
+	},
+
 	"service_appliance_set": {
 	// <common.Schema Value>
 
@@ -64,16 +74,6 @@ var LoadbalancerPoolRefFields = map[string][]string{
 	},
 
 	"loadbalancer_listener": {
-	// <common.Schema Value>
-
-	},
-
-	"service_instance": {
-	// <common.Schema Value>
-
-	},
-
-	"loadbalancer_healthmonitor": {
 	// <common.Schema Value>
 
 	},
@@ -119,15 +119,15 @@ var LoadbalancerPoolParents = []string{
 	"project",
 }
 
-const insertLoadbalancerPoolLoadbalancerHealthmonitorQuery = "insert into `ref_loadbalancer_pool_loadbalancer_healthmonitor` (`from`, `to` ) values (?, ?);"
-
-const insertLoadbalancerPoolServiceApplianceSetQuery = "insert into `ref_loadbalancer_pool_service_appliance_set` (`from`, `to` ) values (?, ?);"
-
 const insertLoadbalancerPoolVirtualMachineInterfaceQuery = "insert into `ref_loadbalancer_pool_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerPoolLoadbalancerListenerQuery = "insert into `ref_loadbalancer_pool_loadbalancer_listener` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerPoolServiceInstanceQuery = "insert into `ref_loadbalancer_pool_service_instance` (`from`, `to` ) values (?, ?);"
+
+const insertLoadbalancerPoolLoadbalancerHealthmonitorQuery = "insert into `ref_loadbalancer_pool_loadbalancer_healthmonitor` (`from`, `to` ) values (?, ?);"
+
+const insertLoadbalancerPoolServiceApplianceSetQuery = "insert into `ref_loadbalancer_pool_service_appliance_set` (`from`, `to` ) values (?, ?);"
 
 // CreateLoadbalancerPool inserts LoadbalancerPool to DB
 func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {

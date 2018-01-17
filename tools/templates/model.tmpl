@@ -44,12 +44,12 @@ func Make{{ name }}() *{{name}}{
         {% elif property.GoType == "int" %}{{ property.GoName }}: 0,
         {% elif property.GoType == "float" %}{{ property.GoName }}: 0,
         {% elif property.Type == "array"%}
-            {% if property.Item.Type == "string" %}
+            {% if property.Items.Type == "string" %}
                 {{ property.GoName }}: []string{},
-            {% elif property.Item.Type == "integer"%}
+            {% elif property.Items.Type == "integer"%}
                 {{ property.GoName }}: []int{},
-            {% elif property.Item.GoType %}
-                {{ property.GoName }}:  Make{{ property.Item.GoType }}Slice(),
+            {% elif property.Items.GoType %}
+                {{ property.GoName }}:  Make{{ property.Items.GoType }}Slice(),
             {% else %}
                 {{ property.GoName }}:  Make{{ property.GoType }}(),
             {% endif %}

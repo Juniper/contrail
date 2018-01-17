@@ -6,15 +6,15 @@ import "encoding/json"
 
 // ApplicationPolicySet
 type ApplicationPolicySet struct {
-	FQName          []string       `json:"fq_name,omitempty"`
-	IDPerms         *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName     string         `json:"display_name,omitempty"`
-	AllApplications bool           `json:"all_applications,omitempty"`
-	Perms2          *PermType2     `json:"perms2,omitempty"`
-	UUID            string         `json:"uuid,omitempty"`
 	ParentUUID      string         `json:"parent_uuid,omitempty"`
 	ParentType      string         `json:"parent_type,omitempty"`
+	FQName          []string       `json:"fq_name,omitempty"`
+	IDPerms         *IdPermsType   `json:"id_perms,omitempty"`
+	Perms2          *PermType2     `json:"perms2,omitempty"`
+	UUID            string         `json:"uuid,omitempty"`
+	AllApplications bool           `json:"all_applications,omitempty"`
 	Annotations     *KeyValuePairs `json:"annotations,omitempty"`
+	DisplayName     string         `json:"display_name,omitempty"`
 
 	FirewallPolicyRefs      []*ApplicationPolicySetFirewallPolicyRef      `json:"firewall_policy_refs,omitempty"`
 	GlobalVrouterConfigRefs []*ApplicationPolicySetGlobalVrouterConfigRef `json:"global_vrouter_config_refs,omitempty"`
@@ -45,15 +45,15 @@ func (model *ApplicationPolicySet) String() string {
 func MakeApplicationPolicySet() *ApplicationPolicySet {
 	return &ApplicationPolicySet{
 		//TODO(nati): Apply default
-		ParentType:      "",
+		DisplayName:     "",
 		Annotations:     MakeKeyValuePairs(),
+		IDPerms:         MakeIdPermsType(),
 		Perms2:          MakePermType2(),
 		UUID:            "",
-		ParentUUID:      "",
 		AllApplications: false,
+		ParentUUID:      "",
+		ParentType:      "",
 		FQName:          []string{},
-		IDPerms:         MakeIdPermsType(),
-		DisplayName:     "",
 	}
 }
 

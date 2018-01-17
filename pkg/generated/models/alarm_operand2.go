@@ -20,8 +20,8 @@ func (model *AlarmOperand2) String() string {
 func MakeAlarmOperand2() *AlarmOperand2 {
 	return &AlarmOperand2{
 		//TODO(nati): Apply default
-		UveAttribute: "",
 		JSONValue:    "",
+		UveAttribute: "",
 	}
 }
 

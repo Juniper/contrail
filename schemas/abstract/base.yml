@@ -29,7 +29,7 @@
           presence: "true"
           description: "FQ Name of the object"
           type: "array"
-          item:
+          items:
             type: "string"
       id_perms:
         operations: "R"

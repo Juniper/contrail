@@ -110,7 +110,7 @@ type JSONSchema struct {
 	Maximum        interface{}            `yaml:"maximum" json:"maximum,omitempty"`
 	Ref            string                 `yaml:"$ref" json:"-"`
 	CollectionType string                 `yaml:"-" json:"-"`
-	Item           *JSONSchema            `yaml:"item" json:"item,omitempty"`
+	Items          *JSONSchema            `yaml:"items" json:"items,omitempty"`
 	GoName         string                 `yaml:"-" json:"-"`
 	GoType         string                 `yaml:"-" json:"-"`
 	GoPremitive    bool                   `yaml:"-" json:"-"`
@@ -167,8 +167,8 @@ func (s *JSONSchema) Copy() *JSONSchema {
 	for name, property := range s.Properties {
 		copied.Properties[name] = property.Copy()
 	}
-	if s.Item != nil {
-		copied.Item = s.Item.Copy()
+	if s.Items != nil {
+		copied.Items = s.Items.Copy()
 	}
 	return copied
 }
@@ -300,16 +300,16 @@ func (s *JSONSchema) resolveGoName(name string) error {
 				goType = "map[string]interface{}"
 			}
 		case "array":
-			err := s.Item.resolveGoName(name)
+			err := s.Items.resolveGoName(name)
 			if err != nil {
 				return err
 			}
-			if s.Item == nil {
+			if s.Items == nil {
 				goType = "[]interface{}"
-			} else if s.Item.Type == "integer" || s.Item.Type == "number" || s.Item.Type == "boolean" || s.Item.Type == "string" {
-				goType = "[]" + s.Item.GoType
+			} else if s.Items.Type == "integer" || s.Items.Type == "number" || s.Items.Type == "boolean" || s.Items.Type == "string" {
+				goType = "[]" + s.Items.GoType
 			} else {
-				goType = "[]*" + s.Item.GoType
+				goType = "[]*" + s.Items.GoType
 			}
 		}
 	}
@@ -376,7 +376,7 @@ func (api *API) resolveRef(name string, schema *JSONSchema) error {
 		return nil
 	}
 	if schema.Type == "array" {
-		err := api.resolveRef("", schema.Item)
+		err := api.resolveRef("", schema.Items)
 		if err != nil {
 			return err
 		}

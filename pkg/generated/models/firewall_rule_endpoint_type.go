@@ -6,12 +6,12 @@ import "encoding/json"
 
 // FirewallRuleEndpointType
 type FirewallRuleEndpointType struct {
-	VirtualNetwork string      `json:"virtual_network,omitempty"`
-	Any            bool        `json:"any,omitempty"`
-	AddressGroup   string      `json:"address_group,omitempty"`
 	Subnet         *SubnetType `json:"subnet,omitempty"`
 	Tags           []string    `json:"tags,omitempty"`
 	TagIds         []int       `json:"tag_ids,omitempty"`
+	VirtualNetwork string      `json:"virtual_network,omitempty"`
+	Any            bool        `json:"any,omitempty"`
+	AddressGroup   string      `json:"address_group,omitempty"`
 }
 
 // String returns json representation of the object
