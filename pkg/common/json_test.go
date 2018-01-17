@@ -53,7 +53,7 @@ func TestSetValueByPathFieldNotExisting(t *testing.T) {
 }
 
 func TestSetValueByPathDeep(t *testing.T) {
-	current := map[string]interface{}{"name": map[string]interface{}{"first": "Tom", "last":"Hardy"}}
+	current := map[string]interface{}{"name": map[string]interface{}{"first": "Tom", "last": "Hardy"}}
 	ok := SetValueByPath(current, "name.last", ".", "Hanks")
 	assert.Equal(t, true, ok)
 	assert.Equal(t, "Hanks", current["name"].(map[string]interface{})["last"])
