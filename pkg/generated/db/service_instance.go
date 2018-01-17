@@ -101,9 +101,9 @@ var ServiceInstanceParents = []string{
 	"project",
 }
 
-const insertServiceInstanceServiceTemplateQuery = "insert into `ref_service_instance_service_template` (`from`, `to` ) values (?, ?);"
-
 const insertServiceInstanceInstanceIPQuery = "insert into `ref_service_instance_instance_ip` (`from`, `to` ,`interface_type`) values (?, ?,?);"
+
+const insertServiceInstanceServiceTemplateQuery = "insert into `ref_service_instance_service_template` (`from`, `to` ) values (?, ?);"
 
 // CreateServiceInstance inserts ServiceInstance to DB
 func CreateServiceInstance(tx *sql.Tx, model *models.ServiceInstance) error {
@@ -191,10 +191,17 @@ func CreateServiceInstance(tx *sql.Tx, model *models.ServiceInstance) error {
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "service_instance", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance, error) {
@@ -754,14 +761,33 @@ func UpdateServiceInstance(tx *sql.Tx, uuid string, model *models.ServiceInstanc
 
 // DeleteServiceInstance deletes a resource
 func DeleteServiceInstance(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteServiceInstanceQuery
+	deleteQuery := deleteServiceInstanceQuery
+	selectQuery := "select count(uuid) from service_instance where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

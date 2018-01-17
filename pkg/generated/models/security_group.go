@@ -6,19 +6,19 @@ import "encoding/json"
 
 // SecurityGroup
 type SecurityGroup struct {
-	SecurityGroupID           SecurityGroupIdType           `json:"security_group_id"`
-	UUID                      string                        `json:"uuid"`
-	ParentUUID                string                        `json:"parent_uuid"`
-	ParentType                string                        `json:"parent_type"`
-	IDPerms                   *IdPermsType                  `json:"id_perms"`
-	DisplayName               string                        `json:"display_name"`
-	Annotations               *KeyValuePairs                `json:"annotations"`
-	Perms2                    *PermType2                    `json:"perms2"`
-	SecurityGroupEntries      *PolicyEntriesType            `json:"security_group_entries"`
-	ConfiguredSecurityGroupID ConfiguredSecurityGroupIdType `json:"configured_security_group_id"`
-	FQName                    []string                      `json:"fq_name"`
+	DisplayName               string                        `json:"display_name,omitempty"`
+	Perms2                    *PermType2                    `json:"perms2,omitempty"`
+	UUID                      string                        `json:"uuid,omitempty"`
+	ParentUUID                string                        `json:"parent_uuid,omitempty"`
+	FQName                    []string                      `json:"fq_name,omitempty"`
+	IDPerms                   *IdPermsType                  `json:"id_perms,omitempty"`
+	SecurityGroupEntries      *PolicyEntriesType            `json:"security_group_entries,omitempty"`
+	ConfiguredSecurityGroupID ConfiguredSecurityGroupIdType `json:"configured_security_group_id,omitempty"`
+	ParentType                string                        `json:"parent_type,omitempty"`
+	SecurityGroupID           SecurityGroupIdType           `json:"security_group_id,omitempty"`
+	Annotations               *KeyValuePairs                `json:"annotations,omitempty"`
 
-	AccessControlLists []*AccessControlList `json:"access_control_lists"`
+	AccessControlLists []*AccessControlList `json:"access_control_lists,omitempty"`
 }
 
 // String returns json representation of the object
@@ -31,17 +31,17 @@ func (model *SecurityGroup) String() string {
 func MakeSecurityGroup() *SecurityGroup {
 	return &SecurityGroup{
 		//TODO(nati): Apply default
-		SecurityGroupEntries:      MakePolicyEntriesType(),
 		ConfiguredSecurityGroupID: MakeConfiguredSecurityGroupIdType(),
-		FQName:          []string{},
-		SecurityGroupID: MakeSecurityGroupIdType(),
-		UUID:            "",
-		ParentUUID:      "",
-		ParentType:      "",
-		IDPerms:         MakeIdPermsType(),
-		DisplayName:     "",
-		Annotations:     MakeKeyValuePairs(),
-		Perms2:          MakePermType2(),
+		DisplayName:               "",
+		Perms2:                    MakePermType2(),
+		UUID:                      "",
+		ParentUUID:                "",
+		FQName:                    []string{},
+		IDPerms:                   MakeIdPermsType(),
+		SecurityGroupEntries:      MakePolicyEntriesType(),
+		Annotations:               MakeKeyValuePairs(),
+		ParentType:                "",
+		SecurityGroupID:           MakeSecurityGroupIdType(),
 	}
 }
 

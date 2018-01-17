@@ -6,20 +6,20 @@ import "encoding/json"
 
 // ForwardingClass
 type ForwardingClass struct {
-	FQName                      []string          `json:"fq_name"`
-	Annotations                 *KeyValuePairs    `json:"annotations"`
-	UUID                        string            `json:"uuid"`
-	ForwardingClassDSCP         DscpValueType     `json:"forwarding_class_dscp"`
-	ForwardingClassID           ForwardingClassId `json:"forwarding_class_id"`
-	ParentUUID                  string            `json:"parent_uuid"`
-	ParentType                  string            `json:"parent_type"`
-	Perms2                      *PermType2        `json:"perms2"`
-	ForwardingClassVlanPriority VlanPriorityType  `json:"forwarding_class_vlan_priority"`
-	ForwardingClassMPLSExp      MplsExpType       `json:"forwarding_class_mpls_exp"`
-	IDPerms                     *IdPermsType      `json:"id_perms"`
-	DisplayName                 string            `json:"display_name"`
+	ForwardingClassVlanPriority VlanPriorityType  `json:"forwarding_class_vlan_priority,omitempty"`
+	ForwardingClassID           ForwardingClassId `json:"forwarding_class_id,omitempty"`
+	Perms2                      *PermType2        `json:"perms2,omitempty"`
+	ParentUUID                  string            `json:"parent_uuid,omitempty"`
+	ParentType                  string            `json:"parent_type,omitempty"`
+	ForwardingClassDSCP         DscpValueType     `json:"forwarding_class_dscp,omitempty"`
+	ForwardingClassMPLSExp      MplsExpType       `json:"forwarding_class_mpls_exp,omitempty"`
+	IDPerms                     *IdPermsType      `json:"id_perms,omitempty"`
+	DisplayName                 string            `json:"display_name,omitempty"`
+	Annotations                 *KeyValuePairs    `json:"annotations,omitempty"`
+	UUID                        string            `json:"uuid,omitempty"`
+	FQName                      []string          `json:"fq_name,omitempty"`
 
-	QosQueueRefs []*ForwardingClassQosQueueRef `json:"qos_queue_refs"`
+	QosQueueRefs []*ForwardingClassQosQueueRef `json:"qos_queue_refs,omitempty"`
 }
 
 // ForwardingClassQosQueueRef references each other
@@ -39,18 +39,18 @@ func (model *ForwardingClass) String() string {
 func MakeForwardingClass() *ForwardingClass {
 	return &ForwardingClass{
 		//TODO(nati): Apply default
+		FQName:                 []string{},
+		ForwardingClassDSCP:    MakeDscpValueType(),
 		ForwardingClassMPLSExp: MakeMplsExpType(),
 		IDPerms:                MakeIdPermsType(),
 		DisplayName:            "",
-		Perms2:                 MakePermType2(),
+		Annotations:            MakeKeyValuePairs(),
+		UUID:                   "",
 		ForwardingClassVlanPriority: MakeVlanPriorityType(),
 		ForwardingClassID:           MakeForwardingClassId(),
+		Perms2:                      MakePermType2(),
 		ParentUUID:                  "",
 		ParentType:                  "",
-		FQName:                      []string{},
-		Annotations:                 MakeKeyValuePairs(),
-		UUID:                        "",
-		ForwardingClassDSCP:         MakeDscpValueType(),
 	}
 }
 

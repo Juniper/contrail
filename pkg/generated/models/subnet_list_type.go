@@ -6,7 +6,7 @@ import "encoding/json"
 
 // SubnetListType
 type SubnetListType struct {
-	Subnet []*SubnetType `json:"subnet"`
+	Subnet []*SubnetType `json:"subnet,omitempty"`
 }
 
 // String returns json representation of the object

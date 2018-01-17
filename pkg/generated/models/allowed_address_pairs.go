@@ -6,7 +6,7 @@ import "encoding/json"
 
 // AllowedAddressPairs
 type AllowedAddressPairs struct {
-	AllowedAddressPair []*AllowedAddressPair `json:"allowed_address_pair"`
+	AllowedAddressPair []*AllowedAddressPair `json:"allowed_address_pair,omitempty"`
 }
 
 // String returns json representation of the object

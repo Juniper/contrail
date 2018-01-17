@@ -6,7 +6,7 @@ import "encoding/json"
 
 // PolicyEntriesType
 type PolicyEntriesType struct {
-	PolicyRule []*PolicyRuleType `json:"policy_rule"`
+	PolicyRule []*PolicyRuleType `json:"policy_rule,omitempty"`
 }
 
 // String returns json representation of the object

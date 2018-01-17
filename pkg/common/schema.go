@@ -10,9 +10,9 @@ import (
 )
 
 var sqlTypeMap = map[string]string{
-	"object":  "text",
+	"object":  "json",
 	"integer": "int",
-	"array":   "text",
+	"array":   "json",
 	"boolean": "bool",
 	"number":  "float",
 	"string":  "varchar(255)",

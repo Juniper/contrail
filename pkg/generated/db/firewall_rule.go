@@ -206,6 +206,19 @@ func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtVirtualNetworkRef, err := tx.Prepare(insertFirewallRuleVirtualNetworkQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
+	}
+	defer stmtVirtualNetworkRef.Close()
+	for _, ref := range model.VirtualNetworkRefs {
+
+		_, err = stmtVirtualNetworkRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs create failed")
+		}
+	}
+
 	stmtServiceGroupRef, err := tx.Prepare(insertFirewallRuleServiceGroupQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ServiceGroupRefs create statement failed")
@@ -245,29 +258,23 @@ func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
 		}
 	}
 
-	stmtVirtualNetworkRef, err := tx.Prepare(insertFirewallRuleVirtualNetworkQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
-	}
-	defer stmtVirtualNetworkRef.Close()
-	for _, ref := range model.VirtualNetworkRefs {
-
-		_, err = stmtVirtualNetworkRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs create failed")
-		}
-	}
-
 	metaData := &common.MetaData{
 		UUID:   model.UUID,
 		Type:   "firewall_rule",
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "firewall_rule", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, error) {
@@ -913,14 +920,33 @@ func UpdateFirewallRule(tx *sql.Tx, uuid string, model *models.FirewallRule) err
 
 // DeleteFirewallRule deletes a resource
 func DeleteFirewallRule(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteFirewallRuleQuery
+	deleteQuery := deleteFirewallRuleQuery
+	selectQuery := "select count(uuid) from firewall_rule where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

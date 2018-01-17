@@ -6,24 +6,24 @@ import "encoding/json"
 
 // FloatingIP
 type FloatingIP struct {
-	FloatingIPPortMappingsEnable bool                 `json:"floating_ip_port_mappings_enable"`
-	FloatingIPFixedIPAddress     IpAddressType        `json:"floating_ip_fixed_ip_address"`
-	FloatingIPTrafficDirection   TrafficDirectionType `json:"floating_ip_traffic_direction"`
-	FloatingIPAddressFamily      IpAddressFamilyType  `json:"floating_ip_address_family"`
-	Annotations                  *KeyValuePairs       `json:"annotations"`
-	ParentUUID                   string               `json:"parent_uuid"`
-	IDPerms                      *IdPermsType         `json:"id_perms"`
-	FloatingIPPortMappings       *PortMappings        `json:"floating_ip_port_mappings"`
-	FloatingIPAddress            IpAddressType        `json:"floating_ip_address"`
-	Perms2                       *PermType2           `json:"perms2"`
-	UUID                         string               `json:"uuid"`
-	FQName                       []string             `json:"fq_name"`
-	FloatingIPIsVirtualIP        bool                 `json:"floating_ip_is_virtual_ip"`
-	ParentType                   string               `json:"parent_type"`
-	DisplayName                  string               `json:"display_name"`
+	FloatingIPIsVirtualIP        bool                 `json:"floating_ip_is_virtual_ip,omitempty"`
+	FloatingIPPortMappingsEnable bool                 `json:"floating_ip_port_mappings_enable,omitempty"`
+	FloatingIPFixedIPAddress     IpAddressType        `json:"floating_ip_fixed_ip_address,omitempty"`
+	FloatingIPTrafficDirection   TrafficDirectionType `json:"floating_ip_traffic_direction,omitempty"`
+	FQName                       []string             `json:"fq_name,omitempty"`
+	Annotations                  *KeyValuePairs       `json:"annotations,omitempty"`
+	FloatingIPPortMappings       *PortMappings        `json:"floating_ip_port_mappings,omitempty"`
+	IDPerms                      *IdPermsType         `json:"id_perms,omitempty"`
+	FloatingIPAddressFamily      IpAddressFamilyType  `json:"floating_ip_address_family,omitempty"`
+	DisplayName                  string               `json:"display_name,omitempty"`
+	Perms2                       *PermType2           `json:"perms2,omitempty"`
+	UUID                         string               `json:"uuid,omitempty"`
+	ParentUUID                   string               `json:"parent_uuid,omitempty"`
+	ParentType                   string               `json:"parent_type,omitempty"`
+	FloatingIPAddress            IpAddressType        `json:"floating_ip_address,omitempty"`
 
-	ProjectRefs                 []*FloatingIPProjectRef                 `json:"project_refs"`
-	VirtualMachineInterfaceRefs []*FloatingIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs"`
+	ProjectRefs                 []*FloatingIPProjectRef                 `json:"project_refs,omitempty"`
+	VirtualMachineInterfaceRefs []*FloatingIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 }
 
 // FloatingIPProjectRef references each other
@@ -50,21 +50,21 @@ func (model *FloatingIP) String() string {
 func MakeFloatingIP() *FloatingIP {
 	return &FloatingIP{
 		//TODO(nati): Apply default
-		FloatingIPIsVirtualIP:        false,
-		ParentType:                   "",
+		FloatingIPAddress:            MakeIpAddressType(),
 		DisplayName:                  "",
+		Perms2:                       MakePermType2(),
+		UUID:                         "",
+		ParentUUID:                   "",
+		ParentType:                   "",
+		Annotations:                  MakeKeyValuePairs(),
+		FloatingIPPortMappings:       MakePortMappings(),
+		FloatingIPIsVirtualIP:        false,
 		FloatingIPPortMappingsEnable: false,
 		FloatingIPFixedIPAddress:     MakeIpAddressType(),
 		FloatingIPTrafficDirection:   MakeTrafficDirectionType(),
-		FloatingIPAddressFamily:      MakeIpAddressFamilyType(),
-		Annotations:                  MakeKeyValuePairs(),
-		ParentUUID:                   "",
-		UUID:                         "",
-		FQName:                       []string{},
-		IDPerms:                      MakeIdPermsType(),
-		FloatingIPPortMappings:       MakePortMappings(),
-		FloatingIPAddress:            MakeIpAddressType(),
-		Perms2:                       MakePermType2(),
+		FQName:                  []string{},
+		FloatingIPAddressFamily: MakeIpAddressFamilyType(),
+		IDPerms:                 MakeIdPermsType(),
 	}
 }
 

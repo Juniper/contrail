@@ -6,18 +6,18 @@ import "encoding/json"
 
 // LogicalInterface
 type LogicalInterface struct {
-	LogicalInterfaceVlanTag int                  `json:"logical_interface_vlan_tag"`
-	LogicalInterfaceType    LogicalInterfaceType `json:"logical_interface_type"`
-	ParentUUID              string               `json:"parent_uuid"`
-	ParentType              string               `json:"parent_type"`
-	FQName                  []string             `json:"fq_name"`
-	DisplayName             string               `json:"display_name"`
-	Annotations             *KeyValuePairs       `json:"annotations"`
-	IDPerms                 *IdPermsType         `json:"id_perms"`
-	Perms2                  *PermType2           `json:"perms2"`
-	UUID                    string               `json:"uuid"`
+	DisplayName             string               `json:"display_name,omitempty"`
+	ParentUUID              string               `json:"parent_uuid,omitempty"`
+	Annotations             *KeyValuePairs       `json:"annotations,omitempty"`
+	Perms2                  *PermType2           `json:"perms2,omitempty"`
+	UUID                    string               `json:"uuid,omitempty"`
+	ParentType              string               `json:"parent_type,omitempty"`
+	LogicalInterfaceVlanTag int                  `json:"logical_interface_vlan_tag,omitempty"`
+	LogicalInterfaceType    LogicalInterfaceType `json:"logical_interface_type,omitempty"`
+	FQName                  []string             `json:"fq_name,omitempty"`
+	IDPerms                 *IdPermsType         `json:"id_perms,omitempty"`
 
-	VirtualMachineInterfaceRefs []*LogicalInterfaceVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs"`
+	VirtualMachineInterfaceRefs []*LogicalInterfaceVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 }
 
 // LogicalInterfaceVirtualMachineInterfaceRef references each other
@@ -37,15 +37,15 @@ func (model *LogicalInterface) String() string {
 func MakeLogicalInterface() *LogicalInterface {
 	return &LogicalInterface{
 		//TODO(nati): Apply default
-		IDPerms:                 MakeIdPermsType(),
-		Perms2:                  MakePermType2(),
-		UUID:                    "",
-		FQName:                  []string{},
 		DisplayName:             "",
-		Annotations:             MakeKeyValuePairs(),
+		ParentUUID:              "",
 		LogicalInterfaceVlanTag: 0,
 		LogicalInterfaceType:    MakeLogicalInterfaceType(),
-		ParentUUID:              "",
+		FQName:                  []string{},
+		IDPerms:                 MakeIdPermsType(),
+		Annotations:             MakeKeyValuePairs(),
+		Perms2:                  MakePermType2(),
+		UUID:                    "",
 		ParentType:              "",
 	}
 }

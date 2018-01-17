@@ -6,22 +6,22 @@ import "encoding/json"
 
 // ContrailCluster
 type ContrailCluster struct {
-	ContrailWebui                      string         `json:"contrail_webui"`
-	StatisticsTTL                      string         `json:"statistics_ttl"`
-	Perms2                             *PermType2     `json:"perms2"`
-	FQName                             []string       `json:"fq_name"`
-	DisplayName                        string         `json:"display_name"`
-	DataTTL                            string         `json:"data_ttl"`
-	DefaultVrouterBondInterfaceMembers string         `json:"default_vrouter_bond_interface_members"`
-	UUID                               string         `json:"uuid"`
-	IDPerms                            *IdPermsType   `json:"id_perms"`
-	ConfigAuditTTL                     string         `json:"config_audit_ttl"`
-	ParentUUID                         string         `json:"parent_uuid"`
-	Annotations                        *KeyValuePairs `json:"annotations"`
-	DefaultGateway                     string         `json:"default_gateway"`
-	DefaultVrouterBondInterface        string         `json:"default_vrouter_bond_interface"`
-	FlowTTL                            string         `json:"flow_ttl"`
-	ParentType                         string         `json:"parent_type"`
+	ConfigAuditTTL                     string         `json:"config_audit_ttl,omitempty"`
+	StatisticsTTL                      string         `json:"statistics_ttl,omitempty"`
+	DisplayName                        string         `json:"display_name,omitempty"`
+	ParentUUID                         string         `json:"parent_uuid,omitempty"`
+	DataTTL                            string         `json:"data_ttl,omitempty"`
+	DefaultVrouterBondInterfaceMembers string         `json:"default_vrouter_bond_interface_members,omitempty"`
+	FQName                             []string       `json:"fq_name,omitempty"`
+	IDPerms                            *IdPermsType   `json:"id_perms,omitempty"`
+	DefaultGateway                     string         `json:"default_gateway,omitempty"`
+	FlowTTL                            string         `json:"flow_ttl,omitempty"`
+	Annotations                        *KeyValuePairs `json:"annotations,omitempty"`
+	UUID                               string         `json:"uuid,omitempty"`
+	ParentType                         string         `json:"parent_type,omitempty"`
+	ContrailWebui                      string         `json:"contrail_webui,omitempty"`
+	DefaultVrouterBondInterface        string         `json:"default_vrouter_bond_interface,omitempty"`
+	Perms2                             *PermType2     `json:"perms2,omitempty"`
 }
 
 // String returns json representation of the object
@@ -34,22 +34,22 @@ func (model *ContrailCluster) String() string {
 func MakeContrailCluster() *ContrailCluster {
 	return &ContrailCluster{
 		//TODO(nati): Apply default
-		ConfigAuditTTL:              "",
-		ParentUUID:                  "",
-		Annotations:                 MakeKeyValuePairs(),
-		ParentType:                  "",
-		DefaultGateway:              "",
-		DefaultVrouterBondInterface: "",
-		FlowTTL:                     "",
-		FQName:                      []string{},
-		DisplayName:                 "",
-		ContrailWebui:               "",
-		StatisticsTTL:               "",
-		Perms2:                      MakePermType2(),
-		IDPerms:                     MakeIdPermsType(),
-		DataTTL:                     "",
+		DataTTL: "",
 		DefaultVrouterBondInterfaceMembers: "",
-		UUID: "",
+		FQName:                      []string{},
+		DefaultGateway:              "",
+		FlowTTL:                     "",
+		Annotations:                 MakeKeyValuePairs(),
+		UUID:                        "",
+		ParentType:                  "",
+		IDPerms:                     MakeIdPermsType(),
+		ContrailWebui:               "",
+		DefaultVrouterBondInterface: "",
+		Perms2:         MakePermType2(),
+		ConfigAuditTTL: "",
+		StatisticsTTL:  "",
+		DisplayName:    "",
+		ParentUUID:     "",
 	}
 }
 

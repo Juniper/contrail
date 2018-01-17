@@ -6,19 +6,19 @@ import "encoding/json"
 
 // ServiceAppliance
 type ServiceAppliance struct {
-	ParentUUID                      string           `json:"parent_uuid"`
-	FQName                          []string         `json:"fq_name"`
-	DisplayName                     string           `json:"display_name"`
-	Annotations                     *KeyValuePairs   `json:"annotations"`
-	Perms2                          *PermType2       `json:"perms2"`
-	UUID                            string           `json:"uuid"`
-	ServiceApplianceProperties      *KeyValuePairs   `json:"service_appliance_properties"`
-	ParentType                      string           `json:"parent_type"`
-	IDPerms                         *IdPermsType     `json:"id_perms"`
-	ServiceApplianceUserCredentials *UserCredentials `json:"service_appliance_user_credentials"`
-	ServiceApplianceIPAddress       IpAddressType    `json:"service_appliance_ip_address"`
+	ServiceApplianceIPAddress       IpAddressType    `json:"service_appliance_ip_address,omitempty"`
+	ServiceApplianceProperties      *KeyValuePairs   `json:"service_appliance_properties,omitempty"`
+	ParentType                      string           `json:"parent_type,omitempty"`
+	IDPerms                         *IdPermsType     `json:"id_perms,omitempty"`
+	Annotations                     *KeyValuePairs   `json:"annotations,omitempty"`
+	UUID                            string           `json:"uuid,omitempty"`
+	ServiceApplianceUserCredentials *UserCredentials `json:"service_appliance_user_credentials,omitempty"`
+	FQName                          []string         `json:"fq_name,omitempty"`
+	DisplayName                     string           `json:"display_name,omitempty"`
+	Perms2                          *PermType2       `json:"perms2,omitempty"`
+	ParentUUID                      string           `json:"parent_uuid,omitempty"`
 
-	PhysicalInterfaceRefs []*ServiceAppliancePhysicalInterfaceRef `json:"physical_interface_refs"`
+	PhysicalInterfaceRefs []*ServiceAppliancePhysicalInterfaceRef `json:"physical_interface_refs,omitempty"`
 }
 
 // ServiceAppliancePhysicalInterfaceRef references each other
@@ -39,17 +39,17 @@ func (model *ServiceAppliance) String() string {
 func MakeServiceAppliance() *ServiceAppliance {
 	return &ServiceAppliance{
 		//TODO(nati): Apply default
-		Perms2:                          MakePermType2(),
-		UUID:                            "",
-		ParentUUID:                      "",
-		FQName:                          []string{},
-		DisplayName:                     "",
-		Annotations:                     MakeKeyValuePairs(),
+		ParentType:  "",
+		IDPerms:     MakeIdPermsType(),
+		Annotations: MakeKeyValuePairs(),
+		UUID:        "",
 		ServiceApplianceUserCredentials: MakeUserCredentials(),
 		ServiceApplianceIPAddress:       MakeIpAddressType(),
 		ServiceApplianceProperties:      MakeKeyValuePairs(),
-		ParentType:                      "",
-		IDPerms:                         MakeIdPermsType(),
+		Perms2:      MakePermType2(),
+		ParentUUID:  "",
+		FQName:      []string{},
+		DisplayName: "",
 	}
 }
 

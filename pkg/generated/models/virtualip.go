@@ -6,18 +6,18 @@ import "encoding/json"
 
 // VirtualIP
 type VirtualIP struct {
-	Perms2              *PermType2     `json:"perms2"`
-	ParentType          string         `json:"parent_type"`
-	DisplayName         string         `json:"display_name"`
-	IDPerms             *IdPermsType   `json:"id_perms"`
-	Annotations         *KeyValuePairs `json:"annotations"`
-	VirtualIPProperties *VirtualIpType `json:"virtual_ip_properties"`
-	UUID                string         `json:"uuid"`
-	ParentUUID          string         `json:"parent_uuid"`
-	FQName              []string       `json:"fq_name"`
+	VirtualIPProperties *VirtualIpType `json:"virtual_ip_properties,omitempty"`
+	ParentUUID          string         `json:"parent_uuid,omitempty"`
+	ParentType          string         `json:"parent_type,omitempty"`
+	Perms2              *PermType2     `json:"perms2,omitempty"`
+	FQName              []string       `json:"fq_name,omitempty"`
+	IDPerms             *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName         string         `json:"display_name,omitempty"`
+	Annotations         *KeyValuePairs `json:"annotations,omitempty"`
+	UUID                string         `json:"uuid,omitempty"`
 
-	LoadbalancerPoolRefs        []*VirtualIPLoadbalancerPoolRef        `json:"loadbalancer_pool_refs"`
-	VirtualMachineInterfaceRefs []*VirtualIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs"`
+	LoadbalancerPoolRefs        []*VirtualIPLoadbalancerPoolRef        `json:"loadbalancer_pool_refs,omitempty"`
+	VirtualMachineInterfaceRefs []*VirtualIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 }
 
 // VirtualIPLoadbalancerPoolRef references each other
@@ -44,15 +44,15 @@ func (model *VirtualIP) String() string {
 func MakeVirtualIP() *VirtualIP {
 	return &VirtualIP{
 		//TODO(nati): Apply default
-		Perms2:              MakePermType2(),
-		ParentType:          "",
-		DisplayName:         "",
 		FQName:              []string{},
 		IDPerms:             MakeIdPermsType(),
+		DisplayName:         "",
 		Annotations:         MakeKeyValuePairs(),
-		VirtualIPProperties: MakeVirtualIpType(),
 		UUID:                "",
+		VirtualIPProperties: MakeVirtualIpType(),
 		ParentUUID:          "",
+		ParentType:          "",
+		Perms2:              MakePermType2(),
 	}
 }
 

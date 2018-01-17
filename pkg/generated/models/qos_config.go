@@ -6,21 +6,21 @@ import "encoding/json"
 
 // QosConfig
 type QosConfig struct {
-	DefaultForwardingClassID ForwardingClassId          `json:"default_forwarding_class_id"`
-	DSCPEntries              *QosIdForwardingClassPairs `json:"dscp_entries"`
-	ParentType               string                     `json:"parent_type"`
-	Annotations              *KeyValuePairs             `json:"annotations"`
-	Perms2                   *PermType2                 `json:"perms2"`
-	UUID                     string                     `json:"uuid"`
-	QosConfigType            QosConfigType              `json:"qos_config_type"`
-	VlanPriorityEntries      *QosIdForwardingClassPairs `json:"vlan_priority_entries"`
-	FQName                   []string                   `json:"fq_name"`
-	IDPerms                  *IdPermsType               `json:"id_perms"`
-	DisplayName              string                     `json:"display_name"`
-	ParentUUID               string                     `json:"parent_uuid"`
-	MPLSExpEntries           *QosIdForwardingClassPairs `json:"mpls_exp_entries"`
+	DSCPEntries              *QosIdForwardingClassPairs `json:"dscp_entries,omitempty"`
+	Annotations              *KeyValuePairs             `json:"annotations,omitempty"`
+	Perms2                   *PermType2                 `json:"perms2,omitempty"`
+	IDPerms                  *IdPermsType               `json:"id_perms,omitempty"`
+	DefaultForwardingClassID ForwardingClassId          `json:"default_forwarding_class_id,omitempty"`
+	MPLSExpEntries           *QosIdForwardingClassPairs `json:"mpls_exp_entries,omitempty"`
+	VlanPriorityEntries      *QosIdForwardingClassPairs `json:"vlan_priority_entries,omitempty"`
+	DisplayName              string                     `json:"display_name,omitempty"`
+	UUID                     string                     `json:"uuid,omitempty"`
+	ParentUUID               string                     `json:"parent_uuid,omitempty"`
+	ParentType               string                     `json:"parent_type,omitempty"`
+	FQName                   []string                   `json:"fq_name,omitempty"`
+	QosConfigType            QosConfigType              `json:"qos_config_type,omitempty"`
 
-	GlobalSystemConfigRefs []*QosConfigGlobalSystemConfigRef `json:"global_system_config_refs"`
+	GlobalSystemConfigRefs []*QosConfigGlobalSystemConfigRef `json:"global_system_config_refs,omitempty"`
 }
 
 // QosConfigGlobalSystemConfigRef references each other
@@ -40,18 +40,18 @@ func (model *QosConfig) String() string {
 func MakeQosConfig() *QosConfig {
 	return &QosConfig{
 		//TODO(nati): Apply default
-		QosConfigType:            MakeQosConfigType(),
 		DefaultForwardingClassID: MakeForwardingClassId(),
 		DSCPEntries:              MakeQosIdForwardingClassPairs(),
-		ParentType:               "",
 		Annotations:              MakeKeyValuePairs(),
 		Perms2:                   MakePermType2(),
-		UUID:                     "",
+		IDPerms:                  MakeIdPermsType(),
+		ParentType:               "",
+		FQName:                   []string{},
+		QosConfigType:            MakeQosConfigType(),
 		MPLSExpEntries:           MakeQosIdForwardingClassPairs(),
 		VlanPriorityEntries:      MakeQosIdForwardingClassPairs(),
-		FQName:                   []string{},
-		IDPerms:                  MakeIdPermsType(),
 		DisplayName:              "",
+		UUID:                     "",
 		ParentUUID:               "",
 	}
 }

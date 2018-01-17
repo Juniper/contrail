@@ -6,7 +6,7 @@ import "encoding/json"
 
 // FirewallRuleMatchTagsTypeIdList
 type FirewallRuleMatchTagsTypeIdList struct {
-	TagType []int `json:"tag_type"`
+	TagType []int `json:"tag_type,omitempty"`
 }
 
 // String returns json representation of the object

@@ -6,9 +6,9 @@ import "encoding/json"
 
 // FlowAgingTimeout
 type FlowAgingTimeout struct {
-	Port             int    `json:"port"`
-	TimeoutInSeconds int    `json:"timeout_in_seconds"`
-	Protocol         string `json:"protocol"`
+	TimeoutInSeconds int    `json:"timeout_in_seconds,omitempty"`
+	Protocol         string `json:"protocol,omitempty"`
+	Port             int    `json:"port,omitempty"`
 }
 
 // String returns json representation of the object
@@ -21,9 +21,9 @@ func (model *FlowAgingTimeout) String() string {
 func MakeFlowAgingTimeout() *FlowAgingTimeout {
 	return &FlowAgingTimeout{
 		//TODO(nati): Apply default
-		TimeoutInSeconds: 0,
 		Protocol:         "",
 		Port:             0,
+		TimeoutInSeconds: 0,
 	}
 }
 

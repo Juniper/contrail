@@ -12,9 +12,11 @@ import (
 func TestAPIAccessList(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "api_access_list")
 	defer func() {
 		common.ClearTable(db, "api_access_list")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestAPIAccessList(t *testing.T) {
 	model := models.MakeAPIAccessList()
 	model.UUID = "api_access_list_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "api_access_list_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateAPIAccessList(tx, model)
@@ -42,6 +45,15 @@ func TestAPIAccessList(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteAPIAccessList(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

@@ -12,9 +12,11 @@ import (
 func TestDsaRule(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "dsa_rule")
 	defer func() {
 		common.ClearTable(db, "dsa_rule")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestDsaRule(t *testing.T) {
 	model := models.MakeDsaRule()
 	model.UUID = "dsa_rule_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "dsa_rule_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateDsaRule(tx, model)
@@ -42,6 +45,15 @@ func TestDsaRule(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteDsaRule(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

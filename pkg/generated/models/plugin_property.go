@@ -6,8 +6,8 @@ import "encoding/json"
 
 // PluginProperty
 type PluginProperty struct {
-	Property string `json:"property"`
-	Value    string `json:"value"`
+	Property string `json:"property,omitempty"`
+	Value    string `json:"value,omitempty"`
 }
 
 // String returns json representation of the object

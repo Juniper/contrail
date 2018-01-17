@@ -95,10 +95,17 @@ func CreatePortTuple(tx *sql.Tx, model *models.PortTuple) error {
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "port_tuple", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanPortTuple(values map[string]interface{}) (*models.PortTuple, error) {
@@ -334,14 +341,33 @@ func UpdatePortTuple(tx *sql.Tx, uuid string, model *models.PortTuple) error {
 
 // DeletePortTuple deletes a resource
 func DeletePortTuple(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deletePortTupleQuery
+	deleteQuery := deletePortTupleQuery
+	selectQuery := "select count(uuid) from port_tuple where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

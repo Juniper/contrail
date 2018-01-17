@@ -43,17 +43,17 @@ var ServiceEndpointFields = []string{
 // ServiceEndpointRefFields is db reference fields for ServiceEndpoint
 var ServiceEndpointRefFields = map[string][]string{
 
+	"service_connection_module": {
+	// <common.Schema Value>
+
+	},
+
 	"physical_router": {
 	// <common.Schema Value>
 
 	},
 
 	"service_object": {
-	// <common.Schema Value>
-
-	},
-
-	"service_connection_module": {
 	// <common.Schema Value>
 
 	},
@@ -153,10 +153,17 @@ func CreateServiceEndpoint(tx *sql.Tx, model *models.ServiceEndpoint) error {
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "service_endpoint", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint, error) {
@@ -452,14 +459,33 @@ func UpdateServiceEndpoint(tx *sql.Tx, uuid string, model *models.ServiceEndpoin
 
 // DeleteServiceEndpoint deletes a resource
 func DeleteServiceEndpoint(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteServiceEndpointQuery
+	deleteQuery := deleteServiceEndpointQuery
+	selectQuery := "select count(uuid) from service_endpoint where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

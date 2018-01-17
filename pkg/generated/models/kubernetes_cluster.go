@@ -6,16 +6,16 @@ import "encoding/json"
 
 // KubernetesCluster
 type KubernetesCluster struct {
-	Annotations          *KeyValuePairs `json:"annotations"`
-	KuberunetesDashboard string         `json:"kuberunetes_dashboard"`
-	DisplayName          string         `json:"display_name"`
-	UUID                 string         `json:"uuid"`
-	ParentUUID           string         `json:"parent_uuid"`
-	ParentType           string         `json:"parent_type"`
-	FQName               []string       `json:"fq_name"`
-	IDPerms              *IdPermsType   `json:"id_perms"`
-	ContrailClusterID    string         `json:"contrail_cluster_id"`
-	Perms2               *PermType2     `json:"perms2"`
+	KuberunetesDashboard string         `json:"kuberunetes_dashboard,omitempty"`
+	ParentType           string         `json:"parent_type,omitempty"`
+	FQName               []string       `json:"fq_name,omitempty"`
+	Perms2               *PermType2     `json:"perms2,omitempty"`
+	ContrailClusterID    string         `json:"contrail_cluster_id,omitempty"`
+	IDPerms              *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName          string         `json:"display_name,omitempty"`
+	Annotations          *KeyValuePairs `json:"annotations,omitempty"`
+	UUID                 string         `json:"uuid,omitempty"`
+	ParentUUID           string         `json:"parent_uuid,omitempty"`
 }
 
 // String returns json representation of the object
@@ -28,16 +28,16 @@ func (model *KubernetesCluster) String() string {
 func MakeKubernetesCluster() *KubernetesCluster {
 	return &KubernetesCluster{
 		//TODO(nati): Apply default
-		ContrailClusterID:    "",
-		Perms2:               MakePermType2(),
-		UUID:                 "",
-		ParentUUID:           "",
 		ParentType:           "",
 		FQName:               []string{},
-		IDPerms:              MakeIdPermsType(),
+		Perms2:               MakePermType2(),
+		ContrailClusterID:    "",
 		KuberunetesDashboard: "",
 		DisplayName:          "",
 		Annotations:          MakeKeyValuePairs(),
+		UUID:                 "",
+		ParentUUID:           "",
+		IDPerms:              MakeIdPermsType(),
 	}
 }
 

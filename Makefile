@@ -19,6 +19,9 @@ generate: ## Run the source code generator
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package
 
+reset_db: ## Reset Database with latest schema.
+	./tools/reset_db.sh
+
 binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrail_{{.OS}}_{{.Arch}}" ./cmd/contrail
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailutil_{{.OS}}_{{.Arch}}" ./cmd/contrailutil

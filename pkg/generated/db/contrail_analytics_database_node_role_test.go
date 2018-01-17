@@ -12,9 +12,11 @@ import (
 func TestContrailAnalyticsDatabaseNodeRole(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "contrail_analytics_database_node_role")
 	defer func() {
 		common.ClearTable(db, "contrail_analytics_database_node_role")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestContrailAnalyticsDatabaseNodeRole(t *testing.T) {
 	model := models.MakeContrailAnalyticsDatabaseNodeRole()
 	model.UUID = "contrail_analytics_database_node_role_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "contrail_analytics_database_node_role_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateContrailAnalyticsDatabaseNodeRole(tx, model)
@@ -42,6 +45,15 @@ func TestContrailAnalyticsDatabaseNodeRole(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteContrailAnalyticsDatabaseNodeRole(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

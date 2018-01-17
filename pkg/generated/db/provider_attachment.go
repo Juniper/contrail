@@ -113,10 +113,17 @@ func CreateProviderAttachment(tx *sql.Tx, model *models.ProviderAttachment) erro
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "provider_attachment", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanProviderAttachment(values map[string]interface{}) (*models.ProviderAttachment, error) {
@@ -372,14 +379,33 @@ func UpdateProviderAttachment(tx *sql.Tx, uuid string, model *models.ProviderAtt
 
 // DeleteProviderAttachment deletes a resource
 func DeleteProviderAttachment(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteProviderAttachmentQuery
+	deleteQuery := deleteProviderAttachmentQuery
+	selectQuery := "select count(uuid) from provider_attachment where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

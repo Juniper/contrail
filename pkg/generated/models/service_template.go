@@ -6,17 +6,17 @@ import "encoding/json"
 
 // ServiceTemplate
 type ServiceTemplate struct {
-	ServiceTemplateProperties *ServiceTemplateType `json:"service_template_properties"`
-	ParentType                string               `json:"parent_type"`
-	FQName                    []string             `json:"fq_name"`
-	DisplayName               string               `json:"display_name"`
-	Perms2                    *PermType2           `json:"perms2"`
-	ParentUUID                string               `json:"parent_uuid"`
-	IDPerms                   *IdPermsType         `json:"id_perms"`
-	Annotations               *KeyValuePairs       `json:"annotations"`
-	UUID                      string               `json:"uuid"`
+	Annotations               *KeyValuePairs       `json:"annotations,omitempty"`
+	Perms2                    *PermType2           `json:"perms2,omitempty"`
+	ServiceTemplateProperties *ServiceTemplateType `json:"service_template_properties,omitempty"`
+	ParentUUID                string               `json:"parent_uuid,omitempty"`
+	ParentType                string               `json:"parent_type,omitempty"`
+	IDPerms                   *IdPermsType         `json:"id_perms,omitempty"`
+	DisplayName               string               `json:"display_name,omitempty"`
+	FQName                    []string             `json:"fq_name,omitempty"`
+	UUID                      string               `json:"uuid,omitempty"`
 
-	ServiceApplianceSetRefs []*ServiceTemplateServiceApplianceSetRef `json:"service_appliance_set_refs"`
+	ServiceApplianceSetRefs []*ServiceTemplateServiceApplianceSetRef `json:"service_appliance_set_refs,omitempty"`
 }
 
 // ServiceTemplateServiceApplianceSetRef references each other
@@ -36,15 +36,15 @@ func (model *ServiceTemplate) String() string {
 func MakeServiceTemplate() *ServiceTemplate {
 	return &ServiceTemplate{
 		//TODO(nati): Apply default
-		UUID:        "",
-		ParentUUID:  "",
-		IDPerms:     MakeIdPermsType(),
-		Annotations: MakeKeyValuePairs(),
-		DisplayName: "",
-		Perms2:      MakePermType2(),
+		Perms2: MakePermType2(),
 		ServiceTemplateProperties: MakeServiceTemplateType(),
+		ParentUUID:                "",
 		ParentType:                "",
+		IDPerms:                   MakeIdPermsType(),
+		DisplayName:               "",
+		Annotations:               MakeKeyValuePairs(),
 		FQName:                    []string{},
+		UUID:                      "",
 	}
 }
 

@@ -75,7 +75,7 @@ func DoInTransaction(db *sql.DB, do func(tx *sql.Tx) error) error {
 			log.Error(err)
 			tx.Rollback()
 		} else {
-			err = tx.Commit()
+			tx.Commit()
 		}
 	}()
 	err = do(tx)
@@ -132,9 +132,28 @@ func (spec *ListSpec) buildFilterQuery() {
 
 func (spec *ListSpec) buildAuthQuery() {
 	auth := spec.Auth
+	where := []string{}
+
 	if !auth.IsAdmin() {
-		spec.where = append(spec.where, fmt.Sprintf("`%s`.`%s` = ?", spec.Table, "owner"))
+		where = append(where, fmt.Sprintf("`%s`.`owner` = ?", spec.Table))
 		spec.Values = append(spec.Values, auth.ProjectID())
+	}
+	if spec.Shared {
+		shareTables := []string{"domain_share_" + spec.Table, "tenant_share_" + spec.Table}
+		for _, shareTable := range shareTables {
+			spec.joins = append(spec.joins,
+				fmt.Sprintf("left join `%s` on `%s`.`uuid` = `%s`.`uuid`",
+					shareTable,
+					spec.Table,
+					shareTable,
+				))
+			spec.groupBy = append(spec.groupBy, spec.Table+".`uuid`")
+			where = append(where, fmt.Sprintf("(`%s`.to = ? and `%s`.access >= 4)", shareTable, shareTable))
+		}
+		spec.Values = append(spec.Values, auth.DomainID(), auth.ProjectID())
+	}
+	if len(where) > 0 {
+		spec.where = append(spec.where, fmt.Sprintf("(%s)", strings.Join(where, " or ")))
 	}
 }
 
@@ -235,7 +254,7 @@ func (spec *ListSpec) checkRequestedFields() bool {
 
 func (spec *ListSpec) buildColumns() {
 	columnTemplate := "`%s`.`%s`"
-	if spec.Detail || len(spec.BackRefUUIDs) > 0 {
+	if spec.Detail || len(spec.BackRefUUIDs) > 0 || spec.Shared {
 		columnTemplate = "ANY_VALUE(`%s`.`%s`)"
 	}
 

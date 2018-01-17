@@ -6,8 +6,8 @@ import "encoding/json"
 
 // BGPaaServiceParametersType
 type BGPaaServiceParametersType struct {
-	PortStart L4PortType `json:"port_start"`
-	PortEnd   L4PortType `json:"port_end"`
+	PortStart L4PortType `json:"port_start,omitempty"`
+	PortEnd   L4PortType `json:"port_end,omitempty"`
 }
 
 // String returns json representation of the object

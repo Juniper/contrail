@@ -6,7 +6,7 @@ import "encoding/json"
 
 // KeyValuePairs
 type KeyValuePairs struct {
-	KeyValuePair []*KeyValuePair `json:"key_value_pair"`
+	KeyValuePair []*KeyValuePair `json:"key_value_pair,omitempty"`
 }
 
 // String returns json representation of the object

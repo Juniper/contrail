@@ -6,7 +6,7 @@ import "encoding/json"
 
 // JunosServicePorts
 type JunosServicePorts struct {
-	ServicePort []string `json:"service_port"`
+	ServicePort []string `json:"service_port,omitempty"`
 }
 
 // String returns json representation of the object

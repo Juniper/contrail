@@ -103,10 +103,17 @@ func CreateAccessControlList(tx *sql.Tx, model *models.AccessControlList) error 
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "access_control_list", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanAccessControlList(values map[string]interface{}) (*models.AccessControlList, error) {
@@ -362,14 +369,33 @@ func UpdateAccessControlList(tx *sql.Tx, uuid string, model *models.AccessContro
 
 // DeleteAccessControlList deletes a resource
 func DeleteAccessControlList(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteAccessControlListQuery
+	deleteQuery := deleteAccessControlListQuery
+	selectQuery := "select count(uuid) from access_control_list where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

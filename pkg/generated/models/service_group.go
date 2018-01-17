@@ -6,15 +6,15 @@ import "encoding/json"
 
 // ServiceGroup
 type ServiceGroup struct {
-	FQName                          []string                  `json:"fq_name"`
-	IDPerms                         *IdPermsType              `json:"id_perms"`
-	DisplayName                     string                    `json:"display_name"`
-	Annotations                     *KeyValuePairs            `json:"annotations"`
-	Perms2                          *PermType2                `json:"perms2"`
-	ServiceGroupFirewallServiceList *FirewallServiceGroupType `json:"service_group_firewall_service_list"`
-	UUID                            string                    `json:"uuid"`
-	ParentUUID                      string                    `json:"parent_uuid"`
-	ParentType                      string                    `json:"parent_type"`
+	ParentUUID                      string                    `json:"parent_uuid,omitempty"`
+	ParentType                      string                    `json:"parent_type,omitempty"`
+	FQName                          []string                  `json:"fq_name,omitempty"`
+	DisplayName                     string                    `json:"display_name,omitempty"`
+	Annotations                     *KeyValuePairs            `json:"annotations,omitempty"`
+	ServiceGroupFirewallServiceList *FirewallServiceGroupType `json:"service_group_firewall_service_list,omitempty"`
+	IDPerms                         *IdPermsType              `json:"id_perms,omitempty"`
+	Perms2                          *PermType2                `json:"perms2,omitempty"`
+	UUID                            string                    `json:"uuid,omitempty"`
 }
 
 // String returns json representation of the object
@@ -27,15 +27,15 @@ func (model *ServiceGroup) String() string {
 func MakeServiceGroup() *ServiceGroup {
 	return &ServiceGroup{
 		//TODO(nati): Apply default
+		UUID: "",
+		ServiceGroupFirewallServiceList: MakeFirewallServiceGroupType(),
 		IDPerms:     MakeIdPermsType(),
+		Perms2:      MakePermType2(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
-		Perms2:      MakePermType2(),
-		ServiceGroupFirewallServiceList: MakeFirewallServiceGroupType(),
-		UUID:       "",
-		FQName:     []string{},
-		ParentUUID: "",
-		ParentType: "",
+		ParentUUID:  "",
+		ParentType:  "",
+		FQName:      []string{},
 	}
 }
 

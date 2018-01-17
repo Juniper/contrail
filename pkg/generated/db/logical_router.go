@@ -45,21 +45,6 @@ var LogicalRouterFields = []string{
 // LogicalRouterRefFields is db reference fields for LogicalRouter
 var LogicalRouterRefFields = map[string][]string{
 
-	"route_table": {
-	// <common.Schema Value>
-
-	},
-
-	"virtual_network": {
-	// <common.Schema Value>
-
-	},
-
-	"physical_router": {
-	// <common.Schema Value>
-
-	},
-
 	"bgpvpn": {
 	// <common.Schema Value>
 
@@ -79,6 +64,21 @@ var LogicalRouterRefFields = map[string][]string{
 	// <common.Schema Value>
 
 	},
+
+	"route_table": {
+	// <common.Schema Value>
+
+	},
+
+	"virtual_network": {
+	// <common.Schema Value>
+
+	},
+
+	"physical_router": {
+	// <common.Schema Value>
+
+	},
 }
 
 // LogicalRouterBackRefFields is db back reference fields for LogicalRouter
@@ -90,12 +90,6 @@ var LogicalRouterParents = []string{
 	"project",
 }
 
-const insertLogicalRouterServiceInstanceQuery = "insert into `ref_logical_router_service_instance` (`from`, `to` ) values (?, ?);"
-
-const insertLogicalRouterRouteTableQuery = "insert into `ref_logical_router_route_table` (`from`, `to` ) values (?, ?);"
-
-const insertLogicalRouterVirtualNetworkQuery = "insert into `ref_logical_router_virtual_network` (`from`, `to` ) values (?, ?);"
-
 const insertLogicalRouterPhysicalRouterQuery = "insert into `ref_logical_router_physical_router` (`from`, `to` ) values (?, ?);"
 
 const insertLogicalRouterBGPVPNQuery = "insert into `ref_logical_router_bgpvpn` (`from`, `to` ) values (?, ?);"
@@ -103,6 +97,12 @@ const insertLogicalRouterBGPVPNQuery = "insert into `ref_logical_router_bgpvpn` 
 const insertLogicalRouterRouteTargetQuery = "insert into `ref_logical_router_route_target` (`from`, `to` ) values (?, ?);"
 
 const insertLogicalRouterVirtualMachineInterfaceQuery = "insert into `ref_logical_router_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
+
+const insertLogicalRouterServiceInstanceQuery = "insert into `ref_logical_router_service_instance` (`from`, `to` ) values (?, ?);"
+
+const insertLogicalRouterRouteTableQuery = "insert into `ref_logical_router_route_table` (`from`, `to` ) values (?, ?);"
+
+const insertLogicalRouterVirtualNetworkQuery = "insert into `ref_logical_router_virtual_network` (`from`, `to` ) values (?, ?);"
 
 // CreateLogicalRouter inserts LogicalRouter to DB
 func CreateLogicalRouter(tx *sql.Tx, model *models.LogicalRouter) error {
@@ -141,6 +141,32 @@ func CreateLogicalRouter(tx *sql.Tx, model *models.LogicalRouter) error {
 		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
+	}
+
+	stmtServiceInstanceRef, err := tx.Prepare(insertLogicalRouterServiceInstanceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceInstanceRefs create statement failed")
+	}
+	defer stmtServiceInstanceRef.Close()
+	for _, ref := range model.ServiceInstanceRefs {
+
+		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceInstanceRefs create failed")
+		}
+	}
+
+	stmtRouteTableRef, err := tx.Prepare(insertLogicalRouterRouteTableQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing RouteTableRefs create statement failed")
+	}
+	defer stmtRouteTableRef.Close()
+	for _, ref := range model.RouteTableRefs {
+
+		_, err = stmtRouteTableRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "RouteTableRefs create failed")
+		}
 	}
 
 	stmtVirtualNetworkRef, err := tx.Prepare(insertLogicalRouterVirtualNetworkQuery)
@@ -208,42 +234,23 @@ func CreateLogicalRouter(tx *sql.Tx, model *models.LogicalRouter) error {
 		}
 	}
 
-	stmtServiceInstanceRef, err := tx.Prepare(insertLogicalRouterServiceInstanceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceInstanceRefs create statement failed")
-	}
-	defer stmtServiceInstanceRef.Close()
-	for _, ref := range model.ServiceInstanceRefs {
-
-		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceInstanceRefs create failed")
-		}
-	}
-
-	stmtRouteTableRef, err := tx.Prepare(insertLogicalRouterRouteTableQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing RouteTableRefs create statement failed")
-	}
-	defer stmtRouteTableRef.Close()
-	for _, ref := range model.RouteTableRefs {
-
-		_, err = stmtRouteTableRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "RouteTableRefs create failed")
-		}
-	}
-
 	metaData := &common.MetaData{
 		UUID:   model.UUID,
 		Type:   "logical_router",
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "logical_router", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, error) {
@@ -425,26 +432,6 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 
 	}
 
-	if value, ok := values["ref_route_target"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LogicalRouterRouteTargetRef{}
-			referenceModel.UUID = uuid
-			m.RouteTargetRefs = append(m.RouteTargetRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -565,6 +552,26 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 		}
 	}
 
+	if value, ok := values["ref_route_target"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterRouteTargetRef{}
+			referenceModel.UUID = uuid
+			m.RouteTargetRefs = append(m.RouteTargetRefs, referenceModel)
+
+		}
+	}
+
 	return m, nil
 }
 
@@ -633,14 +640,33 @@ func UpdateLogicalRouter(tx *sql.Tx, uuid string, model *models.LogicalRouter) e
 
 // DeleteLogicalRouter deletes a resource
 func DeleteLogicalRouter(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteLogicalRouterQuery
+	deleteQuery := deleteLogicalRouterQuery
+	selectQuery := "select count(uuid) from logical_router where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

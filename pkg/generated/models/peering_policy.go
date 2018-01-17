@@ -6,15 +6,15 @@ import "encoding/json"
 
 // PeeringPolicy
 type PeeringPolicy struct {
-	UUID           string             `json:"uuid"`
-	ParentUUID     string             `json:"parent_uuid"`
-	ParentType     string             `json:"parent_type"`
-	FQName         []string           `json:"fq_name"`
-	PeeringService PeeringServiceType `json:"peering_service"`
-	IDPerms        *IdPermsType       `json:"id_perms"`
-	DisplayName    string             `json:"display_name"`
-	Annotations    *KeyValuePairs     `json:"annotations"`
-	Perms2         *PermType2         `json:"perms2"`
+	Annotations    *KeyValuePairs     `json:"annotations,omitempty"`
+	UUID           string             `json:"uuid,omitempty"`
+	ParentType     string             `json:"parent_type,omitempty"`
+	PeeringService PeeringServiceType `json:"peering_service,omitempty"`
+	ParentUUID     string             `json:"parent_uuid,omitempty"`
+	FQName         []string           `json:"fq_name,omitempty"`
+	IDPerms        *IdPermsType       `json:"id_perms,omitempty"`
+	DisplayName    string             `json:"display_name,omitempty"`
+	Perms2         *PermType2         `json:"perms2,omitempty"`
 }
 
 // String returns json representation of the object
@@ -28,14 +28,14 @@ func MakePeeringPolicy() *PeeringPolicy {
 	return &PeeringPolicy{
 		//TODO(nati): Apply default
 		UUID:           "",
-		ParentUUID:     "",
 		ParentType:     "",
-		FQName:         []string{},
 		PeeringService: MakePeeringServiceType(),
+		Annotations:    MakeKeyValuePairs(),
+		FQName:         []string{},
 		IDPerms:        MakeIdPermsType(),
 		DisplayName:    "",
-		Annotations:    MakeKeyValuePairs(),
 		Perms2:         MakePermType2(),
+		ParentUUID:     "",
 	}
 }
 

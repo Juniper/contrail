@@ -6,7 +6,7 @@ import "encoding/json"
 
 // CommunityAttributes
 type CommunityAttributes struct {
-	CommunityAttribute CommunityAttribute `json:"community_attribute"`
+	CommunityAttribute CommunityAttribute `json:"community_attribute,omitempty"`
 }
 
 // String returns json representation of the object

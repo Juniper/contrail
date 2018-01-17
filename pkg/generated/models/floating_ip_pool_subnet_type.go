@@ -6,7 +6,7 @@ import "encoding/json"
 
 // FloatingIpPoolSubnetType
 type FloatingIpPoolSubnetType struct {
-	SubnetUUID []string `json:"subnet_uuid"`
+	SubnetUUID []string `json:"subnet_uuid,omitempty"`
 }
 
 // String returns json representation of the object

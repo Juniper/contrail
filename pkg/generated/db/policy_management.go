@@ -259,10 +259,17 @@ func CreatePolicyManagement(tx *sql.Tx, model *models.PolicyManagement) error {
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "policy_management", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManagement, error) {
@@ -1753,14 +1760,33 @@ func UpdatePolicyManagement(tx *sql.Tx, uuid string, model *models.PolicyManagem
 
 // DeletePolicyManagement deletes a resource
 func DeletePolicyManagement(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deletePolicyManagementQuery
+	deleteQuery := deletePolicyManagementQuery
+	selectQuery := "select count(uuid) from policy_management where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

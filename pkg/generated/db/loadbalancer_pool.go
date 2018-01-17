@@ -53,11 +53,6 @@ var LoadbalancerPoolFields = []string{
 // LoadbalancerPoolRefFields is db reference fields for LoadbalancerPool
 var LoadbalancerPoolRefFields = map[string][]string{
 
-	"loadbalancer_healthmonitor": {
-	// <common.Schema Value>
-
-	},
-
 	"service_appliance_set": {
 	// <common.Schema Value>
 
@@ -74,6 +69,11 @@ var LoadbalancerPoolRefFields = map[string][]string{
 	},
 
 	"service_instance": {
+	// <common.Schema Value>
+
+	},
+
+	"loadbalancer_healthmonitor": {
 	// <common.Schema Value>
 
 	},
@@ -119,15 +119,15 @@ var LoadbalancerPoolParents = []string{
 	"project",
 }
 
+const insertLoadbalancerPoolLoadbalancerHealthmonitorQuery = "insert into `ref_loadbalancer_pool_loadbalancer_healthmonitor` (`from`, `to` ) values (?, ?);"
+
+const insertLoadbalancerPoolServiceApplianceSetQuery = "insert into `ref_loadbalancer_pool_service_appliance_set` (`from`, `to` ) values (?, ?);"
+
 const insertLoadbalancerPoolVirtualMachineInterfaceQuery = "insert into `ref_loadbalancer_pool_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerPoolLoadbalancerListenerQuery = "insert into `ref_loadbalancer_pool_loadbalancer_listener` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerPoolServiceInstanceQuery = "insert into `ref_loadbalancer_pool_service_instance` (`from`, `to` ) values (?, ?);"
-
-const insertLoadbalancerPoolLoadbalancerHealthmonitorQuery = "insert into `ref_loadbalancer_pool_loadbalancer_healthmonitor` (`from`, `to` ) values (?, ?);"
-
-const insertLoadbalancerPoolServiceApplianceSetQuery = "insert into `ref_loadbalancer_pool_service_appliance_set` (`from`, `to` ) values (?, ?);"
 
 // CreateLoadbalancerPool inserts LoadbalancerPool to DB
 func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
@@ -174,6 +174,19 @@ func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
 		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
+	}
+
+	stmtServiceApplianceSetRef, err := tx.Prepare(insertLoadbalancerPoolServiceApplianceSetQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceApplianceSetRefs create statement failed")
+	}
+	defer stmtServiceApplianceSetRef.Close()
+	for _, ref := range model.ServiceApplianceSetRefs {
+
+		_, err = stmtServiceApplianceSetRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
+		}
 	}
 
 	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertLoadbalancerPoolVirtualMachineInterfaceQuery)
@@ -228,29 +241,23 @@ func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
 		}
 	}
 
-	stmtServiceApplianceSetRef, err := tx.Prepare(insertLoadbalancerPoolServiceApplianceSetQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceApplianceSetRefs create statement failed")
-	}
-	defer stmtServiceApplianceSetRef.Close()
-	for _, ref := range model.ServiceApplianceSetRefs {
-
-		_, err = stmtServiceApplianceSetRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
-		}
-	}
-
 	metaData := &common.MetaData{
 		UUID:   model.UUID,
 		Type:   "loadbalancer_pool",
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "loadbalancer_pool", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPool, error) {
@@ -496,46 +503,6 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 
 	}
 
-	if value, ok := values["ref_loadbalancer_healthmonitor"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LoadbalancerPoolLoadbalancerHealthmonitorRef{}
-			referenceModel.UUID = uuid
-			m.LoadbalancerHealthmonitorRefs = append(m.LoadbalancerHealthmonitorRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_service_appliance_set"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LoadbalancerPoolServiceApplianceSetRef{}
-			referenceModel.UUID = uuid
-			m.ServiceApplianceSetRefs = append(m.ServiceApplianceSetRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -592,6 +559,46 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 			referenceModel := &models.LoadbalancerPoolServiceInstanceRef{}
 			referenceModel.UUID = uuid
 			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_loadbalancer_healthmonitor"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LoadbalancerPoolLoadbalancerHealthmonitorRef{}
+			referenceModel.UUID = uuid
+			m.LoadbalancerHealthmonitorRefs = append(m.LoadbalancerHealthmonitorRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_service_appliance_set"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LoadbalancerPoolServiceApplianceSetRef{}
+			referenceModel.UUID = uuid
+			m.ServiceApplianceSetRefs = append(m.ServiceApplianceSetRefs, referenceModel)
 
 		}
 	}
@@ -893,14 +900,33 @@ func UpdateLoadbalancerPool(tx *sql.Tx, uuid string, model *models.LoadbalancerP
 
 // DeleteLoadbalancerPool deletes a resource
 func DeleteLoadbalancerPool(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteLoadbalancerPoolQuery
+	deleteQuery := deleteLoadbalancerPoolQuery
+	selectQuery := "select count(uuid) from loadbalancer_pool where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

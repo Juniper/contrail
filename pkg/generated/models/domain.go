@@ -6,21 +6,21 @@ import "encoding/json"
 
 // Domain
 type Domain struct {
-	Perms2       *PermType2        `json:"perms2"`
-	UUID         string            `json:"uuid"`
-	ParentUUID   string            `json:"parent_uuid"`
-	IDPerms      *IdPermsType      `json:"id_perms"`
-	DisplayName  string            `json:"display_name"`
-	Annotations  *KeyValuePairs    `json:"annotations"`
-	ParentType   string            `json:"parent_type"`
-	FQName       []string          `json:"fq_name"`
-	DomainLimits *DomainLimitsType `json:"domain_limits"`
+	IDPerms      *IdPermsType      `json:"id_perms,omitempty"`
+	ParentUUID   string            `json:"parent_uuid,omitempty"`
+	Perms2       *PermType2        `json:"perms2,omitempty"`
+	UUID         string            `json:"uuid,omitempty"`
+	ParentType   string            `json:"parent_type,omitempty"`
+	FQName       []string          `json:"fq_name,omitempty"`
+	DomainLimits *DomainLimitsType `json:"domain_limits,omitempty"`
+	DisplayName  string            `json:"display_name,omitempty"`
+	Annotations  *KeyValuePairs    `json:"annotations,omitempty"`
 
-	APIAccessLists   []*APIAccessList   `json:"api_access_lists"`
-	Namespaces       []*Namespace       `json:"namespaces"`
-	Projects         []*Project         `json:"projects"`
-	ServiceTemplates []*ServiceTemplate `json:"service_templates"`
-	VirtualDNSs      []*VirtualDNS      `json:"virtual_DNSs"`
+	APIAccessLists   []*APIAccessList   `json:"api_access_lists,omitempty"`
+	Namespaces       []*Namespace       `json:"namespaces,omitempty"`
+	Projects         []*Project         `json:"projects,omitempty"`
+	ServiceTemplates []*ServiceTemplate `json:"service_templates,omitempty"`
+	VirtualDNSs      []*VirtualDNS      `json:"virtual_DNSs,omitempty"`
 }
 
 // String returns json representation of the object
@@ -33,15 +33,15 @@ func (model *Domain) String() string {
 func MakeDomain() *Domain {
 	return &Domain{
 		//TODO(nati): Apply default
-		DomainLimits: MakeDomainLimitsType(),
-		ParentType:   "",
 		FQName:       []string{},
+		DomainLimits: MakeDomainLimitsType(),
+		DisplayName:  "",
 		Annotations:  MakeKeyValuePairs(),
 		Perms2:       MakePermType2(),
 		UUID:         "",
-		ParentUUID:   "",
+		ParentType:   "",
 		IDPerms:      MakeIdPermsType(),
-		DisplayName:  "",
+		ParentUUID:   "",
 	}
 }
 

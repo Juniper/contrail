@@ -12,9 +12,11 @@ import (
 func TestVirtualMachine(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "virtual_machine")
 	defer func() {
 		common.ClearTable(db, "virtual_machine")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestVirtualMachine(t *testing.T) {
 	model := models.MakeVirtualMachine()
 	model.UUID = "virtual_machine_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "virtual_machine_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateVirtualMachine(tx, model)
@@ -42,6 +45,15 @@ func TestVirtualMachine(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteVirtualMachine(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

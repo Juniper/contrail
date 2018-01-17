@@ -145,10 +145,17 @@ func CreatePhysicalInterface(tx *sql.Tx, model *models.PhysicalInterface) error 
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "physical_interface", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanPhysicalInterface(values map[string]interface{}) (*models.PhysicalInterface, error) {
@@ -609,14 +616,33 @@ func UpdatePhysicalInterface(tx *sql.Tx, uuid string, model *models.PhysicalInte
 
 // DeletePhysicalInterface deletes a resource
 func DeletePhysicalInterface(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deletePhysicalInterfaceQuery
+	deleteQuery := deletePhysicalInterfaceQuery
+	selectQuery := "select count(uuid) from physical_interface where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

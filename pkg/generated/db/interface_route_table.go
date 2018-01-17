@@ -122,10 +122,17 @@ func CreateInterfaceRouteTable(tx *sql.Tx, model *models.InterfaceRouteTable) er
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "interface_route_table", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanInterfaceRouteTable(values map[string]interface{}) (*models.InterfaceRouteTable, error) {
@@ -390,14 +397,33 @@ func UpdateInterfaceRouteTable(tx *sql.Tx, uuid string, model *models.InterfaceR
 
 // DeleteInterfaceRouteTable deletes a resource
 func DeleteInterfaceRouteTable(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteInterfaceRouteTableQuery
+	deleteQuery := deleteInterfaceRouteTableQuery
+	selectQuery := "select count(uuid) from interface_route_table where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

@@ -6,19 +6,19 @@ import "encoding/json"
 
 // KubernetesNode
 type KubernetesNode struct {
-	ProvisioningLog           string         `json:"provisioning_log"`
-	ProvisioningStartTime     string         `json:"provisioning_start_time"`
-	UUID                      string         `json:"uuid"`
-	ParentUUID                string         `json:"parent_uuid"`
-	ParentType                string         `json:"parent_type"`
-	IDPerms                   *IdPermsType   `json:"id_perms"`
-	Annotations               *KeyValuePairs `json:"annotations"`
-	ProvisioningState         string         `json:"provisioning_state"`
-	Perms2                    *PermType2     `json:"perms2"`
-	FQName                    []string       `json:"fq_name"`
-	DisplayName               string         `json:"display_name"`
-	ProvisioningProgress      int            `json:"provisioning_progress"`
-	ProvisioningProgressStage string         `json:"provisioning_progress_stage"`
+	ProvisioningState         string         `json:"provisioning_state,omitempty"`
+	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
+	Perms2                    *PermType2     `json:"perms2,omitempty"`
+	UUID                      string         `json:"uuid,omitempty"`
+	ParentUUID                string         `json:"parent_uuid,omitempty"`
+	FQName                    []string       `json:"fq_name,omitempty"`
+	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
+	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
+	ParentType                string         `json:"parent_type,omitempty"`
+	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName               string         `json:"display_name,omitempty"`
+	ProvisioningProgressStage string         `json:"provisioning_progress_stage,omitempty"`
+	ProvisioningProgress      int            `json:"provisioning_progress,omitempty"`
 }
 
 // String returns json representation of the object
@@ -31,19 +31,19 @@ func (model *KubernetesNode) String() string {
 func MakeKubernetesNode() *KubernetesNode {
 	return &KubernetesNode{
 		//TODO(nati): Apply default
-		Perms2:                    MakePermType2(),
-		FQName:                    []string{},
+		ParentType:                "",
+		IDPerms:                   MakeIdPermsType(),
 		DisplayName:               "",
-		ProvisioningProgress:      0,
 		ProvisioningProgressStage: "",
-		ProvisioningState:         "",
+		ProvisioningProgress:      0,
 		ProvisioningStartTime:     "",
-		UUID:            "",
-		ParentUUID:      "",
-		ParentType:      "",
-		IDPerms:         MakeIdPermsType(),
-		Annotations:     MakeKeyValuePairs(),
-		ProvisioningLog: "",
+		ProvisioningState:         "",
+		ProvisioningLog:           "",
+		Perms2:                    MakePermType2(),
+		UUID:                      "",
+		ParentUUID:                "",
+		FQName:                    []string{},
+		Annotations:               MakeKeyValuePairs(),
 	}
 }
 

@@ -6,7 +6,7 @@ import "encoding/json"
 
 // FlowAgingTimeoutList
 type FlowAgingTimeoutList struct {
-	FlowAgingTimeout []*FlowAgingTimeout `json:"flow_aging_timeout"`
+	FlowAgingTimeout []*FlowAgingTimeout `json:"flow_aging_timeout,omitempty"`
 }
 
 // String returns json representation of the object

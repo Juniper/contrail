@@ -12,9 +12,11 @@ import (
 func TestDashboard(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "dashboard")
 	defer func() {
 		common.ClearTable(db, "dashboard")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestDashboard(t *testing.T) {
 	model := models.MakeDashboard()
 	model.UUID = "dashboard_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "dashboard_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateDashboard(tx, model)
@@ -42,6 +45,15 @@ func TestDashboard(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteDashboard(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

@@ -6,7 +6,7 @@ import "encoding/json"
 
 // FirewallServiceGroupType
 type FirewallServiceGroupType struct {
-	FirewallService []*FirewallServiceType `json:"firewall_service"`
+	FirewallService []*FirewallServiceType `json:"firewall_service,omitempty"`
 }
 
 // String returns json representation of the object

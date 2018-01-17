@@ -6,12 +6,12 @@ import "encoding/json"
 
 // GracefulRestartParametersType
 type GracefulRestartParametersType struct {
-	XMPPHelperEnable     bool                             `json:"xmpp_helper_enable"`
-	RestartTime          GracefulRestartTimeType          `json:"restart_time"`
-	LongLivedRestartTime LongLivedGracefulRestartTimeType `json:"long_lived_restart_time"`
-	Enable               bool                             `json:"enable"`
-	EndOfRibTimeout      EndOfRibTimeType                 `json:"end_of_rib_timeout"`
-	BGPHelperEnable      bool                             `json:"bgp_helper_enable"`
+	XMPPHelperEnable     bool                             `json:"xmpp_helper_enable,omitempty"`
+	RestartTime          GracefulRestartTimeType          `json:"restart_time,omitempty"`
+	LongLivedRestartTime LongLivedGracefulRestartTimeType `json:"long_lived_restart_time,omitempty"`
+	Enable               bool                             `json:"enable,omitempty"`
+	EndOfRibTimeout      EndOfRibTimeType                 `json:"end_of_rib_timeout,omitempty"`
+	BGPHelperEnable      bool                             `json:"bgp_helper_enable,omitempty"`
 }
 
 // String returns json representation of the object
@@ -24,12 +24,12 @@ func (model *GracefulRestartParametersType) String() string {
 func MakeGracefulRestartParametersType() *GracefulRestartParametersType {
 	return &GracefulRestartParametersType{
 		//TODO(nati): Apply default
+		EndOfRibTimeout:      MakeEndOfRibTimeType(),
 		BGPHelperEnable:      false,
 		XMPPHelperEnable:     false,
 		RestartTime:          MakeGracefulRestartTimeType(),
 		LongLivedRestartTime: MakeLongLivedGracefulRestartTimeType(),
 		Enable:               false,
-		EndOfRibTimeout:      MakeEndOfRibTimeType(),
 	}
 }
 

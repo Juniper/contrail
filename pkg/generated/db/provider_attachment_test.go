@@ -12,9 +12,11 @@ import (
 func TestProviderAttachment(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "provider_attachment")
 	defer func() {
 		common.ClearTable(db, "provider_attachment")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestProviderAttachment(t *testing.T) {
 	model := models.MakeProviderAttachment()
 	model.UUID = "provider_attachment_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "provider_attachment_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateProviderAttachment(tx, model)
@@ -42,6 +45,15 @@ func TestProviderAttachment(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteProviderAttachment(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

@@ -6,12 +6,12 @@ import "encoding/json"
 
 // MatchConditionType
 type MatchConditionType struct {
-	DSTPort    *PortType    `json:"dst_port"`
-	Protocol   string       `json:"protocol"`
-	SRCPort    *PortType    `json:"src_port"`
-	SRCAddress *AddressType `json:"src_address"`
-	Ethertype  EtherType    `json:"ethertype"`
-	DSTAddress *AddressType `json:"dst_address"`
+	Protocol   string       `json:"protocol,omitempty"`
+	SRCPort    *PortType    `json:"src_port,omitempty"`
+	SRCAddress *AddressType `json:"src_address,omitempty"`
+	Ethertype  EtherType    `json:"ethertype,omitempty"`
+	DSTAddress *AddressType `json:"dst_address,omitempty"`
+	DSTPort    *PortType    `json:"dst_port,omitempty"`
 }
 
 // String returns json representation of the object
@@ -24,12 +24,12 @@ func (model *MatchConditionType) String() string {
 func MakeMatchConditionType() *MatchConditionType {
 	return &MatchConditionType{
 		//TODO(nati): Apply default
-		DSTAddress: MakeAddressType(),
 		DSTPort:    MakePortType(),
 		Protocol:   "",
 		SRCPort:    MakePortType(),
 		SRCAddress: MakeAddressType(),
 		Ethertype:  MakeEtherType(),
+		DSTAddress: MakeAddressType(),
 	}
 }
 

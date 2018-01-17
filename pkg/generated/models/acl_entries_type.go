@@ -6,8 +6,8 @@ import "encoding/json"
 
 // AclEntriesType
 type AclEntriesType struct {
-	Dynamic bool           `json:"dynamic"`
-	ACLRule []*AclRuleType `json:"acl_rule"`
+	Dynamic bool           `json:"dynamic,omitempty"`
+	ACLRule []*AclRuleType `json:"acl_rule,omitempty"`
 }
 
 // String returns json representation of the object

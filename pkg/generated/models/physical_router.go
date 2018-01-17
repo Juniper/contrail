@@ -6,35 +6,35 @@ import "encoding/json"
 
 // PhysicalRouter
 type PhysicalRouter struct {
-	PhysicalRouterSNMPCredentials   *SNMPCredentials    `json:"physical_router_snmp_credentials"`
-	PhysicalRouterRole              PhysicalRouterRole  `json:"physical_router_role"`
-	PhysicalRouterLLDP              bool                `json:"physical_router_lldp"`
-	UUID                            string              `json:"uuid"`
-	ParentType                      string              `json:"parent_type"`
-	Annotations                     *KeyValuePairs      `json:"annotations"`
-	PhysicalRouterManagementIP      string              `json:"physical_router_management_ip"`
-	PhysicalRouterUserCredentials   *UserCredentials    `json:"physical_router_user_credentials"`
-	PhysicalRouterVNCManaged        bool                `json:"physical_router_vnc_managed"`
-	PhysicalRouterLoopbackIP        string              `json:"physical_router_loopback_ip"`
-	PhysicalRouterImageURI          string              `json:"physical_router_image_uri"`
-	PhysicalRouterJunosServicePorts *JunosServicePorts  `json:"physical_router_junos_service_ports"`
-	IDPerms                         *IdPermsType        `json:"id_perms"`
-	ParentUUID                      string              `json:"parent_uuid"`
-	FQName                          []string            `json:"fq_name"`
-	PhysicalRouterProductName       string              `json:"physical_router_product_name"`
-	TelemetryInfo                   *TelemetryStateInfo `json:"telemetry_info"`
-	PhysicalRouterDataplaneIP       string              `json:"physical_router_dataplane_ip"`
-	Perms2                          *PermType2          `json:"perms2"`
-	PhysicalRouterVendorName        string              `json:"physical_router_vendor_name"`
-	PhysicalRouterSNMP              bool                `json:"physical_router_snmp"`
-	DisplayName                     string              `json:"display_name"`
+	PhysicalRouterImageURI          string              `json:"physical_router_image_uri,omitempty"`
+	PhysicalRouterJunosServicePorts *JunosServicePorts  `json:"physical_router_junos_service_ports,omitempty"`
+	IDPerms                         *IdPermsType        `json:"id_perms,omitempty"`
+	Perms2                          *PermType2          `json:"perms2,omitempty"`
+	PhysicalRouterUserCredentials   *UserCredentials    `json:"physical_router_user_credentials,omitempty"`
+	PhysicalRouterLLDP              bool                `json:"physical_router_lldp,omitempty"`
+	PhysicalRouterVendorName        string              `json:"physical_router_vendor_name,omitempty"`
+	PhysicalRouterLoopbackIP        string              `json:"physical_router_loopback_ip,omitempty"`
+	TelemetryInfo                   *TelemetryStateInfo `json:"telemetry_info,omitempty"`
+	FQName                          []string            `json:"fq_name,omitempty"`
+	Annotations                     *KeyValuePairs      `json:"annotations,omitempty"`
+	ParentUUID                      string              `json:"parent_uuid,omitempty"`
+	PhysicalRouterRole              PhysicalRouterRole  `json:"physical_router_role,omitempty"`
+	PhysicalRouterProductName       string              `json:"physical_router_product_name,omitempty"`
+	PhysicalRouterVNCManaged        bool                `json:"physical_router_vnc_managed,omitempty"`
+	PhysicalRouterSNMP              bool                `json:"physical_router_snmp,omitempty"`
+	PhysicalRouterDataplaneIP       string              `json:"physical_router_dataplane_ip,omitempty"`
+	DisplayName                     string              `json:"display_name,omitempty"`
+	UUID                            string              `json:"uuid,omitempty"`
+	ParentType                      string              `json:"parent_type,omitempty"`
+	PhysicalRouterManagementIP      string              `json:"physical_router_management_ip,omitempty"`
+	PhysicalRouterSNMPCredentials   *SNMPCredentials    `json:"physical_router_snmp_credentials,omitempty"`
 
-	VirtualRouterRefs  []*PhysicalRouterVirtualRouterRef  `json:"virtual_router_refs"`
-	VirtualNetworkRefs []*PhysicalRouterVirtualNetworkRef `json:"virtual_network_refs"`
-	BGPRouterRefs      []*PhysicalRouterBGPRouterRef      `json:"bgp_router_refs"`
+	VirtualNetworkRefs []*PhysicalRouterVirtualNetworkRef `json:"virtual_network_refs,omitempty"`
+	BGPRouterRefs      []*PhysicalRouterBGPRouterRef      `json:"bgp_router_refs,omitempty"`
+	VirtualRouterRefs  []*PhysicalRouterVirtualRouterRef  `json:"virtual_router_refs,omitempty"`
 
-	LogicalInterfaces  []*LogicalInterface  `json:"logical_interfaces"`
-	PhysicalInterfaces []*PhysicalInterface `json:"physical_interfaces"`
+	LogicalInterfaces  []*LogicalInterface  `json:"logical_interfaces,omitempty"`
+	PhysicalInterfaces []*PhysicalInterface `json:"physical_interfaces,omitempty"`
 }
 
 // PhysicalRouterVirtualNetworkRef references each other
@@ -68,28 +68,28 @@ func (model *PhysicalRouter) String() string {
 func MakePhysicalRouter() *PhysicalRouter {
 	return &PhysicalRouter{
 		//TODO(nati): Apply default
-		TelemetryInfo:             MakeTelemetryStateInfo(),
-		PhysicalRouterDataplaneIP: "",
-		Perms2: MakePermType2(),
-		PhysicalRouterProductName:       "",
-		PhysicalRouterSNMP:              false,
-		DisplayName:                     "",
-		PhysicalRouterVendorName:        "",
 		PhysicalRouterRole:              MakePhysicalRouterRole(),
-		PhysicalRouterLLDP:              false,
+		PhysicalRouterProductName:       "",
+		PhysicalRouterLoopbackIP:        "",
+		TelemetryInfo:                   MakeTelemetryStateInfo(),
+		FQName:                          []string{},
+		Annotations:                     MakeKeyValuePairs(),
+		ParentUUID:                      "",
+		PhysicalRouterManagementIP:      "",
+		PhysicalRouterSNMPCredentials:   MakeSNMPCredentials(),
+		PhysicalRouterVNCManaged:        false,
+		PhysicalRouterSNMP:              false,
+		PhysicalRouterDataplaneIP:       "",
+		DisplayName:                     "",
 		UUID:                            "",
 		ParentType:                      "",
-		PhysicalRouterSNMPCredentials:   MakeSNMPCredentials(),
 		PhysicalRouterUserCredentials:   MakeUserCredentials(),
-		PhysicalRouterVNCManaged:        false,
-		PhysicalRouterLoopbackIP:        "",
+		PhysicalRouterLLDP:              false,
 		PhysicalRouterImageURI:          "",
 		PhysicalRouterJunosServicePorts: MakeJunosServicePorts(),
-		IDPerms:                    MakeIdPermsType(),
-		Annotations:                MakeKeyValuePairs(),
-		PhysicalRouterManagementIP: "",
-		FQName:     []string{},
-		ParentUUID: "",
+		IDPerms: MakeIdPermsType(),
+		Perms2:  MakePermType2(),
+		PhysicalRouterVendorName: "",
 	}
 }
 

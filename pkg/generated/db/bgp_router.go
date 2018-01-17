@@ -92,10 +92,17 @@ func CreateBGPRouter(tx *sql.Tx, model *models.BGPRouter) error {
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "bgp_router", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanBGPRouter(values map[string]interface{}) (*models.BGPRouter, error) {
@@ -331,14 +338,33 @@ func UpdateBGPRouter(tx *sql.Tx, uuid string, model *models.BGPRouter) error {
 
 // DeleteBGPRouter deletes a resource
 func DeleteBGPRouter(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteBGPRouterQuery
+	deleteQuery := deleteBGPRouterQuery
+	selectQuery := "select count(uuid) from bgp_router where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

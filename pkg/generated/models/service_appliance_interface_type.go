@@ -6,7 +6,7 @@ import "encoding/json"
 
 // ServiceApplianceInterfaceType
 type ServiceApplianceInterfaceType struct {
-	InterfaceType ServiceInterfaceType `json:"interface_type"`
+	InterfaceType ServiceInterfaceType `json:"interface_type,omitempty"`
 }
 
 // String returns json representation of the object

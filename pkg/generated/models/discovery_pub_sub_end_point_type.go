@@ -6,10 +6,10 @@ import "encoding/json"
 
 // DiscoveryPubSubEndPointType
 type DiscoveryPubSubEndPointType struct {
-	EpVersion string      `json:"ep_version"`
-	EpID      string      `json:"ep_id"`
-	EpType    string      `json:"ep_type"`
-	EpPrefix  *SubnetType `json:"ep_prefix"`
+	EpVersion string      `json:"ep_version,omitempty"`
+	EpID      string      `json:"ep_id,omitempty"`
+	EpType    string      `json:"ep_type,omitempty"`
+	EpPrefix  *SubnetType `json:"ep_prefix,omitempty"`
 }
 
 // String returns json representation of the object
@@ -22,10 +22,10 @@ func (model *DiscoveryPubSubEndPointType) String() string {
 func MakeDiscoveryPubSubEndPointType() *DiscoveryPubSubEndPointType {
 	return &DiscoveryPubSubEndPointType{
 		//TODO(nati): Apply default
+		EpVersion: "",
 		EpID:      "",
 		EpType:    "",
 		EpPrefix:  MakeSubnetType(),
-		EpVersion: "",
 	}
 }
 

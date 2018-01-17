@@ -6,9 +6,9 @@ import "encoding/json"
 
 // MACMoveLimitControlType
 type MACMoveLimitControlType struct {
-	MacMoveTimeWindow  MACMoveTimeWindow        `json:"mac_move_time_window"`
-	MacMoveLimit       int                      `json:"mac_move_limit"`
-	MacMoveLimitAction MACLimitExceedActionType `json:"mac_move_limit_action"`
+	MacMoveTimeWindow  MACMoveTimeWindow        `json:"mac_move_time_window,omitempty"`
+	MacMoveLimit       int                      `json:"mac_move_limit,omitempty"`
+	MacMoveLimitAction MACLimitExceedActionType `json:"mac_move_limit_action,omitempty"`
 }
 
 // String returns json representation of the object

@@ -12,9 +12,11 @@ import (
 func TestApplicationPolicySet(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "application_policy_set")
 	defer func() {
 		common.ClearTable(db, "application_policy_set")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestApplicationPolicySet(t *testing.T) {
 	model := models.MakeApplicationPolicySet()
 	model.UUID = "application_policy_set_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "application_policy_set_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateApplicationPolicySet(tx, model)
@@ -42,6 +45,15 @@ func TestApplicationPolicySet(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteApplicationPolicySet(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

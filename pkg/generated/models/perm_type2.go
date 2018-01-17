@@ -6,10 +6,10 @@ import "encoding/json"
 
 // PermType2
 type PermType2 struct {
-	Owner        string       `json:"owner"`
-	OwnerAccess  AccessType   `json:"owner_access"`
-	GlobalAccess AccessType   `json:"global_access"`
-	Share        []*ShareType `json:"share"`
+	Share        []*ShareType `json:"share,omitempty"`
+	Owner        string       `json:"owner,omitempty"`
+	OwnerAccess  AccessType   `json:"owner_access,omitempty"`
+	GlobalAccess AccessType   `json:"global_access,omitempty"`
 }
 
 // String returns json representation of the object

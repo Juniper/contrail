@@ -6,9 +6,9 @@ import "encoding/json"
 
 // ControlTrafficDscpType
 type ControlTrafficDscpType struct {
-	Analytics DscpValueType `json:"analytics"`
-	DNS       DscpValueType `json:"dns"`
-	Control   DscpValueType `json:"control"`
+	Control   DscpValueType `json:"control,omitempty"`
+	Analytics DscpValueType `json:"analytics,omitempty"`
+	DNS       DscpValueType `json:"dns,omitempty"`
 }
 
 // String returns json representation of the object

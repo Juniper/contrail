@@ -6,19 +6,19 @@ import "encoding/json"
 
 // GlobalQosConfig
 type GlobalQosConfig struct {
-	IDPerms            *IdPermsType            `json:"id_perms"`
-	DisplayName        string                  `json:"display_name"`
-	Annotations        *KeyValuePairs          `json:"annotations"`
-	Perms2             *PermType2              `json:"perms2"`
-	ParentType         string                  `json:"parent_type"`
-	FQName             []string                `json:"fq_name"`
-	ControlTrafficDSCP *ControlTrafficDscpType `json:"control_traffic_dscp"`
-	UUID               string                  `json:"uuid"`
-	ParentUUID         string                  `json:"parent_uuid"`
+	Annotations        *KeyValuePairs          `json:"annotations,omitempty"`
+	UUID               string                  `json:"uuid,omitempty"`
+	ControlTrafficDSCP *ControlTrafficDscpType `json:"control_traffic_dscp,omitempty"`
+	ParentUUID         string                  `json:"parent_uuid,omitempty"`
+	ParentType         string                  `json:"parent_type,omitempty"`
+	FQName             []string                `json:"fq_name,omitempty"`
+	IDPerms            *IdPermsType            `json:"id_perms,omitempty"`
+	DisplayName        string                  `json:"display_name,omitempty"`
+	Perms2             *PermType2              `json:"perms2,omitempty"`
 
-	ForwardingClasss []*ForwardingClass `json:"forwarding_classs"`
-	QosConfigs       []*QosConfig       `json:"qos_configs"`
-	QosQueues        []*QosQueue        `json:"qos_queues"`
+	ForwardingClasss []*ForwardingClass `json:"forwarding_classs,omitempty"`
+	QosConfigs       []*QosConfig       `json:"qos_configs,omitempty"`
+	QosQueues        []*QosQueue        `json:"qos_queues,omitempty"`
 }
 
 // String returns json representation of the object
@@ -32,14 +32,14 @@ func MakeGlobalQosConfig() *GlobalQosConfig {
 	return &GlobalQosConfig{
 		//TODO(nati): Apply default
 		ControlTrafficDSCP: MakeControlTrafficDscpType(),
-		UUID:               "",
 		ParentUUID:         "",
-		Perms2:             MakePermType2(),
 		ParentType:         "",
 		FQName:             []string{},
 		IDPerms:            MakeIdPermsType(),
 		DisplayName:        "",
+		Perms2:             MakePermType2(),
 		Annotations:        MakeKeyValuePairs(),
+		UUID:               "",
 	}
 }
 

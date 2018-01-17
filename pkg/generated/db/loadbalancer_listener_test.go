@@ -12,9 +12,11 @@ import (
 func TestLoadbalancerListener(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "loadbalancer_listener")
 	defer func() {
 		common.ClearTable(db, "loadbalancer_listener")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestLoadbalancerListener(t *testing.T) {
 	model := models.MakeLoadbalancerListener()
 	model.UUID = "loadbalancer_listener_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "loadbalancer_listener_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateLoadbalancerListener(tx, model)
@@ -42,6 +45,15 @@ func TestLoadbalancerListener(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteLoadbalancerListener(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

@@ -101,10 +101,17 @@ func CreateQosQueue(tx *sql.Tx, model *models.QosQueue) error {
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "qos_queue", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanQosQueue(values map[string]interface{}) (*models.QosQueue, error) {
@@ -364,14 +371,33 @@ func UpdateQosQueue(tx *sql.Tx, uuid string, model *models.QosQueue) error {
 
 // DeleteQosQueue deletes a resource
 func DeleteQosQueue(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteQosQueueQuery
+	deleteQuery := deleteQosQueueQuery
+	selectQuery := "select count(uuid) from qos_queue where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

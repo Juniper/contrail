@@ -6,7 +6,7 @@ import "encoding/json"
 
 // MacAddressesType
 type MacAddressesType struct {
-	MacAddress []string `json:"mac_address"`
+	MacAddress []string `json:"mac_address,omitempty"`
 }
 
 // String returns json representation of the object

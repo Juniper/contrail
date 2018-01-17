@@ -276,10 +276,17 @@ func CreatePhysicalRouter(tx *sql.Tx, model *models.PhysicalRouter) error {
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "physical_router", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, error) {
@@ -707,6 +714,26 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 
 	}
 
+	if value, ok := values["ref_virtual_router"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.PhysicalRouterVirtualRouterRef{}
+			referenceModel.UUID = uuid
+			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_virtual_network"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -743,26 +770,6 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 			referenceModel := &models.PhysicalRouterBGPRouterRef{}
 			referenceModel.UUID = uuid
 			m.BGPRouterRefs = append(m.BGPRouterRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_virtual_router"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.PhysicalRouterVirtualRouterRef{}
-			referenceModel.UUID = uuid
-			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
 
 		}
 	}
@@ -1221,14 +1228,33 @@ func UpdatePhysicalRouter(tx *sql.Tx, uuid string, model *models.PhysicalRouter)
 
 // DeletePhysicalRouter deletes a resource
 func DeletePhysicalRouter(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deletePhysicalRouterQuery
+	deleteQuery := deletePhysicalRouterQuery
+	selectQuery := "select count(uuid) from physical_router where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

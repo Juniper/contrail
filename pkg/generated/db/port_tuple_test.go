@@ -12,9 +12,11 @@ import (
 func TestPortTuple(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "port_tuple")
 	defer func() {
 		common.ClearTable(db, "port_tuple")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestPortTuple(t *testing.T) {
 	model := models.MakePortTuple()
 	model.UUID = "port_tuple_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "port_tuple_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreatePortTuple(tx, model)
@@ -42,6 +45,15 @@ func TestPortTuple(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeletePortTuple(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
