@@ -37,11 +37,9 @@ func access(dataSource map[string]interface{}, path []string, ok *bool, isSet bo
 	} else if isSet {
 		dataSource[currentAttr] = map[string]interface{}{}
 		currentSource = dataSource[currentAttr].(map[string]interface{})
-		for index, element := range path {
-			if !(index == len(path)-1) {
-				currentSource[element] = map[string]interface{}{}
-				currentSource = currentSource[element].(map[string]interface{})
-			}
+		for _, element := range path {
+			currentSource[element] = map[string]interface{}{}
+			currentSource = currentSource[element].(map[string]interface{})
 		}
 		*ok = true
 	} else {
