@@ -23,11 +23,11 @@ func (model *PermType) String() string {
 func MakePermType() *PermType {
 	return &PermType{
 		//TODO(nati): Apply default
+		Owner:       "",
+		OwnerAccess: MakeAccessType(),
 		OtherAccess: MakeAccessType(),
 		Group:       "",
 		GroupAccess: MakeAccessType(),
-		Owner:       "",
-		OwnerAccess: MakeAccessType(),
 	}
 }
 

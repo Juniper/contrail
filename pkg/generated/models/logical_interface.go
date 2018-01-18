@@ -6,16 +6,16 @@ import "encoding/json"
 
 // LogicalInterface
 type LogicalInterface struct {
-	LogicalInterfaceVlanTag int                  `json:"logical_interface_vlan_tag,omitempty"`
-	Annotations             *KeyValuePairs       `json:"annotations,omitempty"`
-	Perms2                  *PermType2           `json:"perms2,omitempty"`
 	UUID                    string               `json:"uuid,omitempty"`
 	ParentType              string               `json:"parent_type,omitempty"`
 	FQName                  []string             `json:"fq_name,omitempty"`
-	LogicalInterfaceType    LogicalInterfaceType `json:"logical_interface_type,omitempty"`
-	DisplayName             string               `json:"display_name,omitempty"`
-	ParentUUID              string               `json:"parent_uuid,omitempty"`
 	IDPerms                 *IdPermsType         `json:"id_perms,omitempty"`
+	DisplayName             string               `json:"display_name,omitempty"`
+	LogicalInterfaceVlanTag int                  `json:"logical_interface_vlan_tag,omitempty"`
+	LogicalInterfaceType    LogicalInterfaceType `json:"logical_interface_type,omitempty"`
+	ParentUUID              string               `json:"parent_uuid,omitempty"`
+	Annotations             *KeyValuePairs       `json:"annotations,omitempty"`
+	Perms2                  *PermType2           `json:"perms2,omitempty"`
 
 	VirtualMachineInterfaceRefs []*LogicalInterfaceVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 }
@@ -38,15 +38,15 @@ func MakeLogicalInterface() *LogicalInterface {
 	return &LogicalInterface{
 		//TODO(nati): Apply default
 		FQName:                  []string{},
-		LogicalInterfaceVlanTag: 0,
-		Annotations:             MakeKeyValuePairs(),
-		Perms2:                  MakePermType2(),
+		IDPerms:                 MakeIdPermsType(),
+		DisplayName:             "",
 		UUID:                    "",
 		ParentType:              "",
-		LogicalInterfaceType:    MakeLogicalInterfaceType(),
-		DisplayName:             "",
 		ParentUUID:              "",
-		IDPerms:                 MakeIdPermsType(),
+		Annotations:             MakeKeyValuePairs(),
+		Perms2:                  MakePermType2(),
+		LogicalInterfaceVlanTag: 0,
+		LogicalInterfaceType:    MakeLogicalInterfaceType(),
 	}
 }
 

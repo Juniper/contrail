@@ -42,14 +42,14 @@ var FirewallPolicyFields = []string{
 // FirewallPolicyRefFields is db reference fields for FirewallPolicy
 var FirewallPolicyRefFields = map[string][]string{
 
-	"security_logging_object": {
-	// <common.Schema Value>
-
-	},
-
 	"firewall_rule": {
 		// <common.Schema Value>
 		"sequence",
+	},
+
+	"security_logging_object": {
+	// <common.Schema Value>
+
 	},
 }
 
@@ -59,9 +59,9 @@ var FirewallPolicyBackRefFields = map[string][]string{}
 // FirewallPolicyParentTypes is possible parents for FirewallPolicy
 var FirewallPolicyParents = []string{
 
-	"policy_management",
-
 	"project",
+
+	"policy_management",
 }
 
 const insertFirewallPolicyFirewallRuleQuery = "insert into `ref_firewall_policy_firewall_rule` (`from`, `to` ,`sequence`) values (?, ?,?);"

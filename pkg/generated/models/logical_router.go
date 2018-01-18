@@ -8,43 +8,22 @@ import "encoding/json"
 type LogicalRouter struct {
 	VxlanNetworkIdentifier    string           `json:"vxlan_network_identifier,omitempty"`
 	ConfiguredRouteTargetList *RouteTargetList `json:"configured_route_target_list,omitempty"`
-	ParentType                string           `json:"parent_type,omitempty"`
-	Annotations               *KeyValuePairs   `json:"annotations,omitempty"`
-	UUID                      string           `json:"uuid,omitempty"`
-	ParentUUID                string           `json:"parent_uuid,omitempty"`
 	FQName                    []string         `json:"fq_name,omitempty"`
 	IDPerms                   *IdPermsType     `json:"id_perms,omitempty"`
 	DisplayName               string           `json:"display_name,omitempty"`
+	Annotations               *KeyValuePairs   `json:"annotations,omitempty"`
+	ParentUUID                string           `json:"parent_uuid,omitempty"`
+	ParentType                string           `json:"parent_type,omitempty"`
 	Perms2                    *PermType2       `json:"perms2,omitempty"`
+	UUID                      string           `json:"uuid,omitempty"`
 
-	BGPVPNRefs                  []*LogicalRouterBGPVPNRef                  `json:"bgpvpn_refs,omitempty"`
 	RouteTargetRefs             []*LogicalRouterRouteTargetRef             `json:"route_target_refs,omitempty"`
 	VirtualMachineInterfaceRefs []*LogicalRouterVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 	ServiceInstanceRefs         []*LogicalRouterServiceInstanceRef         `json:"service_instance_refs,omitempty"`
 	RouteTableRefs              []*LogicalRouterRouteTableRef              `json:"route_table_refs,omitempty"`
 	VirtualNetworkRefs          []*LogicalRouterVirtualNetworkRef          `json:"virtual_network_refs,omitempty"`
 	PhysicalRouterRefs          []*LogicalRouterPhysicalRouterRef          `json:"physical_router_refs,omitempty"`
-}
-
-// LogicalRouterBGPVPNRef references each other
-type LogicalRouterBGPVPNRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// LogicalRouterRouteTargetRef references each other
-type LogicalRouterRouteTargetRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// LogicalRouterVirtualMachineInterfaceRef references each other
-type LogicalRouterVirtualMachineInterfaceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
+	BGPVPNRefs                  []*LogicalRouterBGPVPNRef                  `json:"bgpvpn_refs,omitempty"`
 }
 
 // LogicalRouterServiceInstanceRef references each other
@@ -75,6 +54,27 @@ type LogicalRouterPhysicalRouterRef struct {
 
 }
 
+// LogicalRouterBGPVPNRef references each other
+type LogicalRouterBGPVPNRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
+// LogicalRouterRouteTargetRef references each other
+type LogicalRouterRouteTargetRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
+// LogicalRouterVirtualMachineInterfaceRef references each other
+type LogicalRouterVirtualMachineInterfaceRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
 // String returns json representation of the object
 func (model *LogicalRouter) String() string {
 	b, _ := json.Marshal(model)
@@ -85,16 +85,16 @@ func (model *LogicalRouter) String() string {
 func MakeLogicalRouter() *LogicalRouter {
 	return &LogicalRouter{
 		//TODO(nati): Apply default
-		ConfiguredRouteTargetList: MakeRouteTargetList(),
-		ParentType:                "",
-		Annotations:               MakeKeyValuePairs(),
+		Perms2:                    MakePermType2(),
 		UUID:                      "",
 		ParentUUID:                "",
+		ParentType:                "",
 		VxlanNetworkIdentifier:    "",
-		IDPerms:                   MakeIdPermsType(),
-		DisplayName:               "",
-		Perms2:                    MakePermType2(),
-		FQName:                    []string{},
+		ConfiguredRouteTargetList: MakeRouteTargetList(),
+		FQName:      []string{},
+		IDPerms:     MakeIdPermsType(),
+		DisplayName: "",
+		Annotations: MakeKeyValuePairs(),
 	}
 }
 

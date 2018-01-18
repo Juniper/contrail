@@ -6,29 +6,29 @@ import "encoding/json"
 
 // E2ServiceProvider
 type E2ServiceProvider struct {
+	ParentType                   string         `json:"parent_type,omitempty"`
+	FQName                       []string       `json:"fq_name,omitempty"`
+	IDPerms                      *IdPermsType   `json:"id_perms,omitempty"`
+	Annotations                  *KeyValuePairs `json:"annotations,omitempty"`
 	UUID                         string         `json:"uuid,omitempty"`
 	ParentUUID                   string         `json:"parent_uuid,omitempty"`
 	E2ServiceProviderPromiscuous bool           `json:"e2_service_provider_promiscuous"`
-	ParentType                   string         `json:"parent_type,omitempty"`
-	IDPerms                      *IdPermsType   `json:"id_perms,omitempty"`
-	Annotations                  *KeyValuePairs `json:"annotations,omitempty"`
 	Perms2                       *PermType2     `json:"perms2,omitempty"`
-	FQName                       []string       `json:"fq_name,omitempty"`
 	DisplayName                  string         `json:"display_name,omitempty"`
 
 	PhysicalRouterRefs []*E2ServiceProviderPhysicalRouterRef `json:"physical_router_refs,omitempty"`
 	PeeringPolicyRefs  []*E2ServiceProviderPeeringPolicyRef  `json:"peering_policy_refs,omitempty"`
 }
 
-// E2ServiceProviderPeeringPolicyRef references each other
-type E2ServiceProviderPeeringPolicyRef struct {
+// E2ServiceProviderPhysicalRouterRef references each other
+type E2ServiceProviderPhysicalRouterRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 
 }
 
-// E2ServiceProviderPhysicalRouterRef references each other
-type E2ServiceProviderPhysicalRouterRef struct {
+// E2ServiceProviderPeeringPolicyRef references each other
+type E2ServiceProviderPeeringPolicyRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 
@@ -44,15 +44,15 @@ func (model *E2ServiceProvider) String() string {
 func MakeE2ServiceProvider() *E2ServiceProvider {
 	return &E2ServiceProvider{
 		//TODO(nati): Apply default
-		IDPerms:                      MakeIdPermsType(),
-		Annotations:                  MakeKeyValuePairs(),
-		Perms2:                       MakePermType2(),
-		UUID:                         "",
-		ParentUUID:                   "",
 		E2ServiceProviderPromiscuous: false,
-		ParentType:                   "",
-		FQName:                       []string{},
-		DisplayName:                  "",
+		Perms2:      MakePermType2(),
+		DisplayName: "",
+		Annotations: MakeKeyValuePairs(),
+		UUID:        "",
+		ParentUUID:  "",
+		ParentType:  "",
+		FQName:      []string{},
+		IDPerms:     MakeIdPermsType(),
 	}
 }
 

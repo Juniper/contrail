@@ -6,15 +6,15 @@ import "encoding/json"
 
 // Domain
 type Domain struct {
-	ParentType   string            `json:"parent_type,omitempty"`
-	DisplayName  string            `json:"display_name,omitempty"`
-	UUID         string            `json:"uuid,omitempty"`
-	DomainLimits *DomainLimitsType `json:"domain_limits,omitempty"`
-	ParentUUID   string            `json:"parent_uuid,omitempty"`
-	FQName       []string          `json:"fq_name,omitempty"`
 	IDPerms      *IdPermsType      `json:"id_perms,omitempty"`
+	DisplayName  string            `json:"display_name,omitempty"`
+	DomainLimits *DomainLimitsType `json:"domain_limits,omitempty"`
 	Annotations  *KeyValuePairs    `json:"annotations,omitempty"`
 	Perms2       *PermType2        `json:"perms2,omitempty"`
+	UUID         string            `json:"uuid,omitempty"`
+	ParentUUID   string            `json:"parent_uuid,omitempty"`
+	ParentType   string            `json:"parent_type,omitempty"`
+	FQName       []string          `json:"fq_name,omitempty"`
 
 	APIAccessLists   []*APIAccessList   `json:"api_access_lists,omitempty"`
 	Namespaces       []*Namespace       `json:"namespaces,omitempty"`
@@ -34,14 +34,14 @@ func MakeDomain() *Domain {
 	return &Domain{
 		//TODO(nati): Apply default
 		ParentType:   "",
-		DisplayName:  "",
-		UUID:         "",
-		Perms2:       MakePermType2(),
-		DomainLimits: MakeDomainLimitsType(),
-		ParentUUID:   "",
 		FQName:       []string{},
-		IDPerms:      MakeIdPermsType(),
+		DisplayName:  "",
+		DomainLimits: MakeDomainLimitsType(),
 		Annotations:  MakeKeyValuePairs(),
+		Perms2:       MakePermType2(),
+		UUID:         "",
+		ParentUUID:   "",
+		IDPerms:      MakeIdPermsType(),
 	}
 }
 

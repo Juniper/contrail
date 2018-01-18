@@ -49,12 +49,12 @@ var FloatingIPFields = []string{
 // FloatingIPRefFields is db reference fields for FloatingIP
 var FloatingIPRefFields = map[string][]string{
 
-	"project": {
+	"virtual_machine_interface": {
 	// <common.Schema Value>
 
 	},
 
-	"virtual_machine_interface": {
+	"project": {
 	// <common.Schema Value>
 
 	},
@@ -66,14 +66,14 @@ var FloatingIPBackRefFields = map[string][]string{}
 // FloatingIPParentTypes is possible parents for FloatingIP
 var FloatingIPParents = []string{
 
-	"instance_ip",
-
 	"floating_ip_pool",
+
+	"instance_ip",
 }
 
-const insertFloatingIPProjectQuery = "insert into `ref_floating_ip_project` (`from`, `to` ) values (?, ?);"
-
 const insertFloatingIPVirtualMachineInterfaceQuery = "insert into `ref_floating_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
+
+const insertFloatingIPProjectQuery = "insert into `ref_floating_ip_project` (`from`, `to` ) values (?, ?);"
 
 // CreateFloatingIP inserts FloatingIP to DB
 func CreateFloatingIP(tx *sql.Tx, model *models.FloatingIP) error {
@@ -119,19 +119,6 @@ func CreateFloatingIP(tx *sql.Tx, model *models.FloatingIP) error {
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertFloatingIPVirtualMachineInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
-	}
-	defer stmtVirtualMachineInterfaceRef.Close()
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
 	stmtProjectRef, err := tx.Prepare(insertFloatingIPProjectQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ProjectRefs create statement failed")
@@ -142,6 +129,19 @@ func CreateFloatingIP(tx *sql.Tx, model *models.FloatingIP) error {
 		_, err = stmtProjectRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ProjectRefs create failed")
+		}
+	}
+
+	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertFloatingIPVirtualMachineInterfaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
+	}
+	defer stmtVirtualMachineInterfaceRef.Close()
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
 	}
 

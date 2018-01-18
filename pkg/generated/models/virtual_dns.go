@@ -6,15 +6,15 @@ import "encoding/json"
 
 // VirtualDNS
 type VirtualDNS struct {
+	IDPerms        *IdPermsType    `json:"id_perms,omitempty"`
 	Annotations    *KeyValuePairs  `json:"annotations,omitempty"`
-	Perms2         *PermType2      `json:"perms2,omitempty"`
+	UUID           string          `json:"uuid,omitempty"`
 	ParentUUID     string          `json:"parent_uuid,omitempty"`
 	ParentType     string          `json:"parent_type,omitempty"`
-	IDPerms        *IdPermsType    `json:"id_perms,omitempty"`
-	DisplayName    string          `json:"display_name,omitempty"`
-	UUID           string          `json:"uuid,omitempty"`
-	FQName         []string        `json:"fq_name,omitempty"`
+	Perms2         *PermType2      `json:"perms2,omitempty"`
 	VirtualDNSData *VirtualDnsType `json:"virtual_DNS_data,omitempty"`
+	FQName         []string        `json:"fq_name,omitempty"`
+	DisplayName    string          `json:"display_name,omitempty"`
 
 	VirtualDNSRecords []*VirtualDNSRecord `json:"virtual_DNS_records,omitempty"`
 }
@@ -29,15 +29,15 @@ func (model *VirtualDNS) String() string {
 func MakeVirtualDNS() *VirtualDNS {
 	return &VirtualDNS{
 		//TODO(nati): Apply default
-		VirtualDNSData: MakeVirtualDnsType(),
-		DisplayName:    "",
-		UUID:           "",
 		FQName:         []string{},
-		IDPerms:        MakeIdPermsType(),
-		Annotations:    MakeKeyValuePairs(),
+		DisplayName:    "",
 		Perms2:         MakePermType2(),
+		VirtualDNSData: MakeVirtualDnsType(),
 		ParentUUID:     "",
 		ParentType:     "",
+		IDPerms:        MakeIdPermsType(),
+		Annotations:    MakeKeyValuePairs(),
+		UUID:           "",
 	}
 }
 

@@ -6,14 +6,14 @@ import "encoding/json"
 
 // CustomerAttachment
 type CustomerAttachment struct {
-	Perms2      *PermType2     `json:"perms2,omitempty"`
-	UUID        string         `json:"uuid,omitempty"`
-	ParentUUID  string         `json:"parent_uuid,omitempty"`
-	ParentType  string         `json:"parent_type,omitempty"`
 	FQName      []string       `json:"fq_name,omitempty"`
 	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
 	DisplayName string         `json:"display_name,omitempty"`
 	Annotations *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2      *PermType2     `json:"perms2,omitempty"`
+	UUID        string         `json:"uuid,omitempty"`
+	ParentUUID  string         `json:"parent_uuid,omitempty"`
+	ParentType  string         `json:"parent_type,omitempty"`
 
 	VirtualMachineInterfaceRefs []*CustomerAttachmentVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 	FloatingIPRefs              []*CustomerAttachmentFloatingIPRef              `json:"floating_ip_refs,omitempty"`

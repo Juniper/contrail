@@ -20,9 +20,10 @@ func (model *AclEntriesType) String() string {
 func MakeAclEntriesType() *AclEntriesType {
 	return &AclEntriesType{
 		//TODO(nati): Apply default
-		Dynamic: false,
 
 		ACLRule: MakeAclRuleTypeSlice(),
+
+		Dynamic: false,
 	}
 }
 

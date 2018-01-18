@@ -26,7 +26,7 @@ func TestContrailAnalyticsNode(t *testing.T) {
 	model.FQName = []string{"default", "default-domain", "contrail_analytics_node_dummy"}
 	model.Perms2.Owner = "admin"
 	updateMap := map[string]interface{}{}
-	common.SetValueByPath(updateMap, "uuid", ".", "access_control_list_dummy_uuid")
+	common.SetValueByPath(updateMap, "uuid", ".", "contrail_analytics_node_dummy_uuid")
 	common.SetValueByPath(updateMap, "fq_name", ".", []string{"default", "default-domain", "access_control_list_dummy"})
 	common.SetValueByPath(updateMap, "display_name", ".", "test_update")
 

@@ -26,7 +26,7 @@ func TestE2ServiceProvider(t *testing.T) {
 	model.FQName = []string{"default", "default-domain", "e2_service_provider_dummy"}
 	model.Perms2.Owner = "admin"
 	updateMap := map[string]interface{}{}
-	common.SetValueByPath(updateMap, "uuid", ".", "access_control_list_dummy_uuid")
+	common.SetValueByPath(updateMap, "uuid", ".", "e2_service_provider_dummy_uuid")
 	common.SetValueByPath(updateMap, "fq_name", ".", []string{"default", "default-domain", "access_control_list_dummy"})
 	common.SetValueByPath(updateMap, "display_name", ".", "test_update")
 

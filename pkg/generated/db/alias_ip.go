@@ -64,9 +64,9 @@ var AliasIPParents = []string{
 	"alias_ip_pool",
 }
 
-const insertAliasIPProjectQuery = "insert into `ref_alias_ip_project` (`from`, `to` ) values (?, ?);"
-
 const insertAliasIPVirtualMachineInterfaceQuery = "insert into `ref_alias_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
+
+const insertAliasIPProjectQuery = "insert into `ref_alias_ip_project` (`from`, `to` ) values (?, ?);"
 
 // CreateAliasIP inserts AliasIP to DB
 func CreateAliasIP(tx *sql.Tx, model *models.AliasIP) error {

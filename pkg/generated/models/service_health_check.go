@@ -6,14 +6,14 @@ import "encoding/json"
 
 // ServiceHealthCheck
 type ServiceHealthCheck struct {
+	UUID                         string                  `json:"uuid,omitempty"`
+	IDPerms                      *IdPermsType            `json:"id_perms,omitempty"`
+	DisplayName                  string                  `json:"display_name,omitempty"`
 	Perms2                       *PermType2              `json:"perms2,omitempty"`
 	ServiceHealthCheckProperties *ServiceHealthCheckType `json:"service_health_check_properties,omitempty"`
 	ParentType                   string                  `json:"parent_type,omitempty"`
 	FQName                       []string                `json:"fq_name,omitempty"`
-	IDPerms                      *IdPermsType            `json:"id_perms,omitempty"`
-	DisplayName                  string                  `json:"display_name,omitempty"`
 	Annotations                  *KeyValuePairs          `json:"annotations,omitempty"`
-	UUID                         string                  `json:"uuid,omitempty"`
 	ParentUUID                   string                  `json:"parent_uuid,omitempty"`
 
 	ServiceInstanceRefs []*ServiceHealthCheckServiceInstanceRef `json:"service_instance_refs,omitempty"`
@@ -37,15 +37,15 @@ func (model *ServiceHealthCheck) String() string {
 func MakeServiceHealthCheck() *ServiceHealthCheck {
 	return &ServiceHealthCheck{
 		//TODO(nati): Apply default
-		UUID:                         "",
 		ParentUUID:                   "",
+		ParentType:                   "",
 		FQName:                       []string{},
-		IDPerms:                      MakeIdPermsType(),
-		DisplayName:                  "",
 		Annotations:                  MakeKeyValuePairs(),
 		ServiceHealthCheckProperties: MakeServiceHealthCheckType(),
-		ParentType:                   "",
-		Perms2:                       MakePermType2(),
+		UUID:        "",
+		IDPerms:     MakeIdPermsType(),
+		DisplayName: "",
+		Perms2:      MakePermType2(),
 	}
 }
 

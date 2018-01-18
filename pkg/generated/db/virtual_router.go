@@ -169,19 +169,6 @@ func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtVirtualMachineRef, err := tx.Prepare(insertVirtualRouterVirtualMachineQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineRefs create statement failed")
-	}
-	defer stmtVirtualMachineRef.Close()
-	for _, ref := range model.VirtualMachineRefs {
-
-		_, err = stmtVirtualMachineRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineRefs create failed")
-		}
-	}
-
 	stmtNetworkIpamRef, err := tx.Prepare(insertVirtualRouterNetworkIpamQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing NetworkIpamRefs create statement failed")
@@ -197,6 +184,19 @@ func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
 			common.MustJSON(ref.Attr.AllocationPools))
 		if err != nil {
 			return errors.Wrap(err, "NetworkIpamRefs create failed")
+		}
+	}
+
+	stmtVirtualMachineRef, err := tx.Prepare(insertVirtualRouterVirtualMachineQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineRefs create statement failed")
+	}
+	defer stmtVirtualMachineRef.Close()
+	for _, ref := range model.VirtualMachineRefs {
+
+		_, err = stmtVirtualMachineRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineRefs create failed")
 		}
 	}
 

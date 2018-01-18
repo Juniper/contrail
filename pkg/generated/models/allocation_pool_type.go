@@ -6,9 +6,9 @@ import "encoding/json"
 
 // AllocationPoolType
 type AllocationPoolType struct {
-	VrouterSpecificPool bool   `json:"vrouter_specific_pool"`
 	Start               string `json:"start,omitempty"`
 	End                 string `json:"end,omitempty"`
+	VrouterSpecificPool bool   `json:"vrouter_specific_pool"`
 }
 
 // String returns json representation of the object
@@ -21,9 +21,9 @@ func (model *AllocationPoolType) String() string {
 func MakeAllocationPoolType() *AllocationPoolType {
 	return &AllocationPoolType{
 		//TODO(nati): Apply default
-		VrouterSpecificPool: false,
 		Start:               "",
 		End:                 "",
+		VrouterSpecificPool: false,
 	}
 }
 

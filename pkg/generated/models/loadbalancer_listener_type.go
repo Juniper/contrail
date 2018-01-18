@@ -6,12 +6,12 @@ import "encoding/json"
 
 // LoadbalancerListenerType
 type LoadbalancerListenerType struct {
-	ProtocolPort        int                      `json:"protocol_port,omitempty"`
 	DefaultTLSContainer string                   `json:"default_tls_container,omitempty"`
 	Protocol            LoadbalancerProtocolType `json:"protocol,omitempty"`
 	ConnectionLimit     int                      `json:"connection_limit,omitempty"`
 	AdminState          bool                     `json:"admin_state"`
 	SniContainers       []string                 `json:"sni_containers,omitempty"`
+	ProtocolPort        int                      `json:"protocol_port,omitempty"`
 }
 
 // String returns json representation of the object

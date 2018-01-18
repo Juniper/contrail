@@ -21,11 +21,11 @@ func (model *TelemetryStateInfo) String() string {
 func MakeTelemetryStateInfo() *TelemetryStateInfo {
 	return &TelemetryStateInfo{
 		//TODO(nati): Apply default
-		ServerIP: "",
 
 		Resource: MakeTelemetryResourceInfoSlice(),
 
 		ServerPort: 0,
+		ServerIP:   "",
 	}
 }
 

@@ -6,17 +6,17 @@ import "encoding/json"
 
 // Alarm
 type Alarm struct {
-	DisplayName   string         `json:"display_name,omitempty"`
-	Annotations   *KeyValuePairs `json:"annotations,omitempty"`
-	UUID          string         `json:"uuid,omitempty"`
-	FQName        []string       `json:"fq_name,omitempty"`
 	AlarmRules    *AlarmOrList   `json:"alarm_rules,omitempty"`
-	UveKeys       *UveKeysType   `json:"uve_keys,omitempty"`
-	AlarmSeverity AlarmSeverity  `json:"alarm_severity,omitempty"`
-	Perms2        *PermType2     `json:"perms2,omitempty"`
+	DisplayName   string         `json:"display_name,omitempty"`
 	ParentUUID    string         `json:"parent_uuid,omitempty"`
 	ParentType    string         `json:"parent_type,omitempty"`
 	IDPerms       *IdPermsType   `json:"id_perms,omitempty"`
+	UveKeys       *UveKeysType   `json:"uve_keys,omitempty"`
+	AlarmSeverity AlarmSeverity  `json:"alarm_severity,omitempty"`
+	Annotations   *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2        *PermType2     `json:"perms2,omitempty"`
+	UUID          string         `json:"uuid,omitempty"`
+	FQName        []string       `json:"fq_name,omitempty"`
 }
 
 // String returns json representation of the object
@@ -29,17 +29,17 @@ func (model *Alarm) String() string {
 func MakeAlarm() *Alarm {
 	return &Alarm{
 		//TODO(nati): Apply default
-		DisplayName:   "",
-		Annotations:   MakeKeyValuePairs(),
-		UUID:          "",
-		FQName:        []string{},
 		AlarmRules:    MakeAlarmOrList(),
-		UveKeys:       MakeUveKeysType(),
-		AlarmSeverity: MakeAlarmSeverity(),
-		Perms2:        MakePermType2(),
+		DisplayName:   "",
 		ParentUUID:    "",
 		ParentType:    "",
 		IDPerms:       MakeIdPermsType(),
+		UveKeys:       MakeUveKeysType(),
+		AlarmSeverity: MakeAlarmSeverity(),
+		Annotations:   MakeKeyValuePairs(),
+		Perms2:        MakePermType2(),
+		UUID:          "",
+		FQName:        []string{},
 	}
 }
 

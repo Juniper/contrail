@@ -6,8 +6,8 @@ import "encoding/json"
 
 // IpamDnsAddressType
 type IpamDnsAddressType struct {
-	VirtualDNSServerName   string           `json:"virtual_dns_server_name,omitempty"`
 	TenantDNSServerAddress *IpAddressesType `json:"tenant_dns_server_address,omitempty"`
+	VirtualDNSServerName   string           `json:"virtual_dns_server_name,omitempty"`
 }
 
 // String returns json representation of the object

@@ -6,23 +6,23 @@ import "encoding/json"
 
 // OpenstackComputeNodeRole
 type OpenstackComputeNodeRole struct {
-	DefaultGateway              string         `json:"default_gateway,omitempty"`
 	VrouterBondInterfaceMembers string         `json:"vrouter_bond_interface_members,omitempty"`
-	ParentType                  string         `json:"parent_type,omitempty"`
-	ProvisioningProgress        int            `json:"provisioning_progress,omitempty"`
-	VrouterType                 string         `json:"vrouter_type,omitempty"`
-	ParentUUID                  string         `json:"parent_uuid,omitempty"`
-	Annotations                 *KeyValuePairs `json:"annotations,omitempty"`
-	ProvisioningLog             string         `json:"provisioning_log,omitempty"`
-	VrouterBondInterface        string         `json:"vrouter_bond_interface,omitempty"`
 	Perms2                      *PermType2     `json:"perms2,omitempty"`
-	UUID                        string         `json:"uuid,omitempty"`
-	ProvisioningStartTime       string         `json:"provisioning_start_time,omitempty"`
 	FQName                      []string       `json:"fq_name,omitempty"`
-	IDPerms                     *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName                 string         `json:"display_name,omitempty"`
+	UUID                        string         `json:"uuid,omitempty"`
+	ProvisioningLog             string         `json:"provisioning_log,omitempty"`
+	ProvisioningProgress        int            `json:"provisioning_progress,omitempty"`
 	ProvisioningProgressStage   string         `json:"provisioning_progress_stage,omitempty"`
 	ProvisioningState           string         `json:"provisioning_state,omitempty"`
+	DefaultGateway              string         `json:"default_gateway,omitempty"`
+	VrouterType                 string         `json:"vrouter_type,omitempty"`
+	ParentType                  string         `json:"parent_type,omitempty"`
+	Annotations                 *KeyValuePairs `json:"annotations,omitempty"`
+	ParentUUID                  string         `json:"parent_uuid,omitempty"`
+	ProvisioningStartTime       string         `json:"provisioning_start_time,omitempty"`
+	VrouterBondInterface        string         `json:"vrouter_bond_interface,omitempty"`
+	IDPerms                     *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName                 string         `json:"display_name,omitempty"`
 }
 
 // String returns json representation of the object
@@ -35,23 +35,23 @@ func (model *OpenstackComputeNodeRole) String() string {
 func MakeOpenstackComputeNodeRole() *OpenstackComputeNodeRole {
 	return &OpenstackComputeNodeRole{
 		//TODO(nati): Apply default
-		VrouterType:          "",
-		ParentUUID:           "",
-		Annotations:          MakeKeyValuePairs(),
-		ProvisioningLog:      "",
-		VrouterBondInterface: "",
-		Perms2:               MakePermType2(),
-		UUID:                 "",
+		Annotations:                 MakeKeyValuePairs(),
+		ParentUUID:                  "",
 		ProvisioningStartTime:       "",
-		FQName:                      []string{},
+		VrouterBondInterface:        "",
 		IDPerms:                     MakeIdPermsType(),
 		DisplayName:                 "",
-		ProvisioningProgressStage:   "",
-		ProvisioningState:           "",
-		DefaultGateway:              "",
 		VrouterBondInterfaceMembers: "",
-		ParentType:                  "",
-		ProvisioningProgress:        0,
+		Perms2:                    MakePermType2(),
+		FQName:                    []string{},
+		UUID:                      "",
+		ProvisioningLog:           "",
+		ProvisioningProgress:      0,
+		ProvisioningProgressStage: "",
+		ProvisioningState:         "",
+		DefaultGateway:            "",
+		VrouterType:               "",
+		ParentType:                "",
 	}
 }
 

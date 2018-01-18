@@ -6,7 +6,6 @@ import "encoding/json"
 
 // ProviderAttachment
 type ProviderAttachment struct {
-	ParentUUID  string         `json:"parent_uuid,omitempty"`
 	ParentType  string         `json:"parent_type,omitempty"`
 	FQName      []string       `json:"fq_name,omitempty"`
 	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
@@ -14,6 +13,7 @@ type ProviderAttachment struct {
 	Annotations *KeyValuePairs `json:"annotations,omitempty"`
 	Perms2      *PermType2     `json:"perms2,omitempty"`
 	UUID        string         `json:"uuid,omitempty"`
+	ParentUUID  string         `json:"parent_uuid,omitempty"`
 
 	VirtualRouterRefs []*ProviderAttachmentVirtualRouterRef `json:"virtual_router_refs,omitempty"`
 }
@@ -35,7 +35,6 @@ func (model *ProviderAttachment) String() string {
 func MakeProviderAttachment() *ProviderAttachment {
 	return &ProviderAttachment{
 		//TODO(nati): Apply default
-		UUID:        "",
 		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
@@ -43,6 +42,7 @@ func MakeProviderAttachment() *ProviderAttachment {
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
+		UUID:        "",
 	}
 }
 

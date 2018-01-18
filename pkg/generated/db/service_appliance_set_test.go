@@ -26,7 +26,7 @@ func TestServiceApplianceSet(t *testing.T) {
 	model.FQName = []string{"default", "default-domain", "service_appliance_set_dummy"}
 	model.Perms2.Owner = "admin"
 	updateMap := map[string]interface{}{}
-	common.SetValueByPath(updateMap, "uuid", ".", "access_control_list_dummy_uuid")
+	common.SetValueByPath(updateMap, "uuid", ".", "service_appliance_set_dummy_uuid")
 	common.SetValueByPath(updateMap, "fq_name", ".", []string{"default", "default-domain", "access_control_list_dummy"})
 	common.SetValueByPath(updateMap, "display_name", ".", "test_update")
 

@@ -6,17 +6,17 @@ import "encoding/json"
 
 // QosQueue
 type QosQueue struct {
-	MaxBandwidth       int            `json:"max_bandwidth,omitempty"`
-	FQName             []string       `json:"fq_name,omitempty"`
-	IDPerms            *IdPermsType   `json:"id_perms,omitempty"`
 	QosQueueIdentifier int            `json:"qos_queue_identifier,omitempty"`
 	MinBandwidth       int            `json:"min_bandwidth,omitempty"`
+	IDPerms            *IdPermsType   `json:"id_perms,omitempty"`
 	Perms2             *PermType2     `json:"perms2,omitempty"`
 	UUID               string         `json:"uuid,omitempty"`
-	ParentUUID         string         `json:"parent_uuid,omitempty"`
-	ParentType         string         `json:"parent_type,omitempty"`
+	FQName             []string       `json:"fq_name,omitempty"`
+	MaxBandwidth       int            `json:"max_bandwidth,omitempty"`
 	DisplayName        string         `json:"display_name,omitempty"`
 	Annotations        *KeyValuePairs `json:"annotations,omitempty"`
+	ParentUUID         string         `json:"parent_uuid,omitempty"`
+	ParentType         string         `json:"parent_type,omitempty"`
 }
 
 // String returns json representation of the object
@@ -29,17 +29,17 @@ func (model *QosQueue) String() string {
 func MakeQosQueue() *QosQueue {
 	return &QosQueue{
 		//TODO(nati): Apply default
-		Perms2:             MakePermType2(),
-		UUID:               "",
-		ParentUUID:         "",
-		ParentType:         "",
-		FQName:             []string{},
-		IDPerms:            MakeIdPermsType(),
 		QosQueueIdentifier: 0,
 		MinBandwidth:       0,
+		IDPerms:            MakeIdPermsType(),
+		Perms2:             MakePermType2(),
+		UUID:               "",
+		FQName:             []string{},
+		MaxBandwidth:       0,
 		DisplayName:        "",
 		Annotations:        MakeKeyValuePairs(),
-		MaxBandwidth:       0,
+		ParentUUID:         "",
+		ParentType:         "",
 	}
 }
 

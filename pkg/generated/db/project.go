@@ -70,6 +70,16 @@ var ProjectFields = []string{
 // ProjectRefFields is db reference fields for Project
 var ProjectRefFields = map[string][]string{
 
+	"application_policy_set": {
+	// <common.Schema Value>
+
+	},
+
+	"floating_ip_pool": {
+	// <common.Schema Value>
+
+	},
+
 	"alias_ip_pool": {
 	// <common.Schema Value>
 
@@ -79,16 +89,6 @@ var ProjectRefFields = map[string][]string{
 		// <common.Schema Value>
 		"ip_prefix",
 		"ip_prefix_len",
-	},
-
-	"application_policy_set": {
-	// <common.Schema Value>
-
-	},
-
-	"floating_ip_pool": {
-	// <common.Schema Value>
-
 	},
 }
 
@@ -1045,13 +1045,13 @@ var ProjectParents = []string{
 	"domain",
 }
 
-const insertProjectAliasIPPoolQuery = "insert into `ref_project_alias_ip_pool` (`from`, `to` ) values (?, ?);"
-
 const insertProjectNamespaceQuery = "insert into `ref_project_namespace` (`from`, `to` ,`ip_prefix`,`ip_prefix_len`) values (?, ?,?,?);"
 
 const insertProjectApplicationPolicySetQuery = "insert into `ref_project_application_policy_set` (`from`, `to` ) values (?, ?);"
 
 const insertProjectFloatingIPPoolQuery = "insert into `ref_project_floating_ip_pool` (`from`, `to` ) values (?, ?);"
+
+const insertProjectAliasIPPoolQuery = "insert into `ref_project_alias_ip_pool` (`from`, `to` ) values (?, ?);"
 
 // CreateProject inserts Project to DB
 func CreateProject(tx *sql.Tx, model *models.Project) error {

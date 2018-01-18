@@ -6,6 +6,7 @@ import "encoding/json"
 
 // ActionListType
 type ActionListType struct {
+	AssignRoutingInstance string            `json:"assign_routing_instance,omitempty"`
 	MirrorTo              *MirrorActionType `json:"mirror_to,omitempty"`
 	SimpleAction          SimpleActionType  `json:"simple_action,omitempty"`
 	ApplyService          []string          `json:"apply_service,omitempty"`
@@ -13,7 +14,6 @@ type ActionListType struct {
 	Log                   bool              `json:"log"`
 	Alert                 bool              `json:"alert"`
 	QosAction             string            `json:"qos_action,omitempty"`
-	AssignRoutingInstance string            `json:"assign_routing_instance,omitempty"`
 }
 
 // String returns json representation of the object
@@ -26,14 +26,14 @@ func (model *ActionListType) String() string {
 func MakeActionListType() *ActionListType {
 	return &ActionListType{
 		//TODO(nati): Apply default
-		QosAction:             "",
-		AssignRoutingInstance: "",
-		MirrorTo:              MakeMirrorActionType(),
 		SimpleAction:          MakeSimpleActionType(),
 		ApplyService:          []string{},
 		GatewayName:           "",
 		Log:                   false,
 		Alert:                 false,
+		QosAction:             "",
+		AssignRoutingInstance: "",
+		MirrorTo:              MakeMirrorActionType(),
 	}
 }
 

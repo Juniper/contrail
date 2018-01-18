@@ -6,30 +6,30 @@ import "encoding/json"
 
 // AliasIP
 type AliasIP struct {
+	UUID                 string              `json:"uuid,omitempty"`
 	AliasIPAddress       IpAddressType       `json:"alias_ip_address,omitempty"`
 	AliasIPAddressFamily IpAddressFamilyType `json:"alias_ip_address_family,omitempty"`
 	DisplayName          string              `json:"display_name,omitempty"`
-	Perms2               *PermType2          `json:"perms2,omitempty"`
-	ParentUUID           string              `json:"parent_uuid,omitempty"`
 	Annotations          *KeyValuePairs      `json:"annotations,omitempty"`
-	UUID                 string              `json:"uuid,omitempty"`
-	ParentType           string              `json:"parent_type,omitempty"`
 	FQName               []string            `json:"fq_name,omitempty"`
 	IDPerms              *IdPermsType        `json:"id_perms,omitempty"`
+	Perms2               *PermType2          `json:"perms2,omitempty"`
+	ParentUUID           string              `json:"parent_uuid,omitempty"`
+	ParentType           string              `json:"parent_type,omitempty"`
 
 	ProjectRefs                 []*AliasIPProjectRef                 `json:"project_refs,omitempty"`
 	VirtualMachineInterfaceRefs []*AliasIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 }
 
-// AliasIPVirtualMachineInterfaceRef references each other
-type AliasIPVirtualMachineInterfaceRef struct {
+// AliasIPProjectRef references each other
+type AliasIPProjectRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 
 }
 
-// AliasIPProjectRef references each other
-type AliasIPProjectRef struct {
+// AliasIPVirtualMachineInterfaceRef references each other
+type AliasIPVirtualMachineInterfaceRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 
@@ -45,16 +45,16 @@ func (model *AliasIP) String() string {
 func MakeAliasIP() *AliasIP {
 	return &AliasIP{
 		//TODO(nati): Apply default
-		IDPerms:              MakeIdPermsType(),
-		Annotations:          MakeKeyValuePairs(),
-		UUID:                 "",
-		ParentType:           "",
-		FQName:               []string{},
-		ParentUUID:           "",
 		AliasIPAddress:       MakeIpAddressType(),
 		AliasIPAddressFamily: MakeIpAddressFamilyType(),
 		DisplayName:          "",
+		Annotations:          MakeKeyValuePairs(),
+		UUID:                 "",
+		IDPerms:              MakeIdPermsType(),
 		Perms2:               MakePermType2(),
+		ParentUUID:           "",
+		ParentType:           "",
+		FQName:               []string{},
 	}
 }
 

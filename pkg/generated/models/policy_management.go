@@ -32,14 +32,14 @@ func (model *PolicyManagement) String() string {
 func MakePolicyManagement() *PolicyManagement {
 	return &PolicyManagement{
 		//TODO(nati): Apply default
+		ParentUUID:  "",
+		ParentType:  "",
 		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
-		ParentUUID:  "",
-		ParentType:  "",
 	}
 }
 

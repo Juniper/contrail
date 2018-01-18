@@ -26,7 +26,7 @@ func TestVirtualDNSRecord(t *testing.T) {
 	model.FQName = []string{"default", "default-domain", "virtual_DNS_record_dummy"}
 	model.Perms2.Owner = "admin"
 	updateMap := map[string]interface{}{}
-	common.SetValueByPath(updateMap, "uuid", ".", "access_control_list_dummy_uuid")
+	common.SetValueByPath(updateMap, "uuid", ".", "virtual_DNS_record_dummy_uuid")
 	common.SetValueByPath(updateMap, "fq_name", ".", []string{"default", "default-domain", "access_control_list_dummy"})
 	common.SetValueByPath(updateMap, "display_name", ".", "test_update")
 

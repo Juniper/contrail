@@ -6,17 +6,17 @@ import "encoding/json"
 
 // ServiceHealthCheckType
 type ServiceHealthCheckType struct {
-	Delay           int                     `json:"delay,omitempty"`
-	URLPath         string                  `json:"url_path,omitempty"`
-	MonitorType     HealthCheckProtocolType `json:"monitor_type,omitempty"`
-	Timeout         int                     `json:"timeout,omitempty"`
 	DelayUsecs      int                     `json:"delayUsecs,omitempty"`
-	TimeoutUsecs    int                     `json:"timeoutUsecs,omitempty"`
 	Enabled         bool                    `json:"enabled"`
+	Delay           int                     `json:"delay,omitempty"`
 	ExpectedCodes   string                  `json:"expected_codes,omitempty"`
+	MonitorType     HealthCheckProtocolType `json:"monitor_type,omitempty"`
+	TimeoutUsecs    int                     `json:"timeoutUsecs,omitempty"`
 	MaxRetries      int                     `json:"max_retries,omitempty"`
 	HealthCheckType HealthCheckType         `json:"health_check_type,omitempty"`
 	HTTPMethod      string                  `json:"http_method,omitempty"`
+	Timeout         int                     `json:"timeout,omitempty"`
+	URLPath         string                  `json:"url_path,omitempty"`
 }
 
 // String returns json representation of the object
@@ -29,17 +29,17 @@ func (model *ServiceHealthCheckType) String() string {
 func MakeServiceHealthCheckType() *ServiceHealthCheckType {
 	return &ServiceHealthCheckType{
 		//TODO(nati): Apply default
-		HTTPMethod:      "",
-		Timeout:         0,
-		DelayUsecs:      0,
-		TimeoutUsecs:    0,
 		Enabled:         false,
+		Delay:           0,
 		ExpectedCodes:   "",
+		MonitorType:     MakeHealthCheckProtocolType(),
+		DelayUsecs:      0,
 		MaxRetries:      0,
 		HealthCheckType: MakeHealthCheckType(),
-		Delay:           0,
+		HTTPMethod:      "",
+		Timeout:         0,
 		URLPath:         "",
-		MonitorType:     MakeHealthCheckProtocolType(),
+		TimeoutUsecs:    0,
 	}
 }
 

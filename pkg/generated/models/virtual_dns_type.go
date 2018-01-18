@@ -26,14 +26,14 @@ func (model *VirtualDnsType) String() string {
 func MakeVirtualDnsType() *VirtualDnsType {
 	return &VirtualDnsType{
 		//TODO(nati): Apply default
-		DefaultTTLSeconds:        0,
-		RecordOrder:              MakeDnsRecordOrderType(),
-		FloatingIPRecord:         MakeFloatingIpDnsNotation(),
 		DomainName:               "",
 		ExternalVisible:          false,
 		NextVirtualDNS:           "",
 		DynamicRecordsFromClient: false,
 		ReverseResolution:        false,
+		DefaultTTLSeconds:        0,
+		RecordOrder:              MakeDnsRecordOrderType(),
+		FloatingIPRecord:         MakeFloatingIpDnsNotation(),
 	}
 }
 

@@ -6,16 +6,16 @@ import "encoding/json"
 
 // VirtualIpType
 type VirtualIpType struct {
+	SubnetID              UuidStringType           `json:"subnet_id,omitempty"`
+	PersistenceCookieName string                   `json:"persistence_cookie_name,omitempty"`
 	Address               IpAddressType            `json:"address,omitempty"`
 	ProtocolPort          int                      `json:"protocol_port,omitempty"`
+	Status                string                   `json:"status,omitempty"`
 	StatusDescription     string                   `json:"status_description,omitempty"`
+	Protocol              LoadbalancerProtocolType `json:"protocol,omitempty"`
 	ConnectionLimit       int                      `json:"connection_limit,omitempty"`
 	PersistenceType       SessionPersistenceType   `json:"persistence_type,omitempty"`
-	PersistenceCookieName string                   `json:"persistence_cookie_name,omitempty"`
 	AdminState            bool                     `json:"admin_state"`
-	Status                string                   `json:"status,omitempty"`
-	Protocol              LoadbalancerProtocolType `json:"protocol,omitempty"`
-	SubnetID              UuidStringType           `json:"subnet_id,omitempty"`
 }
 
 // String returns json representation of the object
@@ -28,16 +28,16 @@ func (model *VirtualIpType) String() string {
 func MakeVirtualIpType() *VirtualIpType {
 	return &VirtualIpType{
 		//TODO(nati): Apply default
-		PersistenceType:       MakeSessionPersistenceType(),
 		Address:               MakeIpAddressType(),
 		ProtocolPort:          0,
+		Status:                "",
 		StatusDescription:     "",
-		ConnectionLimit:       0,
+		Protocol:              MakeLoadbalancerProtocolType(),
 		SubnetID:              MakeUuidStringType(),
 		PersistenceCookieName: "",
+		ConnectionLimit:       0,
+		PersistenceType:       MakeSessionPersistenceType(),
 		AdminState:            false,
-		Status:                "",
-		Protocol:              MakeLoadbalancerProtocolType(),
 	}
 }
 

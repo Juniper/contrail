@@ -109,23 +109,6 @@ func CreateSecurityLoggingObject(tx *sql.Tx, model *models.SecurityLoggingObject
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtNetworkPolicyRef, err := tx.Prepare(insertSecurityLoggingObjectNetworkPolicyQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing NetworkPolicyRefs create statement failed")
-	}
-	defer stmtNetworkPolicyRef.Close()
-	for _, ref := range model.NetworkPolicyRefs {
-
-		if ref.Attr == nil {
-			ref.Attr = models.MakeSecurityLoggingObjectRuleListType()
-		}
-
-		_, err = stmtNetworkPolicyRef.Exec(model.UUID, ref.UUID, common.MustJSON(ref.Attr.Rule))
-		if err != nil {
-			return errors.Wrap(err, "NetworkPolicyRefs create failed")
-		}
-	}
-
 	stmtSecurityGroupRef, err := tx.Prepare(insertSecurityLoggingObjectSecurityGroupQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing SecurityGroupRefs create statement failed")
@@ -140,6 +123,23 @@ func CreateSecurityLoggingObject(tx *sql.Tx, model *models.SecurityLoggingObject
 		_, err = stmtSecurityGroupRef.Exec(model.UUID, ref.UUID, common.MustJSON(ref.Attr.Rule))
 		if err != nil {
 			return errors.Wrap(err, "SecurityGroupRefs create failed")
+		}
+	}
+
+	stmtNetworkPolicyRef, err := tx.Prepare(insertSecurityLoggingObjectNetworkPolicyQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing NetworkPolicyRefs create statement failed")
+	}
+	defer stmtNetworkPolicyRef.Close()
+	for _, ref := range model.NetworkPolicyRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = models.MakeSecurityLoggingObjectRuleListType()
+		}
+
+		_, err = stmtNetworkPolicyRef.Exec(model.UUID, ref.UUID, common.MustJSON(ref.Attr.Rule))
+		if err != nil {
+			return errors.Wrap(err, "NetworkPolicyRefs create failed")
 		}
 	}
 
