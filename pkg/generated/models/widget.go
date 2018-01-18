@@ -6,17 +6,17 @@ import "encoding/json"
 
 // Widget
 type Widget struct {
-	Annotations     *KeyValuePairs `json:"annotations,omitempty"`
+	UUID            string         `json:"uuid,omitempty"`
+	IDPerms         *IdPermsType   `json:"id_perms,omitempty"`
 	ContainerConfig string         `json:"container_config,omitempty"`
 	ContentConfig   string         `json:"content_config,omitempty"`
-	ParentUUID      string         `json:"parent_uuid,omitempty"`
-	FQName          []string       `json:"fq_name,omitempty"`
-	DisplayName     string         `json:"display_name,omitempty"`
-	LayoutConfig    string         `json:"layout_config,omitempty"`
 	Perms2          *PermType2     `json:"perms2,omitempty"`
-	UUID            string         `json:"uuid,omitempty"`
+	ParentUUID      string         `json:"parent_uuid,omitempty"`
 	ParentType      string         `json:"parent_type,omitempty"`
-	IDPerms         *IdPermsType   `json:"id_perms,omitempty"`
+	FQName          []string       `json:"fq_name,omitempty"`
+	LayoutConfig    string         `json:"layout_config,omitempty"`
+	DisplayName     string         `json:"display_name,omitempty"`
+	Annotations     *KeyValuePairs `json:"annotations,omitempty"`
 }
 
 // String returns json representation of the object
@@ -29,17 +29,17 @@ func (model *Widget) String() string {
 func MakeWidget() *Widget {
 	return &Widget{
 		//TODO(nati): Apply default
-		LayoutConfig:    "",
-		Perms2:          MakePermType2(),
-		UUID:            "",
 		ParentType:      "",
+		FQName:          []string{},
+		LayoutConfig:    "",
+		DisplayName:     "",
+		Annotations:     MakeKeyValuePairs(),
+		ParentUUID:      "",
 		IDPerms:         MakeIdPermsType(),
 		ContainerConfig: "",
 		ContentConfig:   "",
-		ParentUUID:      "",
-		FQName:          []string{},
-		DisplayName:     "",
-		Annotations:     MakeKeyValuePairs(),
+		Perms2:          MakePermType2(),
+		UUID:            "",
 	}
 }
 

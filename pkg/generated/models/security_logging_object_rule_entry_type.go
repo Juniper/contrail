@@ -6,8 +6,8 @@ import "encoding/json"
 
 // SecurityLoggingObjectRuleEntryType
 type SecurityLoggingObjectRuleEntryType struct {
-	RuleUUID string `json:"rule_uuid,omitempty"`
 	Rate     int    `json:"rate,omitempty"`
+	RuleUUID string `json:"rule_uuid,omitempty"`
 }
 
 // String returns json representation of the object

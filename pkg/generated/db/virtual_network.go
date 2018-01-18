@@ -12,7 +12,6 @@ import (
 )
 
 const insertVirtualNetworkQuery = "insert into `virtual_network` (`vxlan_network_identifier`,`rpf`,`network_id`,`mirror_destination`,`forwarding_mode`,`allow_transit`,`virtual_network_network_id`,`uuid`,`router_external`,`route_target`,`segmentation_id`,`physical_network`,`port_security_enabled`,`share`,`owner_access`,`owner`,`global_access`,`pbb_evpn_enable`,`pbb_etree_enable`,`parent_uuid`,`parent_type`,`multi_policy_service_chains_enabled`,`mac_move_time_window`,`mac_move_limit_action`,`mac_move_limit`,`mac_limit_action`,`mac_limit`,`mac_learning_enabled`,`mac_aging_time`,`layer2_control_word`,`is_shared`,`import_route_target_list_route_target`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`flood_unknown_unicast`,`external_ipam`,`export_route_target_list_route_target`,`source_port`,`source_ip`,`ip_protocol`,`hashing_configured`,`destination_port`,`destination_ip`,`display_name`,`key_value_pair`,`address_allocation_mode`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateVirtualNetworkQuery = "update `virtual_network` set `vxlan_network_identifier` = ?,`rpf` = ?,`network_id` = ?,`mirror_destination` = ?,`forwarding_mode` = ?,`allow_transit` = ?,`virtual_network_network_id` = ?,`uuid` = ?,`router_external` = ?,`route_target` = ?,`segmentation_id` = ?,`physical_network` = ?,`port_security_enabled` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`pbb_evpn_enable` = ?,`pbb_etree_enable` = ?,`parent_uuid` = ?,`parent_type` = ?,`multi_policy_service_chains_enabled` = ?,`mac_move_time_window` = ?,`mac_move_limit_action` = ?,`mac_move_limit` = ?,`mac_limit_action` = ?,`mac_limit` = ?,`mac_learning_enabled` = ?,`mac_aging_time` = ?,`layer2_control_word` = ?,`is_shared` = ?,`import_route_target_list_route_target` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`flood_unknown_unicast` = ?,`external_ipam` = ?,`export_route_target_list_route_target` = ?,`source_port` = ?,`source_ip` = ?,`ip_protocol` = ?,`hashing_configured` = ?,`destination_port` = ?,`destination_ip` = ?,`display_name` = ?,`key_value_pair` = ?,`address_allocation_mode` = ?;"
 const deleteVirtualNetworkQuery = "delete from `virtual_network` where uuid = ?"
 
 // VirtualNetworkFields is db columns for VirtualNetwork
@@ -78,6 +77,26 @@ var VirtualNetworkFields = []string{
 // VirtualNetworkRefFields is db reference fields for VirtualNetwork
 var VirtualNetworkRefFields = map[string][]string{
 
+	"security_logging_object": {
+	// <common.Schema Value>
+
+	},
+
+	"network_policy": {
+		// <common.Schema Value>
+		"major",
+		"minor",
+		"start_time",
+		"off_interval",
+		"on_interval",
+		"end_time",
+	},
+
+	"qos_config": {
+	// <common.Schema Value>
+
+	},
+
 	"route_table": {
 	// <common.Schema Value>
 
@@ -95,28 +114,8 @@ var VirtualNetworkRefFields = map[string][]string{
 
 	"network_ipam": {
 		// <common.Schema Value>
-		"route",
 		"ipam_subnets",
-	},
-
-	"security_logging_object": {
-	// <common.Schema Value>
-
-	},
-
-	"network_policy": {
-		// <common.Schema Value>
-		"on_interval",
-		"end_time",
-		"start_time",
-		"off_interval",
-		"major",
-		"minor",
-	},
-
-	"qos_config": {
-	// <common.Schema Value>
-
+		"route",
 	},
 }
 
@@ -262,19 +261,19 @@ var VirtualNetworkParents = []string{
 	"project",
 }
 
-const insertVirtualNetworkRouteTableQuery = "insert into `ref_virtual_network_route_table` (`from`, `to` ) values (?, ?);"
-
 const insertVirtualNetworkVirtualNetworkQuery = "insert into `ref_virtual_network_virtual_network` (`from`, `to` ) values (?, ?);"
 
 const insertVirtualNetworkBGPVPNQuery = "insert into `ref_virtual_network_bgpvpn` (`from`, `to` ) values (?, ?);"
 
-const insertVirtualNetworkNetworkIpamQuery = "insert into `ref_virtual_network_network_ipam` (`from`, `to` ,`route`,`ipam_subnets`) values (?, ?,?,?);"
+const insertVirtualNetworkNetworkIpamQuery = "insert into `ref_virtual_network_network_ipam` (`from`, `to` ,`ipam_subnets`,`route`) values (?, ?,?,?);"
 
 const insertVirtualNetworkSecurityLoggingObjectQuery = "insert into `ref_virtual_network_security_logging_object` (`from`, `to` ) values (?, ?);"
 
-const insertVirtualNetworkNetworkPolicyQuery = "insert into `ref_virtual_network_network_policy` (`from`, `to` ,`on_interval`,`end_time`,`start_time`,`off_interval`,`major`,`minor`) values (?, ?,?,?,?,?,?,?);"
+const insertVirtualNetworkNetworkPolicyQuery = "insert into `ref_virtual_network_network_policy` (`from`, `to` ,`major`,`minor`,`start_time`,`off_interval`,`on_interval`,`end_time`) values (?, ?,?,?,?,?,?,?);"
 
 const insertVirtualNetworkQosConfigQuery = "insert into `ref_virtual_network_qos_config` (`from`, `to` ) values (?, ?);"
+
+const insertVirtualNetworkRouteTableQuery = "insert into `ref_virtual_network_route_table` (`from`, `to` ) values (?, ?);"
 
 // CreateVirtualNetwork inserts VirtualNetwork to DB
 func CreateVirtualNetwork(tx *sql.Tx, model *models.VirtualNetwork) error {
@@ -385,8 +384,8 @@ func CreateVirtualNetwork(tx *sql.Tx, model *models.VirtualNetwork) error {
 			ref.Attr = models.MakeVnSubnetsType()
 		}
 
-		_, err = stmtNetworkIpamRef.Exec(model.UUID, ref.UUID, common.MustJSON(ref.Attr.HostRoutes.Route),
-			common.MustJSON(ref.Attr.IpamSubnets))
+		_, err = stmtNetworkIpamRef.Exec(model.UUID, ref.UUID, common.MustJSON(ref.Attr.IpamSubnets),
+			common.MustJSON(ref.Attr.HostRoutes.Route))
 		if err != nil {
 			return errors.Wrap(err, "NetworkIpamRefs create failed")
 		}
@@ -416,12 +415,12 @@ func CreateVirtualNetwork(tx *sql.Tx, model *models.VirtualNetwork) error {
 			ref.Attr = models.MakeVirtualNetworkPolicyType()
 		}
 
-		_, err = stmtNetworkPolicyRef.Exec(model.UUID, ref.UUID, string(ref.Attr.Timer.OnInterval),
-			string(ref.Attr.Timer.EndTime),
+		_, err = stmtNetworkPolicyRef.Exec(model.UUID, ref.UUID, int(ref.Attr.Sequence.Major),
+			int(ref.Attr.Sequence.Minor),
 			string(ref.Attr.Timer.StartTime),
 			string(ref.Attr.Timer.OffInterval),
-			int(ref.Attr.Sequence.Major),
-			int(ref.Attr.Sequence.Minor))
+			string(ref.Attr.Timer.OnInterval),
+			string(ref.Attr.Timer.EndTime))
 		if err != nil {
 			return errors.Wrap(err, "NetworkPolicyRefs create failed")
 		}
@@ -911,66 +910,6 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 	}
 
-	if value, ok := values["ref_route_table"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkRouteTableRef{}
-			referenceModel.UUID = uuid
-			m.RouteTableRefs = append(m.RouteTableRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_virtual_network"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkVirtualNetworkRef{}
-			referenceModel.UUID = uuid
-			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_bgpvpn"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkBGPVPNRef{}
-			referenceModel.UUID = uuid
-			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_network_ipam"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -1053,6 +992,66 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 			referenceModel := &models.VirtualNetworkQosConfigRef{}
 			referenceModel.UUID = uuid
 			m.QosConfigRefs = append(m.QosConfigRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_route_table"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkRouteTableRef{}
+			referenceModel.UUID = uuid
+			m.RouteTableRefs = append(m.RouteTableRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_network"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkVirtualNetworkRef{}
+			referenceModel.UUID = uuid
+			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_bgpvpn"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkBGPVPNRef{}
+			referenceModel.UUID = uuid
+			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
 
 		}
 	}
@@ -2113,9 +2112,482 @@ func ListVirtualNetwork(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualNet
 }
 
 // UpdateVirtualNetwork updates a resource
-func UpdateVirtualNetwork(tx *sql.Tx, uuid string, model *models.VirtualNetwork) error {
-	//TODO(nati) support update
-	return nil
+func UpdateVirtualNetwork(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateVirtualNetworkQuery = "update `virtual_network` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".VirtualNetworkProperties.VxlanNetworkIdentifier", "."); ok {
+		updateVirtualNetworkQuery += "`vxlan_network_identifier` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".VirtualNetworkProperties.RPF", "."); ok {
+		updateVirtualNetworkQuery += "`rpf` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".VirtualNetworkProperties.NetworkID", "."); ok {
+		updateVirtualNetworkQuery += "`network_id` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".VirtualNetworkProperties.MirrorDestination", "."); ok {
+		updateVirtualNetworkQuery += "`mirror_destination` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".VirtualNetworkProperties.ForwardingMode", "."); ok {
+		updateVirtualNetworkQuery += "`forwarding_mode` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".VirtualNetworkProperties.AllowTransit", "."); ok {
+		updateVirtualNetworkQuery += "`allow_transit` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".VirtualNetworkNetworkID", "."); ok {
+		updateVirtualNetworkQuery += "`virtual_network_network_id` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateVirtualNetworkQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".RouterExternal", "."); ok {
+		updateVirtualNetworkQuery += "`router_external` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".RouteTargetList.RouteTarget", "."); ok {
+		updateVirtualNetworkQuery += "`route_target` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ProviderProperties.SegmentationID", "."); ok {
+		updateVirtualNetworkQuery += "`segmentation_id` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ProviderProperties.PhysicalNetwork", "."); ok {
+		updateVirtualNetworkQuery += "`physical_network` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".PortSecurityEnabled", "."); ok {
+		updateVirtualNetworkQuery += "`port_security_enabled` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateVirtualNetworkQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateVirtualNetworkQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateVirtualNetworkQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateVirtualNetworkQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".PBBEvpnEnable", "."); ok {
+		updateVirtualNetworkQuery += "`pbb_evpn_enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".PBBEtreeEnable", "."); ok {
+		updateVirtualNetworkQuery += "`pbb_etree_enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateVirtualNetworkQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateVirtualNetworkQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MultiPolicyServiceChainsEnabled", "."); ok {
+		updateVirtualNetworkQuery += "`multi_policy_service_chains_enabled` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MacMoveControl.MacMoveTimeWindow", "."); ok {
+		updateVirtualNetworkQuery += "`mac_move_time_window` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MacMoveControl.MacMoveLimitAction", "."); ok {
+		updateVirtualNetworkQuery += "`mac_move_limit_action` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MacMoveControl.MacMoveLimit", "."); ok {
+		updateVirtualNetworkQuery += "`mac_move_limit` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MacLimitControl.MacLimitAction", "."); ok {
+		updateVirtualNetworkQuery += "`mac_limit_action` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MacLimitControl.MacLimit", "."); ok {
+		updateVirtualNetworkQuery += "`mac_limit` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MacLearningEnabled", "."); ok {
+		updateVirtualNetworkQuery += "`mac_learning_enabled` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MacAgingTime", "."); ok {
+		updateVirtualNetworkQuery += "`mac_aging_time` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Layer2ControlWord", "."); ok {
+		updateVirtualNetworkQuery += "`layer2_control_word` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IsShared", "."); ok {
+		updateVirtualNetworkQuery += "`is_shared` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ImportRouteTargetList.RouteTarget", "."); ok {
+		updateVirtualNetworkQuery += "`import_route_target_list_route_target` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateVirtualNetworkQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateVirtualNetworkQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateVirtualNetworkQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateVirtualNetworkQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateVirtualNetworkQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateVirtualNetworkQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateVirtualNetworkQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateVirtualNetworkQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateVirtualNetworkQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateVirtualNetworkQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateVirtualNetworkQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateVirtualNetworkQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FloodUnknownUnicast", "."); ok {
+		updateVirtualNetworkQuery += "`flood_unknown_unicast` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ExternalIpam", "."); ok {
+		updateVirtualNetworkQuery += "`external_ipam` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ExportRouteTargetList.RouteTarget", "."); ok {
+		updateVirtualNetworkQuery += "`export_route_target_list_route_target` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".EcmpHashingIncludeFields.SourcePort", "."); ok {
+		updateVirtualNetworkQuery += "`source_port` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".EcmpHashingIncludeFields.SourceIP", "."); ok {
+		updateVirtualNetworkQuery += "`source_ip` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".EcmpHashingIncludeFields.IPProtocol", "."); ok {
+		updateVirtualNetworkQuery += "`ip_protocol` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".EcmpHashingIncludeFields.HashingConfigured", "."); ok {
+		updateVirtualNetworkQuery += "`hashing_configured` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".EcmpHashingIncludeFields.DestinationPort", "."); ok {
+		updateVirtualNetworkQuery += "`destination_port` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".EcmpHashingIncludeFields.DestinationIP", "."); ok {
+		updateVirtualNetworkQuery += "`destination_ip` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateVirtualNetworkQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateVirtualNetworkQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".AddressAllocationMode", "."); ok {
+		updateVirtualNetworkQuery += "`address_allocation_mode` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualNetworkQuery += ","
+	}
+
+	updateVirtualNetworkQuery =
+		updateVirtualNetworkQuery[:len(updateVirtualNetworkQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateVirtualNetworkQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateVirtualNetworkQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteVirtualNetwork deletes a resource

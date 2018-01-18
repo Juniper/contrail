@@ -12,7 +12,6 @@ import (
 )
 
 const insertInstanceIPQuery = "insert into `instance_ip` (`uuid`,`subnet_uuid`,`service_instance_ip`,`service_health_check_ip`,`ip_prefix_len`,`ip_prefix`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`instance_ip_secondary`,`instance_ip_mode`,`instance_ip_local_ip`,`instance_ip_family`,`instance_ip_address`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateInstanceIPQuery = "update `instance_ip` set `uuid` = ?,`subnet_uuid` = ?,`service_instance_ip` = ?,`service_health_check_ip` = ?,`ip_prefix_len` = ?,`ip_prefix` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`instance_ip_secondary` = ?,`instance_ip_mode` = ?,`instance_ip_local_ip` = ?,`instance_ip_family` = ?,`instance_ip_address` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteInstanceIPQuery = "delete from `instance_ip` where uuid = ?"
 
 // InstanceIPFields is db columns for InstanceIP
@@ -53,6 +52,11 @@ var InstanceIPFields = []string{
 // InstanceIPRefFields is db reference fields for InstanceIP
 var InstanceIPRefFields = map[string][]string{
 
+	"network_ipam": {
+	// <common.Schema Value>
+
+	},
+
 	"virtual_network": {
 	// <common.Schema Value>
 
@@ -69,11 +73,6 @@ var InstanceIPRefFields = map[string][]string{
 	},
 
 	"virtual_router": {
-	// <common.Schema Value>
-
-	},
-
-	"network_ipam": {
 	// <common.Schema Value>
 
 	},
@@ -117,6 +116,8 @@ var InstanceIPBackRefFields = map[string][]string{
 // InstanceIPParentTypes is possible parents for InstanceIP
 var InstanceIPParents = []string{}
 
+const insertInstanceIPPhysicalRouterQuery = "insert into `ref_instance_ip_physical_router` (`from`, `to` ) values (?, ?);"
+
 const insertInstanceIPVirtualRouterQuery = "insert into `ref_instance_ip_virtual_router` (`from`, `to` ) values (?, ?);"
 
 const insertInstanceIPNetworkIpamQuery = "insert into `ref_instance_ip_network_ipam` (`from`, `to` ) values (?, ?);"
@@ -124,8 +125,6 @@ const insertInstanceIPNetworkIpamQuery = "insert into `ref_instance_ip_network_i
 const insertInstanceIPVirtualNetworkQuery = "insert into `ref_instance_ip_virtual_network` (`from`, `to` ) values (?, ?);"
 
 const insertInstanceIPVirtualMachineInterfaceQuery = "insert into `ref_instance_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
-
-const insertInstanceIPPhysicalRouterQuery = "insert into `ref_instance_ip_physical_router` (`from`, `to` ) values (?, ?);"
 
 // CreateInstanceIP inserts InstanceIP to DB
 func CreateInstanceIP(tx *sql.Tx, model *models.InstanceIP) error {
@@ -172,6 +171,19 @@ func CreateInstanceIP(tx *sql.Tx, model *models.InstanceIP) error {
 		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
+	}
+
+	stmtNetworkIpamRef, err := tx.Prepare(insertInstanceIPNetworkIpamQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing NetworkIpamRefs create statement failed")
+	}
+	defer stmtNetworkIpamRef.Close()
+	for _, ref := range model.NetworkIpamRefs {
+
+		_, err = stmtNetworkIpamRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "NetworkIpamRefs create failed")
+		}
 	}
 
 	stmtVirtualNetworkRef, err := tx.Prepare(insertInstanceIPVirtualNetworkQuery)
@@ -223,19 +235,6 @@ func CreateInstanceIP(tx *sql.Tx, model *models.InstanceIP) error {
 		_, err = stmtVirtualRouterRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualRouterRefs create failed")
-		}
-	}
-
-	stmtNetworkIpamRef, err := tx.Prepare(insertInstanceIPNetworkIpamQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing NetworkIpamRefs create statement failed")
-	}
-	defer stmtNetworkIpamRef.Close()
-	for _, ref := range model.NetworkIpamRefs {
-
-		_, err = stmtNetworkIpamRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "NetworkIpamRefs create failed")
 		}
 	}
 
@@ -899,9 +898,282 @@ func ListInstanceIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.InstanceIP, er
 }
 
 // UpdateInstanceIP updates a resource
-func UpdateInstanceIP(tx *sql.Tx, uuid string, model *models.InstanceIP) error {
-	//TODO(nati) support update
-	return nil
+func UpdateInstanceIP(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateInstanceIPQuery = "update `instance_ip` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateInstanceIPQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".SubnetUUID", "."); ok {
+		updateInstanceIPQuery += "`subnet_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ServiceInstanceIP", "."); ok {
+		updateInstanceIPQuery += "`service_instance_ip` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ServiceHealthCheckIP", "."); ok {
+		updateInstanceIPQuery += "`service_health_check_ip` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".SecondaryIPTrackingIP.IPPrefixLen", "."); ok {
+		updateInstanceIPQuery += "`ip_prefix_len` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".SecondaryIPTrackingIP.IPPrefix", "."); ok {
+		updateInstanceIPQuery += "`ip_prefix` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateInstanceIPQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateInstanceIPQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateInstanceIPQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateInstanceIPQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateInstanceIPQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateInstanceIPQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".InstanceIPSecondary", "."); ok {
+		updateInstanceIPQuery += "`instance_ip_secondary` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".InstanceIPMode", "."); ok {
+		updateInstanceIPQuery += "`instance_ip_mode` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".InstanceIPLocalIP", "."); ok {
+		updateInstanceIPQuery += "`instance_ip_local_ip` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".InstanceIPFamily", "."); ok {
+		updateInstanceIPQuery += "`instance_ip_family` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".InstanceIPAddress", "."); ok {
+		updateInstanceIPQuery += "`instance_ip_address` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateInstanceIPQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateInstanceIPQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateInstanceIPQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateInstanceIPQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateInstanceIPQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateInstanceIPQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateInstanceIPQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateInstanceIPQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateInstanceIPQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateInstanceIPQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateInstanceIPQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateInstanceIPQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateInstanceIPQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateInstanceIPQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateInstanceIPQuery += ","
+	}
+
+	updateInstanceIPQuery =
+		updateInstanceIPQuery[:len(updateInstanceIPQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateInstanceIPQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateInstanceIPQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteInstanceIP deletes a resource

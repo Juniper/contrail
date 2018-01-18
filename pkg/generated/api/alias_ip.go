@@ -22,6 +22,10 @@ type AliasIPCreateRequest struct {
 	Data *models.AliasIP `json:"alias-ip"`
 }
 
+type AliasIPUpdateRequest struct {
+	Data map[string]interface{} `json:"alias-ip"`
+}
+
 //Path returns api path for collections.
 func (api *AliasIPRESTAPI) Path() string {
 	return "/alias-ips"
@@ -79,7 +83,40 @@ func (api *AliasIPRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *AliasIPRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &AliasIPUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "alias_ip",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateAliasIP(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "alias_ip",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"alias-ip": {
+			"uuid": id,
+			"uri":  "/" + "alias-ip" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

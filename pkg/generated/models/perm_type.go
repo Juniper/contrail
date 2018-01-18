@@ -6,11 +6,11 @@ import "encoding/json"
 
 // PermType
 type PermType struct {
+	Group       string     `json:"group,omitempty"`
+	GroupAccess AccessType `json:"group_access,omitempty"`
 	Owner       string     `json:"owner,omitempty"`
 	OwnerAccess AccessType `json:"owner_access,omitempty"`
 	OtherAccess AccessType `json:"other_access,omitempty"`
-	Group       string     `json:"group,omitempty"`
-	GroupAccess AccessType `json:"group_access,omitempty"`
 }
 
 // String returns json representation of the object

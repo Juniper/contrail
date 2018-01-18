@@ -6,20 +6,20 @@ import "encoding/json"
 
 // VPNGroup
 type VPNGroup struct {
-	ProvisioningState         string         `json:"provisioning_state,omitempty"`
-	Type                      string         `json:"type,omitempty"`
-	DisplayName               string         `json:"display_name,omitempty"`
-	UUID                      string         `json:"uuid,omitempty"`
-	ProvisioningProgress      int            `json:"provisioning_progress,omitempty"`
 	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
-	FQName                    []string       `json:"fq_name,omitempty"`
 	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
+	UUID                      string         `json:"uuid,omitempty"`
 	ParentType                string         `json:"parent_type,omitempty"`
-	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
 	ProvisioningProgressStage string         `json:"provisioning_progress_stage,omitempty"`
-	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
+	DisplayName               string         `json:"display_name,omitempty"`
 	Perms2                    *PermType2     `json:"perms2,omitempty"`
+	ProvisioningProgress      int            `json:"provisioning_progress,omitempty"`
+	FQName                    []string       `json:"fq_name,omitempty"`
+	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
+	Type                      string         `json:"type,omitempty"`
 	ParentUUID                string         `json:"parent_uuid,omitempty"`
+	ProvisioningState         string         `json:"provisioning_state,omitempty"`
+	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
 
 	LocationRefs []*VPNGroupLocationRef `json:"location_refs,omitempty"`
 }
@@ -41,20 +41,20 @@ func (model *VPNGroup) String() string {
 func MakeVPNGroup() *VPNGroup {
 	return &VPNGroup{
 		//TODO(nati): Apply default
+		DisplayName:               "",
+		Perms2:                    MakePermType2(),
+		ProvisioningProgress:      0,
 		FQName:                    []string{},
+		IDPerms:                   MakeIdPermsType(),
+		Type:                      "",
+		ParentUUID:                "",
+		ProvisioningState:         "",
+		ProvisioningLog:           "",
 		Annotations:               MakeKeyValuePairs(),
 		UUID:                      "",
-		ProvisioningProgress:      0,
-		ProvisioningStartTime:     "",
 		ParentType:                "",
-		IDPerms:                   MakeIdPermsType(),
-		Perms2:                    MakePermType2(),
-		ParentUUID:                "",
 		ProvisioningProgressStage: "",
-		ProvisioningLog:           "",
-		Type:                      "",
-		DisplayName:               "",
-		ProvisioningState:         "",
+		ProvisioningStartTime:     "",
 	}
 }
 

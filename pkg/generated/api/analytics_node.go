@@ -22,6 +22,10 @@ type AnalyticsNodeCreateRequest struct {
 	Data *models.AnalyticsNode `json:"analytics-node"`
 }
 
+type AnalyticsNodeUpdateRequest struct {
+	Data map[string]interface{} `json:"analytics-node"`
+}
+
 //Path returns api path for collections.
 func (api *AnalyticsNodeRESTAPI) Path() string {
 	return "/analytics-nodes"
@@ -79,7 +83,40 @@ func (api *AnalyticsNodeRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *AnalyticsNodeRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &AnalyticsNodeUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "analytics_node",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateAnalyticsNode(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "analytics_node",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"analytics-node": {
+			"uuid": id,
+			"uri":  "/" + "analytics-node" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

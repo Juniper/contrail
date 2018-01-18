@@ -6,21 +6,21 @@ import "encoding/json"
 
 // FirewallRule
 type FirewallRule struct {
-	ParentUUID    string                           `json:"parent_uuid,omitempty"`
+	DisplayName   string                           `json:"display_name,omitempty"`
+	ParentType    string                           `json:"parent_type,omitempty"`
+	ActionList    *ActionListType                  `json:"action_list,omitempty"`
+	Service       *FirewallServiceType             `json:"service,omitempty"`
+	UUID          string                           `json:"uuid,omitempty"`
+	Endpoint1     *FirewallRuleEndpointType        `json:"endpoint_1,omitempty"`
 	Endpoint2     *FirewallRuleEndpointType        `json:"endpoint_2,omitempty"`
 	FQName        []string                         `json:"fq_name,omitempty"`
-	DisplayName   string                           `json:"display_name,omitempty"`
-	MatchTags     *FirewallRuleMatchTagsType       `json:"match_tags,omitempty"`
-	Perms2        *PermType2                       `json:"perms2,omitempty"`
-	Endpoint1     *FirewallRuleEndpointType        `json:"endpoint_1,omitempty"`
-	ActionList    *ActionListType                  `json:"action_list,omitempty"`
-	MatchTagTypes *FirewallRuleMatchTagsTypeIdList `json:"match_tag_types,omitempty"`
-	UUID          string                           `json:"uuid,omitempty"`
-	ParentType    string                           `json:"parent_type,omitempty"`
-	Service       *FirewallServiceType             `json:"service,omitempty"`
 	Direction     FirewallRuleDirectionType        `json:"direction,omitempty"`
+	MatchTagTypes *FirewallRuleMatchTagsTypeIdList `json:"match_tag_types,omitempty"`
+	MatchTags     *FirewallRuleMatchTagsType       `json:"match_tags,omitempty"`
 	IDPerms       *IdPermsType                     `json:"id_perms,omitempty"`
 	Annotations   *KeyValuePairs                   `json:"annotations,omitempty"`
+	Perms2        *PermType2                       `json:"perms2,omitempty"`
+	ParentUUID    string                           `json:"parent_uuid,omitempty"`
 
 	ServiceGroupRefs          []*FirewallRuleServiceGroupRef          `json:"service_group_refs,omitempty"`
 	AddressGroupRefs          []*FirewallRuleAddressGroupRef          `json:"address_group_refs,omitempty"`
@@ -66,21 +66,21 @@ func (model *FirewallRule) String() string {
 func MakeFirewallRule() *FirewallRule {
 	return &FirewallRule{
 		//TODO(nati): Apply default
-		UUID:          "",
-		ParentType:    "",
-		Service:       MakeFirewallServiceType(),
-		Direction:     MakeFirewallRuleDirectionType(),
+		MatchTags:     MakeFirewallRuleMatchTagsType(),
 		IDPerms:       MakeIdPermsType(),
 		Annotations:   MakeKeyValuePairs(),
-		ParentUUID:    "",
-		Endpoint2:     MakeFirewallRuleEndpointType(),
-		FQName:        []string{},
-		DisplayName:   "",
-		MatchTags:     MakeFirewallRuleMatchTagsType(),
 		Perms2:        MakePermType2(),
-		Endpoint1:     MakeFirewallRuleEndpointType(),
-		ActionList:    MakeActionListType(),
+		ParentUUID:    "",
+		Direction:     MakeFirewallRuleDirectionType(),
 		MatchTagTypes: MakeFirewallRuleMatchTagsTypeIdList(),
+		DisplayName:   "",
+		ParentType:    "",
+		UUID:          "",
+		ActionList:    MakeActionListType(),
+		Service:       MakeFirewallServiceType(),
+		FQName:        []string{},
+		Endpoint1:     MakeFirewallRuleEndpointType(),
+		Endpoint2:     MakeFirewallRuleEndpointType(),
 	}
 }
 

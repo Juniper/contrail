@@ -20,13 +20,6 @@ type ServiceEndpoint struct {
 	ServiceObjectRefs           []*ServiceEndpointServiceObjectRef           `json:"service_object_refs,omitempty"`
 }
 
-// ServiceEndpointServiceConnectionModuleRef references each other
-type ServiceEndpointServiceConnectionModuleRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
 // ServiceEndpointPhysicalRouterRef references each other
 type ServiceEndpointPhysicalRouterRef struct {
 	UUID string   `json:"uuid"`
@@ -36,6 +29,13 @@ type ServiceEndpointPhysicalRouterRef struct {
 
 // ServiceEndpointServiceObjectRef references each other
 type ServiceEndpointServiceObjectRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
+// ServiceEndpointServiceConnectionModuleRef references each other
+type ServiceEndpointServiceConnectionModuleRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 

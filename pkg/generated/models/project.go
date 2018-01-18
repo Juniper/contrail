@@ -6,22 +6,22 @@ import "encoding/json"
 
 // Project
 type Project struct {
-	VxlanRouting bool           `json:"vxlan_routing,omitempty"`
-	AlarmEnable  bool           `json:"alarm_enable,omitempty"`
-	FQName       []string       `json:"fq_name,omitempty"`
-	DisplayName  string         `json:"display_name,omitempty"`
-	UUID         string         `json:"uuid,omitempty"`
+	VxlanRouting bool           `json:"vxlan_routing"`
 	Quota        *QuotaType     `json:"quota,omitempty"`
-	ParentUUID   string         `json:"parent_uuid,omitempty"`
+	UUID         string         `json:"uuid,omitempty"`
 	ParentType   string         `json:"parent_type,omitempty"`
+	DisplayName  string         `json:"display_name,omitempty"`
+	Perms2       *PermType2     `json:"perms2,omitempty"`
+	AlarmEnable  bool           `json:"alarm_enable"`
+	ParentUUID   string         `json:"parent_uuid,omitempty"`
+	FQName       []string       `json:"fq_name,omitempty"`
 	IDPerms      *IdPermsType   `json:"id_perms,omitempty"`
 	Annotations  *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2       *PermType2     `json:"perms2,omitempty"`
 
+	FloatingIPPoolRefs       []*ProjectFloatingIPPoolRef       `json:"floating_ip_pool_refs,omitempty"`
 	AliasIPPoolRefs          []*ProjectAliasIPPoolRef          `json:"alias_ip_pool_refs,omitempty"`
 	NamespaceRefs            []*ProjectNamespaceRef            `json:"namespace_refs,omitempty"`
 	ApplicationPolicySetRefs []*ProjectApplicationPolicySetRef `json:"application_policy_set_refs,omitempty"`
-	FloatingIPPoolRefs       []*ProjectFloatingIPPoolRef       `json:"floating_ip_pool_refs,omitempty"`
 
 	AddressGroups              []*AddressGroup              `json:"address_groups,omitempty"`
 	Alarms                     []*Alarm                     `json:"alarms,omitempty"`
@@ -95,16 +95,16 @@ func MakeProject() *Project {
 	return &Project{
 		//TODO(nati): Apply default
 		Quota:        MakeQuotaType(),
-		ParentUUID:   "",
+		UUID:         "",
 		ParentType:   "",
+		DisplayName:  "",
+		Perms2:       MakePermType2(),
+		VxlanRouting: false,
+		ParentUUID:   "",
+		FQName:       []string{},
 		IDPerms:      MakeIdPermsType(),
 		Annotations:  MakeKeyValuePairs(),
-		Perms2:       MakePermType2(),
-		UUID:         "",
-		VxlanRouting: false,
 		AlarmEnable:  false,
-		FQName:       []string{},
-		DisplayName:  "",
 	}
 }
 

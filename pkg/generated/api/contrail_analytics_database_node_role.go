@@ -22,6 +22,10 @@ type ContrailAnalyticsDatabaseNodeRoleCreateRequest struct {
 	Data *models.ContrailAnalyticsDatabaseNodeRole `json:"contrail-analytics-database-node-role"`
 }
 
+type ContrailAnalyticsDatabaseNodeRoleUpdateRequest struct {
+	Data map[string]interface{} `json:"contrail-analytics-database-node-role"`
+}
+
 //Path returns api path for collections.
 func (api *ContrailAnalyticsDatabaseNodeRoleRESTAPI) Path() string {
 	return "/contrail-analytics-database-node-roles"
@@ -79,7 +83,40 @@ func (api *ContrailAnalyticsDatabaseNodeRoleRESTAPI) Create(c echo.Context) erro
 
 //Update handles a REST Update request.
 func (api *ContrailAnalyticsDatabaseNodeRoleRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &ContrailAnalyticsDatabaseNodeRoleUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "contrail_analytics_database_node_role",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateContrailAnalyticsDatabaseNodeRole(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "contrail_analytics_database_node_role",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"contrail-analytics-database-node-role": {
+			"uuid": id,
+			"uri":  "/" + "contrail-analytics-database-node-role" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

@@ -6,11 +6,11 @@ import "encoding/json"
 
 // AddressType
 type AddressType struct {
+	SubnetList     []*SubnetType `json:"subnet_list,omitempty"`
+	VirtualNetwork string        `json:"virtual_network,omitempty"`
 	SecurityGroup  string        `json:"security_group,omitempty"`
 	Subnet         *SubnetType   `json:"subnet,omitempty"`
 	NetworkPolicy  string        `json:"network_policy,omitempty"`
-	SubnetList     []*SubnetType `json:"subnet_list,omitempty"`
-	VirtualNetwork string        `json:"virtual_network,omitempty"`
 }
 
 // String returns json representation of the object
@@ -23,13 +23,12 @@ func (model *AddressType) String() string {
 func MakeAddressType() *AddressType {
 	return &AddressType{
 		//TODO(nati): Apply default
-		SecurityGroup: "",
-		Subnet:        MakeSubnetType(),
-		NetworkPolicy: "",
+		VirtualNetwork: "",
+		SecurityGroup:  "",
+		Subnet:         MakeSubnetType(),
+		NetworkPolicy:  "",
 
 		SubnetList: MakeSubnetTypeSlice(),
-
-		VirtualNetwork: "",
 	}
 }
 

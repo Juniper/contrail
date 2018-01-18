@@ -22,6 +22,10 @@ type E2ServiceProviderCreateRequest struct {
 	Data *models.E2ServiceProvider `json:"e2-service-provider"`
 }
 
+type E2ServiceProviderUpdateRequest struct {
+	Data map[string]interface{} `json:"e2-service-provider"`
+}
+
 //Path returns api path for collections.
 func (api *E2ServiceProviderRESTAPI) Path() string {
 	return "/e2-service-providers"
@@ -79,7 +83,40 @@ func (api *E2ServiceProviderRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *E2ServiceProviderRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &E2ServiceProviderUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "e2_service_provider",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateE2ServiceProvider(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "e2_service_provider",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"e2-service-provider": {
+			"uuid": id,
+			"uri":  "/" + "e2-service-provider" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

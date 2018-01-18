@@ -26,14 +26,14 @@ func (model *BGPRouter) String() string {
 func MakeBGPRouter() *BGPRouter {
 	return &BGPRouter{
 		//TODO(nati): Apply default
-		ParentUUID:  "",
-		ParentType:  "",
-		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
+		ParentUUID:  "",
+		ParentType:  "",
+		FQName:      []string{},
+		IDPerms:     MakeIdPermsType(),
 	}
 }
 

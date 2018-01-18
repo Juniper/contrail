@@ -8,11 +8,11 @@ import "encoding/json"
 type LoadbalancerListener struct {
 	LoadbalancerListenerProperties *LoadbalancerListenerType `json:"loadbalancer_listener_properties,omitempty"`
 	ParentType                     string                    `json:"parent_type,omitempty"`
-	DisplayName                    string                    `json:"display_name,omitempty"`
+	IDPerms                        *IdPermsType              `json:"id_perms,omitempty"`
 	Perms2                         *PermType2                `json:"perms2,omitempty"`
 	ParentUUID                     string                    `json:"parent_uuid,omitempty"`
 	FQName                         []string                  `json:"fq_name,omitempty"`
-	IDPerms                        *IdPermsType              `json:"id_perms,omitempty"`
+	DisplayName                    string                    `json:"display_name,omitempty"`
 	Annotations                    *KeyValuePairs            `json:"annotations,omitempty"`
 	UUID                           string                    `json:"uuid,omitempty"`
 
@@ -36,15 +36,15 @@ func (model *LoadbalancerListener) String() string {
 func MakeLoadbalancerListener() *LoadbalancerListener {
 	return &LoadbalancerListener{
 		//TODO(nati): Apply default
-		ParentUUID:  "",
-		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
-		Annotations: MakeKeyValuePairs(),
-		UUID:        "",
 		LoadbalancerListenerProperties: MakeLoadbalancerListenerType(),
 		ParentType:                     "",
-		DisplayName:                    "",
+		IDPerms:                        MakeIdPermsType(),
 		Perms2:                         MakePermType2(),
+		ParentUUID:                     "",
+		FQName:                         []string{},
+		DisplayName:                    "",
+		Annotations:                    MakeKeyValuePairs(),
+		UUID:                           "",
 	}
 }
 

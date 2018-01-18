@@ -12,7 +12,6 @@ import (
 )
 
 const insertLoadbalancerMemberQuery = "insert into `loadbalancer_member` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`weight`,`status_description`,`status`,`protocol_port`,`admin_state`,`address`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateLoadbalancerMemberQuery = "update `loadbalancer_member` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`weight` = ?,`status_description` = ?,`status` = ?,`protocol_port` = ?,`admin_state` = ?,`address` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteLoadbalancerMemberQuery = "delete from `loadbalancer_member` where uuid = ?"
 
 // LoadbalancerMemberFields is db columns for LoadbalancerMember
@@ -394,9 +393,250 @@ func ListLoadbalancerMember(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadba
 }
 
 // UpdateLoadbalancerMember updates a resource
-func UpdateLoadbalancerMember(tx *sql.Tx, uuid string, model *models.LoadbalancerMember) error {
-	//TODO(nati) support update
-	return nil
+func UpdateLoadbalancerMember(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateLoadbalancerMemberQuery = "update `loadbalancer_member` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateLoadbalancerMemberQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateLoadbalancerMemberQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateLoadbalancerMemberQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateLoadbalancerMemberQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateLoadbalancerMemberQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateLoadbalancerMemberQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateLoadbalancerMemberQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerMemberProperties.Weight", "."); ok {
+		updateLoadbalancerMemberQuery += "`weight` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerMemberProperties.StatusDescription", "."); ok {
+		updateLoadbalancerMemberQuery += "`status_description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerMemberProperties.Status", "."); ok {
+		updateLoadbalancerMemberQuery += "`status` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerMemberProperties.ProtocolPort", "."); ok {
+		updateLoadbalancerMemberQuery += "`protocol_port` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerMemberProperties.AdminState", "."); ok {
+		updateLoadbalancerMemberQuery += "`admin_state` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerMemberProperties.Address", "."); ok {
+		updateLoadbalancerMemberQuery += "`address` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateLoadbalancerMemberQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateLoadbalancerMemberQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateLoadbalancerMemberQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateLoadbalancerMemberQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateLoadbalancerMemberQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateLoadbalancerMemberQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateLoadbalancerMemberQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateLoadbalancerMemberQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateLoadbalancerMemberQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateLoadbalancerMemberQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateLoadbalancerMemberQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateLoadbalancerMemberQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateLoadbalancerMemberQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateLoadbalancerMemberQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateLoadbalancerMemberQuery += ","
+	}
+
+	updateLoadbalancerMemberQuery =
+		updateLoadbalancerMemberQuery[:len(updateLoadbalancerMemberQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateLoadbalancerMemberQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateLoadbalancerMemberQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteLoadbalancerMember deletes a resource

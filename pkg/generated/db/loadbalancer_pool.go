@@ -12,7 +12,6 @@ import (
 )
 
 const insertLoadbalancerPoolQuery = "insert into `loadbalancer_pool` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`loadbalancer_pool_provider`,`subnet_id`,`status_description`,`status`,`session_persistence`,`protocol`,`persistence_cookie_name`,`loadbalancer_method`,`admin_state`,`key_value_pair`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`annotations_key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateLoadbalancerPoolQuery = "update `loadbalancer_pool` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`loadbalancer_pool_provider` = ?,`subnet_id` = ?,`status_description` = ?,`status` = ?,`session_persistence` = ?,`protocol` = ?,`persistence_cookie_name` = ?,`loadbalancer_method` = ?,`admin_state` = ?,`key_value_pair` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`annotations_key_value_pair` = ?;"
 const deleteLoadbalancerPoolQuery = "delete from `loadbalancer_pool` where uuid = ?"
 
 // LoadbalancerPoolFields is db columns for LoadbalancerPool
@@ -53,6 +52,11 @@ var LoadbalancerPoolFields = []string{
 // LoadbalancerPoolRefFields is db reference fields for LoadbalancerPool
 var LoadbalancerPoolRefFields = map[string][]string{
 
+	"loadbalancer_listener": {
+	// <common.Schema Value>
+
+	},
+
 	"service_instance": {
 	// <common.Schema Value>
 
@@ -69,11 +73,6 @@ var LoadbalancerPoolRefFields = map[string][]string{
 	},
 
 	"virtual_machine_interface": {
-	// <common.Schema Value>
-
-	},
-
-	"loadbalancer_listener": {
 	// <common.Schema Value>
 
 	},
@@ -119,6 +118,8 @@ var LoadbalancerPoolParents = []string{
 	"project",
 }
 
+const insertLoadbalancerPoolServiceApplianceSetQuery = "insert into `ref_loadbalancer_pool_service_appliance_set` (`from`, `to` ) values (?, ?);"
+
 const insertLoadbalancerPoolVirtualMachineInterfaceQuery = "insert into `ref_loadbalancer_pool_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerPoolLoadbalancerListenerQuery = "insert into `ref_loadbalancer_pool_loadbalancer_listener` (`from`, `to` ) values (?, ?);"
@@ -126,8 +127,6 @@ const insertLoadbalancerPoolLoadbalancerListenerQuery = "insert into `ref_loadba
 const insertLoadbalancerPoolServiceInstanceQuery = "insert into `ref_loadbalancer_pool_service_instance` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerPoolLoadbalancerHealthmonitorQuery = "insert into `ref_loadbalancer_pool_loadbalancer_healthmonitor` (`from`, `to` ) values (?, ?);"
-
-const insertLoadbalancerPoolServiceApplianceSetQuery = "insert into `ref_loadbalancer_pool_service_appliance_set` (`from`, `to` ) values (?, ?);"
 
 // CreateLoadbalancerPool inserts LoadbalancerPool to DB
 func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
@@ -176,32 +175,6 @@ func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtServiceApplianceSetRef, err := tx.Prepare(insertLoadbalancerPoolServiceApplianceSetQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceApplianceSetRefs create statement failed")
-	}
-	defer stmtServiceApplianceSetRef.Close()
-	for _, ref := range model.ServiceApplianceSetRefs {
-
-		_, err = stmtServiceApplianceSetRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
-		}
-	}
-
-	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertLoadbalancerPoolVirtualMachineInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
-	}
-	defer stmtVirtualMachineInterfaceRef.Close()
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
 	stmtLoadbalancerListenerRef, err := tx.Prepare(insertLoadbalancerPoolLoadbalancerListenerQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing LoadbalancerListenerRefs create statement failed")
@@ -238,6 +211,32 @@ func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
 		_, err = stmtLoadbalancerHealthmonitorRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "LoadbalancerHealthmonitorRefs create failed")
+		}
+	}
+
+	stmtServiceApplianceSetRef, err := tx.Prepare(insertLoadbalancerPoolServiceApplianceSetQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceApplianceSetRefs create statement failed")
+	}
+	defer stmtServiceApplianceSetRef.Close()
+	for _, ref := range model.ServiceApplianceSetRefs {
+
+		_, err = stmtServiceApplianceSetRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
+		}
+	}
+
+	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertLoadbalancerPoolVirtualMachineInterfaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
+	}
+	defer stmtVirtualMachineInterfaceRef.Close()
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
 	}
 
@@ -503,6 +502,26 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 
 	}
 
+	if value, ok := values["ref_service_appliance_set"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LoadbalancerPoolServiceApplianceSetRef{}
+			referenceModel.UUID = uuid
+			m.ServiceApplianceSetRefs = append(m.ServiceApplianceSetRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -579,26 +598,6 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 			referenceModel := &models.LoadbalancerPoolLoadbalancerHealthmonitorRef{}
 			referenceModel.UUID = uuid
 			m.LoadbalancerHealthmonitorRefs = append(m.LoadbalancerHealthmonitorRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_service_appliance_set"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LoadbalancerPoolServiceApplianceSetRef{}
-			referenceModel.UUID = uuid
-			m.ServiceApplianceSetRefs = append(m.ServiceApplianceSetRefs, referenceModel)
 
 		}
 	}
@@ -893,9 +892,282 @@ func ListLoadbalancerPool(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadbala
 }
 
 // UpdateLoadbalancerPool updates a resource
-func UpdateLoadbalancerPool(tx *sql.Tx, uuid string, model *models.LoadbalancerPool) error {
-	//TODO(nati) support update
-	return nil
+func UpdateLoadbalancerPool(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateLoadbalancerPoolQuery = "update `loadbalancer_pool` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateLoadbalancerPoolQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateLoadbalancerPoolQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateLoadbalancerPoolQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateLoadbalancerPoolQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateLoadbalancerPoolQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateLoadbalancerPoolQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateLoadbalancerPoolQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerPoolProvider", "."); ok {
+		updateLoadbalancerPoolQuery += "`loadbalancer_pool_provider` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerPoolProperties.SubnetID", "."); ok {
+		updateLoadbalancerPoolQuery += "`subnet_id` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerPoolProperties.StatusDescription", "."); ok {
+		updateLoadbalancerPoolQuery += "`status_description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerPoolProperties.Status", "."); ok {
+		updateLoadbalancerPoolQuery += "`status` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerPoolProperties.SessionPersistence", "."); ok {
+		updateLoadbalancerPoolQuery += "`session_persistence` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerPoolProperties.Protocol", "."); ok {
+		updateLoadbalancerPoolQuery += "`protocol` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerPoolProperties.PersistenceCookieName", "."); ok {
+		updateLoadbalancerPoolQuery += "`persistence_cookie_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerPoolProperties.LoadbalancerMethod", "."); ok {
+		updateLoadbalancerPoolQuery += "`loadbalancer_method` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerPoolProperties.AdminState", "."); ok {
+		updateLoadbalancerPoolQuery += "`admin_state` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerPoolCustomAttributes.KeyValuePair", "."); ok {
+		updateLoadbalancerPoolQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateLoadbalancerPoolQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateLoadbalancerPoolQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateLoadbalancerPoolQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateLoadbalancerPoolQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateLoadbalancerPoolQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateLoadbalancerPoolQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateLoadbalancerPoolQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateLoadbalancerPoolQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateLoadbalancerPoolQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateLoadbalancerPoolQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateLoadbalancerPoolQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateLoadbalancerPoolQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateLoadbalancerPoolQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateLoadbalancerPoolQuery += "`annotations_key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateLoadbalancerPoolQuery += ","
+	}
+
+	updateLoadbalancerPoolQuery =
+		updateLoadbalancerPoolQuery[:len(updateLoadbalancerPoolQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateLoadbalancerPoolQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateLoadbalancerPoolQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteLoadbalancerPool deletes a resource

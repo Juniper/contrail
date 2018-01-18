@@ -22,6 +22,10 @@ type PhysicalRouterCreateRequest struct {
 	Data *models.PhysicalRouter `json:"physical-router"`
 }
 
+type PhysicalRouterUpdateRequest struct {
+	Data map[string]interface{} `json:"physical-router"`
+}
+
 //Path returns api path for collections.
 func (api *PhysicalRouterRESTAPI) Path() string {
 	return "/physical-routers"
@@ -79,7 +83,40 @@ func (api *PhysicalRouterRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *PhysicalRouterRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &PhysicalRouterUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "physical_router",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdatePhysicalRouter(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "physical_router",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"physical-router": {
+			"uuid": id,
+			"uri":  "/" + "physical-router" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

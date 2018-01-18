@@ -22,6 +22,10 @@ type BridgeDomainCreateRequest struct {
 	Data *models.BridgeDomain `json:"bridge-domain"`
 }
 
+type BridgeDomainUpdateRequest struct {
+	Data map[string]interface{} `json:"bridge-domain"`
+}
+
 //Path returns api path for collections.
 func (api *BridgeDomainRESTAPI) Path() string {
 	return "/bridge-domains"
@@ -79,7 +83,40 @@ func (api *BridgeDomainRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *BridgeDomainRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &BridgeDomainUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "bridge_domain",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateBridgeDomain(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "bridge_domain",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"bridge-domain": {
+			"uuid": id,
+			"uri":  "/" + "bridge-domain" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

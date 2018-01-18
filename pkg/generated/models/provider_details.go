@@ -6,8 +6,8 @@ import "encoding/json"
 
 // ProviderDetails
 type ProviderDetails struct {
-	SegmentationID  VlanIdType `json:"segmentation_id,omitempty"`
 	PhysicalNetwork string     `json:"physical_network,omitempty"`
+	SegmentationID  VlanIdType `json:"segmentation_id,omitempty"`
 }
 
 // String returns json representation of the object

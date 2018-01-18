@@ -22,6 +22,10 @@ type WidgetCreateRequest struct {
 	Data *models.Widget `json:"widget"`
 }
 
+type WidgetUpdateRequest struct {
+	Data map[string]interface{} `json:"widget"`
+}
+
 //Path returns api path for collections.
 func (api *WidgetRESTAPI) Path() string {
 	return "/widgets"
@@ -79,7 +83,40 @@ func (api *WidgetRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *WidgetRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &WidgetUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "widget",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateWidget(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "widget",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"widget": {
+			"uuid": id,
+			"uri":  "/" + "widget" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

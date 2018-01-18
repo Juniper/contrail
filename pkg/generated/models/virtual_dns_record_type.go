@@ -24,12 +24,12 @@ func (model *VirtualDnsRecordType) String() string {
 func MakeVirtualDnsRecordType() *VirtualDnsRecordType {
 	return &VirtualDnsRecordType{
 		//TODO(nati): Apply default
-		RecordTTLSeconds:   0,
 		RecordMXPreference: 0,
 		RecordName:         "",
 		RecordClass:        MakeDnsRecordClassType(),
 		RecordData:         "",
 		RecordType:         MakeDnsRecordTypeType(),
+		RecordTTLSeconds:   0,
 	}
 }
 

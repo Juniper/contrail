@@ -6,9 +6,9 @@ import "encoding/json"
 
 // FlowAgingTimeout
 type FlowAgingTimeout struct {
+	TimeoutInSeconds int    `json:"timeout_in_seconds,omitempty"`
 	Protocol         string `json:"protocol,omitempty"`
 	Port             int    `json:"port,omitempty"`
-	TimeoutInSeconds int    `json:"timeout_in_seconds,omitempty"`
 }
 
 // String returns json representation of the object

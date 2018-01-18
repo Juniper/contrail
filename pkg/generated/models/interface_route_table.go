@@ -6,15 +6,15 @@ import "encoding/json"
 
 // InterfaceRouteTable
 type InterfaceRouteTable struct {
-	IDPerms                   *IdPermsType    `json:"id_perms,omitempty"`
-	Perms2                    *PermType2      `json:"perms2,omitempty"`
-	ParentUUID                string          `json:"parent_uuid,omitempty"`
-	ParentType                string          `json:"parent_type,omitempty"`
-	FQName                    []string        `json:"fq_name,omitempty"`
-	InterfaceRouteTableRoutes *RouteTableType `json:"interface_route_table_routes,omitempty"`
 	DisplayName               string          `json:"display_name,omitempty"`
 	Annotations               *KeyValuePairs  `json:"annotations,omitempty"`
+	Perms2                    *PermType2      `json:"perms2,omitempty"`
 	UUID                      string          `json:"uuid,omitempty"`
+	ParentUUID                string          `json:"parent_uuid,omitempty"`
+	ParentType                string          `json:"parent_type,omitempty"`
+	IDPerms                   *IdPermsType    `json:"id_perms,omitempty"`
+	InterfaceRouteTableRoutes *RouteTableType `json:"interface_route_table_routes,omitempty"`
+	FQName                    []string        `json:"fq_name,omitempty"`
 
 	ServiceInstanceRefs []*InterfaceRouteTableServiceInstanceRef `json:"service_instance_refs,omitempty"`
 }
@@ -37,15 +37,15 @@ func (model *InterfaceRouteTable) String() string {
 func MakeInterfaceRouteTable() *InterfaceRouteTable {
 	return &InterfaceRouteTable{
 		//TODO(nati): Apply default
-		ParentType: "",
-		FQName:     []string{},
-		IDPerms:    MakeIdPermsType(),
-		Perms2:     MakePermType2(),
-		ParentUUID: "",
-		UUID:       "",
+		FQName: []string{},
 		InterfaceRouteTableRoutes: MakeRouteTableType(),
-		DisplayName:               "",
-		Annotations:               MakeKeyValuePairs(),
+		UUID:        "",
+		ParentUUID:  "",
+		ParentType:  "",
+		IDPerms:     MakeIdPermsType(),
+		DisplayName: "",
+		Annotations: MakeKeyValuePairs(),
+		Perms2:      MakePermType2(),
 	}
 }
 

@@ -37,7 +37,6 @@ func (model *VirtualMachine) String() string {
 func MakeVirtualMachine() *VirtualMachine {
 	return &VirtualMachine{
 		//TODO(nati): Apply default
-		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
@@ -45,6 +44,7 @@ func MakeVirtualMachine() *VirtualMachine {
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
+		ParentUUID:  "",
 	}
 }
 

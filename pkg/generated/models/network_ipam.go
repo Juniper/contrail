@@ -6,17 +6,17 @@ import "encoding/json"
 
 // NetworkIpam
 type NetworkIpam struct {
+	UUID             string           `json:"uuid,omitempty"`
+	ParentUUID       string           `json:"parent_uuid,omitempty"`
 	ParentType       string           `json:"parent_type,omitempty"`
-	IDPerms          *IdPermsType     `json:"id_perms,omitempty"`
 	DisplayName      string           `json:"display_name,omitempty"`
+	Annotations      *KeyValuePairs   `json:"annotations,omitempty"`
 	Perms2           *PermType2       `json:"perms2,omitempty"`
 	NetworkIpamMGMT  *IpamType        `json:"network_ipam_mgmt,omitempty"`
 	IpamSubnets      *IpamSubnets     `json:"ipam_subnets,omitempty"`
 	IpamSubnetMethod SubnetMethodType `json:"ipam_subnet_method,omitempty"`
-	ParentUUID       string           `json:"parent_uuid,omitempty"`
-	UUID             string           `json:"uuid,omitempty"`
 	FQName           []string         `json:"fq_name,omitempty"`
-	Annotations      *KeyValuePairs   `json:"annotations,omitempty"`
+	IDPerms          *IdPermsType     `json:"id_perms,omitempty"`
 
 	VirtualDNSRefs []*NetworkIpamVirtualDNSRef `json:"virtual_DNS_refs,omitempty"`
 }
@@ -39,16 +39,16 @@ func MakeNetworkIpam() *NetworkIpam {
 	return &NetworkIpam{
 		//TODO(nati): Apply default
 		UUID:             "",
-		FQName:           []string{},
-		Annotations:      MakeKeyValuePairs(),
 		ParentUUID:       "",
 		ParentType:       "",
-		IDPerms:          MakeIdPermsType(),
-		DisplayName:      "",
+		Annotations:      MakeKeyValuePairs(),
 		Perms2:           MakePermType2(),
 		NetworkIpamMGMT:  MakeIpamType(),
 		IpamSubnets:      MakeIpamSubnets(),
 		IpamSubnetMethod: MakeSubnetMethodType(),
+		FQName:           []string{},
+		IDPerms:          MakeIdPermsType(),
+		DisplayName:      "",
 	}
 }
 

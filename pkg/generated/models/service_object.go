@@ -26,6 +26,7 @@ func (model *ServiceObject) String() string {
 func MakeServiceObject() *ServiceObject {
 	return &ServiceObject{
 		//TODO(nati): Apply default
+		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
@@ -33,7 +34,6 @@ func MakeServiceObject() *ServiceObject {
 		UUID:        "",
 		ParentUUID:  "",
 		ParentType:  "",
-		FQName:      []string{},
 	}
 }
 

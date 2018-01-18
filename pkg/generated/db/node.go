@@ -12,7 +12,6 @@ import (
 )
 
 const insertNodeQuery = "insert into `node` (`uuid`,`username`,`type`,`ssh_key`,`private_power_management_username`,`private_power_management_password`,`private_power_management_ip`,`private_machine_state`,`private_machine_properties`,`share`,`owner_access`,`owner`,`global_access`,`password`,`parent_uuid`,`parent_type`,`mac_address`,`ip_address`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`hostname`,`gcp_machine_type`,`gcp_image`,`fq_name`,`display_name`,`aws_instance_type`,`aws_ami`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateNodeQuery = "update `node` set `uuid` = ?,`username` = ?,`type` = ?,`ssh_key` = ?,`private_power_management_username` = ?,`private_power_management_password` = ?,`private_power_management_ip` = ?,`private_machine_state` = ?,`private_machine_properties` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`password` = ?,`parent_uuid` = ?,`parent_type` = ?,`mac_address` = ?,`ip_address` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`hostname` = ?,`gcp_machine_type` = ?,`gcp_image` = ?,`fq_name` = ?,`display_name` = ?,`aws_instance_type` = ?,`aws_ami` = ?,`key_value_pair` = ?;"
 const deleteNodeQuery = "delete from `node` where uuid = ?"
 
 // NodeFields is db columns for Node
@@ -491,9 +490,330 @@ func ListNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.Node, error) {
 }
 
 // UpdateNode updates a resource
-func UpdateNode(tx *sql.Tx, uuid string, model *models.Node) error {
-	//TODO(nati) support update
-	return nil
+func UpdateNode(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateNodeQuery = "update `node` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateNodeQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Username", "."); ok {
+		updateNodeQuery += "`username` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Type", "."); ok {
+		updateNodeQuery += "`type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".SSHKey", "."); ok {
+		updateNodeQuery += "`ssh_key` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".PrivatePowerManagementUsername", "."); ok {
+		updateNodeQuery += "`private_power_management_username` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".PrivatePowerManagementPassword", "."); ok {
+		updateNodeQuery += "`private_power_management_password` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".PrivatePowerManagementIP", "."); ok {
+		updateNodeQuery += "`private_power_management_ip` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".PrivateMachineState", "."); ok {
+		updateNodeQuery += "`private_machine_state` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".PrivateMachineProperties", "."); ok {
+		updateNodeQuery += "`private_machine_properties` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateNodeQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateNodeQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateNodeQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateNodeQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Password", "."); ok {
+		updateNodeQuery += "`password` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateNodeQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateNodeQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MacAddress", "."); ok {
+		updateNodeQuery += "`mac_address` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IPAddress", "."); ok {
+		updateNodeQuery += "`ip_address` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateNodeQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateNodeQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateNodeQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateNodeQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateNodeQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateNodeQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateNodeQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateNodeQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateNodeQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateNodeQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateNodeQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Hostname", "."); ok {
+		updateNodeQuery += "`hostname` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".GCPMachineType", "."); ok {
+		updateNodeQuery += "`gcp_machine_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".GCPImage", "."); ok {
+		updateNodeQuery += "`gcp_image` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateNodeQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateNodeQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".AwsInstanceType", "."); ok {
+		updateNodeQuery += "`aws_instance_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".AwsAmi", "."); ok {
+		updateNodeQuery += "`aws_ami` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateNodeQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateNodeQuery += ","
+	}
+
+	updateNodeQuery =
+		updateNodeQuery[:len(updateNodeQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateNodeQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateNodeQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteNode deletes a resource

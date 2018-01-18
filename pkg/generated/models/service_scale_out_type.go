@@ -6,7 +6,7 @@ import "encoding/json"
 
 // ServiceScaleOutType
 type ServiceScaleOutType struct {
-	AutoScale    bool `json:"auto_scale,omitempty"`
+	AutoScale    bool `json:"auto_scale"`
 	MaxInstances int  `json:"max_instances,omitempty"`
 }
 

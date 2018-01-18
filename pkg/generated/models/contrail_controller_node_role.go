@@ -6,19 +6,19 @@ import "encoding/json"
 
 // ContrailControllerNodeRole
 type ContrailControllerNodeRole struct {
-	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
 	Perms2                    *PermType2     `json:"perms2,omitempty"`
-	UUID                      string         `json:"uuid,omitempty"`
-	ParentType                string         `json:"parent_type,omitempty"`
-	ParentUUID                string         `json:"parent_uuid,omitempty"`
+	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
+	ProvisioningProgressStage string         `json:"provisioning_progress_stage,omitempty"`
 	FQName                    []string       `json:"fq_name,omitempty"`
+	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
 	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
 	DisplayName               string         `json:"display_name,omitempty"`
+	UUID                      string         `json:"uuid,omitempty"`
+	ProvisioningState         string         `json:"provisioning_state,omitempty"`
 	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
 	ProvisioningProgress      int            `json:"provisioning_progress,omitempty"`
-	ProvisioningProgressStage string         `json:"provisioning_progress_stage,omitempty"`
-	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
-	ProvisioningState         string         `json:"provisioning_state,omitempty"`
+	ParentUUID                string         `json:"parent_uuid,omitempty"`
+	ParentType                string         `json:"parent_type,omitempty"`
 }
 
 // String returns json representation of the object
@@ -31,19 +31,19 @@ func (model *ContrailControllerNodeRole) String() string {
 func MakeContrailControllerNodeRole() *ContrailControllerNodeRole {
 	return &ContrailControllerNodeRole{
 		//TODO(nati): Apply default
-		ParentUUID:                "",
-		FQName:                    []string{},
+		ParentType:                "",
 		IDPerms:                   MakeIdPermsType(),
 		DisplayName:               "",
+		UUID:                      "",
+		ProvisioningState:         "",
 		ProvisioningLog:           "",
 		ProvisioningProgress:      0,
-		ProvisioningProgressStage: "",
-		ProvisioningStartTime:     "",
-		ProvisioningState:         "",
+		ParentUUID:                "",
 		Annotations:               MakeKeyValuePairs(),
 		Perms2:                    MakePermType2(),
-		UUID:                      "",
-		ParentType:                "",
+		ProvisioningStartTime:     "",
+		ProvisioningProgressStage: "",
+		FQName: []string{},
 	}
 }
 

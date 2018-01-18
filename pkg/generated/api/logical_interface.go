@@ -22,6 +22,10 @@ type LogicalInterfaceCreateRequest struct {
 	Data *models.LogicalInterface `json:"logical-interface"`
 }
 
+type LogicalInterfaceUpdateRequest struct {
+	Data map[string]interface{} `json:"logical-interface"`
+}
+
 //Path returns api path for collections.
 func (api *LogicalInterfaceRESTAPI) Path() string {
 	return "/logical-interfaces"
@@ -79,7 +83,40 @@ func (api *LogicalInterfaceRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *LogicalInterfaceRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &LogicalInterfaceUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "logical_interface",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateLogicalInterface(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "logical_interface",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"logical-interface": {
+			"uuid": id,
+			"uri":  "/" + "logical-interface" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.
