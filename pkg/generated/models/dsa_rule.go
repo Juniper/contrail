@@ -6,15 +6,15 @@ import "encoding/json"
 
 // DsaRule
 type DsaRule struct {
-	ParentUUID   string                          `json:"parent_uuid,omitempty"`
+	DsaRuleEntry *DiscoveryServiceAssignmentType `json:"dsa_rule_entry,omitempty"`
 	ParentType   string                          `json:"parent_type,omitempty"`
+	Annotations  *KeyValuePairs                  `json:"annotations,omitempty"`
+	FQName       []string                        `json:"fq_name,omitempty"`
 	IDPerms      *IdPermsType                    `json:"id_perms,omitempty"`
 	DisplayName  string                          `json:"display_name,omitempty"`
-	DsaRuleEntry *DiscoveryServiceAssignmentType `json:"dsa_rule_entry,omitempty"`
 	Perms2       *PermType2                      `json:"perms2,omitempty"`
-	Annotations  *KeyValuePairs                  `json:"annotations,omitempty"`
 	UUID         string                          `json:"uuid,omitempty"`
-	FQName       []string                        `json:"fq_name,omitempty"`
+	ParentUUID   string                          `json:"parent_uuid,omitempty"`
 }
 
 // String returns json representation of the object
@@ -27,15 +27,15 @@ func (model *DsaRule) String() string {
 func MakeDsaRule() *DsaRule {
 	return &DsaRule{
 		//TODO(nati): Apply default
-		IDPerms:      MakeIdPermsType(),
-		DisplayName:  "",
 		DsaRuleEntry: MakeDiscoveryServiceAssignmentType(),
-		Perms2:       MakePermType2(),
-		ParentUUID:   "",
 		ParentType:   "",
-		UUID:         "",
-		FQName:       []string{},
 		Annotations:  MakeKeyValuePairs(),
+		DisplayName:  "",
+		Perms2:       MakePermType2(),
+		UUID:         "",
+		ParentUUID:   "",
+		FQName:       []string{},
+		IDPerms:      MakeIdPermsType(),
 	}
 }
 

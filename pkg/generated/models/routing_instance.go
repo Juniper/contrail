@@ -26,14 +26,14 @@ func (model *RoutingInstance) String() string {
 func MakeRoutingInstance() *RoutingInstance {
 	return &RoutingInstance{
 		//TODO(nati): Apply default
-		ParentType:  "",
-		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
 		ParentUUID:  "",
+		ParentType:  "",
+		FQName:      []string{},
+		IDPerms:     MakeIdPermsType(),
 	}
 }
 

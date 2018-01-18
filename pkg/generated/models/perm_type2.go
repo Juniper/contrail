@@ -6,10 +6,10 @@ import "encoding/json"
 
 // PermType2
 type PermType2 struct {
+	Owner        string       `json:"owner,omitempty"`
 	OwnerAccess  AccessType   `json:"owner_access,omitempty"`
 	GlobalAccess AccessType   `json:"global_access,omitempty"`
 	Share        []*ShareType `json:"share,omitempty"`
-	Owner        string       `json:"owner,omitempty"`
 }
 
 // String returns json representation of the object
@@ -22,11 +22,12 @@ func (model *PermType2) String() string {
 func MakePermType2() *PermType2 {
 	return &PermType2{
 		//TODO(nati): Apply default
+
+		Share: MakeShareTypeSlice(),
+
 		Owner:        "",
 		OwnerAccess:  MakeAccessType(),
 		GlobalAccess: MakeAccessType(),
-
-		Share: MakeShareTypeSlice(),
 	}
 }
 

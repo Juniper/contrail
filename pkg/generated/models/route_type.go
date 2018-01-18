@@ -22,10 +22,10 @@ func (model *RouteType) String() string {
 func MakeRouteType() *RouteType {
 	return &RouteType{
 		//TODO(nati): Apply default
+		Prefix:              "",
 		NextHop:             "",
 		CommunityAttributes: MakeCommunityAttributes(),
 		NextHopType:         MakeRouteNextHopType(),
-		Prefix:              "",
 	}
 }
 

@@ -6,6 +6,7 @@ import "encoding/json"
 
 // PortTuple
 type PortTuple struct {
+	ParentType  string         `json:"parent_type,omitempty"`
 	FQName      []string       `json:"fq_name,omitempty"`
 	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
 	DisplayName string         `json:"display_name,omitempty"`
@@ -13,7 +14,6 @@ type PortTuple struct {
 	Perms2      *PermType2     `json:"perms2,omitempty"`
 	UUID        string         `json:"uuid,omitempty"`
 	ParentUUID  string         `json:"parent_uuid,omitempty"`
-	ParentType  string         `json:"parent_type,omitempty"`
 }
 
 // String returns json representation of the object

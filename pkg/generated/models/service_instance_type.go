@@ -6,17 +6,17 @@ import "encoding/json"
 
 // ServiceInstanceType
 type ServiceInstanceType struct {
+	ScaleOut                 *ServiceScaleOutType            `json:"scale_out,omitempty"`
+	LeftIPAddress            IpAddressType                   `json:"left_ip_address,omitempty"`
+	AutoPolicy               bool                            `json:"auto_policy"`
+	RightIPAddress           IpAddressType                   `json:"right_ip_address,omitempty"`
+	AvailabilityZone         string                          `json:"availability_zone,omitempty"`
+	ManagementVirtualNetwork string                          `json:"management_virtual_network,omitempty"`
 	HaMode                   AddressMode                     `json:"ha_mode,omitempty"`
 	VirtualRouterID          string                          `json:"virtual_router_id,omitempty"`
 	InterfaceList            []*ServiceInstanceInterfaceType `json:"interface_list,omitempty"`
-	LeftIPAddress            IpAddressType                   `json:"left_ip_address,omitempty"`
-	RightVirtualNetwork      string                          `json:"right_virtual_network,omitempty"`
-	RightIPAddress           IpAddressType                   `json:"right_ip_address,omitempty"`
-	AvailabilityZone         string                          `json:"availability_zone,omitempty"`
-	ScaleOut                 *ServiceScaleOutType            `json:"scale_out,omitempty"`
 	LeftVirtualNetwork       string                          `json:"left_virtual_network,omitempty"`
-	ManagementVirtualNetwork string                          `json:"management_virtual_network,omitempty"`
-	AutoPolicy               bool                            `json:"auto_policy"`
+	RightVirtualNetwork      string                          `json:"right_virtual_network,omitempty"`
 }
 
 // String returns json representation of the object
@@ -30,18 +30,18 @@ func MakeServiceInstanceType() *ServiceInstanceType {
 	return &ServiceInstanceType{
 		//TODO(nati): Apply default
 		ManagementVirtualNetwork: "",
-		AutoPolicy:               false,
-		VirtualRouterID:          "",
+		HaMode:          MakeAddressMode(),
+		VirtualRouterID: "",
 
 		InterfaceList: MakeServiceInstanceInterfaceTypeSlice(),
 
-		LeftIPAddress:       MakeIpAddressType(),
-		RightVirtualNetwork: "",
-		RightIPAddress:      MakeIpAddressType(),
-		AvailabilityZone:    "",
-		ScaleOut:            MakeServiceScaleOutType(),
-		HaMode:              MakeAddressMode(),
 		LeftVirtualNetwork:  "",
+		RightVirtualNetwork: "",
+		AvailabilityZone:    "",
+		LeftIPAddress:       MakeIpAddressType(),
+		AutoPolicy:          false,
+		RightIPAddress:      MakeIpAddressType(),
+		ScaleOut:            MakeServiceScaleOutType(),
 	}
 }
 

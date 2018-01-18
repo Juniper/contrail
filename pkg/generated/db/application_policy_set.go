@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"encoding/json"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/pkg/errors"
@@ -42,14 +43,14 @@ var ApplicationPolicySetFields = []string{
 // ApplicationPolicySetRefFields is db reference fields for ApplicationPolicySet
 var ApplicationPolicySetRefFields = map[string][]string{
 
-	"global_vrouter_config": {
-	// <common.Schema Value>
-
-	},
-
 	"firewall_policy": {
 		// <common.Schema Value>
 		"sequence",
+	},
+
+	"global_vrouter_config": {
+	// <common.Schema Value>
+
 	},
 }
 
@@ -59,9 +60,9 @@ var ApplicationPolicySetBackRefFields = map[string][]string{}
 // ApplicationPolicySetParentTypes is possible parents for ApplicationPolicySet
 var ApplicationPolicySetParents = []string{
 
-	"policy_management",
-
 	"project",
+
+	"policy_management",
 }
 
 const insertApplicationPolicySetFirewallPolicyQuery = "insert into `ref_application_policy_set_firewall_policy` (`from`, `to` ,`sequence`) values (?, ?,?);"

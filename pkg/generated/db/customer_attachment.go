@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"encoding/json"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/pkg/errors"
@@ -309,26 +310,6 @@ func scanCustomerAttachment(values map[string]interface{}) (*models.CustomerAtta
 
 	}
 
-	if value, ok := values["ref_virtual_machine_interface"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.CustomerAttachmentVirtualMachineInterfaceRef{}
-			referenceModel.UUID = uuid
-			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_floating_ip"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -345,6 +326,26 @@ func scanCustomerAttachment(values map[string]interface{}) (*models.CustomerAtta
 			referenceModel := &models.CustomerAttachmentFloatingIPRef{}
 			referenceModel.UUID = uuid
 			m.FloatingIPRefs = append(m.FloatingIPRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_machine_interface"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.CustomerAttachmentVirtualMachineInterfaceRef{}
+			referenceModel.UUID = uuid
+			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
 
 		}
 	}

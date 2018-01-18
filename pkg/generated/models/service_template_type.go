@@ -6,18 +6,18 @@ import "encoding/json"
 
 // ServiceTemplateType
 type ServiceTemplateType struct {
+	ServiceType               ServiceType                     `json:"service_type,omitempty"`
+	VrouterInstanceType       VRouterInstanceType             `json:"vrouter_instance_type,omitempty"`
+	AvailabilityZoneEnable    bool                            `json:"availability_zone_enable"`
+	ServiceVirtualizationType ServiceVirtualizationType       `json:"service_virtualization_type,omitempty"`
 	InterfaceType             []*ServiceTemplateInterfaceType `json:"interface_type,omitempty"`
-	ImageName                 string                          `json:"image_name,omitempty"`
 	ServiceMode               ServiceModeType                 `json:"service_mode,omitempty"`
 	Version                   int                             `json:"version,omitempty"`
-	ServiceType               ServiceType                     `json:"service_type,omitempty"`
 	Flavor                    string                          `json:"flavor,omitempty"`
-	AvailabilityZoneEnable    bool                            `json:"availability_zone_enable"`
-	InstanceData              string                          `json:"instance_data,omitempty"`
 	ServiceScaling            bool                            `json:"service_scaling"`
-	VrouterInstanceType       VRouterInstanceType             `json:"vrouter_instance_type,omitempty"`
+	InstanceData              string                          `json:"instance_data,omitempty"`
 	OrderedInterfaces         bool                            `json:"ordered_interfaces"`
-	ServiceVirtualizationType ServiceVirtualizationType       `json:"service_virtualization_type,omitempty"`
+	ImageName                 string                          `json:"image_name,omitempty"`
 }
 
 // String returns json representation of the object
@@ -30,20 +30,20 @@ func (model *ServiceTemplateType) String() string {
 func MakeServiceTemplateType() *ServiceTemplateType {
 	return &ServiceTemplateType{
 		//TODO(nati): Apply default
-		ServiceMode:            MakeServiceModeType(),
-		Version:                0,
-		ServiceType:            MakeServiceType(),
-		Flavor:                 "",
-		AvailabilityZoneEnable: false,
-		InstanceData:           "",
+		AvailabilityZoneEnable:    false,
+		ServiceVirtualizationType: MakeServiceVirtualizationType(),
 
 		InterfaceType: MakeServiceTemplateInterfaceTypeSlice(),
 
-		ImageName:                 "",
-		ServiceScaling:            false,
-		OrderedInterfaces:         false,
-		ServiceVirtualizationType: MakeServiceVirtualizationType(),
-		VrouterInstanceType:       MakeVRouterInstanceType(),
+		ServiceType:         MakeServiceType(),
+		VrouterInstanceType: MakeVRouterInstanceType(),
+		ServiceScaling:      false,
+		InstanceData:        "",
+		OrderedInterfaces:   false,
+		ImageName:           "",
+		ServiceMode:         MakeServiceModeType(),
+		Version:             0,
+		Flavor:              "",
 	}
 }
 

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
 
@@ -24,6 +25,10 @@ func TestWidget(t *testing.T) {
 	model.UUID = "widget_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "widget_dummy"}
 	model.Perms2.Owner = "admin"
+	updateMap := map[string]interface{}{}
+	common.SetValueByPath(updateMap, "uuid", ".", "access_control_list_dummy_uuid")
+	common.SetValueByPath(updateMap, "fq_name", ".", []string{"default", "default-domain", "access_control_list_dummy"})
+	common.SetValueByPath(updateMap, "display_name", ".", "test_update")
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateWidget(tx, model)
@@ -33,7 +38,7 @@ func TestWidget(t *testing.T) {
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return UpdateWidget(tx, model.UUID, model)
+		return UpdateWidget(tx, model.UUID, updateMap)
 	})
 	if err != nil {
 		t.Fatal("update failed", err)

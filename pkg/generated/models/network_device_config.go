@@ -6,6 +6,7 @@ import "encoding/json"
 
 // NetworkDeviceConfig
 type NetworkDeviceConfig struct {
+	FQName      []string       `json:"fq_name,omitempty"`
 	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
 	DisplayName string         `json:"display_name,omitempty"`
 	Annotations *KeyValuePairs `json:"annotations,omitempty"`
@@ -13,7 +14,6 @@ type NetworkDeviceConfig struct {
 	UUID        string         `json:"uuid,omitempty"`
 	ParentUUID  string         `json:"parent_uuid,omitempty"`
 	ParentType  string         `json:"parent_type,omitempty"`
-	FQName      []string       `json:"fq_name,omitempty"`
 
 	PhysicalRouterRefs []*NetworkDeviceConfigPhysicalRouterRef `json:"physical_router_refs,omitempty"`
 }
@@ -35,14 +35,14 @@ func (model *NetworkDeviceConfig) String() string {
 func MakeNetworkDeviceConfig() *NetworkDeviceConfig {
 	return &NetworkDeviceConfig{
 		//TODO(nati): Apply default
-		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
-		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
 		ParentUUID:  "",
 		ParentType:  "",
+		FQName:      []string{},
+		IDPerms:     MakeIdPermsType(),
+		DisplayName: "",
 	}
 }
 

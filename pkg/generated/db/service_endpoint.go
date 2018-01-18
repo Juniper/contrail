@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"encoding/json"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/pkg/errors"
@@ -63,11 +64,11 @@ var ServiceEndpointBackRefFields = map[string][]string{}
 // ServiceEndpointParentTypes is possible parents for ServiceEndpoint
 var ServiceEndpointParents = []string{}
 
+const insertServiceEndpointServiceObjectQuery = "insert into `ref_service_endpoint_service_object` (`from`, `to` ) values (?, ?);"
+
 const insertServiceEndpointServiceConnectionModuleQuery = "insert into `ref_service_endpoint_service_connection_module` (`from`, `to` ) values (?, ?);"
 
 const insertServiceEndpointPhysicalRouterQuery = "insert into `ref_service_endpoint_physical_router` (`from`, `to` ) values (?, ?);"
-
-const insertServiceEndpointServiceObjectQuery = "insert into `ref_service_endpoint_service_object` (`from`, `to` ) values (?, ?);"
 
 // CreateServiceEndpoint inserts ServiceEndpoint to DB
 func CreateServiceEndpoint(tx *sql.Tx, model *models.ServiceEndpoint) error {
@@ -329,6 +330,26 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	}
 
+	if value, ok := values["ref_service_object"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ServiceEndpointServiceObjectRef{}
+			referenceModel.UUID = uuid
+			m.ServiceObjectRefs = append(m.ServiceObjectRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_service_connection_module"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -365,26 +386,6 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 			referenceModel := &models.ServiceEndpointPhysicalRouterRef{}
 			referenceModel.UUID = uuid
 			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_service_object"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ServiceEndpointServiceObjectRef{}
-			referenceModel.UUID = uuid
-			m.ServiceObjectRefs = append(m.ServiceObjectRefs, referenceModel)
 
 		}
 	}

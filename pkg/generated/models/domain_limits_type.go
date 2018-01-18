@@ -21,9 +21,9 @@ func (model *DomainLimitsType) String() string {
 func MakeDomainLimitsType() *DomainLimitsType {
 	return &DomainLimitsType{
 		//TODO(nati): Apply default
-		SecurityGroupLimit:  0,
 		ProjectLimit:        0,
 		VirtualNetworkLimit: 0,
+		SecurityGroupLimit:  0,
 	}
 }
 

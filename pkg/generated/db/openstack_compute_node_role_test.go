@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
 
@@ -24,6 +25,10 @@ func TestOpenstackComputeNodeRole(t *testing.T) {
 	model.UUID = "openstack_compute_node_role_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "openstack_compute_node_role_dummy"}
 	model.Perms2.Owner = "admin"
+	updateMap := map[string]interface{}{}
+	common.SetValueByPath(updateMap, "uuid", ".", "access_control_list_dummy_uuid")
+	common.SetValueByPath(updateMap, "fq_name", ".", []string{"default", "default-domain", "access_control_list_dummy"})
+	common.SetValueByPath(updateMap, "display_name", ".", "test_update")
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateOpenstackComputeNodeRole(tx, model)
@@ -33,7 +38,7 @@ func TestOpenstackComputeNodeRole(t *testing.T) {
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return UpdateOpenstackComputeNodeRole(tx, model.UUID, model)
+		return UpdateOpenstackComputeNodeRole(tx, model.UUID, updateMap)
 	})
 	if err != nil {
 		t.Fatal("update failed", err)

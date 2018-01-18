@@ -6,10 +6,10 @@ import "encoding/json"
 
 // TimerType
 type TimerType struct {
-	StartTime   string `json:"start_time,omitempty"`
 	OffInterval string `json:"off_interval,omitempty"`
 	OnInterval  string `json:"on_interval,omitempty"`
 	EndTime     string `json:"end_time,omitempty"`
+	StartTime   string `json:"start_time,omitempty"`
 }
 
 // String returns json representation of the object

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
 
@@ -24,6 +25,10 @@ func TestConfigNode(t *testing.T) {
 	model.UUID = "config_node_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "config_node_dummy"}
 	model.Perms2.Owner = "admin"
+	updateMap := map[string]interface{}{}
+	common.SetValueByPath(updateMap, "uuid", ".", "access_control_list_dummy_uuid")
+	common.SetValueByPath(updateMap, "fq_name", ".", []string{"default", "default-domain", "access_control_list_dummy"})
+	common.SetValueByPath(updateMap, "display_name", ".", "test_update")
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateConfigNode(tx, model)
@@ -33,7 +38,7 @@ func TestConfigNode(t *testing.T) {
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return UpdateConfigNode(tx, model.UUID, model)
+		return UpdateConfigNode(tx, model.UUID, updateMap)
 	})
 	if err != nil {
 		t.Fatal("update failed", err)

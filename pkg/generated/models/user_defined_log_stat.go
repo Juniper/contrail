@@ -20,8 +20,8 @@ func (model *UserDefinedLogStat) String() string {
 func MakeUserDefinedLogStat() *UserDefinedLogStat {
 	return &UserDefinedLogStat{
 		//TODO(nati): Apply default
-		Name:    "",
 		Pattern: "",
+		Name:    "",
 	}
 }
 

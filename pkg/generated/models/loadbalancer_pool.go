@@ -6,17 +6,17 @@ import "encoding/json"
 
 // LoadbalancerPool
 type LoadbalancerPool struct {
+	FQName                           []string              `json:"fq_name,omitempty"`
 	IDPerms                          *IdPermsType          `json:"id_perms,omitempty"`
-	DisplayName                      string                `json:"display_name,omitempty"`
 	Perms2                           *PermType2            `json:"perms2,omitempty"`
+	UUID                             string                `json:"uuid,omitempty"`
+	ParentUUID                       string                `json:"parent_uuid,omitempty"`
+	ParentType                       string                `json:"parent_type,omitempty"`
 	LoadbalancerPoolProperties       *LoadbalancerPoolType `json:"loadbalancer_pool_properties,omitempty"`
 	LoadbalancerPoolCustomAttributes *KeyValuePairs        `json:"loadbalancer_pool_custom_attributes,omitempty"`
-	ParentUUID                       string                `json:"parent_uuid,omitempty"`
 	Annotations                      *KeyValuePairs        `json:"annotations,omitempty"`
-	UUID                             string                `json:"uuid,omitempty"`
 	LoadbalancerPoolProvider         string                `json:"loadbalancer_pool_provider,omitempty"`
-	ParentType                       string                `json:"parent_type,omitempty"`
-	FQName                           []string              `json:"fq_name,omitempty"`
+	DisplayName                      string                `json:"display_name,omitempty"`
 
 	ServiceApplianceSetRefs       []*LoadbalancerPoolServiceApplianceSetRef       `json:"service_appliance_set_refs,omitempty"`
 	VirtualMachineInterfaceRefs   []*LoadbalancerPoolVirtualMachineInterfaceRef   `json:"virtual_machine_interface_refs,omitempty"`
@@ -72,17 +72,17 @@ func (model *LoadbalancerPool) String() string {
 func MakeLoadbalancerPool() *LoadbalancerPool {
 	return &LoadbalancerPool{
 		//TODO(nati): Apply default
-		Annotations: MakeKeyValuePairs(),
-		UUID:        "",
-		LoadbalancerPoolProvider: "",
-		ParentType:               "",
-		FQName:                   []string{},
-		IDPerms:                  MakeIdPermsType(),
-		DisplayName:              "",
-		Perms2:                   MakePermType2(),
+		Annotations:                      MakeKeyValuePairs(),
+		LoadbalancerPoolProvider:         "",
+		DisplayName:                      "",
+		FQName:                           []string{},
+		IDPerms:                          MakeIdPermsType(),
+		Perms2:                           MakePermType2(),
+		UUID:                             "",
+		ParentUUID:                       "",
+		ParentType:                       "",
 		LoadbalancerPoolProperties:       MakeLoadbalancerPoolType(),
 		LoadbalancerPoolCustomAttributes: MakeKeyValuePairs(),
-		ParentUUID:                       "",
 	}
 }
 

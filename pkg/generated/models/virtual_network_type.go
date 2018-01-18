@@ -6,12 +6,12 @@ import "encoding/json"
 
 // VirtualNetworkType
 type VirtualNetworkType struct {
+	VxlanNetworkIdentifier VxlanNetworkIdentifierType `json:"vxlan_network_identifier,omitempty"`
 	RPF                    RpfModeType                `json:"rpf,omitempty"`
 	ForwardingMode         ForwardingModeType         `json:"forwarding_mode,omitempty"`
 	AllowTransit           bool                       `json:"allow_transit"`
 	NetworkID              int                        `json:"network_id,omitempty"`
 	MirrorDestination      bool                       `json:"mirror_destination"`
-	VxlanNetworkIdentifier VxlanNetworkIdentifierType `json:"vxlan_network_identifier,omitempty"`
 }
 
 // String returns json representation of the object

@@ -22,10 +22,10 @@ func (model *VirtualMachineInterfacePropertiesType) String() string {
 func MakeVirtualMachineInterfacePropertiesType() *VirtualMachineInterfacePropertiesType {
 	return &VirtualMachineInterfacePropertiesType{
 		//TODO(nati): Apply default
-		InterfaceMirror:      MakeInterfaceMirrorType(),
-		ServiceInterfaceType: MakeServiceInterfaceType(),
 		SubInterfaceVlanTag:  0,
 		LocalPreference:      0,
+		InterfaceMirror:      MakeInterfaceMirrorType(),
+		ServiceInterfaceType: MakeServiceInterfaceType(),
 	}
 }
 

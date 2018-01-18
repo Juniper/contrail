@@ -2,12 +2,13 @@ package api
 
 import (
 	"database/sql"
+	"net/http"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
-	"net/http"
 
 	log "github.com/sirupsen/logrus"
 )

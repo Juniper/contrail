@@ -15,8 +15,8 @@ type FirewallPolicy struct {
 	UUID        string         `json:"uuid,omitempty"`
 	ParentUUID  string         `json:"parent_uuid,omitempty"`
 
-	FirewallRuleRefs          []*FirewallPolicyFirewallRuleRef          `json:"firewall_rule_refs,omitempty"`
 	SecurityLoggingObjectRefs []*FirewallPolicySecurityLoggingObjectRef `json:"security_logging_object_refs,omitempty"`
+	FirewallRuleRefs          []*FirewallPolicyFirewallRuleRef          `json:"firewall_rule_refs,omitempty"`
 }
 
 // FirewallPolicyFirewallRuleRef references each other
@@ -44,14 +44,14 @@ func (model *FirewallPolicy) String() string {
 func MakeFirewallPolicy() *FirewallPolicy {
 	return &FirewallPolicy{
 		//TODO(nati): Apply default
-		Annotations: MakeKeyValuePairs(),
-		Perms2:      MakePermType2(),
-		UUID:        "",
-		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
+		Annotations: MakeKeyValuePairs(),
+		Perms2:      MakePermType2(),
+		UUID:        "",
+		ParentUUID:  "",
 	}
 }
 

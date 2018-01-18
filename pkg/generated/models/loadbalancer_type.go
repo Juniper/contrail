@@ -24,12 +24,12 @@ func (model *LoadbalancerType) String() string {
 func MakeLoadbalancerType() *LoadbalancerType {
 	return &LoadbalancerType{
 		//TODO(nati): Apply default
+		OperatingStatus:    "",
 		Status:             "",
 		ProvisioningStatus: "",
 		AdminState:         false,
 		VipAddress:         MakeIpAddressType(),
 		VipSubnetID:        MakeUuidStringType(),
-		OperatingStatus:    "",
 	}
 }
 

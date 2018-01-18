@@ -2,6 +2,7 @@ package db
 
 import ("fmt"
         "testing"
+        "database/sql"
 
         "github.com/Juniper/contrail/pkg/common"
         "github.com/Juniper/contrail/pkg/generated/models")
@@ -22,6 +23,10 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
     model.UUID = "{{ schema.ID }}_dummy_uuid"
     model.FQName = []string{"default", "default-domain", "{{ schema.ID }}_dummy"}
     model.Perms2.Owner = "admin"
+    updateMap := map[string]interface{}{}
+    common.SetValueByPath(updateMap, "uuid", ".", "access_control_list_dummy_uuid")
+    common.SetValueByPath(updateMap, "fq_name", ".", []string{"default", "default-domain", "access_control_list_dummy"})
+    common.SetValueByPath(updateMap, "display_name", ".", "test_update")
 
     err := common.DoInTransaction(db, func (tx *sql.Tx) error {
         return Create{{ schema.JSONSchema.GoName }}(tx, model)
@@ -31,7 +36,7 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
     }
 
     err = common.DoInTransaction(db, func (tx *sql.Tx) error {
-        return Update{{ schema.JSONSchema.GoName }}(tx, model.UUID, model)
+        return Update{{ schema.JSONSchema.GoName }}(tx, model.UUID, updateMap)
     })
     if err != nil {
         t.Fatal("update failed", err)

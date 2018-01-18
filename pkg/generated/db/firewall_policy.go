@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"encoding/json"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/pkg/errors"
@@ -58,9 +59,9 @@ var FirewallPolicyBackRefFields = map[string][]string{}
 // FirewallPolicyParentTypes is possible parents for FirewallPolicy
 var FirewallPolicyParents = []string{
 
-	"project",
-
 	"policy_management",
+
+	"project",
 }
 
 const insertFirewallPolicyFirewallRuleQuery = "insert into `ref_firewall_policy_firewall_rule` (`from`, `to` ,`sequence`) values (?, ?,?);"

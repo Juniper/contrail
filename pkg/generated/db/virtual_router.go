@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"encoding/json"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/pkg/errors"
@@ -44,15 +45,15 @@ var VirtualRouterFields = []string{
 // VirtualRouterRefFields is db reference fields for VirtualRouter
 var VirtualRouterRefFields = map[string][]string{
 
+	"virtual_machine": {
+	// <common.Schema Value>
+
+	},
+
 	"network_ipam": {
 		// <common.Schema Value>
 		"subnet",
 		"allocation_pools",
-	},
-
-	"virtual_machine": {
-	// <common.Schema Value>
-
 	},
 }
 

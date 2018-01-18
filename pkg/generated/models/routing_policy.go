@@ -36,14 +36,14 @@ func (model *RoutingPolicy) String() string {
 func MakeRoutingPolicy() *RoutingPolicy {
 	return &RoutingPolicy{
 		//TODO(nati): Apply default
-		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
-		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
 		ParentUUID:  "",
 		ParentType:  "",
+		FQName:      []string{},
+		IDPerms:     MakeIdPermsType(),
+		DisplayName: "",
 	}
 }
 

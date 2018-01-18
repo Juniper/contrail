@@ -6,8 +6,8 @@ import "encoding/json"
 
 // ProtocolType
 type ProtocolType struct {
-	Protocol string `json:"protocol,omitempty"`
 	Port     int    `json:"port,omitempty"`
+	Protocol string `json:"protocol,omitempty"`
 }
 
 // String returns json representation of the object
@@ -20,8 +20,8 @@ func (model *ProtocolType) String() string {
 func MakeProtocolType() *ProtocolType {
 	return &ProtocolType{
 		//TODO(nati): Apply default
-		Port:     0,
 		Protocol: "",
+		Port:     0,
 	}
 }
 

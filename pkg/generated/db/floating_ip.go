@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"encoding/json"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/pkg/errors"
@@ -118,19 +119,6 @@ func CreateFloatingIP(tx *sql.Tx, model *models.FloatingIP) error {
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtProjectRef, err := tx.Prepare(insertFloatingIPProjectQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ProjectRefs create statement failed")
-	}
-	defer stmtProjectRef.Close()
-	for _, ref := range model.ProjectRefs {
-
-		_, err = stmtProjectRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ProjectRefs create failed")
-		}
-	}
-
 	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertFloatingIPVirtualMachineInterfaceQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
@@ -141,6 +129,19 @@ func CreateFloatingIP(tx *sql.Tx, model *models.FloatingIP) error {
 		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
+	}
+
+	stmtProjectRef, err := tx.Prepare(insertFloatingIPProjectQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ProjectRefs create statement failed")
+	}
+	defer stmtProjectRef.Close()
+	for _, ref := range model.ProjectRefs {
+
+		_, err = stmtProjectRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ProjectRefs create failed")
 		}
 	}
 

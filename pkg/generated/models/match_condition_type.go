@@ -24,12 +24,12 @@ func (model *MatchConditionType) String() string {
 func MakeMatchConditionType() *MatchConditionType {
 	return &MatchConditionType{
 		//TODO(nati): Apply default
-		SRCPort:    MakePortType(),
-		SRCAddress: MakeAddressType(),
-		Ethertype:  MakeEtherType(),
 		DSTAddress: MakeAddressType(),
 		DSTPort:    MakePortType(),
 		Protocol:   "",
+		SRCPort:    MakePortType(),
+		SRCAddress: MakeAddressType(),
+		Ethertype:  MakeEtherType(),
 	}
 }
 

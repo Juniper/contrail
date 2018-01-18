@@ -6,16 +6,16 @@ import "encoding/json"
 
 // VirtualIpType
 type VirtualIpType struct {
-	Status                string                   `json:"status,omitempty"`
-	PersistenceCookieName string                   `json:"persistence_cookie_name,omitempty"`
-	PersistenceType       SessionPersistenceType   `json:"persistence_type,omitempty"`
+	Address               IpAddressType            `json:"address,omitempty"`
 	ProtocolPort          int                      `json:"protocol_port,omitempty"`
 	StatusDescription     string                   `json:"status_description,omitempty"`
+	ConnectionLimit       int                      `json:"connection_limit,omitempty"`
+	PersistenceType       SessionPersistenceType   `json:"persistence_type,omitempty"`
+	PersistenceCookieName string                   `json:"persistence_cookie_name,omitempty"`
+	AdminState            bool                     `json:"admin_state"`
+	Status                string                   `json:"status,omitempty"`
 	Protocol              LoadbalancerProtocolType `json:"protocol,omitempty"`
 	SubnetID              UuidStringType           `json:"subnet_id,omitempty"`
-	ConnectionLimit       int                      `json:"connection_limit,omitempty"`
-	AdminState            bool                     `json:"admin_state"`
-	Address               IpAddressType            `json:"address,omitempty"`
 }
 
 // String returns json representation of the object
@@ -28,16 +28,16 @@ func (model *VirtualIpType) String() string {
 func MakeVirtualIpType() *VirtualIpType {
 	return &VirtualIpType{
 		//TODO(nati): Apply default
-		ProtocolPort:          0,
-		Status:                "",
-		PersistenceCookieName: "",
 		PersistenceType:       MakeSessionPersistenceType(),
-		ConnectionLimit:       0,
-		AdminState:            false,
 		Address:               MakeIpAddressType(),
+		ProtocolPort:          0,
 		StatusDescription:     "",
-		Protocol:              MakeLoadbalancerProtocolType(),
+		ConnectionLimit:       0,
 		SubnetID:              MakeUuidStringType(),
+		PersistenceCookieName: "",
+		AdminState:            false,
+		Status:                "",
+		Protocol:              MakeLoadbalancerProtocolType(),
 	}
 }
 

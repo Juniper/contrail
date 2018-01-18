@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
 
@@ -24,6 +25,10 @@ func TestServiceConnectionModule(t *testing.T) {
 	model.UUID = "service_connection_module_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "service_connection_module_dummy"}
 	model.Perms2.Owner = "admin"
+	updateMap := map[string]interface{}{}
+	common.SetValueByPath(updateMap, "uuid", ".", "access_control_list_dummy_uuid")
+	common.SetValueByPath(updateMap, "fq_name", ".", []string{"default", "default-domain", "access_control_list_dummy"})
+	common.SetValueByPath(updateMap, "display_name", ".", "test_update")
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateServiceConnectionModule(tx, model)
@@ -33,7 +38,7 @@ func TestServiceConnectionModule(t *testing.T) {
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return UpdateServiceConnectionModule(tx, model.UUID, model)
+		return UpdateServiceConnectionModule(tx, model.UUID, updateMap)
 	})
 	if err != nil {
 		t.Fatal("update failed", err)
