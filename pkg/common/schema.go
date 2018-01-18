@@ -29,8 +29,9 @@ var sqlBindMap = map[string]string{
 
 //API object has schemas and types for API definition.
 type API struct {
-	Schemas []*Schema              `yaml:"schemas" json:"schemas,omitempty"`
-	Types   map[string]*JSONSchema `yaml:"-" json:"-"`
+	Schemas     []*Schema              `yaml:"schemas" json:"schemas,omitempty"`
+	Definitions []*Schema              `yaml:"-" json:"-"`
+	Types       map[string]*JSONSchema `yaml:"-" json:"-"`
 }
 
 //ColumnConfig is for database configuraion.
@@ -329,8 +330,8 @@ func (s *JSONSchema) resolveGoName(name string) error {
 	return nil
 }
 
-func (api *API) schemaByFileName(fileName string) *Schema {
-	for _, s := range api.Schemas {
+func (api *API) definitionByFileName(fileName string) *Schema {
+	for _, s := range api.Definitions {
 		if s.FileName == fileName {
 			return s
 		}
@@ -351,7 +352,7 @@ func (api *API) loadType(schemaFile, typeName string) (*JSONSchema, error) {
 	if definition, ok := api.Types[typeName]; ok {
 		return definition, nil
 	}
-	definitions := api.schemaByFileName(schemaFile)
+	definitions := api.definitionByFileName(schemaFile)
 	if definitions == nil {
 		return nil, fmt.Errorf("Can't find file for %s", schemaFile)
 	}
@@ -494,8 +495,9 @@ func (api *API) resolveExtend() error {
 //MakeAPI load directory and generate API definitions.
 func MakeAPI(dir string) (*API, error) {
 	api := &API{
-		Schemas: []*Schema{},
-		Types:   map[string]*JSONSchema{},
+		Schemas:     []*Schema{},
+		Definitions: []*Schema{},
+		Types:       map[string]*JSONSchema{},
 	}
 	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
 		if f.IsDir() {
@@ -512,7 +514,10 @@ func MakeAPI(dir string) (*API, error) {
 		}
 		schema.Path = strings.Replace(schema.ID, "_", "-", -1)
 		schema.PluralPath = strings.Replace(schema.Plural, "_", "-", -1)
-		api.Schemas = append(api.Schemas, &schema)
+		if schema.ID != "" {
+			api.Schemas = append(api.Schemas, &schema)
+		}
+		api.Definitions = append(api.Definitions, &schema)
 		return nil
 	})
 	err = api.resolveAllRef()
