@@ -6,7 +6,7 @@ import "encoding/json"
 
 // IpAddressesType
 type IpAddressesType struct {
-	IPAddress IpAddressType `json:"ip_address"`
+	IPAddress IpAddressType `json:"ip_address,omitempty"`
 }
 
 // String returns json representation of the object

@@ -6,20 +6,20 @@ import "encoding/json"
 
 // ConfigRoot
 type ConfigRoot struct {
-	Annotations *KeyValuePairs `json:"annotations"`
-	Perms2      *PermType2     `json:"perms2"`
-	UUID        string         `json:"uuid"`
-	ParentUUID  string         `json:"parent_uuid"`
-	ParentType  string         `json:"parent_type"`
-	FQName      []string       `json:"fq_name"`
-	IDPerms     *IdPermsType   `json:"id_perms"`
-	DisplayName string         `json:"display_name"`
+	Annotations *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2      *PermType2     `json:"perms2,omitempty"`
+	UUID        string         `json:"uuid,omitempty"`
+	ParentUUID  string         `json:"parent_uuid,omitempty"`
+	ParentType  string         `json:"parent_type,omitempty"`
+	FQName      []string       `json:"fq_name,omitempty"`
+	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName string         `json:"display_name,omitempty"`
 
-	TagRefs []*ConfigRootTagRef `json:"tag_refs"`
+	TagRefs []*ConfigRootTagRef `json:"tag_refs,omitempty"`
 
-	Domains             []*Domain             `json:"domains"`
-	GlobalSystemConfigs []*GlobalSystemConfig `json:"global_system_configs"`
-	Tags                []*Tag                `json:"tags"`
+	Domains             []*Domain             `json:"domains,omitempty"`
+	GlobalSystemConfigs []*GlobalSystemConfig `json:"global_system_configs,omitempty"`
+	Tags                []*Tag                `json:"tags,omitempty"`
 }
 
 // ConfigRootTagRef references each other
@@ -39,14 +39,14 @@ func (model *ConfigRoot) String() string {
 func MakeConfigRoot() *ConfigRoot {
 	return &ConfigRoot{
 		//TODO(nati): Apply default
-		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
-		DisplayName: "",
-		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
 		ParentUUID:  "",
 		ParentType:  "",
+		FQName:      []string{},
+		IDPerms:     MakeIdPermsType(),
+		DisplayName: "",
+		Annotations: MakeKeyValuePairs(),
 	}
 }
 

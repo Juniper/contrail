@@ -12,9 +12,11 @@ import (
 func TestDiscoveryServiceAssignment(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "discovery_service_assignment")
 	defer func() {
 		common.ClearTable(db, "discovery_service_assignment")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestDiscoveryServiceAssignment(t *testing.T) {
 	model := models.MakeDiscoveryServiceAssignment()
 	model.UUID = "discovery_service_assignment_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "discovery_service_assignment_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateDiscoveryServiceAssignment(tx, model)
@@ -42,6 +45,15 @@ func TestDiscoveryServiceAssignment(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteDiscoveryServiceAssignment(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

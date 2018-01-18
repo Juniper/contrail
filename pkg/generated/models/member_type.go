@@ -6,7 +6,7 @@ import "encoding/json"
 
 // MemberType
 type MemberType struct {
-	Role string `json:"role"`
+	Role string `json:"role,omitempty"`
 }
 
 // String returns json representation of the object

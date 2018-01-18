@@ -6,8 +6,8 @@ import "encoding/json"
 
 // VnSubnetsType
 type VnSubnetsType struct {
-	IpamSubnets []*IpamSubnetType `json:"ipam_subnets"`
-	HostRoutes  *RouteTableType   `json:"host_routes"`
+	IpamSubnets []*IpamSubnetType `json:"ipam_subnets,omitempty"`
+	HostRoutes  *RouteTableType   `json:"host_routes,omitempty"`
 }
 
 // String returns json representation of the object

@@ -61,14 +61,14 @@ var ApplicationPolicySetBackRefFields = map[string][]string{}
 // ApplicationPolicySetParentTypes is possible parents for ApplicationPolicySet
 var ApplicationPolicySetParents = []string{
 
-	"project",
-
 	"policy_management",
+
+	"project",
 }
 
-const insertApplicationPolicySetGlobalVrouterConfigQuery = "insert into `ref_application_policy_set_global_vrouter_config` (`from`, `to` ) values (?, ?);"
-
 const insertApplicationPolicySetFirewallPolicyQuery = "insert into `ref_application_policy_set_firewall_policy` (`from`, `to` ,`sequence`) values (?, ?,?);"
+
+const insertApplicationPolicySetGlobalVrouterConfigQuery = "insert into `ref_application_policy_set_global_vrouter_config` (`from`, `to` ) values (?, ?);"
 
 // CreateApplicationPolicySet inserts ApplicationPolicySet to DB
 func CreateApplicationPolicySet(tx *sql.Tx, model *models.ApplicationPolicySet) error {
@@ -144,10 +144,17 @@ func CreateApplicationPolicySet(tx *sql.Tx, model *models.ApplicationPolicySet) 
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "application_policy_set", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanApplicationPolicySet(values map[string]interface{}) (*models.ApplicationPolicySet, error) {
@@ -434,14 +441,33 @@ func UpdateApplicationPolicySet(tx *sql.Tx, uuid string, model *models.Applicati
 
 // DeleteApplicationPolicySet deletes a resource
 func DeleteApplicationPolicySet(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteApplicationPolicySetQuery
+	deleteQuery := deleteApplicationPolicySetQuery
+	selectQuery := "select count(uuid) from application_policy_set where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

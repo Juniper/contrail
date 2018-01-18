@@ -6,8 +6,8 @@ import "encoding/json"
 
 // SequenceType
 type SequenceType struct {
-	Major int `json:"major"`
-	Minor int `json:"minor"`
+	Major int `json:"major,omitempty"`
+	Minor int `json:"minor,omitempty"`
 }
 
 // String returns json representation of the object
@@ -20,8 +20,8 @@ func (model *SequenceType) String() string {
 func MakeSequenceType() *SequenceType {
 	return &SequenceType{
 		//TODO(nati): Apply default
-		Minor: 0,
 		Major: 0,
+		Minor: 0,
 	}
 }
 

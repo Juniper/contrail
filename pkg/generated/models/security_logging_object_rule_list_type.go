@@ -6,7 +6,7 @@ import "encoding/json"
 
 // SecurityLoggingObjectRuleListType
 type SecurityLoggingObjectRuleListType struct {
-	Rule []*SecurityLoggingObjectRuleEntryType `json:"rule"`
+	Rule []*SecurityLoggingObjectRuleEntryType `json:"rule,omitempty"`
 }
 
 // String returns json representation of the object

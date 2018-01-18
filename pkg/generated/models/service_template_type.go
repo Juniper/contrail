@@ -6,18 +6,18 @@ import "encoding/json"
 
 // ServiceTemplateType
 type ServiceTemplateType struct {
-	OrderedInterfaces         bool                            `json:"ordered_interfaces"`
-	ServiceVirtualizationType ServiceVirtualizationType       `json:"service_virtualization_type"`
-	Version                   int                             `json:"version"`
-	ServiceType               ServiceType                     `json:"service_type"`
-	InstanceData              string                          `json:"instance_data"`
-	InterfaceType             []*ServiceTemplateInterfaceType `json:"interface_type"`
-	ImageName                 string                          `json:"image_name"`
-	ServiceMode               ServiceModeType                 `json:"service_mode"`
-	Flavor                    string                          `json:"flavor"`
-	ServiceScaling            bool                            `json:"service_scaling"`
-	VrouterInstanceType       VRouterInstanceType             `json:"vrouter_instance_type"`
-	AvailabilityZoneEnable    bool                            `json:"availability_zone_enable"`
+	InterfaceType             []*ServiceTemplateInterfaceType `json:"interface_type,omitempty"`
+	ServiceMode               ServiceModeType                 `json:"service_mode,omitempty"`
+	Flavor                    string                          `json:"flavor,omitempty"`
+	AvailabilityZoneEnable    bool                            `json:"availability_zone_enable,omitempty"`
+	InstanceData              string                          `json:"instance_data,omitempty"`
+	OrderedInterfaces         bool                            `json:"ordered_interfaces,omitempty"`
+	ServiceVirtualizationType ServiceVirtualizationType       `json:"service_virtualization_type,omitempty"`
+	ImageName                 string                          `json:"image_name,omitempty"`
+	Version                   int                             `json:"version,omitempty"`
+	ServiceType               ServiceType                     `json:"service_type,omitempty"`
+	ServiceScaling            bool                            `json:"service_scaling,omitempty"`
+	VrouterInstanceType       VRouterInstanceType             `json:"vrouter_instance_type,omitempty"`
 }
 
 // String returns json representation of the object
@@ -30,20 +30,20 @@ func (model *ServiceTemplateType) String() string {
 func MakeServiceTemplateType() *ServiceTemplateType {
 	return &ServiceTemplateType{
 		//TODO(nati): Apply default
-		InstanceData:              "",
-		OrderedInterfaces:         false,
-		ServiceVirtualizationType: MakeServiceVirtualizationType(),
-		Version:                   0,
-		ServiceType:               MakeServiceType(),
-		AvailabilityZoneEnable:    false,
+		ServiceMode: MakeServiceModeType(),
+		Flavor:      "",
 
 		InterfaceType: MakeServiceTemplateInterfaceTypeSlice(),
 
-		ImageName:           "",
-		ServiceMode:         MakeServiceModeType(),
-		Flavor:              "",
-		ServiceScaling:      false,
-		VrouterInstanceType: MakeVRouterInstanceType(),
+		InstanceData:              "",
+		OrderedInterfaces:         false,
+		ServiceVirtualizationType: MakeServiceVirtualizationType(),
+		ImageName:                 "",
+		Version:                   0,
+		ServiceType:               MakeServiceType(),
+		ServiceScaling:            false,
+		AvailabilityZoneEnable:    false,
+		VrouterInstanceType:       MakeVRouterInstanceType(),
 	}
 }
 

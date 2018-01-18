@@ -6,18 +6,18 @@ import "encoding/json"
 
 // VirtualIP
 type VirtualIP struct {
-	Perms2              *PermType2     `json:"perms2"`
-	ParentType          string         `json:"parent_type"`
-	DisplayName         string         `json:"display_name"`
-	IDPerms             *IdPermsType   `json:"id_perms"`
-	Annotations         *KeyValuePairs `json:"annotations"`
-	VirtualIPProperties *VirtualIpType `json:"virtual_ip_properties"`
-	UUID                string         `json:"uuid"`
-	ParentUUID          string         `json:"parent_uuid"`
-	FQName              []string       `json:"fq_name"`
+	Annotations         *KeyValuePairs `json:"annotations,omitempty"`
+	ParentUUID          string         `json:"parent_uuid,omitempty"`
+	ParentType          string         `json:"parent_type,omitempty"`
+	VirtualIPProperties *VirtualIpType `json:"virtual_ip_properties,omitempty"`
+	FQName              []string       `json:"fq_name,omitempty"`
+	IDPerms             *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName         string         `json:"display_name,omitempty"`
+	Perms2              *PermType2     `json:"perms2,omitempty"`
+	UUID                string         `json:"uuid,omitempty"`
 
-	LoadbalancerPoolRefs        []*VirtualIPLoadbalancerPoolRef        `json:"loadbalancer_pool_refs"`
-	VirtualMachineInterfaceRefs []*VirtualIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs"`
+	LoadbalancerPoolRefs        []*VirtualIPLoadbalancerPoolRef        `json:"loadbalancer_pool_refs,omitempty"`
+	VirtualMachineInterfaceRefs []*VirtualIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 }
 
 // VirtualIPLoadbalancerPoolRef references each other
@@ -45,14 +45,14 @@ func MakeVirtualIP() *VirtualIP {
 	return &VirtualIP{
 		//TODO(nati): Apply default
 		Perms2:              MakePermType2(),
-		ParentType:          "",
-		DisplayName:         "",
-		FQName:              []string{},
-		IDPerms:             MakeIdPermsType(),
-		Annotations:         MakeKeyValuePairs(),
-		VirtualIPProperties: MakeVirtualIpType(),
 		UUID:                "",
 		ParentUUID:          "",
+		ParentType:          "",
+		VirtualIPProperties: MakeVirtualIpType(),
+		FQName:              []string{},
+		IDPerms:             MakeIdPermsType(),
+		DisplayName:         "",
+		Annotations:         MakeKeyValuePairs(),
 	}
 }
 

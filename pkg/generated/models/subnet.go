@@ -6,17 +6,17 @@ import "encoding/json"
 
 // Subnet
 type Subnet struct {
-	DisplayName    string         `json:"display_name"`
-	Perms2         *PermType2     `json:"perms2"`
-	ParentType     string         `json:"parent_type"`
-	FQName         []string       `json:"fq_name"`
-	IDPerms        *IdPermsType   `json:"id_perms"`
-	SubnetIPPrefix *SubnetType    `json:"subnet_ip_prefix"`
-	Annotations    *KeyValuePairs `json:"annotations"`
-	UUID           string         `json:"uuid"`
-	ParentUUID     string         `json:"parent_uuid"`
+	SubnetIPPrefix *SubnetType    `json:"subnet_ip_prefix,omitempty"`
+	FQName         []string       `json:"fq_name,omitempty"`
+	UUID           string         `json:"uuid,omitempty"`
+	ParentUUID     string         `json:"parent_uuid,omitempty"`
+	ParentType     string         `json:"parent_type,omitempty"`
+	IDPerms        *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName    string         `json:"display_name,omitempty"`
+	Annotations    *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2         *PermType2     `json:"perms2,omitempty"`
 
-	VirtualMachineInterfaceRefs []*SubnetVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs"`
+	VirtualMachineInterfaceRefs []*SubnetVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 }
 
 // SubnetVirtualMachineInterfaceRef references each other
@@ -36,15 +36,15 @@ func (model *Subnet) String() string {
 func MakeSubnet() *Subnet {
 	return &Subnet{
 		//TODO(nati): Apply default
+		ParentUUID:     "",
 		ParentType:     "",
-		FQName:         []string{},
 		IDPerms:        MakeIdPermsType(),
 		DisplayName:    "",
+		Annotations:    MakeKeyValuePairs(),
 		Perms2:         MakePermType2(),
 		UUID:           "",
-		ParentUUID:     "",
 		SubnetIPPrefix: MakeSubnetType(),
-		Annotations:    MakeKeyValuePairs(),
+		FQName:         []string{},
 	}
 }
 

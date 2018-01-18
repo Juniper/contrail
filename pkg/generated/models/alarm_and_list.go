@@ -6,7 +6,7 @@ import "encoding/json"
 
 // AlarmAndList
 type AlarmAndList struct {
-	AndList []*AlarmExpression `json:"and_list"`
+	AndList []*AlarmExpression `json:"and_list,omitempty"`
 }
 
 // String returns json representation of the object

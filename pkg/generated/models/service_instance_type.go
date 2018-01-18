@@ -6,17 +6,17 @@ import "encoding/json"
 
 // ServiceInstanceType
 type ServiceInstanceType struct {
-	RightIPAddress           IpAddressType                   `json:"right_ip_address"`
-	AvailabilityZone         string                          `json:"availability_zone"`
-	ManagementVirtualNetwork string                          `json:"management_virtual_network"`
-	HaMode                   AddressMode                     `json:"ha_mode"`
-	InterfaceList            []*ServiceInstanceInterfaceType `json:"interface_list"`
-	LeftIPAddress            IpAddressType                   `json:"left_ip_address"`
-	AutoPolicy               bool                            `json:"auto_policy"`
-	RightVirtualNetwork      string                          `json:"right_virtual_network"`
-	ScaleOut                 *ServiceScaleOutType            `json:"scale_out"`
-	VirtualRouterID          string                          `json:"virtual_router_id"`
-	LeftVirtualNetwork       string                          `json:"left_virtual_network"`
+	HaMode                   AddressMode                     `json:"ha_mode,omitempty"`
+	AutoPolicy               bool                            `json:"auto_policy,omitempty"`
+	AvailabilityZone         string                          `json:"availability_zone,omitempty"`
+	ManagementVirtualNetwork string                          `json:"management_virtual_network,omitempty"`
+	ScaleOut                 *ServiceScaleOutType            `json:"scale_out,omitempty"`
+	VirtualRouterID          string                          `json:"virtual_router_id,omitempty"`
+	InterfaceList            []*ServiceInstanceInterfaceType `json:"interface_list,omitempty"`
+	LeftIPAddress            IpAddressType                   `json:"left_ip_address,omitempty"`
+	LeftVirtualNetwork       string                          `json:"left_virtual_network,omitempty"`
+	RightVirtualNetwork      string                          `json:"right_virtual_network,omitempty"`
+	RightIPAddress           IpAddressType                   `json:"right_ip_address,omitempty"`
 }
 
 // String returns json representation of the object
@@ -29,15 +29,15 @@ func (model *ServiceInstanceType) String() string {
 func MakeServiceInstanceType() *ServiceInstanceType {
 	return &ServiceInstanceType{
 		//TODO(nati): Apply default
-		RightVirtualNetwork:      "",
-		ScaleOut:                 MakeServiceScaleOutType(),
-		VirtualRouterID:          "",
-		LeftVirtualNetwork:       "",
-		AutoPolicy:               false,
-		RightIPAddress:           MakeIpAddressType(),
 		AvailabilityZone:         "",
 		ManagementVirtualNetwork: "",
-		HaMode: MakeAddressMode(),
+		HaMode:              MakeAddressMode(),
+		AutoPolicy:          false,
+		LeftVirtualNetwork:  "",
+		RightVirtualNetwork: "",
+		RightIPAddress:      MakeIpAddressType(),
+		ScaleOut:            MakeServiceScaleOutType(),
+		VirtualRouterID:     "",
 
 		InterfaceList: MakeServiceInstanceInterfaceTypeSlice(),
 

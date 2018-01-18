@@ -207,10 +207,17 @@ func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "virtual_router", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, error) {
@@ -952,14 +959,33 @@ func UpdateVirtualRouter(tx *sql.Tx, uuid string, model *models.VirtualRouter) e
 
 // DeleteVirtualRouter deletes a resource
 func DeleteVirtualRouter(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteVirtualRouterQuery
+	deleteQuery := deleteVirtualRouterQuery
+	selectQuery := "select count(uuid) from virtual_router where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

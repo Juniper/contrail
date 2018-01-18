@@ -6,21 +6,21 @@ import "encoding/json"
 
 // ServiceInstance
 type ServiceInstance struct {
-	ServiceInstanceProperties *ServiceInstanceType `json:"service_instance_properties"`
-	FQName                    []string             `json:"fq_name"`
-	DisplayName               string               `json:"display_name"`
-	Annotations               *KeyValuePairs       `json:"annotations"`
-	ParentUUID                string               `json:"parent_uuid"`
-	ServiceInstanceBindings   *KeyValuePairs       `json:"service_instance_bindings"`
-	ParentType                string               `json:"parent_type"`
-	IDPerms                   *IdPermsType         `json:"id_perms"`
-	Perms2                    *PermType2           `json:"perms2"`
-	UUID                      string               `json:"uuid"`
+	Annotations               *KeyValuePairs       `json:"annotations,omitempty"`
+	ServiceInstanceBindings   *KeyValuePairs       `json:"service_instance_bindings,omitempty"`
+	ParentUUID                string               `json:"parent_uuid,omitempty"`
+	ParentType                string               `json:"parent_type,omitempty"`
+	FQName                    []string             `json:"fq_name,omitempty"`
+	IDPerms                   *IdPermsType         `json:"id_perms,omitempty"`
+	ServiceInstanceProperties *ServiceInstanceType `json:"service_instance_properties,omitempty"`
+	Perms2                    *PermType2           `json:"perms2,omitempty"`
+	UUID                      string               `json:"uuid,omitempty"`
+	DisplayName               string               `json:"display_name,omitempty"`
 
-	ServiceTemplateRefs []*ServiceInstanceServiceTemplateRef `json:"service_template_refs"`
-	InstanceIPRefs      []*ServiceInstanceInstanceIPRef      `json:"instance_ip_refs"`
+	ServiceTemplateRefs []*ServiceInstanceServiceTemplateRef `json:"service_template_refs,omitempty"`
+	InstanceIPRefs      []*ServiceInstanceInstanceIPRef      `json:"instance_ip_refs,omitempty"`
 
-	PortTuples []*PortTuple `json:"port_tuples"`
+	PortTuples []*PortTuple `json:"port_tuples,omitempty"`
 }
 
 // ServiceInstanceServiceTemplateRef references each other
@@ -48,16 +48,16 @@ func (model *ServiceInstance) String() string {
 func MakeServiceInstance() *ServiceInstance {
 	return &ServiceInstance{
 		//TODO(nati): Apply default
+		UUID:                      "",
 		DisplayName:               "",
-		Annotations:               MakeKeyValuePairs(),
-		ParentUUID:                "",
 		ServiceInstanceProperties: MakeServiceInstanceType(),
-		FQName:  []string{},
-		IDPerms: MakeIdPermsType(),
-		Perms2:  MakePermType2(),
-		UUID:    "",
-		ServiceInstanceBindings: MakeKeyValuePairs(),
+		Perms2:                  MakePermType2(),
 		ParentType:              "",
+		FQName:                  []string{},
+		IDPerms:                 MakeIdPermsType(),
+		Annotations:             MakeKeyValuePairs(),
+		ServiceInstanceBindings: MakeKeyValuePairs(),
+		ParentUUID:              "",
 	}
 }
 

@@ -93,10 +93,17 @@ func Create{{ schema.JSONSchema.GoName }}(tx *sql.Tx, model *models.{{ schema.JS
         FQName: model.FQName,
     }
     err = common.CreateMetaData(tx, metaData)
+    if err != nil {
+        return err
+    }
+    err = common.CreateSharing(tx, "{{ schema.ID }}", model.UUID, model.Perms2.Share)
+    if err != nil {
+        return err
+    }
     log.WithFields(log.Fields{
         "model": model,
     }).Debug("created")
-    return err
+    return nil
 }
 
 func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models.{{ schema.JSONSchema.GoName }}, error) {
@@ -321,14 +328,33 @@ func Update{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string, model map[str
 
 // Delete{{ schema.JSONSchema.GoName }} deletes a resource
 func Delete{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-    query := delete{{ schema.JSONSchema.GoName }}Query
+    deleteQuery := delete{{ schema.JSONSchema.GoName }}Query
+    selectQuery := "select count(uuid) from {{ schema.ID }} where uuid = ?"
     var err error
-
+    var count int
+    
     if auth.IsAdmin() {
-        _, err = tx.Exec(query, uuid)
+        row := tx.QueryRow(selectQuery, uuid)
+        if err != nil {
+            return errors.Wrap(err, "not found")
+        }
+        row.Scan(&count)
+        if count == 0 {
+           return errors.New("Not found")
+        }
+        _, err = tx.Exec(deleteQuery, uuid)
     }else{
-        query += " and owner = ?"
-        _, err = tx.Exec(query, uuid, auth.ProjectID() )
+        deleteQuery += " and owner = ?"
+        selectQuery += " and owner = ?"
+        row := tx.QueryRow(selectQuery, uuid, auth.ProjectID() )
+        if err != nil {
+            return errors.Wrap(err, "not found")
+        }
+        row.Scan(&count)
+        if count == 0 {
+           return errors.New("Not found")
+        }
+        _, err = tx.Exec(deleteQuery, uuid, auth.ProjectID() )
     }
 
     if err != nil {

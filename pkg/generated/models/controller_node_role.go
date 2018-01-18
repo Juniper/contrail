@@ -6,23 +6,23 @@ import "encoding/json"
 
 // ControllerNodeRole
 type ControllerNodeRole struct {
-	ParentUUID                            string         `json:"parent_uuid"`
-	ParentType                            string         `json:"parent_type"`
-	FQName                                []string       `json:"fq_name"`
-	IDPerms                               *IdPermsType   `json:"id_perms"`
-	CapacityDrives                        string         `json:"capacity_drives"`
-	Perms2                                *PermType2     `json:"perms2"`
-	ProvisioningLog                       string         `json:"provisioning_log"`
-	Annotations                           *KeyValuePairs `json:"annotations"`
-	DisplayName                           string         `json:"display_name"`
-	ProvisioningStartTime                 string         `json:"provisioning_start_time"`
-	ProvisioningProgressStage             string         `json:"provisioning_progress_stage"`
-	InternalapiBondInterfaceMembers       string         `json:"internalapi_bond_interface_members"`
-	PerformanceDrives                     string         `json:"performance_drives"`
-	StorageManagementBondInterfaceMembers string         `json:"storage_management_bond_interface_members"`
-	UUID                                  string         `json:"uuid"`
-	ProvisioningState                     string         `json:"provisioning_state"`
-	ProvisioningProgress                  int            `json:"provisioning_progress"`
+	ProvisioningLog                       string         `json:"provisioning_log,omitempty"`
+	ProvisioningProgress                  int            `json:"provisioning_progress,omitempty"`
+	InternalapiBondInterfaceMembers       string         `json:"internalapi_bond_interface_members,omitempty"`
+	Perms2                                *PermType2     `json:"perms2,omitempty"`
+	ProvisioningStartTime                 string         `json:"provisioning_start_time,omitempty"`
+	ProvisioningState                     string         `json:"provisioning_state,omitempty"`
+	IDPerms                               *IdPermsType   `json:"id_perms,omitempty"`
+	Annotations                           *KeyValuePairs `json:"annotations,omitempty"`
+	UUID                                  string         `json:"uuid,omitempty"`
+	FQName                                []string       `json:"fq_name,omitempty"`
+	PerformanceDrives                     string         `json:"performance_drives,omitempty"`
+	ProvisioningProgressStage             string         `json:"provisioning_progress_stage,omitempty"`
+	ParentType                            string         `json:"parent_type,omitempty"`
+	CapacityDrives                        string         `json:"capacity_drives,omitempty"`
+	StorageManagementBondInterfaceMembers string         `json:"storage_management_bond_interface_members,omitempty"`
+	DisplayName                           string         `json:"display_name,omitempty"`
+	ParentUUID                            string         `json:"parent_uuid,omitempty"`
 }
 
 // String returns json representation of the object
@@ -35,23 +35,23 @@ func (model *ControllerNodeRole) String() string {
 func MakeControllerNodeRole() *ControllerNodeRole {
 	return &ControllerNodeRole{
 		//TODO(nati): Apply default
-		ParentUUID:                            "",
-		ParentType:                            "",
+		Annotations:                           MakeKeyValuePairs(),
+		UUID:                                  "",
 		FQName:                                []string{},
 		IDPerms:                               MakeIdPermsType(),
-		CapacityDrives:                        "",
-		Perms2:                                MakePermType2(),
-		ProvisioningLog:                       "",
-		Annotations:                           MakeKeyValuePairs(),
-		DisplayName:                           "",
-		ProvisioningStartTime:                 "",
-		ProvisioningState:                     "",
-		ProvisioningProgress:                  0,
 		ProvisioningProgressStage:             "",
-		InternalapiBondInterfaceMembers:       "",
 		PerformanceDrives:                     "",
 		StorageManagementBondInterfaceMembers: "",
-		UUID: "",
+		DisplayName:                           "",
+		ParentUUID:                            "",
+		ParentType:                            "",
+		CapacityDrives:                        "",
+		Perms2:                                MakePermType2(),
+		ProvisioningStartTime:                 "",
+		ProvisioningState:                     "",
+		ProvisioningLog:                       "",
+		ProvisioningProgress:                  0,
+		InternalapiBondInterfaceMembers:       "",
 	}
 }
 

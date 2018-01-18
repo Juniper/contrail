@@ -12,9 +12,11 @@ import (
 func TestAlarm(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "alarm")
 	defer func() {
 		common.ClearTable(db, "alarm")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestAlarm(t *testing.T) {
 	model := models.MakeAlarm()
 	model.UUID = "alarm_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "alarm_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateAlarm(tx, model)
@@ -42,6 +45,15 @@ func TestAlarm(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteAlarm(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

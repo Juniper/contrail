@@ -6,17 +6,17 @@ import "encoding/json"
 
 // FloatingIPPool
 type FloatingIPPool struct {
-	DisplayName           string                    `json:"display_name"`
-	Annotations           *KeyValuePairs            `json:"annotations"`
-	Perms2                *PermType2                `json:"perms2"`
-	FQName                []string                  `json:"fq_name"`
-	ParentUUID            string                    `json:"parent_uuid"`
-	ParentType            string                    `json:"parent_type"`
-	IDPerms               *IdPermsType              `json:"id_perms"`
-	FloatingIPPoolSubnets *FloatingIpPoolSubnetType `json:"floating_ip_pool_subnets"`
-	UUID                  string                    `json:"uuid"`
+	ParentUUID            string                    `json:"parent_uuid,omitempty"`
+	ParentType            string                    `json:"parent_type,omitempty"`
+	Annotations           *KeyValuePairs            `json:"annotations,omitempty"`
+	Perms2                *PermType2                `json:"perms2,omitempty"`
+	UUID                  string                    `json:"uuid,omitempty"`
+	FQName                []string                  `json:"fq_name,omitempty"`
+	IDPerms               *IdPermsType              `json:"id_perms,omitempty"`
+	FloatingIPPoolSubnets *FloatingIpPoolSubnetType `json:"floating_ip_pool_subnets,omitempty"`
+	DisplayName           string                    `json:"display_name,omitempty"`
 
-	FloatingIPs []*FloatingIP `json:"floating_ips"`
+	FloatingIPs []*FloatingIP `json:"floating_ips,omitempty"`
 }
 
 // String returns json representation of the object
@@ -29,15 +29,15 @@ func (model *FloatingIPPool) String() string {
 func MakeFloatingIPPool() *FloatingIPPool {
 	return &FloatingIPPool{
 		//TODO(nati): Apply default
-		Perms2:                MakePermType2(),
 		FQName:                []string{},
-		DisplayName:           "",
-		Annotations:           MakeKeyValuePairs(),
 		IDPerms:               MakeIdPermsType(),
 		FloatingIPPoolSubnets: MakeFloatingIpPoolSubnetType(),
-		UUID:       "",
-		ParentUUID: "",
-		ParentType: "",
+		DisplayName:           "",
+		Annotations:           MakeKeyValuePairs(),
+		Perms2:                MakePermType2(),
+		UUID:                  "",
+		ParentUUID:            "",
+		ParentType:            "",
 	}
 }
 

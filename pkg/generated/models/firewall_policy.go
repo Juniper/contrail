@@ -6,17 +6,17 @@ import "encoding/json"
 
 // FirewallPolicy
 type FirewallPolicy struct {
-	Perms2      *PermType2     `json:"perms2"`
-	UUID        string         `json:"uuid"`
-	ParentUUID  string         `json:"parent_uuid"`
-	ParentType  string         `json:"parent_type"`
-	FQName      []string       `json:"fq_name"`
-	IDPerms     *IdPermsType   `json:"id_perms"`
-	DisplayName string         `json:"display_name"`
-	Annotations *KeyValuePairs `json:"annotations"`
+	ParentUUID  string         `json:"parent_uuid,omitempty"`
+	ParentType  string         `json:"parent_type,omitempty"`
+	FQName      []string       `json:"fq_name,omitempty"`
+	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName string         `json:"display_name,omitempty"`
+	Annotations *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2      *PermType2     `json:"perms2,omitempty"`
+	UUID        string         `json:"uuid,omitempty"`
 
-	FirewallRuleRefs          []*FirewallPolicyFirewallRuleRef          `json:"firewall_rule_refs"`
-	SecurityLoggingObjectRefs []*FirewallPolicySecurityLoggingObjectRef `json:"security_logging_object_refs"`
+	FirewallRuleRefs          []*FirewallPolicyFirewallRuleRef          `json:"firewall_rule_refs,omitempty"`
+	SecurityLoggingObjectRefs []*FirewallPolicySecurityLoggingObjectRef `json:"security_logging_object_refs,omitempty"`
 }
 
 // FirewallPolicySecurityLoggingObjectRef references each other
@@ -44,14 +44,14 @@ func (model *FirewallPolicy) String() string {
 func MakeFirewallPolicy() *FirewallPolicy {
 	return &FirewallPolicy{
 		//TODO(nati): Apply default
-		Perms2:      MakePermType2(),
-		UUID:        "",
 		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
+		Perms2:      MakePermType2(),
+		UUID:        "",
 	}
 }
 

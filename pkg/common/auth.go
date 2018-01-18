@@ -42,6 +42,14 @@ func (context *AuthContext) ProjectID() string {
 	return context.projectID
 }
 
+//DomainID is used to get an id for domain.
+func (context *AuthContext) DomainID() string {
+	if context == nil {
+		return "admin"
+	}
+	return context.domainID
+}
+
 //GetAuthContext is used to get an authentication from echo.Context.
 func GetAuthContext(c echo.Context) *AuthContext {
 	iAuth := c.Get("auth")

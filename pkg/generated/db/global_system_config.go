@@ -463,10 +463,17 @@ func CreateGlobalSystemConfig(tx *sql.Tx, model *models.GlobalSystemConfig) erro
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "global_system_config", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystemConfig, error) {
@@ -3180,14 +3187,33 @@ func UpdateGlobalSystemConfig(tx *sql.Tx, uuid string, model *models.GlobalSyste
 
 // DeleteGlobalSystemConfig deletes a resource
 func DeleteGlobalSystemConfig(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteGlobalSystemConfigQuery
+	deleteQuery := deleteGlobalSystemConfigQuery
+	selectQuery := "select count(uuid) from global_system_config where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

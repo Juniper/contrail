@@ -12,9 +12,11 @@ import (
 func TestRouteTarget(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "route_target")
 	defer func() {
 		common.ClearTable(db, "route_target")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestRouteTarget(t *testing.T) {
 	model := models.MakeRouteTarget()
 	model.UUID = "route_target_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "route_target_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateRouteTarget(tx, model)
@@ -42,6 +45,15 @@ func TestRouteTarget(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteRouteTarget(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

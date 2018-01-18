@@ -6,7 +6,7 @@ import "encoding/json"
 
 // RouteTargetList
 type RouteTargetList struct {
-	RouteTarget []string `json:"route_target"`
+	RouteTarget []string `json:"route_target,omitempty"`
 }
 
 // String returns json representation of the object

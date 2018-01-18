@@ -12,9 +12,11 @@ import (
 func TestRoutingInstance(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "routing_instance")
 	defer func() {
 		common.ClearTable(db, "routing_instance")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestRoutingInstance(t *testing.T) {
 	model := models.MakeRoutingInstance()
 	model.UUID = "routing_instance_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "routing_instance_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateRoutingInstance(tx, model)
@@ -42,6 +45,15 @@ func TestRoutingInstance(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteRoutingInstance(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

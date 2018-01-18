@@ -12,9 +12,11 @@ import (
 func TestFirewallPolicy(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "firewall_policy")
 	defer func() {
 		common.ClearTable(db, "firewall_policy")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestFirewallPolicy(t *testing.T) {
 	model := models.MakeFirewallPolicy()
 	model.UUID = "firewall_policy_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "firewall_policy_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateFirewallPolicy(tx, model)
@@ -42,6 +45,15 @@ func TestFirewallPolicy(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteFirewallPolicy(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

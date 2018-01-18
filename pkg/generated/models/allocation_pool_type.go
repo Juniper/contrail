@@ -6,9 +6,9 @@ import "encoding/json"
 
 // AllocationPoolType
 type AllocationPoolType struct {
-	VrouterSpecificPool bool   `json:"vrouter_specific_pool"`
-	Start               string `json:"start"`
-	End                 string `json:"end"`
+	End                 string `json:"end,omitempty"`
+	VrouterSpecificPool bool   `json:"vrouter_specific_pool,omitempty"`
+	Start               string `json:"start,omitempty"`
 }
 
 // String returns json representation of the object

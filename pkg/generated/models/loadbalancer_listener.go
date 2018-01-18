@@ -6,17 +6,17 @@ import "encoding/json"
 
 // LoadbalancerListener
 type LoadbalancerListener struct {
-	LoadbalancerListenerProperties *LoadbalancerListenerType `json:"loadbalancer_listener_properties"`
-	ParentType                     string                    `json:"parent_type"`
-	FQName                         []string                  `json:"fq_name"`
-	IDPerms                        *IdPermsType              `json:"id_perms"`
-	DisplayName                    string                    `json:"display_name"`
-	Annotations                    *KeyValuePairs            `json:"annotations"`
-	UUID                           string                    `json:"uuid"`
-	ParentUUID                     string                    `json:"parent_uuid"`
-	Perms2                         *PermType2                `json:"perms2"`
+	LoadbalancerListenerProperties *LoadbalancerListenerType `json:"loadbalancer_listener_properties,omitempty"`
+	ParentType                     string                    `json:"parent_type,omitempty"`
+	DisplayName                    string                    `json:"display_name,omitempty"`
+	Perms2                         *PermType2                `json:"perms2,omitempty"`
+	ParentUUID                     string                    `json:"parent_uuid,omitempty"`
+	FQName                         []string                  `json:"fq_name,omitempty"`
+	IDPerms                        *IdPermsType              `json:"id_perms,omitempty"`
+	Annotations                    *KeyValuePairs            `json:"annotations,omitempty"`
+	UUID                           string                    `json:"uuid,omitempty"`
 
-	LoadbalancerRefs []*LoadbalancerListenerLoadbalancerRef `json:"loadbalancer_refs"`
+	LoadbalancerRefs []*LoadbalancerListenerLoadbalancerRef `json:"loadbalancer_refs,omitempty"`
 }
 
 // LoadbalancerListenerLoadbalancerRef references each other
@@ -36,15 +36,15 @@ func (model *LoadbalancerListener) String() string {
 func MakeLoadbalancerListener() *LoadbalancerListener {
 	return &LoadbalancerListener{
 		//TODO(nati): Apply default
-		UUID:       "",
-		ParentUUID: "",
-		Perms2:     MakePermType2(),
+		ParentUUID:  "",
+		FQName:      []string{},
+		IDPerms:     MakeIdPermsType(),
+		Annotations: MakeKeyValuePairs(),
+		UUID:        "",
 		LoadbalancerListenerProperties: MakeLoadbalancerListenerType(),
 		ParentType:                     "",
-		FQName:                         []string{},
-		IDPerms:                        MakeIdPermsType(),
 		DisplayName:                    "",
-		Annotations:                    MakeKeyValuePairs(),
+		Perms2:                         MakePermType2(),
 	}
 }
 

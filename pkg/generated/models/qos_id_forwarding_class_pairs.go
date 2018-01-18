@@ -6,7 +6,7 @@ import "encoding/json"
 
 // QosIdForwardingClassPairs
 type QosIdForwardingClassPairs struct {
-	QosIDForwardingClassPair []*QosIdForwardingClassPair `json:"qos_id_forwarding_class_pair"`
+	QosIDForwardingClassPair []*QosIdForwardingClassPair `json:"qos_id_forwarding_class_pair,omitempty"`
 }
 
 // String returns json representation of the object

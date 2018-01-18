@@ -6,9 +6,9 @@ import "encoding/json"
 
 // StaticMirrorNhType
 type StaticMirrorNhType struct {
-	VtepDSTIPAddress  string                     `json:"vtep_dst_ip_address"`
-	VtepDSTMacAddress string                     `json:"vtep_dst_mac_address"`
-	Vni               VxlanNetworkIdentifierType `json:"vni"`
+	VtepDSTMacAddress string                     `json:"vtep_dst_mac_address,omitempty"`
+	Vni               VxlanNetworkIdentifierType `json:"vni,omitempty"`
+	VtepDSTIPAddress  string                     `json:"vtep_dst_ip_address,omitempty"`
 }
 
 // String returns json representation of the object
@@ -21,9 +21,9 @@ func (model *StaticMirrorNhType) String() string {
 func MakeStaticMirrorNhType() *StaticMirrorNhType {
 	return &StaticMirrorNhType{
 		//TODO(nati): Apply default
+		VtepDSTIPAddress:  "",
 		VtepDSTMacAddress: "",
 		Vni:               MakeVxlanNetworkIdentifierType(),
-		VtepDSTIPAddress:  "",
 	}
 }
 

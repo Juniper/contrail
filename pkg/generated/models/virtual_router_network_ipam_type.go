@@ -6,8 +6,8 @@ import "encoding/json"
 
 // VirtualRouterNetworkIpamType
 type VirtualRouterNetworkIpamType struct {
-	Subnet          []*SubnetType         `json:"subnet"`
-	AllocationPools []*AllocationPoolType `json:"allocation_pools"`
+	Subnet          []*SubnetType         `json:"subnet,omitempty"`
+	AllocationPools []*AllocationPoolType `json:"allocation_pools,omitempty"`
 }
 
 // String returns json representation of the object

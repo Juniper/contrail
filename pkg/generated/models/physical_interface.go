@@ -6,19 +6,19 @@ import "encoding/json"
 
 // PhysicalInterface
 type PhysicalInterface struct {
-	ParentType                string         `json:"parent_type"`
-	FQName                    []string       `json:"fq_name"`
-	IDPerms                   *IdPermsType   `json:"id_perms"`
-	DisplayName               string         `json:"display_name"`
-	Annotations               *KeyValuePairs `json:"annotations"`
-	Perms2                    *PermType2     `json:"perms2"`
-	UUID                      string         `json:"uuid"`
-	EthernetSegmentIdentifier string         `json:"ethernet_segment_identifier"`
-	ParentUUID                string         `json:"parent_uuid"`
+	DisplayName               string         `json:"display_name,omitempty"`
+	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
+	UUID                      string         `json:"uuid,omitempty"`
+	ParentUUID                string         `json:"parent_uuid,omitempty"`
+	ParentType                string         `json:"parent_type,omitempty"`
+	FQName                    []string       `json:"fq_name,omitempty"`
+	Perms2                    *PermType2     `json:"perms2,omitempty"`
+	EthernetSegmentIdentifier string         `json:"ethernet_segment_identifier,omitempty"`
+	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
 
-	PhysicalInterfaceRefs []*PhysicalInterfacePhysicalInterfaceRef `json:"physical_interface_refs"`
+	PhysicalInterfaceRefs []*PhysicalInterfacePhysicalInterfaceRef `json:"physical_interface_refs,omitempty"`
 
-	LogicalInterfaces []*LogicalInterface `json:"logical_interfaces"`
+	LogicalInterfaces []*LogicalInterface `json:"logical_interfaces,omitempty"`
 }
 
 // PhysicalInterfacePhysicalInterfaceRef references each other
@@ -38,15 +38,15 @@ func (model *PhysicalInterface) String() string {
 func MakePhysicalInterface() *PhysicalInterface {
 	return &PhysicalInterface{
 		//TODO(nati): Apply default
+		EthernetSegmentIdentifier: "",
+		IDPerms:                   MakeIdPermsType(),
 		Perms2:                    MakePermType2(),
-		UUID:                      "",
+		ParentUUID:                "",
 		ParentType:                "",
 		FQName:                    []string{},
-		IDPerms:                   MakeIdPermsType(),
 		DisplayName:               "",
 		Annotations:               MakeKeyValuePairs(),
-		EthernetSegmentIdentifier: "",
-		ParentUUID:                "",
+		UUID:                      "",
 	}
 }
 

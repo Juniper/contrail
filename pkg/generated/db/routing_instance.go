@@ -95,10 +95,17 @@ func CreateRoutingInstance(tx *sql.Tx, model *models.RoutingInstance) error {
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "routing_instance", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanRoutingInstance(values map[string]interface{}) (*models.RoutingInstance, error) {
@@ -334,14 +341,33 @@ func UpdateRoutingInstance(tx *sql.Tx, uuid string, model *models.RoutingInstanc
 
 // DeleteRoutingInstance deletes a resource
 func DeleteRoutingInstance(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteRoutingInstanceQuery
+	deleteQuery := deleteRoutingInstanceQuery
+	selectQuery := "select count(uuid) from routing_instance where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

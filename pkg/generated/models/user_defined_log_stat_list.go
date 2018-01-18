@@ -6,7 +6,7 @@ import "encoding/json"
 
 // UserDefinedLogStatList
 type UserDefinedLogStatList struct {
-	Statlist []*UserDefinedLogStat `json:"statlist"`
+	Statlist []*UserDefinedLogStat `json:"statlist,omitempty"`
 }
 
 // String returns json representation of the object

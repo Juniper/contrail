@@ -6,7 +6,7 @@ import "encoding/json"
 
 // EncapsulationPrioritiesType
 type EncapsulationPrioritiesType struct {
-	Encapsulation EncapsulationType `json:"encapsulation"`
+	Encapsulation EncapsulationType `json:"encapsulation,omitempty"`
 }
 
 // String returns json representation of the object

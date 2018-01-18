@@ -6,16 +6,16 @@ import "encoding/json"
 
 // VirtualIpType
 type VirtualIpType struct {
-	Protocol              LoadbalancerProtocolType `json:"protocol"`
-	SubnetID              UuidStringType           `json:"subnet_id"`
-	PersistenceCookieName string                   `json:"persistence_cookie_name"`
-	ConnectionLimit       int                      `json:"connection_limit"`
-	ProtocolPort          int                      `json:"protocol_port"`
-	Status                string                   `json:"status"`
-	StatusDescription     string                   `json:"status_description"`
-	PersistenceType       SessionPersistenceType   `json:"persistence_type"`
-	AdminState            bool                     `json:"admin_state"`
-	Address               IpAddressType            `json:"address"`
+	Status                string                   `json:"status,omitempty"`
+	Protocol              LoadbalancerProtocolType `json:"protocol,omitempty"`
+	AdminState            bool                     `json:"admin_state,omitempty"`
+	ProtocolPort          int                      `json:"protocol_port,omitempty"`
+	PersistenceType       SessionPersistenceType   `json:"persistence_type,omitempty"`
+	Address               IpAddressType            `json:"address,omitempty"`
+	StatusDescription     string                   `json:"status_description,omitempty"`
+	SubnetID              UuidStringType           `json:"subnet_id,omitempty"`
+	PersistenceCookieName string                   `json:"persistence_cookie_name,omitempty"`
+	ConnectionLimit       int                      `json:"connection_limit,omitempty"`
 }
 
 // String returns json representation of the object
@@ -28,15 +28,15 @@ func (model *VirtualIpType) String() string {
 func MakeVirtualIpType() *VirtualIpType {
 	return &VirtualIpType{
 		//TODO(nati): Apply default
-		Status:                "",
-		StatusDescription:     "",
 		PersistenceType:       MakeSessionPersistenceType(),
-		AdminState:            false,
 		Address:               MakeIpAddressType(),
-		Protocol:              MakeLoadbalancerProtocolType(),
+		StatusDescription:     "",
 		SubnetID:              MakeUuidStringType(),
 		PersistenceCookieName: "",
 		ConnectionLimit:       0,
+		Status:                "",
+		Protocol:              MakeLoadbalancerProtocolType(),
+		AdminState:            false,
 		ProtocolPort:          0,
 	}
 }

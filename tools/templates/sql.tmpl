@@ -27,5 +27,25 @@ create table ref_{{ schema.ID }}_{{ linkTo }} (
     index from_index (`from`)) CHARACTER SET utf8mb4;
 {% endfor %}
 
+create table tenant_share_{{ schema.ID }} (
+    `uuid` varchar(255),
+    `to` varchar(255),
+    `access` integer,
+    foreign key (`uuid`) references {{ schema.ID }}(uuid) on delete cascade,
+    foreign key (`to`) references project(uuid) on delete cascade,
+    index uuid_index (`uuid`),
+    index to_index (`to`)
+    ) CHARACTER SET utf8mb4;
+
+create table domain_share_{{ schema.ID }} (
+    `uuid` varchar(255),
+    `to` varchar(255),
+    `access` integer,
+    foreign key (`uuid`) references {{ schema.ID }}(uuid) on delete cascade,
+    foreign key (`to`) references domain(uuid) on delete cascade,
+    index uuid_index (`uuid`),
+    index to_index (`to`)
+    ) CHARACTER SET utf8mb4;
+
 {% endif %}
 {% endfor %}

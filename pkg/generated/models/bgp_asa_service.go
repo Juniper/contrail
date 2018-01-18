@@ -6,23 +6,23 @@ import "encoding/json"
 
 // BGPAsAService
 type BGPAsAService struct {
-	AutonomousSystem                 AutonomousSystemType `json:"autonomous_system"`
-	BgpaasShared                     bool                 `json:"bgpaas_shared"`
-	ParentUUID                       string               `json:"parent_uuid"`
-	IDPerms                          *IdPermsType         `json:"id_perms"`
-	BgpaasSessionAttributes          string               `json:"bgpaas_session_attributes"`
-	BgpaasSuppressRouteAdvertisement bool                 `json:"bgpaas_suppress_route_advertisement"`
-	BgpaasIpv4MappedIpv6Nexthop      bool                 `json:"bgpaas_ipv4_mapped_ipv6_nexthop"`
-	UUID                             string               `json:"uuid"`
-	ParentType                       string               `json:"parent_type"`
-	FQName                           []string             `json:"fq_name"`
-	Annotations                      *KeyValuePairs       `json:"annotations"`
-	BgpaasIPAddress                  IpAddressType        `json:"bgpaas_ip_address"`
-	DisplayName                      string               `json:"display_name"`
-	Perms2                           *PermType2           `json:"perms2"`
+	BgpaasIPAddress                  IpAddressType        `json:"bgpaas_ip_address,omitempty"`
+	Perms2                           *PermType2           `json:"perms2,omitempty"`
+	IDPerms                          *IdPermsType         `json:"id_perms,omitempty"`
+	Annotations                      *KeyValuePairs       `json:"annotations,omitempty"`
+	FQName                           []string             `json:"fq_name,omitempty"`
+	DisplayName                      string               `json:"display_name,omitempty"`
+	BgpaasSessionAttributes          string               `json:"bgpaas_session_attributes,omitempty"`
+	BgpaasSuppressRouteAdvertisement bool                 `json:"bgpaas_suppress_route_advertisement,omitempty"`
+	AutonomousSystem                 AutonomousSystemType `json:"autonomous_system,omitempty"`
+	UUID                             string               `json:"uuid,omitempty"`
+	BgpaasShared                     bool                 `json:"bgpaas_shared,omitempty"`
+	BgpaasIpv4MappedIpv6Nexthop      bool                 `json:"bgpaas_ipv4_mapped_ipv6_nexthop,omitempty"`
+	ParentUUID                       string               `json:"parent_uuid,omitempty"`
+	ParentType                       string               `json:"parent_type,omitempty"`
 
-	ServiceHealthCheckRefs      []*BGPAsAServiceServiceHealthCheckRef      `json:"service_health_check_refs"`
-	VirtualMachineInterfaceRefs []*BGPAsAServiceVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs"`
+	VirtualMachineInterfaceRefs []*BGPAsAServiceVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
+	ServiceHealthCheckRefs      []*BGPAsAServiceServiceHealthCheckRef      `json:"service_health_check_refs,omitempty"`
 }
 
 // BGPAsAServiceVirtualMachineInterfaceRef references each other
@@ -49,20 +49,20 @@ func (model *BGPAsAService) String() string {
 func MakeBGPAsAService() *BGPAsAService {
 	return &BGPAsAService{
 		//TODO(nati): Apply default
-		UUID:                             "",
-		ParentType:                       "",
 		FQName:                           []string{},
-		Annotations:                      MakeKeyValuePairs(),
+		DisplayName:                      "",
 		BgpaasSessionAttributes:          "",
 		BgpaasSuppressRouteAdvertisement: false,
-		BgpaasIpv4MappedIpv6Nexthop:      false,
-		BgpaasIPAddress:                  MakeIpAddressType(),
-		DisplayName:                      "",
-		Perms2:                           MakePermType2(),
 		AutonomousSystem:                 MakeAutonomousSystemType(),
+		UUID:                             "",
 		BgpaasShared:                     false,
+		BgpaasIpv4MappedIpv6Nexthop:      false,
 		ParentUUID:                       "",
+		ParentType:                       "",
+		BgpaasIPAddress:                  MakeIpAddressType(),
+		Perms2:                           MakePermType2(),
 		IDPerms:                          MakeIdPermsType(),
+		Annotations:                      MakeKeyValuePairs(),
 	}
 }
 

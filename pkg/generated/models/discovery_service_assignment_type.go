@@ -6,8 +6,8 @@ import "encoding/json"
 
 // DiscoveryServiceAssignmentType
 type DiscoveryServiceAssignmentType struct {
-	Subscriber []*DiscoveryPubSubEndPointType `json:"subscriber"`
-	Publisher  *DiscoveryPubSubEndPointType   `json:"publisher"`
+	Subscriber []*DiscoveryPubSubEndPointType `json:"subscriber,omitempty"`
+	Publisher  *DiscoveryPubSubEndPointType   `json:"publisher,omitempty"`
 }
 
 // String returns json representation of the object

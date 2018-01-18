@@ -12,9 +12,11 @@ import (
 func TestLoadbalancerHealthmonitor(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "loadbalancer_healthmonitor")
 	defer func() {
 		common.ClearTable(db, "loadbalancer_healthmonitor")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestLoadbalancerHealthmonitor(t *testing.T) {
 	model := models.MakeLoadbalancerHealthmonitor()
 	model.UUID = "loadbalancer_healthmonitor_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "loadbalancer_healthmonitor_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateLoadbalancerHealthmonitor(tx, model)
@@ -42,6 +45,15 @@ func TestLoadbalancerHealthmonitor(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteLoadbalancerHealthmonitor(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

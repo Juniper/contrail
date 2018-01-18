@@ -6,10 +6,10 @@ import "encoding/json"
 
 // VrfAssignRuleType
 type VrfAssignRuleType struct {
-	RoutingInstance string              `json:"routing_instance"`
-	MatchCondition  *MatchConditionType `json:"match_condition"`
-	VlanTag         int                 `json:"vlan_tag"`
-	IgnoreACL       bool                `json:"ignore_acl"`
+	RoutingInstance string              `json:"routing_instance,omitempty"`
+	MatchCondition  *MatchConditionType `json:"match_condition,omitempty"`
+	VlanTag         int                 `json:"vlan_tag,omitempty"`
+	IgnoreACL       bool                `json:"ignore_acl,omitempty"`
 }
 
 // String returns json representation of the object

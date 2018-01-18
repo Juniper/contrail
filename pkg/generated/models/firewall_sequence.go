@@ -6,7 +6,7 @@ import "encoding/json"
 
 // FirewallSequence
 type FirewallSequence struct {
-	Sequence string `json:"sequence"`
+	Sequence string `json:"sequence,omitempty"`
 }
 
 // String returns json representation of the object

@@ -12,9 +12,11 @@ import (
 func TestServiceObject(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "service_object")
 	defer func() {
 		common.ClearTable(db, "service_object")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestServiceObject(t *testing.T) {
 	model := models.MakeServiceObject()
 	model.UUID = "service_object_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "service_object_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateServiceObject(tx, model)
@@ -42,6 +45,15 @@ func TestServiceObject(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteServiceObject(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

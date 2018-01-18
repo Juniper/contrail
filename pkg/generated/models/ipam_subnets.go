@@ -6,7 +6,7 @@ import "encoding/json"
 
 // IpamSubnets
 type IpamSubnets struct {
-	Subnets []*IpamSubnetType `json:"subnets"`
+	Subnets []*IpamSubnetType `json:"subnets,omitempty"`
 }
 
 // String returns json representation of the object

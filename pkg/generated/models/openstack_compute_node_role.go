@@ -6,23 +6,23 @@ import "encoding/json"
 
 // OpenstackComputeNodeRole
 type OpenstackComputeNodeRole struct {
-	DefaultGateway              string         `json:"default_gateway"`
-	VrouterType                 string         `json:"vrouter_type"`
-	ParentUUID                  string         `json:"parent_uuid"`
-	ProvisioningLog             string         `json:"provisioning_log"`
-	ProvisioningProgress        int            `json:"provisioning_progress"`
-	DisplayName                 string         `json:"display_name"`
-	Perms2                      *PermType2     `json:"perms2"`
-	VrouterBondInterfaceMembers string         `json:"vrouter_bond_interface_members"`
-	UUID                        string         `json:"uuid"`
-	ParentType                  string         `json:"parent_type"`
-	FQName                      []string       `json:"fq_name"`
-	IDPerms                     *IdPermsType   `json:"id_perms"`
-	VrouterBondInterface        string         `json:"vrouter_bond_interface"`
-	ProvisioningProgressStage   string         `json:"provisioning_progress_stage"`
-	ProvisioningStartTime       string         `json:"provisioning_start_time"`
-	Annotations                 *KeyValuePairs `json:"annotations"`
-	ProvisioningState           string         `json:"provisioning_state"`
+	DisplayName                 string         `json:"display_name,omitempty"`
+	UUID                        string         `json:"uuid,omitempty"`
+	ProvisioningLog             string         `json:"provisioning_log,omitempty"`
+	ProvisioningProgressStage   string         `json:"provisioning_progress_stage,omitempty"`
+	Perms2                      *PermType2     `json:"perms2,omitempty"`
+	ParentType                  string         `json:"parent_type,omitempty"`
+	ProvisioningProgress        int            `json:"provisioning_progress,omitempty"`
+	DefaultGateway              string         `json:"default_gateway,omitempty"`
+	VrouterType                 string         `json:"vrouter_type,omitempty"`
+	ParentUUID                  string         `json:"parent_uuid,omitempty"`
+	FQName                      []string       `json:"fq_name,omitempty"`
+	ProvisioningStartTime       string         `json:"provisioning_start_time,omitempty"`
+	ProvisioningState           string         `json:"provisioning_state,omitempty"`
+	VrouterBondInterface        string         `json:"vrouter_bond_interface,omitempty"`
+	VrouterBondInterfaceMembers string         `json:"vrouter_bond_interface_members,omitempty"`
+	IDPerms                     *IdPermsType   `json:"id_perms,omitempty"`
+	Annotations                 *KeyValuePairs `json:"annotations,omitempty"`
 }
 
 // String returns json representation of the object
@@ -35,23 +35,23 @@ func (model *OpenstackComputeNodeRole) String() string {
 func MakeOpenstackComputeNodeRole() *OpenstackComputeNodeRole {
 	return &OpenstackComputeNodeRole{
 		//TODO(nati): Apply default
-		ParentType:  "",
-		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
-		DisplayName: "",
-		Perms2:      MakePermType2(),
+		ParentUUID:                  "",
+		FQName:                      []string{},
+		ProvisioningStartTime:       "",
+		ProvisioningState:           "",
+		DefaultGateway:              "",
+		VrouterType:                 "",
+		IDPerms:                     MakeIdPermsType(),
+		Annotations:                 MakeKeyValuePairs(),
+		VrouterBondInterface:        "",
 		VrouterBondInterfaceMembers: "",
-		UUID: "",
-		ProvisioningStartTime:     "",
-		VrouterBondInterface:      "",
-		ProvisioningProgressStage: "",
-		Annotations:               MakeKeyValuePairs(),
-		ProvisioningState:         "",
-		ParentUUID:                "",
-		ProvisioningLog:           "",
-		ProvisioningProgress:      0,
-		DefaultGateway:            "",
-		VrouterType:               "",
+		ProvisioningLog:             "",
+		ProvisioningProgressStage:   "",
+		DisplayName:                 "",
+		UUID:                        "",
+		ProvisioningProgress:        0,
+		Perms2:                      MakePermType2(),
+		ParentType:                  "",
 	}
 }
 

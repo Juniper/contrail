@@ -6,19 +6,19 @@ import "encoding/json"
 
 // Tag
 type Tag struct {
-	Perms2      *PermType2     `json:"perms2"`
-	ParentType  string         `json:"parent_type"`
-	FQName      []string       `json:"fq_name"`
-	IDPerms     *IdPermsType   `json:"id_perms"`
-	DisplayName string         `json:"display_name"`
-	Annotations *KeyValuePairs `json:"annotations"`
-	TagTypeName string         `json:"tag_type_name"`
-	TagValue    string         `json:"tag_value"`
-	UUID        string         `json:"uuid"`
-	ParentUUID  string         `json:"parent_uuid"`
-	TagID       U32BitHexInt   `json:"tag_id"`
+	Perms2      *PermType2     `json:"perms2,omitempty"`
+	TagTypeName string         `json:"tag_type_name,omitempty"`
+	TagID       U32BitHexInt   `json:"tag_id,omitempty"`
+	TagValue    string         `json:"tag_value,omitempty"`
+	ParentUUID  string         `json:"parent_uuid,omitempty"`
+	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName string         `json:"display_name,omitempty"`
+	Annotations *KeyValuePairs `json:"annotations,omitempty"`
+	UUID        string         `json:"uuid,omitempty"`
+	ParentType  string         `json:"parent_type,omitempty"`
+	FQName      []string       `json:"fq_name,omitempty"`
 
-	TagTypeRefs []*TagTagTypeRef `json:"tag_type_refs"`
+	TagTypeRefs []*TagTagTypeRef `json:"tag_type_refs,omitempty"`
 }
 
 // TagTagTypeRef references each other
@@ -39,16 +39,16 @@ func MakeTag() *Tag {
 	return &Tag{
 		//TODO(nati): Apply default
 		Perms2:      MakePermType2(),
-		ParentType:  "",
-		FQName:      []string{},
+		TagTypeName: "",
+		TagID:       MakeU32BitHexInt(),
+		TagValue:    "",
+		ParentUUID:  "",
 		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
-		TagTypeName: "",
-		TagValue:    "",
 		UUID:        "",
-		ParentUUID:  "",
-		TagID:       MakeU32BitHexInt(),
+		ParentType:  "",
+		FQName:      []string{},
 	}
 }
 

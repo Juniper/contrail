@@ -128,10 +128,17 @@ func CreateLoadbalancerListener(tx *sql.Tx, model *models.LoadbalancerListener) 
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "loadbalancer_listener", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanLoadbalancerListener(values map[string]interface{}) (*models.LoadbalancerListener, error) {
@@ -433,14 +440,33 @@ func UpdateLoadbalancerListener(tx *sql.Tx, uuid string, model *models.Loadbalan
 
 // DeleteLoadbalancerListener deletes a resource
 func DeleteLoadbalancerListener(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteLoadbalancerListenerQuery
+	deleteQuery := deleteLoadbalancerListenerQuery
+	selectQuery := "select count(uuid) from loadbalancer_listener where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

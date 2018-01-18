@@ -6,8 +6,8 @@ import "encoding/json"
 
 // ServiceScaleOutType
 type ServiceScaleOutType struct {
-	MaxInstances int  `json:"max_instances"`
-	AutoScale    bool `json:"auto_scale"`
+	AutoScale    bool `json:"auto_scale,omitempty"`
+	MaxInstances int  `json:"max_instances,omitempty"`
 }
 
 // String returns json representation of the object

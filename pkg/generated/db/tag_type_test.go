@@ -12,9 +12,11 @@ import (
 func TestTagType(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "tag_type")
 	defer func() {
 		common.ClearTable(db, "tag_type")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestTagType(t *testing.T) {
 	model := models.MakeTagType()
 	model.UUID = "tag_type_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "tag_type_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateTagType(tx, model)
@@ -42,6 +45,15 @@ func TestTagType(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteTagType(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

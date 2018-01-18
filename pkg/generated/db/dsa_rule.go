@@ -107,10 +107,17 @@ func CreateDsaRule(tx *sql.Tx, model *models.DsaRule) error {
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "dsa_rule", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanDsaRule(values map[string]interface{}) (*models.DsaRule, error) {
@@ -392,14 +399,33 @@ func UpdateDsaRule(tx *sql.Tx, uuid string, model *models.DsaRule) error {
 
 // DeleteDsaRule deletes a resource
 func DeleteDsaRule(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteDsaRuleQuery
+	deleteQuery := deleteDsaRuleQuery
+	selectQuery := "select count(uuid) from dsa_rule where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

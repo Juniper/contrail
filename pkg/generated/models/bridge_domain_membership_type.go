@@ -6,7 +6,7 @@ import "encoding/json"
 
 // BridgeDomainMembershipType
 type BridgeDomainMembershipType struct {
-	VlanTag Dot1QTagType `json:"vlan_tag"`
+	VlanTag Dot1QTagType `json:"vlan_tag,omitempty"`
 }
 
 // String returns json representation of the object

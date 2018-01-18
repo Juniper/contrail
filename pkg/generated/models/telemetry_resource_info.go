@@ -6,9 +6,9 @@ import "encoding/json"
 
 // TelemetryResourceInfo
 type TelemetryResourceInfo struct {
-	Path string `json:"path"`
-	Rate string `json:"rate"`
-	Name string `json:"name"`
+	Path string `json:"path,omitempty"`
+	Rate string `json:"rate,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 // String returns json representation of the object
@@ -21,9 +21,9 @@ func (model *TelemetryResourceInfo) String() string {
 func MakeTelemetryResourceInfo() *TelemetryResourceInfo {
 	return &TelemetryResourceInfo{
 		//TODO(nati): Apply default
+		Name: "",
 		Path: "",
 		Rate: "",
-		Name: "",
 	}
 }
 

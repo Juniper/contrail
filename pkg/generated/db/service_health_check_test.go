@@ -12,9 +12,11 @@ import (
 func TestServiceHealthCheck(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "service_health_check")
 	defer func() {
 		common.ClearTable(db, "service_health_check")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestServiceHealthCheck(t *testing.T) {
 	model := models.MakeServiceHealthCheck()
 	model.UUID = "service_health_check_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "service_health_check_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateServiceHealthCheck(tx, model)
@@ -42,6 +45,15 @@ func TestServiceHealthCheck(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteServiceHealthCheck(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

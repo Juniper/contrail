@@ -50,9 +50,9 @@ var ServiceGroupBackRefFields = map[string][]string{}
 // ServiceGroupParentTypes is possible parents for ServiceGroup
 var ServiceGroupParents = []string{
 
-	"policy_management",
-
 	"project",
+
+	"policy_management",
 }
 
 // CreateServiceGroup inserts ServiceGroup to DB
@@ -99,10 +99,17 @@ func CreateServiceGroup(tx *sql.Tx, model *models.ServiceGroup) error {
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "service_group", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanServiceGroup(values map[string]interface{}) (*models.ServiceGroup, error) {
@@ -344,14 +351,33 @@ func UpdateServiceGroup(tx *sql.Tx, uuid string, model *models.ServiceGroup) err
 
 // DeleteServiceGroup deletes a resource
 func DeleteServiceGroup(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteServiceGroupQuery
+	deleteQuery := deleteServiceGroupQuery
+	selectQuery := "select count(uuid) from service_group where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

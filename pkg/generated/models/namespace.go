@@ -6,15 +6,15 @@ import "encoding/json"
 
 // Namespace
 type Namespace struct {
-	NamespaceCidr *SubnetType    `json:"namespace_cidr"`
-	ParentType    string         `json:"parent_type"`
-	IDPerms       *IdPermsType   `json:"id_perms"`
-	Annotations   *KeyValuePairs `json:"annotations"`
-	FQName        []string       `json:"fq_name"`
-	DisplayName   string         `json:"display_name"`
-	Perms2        *PermType2     `json:"perms2"`
-	UUID          string         `json:"uuid"`
-	ParentUUID    string         `json:"parent_uuid"`
+	UUID          string         `json:"uuid,omitempty"`
+	FQName        []string       `json:"fq_name,omitempty"`
+	IDPerms       *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName   string         `json:"display_name,omitempty"`
+	NamespaceCidr *SubnetType    `json:"namespace_cidr,omitempty"`
+	Annotations   *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2        *PermType2     `json:"perms2,omitempty"`
+	ParentUUID    string         `json:"parent_uuid,omitempty"`
+	ParentType    string         `json:"parent_type,omitempty"`
 }
 
 // String returns json representation of the object
@@ -27,15 +27,15 @@ func (model *Namespace) String() string {
 func MakeNamespace() *Namespace {
 	return &Namespace{
 		//TODO(nati): Apply default
-		FQName:        []string{},
-		DisplayName:   "",
-		Perms2:        MakePermType2(),
 		UUID:          "",
 		ParentUUID:    "",
-		NamespaceCidr: MakeSubnetType(),
 		ParentType:    "",
+		FQName:        []string{},
 		IDPerms:       MakeIdPermsType(),
+		DisplayName:   "",
+		NamespaceCidr: MakeSubnetType(),
 		Annotations:   MakeKeyValuePairs(),
+		Perms2:        MakePermType2(),
 	}
 }
 

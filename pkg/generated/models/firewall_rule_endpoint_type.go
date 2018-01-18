@@ -6,12 +6,12 @@ import "encoding/json"
 
 // FirewallRuleEndpointType
 type FirewallRuleEndpointType struct {
-	Subnet         *SubnetType `json:"subnet"`
-	Tags           []string    `json:"tags"`
-	TagIds         []int       `json:"tag_ids"`
-	VirtualNetwork string      `json:"virtual_network"`
-	Any            bool        `json:"any"`
-	AddressGroup   string      `json:"address_group"`
+	Subnet         *SubnetType `json:"subnet,omitempty"`
+	Tags           []string    `json:"tags,omitempty"`
+	TagIds         []int       `json:"tag_ids,omitempty"`
+	VirtualNetwork string      `json:"virtual_network,omitempty"`
+	Any            bool        `json:"any,omitempty"`
+	AddressGroup   string      `json:"address_group,omitempty"`
 }
 
 // String returns json representation of the object
@@ -24,13 +24,14 @@ func (model *FirewallRuleEndpointType) String() string {
 func MakeFirewallRuleEndpointType() *FirewallRuleEndpointType {
 	return &FirewallRuleEndpointType{
 		//TODO(nati): Apply default
+		Subnet: MakeSubnetType(),
+		Tags:   []string{},
+
+		TagIds: []int{},
+
 		VirtualNetwork: "",
 		Any:            false,
 		AddressGroup:   "",
-		Subnet:         MakeSubnetType(),
-		Tags:           []string{},
-
-		TagIds: []int{},
 	}
 }
 

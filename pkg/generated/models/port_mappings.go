@@ -6,7 +6,7 @@ import "encoding/json"
 
 // PortMappings
 type PortMappings struct {
-	PortMappings []*PortMap `json:"port_mappings"`
+	PortMappings []*PortMap `json:"port_mappings,omitempty"`
 }
 
 // String returns json representation of the object

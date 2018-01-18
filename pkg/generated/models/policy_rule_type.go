@@ -6,19 +6,19 @@ import "encoding/json"
 
 // PolicyRuleType
 type PolicyRuleType struct {
-	DSTPorts     []*PortType     `json:"dst_ports"`
-	Application  []string        `json:"application"`
-	LastModified string          `json:"last_modified"`
-	Ethertype    EtherType       `json:"ethertype"`
-	SRCPorts     []*PortType     `json:"src_ports"`
-	DSTAddresses []*AddressType  `json:"dst_addresses"`
-	Created      string          `json:"created"`
-	RuleUUID     string          `json:"rule_uuid"`
-	SRCAddresses []*AddressType  `json:"src_addresses"`
-	RuleSequence *SequenceType   `json:"rule_sequence"`
-	Direction    DirectionType   `json:"direction"`
-	Protocol     string          `json:"protocol"`
-	ActionList   *ActionListType `json:"action_list"`
+	RuleUUID     string          `json:"rule_uuid,omitempty"`
+	DSTPorts     []*PortType     `json:"dst_ports,omitempty"`
+	Application  []string        `json:"application,omitempty"`
+	LastModified string          `json:"last_modified,omitempty"`
+	Ethertype    EtherType       `json:"ethertype,omitempty"`
+	SRCAddresses []*AddressType  `json:"src_addresses,omitempty"`
+	DSTAddresses []*AddressType  `json:"dst_addresses,omitempty"`
+	Created      string          `json:"created,omitempty"`
+	ActionList   *ActionListType `json:"action_list,omitempty"`
+	RuleSequence *SequenceType   `json:"rule_sequence,omitempty"`
+	SRCPorts     []*PortType     `json:"src_ports,omitempty"`
+	Direction    DirectionType   `json:"direction,omitempty"`
+	Protocol     string          `json:"protocol,omitempty"`
 }
 
 // String returns json representation of the object
@@ -31,26 +31,26 @@ func (model *PolicyRuleType) String() string {
 func MakePolicyRuleType() *PolicyRuleType {
 	return &PolicyRuleType{
 		//TODO(nati): Apply default
-		Direction:  MakeDirectionType(),
-		Protocol:   "",
-		ActionList: MakeActionListType(),
-
-		SRCAddresses: MakeAddressTypeSlice(),
-
-		RuleSequence: MakeSequenceType(),
-		LastModified: "",
-		Ethertype:    MakeEtherType(),
-
-		SRCPorts: MakePortTypeSlice(),
-
-		DSTAddresses: MakeAddressTypeSlice(),
-
-		Created:  "",
 		RuleUUID: "",
 
 		DSTPorts: MakePortTypeSlice(),
 
-		Application: []string{},
+		Application:  []string{},
+		LastModified: "",
+		Ethertype:    MakeEtherType(),
+
+		SRCAddresses: MakeAddressTypeSlice(),
+
+		DSTAddresses: MakeAddressTypeSlice(),
+
+		Created:      "",
+		ActionList:   MakeActionListType(),
+		RuleSequence: MakeSequenceType(),
+
+		SRCPorts: MakePortTypeSlice(),
+
+		Direction: MakeDirectionType(),
+		Protocol:  "",
 	}
 }
 

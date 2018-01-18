@@ -12,9 +12,11 @@ import (
 func TestKubernetesNode(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "kubernetes_node")
 	defer func() {
 		common.ClearTable(db, "kubernetes_node")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestKubernetesNode(t *testing.T) {
 	model := models.MakeKubernetesNode()
 	model.UUID = "kubernetes_node_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "kubernetes_node_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateKubernetesNode(tx, model)
@@ -42,6 +45,15 @@ func TestKubernetesNode(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteKubernetesNode(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

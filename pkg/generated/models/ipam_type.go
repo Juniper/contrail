@@ -6,12 +6,12 @@ import "encoding/json"
 
 // IpamType
 type IpamType struct {
-	IpamDNSMethod  IpamDnsMethodType    `json:"ipam_dns_method"`
-	IpamDNSServer  *IpamDnsAddressType  `json:"ipam_dns_server"`
-	DHCPOptionList *DhcpOptionsListType `json:"dhcp_option_list"`
-	HostRoutes     *RouteTableType      `json:"host_routes"`
-	CidrBlock      *SubnetType          `json:"cidr_block"`
-	IpamMethod     IpamMethodType       `json:"ipam_method"`
+	IpamDNSMethod  IpamDnsMethodType    `json:"ipam_dns_method,omitempty"`
+	IpamDNSServer  *IpamDnsAddressType  `json:"ipam_dns_server,omitempty"`
+	DHCPOptionList *DhcpOptionsListType `json:"dhcp_option_list,omitempty"`
+	HostRoutes     *RouteTableType      `json:"host_routes,omitempty"`
+	CidrBlock      *SubnetType          `json:"cidr_block,omitempty"`
+	IpamMethod     IpamMethodType       `json:"ipam_method,omitempty"`
 }
 
 // String returns json representation of the object

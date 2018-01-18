@@ -12,9 +12,11 @@ import (
 func TestRouteAggregate(t *testing.T) {
 	t.Parallel()
 	db := testDB
+	common.UseTable(db, "metadata")
 	common.UseTable(db, "route_aggregate")
 	defer func() {
 		common.ClearTable(db, "route_aggregate")
+		common.ClearTable(db, "metadata")
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -22,6 +24,7 @@ func TestRouteAggregate(t *testing.T) {
 	model := models.MakeRouteAggregate()
 	model.UUID = "route_aggregate_dummy_uuid"
 	model.FQName = []string{"default", "default-domain", "route_aggregate_dummy"}
+	model.Perms2.Owner = "admin"
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateRouteAggregate(tx, model)
@@ -42,6 +45,15 @@ func TestRouteAggregate(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteRouteAggregate(tx, model.UUID,
+			common.NewAuthContext("default", "demo", "demo", []string{}),
+		)
+	})
+	if err == nil {
+		t.Fatal("auth failed")
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

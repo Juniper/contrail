@@ -6,7 +6,7 @@ import "encoding/json"
 
 // FatFlowProtocols
 type FatFlowProtocols struct {
-	FatFlowProtocol []*ProtocolType `json:"fat_flow_protocol"`
+	FatFlowProtocol []*ProtocolType `json:"fat_flow_protocol,omitempty"`
 }
 
 // String returns json representation of the object

@@ -57,9 +57,9 @@ var LogicalInterfaceBackRefFields = map[string][]string{}
 // LogicalInterfaceParentTypes is possible parents for LogicalInterface
 var LogicalInterfaceParents = []string{
 
-	"physical_interface",
-
 	"physical_router",
+
+	"physical_interface",
 }
 
 const insertLogicalInterfaceVirtualMachineInterfaceQuery = "insert into `ref_logical_interface_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
@@ -122,10 +122,17 @@ func CreateLogicalInterface(tx *sql.Tx, model *models.LogicalInterface) error {
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "logical_interface", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanLogicalInterface(values map[string]interface{}) (*models.LogicalInterface, error) {
@@ -397,14 +404,33 @@ func UpdateLogicalInterface(tx *sql.Tx, uuid string, model *models.LogicalInterf
 
 // DeleteLogicalInterface deletes a resource
 func DeleteLogicalInterface(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteLogicalInterfaceQuery
+	deleteQuery := deleteLogicalInterfaceQuery
+	selectQuery := "select count(uuid) from logical_interface where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

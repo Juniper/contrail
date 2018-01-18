@@ -6,10 +6,10 @@ import "encoding/json"
 
 // TimerType
 type TimerType struct {
-	StartTime   string `json:"start_time"`
-	OffInterval string `json:"off_interval"`
-	OnInterval  string `json:"on_interval"`
-	EndTime     string `json:"end_time"`
+	EndTime     string `json:"end_time,omitempty"`
+	StartTime   string `json:"start_time,omitempty"`
+	OffInterval string `json:"off_interval,omitempty"`
+	OnInterval  string `json:"on_interval,omitempty"`
 }
 
 // String returns json representation of the object
@@ -22,10 +22,10 @@ func (model *TimerType) String() string {
 func MakeTimerType() *TimerType {
 	return &TimerType{
 		//TODO(nati): Apply default
-		StartTime:   "",
-		OffInterval: "",
 		OnInterval:  "",
 		EndTime:     "",
+		StartTime:   "",
+		OffInterval: "",
 	}
 }
 

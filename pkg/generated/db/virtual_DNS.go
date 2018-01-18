@@ -142,10 +142,17 @@ func CreateVirtualDNS(tx *sql.Tx, model *models.VirtualDNS) error {
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
+	if err != nil {
+		return err
+	}
+	err = common.CreateSharing(tx, "virtual_DNS", model.UUID, model.Perms2.Share)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"model": model,
 	}).Debug("created")
-	return err
+	return nil
 }
 
 func scanVirtualDNS(values map[string]interface{}) (*models.VirtualDNS, error) {
@@ -674,14 +681,33 @@ func UpdateVirtualDNS(tx *sql.Tx, uuid string, model *models.VirtualDNS) error {
 
 // DeleteVirtualDNS deletes a resource
 func DeleteVirtualDNS(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
-	query := deleteVirtualDNSQuery
+	deleteQuery := deleteVirtualDNSQuery
+	selectQuery := "select count(uuid) from virtual_DNS where uuid = ?"
 	var err error
+	var count int
 
 	if auth.IsAdmin() {
-		_, err = tx.Exec(query, uuid)
+		row := tx.QueryRow(selectQuery, uuid)
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid)
 	} else {
-		query += " and owner = ?"
-		_, err = tx.Exec(query, uuid, auth.ProjectID())
+		deleteQuery += " and owner = ?"
+		selectQuery += " and owner = ?"
+		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		if err != nil {
+			return errors.Wrap(err, "not found")
+		}
+		row.Scan(&count)
+		if count == 0 {
+			return errors.New("Not found")
+		}
+		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {
