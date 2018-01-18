@@ -6,18 +6,18 @@ import "encoding/json"
 
 // BGPVPN
 type BGPVPN struct {
-	Annotations           *KeyValuePairs   `json:"annotations,omitempty"`
 	UUID                  string           `json:"uuid,omitempty"`
-	RouteTargetList       *RouteTargetList `json:"route_target_list,omitempty"`
+	IDPerms               *IdPermsType     `json:"id_perms,omitempty"`
+	DisplayName           string           `json:"display_name,omitempty"`
+	Perms2                *PermType2       `json:"perms2,omitempty"`
 	ImportRouteTargetList *RouteTargetList `json:"import_route_target_list,omitempty"`
+	ExportRouteTargetList *RouteTargetList `json:"export_route_target_list,omitempty"`
+	BGPVPNType            VpnType          `json:"bgpvpn_type,omitempty"`
 	ParentUUID            string           `json:"parent_uuid,omitempty"`
 	ParentType            string           `json:"parent_type,omitempty"`
 	FQName                []string         `json:"fq_name,omitempty"`
-	IDPerms               *IdPermsType     `json:"id_perms,omitempty"`
-	ExportRouteTargetList *RouteTargetList `json:"export_route_target_list,omitempty"`
-	BGPVPNType            VpnType          `json:"bgpvpn_type,omitempty"`
-	DisplayName           string           `json:"display_name,omitempty"`
-	Perms2                *PermType2       `json:"perms2,omitempty"`
+	Annotations           *KeyValuePairs   `json:"annotations,omitempty"`
+	RouteTargetList       *RouteTargetList `json:"route_target_list,omitempty"`
 }
 
 // String returns json representation of the object
@@ -30,18 +30,18 @@ func (model *BGPVPN) String() string {
 func MakeBGPVPN() *BGPVPN {
 	return &BGPVPN{
 		//TODO(nati): Apply default
-		ExportRouteTargetList: MakeRouteTargetList(),
-		BGPVPNType:            MakeVpnType(),
-		DisplayName:           "",
 		Perms2:                MakePermType2(),
-		FQName:                []string{},
-		IDPerms:               MakeIdPermsType(),
-		Annotations:           MakeKeyValuePairs(),
 		UUID:                  "",
+		IDPerms:               MakeIdPermsType(),
+		DisplayName:           "",
+		ParentType:            "",
+		FQName:                []string{},
+		Annotations:           MakeKeyValuePairs(),
 		RouteTargetList:       MakeRouteTargetList(),
 		ImportRouteTargetList: MakeRouteTargetList(),
+		ExportRouteTargetList: MakeRouteTargetList(),
+		BGPVPNType:            MakeVpnType(),
 		ParentUUID:            "",
-		ParentType:            "",
 	}
 }
 

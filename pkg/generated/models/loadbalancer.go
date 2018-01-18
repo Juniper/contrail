@@ -6,15 +6,15 @@ import "encoding/json"
 
 // Loadbalancer
 type Loadbalancer struct {
-	UUID                   string            `json:"uuid,omitempty"`
-	LoadbalancerProvider   string            `json:"loadbalancer_provider,omitempty"`
-	FQName                 []string          `json:"fq_name,omitempty"`
-	DisplayName            string            `json:"display_name,omitempty"`
-	Perms2                 *PermType2        `json:"perms2,omitempty"`
-	Annotations            *KeyValuePairs    `json:"annotations,omitempty"`
-	LoadbalancerProperties *LoadbalancerType `json:"loadbalancer_properties,omitempty"`
 	ParentUUID             string            `json:"parent_uuid,omitempty"`
 	ParentType             string            `json:"parent_type,omitempty"`
+	FQName                 []string          `json:"fq_name,omitempty"`
+	DisplayName            string            `json:"display_name,omitempty"`
+	Annotations            *KeyValuePairs    `json:"annotations,omitempty"`
+	LoadbalancerProperties *LoadbalancerType `json:"loadbalancer_properties,omitempty"`
+	LoadbalancerProvider   string            `json:"loadbalancer_provider,omitempty"`
+	Perms2                 *PermType2        `json:"perms2,omitempty"`
+	UUID                   string            `json:"uuid,omitempty"`
 	IDPerms                *IdPermsType      `json:"id_perms,omitempty"`
 
 	ServiceApplianceSetRefs     []*LoadbalancerServiceApplianceSetRef     `json:"service_appliance_set_refs,omitempty"`
@@ -53,16 +53,16 @@ func (model *Loadbalancer) String() string {
 func MakeLoadbalancer() *Loadbalancer {
 	return &Loadbalancer{
 		//TODO(nati): Apply default
-		LoadbalancerProperties: MakeLoadbalancerType(),
 		ParentUUID:             "",
 		ParentType:             "",
-		IDPerms:                MakeIdPermsType(),
-		Annotations:            MakeKeyValuePairs(),
-		LoadbalancerProvider:   "",
 		FQName:                 []string{},
 		DisplayName:            "",
+		Annotations:            MakeKeyValuePairs(),
+		LoadbalancerProperties: MakeLoadbalancerType(),
+		LoadbalancerProvider:   "",
 		Perms2:                 MakePermType2(),
 		UUID:                   "",
+		IDPerms:                MakeIdPermsType(),
 	}
 }
 

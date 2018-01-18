@@ -24,12 +24,12 @@ func (model *VirtualNetworkType) String() string {
 func MakeVirtualNetworkType() *VirtualNetworkType {
 	return &VirtualNetworkType{
 		//TODO(nati): Apply default
-		ForwardingMode:         MakeForwardingModeType(),
-		AllowTransit:           false,
 		NetworkID:              0,
 		MirrorDestination:      false,
 		VxlanNetworkIdentifier: MakeVxlanNetworkIdentifierType(),
-		RPF: MakeRpfModeType(),
+		RPF:            MakeRpfModeType(),
+		ForwardingMode: MakeForwardingModeType(),
+		AllowTransit:   false,
 	}
 }
 

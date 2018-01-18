@@ -6,18 +6,18 @@ import "encoding/json"
 
 // BridgeDomain
 type BridgeDomain struct {
-	MacMoveControl     *MACMoveLimitControlType `json:"mac_move_control,omitempty"`
 	MacLimitControl    *MACLimitControlType     `json:"mac_limit_control,omitempty"`
 	UUID               string                   `json:"uuid,omitempty"`
 	ParentUUID         string                   `json:"parent_uuid,omitempty"`
 	ParentType         string                   `json:"parent_type,omitempty"`
-	FQName             []string                 `json:"fq_name,omitempty"`
 	IDPerms            *IdPermsType             `json:"id_perms,omitempty"`
-	Isid               IsidType                 `json:"isid,omitempty"`
-	Perms2             *PermType2               `json:"perms2,omitempty"`
-	MacLearningEnabled bool                     `json:"mac_learning_enabled"`
-	DisplayName        string                   `json:"display_name,omitempty"`
 	Annotations        *KeyValuePairs           `json:"annotations,omitempty"`
+	MacLearningEnabled bool                     `json:"mac_learning_enabled"`
+	Isid               IsidType                 `json:"isid,omitempty"`
+	MacMoveControl     *MACMoveLimitControlType `json:"mac_move_control,omitempty"`
+	Perms2             *PermType2               `json:"perms2,omitempty"`
+	FQName             []string                 `json:"fq_name,omitempty"`
+	DisplayName        string                   `json:"display_name,omitempty"`
 	MacAgingTime       MACAgingTime             `json:"mac_aging_time,omitempty"`
 }
 
@@ -31,19 +31,19 @@ func (model *BridgeDomain) String() string {
 func MakeBridgeDomain() *BridgeDomain {
 	return &BridgeDomain{
 		//TODO(nati): Apply default
+		ParentType:         "",
+		IDPerms:            MakeIdPermsType(),
+		Annotations:        MakeKeyValuePairs(),
+		MacLearningEnabled: false,
+		MacLimitControl:    MakeMACLimitControlType(),
 		UUID:               "",
 		ParentUUID:         "",
-		ParentType:         "",
 		FQName:             []string{},
-		IDPerms:            MakeIdPermsType(),
+		DisplayName:        "",
+		MacAgingTime:       MakeMACAgingTime(),
 		Isid:               MakeIsidType(),
 		MacMoveControl:     MakeMACMoveLimitControlType(),
-		MacLimitControl:    MakeMACLimitControlType(),
 		Perms2:             MakePermType2(),
-		Annotations:        MakeKeyValuePairs(),
-		MacAgingTime:       MakeMACAgingTime(),
-		MacLearningEnabled: false,
-		DisplayName:        "",
 	}
 }
 

@@ -6,17 +6,17 @@ import "encoding/json"
 
 // MirrorActionType
 type MirrorActionType struct {
+	NicAssistedMirroring     bool                `json:"nic_assisted_mirroring"`
 	NicAssistedMirroringVlan VlanIdType          `json:"nic_assisted_mirroring_vlan,omitempty"`
 	NHMode                   NHModeType          `json:"nh_mode,omitempty"`
 	JuniperHeader            bool                `json:"juniper_header"`
-	RoutingInstance          string              `json:"routing_instance,omitempty"`
 	AnalyzerIPAddress        string              `json:"analyzer_ip_address,omitempty"`
-	NicAssistedMirroring     bool                `json:"nic_assisted_mirroring"`
+	AnalyzerMacAddress       string              `json:"analyzer_mac_address,omitempty"`
 	AnalyzerName             string              `json:"analyzer_name,omitempty"`
 	UDPPort                  int                 `json:"udp_port,omitempty"`
+	RoutingInstance          string              `json:"routing_instance,omitempty"`
 	StaticNHHeader           *StaticMirrorNhType `json:"static_nh_header,omitempty"`
 	Encapsulation            string              `json:"encapsulation,omitempty"`
-	AnalyzerMacAddress       string              `json:"analyzer_mac_address,omitempty"`
 }
 
 // String returns json representation of the object
@@ -29,17 +29,17 @@ func (model *MirrorActionType) String() string {
 func MakeMirrorActionType() *MirrorActionType {
 	return &MirrorActionType{
 		//TODO(nati): Apply default
-		AnalyzerIPAddress:        "",
-		NicAssistedMirroring:     false,
 		NicAssistedMirroringVlan: MakeVlanIdType(),
-		NHMode:             MakeNHModeType(),
-		JuniperHeader:      false,
-		RoutingInstance:    "",
-		AnalyzerMacAddress: "",
-		AnalyzerName:       "",
-		UDPPort:            0,
-		StaticNHHeader:     MakeStaticMirrorNhType(),
-		Encapsulation:      "",
+		NHMode:               MakeNHModeType(),
+		JuniperHeader:        false,
+		AnalyzerIPAddress:    "",
+		AnalyzerMacAddress:   "",
+		NicAssistedMirroring: false,
+		AnalyzerName:         "",
+		UDPPort:              0,
+		RoutingInstance:      "",
+		StaticNHHeader:       MakeStaticMirrorNhType(),
+		Encapsulation:        "",
 	}
 }
 

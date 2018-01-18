@@ -26,9 +26,92 @@ func TestOpenstackCluster(t *testing.T) {
 	model.FQName = []string{"default", "default-domain", "openstack_cluster_dummy"}
 	model.Perms2.Owner = "admin"
 	updateMap := map[string]interface{}{}
+
+	common.SetValueByPath(updateMap, ".UUID", ".", "test")
+
+	common.SetValueByPath(updateMap, ".PublicIP", ".", "test")
+
+	common.SetValueByPath(updateMap, ".PublicGateway", ".", "test")
+
+	common.SetValueByPath(updateMap, ".ProvisioningState", ".", "test")
+
+	common.SetValueByPath(updateMap, ".ProvisioningStartTime", ".", "test")
+
+	common.SetValueByPath(updateMap, ".ProvisioningProgressStage", ".", "test")
+
+	common.SetValueByPath(updateMap, ".ProvisioningProgress", ".", 1.0)
+
+	common.SetValueByPath(updateMap, ".ProvisioningLog", ".", "test")
+
+	common.SetValueByPath(updateMap, ".Perms2.Share", ".", `{"test":"test"}`)
+
+	common.SetValueByPath(updateMap, ".Perms2.OwnerAccess", ".", 1.0)
+
+	common.SetValueByPath(updateMap, ".Perms2.Owner", ".", "test")
+
+	common.SetValueByPath(updateMap, ".Perms2.GlobalAccess", ".", 1.0)
+
+	common.SetValueByPath(updateMap, ".ParentUUID", ".", "test")
+
+	common.SetValueByPath(updateMap, ".ParentType", ".", "test")
+
+	common.SetValueByPath(updateMap, ".OpenstackWebui", ".", "test")
+
+	common.SetValueByPath(updateMap, ".IDPerms.UserVisible", ".", true)
+
+	common.SetValueByPath(updateMap, ".IDPerms.Permissions.OwnerAccess", ".", 1.0)
+
+	common.SetValueByPath(updateMap, ".IDPerms.Permissions.Owner", ".", "test")
+
+	common.SetValueByPath(updateMap, ".IDPerms.Permissions.OtherAccess", ".", 1.0)
+
+	common.SetValueByPath(updateMap, ".IDPerms.Permissions.GroupAccess", ".", 1.0)
+
+	common.SetValueByPath(updateMap, ".IDPerms.Permissions.Group", ".", "test")
+
+	common.SetValueByPath(updateMap, ".IDPerms.LastModified", ".", "test")
+
+	common.SetValueByPath(updateMap, ".IDPerms.Enable", ".", true)
+
+	common.SetValueByPath(updateMap, ".IDPerms.Description", ".", "test")
+
+	common.SetValueByPath(updateMap, ".IDPerms.Creator", ".", "test")
+
+	common.SetValueByPath(updateMap, ".IDPerms.Created", ".", "test")
+
+	common.SetValueByPath(updateMap, ".FQName", ".", `{"test":"test"}`)
+
+	common.SetValueByPath(updateMap, ".ExternalNetCidr", ".", "test")
+
+	common.SetValueByPath(updateMap, ".ExternalAllocationPoolStart", ".", "test")
+
+	common.SetValueByPath(updateMap, ".ExternalAllocationPoolEnd", ".", "test")
+
+	common.SetValueByPath(updateMap, ".DisplayName", ".", "test")
+
+	common.SetValueByPath(updateMap, ".DefaultStorageBackendBondInterfaceMembers", ".", "test")
+
+	common.SetValueByPath(updateMap, ".DefaultStorageAccessBondInterfaceMembers", ".", "test")
+
+	common.SetValueByPath(updateMap, ".DefaultPerformanceDrives", ".", "test")
+
+	common.SetValueByPath(updateMap, ".DefaultOsdDrives", ".", "test")
+
+	common.SetValueByPath(updateMap, ".DefaultJournalDrives", ".", "test")
+
+	common.SetValueByPath(updateMap, ".DefaultCapacityDrives", ".", "test")
+
+	common.SetValueByPath(updateMap, ".ContrailClusterID", ".", "test")
+
+	common.SetValueByPath(updateMap, ".Annotations.KeyValuePair", ".", `{"test":"test"}`)
+
+	common.SetValueByPath(updateMap, ".AdminPassword", ".", "test")
+
 	common.SetValueByPath(updateMap, "uuid", ".", "openstack_cluster_dummy_uuid")
+
 	common.SetValueByPath(updateMap, "fq_name", ".", []string{"default", "default-domain", "access_control_list_dummy"})
-	common.SetValueByPath(updateMap, "display_name", ".", "test_update")
+
+	common.SetValueByPath(updateMap, "perms2.owner", ".", "admin")
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateOpenstackCluster(tx, model)

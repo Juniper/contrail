@@ -6,14 +6,14 @@ import "encoding/json"
 
 // ActionListType
 type ActionListType struct {
-	AssignRoutingInstance string            `json:"assign_routing_instance,omitempty"`
-	MirrorTo              *MirrorActionType `json:"mirror_to,omitempty"`
-	SimpleAction          SimpleActionType  `json:"simple_action,omitempty"`
 	ApplyService          []string          `json:"apply_service,omitempty"`
 	GatewayName           string            `json:"gateway_name,omitempty"`
 	Log                   bool              `json:"log"`
 	Alert                 bool              `json:"alert"`
 	QosAction             string            `json:"qos_action,omitempty"`
+	AssignRoutingInstance string            `json:"assign_routing_instance,omitempty"`
+	MirrorTo              *MirrorActionType `json:"mirror_to,omitempty"`
+	SimpleAction          SimpleActionType  `json:"simple_action,omitempty"`
 }
 
 // String returns json representation of the object

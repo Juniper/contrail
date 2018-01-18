@@ -6,20 +6,20 @@ import "encoding/json"
 
 // VPNGroup
 type VPNGroup struct {
+	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
+	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
+	UUID                      string         `json:"uuid,omitempty"`
+	ParentType                string         `json:"parent_type,omitempty"`
+	ProvisioningProgressStage string         `json:"provisioning_progress_stage,omitempty"`
 	DisplayName               string         `json:"display_name,omitempty"`
+	Perms2                    *PermType2     `json:"perms2,omitempty"`
 	ProvisioningProgress      int            `json:"provisioning_progress,omitempty"`
-	ProvisioningState         string         `json:"provisioning_state,omitempty"`
-	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
+	FQName                    []string       `json:"fq_name,omitempty"`
+	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
 	Type                      string         `json:"type,omitempty"`
 	ParentUUID                string         `json:"parent_uuid,omitempty"`
-	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
-	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
-	ParentType                string         `json:"parent_type,omitempty"`
-	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
-	Perms2                    *PermType2     `json:"perms2,omitempty"`
-	ProvisioningProgressStage string         `json:"provisioning_progress_stage,omitempty"`
-	UUID                      string         `json:"uuid,omitempty"`
-	FQName                    []string       `json:"fq_name,omitempty"`
+	ProvisioningState         string         `json:"provisioning_state,omitempty"`
+	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
 
 	LocationRefs []*VPNGroupLocationRef `json:"location_refs,omitempty"`
 }
@@ -41,20 +41,20 @@ func (model *VPNGroup) String() string {
 func MakeVPNGroup() *VPNGroup {
 	return &VPNGroup{
 		//TODO(nati): Apply default
-		ParentType: "",
-		IDPerms:    MakeIdPermsType(),
-		Perms2:     MakePermType2(),
+		DisplayName:               "",
+		Perms2:                    MakePermType2(),
+		ProvisioningProgress:      0,
+		FQName:                    []string{},
+		IDPerms:                   MakeIdPermsType(),
+		Type:                      "",
+		ParentUUID:                "",
+		ProvisioningState:         "",
+		ProvisioningLog:           "",
+		Annotations:               MakeKeyValuePairs(),
+		UUID:                      "",
+		ParentType:                "",
 		ProvisioningProgressStage: "",
-		UUID:                  "",
-		FQName:                []string{},
-		DisplayName:           "",
-		ProvisioningProgress:  0,
-		ProvisioningLog:       "",
-		Type:                  "",
-		ParentUUID:            "",
-		Annotations:           MakeKeyValuePairs(),
-		ProvisioningStartTime: "",
-		ProvisioningState:     "",
+		ProvisioningStartTime:     "",
 	}
 }
 

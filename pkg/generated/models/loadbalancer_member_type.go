@@ -24,12 +24,12 @@ func (model *LoadbalancerMemberType) String() string {
 func MakeLoadbalancerMemberType() *LoadbalancerMemberType {
 	return &LoadbalancerMemberType{
 		//TODO(nati): Apply default
+		AdminState:        false,
+		Address:           MakeIpAddressType(),
 		ProtocolPort:      0,
 		Status:            "",
 		StatusDescription: "",
 		Weight:            0,
-		AdminState:        false,
-		Address:           MakeIpAddressType(),
 	}
 }
 

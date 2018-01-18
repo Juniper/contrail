@@ -6,8 +6,8 @@ import "encoding/json"
 
 // QosIdForwardingClassPair
 type QosIdForwardingClassPair struct {
-	Key               int               `json:"key,omitempty"`
 	ForwardingClassID ForwardingClassId `json:"forwarding_class_id,omitempty"`
+	Key               int               `json:"key,omitempty"`
 }
 
 // String returns json representation of the object

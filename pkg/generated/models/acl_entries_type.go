@@ -6,8 +6,8 @@ import "encoding/json"
 
 // AclEntriesType
 type AclEntriesType struct {
-	Dynamic bool           `json:"dynamic"`
 	ACLRule []*AclRuleType `json:"acl_rule,omitempty"`
+	Dynamic bool           `json:"dynamic"`
 }
 
 // String returns json representation of the object
@@ -20,10 +20,9 @@ func (model *AclEntriesType) String() string {
 func MakeAclEntriesType() *AclEntriesType {
 	return &AclEntriesType{
 		//TODO(nati): Apply default
+		Dynamic: false,
 
 		ACLRule: MakeAclRuleTypeSlice(),
-
-		Dynamic: false,
 	}
 }
 

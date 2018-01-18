@@ -6,25 +6,18 @@ import "encoding/json"
 
 // ServiceEndpoint
 type ServiceEndpoint struct {
+	FQName      []string       `json:"fq_name,omitempty"`
+	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
 	DisplayName string         `json:"display_name,omitempty"`
 	Annotations *KeyValuePairs `json:"annotations,omitempty"`
 	Perms2      *PermType2     `json:"perms2,omitempty"`
 	UUID        string         `json:"uuid,omitempty"`
 	ParentUUID  string         `json:"parent_uuid,omitempty"`
 	ParentType  string         `json:"parent_type,omitempty"`
-	FQName      []string       `json:"fq_name,omitempty"`
-	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
 
 	ServiceConnectionModuleRefs []*ServiceEndpointServiceConnectionModuleRef `json:"service_connection_module_refs,omitempty"`
 	PhysicalRouterRefs          []*ServiceEndpointPhysicalRouterRef          `json:"physical_router_refs,omitempty"`
 	ServiceObjectRefs           []*ServiceEndpointServiceObjectRef           `json:"service_object_refs,omitempty"`
-}
-
-// ServiceEndpointServiceConnectionModuleRef references each other
-type ServiceEndpointServiceConnectionModuleRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
 }
 
 // ServiceEndpointPhysicalRouterRef references each other
@@ -36,6 +29,13 @@ type ServiceEndpointPhysicalRouterRef struct {
 
 // ServiceEndpointServiceObjectRef references each other
 type ServiceEndpointServiceObjectRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
+// ServiceEndpointServiceConnectionModuleRef references each other
+type ServiceEndpointServiceConnectionModuleRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 

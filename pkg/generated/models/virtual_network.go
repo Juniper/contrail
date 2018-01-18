@@ -6,43 +6,43 @@ import "encoding/json"
 
 // VirtualNetwork
 type VirtualNetwork struct {
-	PBBEvpnEnable                   bool                      `json:"pbb_evpn_enable"`
-	PBBEtreeEnable                  bool                      `json:"pbb_etree_enable"`
-	EcmpHashingIncludeFields        *EcmpHashingIncludeFields `json:"ecmp_hashing_include_fields,omitempty"`
-	MacLimitControl                 *MACLimitControlType      `json:"mac_limit_control,omitempty"`
-	IDPerms                         *IdPermsType              `json:"id_perms,omitempty"`
-	ParentType                      string                    `json:"parent_type,omitempty"`
-	FloodUnknownUnicast             bool                      `json:"flood_unknown_unicast"`
-	PortSecurityEnabled             bool                      `json:"port_security_enabled"`
-	MacMoveControl                  *MACMoveLimitControlType  `json:"mac_move_control,omitempty"`
 	ExportRouteTargetList           *RouteTargetList          `json:"export_route_target_list,omitempty"`
-	RouterExternal                  bool                      `json:"router_external"`
+	MacMoveControl                  *MACMoveLimitControlType  `json:"mac_move_control,omitempty"`
 	Perms2                          *PermType2                `json:"perms2,omitempty"`
-	ParentUUID                      string                    `json:"parent_uuid,omitempty"`
-	FQName                          []string                  `json:"fq_name,omitempty"`
-	AddressAllocationMode           AddressAllocationModeType `json:"address_allocation_mode,omitempty"`
-	MultiPolicyServiceChainsEnabled bool                      `json:"multi_policy_service_chains_enabled"`
 	MacLearningEnabled              bool                      `json:"mac_learning_enabled"`
-	DisplayName                     string                    `json:"display_name,omitempty"`
-	ImportRouteTargetList           *RouteTargetList          `json:"import_route_target_list,omitempty"`
-	RouteTargetList                 *RouteTargetList          `json:"route_target_list,omitempty"`
-	IsShared                        bool                      `json:"is_shared"`
+	PortSecurityEnabled             bool                      `json:"port_security_enabled"`
 	VirtualNetworkProperties        *VirtualNetworkType       `json:"virtual_network_properties,omitempty"`
-	MacAgingTime                    MACAgingTime              `json:"mac_aging_time,omitempty"`
+	PBBEvpnEnable                   bool                      `json:"pbb_evpn_enable"`
+	RouterExternal                  bool                      `json:"router_external"`
+	RouteTargetList                 *RouteTargetList          `json:"route_target_list,omitempty"`
 	ProviderProperties              *ProviderDetails          `json:"provider_properties,omitempty"`
-	Layer2ControlWord               bool                      `json:"layer2_control_word"`
-	ExternalIpam                    bool                      `json:"external_ipam"`
+	PBBEtreeEnable                  bool                      `json:"pbb_etree_enable"`
+	IDPerms                         *IdPermsType              `json:"id_perms,omitempty"`
+	MultiPolicyServiceChainsEnabled bool                      `json:"multi_policy_service_chains_enabled"`
+	IsShared                        bool                      `json:"is_shared"`
+	ParentType                      string                    `json:"parent_type,omitempty"`
 	Annotations                     *KeyValuePairs            `json:"annotations,omitempty"`
-	UUID                            string                    `json:"uuid,omitempty"`
 	VirtualNetworkNetworkID         VirtualNetworkIdType      `json:"virtual_network_network_id,omitempty"`
+	AddressAllocationMode           AddressAllocationModeType `json:"address_allocation_mode,omitempty"`
+	Layer2ControlWord               bool                      `json:"layer2_control_word"`
+	DisplayName                     string                    `json:"display_name,omitempty"`
+	MacAgingTime                    MACAgingTime              `json:"mac_aging_time,omitempty"`
+	ParentUUID                      string                    `json:"parent_uuid,omitempty"`
+	UUID                            string                    `json:"uuid,omitempty"`
+	EcmpHashingIncludeFields        *EcmpHashingIncludeFields `json:"ecmp_hashing_include_fields,omitempty"`
+	ExternalIpam                    bool                      `json:"external_ipam"`
+	MacLimitControl                 *MACLimitControlType      `json:"mac_limit_control,omitempty"`
+	FQName                          []string                  `json:"fq_name,omitempty"`
+	ImportRouteTargetList           *RouteTargetList          `json:"import_route_target_list,omitempty"`
+	FloodUnknownUnicast             bool                      `json:"flood_unknown_unicast"`
 
-	BGPVPNRefs                []*VirtualNetworkBGPVPNRef                `json:"bgpvpn_refs,omitempty"`
-	NetworkIpamRefs           []*VirtualNetworkNetworkIpamRef           `json:"network_ipam_refs,omitempty"`
 	SecurityLoggingObjectRefs []*VirtualNetworkSecurityLoggingObjectRef `json:"security_logging_object_refs,omitempty"`
 	NetworkPolicyRefs         []*VirtualNetworkNetworkPolicyRef         `json:"network_policy_refs,omitempty"`
 	QosConfigRefs             []*VirtualNetworkQosConfigRef             `json:"qos_config_refs,omitempty"`
 	RouteTableRefs            []*VirtualNetworkRouteTableRef            `json:"route_table_refs,omitempty"`
 	VirtualNetworkRefs        []*VirtualNetworkVirtualNetworkRef        `json:"virtual_network_refs,omitempty"`
+	BGPVPNRefs                []*VirtualNetworkBGPVPNRef                `json:"bgpvpn_refs,omitempty"`
+	NetworkIpamRefs           []*VirtualNetworkNetworkIpamRef           `json:"network_ipam_refs,omitempty"`
 
 	AccessControlLists []*AccessControlList `json:"access_control_lists,omitempty"`
 	AliasIPPools       []*AliasIPPool       `json:"alias_ip_pools,omitempty"`
@@ -112,35 +112,35 @@ func (model *VirtualNetwork) String() string {
 func MakeVirtualNetwork() *VirtualNetwork {
 	return &VirtualNetwork{
 		//TODO(nati): Apply default
-		MultiPolicyServiceChainsEnabled: false,
-		ImportRouteTargetList:           MakeRouteTargetList(),
-		MacLearningEnabled:              false,
-		DisplayName:                     "",
-		VirtualNetworkProperties:        MakeVirtualNetworkType(),
-		RouteTargetList:                 MakeRouteTargetList(),
-		IsShared:                        false,
-		Layer2ControlWord:               false,
-		ExternalIpam:                    false,
-		Annotations:                     MakeKeyValuePairs(),
-		UUID:                            "",
-		VirtualNetworkNetworkID:  MakeVirtualNetworkIdType(),
-		MacAgingTime:             MakeMACAgingTime(),
-		ProviderProperties:       MakeProviderDetails(),
-		EcmpHashingIncludeFields: MakeEcmpHashingIncludeFields(),
+		ExportRouteTargetList: MakeRouteTargetList(),
+		MacMoveControl:        MakeMACMoveLimitControlType(),
+		Perms2:                MakePermType2(),
+		VirtualNetworkProperties: MakeVirtualNetworkType(),
 		PBBEvpnEnable:            false,
-		PBBEtreeEnable:           false,
-		ParentType:               "",
-		FloodUnknownUnicast:      false,
-		MacLimitControl:          MakeMACLimitControlType(),
-		IDPerms:                  MakeIdPermsType(),
-		ExportRouteTargetList:    MakeRouteTargetList(),
-		PortSecurityEnabled:      false,
-		MacMoveControl:           MakeMACMoveLimitControlType(),
-		ParentUUID:               "",
-		FQName:                   []string{},
-		AddressAllocationMode:    MakeAddressAllocationModeType(),
 		RouterExternal:           false,
-		Perms2:                   MakePermType2(),
+		RouteTargetList:          MakeRouteTargetList(),
+		MacLearningEnabled:       false,
+		PortSecurityEnabled:      false,
+		ProviderProperties:       MakeProviderDetails(),
+		PBBEtreeEnable:           false,
+		IDPerms:                  MakeIdPermsType(),
+		MultiPolicyServiceChainsEnabled: false,
+		IsShared:                        false,
+		ParentType:                      "",
+		VirtualNetworkNetworkID:         MakeVirtualNetworkIdType(),
+		AddressAllocationMode:           MakeAddressAllocationModeType(),
+		Layer2ControlWord:               false,
+		DisplayName:                     "",
+		Annotations:                     MakeKeyValuePairs(),
+		MacAgingTime:                    MakeMACAgingTime(),
+		ParentUUID:                      "",
+		EcmpHashingIncludeFields:        MakeEcmpHashingIncludeFields(),
+		ExternalIpam:                    false,
+		MacLimitControl:                 MakeMACLimitControlType(),
+		FQName:                          []string{},
+		UUID:                            "",
+		ImportRouteTargetList: MakeRouteTargetList(),
+		FloodUnknownUnicast:   false,
 	}
 }
 

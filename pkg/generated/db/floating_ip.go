@@ -49,12 +49,12 @@ var FloatingIPFields = []string{
 // FloatingIPRefFields is db reference fields for FloatingIP
 var FloatingIPRefFields = map[string][]string{
 
-	"virtual_machine_interface": {
+	"project": {
 	// <common.Schema Value>
 
 	},
 
-	"project": {
+	"virtual_machine_interface": {
 	// <common.Schema Value>
 
 	},
@@ -71,9 +71,9 @@ var FloatingIPParents = []string{
 	"instance_ip",
 }
 
-const insertFloatingIPVirtualMachineInterfaceQuery = "insert into `ref_floating_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
-
 const insertFloatingIPProjectQuery = "insert into `ref_floating_ip_project` (`from`, `to` ) values (?, ?);"
+
+const insertFloatingIPVirtualMachineInterfaceQuery = "insert into `ref_floating_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateFloatingIP inserts FloatingIP to DB
 func CreateFloatingIP(tx *sql.Tx, model *models.FloatingIP) error {

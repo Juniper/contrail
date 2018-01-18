@@ -6,16 +6,16 @@ import "encoding/json"
 
 // ServiceInstance
 type ServiceInstance struct {
-	ServiceInstanceBindings   *KeyValuePairs       `json:"service_instance_bindings,omitempty"`
-	FQName                    []string             `json:"fq_name,omitempty"`
-	DisplayName               string               `json:"display_name,omitempty"`
-	ParentUUID                string               `json:"parent_uuid,omitempty"`
-	ParentType                string               `json:"parent_type,omitempty"`
 	ServiceInstanceProperties *ServiceInstanceType `json:"service_instance_properties,omitempty"`
-	IDPerms                   *IdPermsType         `json:"id_perms,omitempty"`
 	Annotations               *KeyValuePairs       `json:"annotations,omitempty"`
-	Perms2                    *PermType2           `json:"perms2,omitempty"`
+	ParentUUID                string               `json:"parent_uuid,omitempty"`
 	UUID                      string               `json:"uuid,omitempty"`
+	ParentType                string               `json:"parent_type,omitempty"`
+	FQName                    []string             `json:"fq_name,omitempty"`
+	ServiceInstanceBindings   *KeyValuePairs       `json:"service_instance_bindings,omitempty"`
+	IDPerms                   *IdPermsType         `json:"id_perms,omitempty"`
+	DisplayName               string               `json:"display_name,omitempty"`
+	Perms2                    *PermType2           `json:"perms2,omitempty"`
 
 	ServiceTemplateRefs []*ServiceInstanceServiceTemplateRef `json:"service_template_refs,omitempty"`
 	InstanceIPRefs      []*ServiceInstanceInstanceIPRef      `json:"instance_ip_refs,omitempty"`
@@ -48,16 +48,16 @@ func (model *ServiceInstance) String() string {
 func MakeServiceInstance() *ServiceInstance {
 	return &ServiceInstance{
 		//TODO(nati): Apply default
-		ParentUUID:              "",
-		ParentType:              "",
-		ServiceInstanceBindings: MakeKeyValuePairs(),
-		FQName:                  []string{},
-		DisplayName:             "",
-		Perms2:                  MakePermType2(),
-		UUID:                    "",
-		ServiceInstanceProperties: MakeServiceInstanceType(),
+		Perms2:                    MakePermType2(),
+		UUID:                      "",
+		ParentType:                "",
+		FQName:                    []string{},
+		ServiceInstanceBindings:   MakeKeyValuePairs(),
 		IDPerms:                   MakeIdPermsType(),
+		DisplayName:               "",
+		ServiceInstanceProperties: MakeServiceInstanceType(),
 		Annotations:               MakeKeyValuePairs(),
+		ParentUUID:                "",
 	}
 }
 

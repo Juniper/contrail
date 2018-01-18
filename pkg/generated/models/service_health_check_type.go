@@ -6,17 +6,17 @@ import "encoding/json"
 
 // ServiceHealthCheckType
 type ServiceHealthCheckType struct {
-	DelayUsecs      int                     `json:"delayUsecs,omitempty"`
-	Enabled         bool                    `json:"enabled"`
 	Delay           int                     `json:"delay,omitempty"`
-	ExpectedCodes   string                  `json:"expected_codes,omitempty"`
-	MonitorType     HealthCheckProtocolType `json:"monitor_type,omitempty"`
-	TimeoutUsecs    int                     `json:"timeoutUsecs,omitempty"`
 	MaxRetries      int                     `json:"max_retries,omitempty"`
 	HealthCheckType HealthCheckType         `json:"health_check_type,omitempty"`
-	HTTPMethod      string                  `json:"http_method,omitempty"`
 	Timeout         int                     `json:"timeout,omitempty"`
+	MonitorType     HealthCheckProtocolType `json:"monitor_type,omitempty"`
+	Enabled         bool                    `json:"enabled"`
+	TimeoutUsecs    int                     `json:"timeoutUsecs,omitempty"`
+	ExpectedCodes   string                  `json:"expected_codes,omitempty"`
+	HTTPMethod      string                  `json:"http_method,omitempty"`
 	URLPath         string                  `json:"url_path,omitempty"`
+	DelayUsecs      int                     `json:"delayUsecs,omitempty"`
 }
 
 // String returns json representation of the object
@@ -29,17 +29,17 @@ func (model *ServiceHealthCheckType) String() string {
 func MakeServiceHealthCheckType() *ServiceHealthCheckType {
 	return &ServiceHealthCheckType{
 		//TODO(nati): Apply default
+		DelayUsecs:      0,
+		TimeoutUsecs:    0,
+		ExpectedCodes:   "",
+		HTTPMethod:      "",
+		URLPath:         "",
 		Enabled:         false,
 		Delay:           0,
-		ExpectedCodes:   "",
-		MonitorType:     MakeHealthCheckProtocolType(),
-		DelayUsecs:      0,
 		MaxRetries:      0,
 		HealthCheckType: MakeHealthCheckType(),
-		HTTPMethod:      "",
 		Timeout:         0,
-		URLPath:         "",
-		TimeoutUsecs:    0,
+		MonitorType:     MakeHealthCheckProtocolType(),
 	}
 }
 

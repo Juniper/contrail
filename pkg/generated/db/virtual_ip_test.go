@@ -26,9 +26,74 @@ func TestVirtualIP(t *testing.T) {
 	model.FQName = []string{"default", "default-domain", "virtual_ip_dummy"}
 	model.Perms2.Owner = "admin"
 	updateMap := map[string]interface{}{}
+
+	common.SetValueByPath(updateMap, ".VirtualIPProperties.SubnetID", ".", "test")
+
+	common.SetValueByPath(updateMap, ".VirtualIPProperties.StatusDescription", ".", "test")
+
+	common.SetValueByPath(updateMap, ".VirtualIPProperties.Status", ".", "test")
+
+	common.SetValueByPath(updateMap, ".VirtualIPProperties.ProtocolPort", ".", 1.0)
+
+	common.SetValueByPath(updateMap, ".VirtualIPProperties.Protocol", ".", "test")
+
+	common.SetValueByPath(updateMap, ".VirtualIPProperties.PersistenceType", ".", "test")
+
+	common.SetValueByPath(updateMap, ".VirtualIPProperties.PersistenceCookieName", ".", "test")
+
+	common.SetValueByPath(updateMap, ".VirtualIPProperties.ConnectionLimit", ".", 1.0)
+
+	common.SetValueByPath(updateMap, ".VirtualIPProperties.AdminState", ".", true)
+
+	common.SetValueByPath(updateMap, ".VirtualIPProperties.Address", ".", "test")
+
+	common.SetValueByPath(updateMap, ".UUID", ".", "test")
+
+	common.SetValueByPath(updateMap, ".Perms2.Share", ".", `{"test":"test"}`)
+
+	common.SetValueByPath(updateMap, ".Perms2.OwnerAccess", ".", 1.0)
+
+	common.SetValueByPath(updateMap, ".Perms2.Owner", ".", "test")
+
+	common.SetValueByPath(updateMap, ".Perms2.GlobalAccess", ".", 1.0)
+
+	common.SetValueByPath(updateMap, ".ParentUUID", ".", "test")
+
+	common.SetValueByPath(updateMap, ".ParentType", ".", "test")
+
+	common.SetValueByPath(updateMap, ".IDPerms.UserVisible", ".", true)
+
+	common.SetValueByPath(updateMap, ".IDPerms.Permissions.OwnerAccess", ".", 1.0)
+
+	common.SetValueByPath(updateMap, ".IDPerms.Permissions.Owner", ".", "test")
+
+	common.SetValueByPath(updateMap, ".IDPerms.Permissions.OtherAccess", ".", 1.0)
+
+	common.SetValueByPath(updateMap, ".IDPerms.Permissions.GroupAccess", ".", 1.0)
+
+	common.SetValueByPath(updateMap, ".IDPerms.Permissions.Group", ".", "test")
+
+	common.SetValueByPath(updateMap, ".IDPerms.LastModified", ".", "test")
+
+	common.SetValueByPath(updateMap, ".IDPerms.Enable", ".", true)
+
+	common.SetValueByPath(updateMap, ".IDPerms.Description", ".", "test")
+
+	common.SetValueByPath(updateMap, ".IDPerms.Creator", ".", "test")
+
+	common.SetValueByPath(updateMap, ".IDPerms.Created", ".", "test")
+
+	common.SetValueByPath(updateMap, ".FQName", ".", `{"test":"test"}`)
+
+	common.SetValueByPath(updateMap, ".DisplayName", ".", "test")
+
+	common.SetValueByPath(updateMap, ".Annotations.KeyValuePair", ".", `{"test":"test"}`)
+
 	common.SetValueByPath(updateMap, "uuid", ".", "virtual_ip_dummy_uuid")
+
 	common.SetValueByPath(updateMap, "fq_name", ".", []string{"default", "default-domain", "access_control_list_dummy"})
-	common.SetValueByPath(updateMap, "display_name", ".", "test_update")
+
+	common.SetValueByPath(updateMap, "perms2.owner", ".", "admin")
 
 	err := common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateVirtualIP(tx, model)

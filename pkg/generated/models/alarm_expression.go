@@ -22,10 +22,10 @@ func (model *AlarmExpression) String() string {
 func MakeAlarmExpression() *AlarmExpression {
 	return &AlarmExpression{
 		//TODO(nati): Apply default
-		Operand2:  MakeAlarmOperand2(),
 		Operation: MakeAlarmOperation(),
 		Operand1:  "",
 		Variables: []string{},
+		Operand2:  MakeAlarmOperand2(),
 	}
 }
 

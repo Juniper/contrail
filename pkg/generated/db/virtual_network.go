@@ -77,6 +77,31 @@ var VirtualNetworkFields = []string{
 // VirtualNetworkRefFields is db reference fields for VirtualNetwork
 var VirtualNetworkRefFields = map[string][]string{
 
+	"security_logging_object": {
+	// <common.Schema Value>
+
+	},
+
+	"network_policy": {
+		// <common.Schema Value>
+		"major",
+		"minor",
+		"start_time",
+		"off_interval",
+		"on_interval",
+		"end_time",
+	},
+
+	"qos_config": {
+	// <common.Schema Value>
+
+	},
+
+	"route_table": {
+	// <common.Schema Value>
+
+	},
+
 	"virtual_network": {
 	// <common.Schema Value>
 
@@ -91,31 +116,6 @@ var VirtualNetworkRefFields = map[string][]string{
 		// <common.Schema Value>
 		"ipam_subnets",
 		"route",
-	},
-
-	"security_logging_object": {
-	// <common.Schema Value>
-
-	},
-
-	"network_policy": {
-		// <common.Schema Value>
-		"on_interval",
-		"end_time",
-		"start_time",
-		"off_interval",
-		"minor",
-		"major",
-	},
-
-	"qos_config": {
-	// <common.Schema Value>
-
-	},
-
-	"route_table": {
-	// <common.Schema Value>
-
 	},
 }
 
@@ -269,7 +269,7 @@ const insertVirtualNetworkNetworkIpamQuery = "insert into `ref_virtual_network_n
 
 const insertVirtualNetworkSecurityLoggingObjectQuery = "insert into `ref_virtual_network_security_logging_object` (`from`, `to` ) values (?, ?);"
 
-const insertVirtualNetworkNetworkPolicyQuery = "insert into `ref_virtual_network_network_policy` (`from`, `to` ,`on_interval`,`end_time`,`start_time`,`off_interval`,`minor`,`major`) values (?, ?,?,?,?,?,?,?);"
+const insertVirtualNetworkNetworkPolicyQuery = "insert into `ref_virtual_network_network_policy` (`from`, `to` ,`major`,`minor`,`start_time`,`off_interval`,`on_interval`,`end_time`) values (?, ?,?,?,?,?,?,?);"
 
 const insertVirtualNetworkQosConfigQuery = "insert into `ref_virtual_network_qos_config` (`from`, `to` ) values (?, ?);"
 
@@ -415,12 +415,12 @@ func CreateVirtualNetwork(tx *sql.Tx, model *models.VirtualNetwork) error {
 			ref.Attr = models.MakeVirtualNetworkPolicyType()
 		}
 
-		_, err = stmtNetworkPolicyRef.Exec(model.UUID, ref.UUID, string(ref.Attr.Timer.OnInterval),
-			string(ref.Attr.Timer.EndTime),
+		_, err = stmtNetworkPolicyRef.Exec(model.UUID, ref.UUID, int(ref.Attr.Sequence.Major),
+			int(ref.Attr.Sequence.Minor),
 			string(ref.Attr.Timer.StartTime),
 			string(ref.Attr.Timer.OffInterval),
-			int(ref.Attr.Sequence.Minor),
-			int(ref.Attr.Sequence.Major))
+			string(ref.Attr.Timer.OnInterval),
+			string(ref.Attr.Timer.EndTime))
 		if err != nil {
 			return errors.Wrap(err, "NetworkPolicyRefs create failed")
 		}
@@ -910,26 +910,6 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 	}
 
-	if value, ok := values["ref_bgpvpn"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkBGPVPNRef{}
-			referenceModel.UUID = uuid
-			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_network_ipam"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -1052,6 +1032,26 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 			referenceModel := &models.VirtualNetworkVirtualNetworkRef{}
 			referenceModel.UUID = uuid
 			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_bgpvpn"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkBGPVPNRef{}
+			referenceModel.UUID = uuid
+			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
 
 		}
 	}

@@ -105,6 +105,19 @@ func CreateFirewallPolicy(tx *sql.Tx, model *models.FirewallPolicy) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtSecurityLoggingObjectRef, err := tx.Prepare(insertFirewallPolicySecurityLoggingObjectQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing SecurityLoggingObjectRefs create statement failed")
+	}
+	defer stmtSecurityLoggingObjectRef.Close()
+	for _, ref := range model.SecurityLoggingObjectRefs {
+
+		_, err = stmtSecurityLoggingObjectRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "SecurityLoggingObjectRefs create failed")
+		}
+	}
+
 	stmtFirewallRuleRef, err := tx.Prepare(insertFirewallPolicyFirewallRuleQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing FirewallRuleRefs create statement failed")
@@ -119,19 +132,6 @@ func CreateFirewallPolicy(tx *sql.Tx, model *models.FirewallPolicy) error {
 		_, err = stmtFirewallRuleRef.Exec(model.UUID, ref.UUID, string(ref.Attr.Sequence))
 		if err != nil {
 			return errors.Wrap(err, "FirewallRuleRefs create failed")
-		}
-	}
-
-	stmtSecurityLoggingObjectRef, err := tx.Prepare(insertFirewallPolicySecurityLoggingObjectQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing SecurityLoggingObjectRefs create statement failed")
-	}
-	defer stmtSecurityLoggingObjectRef.Close()
-	for _, ref := range model.SecurityLoggingObjectRefs {
-
-		_, err = stmtSecurityLoggingObjectRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "SecurityLoggingObjectRefs create failed")
 		}
 	}
 
@@ -319,6 +319,26 @@ func scanFirewallPolicy(values map[string]interface{}) (*models.FirewallPolicy, 
 
 	}
 
+	if value, ok := values["ref_security_logging_object"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.FirewallPolicySecurityLoggingObjectRef{}
+			referenceModel.UUID = uuid
+			m.SecurityLoggingObjectRefs = append(m.SecurityLoggingObjectRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_firewall_rule"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -338,26 +358,6 @@ func scanFirewallPolicy(values map[string]interface{}) (*models.FirewallPolicy, 
 
 			attr := models.MakeFirewallSequence()
 			referenceModel.Attr = attr
-
-		}
-	}
-
-	if value, ok := values["ref_security_logging_object"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.FirewallPolicySecurityLoggingObjectRef{}
-			referenceModel.UUID = uuid
-			m.SecurityLoggingObjectRefs = append(m.SecurityLoggingObjectRefs, referenceModel)
 
 		}
 	}

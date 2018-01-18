@@ -117,13 +117,13 @@ var FirewallRuleParents = []string{
 	"policy_management",
 }
 
-const insertFirewallRuleServiceGroupQuery = "insert into `ref_firewall_rule_service_group` (`from`, `to` ) values (?, ?);"
-
-const insertFirewallRuleAddressGroupQuery = "insert into `ref_firewall_rule_address_group` (`from`, `to` ) values (?, ?);"
-
 const insertFirewallRuleSecurityLoggingObjectQuery = "insert into `ref_firewall_rule_security_logging_object` (`from`, `to` ) values (?, ?);"
 
 const insertFirewallRuleVirtualNetworkQuery = "insert into `ref_firewall_rule_virtual_network` (`from`, `to` ) values (?, ?);"
+
+const insertFirewallRuleServiceGroupQuery = "insert into `ref_firewall_rule_service_group` (`from`, `to` ) values (?, ?);"
+
+const insertFirewallRuleAddressGroupQuery = "insert into `ref_firewall_rule_address_group` (`from`, `to` ) values (?, ?);"
 
 // CreateFirewallRule inserts FirewallRule to DB
 func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
@@ -771,46 +771,6 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	}
 
-	if value, ok := values["ref_security_logging_object"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.FirewallRuleSecurityLoggingObjectRef{}
-			referenceModel.UUID = uuid
-			m.SecurityLoggingObjectRefs = append(m.SecurityLoggingObjectRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_virtual_network"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.FirewallRuleVirtualNetworkRef{}
-			referenceModel.UUID = uuid
-			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_service_group"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -847,6 +807,46 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 			referenceModel := &models.FirewallRuleAddressGroupRef{}
 			referenceModel.UUID = uuid
 			m.AddressGroupRefs = append(m.AddressGroupRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_security_logging_object"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.FirewallRuleSecurityLoggingObjectRef{}
+			referenceModel.UUID = uuid
+			m.SecurityLoggingObjectRefs = append(m.SecurityLoggingObjectRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_network"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.FirewallRuleVirtualNetworkRef{}
+			referenceModel.UUID = uuid
+			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
 
 		}
 	}

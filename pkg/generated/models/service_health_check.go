@@ -6,15 +6,15 @@ import "encoding/json"
 
 // ServiceHealthCheck
 type ServiceHealthCheck struct {
-	UUID                         string                  `json:"uuid,omitempty"`
-	IDPerms                      *IdPermsType            `json:"id_perms,omitempty"`
-	DisplayName                  string                  `json:"display_name,omitempty"`
 	Perms2                       *PermType2              `json:"perms2,omitempty"`
+	ParentUUID                   string                  `json:"parent_uuid,omitempty"`
+	IDPerms                      *IdPermsType            `json:"id_perms,omitempty"`
+	Annotations                  *KeyValuePairs          `json:"annotations,omitempty"`
+	DisplayName                  string                  `json:"display_name,omitempty"`
+	UUID                         string                  `json:"uuid,omitempty"`
 	ServiceHealthCheckProperties *ServiceHealthCheckType `json:"service_health_check_properties,omitempty"`
 	ParentType                   string                  `json:"parent_type,omitempty"`
 	FQName                       []string                `json:"fq_name,omitempty"`
-	Annotations                  *KeyValuePairs          `json:"annotations,omitempty"`
-	ParentUUID                   string                  `json:"parent_uuid,omitempty"`
 
 	ServiceInstanceRefs []*ServiceHealthCheckServiceInstanceRef `json:"service_instance_refs,omitempty"`
 }
@@ -37,15 +37,15 @@ func (model *ServiceHealthCheck) String() string {
 func MakeServiceHealthCheck() *ServiceHealthCheck {
 	return &ServiceHealthCheck{
 		//TODO(nati): Apply default
-		ParentUUID:                   "",
+		ServiceHealthCheckProperties: MakeServiceHealthCheckType(),
 		ParentType:                   "",
 		FQName:                       []string{},
+		DisplayName:                  "",
+		UUID:                         "",
+		ParentUUID:                   "",
+		IDPerms:                      MakeIdPermsType(),
 		Annotations:                  MakeKeyValuePairs(),
-		ServiceHealthCheckProperties: MakeServiceHealthCheckType(),
-		UUID:        "",
-		IDPerms:     MakeIdPermsType(),
-		DisplayName: "",
-		Perms2:      MakePermType2(),
+		Perms2:                       MakePermType2(),
 	}
 }
 

@@ -6,20 +6,20 @@ import "encoding/json"
 
 // BGPAsAService
 type BGPAsAService struct {
-	BgpaasIPAddress                  IpAddressType        `json:"bgpaas_ip_address,omitempty"`
-	AutonomousSystem                 AutonomousSystemType `json:"autonomous_system,omitempty"`
-	IDPerms                          *IdPermsType         `json:"id_perms,omitempty"`
-	BgpaasShared                     bool                 `json:"bgpaas_shared"`
-	DisplayName                      string               `json:"display_name,omitempty"`
+	BgpaasIpv4MappedIpv6Nexthop      bool                 `json:"bgpaas_ipv4_mapped_ipv6_nexthop"`
 	UUID                             string               `json:"uuid,omitempty"`
-	ParentUUID                       string               `json:"parent_uuid,omitempty"`
+	BgpaasShared                     bool                 `json:"bgpaas_shared"`
+	IDPerms                          *IdPermsType         `json:"id_perms,omitempty"`
 	Perms2                           *PermType2           `json:"perms2,omitempty"`
 	BgpaasSessionAttributes          string               `json:"bgpaas_session_attributes,omitempty"`
-	BgpaasSuppressRouteAdvertisement bool                 `json:"bgpaas_suppress_route_advertisement"`
-	BgpaasIpv4MappedIpv6Nexthop      bool                 `json:"bgpaas_ipv4_mapped_ipv6_nexthop"`
-	Annotations                      *KeyValuePairs       `json:"annotations,omitempty"`
+	AutonomousSystem                 AutonomousSystemType `json:"autonomous_system,omitempty"`
+	ParentUUID                       string               `json:"parent_uuid,omitempty"`
 	ParentType                       string               `json:"parent_type,omitempty"`
+	DisplayName                      string               `json:"display_name,omitempty"`
+	BgpaasIPAddress                  IpAddressType        `json:"bgpaas_ip_address,omitempty"`
 	FQName                           []string             `json:"fq_name,omitempty"`
+	Annotations                      *KeyValuePairs       `json:"annotations,omitempty"`
+	BgpaasSuppressRouteAdvertisement bool                 `json:"bgpaas_suppress_route_advertisement"`
 
 	VirtualMachineInterfaceRefs []*BGPAsAServiceVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 	ServiceHealthCheckRefs      []*BGPAsAServiceServiceHealthCheckRef      `json:"service_health_check_refs,omitempty"`
@@ -49,20 +49,20 @@ func (model *BGPAsAService) String() string {
 func MakeBGPAsAService() *BGPAsAService {
 	return &BGPAsAService{
 		//TODO(nati): Apply default
-		BgpaasShared:                     false,
-		DisplayName:                      "",
-		UUID:                             "",
-		ParentUUID:                       "",
-		BgpaasSessionAttributes:          "",
-		BgpaasSuppressRouteAdvertisement: false,
-		BgpaasIpv4MappedIpv6Nexthop:      false,
-		Annotations:                      MakeKeyValuePairs(),
-		Perms2:                           MakePermType2(),
-		ParentType:                       "",
-		FQName:                           []string{},
 		BgpaasIPAddress:                  MakeIpAddressType(),
 		AutonomousSystem:                 MakeAutonomousSystemType(),
-		IDPerms:                          MakeIdPermsType(),
+		ParentUUID:                       "",
+		ParentType:                       "",
+		DisplayName:                      "",
+		BgpaasSuppressRouteAdvertisement: false,
+		FQName:                      []string{},
+		Annotations:                 MakeKeyValuePairs(),
+		BgpaasShared:                false,
+		BgpaasIpv4MappedIpv6Nexthop: false,
+		UUID: "",
+		BgpaasSessionAttributes: "",
+		IDPerms:                 MakeIdPermsType(),
+		Perms2:                  MakePermType2(),
 	}
 }
 

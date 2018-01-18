@@ -6,8 +6,8 @@ import "encoding/json"
 
 // UserCredentials
 type UserCredentials struct {
-	Password string `json:"password,omitempty"`
 	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
 // String returns json representation of the object

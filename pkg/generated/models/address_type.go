@@ -23,13 +23,12 @@ func (model *AddressType) String() string {
 func MakeAddressType() *AddressType {
 	return &AddressType{
 		//TODO(nati): Apply default
-		SecurityGroup: "",
-		Subnet:        MakeSubnetType(),
-		NetworkPolicy: "",
+		VirtualNetwork: "",
+		SecurityGroup:  "",
+		Subnet:         MakeSubnetType(),
+		NetworkPolicy:  "",
 
 		SubnetList: MakeSubnetTypeSlice(),
-
-		VirtualNetwork: "",
 	}
 }
 
