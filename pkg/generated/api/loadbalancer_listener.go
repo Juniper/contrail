@@ -2,13 +2,12 @@ package api
 
 import (
 	"database/sql"
-	"net/http"
-
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
+	"net/http"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -20,6 +19,10 @@ type LoadbalancerListenerRESTAPI struct {
 
 type LoadbalancerListenerCreateRequest struct {
 	Data *models.LoadbalancerListener `json:"loadbalancer-listener"`
+}
+
+type LoadbalancerListenerUpdateRequest struct {
+	Data map[string]interface{} `json:"loadbalancer-listener"`
 }
 
 //Path returns api path for collections.
@@ -79,7 +82,40 @@ func (api *LoadbalancerListenerRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *LoadbalancerListenerRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &LoadbalancerListenerUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "loadbalancer_listener",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateLoadbalancerListener(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "loadbalancer_listener",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"loadbalancer-listener": {
+			"uuid": id,
+			"uri":  "/" + "loadbalancer-listener" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

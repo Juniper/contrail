@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"encoding/json"
-
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/pkg/errors"
@@ -12,7 +11,6 @@ import (
 )
 
 const insertBGPAsAServiceQuery = "insert into `bgp_as_a_service` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`bgpaas_suppress_route_advertisement`,`bgpaas_shared`,`bgpaas_session_attributes`,`bgpaas_ipv4_mapped_ipv6_nexthop`,`bgpaas_ip_address`,`autonomous_system`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateBGPAsAServiceQuery = "update `bgp_as_a_service` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`bgpaas_suppress_route_advertisement` = ?,`bgpaas_shared` = ?,`bgpaas_session_attributes` = ?,`bgpaas_ipv4_mapped_ipv6_nexthop` = ?,`bgpaas_ip_address` = ?,`autonomous_system` = ?,`key_value_pair` = ?;"
 const deleteBGPAsAServiceQuery = "delete from `bgp_as_a_service` where uuid = ?"
 
 // BGPAsAServiceFields is db columns for BGPAsAService
@@ -475,9 +473,250 @@ func ListBGPAsAService(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPAsAServi
 }
 
 // UpdateBGPAsAService updates a resource
-func UpdateBGPAsAService(tx *sql.Tx, uuid string, model *models.BGPAsAService) error {
-	//TODO(nati) support update
-	return nil
+func UpdateBGPAsAService(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateBGPAsAServiceQuery = "update `bgp_as_a_service` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateBGPAsAServiceQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateBGPAsAServiceQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateBGPAsAServiceQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateBGPAsAServiceQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateBGPAsAServiceQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateBGPAsAServiceQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateBGPAsAServiceQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateBGPAsAServiceQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateBGPAsAServiceQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateBGPAsAServiceQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateBGPAsAServiceQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateBGPAsAServiceQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateBGPAsAServiceQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateBGPAsAServiceQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateBGPAsAServiceQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateBGPAsAServiceQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateBGPAsAServiceQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateBGPAsAServiceQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateBGPAsAServiceQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateBGPAsAServiceQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".BgpaasSuppressRouteAdvertisement", "."); ok {
+		updateBGPAsAServiceQuery += "`bgpaas_suppress_route_advertisement` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".BgpaasShared", "."); ok {
+		updateBGPAsAServiceQuery += "`bgpaas_shared` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".BgpaasSessionAttributes", "."); ok {
+		updateBGPAsAServiceQuery += "`bgpaas_session_attributes` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".BgpaasIpv4MappedIpv6Nexthop", "."); ok {
+		updateBGPAsAServiceQuery += "`bgpaas_ipv4_mapped_ipv6_nexthop` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".BgpaasIPAddress", "."); ok {
+		updateBGPAsAServiceQuery += "`bgpaas_ip_address` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".AutonomousSystem", "."); ok {
+		updateBGPAsAServiceQuery += "`autonomous_system` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateBGPAsAServiceQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateBGPAsAServiceQuery += ","
+	}
+
+	updateBGPAsAServiceQuery =
+		updateBGPAsAServiceQuery[:len(updateBGPAsAServiceQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateBGPAsAServiceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateBGPAsAServiceQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteBGPAsAService deletes a resource

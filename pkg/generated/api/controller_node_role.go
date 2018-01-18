@@ -2,13 +2,12 @@ package api
 
 import (
 	"database/sql"
-	"net/http"
-
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
+	"net/http"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -20,6 +19,10 @@ type ControllerNodeRoleRESTAPI struct {
 
 type ControllerNodeRoleCreateRequest struct {
 	Data *models.ControllerNodeRole `json:"controller-node-role"`
+}
+
+type ControllerNodeRoleUpdateRequest struct {
+	Data map[string]interface{} `json:"controller-node-role"`
 }
 
 //Path returns api path for collections.
@@ -79,7 +82,40 @@ func (api *ControllerNodeRoleRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *ControllerNodeRoleRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &ControllerNodeRoleUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "controller_node_role",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateControllerNodeRole(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "controller_node_role",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"controller-node-role": {
+			"uuid": id,
+			"uri":  "/" + "controller-node-role" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

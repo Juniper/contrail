@@ -1,7 +1,6 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
 	"testing"
 
@@ -31,6 +30,13 @@ func TestDatabaseNode(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("create failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return UpdateDatabaseNode(tx, model.UUID, model)
+	})
+	if err != nil {
+		t.Fatal("update failed", err)
 	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

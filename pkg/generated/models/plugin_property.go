@@ -20,8 +20,8 @@ func (model *PluginProperty) String() string {
 func MakePluginProperty() *PluginProperty {
 	return &PluginProperty{
 		//TODO(nati): Apply default
-		Property: "",
 		Value:    "",
+		Property: "",
 	}
 }
 

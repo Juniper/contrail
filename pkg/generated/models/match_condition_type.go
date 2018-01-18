@@ -6,12 +6,12 @@ import "encoding/json"
 
 // MatchConditionType
 type MatchConditionType struct {
-	Protocol   string       `json:"protocol,omitempty"`
 	SRCPort    *PortType    `json:"src_port,omitempty"`
 	SRCAddress *AddressType `json:"src_address,omitempty"`
 	Ethertype  EtherType    `json:"ethertype,omitempty"`
 	DSTAddress *AddressType `json:"dst_address,omitempty"`
 	DSTPort    *PortType    `json:"dst_port,omitempty"`
+	Protocol   string       `json:"protocol,omitempty"`
 }
 
 // String returns json representation of the object

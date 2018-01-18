@@ -6,19 +6,19 @@ import "encoding/json"
 
 // AppformixNodeRole
 type AppformixNodeRole struct {
-	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
+	ParentType                string         `json:"parent_type,omitempty"`
 	FQName                    []string       `json:"fq_name,omitempty"`
-	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
-	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
+	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
+	ProvisioningProgressStage string         `json:"provisioning_progress_stage,omitempty"`
+	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
+	ProvisioningState         string         `json:"provisioning_state,omitempty"`
 	Perms2                    *PermType2     `json:"perms2,omitempty"`
 	UUID                      string         `json:"uuid,omitempty"`
 	ParentUUID                string         `json:"parent_uuid,omitempty"`
-	ProvisioningProgressStage string         `json:"provisioning_progress_stage,omitempty"`
+	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
 	DisplayName               string         `json:"display_name,omitempty"`
-	ParentType                string         `json:"parent_type,omitempty"`
-	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
 	ProvisioningProgress      int            `json:"provisioning_progress,omitempty"`
-	ProvisioningState         string         `json:"provisioning_state,omitempty"`
+	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
 }
 
 // String returns json representation of the object
@@ -31,19 +31,19 @@ func (model *AppformixNodeRole) String() string {
 func MakeAppformixNodeRole() *AppformixNodeRole {
 	return &AppformixNodeRole{
 		//TODO(nati): Apply default
+		ProvisioningProgressStage: "",
 		ProvisioningStartTime:     "",
-		FQName:                    []string{},
-		IDPerms:                   MakeIdPermsType(),
-		Annotations:               MakeKeyValuePairs(),
+		ProvisioningState:         "",
 		Perms2:                    MakePermType2(),
+		ParentType:                "",
+		FQName:                    []string{},
+		ProvisioningLog:           "",
+		DisplayName:               "",
+		ProvisioningProgress:      0,
+		Annotations:               MakeKeyValuePairs(),
 		UUID:                      "",
 		ParentUUID:                "",
-		ProvisioningProgressStage: "",
-		DisplayName:               "",
-		ParentType:                "",
-		ProvisioningLog:           "",
-		ProvisioningProgress:      0,
-		ProvisioningState:         "",
+		IDPerms:                   MakeIdPermsType(),
 	}
 }
 

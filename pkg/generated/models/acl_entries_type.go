@@ -6,7 +6,7 @@ import "encoding/json"
 
 // AclEntriesType
 type AclEntriesType struct {
-	Dynamic bool           `json:"dynamic,omitempty"`
+	Dynamic bool           `json:"dynamic"`
 	ACLRule []*AclRuleType `json:"acl_rule,omitempty"`
 }
 

@@ -6,8 +6,8 @@ import "encoding/json"
 
 // AlarmOperand2
 type AlarmOperand2 struct {
-	UveAttribute string `json:"uve_attribute,omitempty"`
 	JSONValue    string `json:"json_value,omitempty"`
+	UveAttribute string `json:"uve_attribute,omitempty"`
 }
 
 // String returns json representation of the object
@@ -20,8 +20,8 @@ func (model *AlarmOperand2) String() string {
 func MakeAlarmOperand2() *AlarmOperand2 {
 	return &AlarmOperand2{
 		//TODO(nati): Apply default
-		JSONValue:    "",
 		UveAttribute: "",
+		JSONValue:    "",
 	}
 }
 

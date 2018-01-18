@@ -7,23 +7,30 @@ import "encoding/json"
 // LogicalRouter
 type LogicalRouter struct {
 	UUID                      string           `json:"uuid,omitempty"`
-	VxlanNetworkIdentifier    string           `json:"vxlan_network_identifier,omitempty"`
+	ParentUUID                string           `json:"parent_uuid,omitempty"`
 	IDPerms                   *IdPermsType     `json:"id_perms,omitempty"`
 	DisplayName               string           `json:"display_name,omitempty"`
-	Perms2                    *PermType2       `json:"perms2,omitempty"`
-	FQName                    []string         `json:"fq_name,omitempty"`
-	ConfiguredRouteTargetList *RouteTargetList `json:"configured_route_target_list,omitempty"`
-	Annotations               *KeyValuePairs   `json:"annotations,omitempty"`
-	ParentUUID                string           `json:"parent_uuid,omitempty"`
+	VxlanNetworkIdentifier    string           `json:"vxlan_network_identifier,omitempty"`
 	ParentType                string           `json:"parent_type,omitempty"`
+	FQName                    []string         `json:"fq_name,omitempty"`
+	Annotations               *KeyValuePairs   `json:"annotations,omitempty"`
+	Perms2                    *PermType2       `json:"perms2,omitempty"`
+	ConfiguredRouteTargetList *RouteTargetList `json:"configured_route_target_list,omitempty"`
 
+	VirtualMachineInterfaceRefs []*LogicalRouterVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
+	ServiceInstanceRefs         []*LogicalRouterServiceInstanceRef         `json:"service_instance_refs,omitempty"`
+	RouteTableRefs              []*LogicalRouterRouteTableRef              `json:"route_table_refs,omitempty"`
 	VirtualNetworkRefs          []*LogicalRouterVirtualNetworkRef          `json:"virtual_network_refs,omitempty"`
 	PhysicalRouterRefs          []*LogicalRouterPhysicalRouterRef          `json:"physical_router_refs,omitempty"`
 	BGPVPNRefs                  []*LogicalRouterBGPVPNRef                  `json:"bgpvpn_refs,omitempty"`
 	RouteTargetRefs             []*LogicalRouterRouteTargetRef             `json:"route_target_refs,omitempty"`
-	VirtualMachineInterfaceRefs []*LogicalRouterVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
-	ServiceInstanceRefs         []*LogicalRouterServiceInstanceRef         `json:"service_instance_refs,omitempty"`
-	RouteTableRefs              []*LogicalRouterRouteTableRef              `json:"route_table_refs,omitempty"`
+}
+
+// LogicalRouterServiceInstanceRef references each other
+type LogicalRouterServiceInstanceRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
 }
 
 // LogicalRouterRouteTableRef references each other
@@ -68,13 +75,6 @@ type LogicalRouterVirtualMachineInterfaceRef struct {
 
 }
 
-// LogicalRouterServiceInstanceRef references each other
-type LogicalRouterServiceInstanceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
 // String returns json representation of the object
 func (model *LogicalRouter) String() string {
 	b, _ := json.Marshal(model)
@@ -85,16 +85,16 @@ func (model *LogicalRouter) String() string {
 func MakeLogicalRouter() *LogicalRouter {
 	return &LogicalRouter{
 		//TODO(nati): Apply default
-		DisplayName: "",
-		Perms2:      MakePermType2(),
-		UUID:        "",
 		VxlanNetworkIdentifier: "",
-		IDPerms:                MakeIdPermsType(),
-		ParentUUID:             "",
-		ParentType:             "",
-		FQName:                 []string{},
+		UUID:                      "",
+		ParentUUID:                "",
+		IDPerms:                   MakeIdPermsType(),
+		DisplayName:               "",
 		ConfiguredRouteTargetList: MakeRouteTargetList(),
+		ParentType:                "",
+		FQName:                    []string{},
 		Annotations:               MakeKeyValuePairs(),
+		Perms2:                    MakePermType2(),
 	}
 }
 

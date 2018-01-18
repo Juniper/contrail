@@ -43,14 +43,14 @@ func (model *CustomerAttachment) String() string {
 func MakeCustomerAttachment() *CustomerAttachment {
 	return &CustomerAttachment{
 		//TODO(nati): Apply default
-		Perms2:      MakePermType2(),
-		UUID:        "",
-		ParentUUID:  "",
-		ParentType:  "",
 		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
+		Perms2:      MakePermType2(),
+		UUID:        "",
+		ParentUUID:  "",
+		ParentType:  "",
 	}
 }
 

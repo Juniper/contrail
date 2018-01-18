@@ -6,9 +6,9 @@ import "encoding/json"
 
 // TelemetryStateInfo
 type TelemetryStateInfo struct {
+	ServerPort int                      `json:"server_port,omitempty"`
 	ServerIP   string                   `json:"server_ip,omitempty"`
 	Resource   []*TelemetryResourceInfo `json:"resource,omitempty"`
-	ServerPort int                      `json:"server_port,omitempty"`
 }
 
 // String returns json representation of the object

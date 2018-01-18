@@ -6,15 +6,15 @@ import "encoding/json"
 
 // GlobalQosConfig
 type GlobalQosConfig struct {
-	ParentUUID         string                  `json:"parent_uuid,omitempty"`
-	ParentType         string                  `json:"parent_type,omitempty"`
 	DisplayName        string                  `json:"display_name,omitempty"`
 	Annotations        *KeyValuePairs          `json:"annotations,omitempty"`
-	ControlTrafficDSCP *ControlTrafficDscpType `json:"control_traffic_dscp,omitempty"`
-	FQName             []string                `json:"fq_name,omitempty"`
-	IDPerms            *IdPermsType            `json:"id_perms,omitempty"`
 	Perms2             *PermType2              `json:"perms2,omitempty"`
+	ParentType         string                  `json:"parent_type,omitempty"`
+	ControlTrafficDSCP *ControlTrafficDscpType `json:"control_traffic_dscp,omitempty"`
+	IDPerms            *IdPermsType            `json:"id_perms,omitempty"`
+	FQName             []string                `json:"fq_name,omitempty"`
 	UUID               string                  `json:"uuid,omitempty"`
+	ParentUUID         string                  `json:"parent_uuid,omitempty"`
 
 	ForwardingClasss []*ForwardingClass `json:"forwarding_classs,omitempty"`
 	QosConfigs       []*QosConfig       `json:"qos_configs,omitempty"`
@@ -31,15 +31,15 @@ func (model *GlobalQosConfig) String() string {
 func MakeGlobalQosConfig() *GlobalQosConfig {
 	return &GlobalQosConfig{
 		//TODO(nati): Apply default
-		ParentType:         "",
-		DisplayName:        "",
-		Annotations:        MakeKeyValuePairs(),
+		UUID:               "",
 		ParentUUID:         "",
 		FQName:             []string{},
-		IDPerms:            MakeIdPermsType(),
-		Perms2:             MakePermType2(),
-		UUID:               "",
 		ControlTrafficDSCP: MakeControlTrafficDscpType(),
+		IDPerms:            MakeIdPermsType(),
+		DisplayName:        "",
+		Annotations:        MakeKeyValuePairs(),
+		Perms2:             MakePermType2(),
+		ParentType:         "",
 	}
 }
 

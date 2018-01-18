@@ -7,17 +7,17 @@ import "encoding/json"
 // ServiceTemplateType
 type ServiceTemplateType struct {
 	InterfaceType             []*ServiceTemplateInterfaceType `json:"interface_type,omitempty"`
-	ServiceMode               ServiceModeType                 `json:"service_mode,omitempty"`
-	Flavor                    string                          `json:"flavor,omitempty"`
-	AvailabilityZoneEnable    bool                            `json:"availability_zone_enable,omitempty"`
-	InstanceData              string                          `json:"instance_data,omitempty"`
-	OrderedInterfaces         bool                            `json:"ordered_interfaces,omitempty"`
-	ServiceVirtualizationType ServiceVirtualizationType       `json:"service_virtualization_type,omitempty"`
 	ImageName                 string                          `json:"image_name,omitempty"`
+	ServiceMode               ServiceModeType                 `json:"service_mode,omitempty"`
 	Version                   int                             `json:"version,omitempty"`
 	ServiceType               ServiceType                     `json:"service_type,omitempty"`
-	ServiceScaling            bool                            `json:"service_scaling,omitempty"`
+	Flavor                    string                          `json:"flavor,omitempty"`
+	AvailabilityZoneEnable    bool                            `json:"availability_zone_enable"`
+	InstanceData              string                          `json:"instance_data,omitempty"`
+	ServiceScaling            bool                            `json:"service_scaling"`
 	VrouterInstanceType       VRouterInstanceType             `json:"vrouter_instance_type,omitempty"`
+	OrderedInterfaces         bool                            `json:"ordered_interfaces"`
+	ServiceVirtualizationType ServiceVirtualizationType       `json:"service_virtualization_type,omitempty"`
 }
 
 // String returns json representation of the object
@@ -30,19 +30,19 @@ func (model *ServiceTemplateType) String() string {
 func MakeServiceTemplateType() *ServiceTemplateType {
 	return &ServiceTemplateType{
 		//TODO(nati): Apply default
-		ServiceMode: MakeServiceModeType(),
-		Flavor:      "",
+		ServiceMode:            MakeServiceModeType(),
+		Version:                0,
+		ServiceType:            MakeServiceType(),
+		Flavor:                 "",
+		AvailabilityZoneEnable: false,
+		InstanceData:           "",
 
 		InterfaceType: MakeServiceTemplateInterfaceTypeSlice(),
 
-		InstanceData:              "",
+		ImageName:                 "",
+		ServiceScaling:            false,
 		OrderedInterfaces:         false,
 		ServiceVirtualizationType: MakeServiceVirtualizationType(),
-		ImageName:                 "",
-		Version:                   0,
-		ServiceType:               MakeServiceType(),
-		ServiceScaling:            false,
-		AvailabilityZoneEnable:    false,
 		VrouterInstanceType:       MakeVRouterInstanceType(),
 	}
 }

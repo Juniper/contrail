@@ -7,15 +7,15 @@ import "encoding/json"
 // VirtualIpType
 type VirtualIpType struct {
 	Status                string                   `json:"status,omitempty"`
-	Protocol              LoadbalancerProtocolType `json:"protocol,omitempty"`
-	AdminState            bool                     `json:"admin_state,omitempty"`
-	ProtocolPort          int                      `json:"protocol_port,omitempty"`
-	PersistenceType       SessionPersistenceType   `json:"persistence_type,omitempty"`
-	Address               IpAddressType            `json:"address,omitempty"`
-	StatusDescription     string                   `json:"status_description,omitempty"`
-	SubnetID              UuidStringType           `json:"subnet_id,omitempty"`
 	PersistenceCookieName string                   `json:"persistence_cookie_name,omitempty"`
+	PersistenceType       SessionPersistenceType   `json:"persistence_type,omitempty"`
+	ProtocolPort          int                      `json:"protocol_port,omitempty"`
+	StatusDescription     string                   `json:"status_description,omitempty"`
+	Protocol              LoadbalancerProtocolType `json:"protocol,omitempty"`
+	SubnetID              UuidStringType           `json:"subnet_id,omitempty"`
 	ConnectionLimit       int                      `json:"connection_limit,omitempty"`
+	AdminState            bool                     `json:"admin_state"`
+	Address               IpAddressType            `json:"address,omitempty"`
 }
 
 // String returns json representation of the object
@@ -28,16 +28,16 @@ func (model *VirtualIpType) String() string {
 func MakeVirtualIpType() *VirtualIpType {
 	return &VirtualIpType{
 		//TODO(nati): Apply default
+		ProtocolPort:          0,
+		Status:                "",
+		PersistenceCookieName: "",
 		PersistenceType:       MakeSessionPersistenceType(),
+		ConnectionLimit:       0,
+		AdminState:            false,
 		Address:               MakeIpAddressType(),
 		StatusDescription:     "",
-		SubnetID:              MakeUuidStringType(),
-		PersistenceCookieName: "",
-		ConnectionLimit:       0,
-		Status:                "",
 		Protocol:              MakeLoadbalancerProtocolType(),
-		AdminState:            false,
-		ProtocolPort:          0,
+		SubnetID:              MakeUuidStringType(),
 	}
 }
 

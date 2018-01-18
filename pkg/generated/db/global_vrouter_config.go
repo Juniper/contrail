@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"encoding/json"
-
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/pkg/errors"
@@ -12,7 +11,6 @@ import (
 )
 
 const insertGlobalVrouterConfigQuery = "insert into `global_vrouter_config` (`vxlan_network_identifier_mode`,`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`linklocal_service_entry`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`forwarding_mode`,`flow_export_rate`,`flow_aging_timeout`,`encapsulation`,`enable_security_logging`,`source_port`,`source_ip`,`ip_protocol`,`hashing_configured`,`destination_port`,`destination_ip`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateGlobalVrouterConfigQuery = "update `global_vrouter_config` set `vxlan_network_identifier_mode` = ?,`uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`linklocal_service_entry` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`forwarding_mode` = ?,`flow_export_rate` = ?,`flow_aging_timeout` = ?,`encapsulation` = ?,`enable_security_logging` = ?,`source_port` = ?,`source_ip` = ?,`ip_protocol` = ?,`hashing_configured` = ?,`destination_port` = ?,`destination_ip` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteGlobalVrouterConfigQuery = "delete from `global_vrouter_config` where uuid = ?"
 
 // GlobalVrouterConfigFields is db columns for GlobalVrouterConfig
@@ -680,9 +678,306 @@ func ListGlobalVrouterConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Globa
 }
 
 // UpdateGlobalVrouterConfig updates a resource
-func UpdateGlobalVrouterConfig(tx *sql.Tx, uuid string, model *models.GlobalVrouterConfig) error {
-	//TODO(nati) support update
-	return nil
+func UpdateGlobalVrouterConfig(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateGlobalVrouterConfigQuery = "update `global_vrouter_config` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".VxlanNetworkIdentifierMode", "."); ok {
+		updateGlobalVrouterConfigQuery += "`vxlan_network_identifier_mode` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateGlobalVrouterConfigQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateGlobalVrouterConfigQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateGlobalVrouterConfigQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateGlobalVrouterConfigQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateGlobalVrouterConfigQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateGlobalVrouterConfigQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateGlobalVrouterConfigQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LinklocalServices.LinklocalServiceEntry", "."); ok {
+		updateGlobalVrouterConfigQuery += "`linklocal_service_entry` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateGlobalVrouterConfigQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateGlobalVrouterConfigQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateGlobalVrouterConfigQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateGlobalVrouterConfigQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateGlobalVrouterConfigQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateGlobalVrouterConfigQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateGlobalVrouterConfigQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateGlobalVrouterConfigQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateGlobalVrouterConfigQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateGlobalVrouterConfigQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateGlobalVrouterConfigQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateGlobalVrouterConfigQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ForwardingMode", "."); ok {
+		updateGlobalVrouterConfigQuery += "`forwarding_mode` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FlowExportRate", "."); ok {
+		updateGlobalVrouterConfigQuery += "`flow_export_rate` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FlowAgingTimeoutList.FlowAgingTimeout", "."); ok {
+		updateGlobalVrouterConfigQuery += "`flow_aging_timeout` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".EncapsulationPriorities.Encapsulation", "."); ok {
+		updateGlobalVrouterConfigQuery += "`encapsulation` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".EnableSecurityLogging", "."); ok {
+		updateGlobalVrouterConfigQuery += "`enable_security_logging` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".EcmpHashingIncludeFields.SourcePort", "."); ok {
+		updateGlobalVrouterConfigQuery += "`source_port` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".EcmpHashingIncludeFields.SourceIP", "."); ok {
+		updateGlobalVrouterConfigQuery += "`source_ip` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".EcmpHashingIncludeFields.IPProtocol", "."); ok {
+		updateGlobalVrouterConfigQuery += "`ip_protocol` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".EcmpHashingIncludeFields.HashingConfigured", "."); ok {
+		updateGlobalVrouterConfigQuery += "`hashing_configured` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".EcmpHashingIncludeFields.DestinationPort", "."); ok {
+		updateGlobalVrouterConfigQuery += "`destination_port` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".EcmpHashingIncludeFields.DestinationIP", "."); ok {
+		updateGlobalVrouterConfigQuery += "`destination_ip` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateGlobalVrouterConfigQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateGlobalVrouterConfigQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateGlobalVrouterConfigQuery += ","
+	}
+
+	updateGlobalVrouterConfigQuery =
+		updateGlobalVrouterConfigQuery[:len(updateGlobalVrouterConfigQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateGlobalVrouterConfigQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateGlobalVrouterConfigQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteGlobalVrouterConfig deletes a resource

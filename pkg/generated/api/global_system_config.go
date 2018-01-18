@@ -2,13 +2,12 @@ package api
 
 import (
 	"database/sql"
-	"net/http"
-
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
+	"net/http"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -20,6 +19,10 @@ type GlobalSystemConfigRESTAPI struct {
 
 type GlobalSystemConfigCreateRequest struct {
 	Data *models.GlobalSystemConfig `json:"global-system-config"`
+}
+
+type GlobalSystemConfigUpdateRequest struct {
+	Data map[string]interface{} `json:"global-system-config"`
 }
 
 //Path returns api path for collections.
@@ -79,7 +82,40 @@ func (api *GlobalSystemConfigRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *GlobalSystemConfigRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &GlobalSystemConfigUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "global_system_config",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateGlobalSystemConfig(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "global_system_config",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"global-system-config": {
+			"uuid": id,
+			"uri":  "/" + "global-system-config" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

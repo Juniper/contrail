@@ -2,13 +2,12 @@ package api
 
 import (
 	"database/sql"
-	"net/http"
-
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
+	"net/http"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -20,6 +19,10 @@ type ProjectRESTAPI struct {
 
 type ProjectCreateRequest struct {
 	Data *models.Project `json:"project"`
+}
+
+type ProjectUpdateRequest struct {
+	Data map[string]interface{} `json:"project"`
 }
 
 //Path returns api path for collections.
@@ -79,7 +82,40 @@ func (api *ProjectRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *ProjectRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &ProjectUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "project",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateProject(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "project",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"project": {
+			"uuid": id,
+			"uri":  "/" + "project" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

@@ -35,7 +35,6 @@ func (model *ProviderAttachment) String() string {
 func MakeProviderAttachment() *ProviderAttachment {
 	return &ProviderAttachment{
 		//TODO(nati): Apply default
-		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
@@ -43,6 +42,7 @@ func MakeProviderAttachment() *ProviderAttachment {
 		UUID:        "",
 		ParentUUID:  "",
 		ParentType:  "",
+		FQName:      []string{},
 	}
 }
 

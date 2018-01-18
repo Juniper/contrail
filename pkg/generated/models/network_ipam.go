@@ -6,17 +6,17 @@ import "encoding/json"
 
 // NetworkIpam
 type NetworkIpam struct {
-	ParentType       string           `json:"parent_type,omitempty"`
-	IDPerms          *IdPermsType     `json:"id_perms,omitempty"`
-	DisplayName      string           `json:"display_name,omitempty"`
 	Perms2           *PermType2       `json:"perms2,omitempty"`
-	NetworkIpamMGMT  *IpamType        `json:"network_ipam_mgmt,omitempty"`
-	IpamSubnets      *IpamSubnets     `json:"ipam_subnets,omitempty"`
-	IpamSubnetMethod SubnetMethodType `json:"ipam_subnet_method,omitempty"`
-	ParentUUID       string           `json:"parent_uuid,omitempty"`
 	UUID             string           `json:"uuid,omitempty"`
-	FQName           []string         `json:"fq_name,omitempty"`
+	IpamSubnets      *IpamSubnets     `json:"ipam_subnets,omitempty"`
+	ParentType       string           `json:"parent_type,omitempty"`
+	DisplayName      string           `json:"display_name,omitempty"`
+	IDPerms          *IdPermsType     `json:"id_perms,omitempty"`
 	Annotations      *KeyValuePairs   `json:"annotations,omitempty"`
+	ParentUUID       string           `json:"parent_uuid,omitempty"`
+	NetworkIpamMGMT  *IpamType        `json:"network_ipam_mgmt,omitempty"`
+	IpamSubnetMethod SubnetMethodType `json:"ipam_subnet_method,omitempty"`
+	FQName           []string         `json:"fq_name,omitempty"`
 
 	VirtualDNSRefs []*NetworkIpamVirtualDNSRef `json:"virtual_DNS_refs,omitempty"`
 }
@@ -38,17 +38,17 @@ func (model *NetworkIpam) String() string {
 func MakeNetworkIpam() *NetworkIpam {
 	return &NetworkIpam{
 		//TODO(nati): Apply default
-		UUID:             "",
-		FQName:           []string{},
-		Annotations:      MakeKeyValuePairs(),
-		ParentUUID:       "",
+		IpamSubnets:      MakeIpamSubnets(),
 		ParentType:       "",
-		IDPerms:          MakeIdPermsType(),
 		DisplayName:      "",
 		Perms2:           MakePermType2(),
+		UUID:             "",
+		ParentUUID:       "",
 		NetworkIpamMGMT:  MakeIpamType(),
-		IpamSubnets:      MakeIpamSubnets(),
 		IpamSubnetMethod: MakeSubnetMethodType(),
+		FQName:           []string{},
+		IDPerms:          MakeIdPermsType(),
+		Annotations:      MakeKeyValuePairs(),
 	}
 }
 

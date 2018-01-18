@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"encoding/json"
-
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/pkg/errors"
@@ -12,7 +11,6 @@ import (
 )
 
 const insertServiceHealthCheckQuery = "insert into `service_health_check` (`uuid`,`url_path`,`timeoutUsecs`,`timeout`,`monitor_type`,`max_retries`,`http_method`,`health_check_type`,`expected_codes`,`enabled`,`delayUsecs`,`delay`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateServiceHealthCheckQuery = "update `service_health_check` set `uuid` = ?,`url_path` = ?,`timeoutUsecs` = ?,`timeout` = ?,`monitor_type` = ?,`max_retries` = ?,`http_method` = ?,`health_check_type` = ?,`expected_codes` = ?,`enabled` = ?,`delayUsecs` = ?,`delay` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteServiceHealthCheckQuery = "delete from `service_health_check` where uuid = ?"
 
 // ServiceHealthCheckFields is db columns for ServiceHealthCheck
@@ -492,9 +490,290 @@ func ListServiceHealthCheck(tx *sql.Tx, spec *common.ListSpec) ([]*models.Servic
 }
 
 // UpdateServiceHealthCheck updates a resource
-func UpdateServiceHealthCheck(tx *sql.Tx, uuid string, model *models.ServiceHealthCheck) error {
-	//TODO(nati) support update
-	return nil
+func UpdateServiceHealthCheck(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateServiceHealthCheckQuery = "update `service_health_check` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateServiceHealthCheckQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ServiceHealthCheckProperties.URLPath", "."); ok {
+		updateServiceHealthCheckQuery += "`url_path` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ServiceHealthCheckProperties.TimeoutUsecs", "."); ok {
+		updateServiceHealthCheckQuery += "`timeoutUsecs` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ServiceHealthCheckProperties.Timeout", "."); ok {
+		updateServiceHealthCheckQuery += "`timeout` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ServiceHealthCheckProperties.MonitorType", "."); ok {
+		updateServiceHealthCheckQuery += "`monitor_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ServiceHealthCheckProperties.MaxRetries", "."); ok {
+		updateServiceHealthCheckQuery += "`max_retries` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ServiceHealthCheckProperties.HTTPMethod", "."); ok {
+		updateServiceHealthCheckQuery += "`http_method` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ServiceHealthCheckProperties.HealthCheckType", "."); ok {
+		updateServiceHealthCheckQuery += "`health_check_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ServiceHealthCheckProperties.ExpectedCodes", "."); ok {
+		updateServiceHealthCheckQuery += "`expected_codes` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ServiceHealthCheckProperties.Enabled", "."); ok {
+		updateServiceHealthCheckQuery += "`enabled` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ServiceHealthCheckProperties.DelayUsecs", "."); ok {
+		updateServiceHealthCheckQuery += "`delayUsecs` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ServiceHealthCheckProperties.Delay", "."); ok {
+		updateServiceHealthCheckQuery += "`delay` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateServiceHealthCheckQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateServiceHealthCheckQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateServiceHealthCheckQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateServiceHealthCheckQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateServiceHealthCheckQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateServiceHealthCheckQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateServiceHealthCheckQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateServiceHealthCheckQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateServiceHealthCheckQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateServiceHealthCheckQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateServiceHealthCheckQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateServiceHealthCheckQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateServiceHealthCheckQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateServiceHealthCheckQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateServiceHealthCheckQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateServiceHealthCheckQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateServiceHealthCheckQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateServiceHealthCheckQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateServiceHealthCheckQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateServiceHealthCheckQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateServiceHealthCheckQuery += ","
+	}
+
+	updateServiceHealthCheckQuery =
+		updateServiceHealthCheckQuery[:len(updateServiceHealthCheckQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateServiceHealthCheckQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateServiceHealthCheckQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteServiceHealthCheck deletes a resource

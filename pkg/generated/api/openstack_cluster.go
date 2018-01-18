@@ -2,13 +2,12 @@ package api
 
 import (
 	"database/sql"
-	"net/http"
-
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
+	"net/http"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -20,6 +19,10 @@ type OpenstackClusterRESTAPI struct {
 
 type OpenstackClusterCreateRequest struct {
 	Data *models.OpenstackCluster `json:"openstack-cluster"`
+}
+
+type OpenstackClusterUpdateRequest struct {
+	Data map[string]interface{} `json:"openstack-cluster"`
 }
 
 //Path returns api path for collections.
@@ -79,7 +82,40 @@ func (api *OpenstackClusterRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *OpenstackClusterRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &OpenstackClusterUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "openstack_cluster",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateOpenstackCluster(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "openstack_cluster",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"openstack-cluster": {
+			"uuid": id,
+			"uri":  "/" + "openstack-cluster" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

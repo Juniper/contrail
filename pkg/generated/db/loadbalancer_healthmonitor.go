@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"encoding/json"
-
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/pkg/errors"
@@ -12,7 +11,6 @@ import (
 )
 
 const insertLoadbalancerHealthmonitorQuery = "insert into `loadbalancer_healthmonitor` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`url_path`,`timeout`,`monitor_type`,`max_retries`,`http_method`,`expected_codes`,`delay`,`admin_state`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateLoadbalancerHealthmonitorQuery = "update `loadbalancer_healthmonitor` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`url_path` = ?,`timeout` = ?,`monitor_type` = ?,`max_retries` = ?,`http_method` = ?,`expected_codes` = ?,`delay` = ?,`admin_state` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteLoadbalancerHealthmonitorQuery = "delete from `loadbalancer_healthmonitor` where uuid = ?"
 
 // LoadbalancerHealthmonitorFields is db columns for LoadbalancerHealthmonitor
@@ -414,9 +412,266 @@ func ListLoadbalancerHealthmonitor(tx *sql.Tx, spec *common.ListSpec) ([]*models
 }
 
 // UpdateLoadbalancerHealthmonitor updates a resource
-func UpdateLoadbalancerHealthmonitor(tx *sql.Tx, uuid string, model *models.LoadbalancerHealthmonitor) error {
-	//TODO(nati) support update
-	return nil
+func UpdateLoadbalancerHealthmonitor(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateLoadbalancerHealthmonitorQuery = "update `loadbalancer_healthmonitor` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerHealthmonitorProperties.URLPath", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`url_path` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerHealthmonitorProperties.Timeout", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`timeout` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerHealthmonitorProperties.MonitorType", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`monitor_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerHealthmonitorProperties.MaxRetries", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`max_retries` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerHealthmonitorProperties.HTTPMethod", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`http_method` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerHealthmonitorProperties.ExpectedCodes", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`expected_codes` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerHealthmonitorProperties.Delay", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`delay` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".LoadbalancerHealthmonitorProperties.AdminState", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`admin_state` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateLoadbalancerHealthmonitorQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateLoadbalancerHealthmonitorQuery += ","
+	}
+
+	updateLoadbalancerHealthmonitorQuery =
+		updateLoadbalancerHealthmonitorQuery[:len(updateLoadbalancerHealthmonitorQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateLoadbalancerHealthmonitorQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateLoadbalancerHealthmonitorQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteLoadbalancerHealthmonitor deletes a resource

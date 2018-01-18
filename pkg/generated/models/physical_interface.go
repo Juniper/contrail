@@ -6,15 +6,15 @@ import "encoding/json"
 
 // PhysicalInterface
 type PhysicalInterface struct {
-	DisplayName               string         `json:"display_name,omitempty"`
-	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
+	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
 	UUID                      string         `json:"uuid,omitempty"`
 	ParentUUID                string         `json:"parent_uuid,omitempty"`
 	ParentType                string         `json:"parent_type,omitempty"`
-	FQName                    []string       `json:"fq_name,omitempty"`
-	Perms2                    *PermType2     `json:"perms2,omitempty"`
 	EthernetSegmentIdentifier string         `json:"ethernet_segment_identifier,omitempty"`
-	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName               string         `json:"display_name,omitempty"`
+	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2                    *PermType2     `json:"perms2,omitempty"`
+	FQName                    []string       `json:"fq_name,omitempty"`
 
 	PhysicalInterfaceRefs []*PhysicalInterfacePhysicalInterfaceRef `json:"physical_interface_refs,omitempty"`
 
@@ -39,14 +39,14 @@ func MakePhysicalInterface() *PhysicalInterface {
 	return &PhysicalInterface{
 		//TODO(nati): Apply default
 		EthernetSegmentIdentifier: "",
-		IDPerms:                   MakeIdPermsType(),
-		Perms2:                    MakePermType2(),
-		ParentUUID:                "",
-		ParentType:                "",
-		FQName:                    []string{},
 		DisplayName:               "",
 		Annotations:               MakeKeyValuePairs(),
+		Perms2:                    MakePermType2(),
+		FQName:                    []string{},
+		IDPerms:                   MakeIdPermsType(),
 		UUID:                      "",
+		ParentUUID:                "",
+		ParentType:                "",
 	}
 }
 

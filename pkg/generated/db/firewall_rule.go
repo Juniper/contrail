@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"encoding/json"
-
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/pkg/errors"
@@ -12,7 +11,6 @@ import (
 )
 
 const insertFirewallRuleQuery = "insert into `firewall_rule` (`uuid`,`start_port`,`end_port`,`protocol_id`,`protocol`,`dst_ports_start_port`,`dst_ports_end_port`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`tag_list`,`tag_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`virtual_network`,`tags`,`tag_ids`,`ip_prefix_len`,`ip_prefix`,`any`,`address_group`,`endpoint_1_virtual_network`,`endpoint_1_tags`,`endpoint_1_tag_ids`,`subnet_ip_prefix_len`,`subnet_ip_prefix`,`endpoint_1_any`,`endpoint_1_address_group`,`display_name`,`direction`,`key_value_pair`,`simple_action`,`qos_action`,`udp_port`,`vtep_dst_mac_address`,`vtep_dst_ip_address`,`vni`,`routing_instance`,`nic_assisted_mirroring_vlan`,`nic_assisted_mirroring`,`nh_mode`,`juniper_header`,`encapsulation`,`analyzer_name`,`analyzer_mac_address`,`analyzer_ip_address`,`log`,`gateway_name`,`assign_routing_instance`,`apply_service`,`alert`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateFirewallRuleQuery = "update `firewall_rule` set `uuid` = ?,`start_port` = ?,`end_port` = ?,`protocol_id` = ?,`protocol` = ?,`dst_ports_start_port` = ?,`dst_ports_end_port` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`tag_list` = ?,`tag_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`virtual_network` = ?,`tags` = ?,`tag_ids` = ?,`ip_prefix_len` = ?,`ip_prefix` = ?,`any` = ?,`address_group` = ?,`endpoint_1_virtual_network` = ?,`endpoint_1_tags` = ?,`endpoint_1_tag_ids` = ?,`subnet_ip_prefix_len` = ?,`subnet_ip_prefix` = ?,`endpoint_1_any` = ?,`endpoint_1_address_group` = ?,`display_name` = ?,`direction` = ?,`key_value_pair` = ?,`simple_action` = ?,`qos_action` = ?,`udp_port` = ?,`vtep_dst_mac_address` = ?,`vtep_dst_ip_address` = ?,`vni` = ?,`routing_instance` = ?,`nic_assisted_mirroring_vlan` = ?,`nic_assisted_mirroring` = ?,`nh_mode` = ?,`juniper_header` = ?,`encapsulation` = ?,`analyzer_name` = ?,`analyzer_mac_address` = ?,`analyzer_ip_address` = ?,`log` = ?,`gateway_name` = ?,`assign_routing_instance` = ?,`apply_service` = ?,`alert` = ?;"
 const deleteFirewallRuleQuery = "delete from `firewall_rule` where uuid = ?"
 
 // FirewallRuleFields is db columns for FirewallRule
@@ -206,32 +204,6 @@ func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtServiceGroupRef, err := tx.Prepare(insertFirewallRuleServiceGroupQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceGroupRefs create statement failed")
-	}
-	defer stmtServiceGroupRef.Close()
-	for _, ref := range model.ServiceGroupRefs {
-
-		_, err = stmtServiceGroupRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceGroupRefs create failed")
-		}
-	}
-
-	stmtAddressGroupRef, err := tx.Prepare(insertFirewallRuleAddressGroupQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing AddressGroupRefs create statement failed")
-	}
-	defer stmtAddressGroupRef.Close()
-	for _, ref := range model.AddressGroupRefs {
-
-		_, err = stmtAddressGroupRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "AddressGroupRefs create failed")
-		}
-	}
-
 	stmtSecurityLoggingObjectRef, err := tx.Prepare(insertFirewallRuleSecurityLoggingObjectQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing SecurityLoggingObjectRefs create statement failed")
@@ -255,6 +227,32 @@ func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
 		_, err = stmtVirtualNetworkRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualNetworkRefs create failed")
+		}
+	}
+
+	stmtServiceGroupRef, err := tx.Prepare(insertFirewallRuleServiceGroupQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceGroupRefs create statement failed")
+	}
+	defer stmtServiceGroupRef.Close()
+	for _, ref := range model.ServiceGroupRefs {
+
+		_, err = stmtServiceGroupRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceGroupRefs create failed")
+		}
+	}
+
+	stmtAddressGroupRef, err := tx.Prepare(insertFirewallRuleAddressGroupQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing AddressGroupRefs create statement failed")
+	}
+	defer stmtAddressGroupRef.Close()
+	for _, ref := range model.AddressGroupRefs {
+
+		_, err = stmtAddressGroupRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "AddressGroupRefs create failed")
 		}
 	}
 
@@ -772,6 +770,26 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	}
 
+	if value, ok := values["ref_security_logging_object"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.FirewallRuleSecurityLoggingObjectRef{}
+			referenceModel.UUID = uuid
+			m.SecurityLoggingObjectRefs = append(m.SecurityLoggingObjectRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_virtual_network"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -828,26 +846,6 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 			referenceModel := &models.FirewallRuleAddressGroupRef{}
 			referenceModel.UUID = uuid
 			m.AddressGroupRefs = append(m.AddressGroupRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_security_logging_object"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.FirewallRuleSecurityLoggingObjectRef{}
-			referenceModel.UUID = uuid
-			m.SecurityLoggingObjectRefs = append(m.SecurityLoggingObjectRefs, referenceModel)
 
 		}
 	}
@@ -913,9 +911,546 @@ func ListFirewallRule(tx *sql.Tx, spec *common.ListSpec) ([]*models.FirewallRule
 }
 
 // UpdateFirewallRule updates a resource
-func UpdateFirewallRule(tx *sql.Tx, uuid string, model *models.FirewallRule) error {
-	//TODO(nati) support update
-	return nil
+func UpdateFirewallRule(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateFirewallRuleQuery = "update `firewall_rule` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateFirewallRuleQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Service.SRCPorts.StartPort", "."); ok {
+		updateFirewallRuleQuery += "`start_port` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Service.SRCPorts.EndPort", "."); ok {
+		updateFirewallRuleQuery += "`end_port` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Service.ProtocolID", "."); ok {
+		updateFirewallRuleQuery += "`protocol_id` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Service.Protocol", "."); ok {
+		updateFirewallRuleQuery += "`protocol` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Service.DSTPorts.StartPort", "."); ok {
+		updateFirewallRuleQuery += "`dst_ports_start_port` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Service.DSTPorts.EndPort", "."); ok {
+		updateFirewallRuleQuery += "`dst_ports_end_port` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateFirewallRuleQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateFirewallRuleQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateFirewallRuleQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateFirewallRuleQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateFirewallRuleQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateFirewallRuleQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MatchTags.TagList", "."); ok {
+		updateFirewallRuleQuery += "`tag_list` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MatchTagTypes.TagType", "."); ok {
+		updateFirewallRuleQuery += "`tag_type` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateFirewallRuleQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateFirewallRuleQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateFirewallRuleQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateFirewallRuleQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateFirewallRuleQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateFirewallRuleQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateFirewallRuleQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateFirewallRuleQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateFirewallRuleQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateFirewallRuleQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateFirewallRuleQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateFirewallRuleQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Endpoint2.VirtualNetwork", "."); ok {
+		updateFirewallRuleQuery += "`virtual_network` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Endpoint2.Tags", "."); ok {
+		updateFirewallRuleQuery += "`tags` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Endpoint2.TagIds", "."); ok {
+		updateFirewallRuleQuery += "`tag_ids` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Endpoint2.Subnet.IPPrefixLen", "."); ok {
+		updateFirewallRuleQuery += "`ip_prefix_len` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Endpoint2.Subnet.IPPrefix", "."); ok {
+		updateFirewallRuleQuery += "`ip_prefix` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Endpoint2.Any", "."); ok {
+		updateFirewallRuleQuery += "`any` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Endpoint2.AddressGroup", "."); ok {
+		updateFirewallRuleQuery += "`address_group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Endpoint1.VirtualNetwork", "."); ok {
+		updateFirewallRuleQuery += "`endpoint_1_virtual_network` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Endpoint1.Tags", "."); ok {
+		updateFirewallRuleQuery += "`endpoint_1_tags` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Endpoint1.TagIds", "."); ok {
+		updateFirewallRuleQuery += "`endpoint_1_tag_ids` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Endpoint1.Subnet.IPPrefixLen", "."); ok {
+		updateFirewallRuleQuery += "`subnet_ip_prefix_len` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Endpoint1.Subnet.IPPrefix", "."); ok {
+		updateFirewallRuleQuery += "`subnet_ip_prefix` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Endpoint1.Any", "."); ok {
+		updateFirewallRuleQuery += "`endpoint_1_any` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Endpoint1.AddressGroup", "."); ok {
+		updateFirewallRuleQuery += "`endpoint_1_address_group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateFirewallRuleQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Direction", "."); ok {
+		updateFirewallRuleQuery += "`direction` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateFirewallRuleQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.SimpleAction", "."); ok {
+		updateFirewallRuleQuery += "`simple_action` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.QosAction", "."); ok {
+		updateFirewallRuleQuery += "`qos_action` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.MirrorTo.UDPPort", "."); ok {
+		updateFirewallRuleQuery += "`udp_port` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.MirrorTo.StaticNHHeader.VtepDSTMacAddress", "."); ok {
+		updateFirewallRuleQuery += "`vtep_dst_mac_address` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.MirrorTo.StaticNHHeader.VtepDSTIPAddress", "."); ok {
+		updateFirewallRuleQuery += "`vtep_dst_ip_address` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.MirrorTo.StaticNHHeader.Vni", "."); ok {
+		updateFirewallRuleQuery += "`vni` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.MirrorTo.RoutingInstance", "."); ok {
+		updateFirewallRuleQuery += "`routing_instance` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.MirrorTo.NicAssistedMirroringVlan", "."); ok {
+		updateFirewallRuleQuery += "`nic_assisted_mirroring_vlan` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.MirrorTo.NicAssistedMirroring", "."); ok {
+		updateFirewallRuleQuery += "`nic_assisted_mirroring` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.MirrorTo.NHMode", "."); ok {
+		updateFirewallRuleQuery += "`nh_mode` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.MirrorTo.JuniperHeader", "."); ok {
+		updateFirewallRuleQuery += "`juniper_header` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.MirrorTo.Encapsulation", "."); ok {
+		updateFirewallRuleQuery += "`encapsulation` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.MirrorTo.AnalyzerName", "."); ok {
+		updateFirewallRuleQuery += "`analyzer_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.MirrorTo.AnalyzerMacAddress", "."); ok {
+		updateFirewallRuleQuery += "`analyzer_mac_address` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.MirrorTo.AnalyzerIPAddress", "."); ok {
+		updateFirewallRuleQuery += "`analyzer_ip_address` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.Log", "."); ok {
+		updateFirewallRuleQuery += "`log` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.GatewayName", "."); ok {
+		updateFirewallRuleQuery += "`gateway_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.AssignRoutingInstance", "."); ok {
+		updateFirewallRuleQuery += "`assign_routing_instance` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.ApplyService", "."); ok {
+		updateFirewallRuleQuery += "`apply_service` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ActionList.Alert", "."); ok {
+		updateFirewallRuleQuery += "`alert` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateFirewallRuleQuery += ","
+	}
+
+	updateFirewallRuleQuery =
+		updateFirewallRuleQuery[:len(updateFirewallRuleQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateFirewallRuleQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateFirewallRuleQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteFirewallRule deletes a resource

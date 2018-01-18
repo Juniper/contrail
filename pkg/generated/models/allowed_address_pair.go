@@ -6,9 +6,9 @@ import "encoding/json"
 
 // AllowedAddressPair
 type AllowedAddressPair struct {
+	AddressMode AddressMode `json:"address_mode,omitempty"`
 	IP          *SubnetType `json:"ip,omitempty"`
 	Mac         string      `json:"mac,omitempty"`
-	AddressMode AddressMode `json:"address_mode,omitempty"`
 }
 
 // String returns json representation of the object
@@ -21,9 +21,9 @@ func (model *AllowedAddressPair) String() string {
 func MakeAllowedAddressPair() *AllowedAddressPair {
 	return &AllowedAddressPair{
 		//TODO(nati): Apply default
-		IP:          MakeSubnetType(),
 		Mac:         "",
 		AddressMode: MakeAddressMode(),
+		IP:          MakeSubnetType(),
 	}
 }
 
