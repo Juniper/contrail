@@ -22,6 +22,10 @@ type ConfigRootCreateRequest struct {
 	Data *models.ConfigRoot `json:"config-root"`
 }
 
+type ConfigRootUpdateRequest struct {
+	Data map[string]interface{} `json:"config-root"`
+}
+
 //Path returns api path for collections.
 func (api *ConfigRootRESTAPI) Path() string {
 	return "/config-roots"
@@ -79,7 +83,40 @@ func (api *ConfigRootRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *ConfigRootRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &ConfigRootUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "config_root",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateConfigRoot(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "config_root",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"config-root": {
+			"uuid": id,
+			"uri":  "/" + "config-root" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

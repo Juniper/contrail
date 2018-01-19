@@ -22,6 +22,10 @@ type KubernetesClusterCreateRequest struct {
 	Data *models.KubernetesCluster `json:"kubernetes-cluster"`
 }
 
+type KubernetesClusterUpdateRequest struct {
+	Data map[string]interface{} `json:"kubernetes-cluster"`
+}
+
 //Path returns api path for collections.
 func (api *KubernetesClusterRESTAPI) Path() string {
 	return "/kubernetes-clusters"
@@ -79,7 +83,40 @@ func (api *KubernetesClusterRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *KubernetesClusterRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &KubernetesClusterUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "kubernetes_cluster",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateKubernetesCluster(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "kubernetes_cluster",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"kubernetes-cluster": {
+			"uuid": id,
+			"uri":  "/" + "kubernetes-cluster" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

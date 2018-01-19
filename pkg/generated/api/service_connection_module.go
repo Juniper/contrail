@@ -22,6 +22,10 @@ type ServiceConnectionModuleCreateRequest struct {
 	Data *models.ServiceConnectionModule `json:"service-connection-module"`
 }
 
+type ServiceConnectionModuleUpdateRequest struct {
+	Data map[string]interface{} `json:"service-connection-module"`
+}
+
 //Path returns api path for collections.
 func (api *ServiceConnectionModuleRESTAPI) Path() string {
 	return "/service-connection-modules"
@@ -79,7 +83,40 @@ func (api *ServiceConnectionModuleRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *ServiceConnectionModuleRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &ServiceConnectionModuleUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_connection_module",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateServiceConnectionModule(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_connection_module",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"service-connection-module": {
+			"uuid": id,
+			"uri":  "/" + "service-connection-module" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

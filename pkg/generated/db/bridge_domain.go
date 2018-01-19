@@ -12,7 +12,6 @@ import (
 )
 
 const insertBridgeDomainQuery = "insert into `bridge_domain` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`mac_move_time_window`,`mac_move_limit_action`,`mac_move_limit`,`mac_limit_action`,`mac_limit`,`mac_learning_enabled`,`mac_aging_time`,`isid`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateBridgeDomainQuery = "update `bridge_domain` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`mac_move_time_window` = ?,`mac_move_limit_action` = ?,`mac_move_limit` = ?,`mac_limit_action` = ?,`mac_limit` = ?,`mac_learning_enabled` = ?,`mac_aging_time` = ?,`isid` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteBridgeDomainQuery = "delete from `bridge_domain` where uuid = ?"
 
 // BridgeDomainFields is db columns for BridgeDomain
@@ -414,9 +413,266 @@ func ListBridgeDomain(tx *sql.Tx, spec *common.ListSpec) ([]*models.BridgeDomain
 }
 
 // UpdateBridgeDomain updates a resource
-func UpdateBridgeDomain(tx *sql.Tx, uuid string, model *models.BridgeDomain) error {
-	//TODO(nati) support update
-	return nil
+func UpdateBridgeDomain(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateBridgeDomainQuery = "update `bridge_domain` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateBridgeDomainQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateBridgeDomainQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateBridgeDomainQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateBridgeDomainQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateBridgeDomainQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateBridgeDomainQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateBridgeDomainQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MacMoveControl.MacMoveTimeWindow", "."); ok {
+		updateBridgeDomainQuery += "`mac_move_time_window` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MacMoveControl.MacMoveLimitAction", "."); ok {
+		updateBridgeDomainQuery += "`mac_move_limit_action` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MacMoveControl.MacMoveLimit", "."); ok {
+		updateBridgeDomainQuery += "`mac_move_limit` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MacLimitControl.MacLimitAction", "."); ok {
+		updateBridgeDomainQuery += "`mac_limit_action` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MacLimitControl.MacLimit", "."); ok {
+		updateBridgeDomainQuery += "`mac_limit` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MacLearningEnabled", "."); ok {
+		updateBridgeDomainQuery += "`mac_learning_enabled` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".MacAgingTime", "."); ok {
+		updateBridgeDomainQuery += "`mac_aging_time` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Isid", "."); ok {
+		updateBridgeDomainQuery += "`isid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateBridgeDomainQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateBridgeDomainQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateBridgeDomainQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateBridgeDomainQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateBridgeDomainQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateBridgeDomainQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateBridgeDomainQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateBridgeDomainQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateBridgeDomainQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateBridgeDomainQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateBridgeDomainQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateBridgeDomainQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateBridgeDomainQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateBridgeDomainQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateBridgeDomainQuery += ","
+	}
+
+	updateBridgeDomainQuery =
+		updateBridgeDomainQuery[:len(updateBridgeDomainQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateBridgeDomainQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateBridgeDomainQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteBridgeDomain deletes a resource

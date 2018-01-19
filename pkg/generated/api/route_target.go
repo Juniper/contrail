@@ -22,6 +22,10 @@ type RouteTargetCreateRequest struct {
 	Data *models.RouteTarget `json:"route-target"`
 }
 
+type RouteTargetUpdateRequest struct {
+	Data map[string]interface{} `json:"route-target"`
+}
+
 //Path returns api path for collections.
 func (api *RouteTargetRESTAPI) Path() string {
 	return "/route-targets"
@@ -79,7 +83,40 @@ func (api *RouteTargetRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *RouteTargetRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &RouteTargetUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "route_target",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateRouteTarget(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "route_target",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"route-target": {
+			"uuid": id,
+			"uri":  "/" + "route-target" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

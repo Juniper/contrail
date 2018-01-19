@@ -22,6 +22,10 @@ type BGPVPNCreateRequest struct {
 	Data *models.BGPVPN `json:"bgpvpn"`
 }
 
+type BGPVPNUpdateRequest struct {
+	Data map[string]interface{} `json:"bgpvpn"`
+}
+
 //Path returns api path for collections.
 func (api *BGPVPNRESTAPI) Path() string {
 	return "/bgpvpns"
@@ -79,7 +83,40 @@ func (api *BGPVPNRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *BGPVPNRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &BGPVPNUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "bgpvpn",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateBGPVPN(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "bgpvpn",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"bgpvpn": {
+			"uuid": id,
+			"uri":  "/" + "bgpvpn" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

@@ -22,6 +22,10 @@ type InterfaceRouteTableCreateRequest struct {
 	Data *models.InterfaceRouteTable `json:"interface-route-table"`
 }
 
+type InterfaceRouteTableUpdateRequest struct {
+	Data map[string]interface{} `json:"interface-route-table"`
+}
+
 //Path returns api path for collections.
 func (api *InterfaceRouteTableRESTAPI) Path() string {
 	return "/interface-route-tables"
@@ -79,7 +83,40 @@ func (api *InterfaceRouteTableRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *InterfaceRouteTableRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &InterfaceRouteTableUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "interface_route_table",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateInterfaceRouteTable(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "interface_route_table",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"interface-route-table": {
+			"uuid": id,
+			"uri":  "/" + "interface-route-table" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

@@ -7,15 +7,15 @@ import "encoding/json"
 // VirtualIpType
 type VirtualIpType struct {
 	Status                string                   `json:"status,omitempty"`
-	Protocol              LoadbalancerProtocolType `json:"protocol,omitempty"`
-	AdminState            bool                     `json:"admin_state,omitempty"`
-	ProtocolPort          int                      `json:"protocol_port,omitempty"`
+	SubnetID              UuidStringType           `json:"subnet_id,omitempty"`
 	PersistenceType       SessionPersistenceType   `json:"persistence_type,omitempty"`
+	AdminState            bool                     `json:"admin_state"`
 	Address               IpAddressType            `json:"address,omitempty"`
 	StatusDescription     string                   `json:"status_description,omitempty"`
-	SubnetID              UuidStringType           `json:"subnet_id,omitempty"`
+	Protocol              LoadbalancerProtocolType `json:"protocol,omitempty"`
 	PersistenceCookieName string                   `json:"persistence_cookie_name,omitempty"`
 	ConnectionLimit       int                      `json:"connection_limit,omitempty"`
+	ProtocolPort          int                      `json:"protocol_port,omitempty"`
 }
 
 // String returns json representation of the object
@@ -28,16 +28,16 @@ func (model *VirtualIpType) String() string {
 func MakeVirtualIpType() *VirtualIpType {
 	return &VirtualIpType{
 		//TODO(nati): Apply default
-		PersistenceType:       MakeSessionPersistenceType(),
-		Address:               MakeIpAddressType(),
 		StatusDescription:     "",
-		SubnetID:              MakeUuidStringType(),
+		Protocol:              MakeLoadbalancerProtocolType(),
 		PersistenceCookieName: "",
 		ConnectionLimit:       0,
-		Status:                "",
-		Protocol:              MakeLoadbalancerProtocolType(),
-		AdminState:            false,
 		ProtocolPort:          0,
+		Status:                "",
+		SubnetID:              MakeUuidStringType(),
+		PersistenceType:       MakeSessionPersistenceType(),
+		AdminState:            false,
+		Address:               MakeIpAddressType(),
 	}
 }
 

@@ -22,6 +22,10 @@ type AccessControlListCreateRequest struct {
 	Data *models.AccessControlList `json:"access-control-list"`
 }
 
+type AccessControlListUpdateRequest struct {
+	Data map[string]interface{} `json:"access-control-list"`
+}
+
 //Path returns api path for collections.
 func (api *AccessControlListRESTAPI) Path() string {
 	return "/access-control-lists"
@@ -79,7 +83,40 @@ func (api *AccessControlListRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *AccessControlListRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &AccessControlListUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "access_control_list",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateAccessControlList(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "access_control_list",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"access-control-list": {
+			"uuid": id,
+			"uri":  "/" + "access-control-list" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

@@ -6,16 +6,16 @@ import "encoding/json"
 
 // LogicalInterface
 type LogicalInterface struct {
-	LogicalInterfaceVlanTag int                  `json:"logical_interface_vlan_tag,omitempty"`
-	LogicalInterfaceType    LogicalInterfaceType `json:"logical_interface_type,omitempty"`
-	Annotations             *KeyValuePairs       `json:"annotations,omitempty"`
+	IDPerms                 *IdPermsType         `json:"id_perms,omitempty"`
+	ParentType              string               `json:"parent_type,omitempty"`
+	FQName                  []string             `json:"fq_name,omitempty"`
 	Perms2                  *PermType2           `json:"perms2,omitempty"`
 	UUID                    string               `json:"uuid,omitempty"`
 	ParentUUID              string               `json:"parent_uuid,omitempty"`
-	FQName                  []string             `json:"fq_name,omitempty"`
-	IDPerms                 *IdPermsType         `json:"id_perms,omitempty"`
+	LogicalInterfaceVlanTag int                  `json:"logical_interface_vlan_tag,omitempty"`
+	LogicalInterfaceType    LogicalInterfaceType `json:"logical_interface_type,omitempty"`
 	DisplayName             string               `json:"display_name,omitempty"`
-	ParentType              string               `json:"parent_type,omitempty"`
+	Annotations             *KeyValuePairs       `json:"annotations,omitempty"`
 
 	VirtualMachineInterfaceRefs []*LogicalInterfaceVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 }
@@ -37,16 +37,16 @@ func (model *LogicalInterface) String() string {
 func MakeLogicalInterface() *LogicalInterface {
 	return &LogicalInterface{
 		//TODO(nati): Apply default
+		ParentType:              "",
 		FQName:                  []string{},
 		IDPerms:                 MakeIdPermsType(),
-		DisplayName:             "",
-		ParentType:              "",
-		LogicalInterfaceVlanTag: 0,
 		LogicalInterfaceType:    MakeLogicalInterfaceType(),
+		DisplayName:             "",
 		Annotations:             MakeKeyValuePairs(),
 		Perms2:                  MakePermType2(),
 		UUID:                    "",
 		ParentUUID:              "",
+		LogicalInterfaceVlanTag: 0,
 	}
 }
 

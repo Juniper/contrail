@@ -20,8 +20,8 @@ func (model *ProviderDetails) String() string {
 func MakeProviderDetails() *ProviderDetails {
 	return &ProviderDetails{
 		//TODO(nati): Apply default
-		SegmentationID:  MakeVlanIdType(),
 		PhysicalNetwork: "",
+		SegmentationID:  MakeVlanIdType(),
 	}
 }
 
