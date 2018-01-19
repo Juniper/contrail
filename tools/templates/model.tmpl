@@ -8,7 +8,7 @@ import "encoding/json"
 // {{ name }} {{ type.description }}
 type {{ name }} struct {
 {% for propertyName, property in type.Properties %}
-    {{ property.GoName }} {% if property.Type == "object" and property.Properties %}*{% endif %}{{ property.GoType }} `json:"{{propertyName}},omitempty"`{% endfor %}
+    {{ property.GoName }} {% if property.Type == "object" and property.Properties %}*{% endif %}{% if property.GoType != "bool" %}{{ property.GoType }} `json:"{{propertyName}},omitempty"`{% else %}{{ property.GoType }} `json:"{{propertyName}}"`{% endif %}{% endfor %}
 {% for linkTo, reference in references %}
     {{ reference.GoName }}Refs []*{{ type.GoName }}{{ reference.GoName }}Ref `json:"{{linkTo}}_refs,omitempty"`{% endfor %}
 {% for child in children %}

@@ -12,7 +12,6 @@ import (
 )
 
 const insertBGPVPNQuery = "insert into `bgpvpn` (`uuid`,`route_target`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`import_route_target_list_route_target`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`export_route_target_list_route_target`,`display_name`,`bgpvpn_type`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateBGPVPNQuery = "update `bgpvpn` set `uuid` = ?,`route_target` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`import_route_target_list_route_target` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`export_route_target_list_route_target` = ?,`display_name` = ?,`bgpvpn_type` = ?,`key_value_pair` = ?;"
 const deleteBGPVPNQuery = "delete from `bgpvpn` where uuid = ?"
 
 // BGPVPNFields is db columns for BGPVPN
@@ -368,9 +367,234 @@ func ListBGPVPN(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPVPN, error) {
 }
 
 // UpdateBGPVPN updates a resource
-func UpdateBGPVPN(tx *sql.Tx, uuid string, model *models.BGPVPN) error {
-	//TODO(nati) support update
-	return nil
+func UpdateBGPVPN(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateBGPVPNQuery = "update `bgpvpn` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateBGPVPNQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".RouteTargetList.RouteTarget", "."); ok {
+		updateBGPVPNQuery += "`route_target` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateBGPVPNQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateBGPVPNQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateBGPVPNQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateBGPVPNQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateBGPVPNQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateBGPVPNQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ImportRouteTargetList.RouteTarget", "."); ok {
+		updateBGPVPNQuery += "`import_route_target_list_route_target` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateBGPVPNQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateBGPVPNQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateBGPVPNQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateBGPVPNQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateBGPVPNQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateBGPVPNQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateBGPVPNQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateBGPVPNQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateBGPVPNQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateBGPVPNQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateBGPVPNQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateBGPVPNQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ExportRouteTargetList.RouteTarget", "."); ok {
+		updateBGPVPNQuery += "`export_route_target_list_route_target` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateBGPVPNQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".BGPVPNType", "."); ok {
+		updateBGPVPNQuery += "`bgpvpn_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateBGPVPNQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateBGPVPNQuery += ","
+	}
+
+	updateBGPVPNQuery =
+		updateBGPVPNQuery[:len(updateBGPVPNQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateBGPVPNQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateBGPVPNQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteBGPVPN deletes a resource

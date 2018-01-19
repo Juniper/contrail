@@ -12,7 +12,6 @@ import (
 )
 
 const insertVirtualIPQuery = "insert into `virtual_ip` (`subnet_id`,`status_description`,`status`,`protocol_port`,`protocol`,`persistence_type`,`persistence_cookie_name`,`connection_limit`,`admin_state`,`address`,`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateVirtualIPQuery = "update `virtual_ip` set `subnet_id` = ?,`status_description` = ?,`status` = ?,`protocol_port` = ?,`protocol` = ?,`persistence_type` = ?,`persistence_cookie_name` = ?,`connection_limit` = ?,`admin_state` = ?,`address` = ?,`uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteVirtualIPQuery = "delete from `virtual_ip` where uuid = ?"
 
 // VirtualIPFields is db columns for VirtualIP
@@ -53,12 +52,12 @@ var VirtualIPFields = []string{
 // VirtualIPRefFields is db reference fields for VirtualIP
 var VirtualIPRefFields = map[string][]string{
 
-	"virtual_machine_interface": {
+	"loadbalancer_pool": {
 	// <common.Schema Value>
 
 	},
 
-	"loadbalancer_pool": {
+	"virtual_machine_interface": {
 	// <common.Schema Value>
 
 	},
@@ -515,9 +514,282 @@ func ListVirtualIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualIP, erro
 }
 
 // UpdateVirtualIP updates a resource
-func UpdateVirtualIP(tx *sql.Tx, uuid string, model *models.VirtualIP) error {
-	//TODO(nati) support update
-	return nil
+func UpdateVirtualIP(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateVirtualIPQuery = "update `virtual_ip` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".VirtualIPProperties.SubnetID", "."); ok {
+		updateVirtualIPQuery += "`subnet_id` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".VirtualIPProperties.StatusDescription", "."); ok {
+		updateVirtualIPQuery += "`status_description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".VirtualIPProperties.Status", "."); ok {
+		updateVirtualIPQuery += "`status` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".VirtualIPProperties.ProtocolPort", "."); ok {
+		updateVirtualIPQuery += "`protocol_port` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".VirtualIPProperties.Protocol", "."); ok {
+		updateVirtualIPQuery += "`protocol` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".VirtualIPProperties.PersistenceType", "."); ok {
+		updateVirtualIPQuery += "`persistence_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".VirtualIPProperties.PersistenceCookieName", "."); ok {
+		updateVirtualIPQuery += "`persistence_cookie_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".VirtualIPProperties.ConnectionLimit", "."); ok {
+		updateVirtualIPQuery += "`connection_limit` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".VirtualIPProperties.AdminState", "."); ok {
+		updateVirtualIPQuery += "`admin_state` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".VirtualIPProperties.Address", "."); ok {
+		updateVirtualIPQuery += "`address` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateVirtualIPQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateVirtualIPQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateVirtualIPQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateVirtualIPQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateVirtualIPQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateVirtualIPQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateVirtualIPQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateVirtualIPQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateVirtualIPQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateVirtualIPQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateVirtualIPQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateVirtualIPQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateVirtualIPQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateVirtualIPQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateVirtualIPQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateVirtualIPQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateVirtualIPQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateVirtualIPQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateVirtualIPQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateVirtualIPQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateVirtualIPQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateVirtualIPQuery += ","
+	}
+
+	updateVirtualIPQuery =
+		updateVirtualIPQuery[:len(updateVirtualIPQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateVirtualIPQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateVirtualIPQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteVirtualIP deletes a resource

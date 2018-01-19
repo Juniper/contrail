@@ -12,7 +12,6 @@ import (
 )
 
 const insertPortTupleQuery = "insert into `port_tuple` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updatePortTupleQuery = "update `port_tuple` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deletePortTupleQuery = "delete from `port_tuple` where uuid = ?"
 
 // PortTupleFields is db columns for PortTuple
@@ -334,9 +333,202 @@ func ListPortTuple(tx *sql.Tx, spec *common.ListSpec) ([]*models.PortTuple, erro
 }
 
 // UpdatePortTuple updates a resource
-func UpdatePortTuple(tx *sql.Tx, uuid string, model *models.PortTuple) error {
-	//TODO(nati) support update
-	return nil
+func UpdatePortTuple(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updatePortTupleQuery = "update `port_tuple` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updatePortTupleQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updatePortTupleQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updatePortTupleQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updatePortTupleQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updatePortTupleQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updatePortTupleQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updatePortTupleQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updatePortTupleQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updatePortTupleQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updatePortTupleQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updatePortTupleQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updatePortTupleQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updatePortTupleQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updatePortTupleQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updatePortTupleQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updatePortTupleQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updatePortTupleQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updatePortTupleQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updatePortTupleQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updatePortTupleQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updatePortTupleQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updatePortTupleQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updatePortTupleQuery += ","
+	}
+
+	updatePortTupleQuery =
+		updatePortTupleQuery[:len(updatePortTupleQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updatePortTupleQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updatePortTupleQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeletePortTuple deletes a resource

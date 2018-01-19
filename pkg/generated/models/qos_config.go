@@ -6,19 +6,19 @@ import "encoding/json"
 
 // QosConfig
 type QosConfig struct {
+	IDPerms                  *IdPermsType               `json:"id_perms,omitempty"`
+	DisplayName              string                     `json:"display_name,omitempty"`
 	Annotations              *KeyValuePairs             `json:"annotations,omitempty"`
 	Perms2                   *PermType2                 `json:"perms2,omitempty"`
-	UUID                     string                     `json:"uuid,omitempty"`
-	ParentUUID               string                     `json:"parent_uuid,omitempty"`
 	MPLSExpEntries           *QosIdForwardingClassPairs `json:"mpls_exp_entries,omitempty"`
-	VlanPriorityEntries      *QosIdForwardingClassPairs `json:"vlan_priority_entries,omitempty"`
 	DefaultForwardingClassID ForwardingClassId          `json:"default_forwarding_class_id,omitempty"`
-	DisplayName              string                     `json:"display_name,omitempty"`
+	DSCPEntries              *QosIdForwardingClassPairs `json:"dscp_entries,omitempty"`
+	ParentUUID               string                     `json:"parent_uuid,omitempty"`
+	UUID                     string                     `json:"uuid,omitempty"`
+	QosConfigType            QosConfigType              `json:"qos_config_type,omitempty"`
+	VlanPriorityEntries      *QosIdForwardingClassPairs `json:"vlan_priority_entries,omitempty"`
 	ParentType               string                     `json:"parent_type,omitempty"`
 	FQName                   []string                   `json:"fq_name,omitempty"`
-	QosConfigType            QosConfigType              `json:"qos_config_type,omitempty"`
-	DSCPEntries              *QosIdForwardingClassPairs `json:"dscp_entries,omitempty"`
-	IDPerms                  *IdPermsType               `json:"id_perms,omitempty"`
 
 	GlobalSystemConfigRefs []*QosConfigGlobalSystemConfigRef `json:"global_system_config_refs,omitempty"`
 }
@@ -41,18 +41,18 @@ func MakeQosConfig() *QosConfig {
 	return &QosConfig{
 		//TODO(nati): Apply default
 		UUID:                     "",
-		ParentUUID:               "",
-		MPLSExpEntries:           MakeQosIdForwardingClassPairs(),
+		QosConfigType:            MakeQosConfigType(),
 		VlanPriorityEntries:      MakeQosIdForwardingClassPairs(),
-		DefaultForwardingClassID: MakeForwardingClassId(),
+		ParentType:               "",
+		FQName:                   []string{},
+		IDPerms:                  MakeIdPermsType(),
 		DisplayName:              "",
 		Annotations:              MakeKeyValuePairs(),
 		Perms2:                   MakePermType2(),
-		ParentType:               "",
-		FQName:                   []string{},
-		QosConfigType:            MakeQosConfigType(),
+		MPLSExpEntries:           MakeQosIdForwardingClassPairs(),
+		DefaultForwardingClassID: MakeForwardingClassId(),
 		DSCPEntries:              MakeQosIdForwardingClassPairs(),
-		IDPerms:                  MakeIdPermsType(),
+		ParentUUID:               "",
 	}
 }
 

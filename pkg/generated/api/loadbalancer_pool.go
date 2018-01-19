@@ -22,6 +22,10 @@ type LoadbalancerPoolCreateRequest struct {
 	Data *models.LoadbalancerPool `json:"loadbalancer-pool"`
 }
 
+type LoadbalancerPoolUpdateRequest struct {
+	Data map[string]interface{} `json:"loadbalancer-pool"`
+}
+
 //Path returns api path for collections.
 func (api *LoadbalancerPoolRESTAPI) Path() string {
 	return "/loadbalancer-pools"
@@ -79,7 +83,40 @@ func (api *LoadbalancerPoolRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *LoadbalancerPoolRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &LoadbalancerPoolUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "loadbalancer_pool",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateLoadbalancerPool(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "loadbalancer_pool",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"loadbalancer-pool": {
+			"uuid": id,
+			"uri":  "/" + "loadbalancer-pool" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

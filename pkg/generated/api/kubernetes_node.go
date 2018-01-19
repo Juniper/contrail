@@ -22,6 +22,10 @@ type KubernetesNodeCreateRequest struct {
 	Data *models.KubernetesNode `json:"kubernetes-node"`
 }
 
+type KubernetesNodeUpdateRequest struct {
+	Data map[string]interface{} `json:"kubernetes-node"`
+}
+
 //Path returns api path for collections.
 func (api *KubernetesNodeRESTAPI) Path() string {
 	return "/kubernetes-nodes"
@@ -79,7 +83,40 @@ func (api *KubernetesNodeRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *KubernetesNodeRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &KubernetesNodeUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "kubernetes_node",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateKubernetesNode(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "kubernetes_node",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"kubernetes-node": {
+			"uuid": id,
+			"uri":  "/" + "kubernetes-node" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

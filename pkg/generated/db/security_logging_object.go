@@ -12,7 +12,6 @@ import (
 )
 
 const insertSecurityLoggingObjectQuery = "insert into `security_logging_object` (`uuid`,`rule`,`security_logging_object_rate`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateSecurityLoggingObjectQuery = "update `security_logging_object` set `uuid` = ?,`rule` = ?,`security_logging_object_rate` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteSecurityLoggingObjectQuery = "delete from `security_logging_object` where uuid = ?"
 
 // SecurityLoggingObjectFields is db columns for SecurityLoggingObject
@@ -45,12 +44,12 @@ var SecurityLoggingObjectFields = []string{
 // SecurityLoggingObjectRefFields is db reference fields for SecurityLoggingObject
 var SecurityLoggingObjectRefFields = map[string][]string{
 
-	"security_group": {
+	"network_policy": {
 		// <common.Schema Value>
 		"rule",
 	},
 
-	"network_policy": {
+	"security_group": {
 		// <common.Schema Value>
 		"rule",
 	},
@@ -62,9 +61,9 @@ var SecurityLoggingObjectBackRefFields = map[string][]string{}
 // SecurityLoggingObjectParentTypes is possible parents for SecurityLoggingObject
 var SecurityLoggingObjectParents = []string{
 
-	"global_vrouter_config",
-
 	"project",
+
+	"global_vrouter_config",
 }
 
 const insertSecurityLoggingObjectNetworkPolicyQuery = "insert into `ref_security_logging_object_network_policy` (`from`, `to` ,`rule`) values (?, ?,?);"
@@ -342,29 +341,6 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 
 	}
 
-	if value, ok := values["ref_network_policy"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.SecurityLoggingObjectNetworkPolicyRef{}
-			referenceModel.UUID = uuid
-			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
-
-			attr := models.MakeSecurityLoggingObjectRuleListType()
-			referenceModel.Attr = attr
-
-		}
-	}
-
 	if value, ok := values["ref_security_group"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -381,6 +357,29 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 			referenceModel := &models.SecurityLoggingObjectSecurityGroupRef{}
 			referenceModel.UUID = uuid
 			m.SecurityGroupRefs = append(m.SecurityGroupRefs, referenceModel)
+
+			attr := models.MakeSecurityLoggingObjectRuleListType()
+			referenceModel.Attr = attr
+
+		}
+	}
+
+	if value, ok := values["ref_network_policy"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.SecurityLoggingObjectNetworkPolicyRef{}
+			referenceModel.UUID = uuid
+			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
 
 			attr := models.MakeSecurityLoggingObjectRuleListType()
 			referenceModel.Attr = attr
@@ -449,9 +448,218 @@ func ListSecurityLoggingObject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Sec
 }
 
 // UpdateSecurityLoggingObject updates a resource
-func UpdateSecurityLoggingObject(tx *sql.Tx, uuid string, model *models.SecurityLoggingObject) error {
-	//TODO(nati) support update
-	return nil
+func UpdateSecurityLoggingObject(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateSecurityLoggingObjectQuery = "update `security_logging_object` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateSecurityLoggingObjectQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".SecurityLoggingObjectRules.Rule", "."); ok {
+		updateSecurityLoggingObjectQuery += "`rule` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".SecurityLoggingObjectRate", "."); ok {
+		updateSecurityLoggingObjectQuery += "`security_logging_object_rate` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateSecurityLoggingObjectQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateSecurityLoggingObjectQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateSecurityLoggingObjectQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateSecurityLoggingObjectQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateSecurityLoggingObjectQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateSecurityLoggingObjectQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateSecurityLoggingObjectQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateSecurityLoggingObjectQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateSecurityLoggingObjectQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateSecurityLoggingObjectQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateSecurityLoggingObjectQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateSecurityLoggingObjectQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateSecurityLoggingObjectQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateSecurityLoggingObjectQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateSecurityLoggingObjectQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateSecurityLoggingObjectQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateSecurityLoggingObjectQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateSecurityLoggingObjectQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateSecurityLoggingObjectQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateSecurityLoggingObjectQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateSecurityLoggingObjectQuery += ","
+	}
+
+	updateSecurityLoggingObjectQuery =
+		updateSecurityLoggingObjectQuery[:len(updateSecurityLoggingObjectQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateSecurityLoggingObjectQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateSecurityLoggingObjectQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteSecurityLoggingObject deletes a resource

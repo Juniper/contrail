@@ -2,7 +2,8 @@ package db
 
 import (
     "testing"
-	"database/sql"
+    "database/sql"
+    "os"
     "github.com/Juniper/contrail/pkg/common"
     log "github.com/sirupsen/logrus"
     //Import mysql driver
@@ -13,7 +14,7 @@ var testDB *sql.DB
 
 func TestMain(m *testing.M) {
     common.InitConfig()
-   	common.SetLogLevel() 
+   	common.SetLogLevel()
     var err error
     testDB, err = common.ConnectDB()
     if err != nil {

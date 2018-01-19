@@ -22,6 +22,10 @@ type DomainCreateRequest struct {
 	Data *models.Domain `json:"domain"`
 }
 
+type DomainUpdateRequest struct {
+	Data map[string]interface{} `json:"domain"`
+}
+
 //Path returns api path for collections.
 func (api *DomainRESTAPI) Path() string {
 	return "/domains"
@@ -79,7 +83,40 @@ func (api *DomainRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *DomainRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &DomainUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "domain",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateDomain(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "domain",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"domain": {
+			"uuid": id,
+			"uri":  "/" + "domain" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

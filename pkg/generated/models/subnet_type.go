@@ -20,8 +20,8 @@ func (model *SubnetType) String() string {
 func MakeSubnetType() *SubnetType {
 	return &SubnetType{
 		//TODO(nati): Apply default
-		IPPrefix:    "",
 		IPPrefixLen: 0,
+		IPPrefix:    "",
 	}
 }
 

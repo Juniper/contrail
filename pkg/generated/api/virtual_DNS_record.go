@@ -22,6 +22,10 @@ type VirtualDNSRecordCreateRequest struct {
 	Data *models.VirtualDNSRecord `json:"virtual-DNS-record"`
 }
 
+type VirtualDNSRecordUpdateRequest struct {
+	Data map[string]interface{} `json:"virtual-DNS-record"`
+}
+
 //Path returns api path for collections.
 func (api *VirtualDNSRecordRESTAPI) Path() string {
 	return "/virtual-DNS-records"
@@ -79,7 +83,40 @@ func (api *VirtualDNSRecordRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *VirtualDNSRecordRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &VirtualDNSRecordUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "virtual_DNS_record",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateVirtualDNSRecord(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "virtual_DNS_record",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"virtual-DNS-record": {
+			"uuid": id,
+			"uri":  "/" + "virtual-DNS-record" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

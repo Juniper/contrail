@@ -6,9 +6,9 @@ import "encoding/json"
 
 // ServiceTemplateInterfaceType
 type ServiceTemplateInterfaceType struct {
-	SharedIP             bool                 `json:"shared_ip,omitempty"`
+	StaticRouteEnable    bool                 `json:"static_route_enable"`
+	SharedIP             bool                 `json:"shared_ip"`
 	ServiceInterfaceType ServiceInterfaceType `json:"service_interface_type,omitempty"`
-	StaticRouteEnable    bool                 `json:"static_route_enable,omitempty"`
 }
 
 // String returns json representation of the object

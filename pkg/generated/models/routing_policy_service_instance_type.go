@@ -20,8 +20,8 @@ func (model *RoutingPolicyServiceInstanceType) String() string {
 func MakeRoutingPolicyServiceInstanceType() *RoutingPolicyServiceInstanceType {
 	return &RoutingPolicyServiceInstanceType{
 		//TODO(nati): Apply default
-		LeftSequence:  "",
 		RightSequence: "",
+		LeftSequence:  "",
 	}
 }
 

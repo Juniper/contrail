@@ -12,7 +12,6 @@ import (
 )
 
 const insertOpenstackClusterQuery = "insert into `openstack_cluster` (`uuid`,`public_ip`,`public_gateway`,`provisioning_state`,`provisioning_start_time`,`provisioning_progress_stage`,`provisioning_progress`,`provisioning_log`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`openstack_webui`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`external_net_cidr`,`external_allocation_pool_start`,`external_allocation_pool_end`,`display_name`,`default_storage_backend_bond_interface_members`,`default_storage_access_bond_interface_members`,`default_performance_drives`,`default_osd_drives`,`default_journal_drives`,`default_capacity_drives`,`contrail_cluster_id`,`key_value_pair`,`admin_password`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateOpenstackClusterQuery = "update `openstack_cluster` set `uuid` = ?,`public_ip` = ?,`public_gateway` = ?,`provisioning_state` = ?,`provisioning_start_time` = ?,`provisioning_progress_stage` = ?,`provisioning_progress` = ?,`provisioning_log` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`openstack_webui` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`external_net_cidr` = ?,`external_allocation_pool_start` = ?,`external_allocation_pool_end` = ?,`display_name` = ?,`default_storage_backend_bond_interface_members` = ?,`default_storage_access_bond_interface_members` = ?,`default_performance_drives` = ?,`default_osd_drives` = ?,`default_journal_drives` = ?,`default_capacity_drives` = ?,`contrail_cluster_id` = ?,`key_value_pair` = ?,`admin_password` = ?;"
 const deleteOpenstackClusterQuery = "delete from `openstack_cluster` where uuid = ?"
 
 // OpenstackClusterFields is db columns for OpenstackCluster
@@ -521,9 +520,354 @@ func ListOpenstackCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.Openstac
 }
 
 // UpdateOpenstackCluster updates a resource
-func UpdateOpenstackCluster(tx *sql.Tx, uuid string, model *models.OpenstackCluster) error {
-	//TODO(nati) support update
-	return nil
+func UpdateOpenstackCluster(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateOpenstackClusterQuery = "update `openstack_cluster` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateOpenstackClusterQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".PublicIP", "."); ok {
+		updateOpenstackClusterQuery += "`public_ip` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".PublicGateway", "."); ok {
+		updateOpenstackClusterQuery += "`public_gateway` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ProvisioningState", "."); ok {
+		updateOpenstackClusterQuery += "`provisioning_state` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ProvisioningStartTime", "."); ok {
+		updateOpenstackClusterQuery += "`provisioning_start_time` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ProvisioningProgressStage", "."); ok {
+		updateOpenstackClusterQuery += "`provisioning_progress_stage` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ProvisioningProgress", "."); ok {
+		updateOpenstackClusterQuery += "`provisioning_progress` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ProvisioningLog", "."); ok {
+		updateOpenstackClusterQuery += "`provisioning_log` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateOpenstackClusterQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateOpenstackClusterQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateOpenstackClusterQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateOpenstackClusterQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateOpenstackClusterQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateOpenstackClusterQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".OpenstackWebui", "."); ok {
+		updateOpenstackClusterQuery += "`openstack_webui` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateOpenstackClusterQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateOpenstackClusterQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateOpenstackClusterQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateOpenstackClusterQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateOpenstackClusterQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateOpenstackClusterQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateOpenstackClusterQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateOpenstackClusterQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateOpenstackClusterQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateOpenstackClusterQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateOpenstackClusterQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateOpenstackClusterQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ExternalNetCidr", "."); ok {
+		updateOpenstackClusterQuery += "`external_net_cidr` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ExternalAllocationPoolStart", "."); ok {
+		updateOpenstackClusterQuery += "`external_allocation_pool_start` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ExternalAllocationPoolEnd", "."); ok {
+		updateOpenstackClusterQuery += "`external_allocation_pool_end` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateOpenstackClusterQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DefaultStorageBackendBondInterfaceMembers", "."); ok {
+		updateOpenstackClusterQuery += "`default_storage_backend_bond_interface_members` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DefaultStorageAccessBondInterfaceMembers", "."); ok {
+		updateOpenstackClusterQuery += "`default_storage_access_bond_interface_members` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DefaultPerformanceDrives", "."); ok {
+		updateOpenstackClusterQuery += "`default_performance_drives` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DefaultOsdDrives", "."); ok {
+		updateOpenstackClusterQuery += "`default_osd_drives` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DefaultJournalDrives", "."); ok {
+		updateOpenstackClusterQuery += "`default_journal_drives` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DefaultCapacityDrives", "."); ok {
+		updateOpenstackClusterQuery += "`default_capacity_drives` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ContrailClusterID", "."); ok {
+		updateOpenstackClusterQuery += "`contrail_cluster_id` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateOpenstackClusterQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".AdminPassword", "."); ok {
+		updateOpenstackClusterQuery += "`admin_password` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateOpenstackClusterQuery += ","
+	}
+
+	updateOpenstackClusterQuery =
+		updateOpenstackClusterQuery[:len(updateOpenstackClusterQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateOpenstackClusterQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateOpenstackClusterQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteOpenstackCluster deletes a resource

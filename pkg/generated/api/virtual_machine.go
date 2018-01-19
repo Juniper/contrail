@@ -22,6 +22,10 @@ type VirtualMachineCreateRequest struct {
 	Data *models.VirtualMachine `json:"virtual-machine"`
 }
 
+type VirtualMachineUpdateRequest struct {
+	Data map[string]interface{} `json:"virtual-machine"`
+}
+
 //Path returns api path for collections.
 func (api *VirtualMachineRESTAPI) Path() string {
 	return "/virtual-machines"
@@ -79,7 +83,40 @@ func (api *VirtualMachineRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *VirtualMachineRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &VirtualMachineUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "virtual_machine",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateVirtualMachine(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "virtual_machine",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"virtual-machine": {
+			"uuid": id,
+			"uri":  "/" + "virtual-machine" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

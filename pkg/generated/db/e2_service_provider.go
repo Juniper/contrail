@@ -12,7 +12,6 @@ import (
 )
 
 const insertE2ServiceProviderQuery = "insert into `e2_service_provider` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`e2_service_provider_promiscuous`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateE2ServiceProviderQuery = "update `e2_service_provider` set `uuid` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`e2_service_provider_promiscuous` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteE2ServiceProviderQuery = "delete from `e2_service_provider` where uuid = ?"
 
 // E2ServiceProviderFields is db columns for E2ServiceProvider
@@ -321,26 +320,6 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 
 	}
 
-	if value, ok := values["ref_peering_policy"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.E2ServiceProviderPeeringPolicyRef{}
-			referenceModel.UUID = uuid
-			m.PeeringPolicyRefs = append(m.PeeringPolicyRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_physical_router"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -357,6 +336,26 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 			referenceModel := &models.E2ServiceProviderPhysicalRouterRef{}
 			referenceModel.UUID = uuid
 			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_peering_policy"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.E2ServiceProviderPeeringPolicyRef{}
+			referenceModel.UUID = uuid
+			m.PeeringPolicyRefs = append(m.PeeringPolicyRefs, referenceModel)
 
 		}
 	}
@@ -422,9 +421,210 @@ func ListE2ServiceProvider(tx *sql.Tx, spec *common.ListSpec) ([]*models.E2Servi
 }
 
 // UpdateE2ServiceProvider updates a resource
-func UpdateE2ServiceProvider(tx *sql.Tx, uuid string, model *models.E2ServiceProvider) error {
-	//TODO(nati) support update
-	return nil
+func UpdateE2ServiceProvider(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateE2ServiceProviderQuery = "update `e2_service_provider` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateE2ServiceProviderQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateE2ServiceProviderQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateE2ServiceProviderQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateE2ServiceProviderQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateE2ServiceProviderQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateE2ServiceProviderQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateE2ServiceProviderQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateE2ServiceProviderQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateE2ServiceProviderQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateE2ServiceProviderQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateE2ServiceProviderQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateE2ServiceProviderQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateE2ServiceProviderQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateE2ServiceProviderQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateE2ServiceProviderQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateE2ServiceProviderQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateE2ServiceProviderQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateE2ServiceProviderQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateE2ServiceProviderQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".E2ServiceProviderPromiscuous", "."); ok {
+		updateE2ServiceProviderQuery += "`e2_service_provider_promiscuous` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateE2ServiceProviderQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateE2ServiceProviderQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateE2ServiceProviderQuery += ","
+	}
+
+	updateE2ServiceProviderQuery =
+		updateE2ServiceProviderQuery[:len(updateE2ServiceProviderQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateE2ServiceProviderQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateE2ServiceProviderQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteE2ServiceProvider deletes a resource
