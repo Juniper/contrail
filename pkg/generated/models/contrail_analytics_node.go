@@ -6,19 +6,19 @@ import "encoding/json"
 
 // ContrailAnalyticsNode
 type ContrailAnalyticsNode struct {
-	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
+	ParentType                string         `json:"parent_type,omitempty"`
 	FQName                    []string       `json:"fq_name,omitempty"`
+	DisplayName               string         `json:"display_name,omitempty"`
 	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2                    *PermType2     `json:"perms2,omitempty"`
+	ParentUUID                string         `json:"parent_uuid,omitempty"`
+	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
+	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
 	UUID                      string         `json:"uuid,omitempty"`
 	ProvisioningProgress      int            `json:"provisioning_progress,omitempty"`
 	ProvisioningProgressStage string         `json:"provisioning_progress_stage,omitempty"`
-	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
 	ProvisioningState         string         `json:"provisioning_state,omitempty"`
-	ParentUUID                string         `json:"parent_uuid,omitempty"`
-	ParentType                string         `json:"parent_type,omitempty"`
-	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName               string         `json:"display_name,omitempty"`
-	Perms2                    *PermType2     `json:"perms2,omitempty"`
+	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
 }
 
 // String returns json representation of the object
@@ -31,19 +31,19 @@ func (model *ContrailAnalyticsNode) String() string {
 func MakeContrailAnalyticsNode() *ContrailAnalyticsNode {
 	return &ContrailAnalyticsNode{
 		//TODO(nati): Apply default
+		ParentUUID:                "",
+		ProvisioningStartTime:     "",
+		ParentType:                "",
 		FQName:                    []string{},
+		DisplayName:               "",
 		Annotations:               MakeKeyValuePairs(),
+		Perms2:                    MakePermType2(),
+		ProvisioningLog:           "",
+		IDPerms:                   MakeIdPermsType(),
 		UUID:                      "",
 		ProvisioningProgress:      0,
 		ProvisioningProgressStage: "",
-		ProvisioningStartTime:     "",
 		ProvisioningState:         "",
-		ProvisioningLog:           "",
-		ParentUUID:                "",
-		ParentType:                "",
-		IDPerms:                   MakeIdPermsType(),
-		DisplayName:               "",
-		Perms2:                    MakePermType2(),
 	}
 }
 

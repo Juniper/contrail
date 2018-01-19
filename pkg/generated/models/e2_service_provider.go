@@ -6,15 +6,15 @@ import "encoding/json"
 
 // E2ServiceProvider
 type E2ServiceProvider struct {
-	ParentUUID                   string         `json:"parent_uuid,omitempty"`
-	IDPerms                      *IdPermsType   `json:"id_perms,omitempty"`
-	Annotations                  *KeyValuePairs `json:"annotations,omitempty"`
-	E2ServiceProviderPromiscuous bool           `json:"e2_service_provider_promiscuous"`
-	UUID                         string         `json:"uuid,omitempty"`
-	ParentType                   string         `json:"parent_type,omitempty"`
-	FQName                       []string       `json:"fq_name,omitempty"`
-	DisplayName                  string         `json:"display_name,omitempty"`
 	Perms2                       *PermType2     `json:"perms2,omitempty"`
+	ParentUUID                   string         `json:"parent_uuid,omitempty"`
+	FQName                       []string       `json:"fq_name,omitempty"`
+	IDPerms                      *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName                  string         `json:"display_name,omitempty"`
+	UUID                         string         `json:"uuid,omitempty"`
+	E2ServiceProviderPromiscuous bool           `json:"e2_service_provider_promiscuous"`
+	ParentType                   string         `json:"parent_type,omitempty"`
+	Annotations                  *KeyValuePairs `json:"annotations,omitempty"`
 
 	PhysicalRouterRefs []*E2ServiceProviderPhysicalRouterRef `json:"physical_router_refs,omitempty"`
 	PeeringPolicyRefs  []*E2ServiceProviderPeeringPolicyRef  `json:"peering_policy_refs,omitempty"`
@@ -44,15 +44,15 @@ func (model *E2ServiceProvider) String() string {
 func MakeE2ServiceProvider() *E2ServiceProvider {
 	return &E2ServiceProvider{
 		//TODO(nati): Apply default
-		Perms2: MakePermType2(),
-		E2ServiceProviderPromiscuous: false,
-		UUID:        "",
-		ParentType:  "",
-		FQName:      []string{},
 		DisplayName: "",
+		Perms2:      MakePermType2(),
 		ParentUUID:  "",
+		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
 		Annotations: MakeKeyValuePairs(),
+		UUID:        "",
+		E2ServiceProviderPromiscuous: false,
+		ParentType:                   "",
 	}
 }
 

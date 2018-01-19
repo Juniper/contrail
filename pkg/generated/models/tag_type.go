@@ -6,15 +6,15 @@ import "encoding/json"
 
 // TagType
 type TagType struct {
-	TagTypeID   U16BitHexInt   `json:"tag_type_id,omitempty"`
-	Annotations *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2      *PermType2     `json:"perms2,omitempty"`
-	ParentUUID  string         `json:"parent_uuid,omitempty"`
-	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
 	UUID        string         `json:"uuid,omitempty"`
-	ParentType  string         `json:"parent_type,omitempty"`
+	ParentUUID  string         `json:"parent_uuid,omitempty"`
+	Annotations *KeyValuePairs `json:"annotations,omitempty"`
+	TagTypeID   U16BitHexInt   `json:"tag_type_id,omitempty"`
 	FQName      []string       `json:"fq_name,omitempty"`
+	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
 	DisplayName string         `json:"display_name,omitempty"`
+	Perms2      *PermType2     `json:"perms2,omitempty"`
+	ParentType  string         `json:"parent_type,omitempty"`
 }
 
 // String returns json representation of the object
@@ -27,15 +27,15 @@ func (model *TagType) String() string {
 func MakeTagType() *TagType {
 	return &TagType{
 		//TODO(nati): Apply default
-		TagTypeID:   MakeU16BitHexInt(),
 		Annotations: MakeKeyValuePairs(),
-		Perms2:      MakePermType2(),
-		ParentUUID:  "",
-		IDPerms:     MakeIdPermsType(),
+		TagTypeID:   MakeU16BitHexInt(),
 		UUID:        "",
+		ParentUUID:  "",
+		DisplayName: "",
+		Perms2:      MakePermType2(),
 		ParentType:  "",
 		FQName:      []string{},
-		DisplayName: "",
+		IDPerms:     MakeIdPermsType(),
 	}
 }
 

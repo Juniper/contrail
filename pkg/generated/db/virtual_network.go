@@ -77,11 +77,6 @@ var VirtualNetworkFields = []string{
 // VirtualNetworkRefFields is db reference fields for VirtualNetwork
 var VirtualNetworkRefFields = map[string][]string{
 
-	"bgpvpn": {
-	// <common.Schema Value>
-
-	},
-
 	"network_ipam": {
 		// <common.Schema Value>
 		"ipam_subnets",
@@ -99,8 +94,8 @@ var VirtualNetworkRefFields = map[string][]string{
 		"off_interval",
 		"on_interval",
 		"end_time",
-		"minor",
 		"major",
+		"minor",
 	},
 
 	"qos_config": {
@@ -114,6 +109,11 @@ var VirtualNetworkRefFields = map[string][]string{
 	},
 
 	"virtual_network": {
+	// <common.Schema Value>
+
+	},
+
+	"bgpvpn": {
 	// <common.Schema Value>
 
 	},
@@ -261,19 +261,19 @@ var VirtualNetworkParents = []string{
 	"project",
 }
 
-const insertVirtualNetworkSecurityLoggingObjectQuery = "insert into `ref_virtual_network_security_logging_object` (`from`, `to` ) values (?, ?);"
-
-const insertVirtualNetworkNetworkPolicyQuery = "insert into `ref_virtual_network_network_policy` (`from`, `to` ,`start_time`,`off_interval`,`on_interval`,`end_time`,`minor`,`major`) values (?, ?,?,?,?,?,?,?);"
-
-const insertVirtualNetworkQosConfigQuery = "insert into `ref_virtual_network_qos_config` (`from`, `to` ) values (?, ?);"
-
-const insertVirtualNetworkRouteTableQuery = "insert into `ref_virtual_network_route_table` (`from`, `to` ) values (?, ?);"
-
 const insertVirtualNetworkVirtualNetworkQuery = "insert into `ref_virtual_network_virtual_network` (`from`, `to` ) values (?, ?);"
 
 const insertVirtualNetworkBGPVPNQuery = "insert into `ref_virtual_network_bgpvpn` (`from`, `to` ) values (?, ?);"
 
 const insertVirtualNetworkNetworkIpamQuery = "insert into `ref_virtual_network_network_ipam` (`from`, `to` ,`ipam_subnets`,`route`) values (?, ?,?,?);"
+
+const insertVirtualNetworkSecurityLoggingObjectQuery = "insert into `ref_virtual_network_security_logging_object` (`from`, `to` ) values (?, ?);"
+
+const insertVirtualNetworkNetworkPolicyQuery = "insert into `ref_virtual_network_network_policy` (`from`, `to` ,`start_time`,`off_interval`,`on_interval`,`end_time`,`major`,`minor`) values (?, ?,?,?,?,?,?,?);"
+
+const insertVirtualNetworkQosConfigQuery = "insert into `ref_virtual_network_qos_config` (`from`, `to` ) values (?, ?);"
+
+const insertVirtualNetworkRouteTableQuery = "insert into `ref_virtual_network_route_table` (`from`, `to` ) values (?, ?);"
 
 // CreateVirtualNetwork inserts VirtualNetwork to DB
 func CreateVirtualNetwork(tx *sql.Tx, model *models.VirtualNetwork) error {
@@ -347,6 +347,41 @@ func CreateVirtualNetwork(tx *sql.Tx, model *models.VirtualNetwork) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtSecurityLoggingObjectRef, err := tx.Prepare(insertVirtualNetworkSecurityLoggingObjectQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing SecurityLoggingObjectRefs create statement failed")
+	}
+	defer stmtSecurityLoggingObjectRef.Close()
+	for _, ref := range model.SecurityLoggingObjectRefs {
+
+		_, err = stmtSecurityLoggingObjectRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "SecurityLoggingObjectRefs create failed")
+		}
+	}
+
+	stmtNetworkPolicyRef, err := tx.Prepare(insertVirtualNetworkNetworkPolicyQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing NetworkPolicyRefs create statement failed")
+	}
+	defer stmtNetworkPolicyRef.Close()
+	for _, ref := range model.NetworkPolicyRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = models.MakeVirtualNetworkPolicyType()
+		}
+
+		_, err = stmtNetworkPolicyRef.Exec(model.UUID, ref.UUID, string(ref.Attr.Timer.StartTime),
+			string(ref.Attr.Timer.OffInterval),
+			string(ref.Attr.Timer.OnInterval),
+			string(ref.Attr.Timer.EndTime),
+			int(ref.Attr.Sequence.Major),
+			int(ref.Attr.Sequence.Minor))
+		if err != nil {
+			return errors.Wrap(err, "NetworkPolicyRefs create failed")
+		}
+	}
+
 	stmtQosConfigRef, err := tx.Prepare(insertVirtualNetworkQosConfigQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing QosConfigRefs create statement failed")
@@ -414,41 +449,6 @@ func CreateVirtualNetwork(tx *sql.Tx, model *models.VirtualNetwork) error {
 			common.MustJSON(ref.Attr.HostRoutes.Route))
 		if err != nil {
 			return errors.Wrap(err, "NetworkIpamRefs create failed")
-		}
-	}
-
-	stmtSecurityLoggingObjectRef, err := tx.Prepare(insertVirtualNetworkSecurityLoggingObjectQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing SecurityLoggingObjectRefs create statement failed")
-	}
-	defer stmtSecurityLoggingObjectRef.Close()
-	for _, ref := range model.SecurityLoggingObjectRefs {
-
-		_, err = stmtSecurityLoggingObjectRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "SecurityLoggingObjectRefs create failed")
-		}
-	}
-
-	stmtNetworkPolicyRef, err := tx.Prepare(insertVirtualNetworkNetworkPolicyQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing NetworkPolicyRefs create statement failed")
-	}
-	defer stmtNetworkPolicyRef.Close()
-	for _, ref := range model.NetworkPolicyRefs {
-
-		if ref.Attr == nil {
-			ref.Attr = models.MakeVirtualNetworkPolicyType()
-		}
-
-		_, err = stmtNetworkPolicyRef.Exec(model.UUID, ref.UUID, string(ref.Attr.Timer.StartTime),
-			string(ref.Attr.Timer.OffInterval),
-			string(ref.Attr.Timer.OnInterval),
-			string(ref.Attr.Timer.EndTime),
-			int(ref.Attr.Sequence.Minor),
-			int(ref.Attr.Sequence.Major))
-		if err != nil {
-			return errors.Wrap(err, "NetworkPolicyRefs create failed")
 		}
 	}
 
@@ -910,29 +910,6 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 	}
 
-	if value, ok := values["ref_network_policy"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkNetworkPolicyRef{}
-			referenceModel.UUID = uuid
-			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
-
-			attr := models.MakeVirtualNetworkPolicyType()
-			referenceModel.Attr = attr
-
-		}
-	}
-
 	if value, ok := values["ref_qos_config"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -1052,6 +1029,29 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 			referenceModel := &models.VirtualNetworkSecurityLoggingObjectRef{}
 			referenceModel.UUID = uuid
 			m.SecurityLoggingObjectRefs = append(m.SecurityLoggingObjectRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_network_policy"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkNetworkPolicyRef{}
+			referenceModel.UUID = uuid
+			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
+
+			attr := models.MakeVirtualNetworkPolicyType()
+			referenceModel.Attr = attr
 
 		}
 	}

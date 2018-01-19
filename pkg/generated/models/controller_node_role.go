@@ -6,23 +6,23 @@ import "encoding/json"
 
 // ControllerNodeRole
 type ControllerNodeRole struct {
-	InternalapiBondInterfaceMembers       string         `json:"internalapi_bond_interface_members,omitempty"`
-	ParentUUID                            string         `json:"parent_uuid,omitempty"`
-	ProvisioningLog                       string         `json:"provisioning_log,omitempty"`
-	ProvisioningState                     string         `json:"provisioning_state,omitempty"`
+	CapacityDrives                        string         `json:"capacity_drives,omitempty"`
 	StorageManagementBondInterfaceMembers string         `json:"storage_management_bond_interface_members,omitempty"`
 	UUID                                  string         `json:"uuid,omitempty"`
-	Annotations                           *KeyValuePairs `json:"annotations,omitempty"`
+	ParentUUID                            string         `json:"parent_uuid,omitempty"`
+	ProvisioningLog                       string         `json:"provisioning_log,omitempty"`
 	Perms2                                *PermType2     `json:"perms2,omitempty"`
-	ProvisioningProgressStage             string         `json:"provisioning_progress_stage,omitempty"`
-	ProvisioningStartTime                 string         `json:"provisioning_start_time,omitempty"`
-	CapacityDrives                        string         `json:"capacity_drives,omitempty"`
-	PerformanceDrives                     string         `json:"performance_drives,omitempty"`
 	IDPerms                               *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName                           string         `json:"display_name,omitempty"`
-	ProvisioningProgress                  int            `json:"provisioning_progress,omitempty"`
+	ProvisioningStartTime                 string         `json:"provisioning_start_time,omitempty"`
+	PerformanceDrives                     string         `json:"performance_drives,omitempty"`
 	ParentType                            string         `json:"parent_type,omitempty"`
+	ProvisioningProgressStage             string         `json:"provisioning_progress_stage,omitempty"`
+	InternalapiBondInterfaceMembers       string         `json:"internalapi_bond_interface_members,omitempty"`
 	FQName                                []string       `json:"fq_name,omitempty"`
+	DisplayName                           string         `json:"display_name,omitempty"`
+	Annotations                           *KeyValuePairs `json:"annotations,omitempty"`
+	ProvisioningState                     string         `json:"provisioning_state,omitempty"`
+	ProvisioningProgress                  int            `json:"provisioning_progress,omitempty"`
 }
 
 // String returns json representation of the object
@@ -35,23 +35,23 @@ func (model *ControllerNodeRole) String() string {
 func MakeControllerNodeRole() *ControllerNodeRole {
 	return &ControllerNodeRole{
 		//TODO(nati): Apply default
-		Perms2: MakePermType2(),
-		ProvisioningProgressStage:             "",
-		ProvisioningStartTime:                 "",
-		StorageManagementBondInterfaceMembers: "",
-		UUID:                            "",
-		Annotations:                     MakeKeyValuePairs(),
-		DisplayName:                     "",
 		ProvisioningProgress:            0,
-		CapacityDrives:                  "",
-		PerformanceDrives:               "",
-		IDPerms:                         MakeIdPermsType(),
-		ParentType:                      "",
-		FQName:                          []string{},
-		ProvisioningState:               "",
 		InternalapiBondInterfaceMembers: "",
-		ParentUUID:                      "",
-		ProvisioningLog:                 "",
+		FQName:                                []string{},
+		DisplayName:                           "",
+		Annotations:                           MakeKeyValuePairs(),
+		ProvisioningState:                     "",
+		CapacityDrives:                        "",
+		StorageManagementBondInterfaceMembers: "",
+		UUID:                      "",
+		ParentUUID:                "",
+		ProvisioningLog:           "",
+		Perms2:                    MakePermType2(),
+		IDPerms:                   MakeIdPermsType(),
+		ProvisioningStartTime:     "",
+		PerformanceDrives:         "",
+		ParentType:                "",
+		ProvisioningProgressStage: "",
 	}
 }
 

@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 var sqlTypeMap = map[string]string{
@@ -77,44 +79,48 @@ func (c ColumnConfigs) shortenColumn() {
 
 //Schema represents a data model
 type Schema struct {
-	FileName    string                 `yaml:"-" json:"-"`
-	ID          string                 `yaml:"id" json:"id,omitempty"`
-	Plural      string                 `yaml:"plural" json:"plural,omitempty"`
-	Type        string                 `yaml:"type" json:"type,omitempty"`
-	Title       string                 `yaml:"title" json:"title,omitempty"`
-	Description string                 `yaml:"description" json:"description,omitempty"`
-	Parents     map[string]*Reference  `yaml:"parents" json:"parents,omitempty"`
-	References  map[string]*Reference  `yaml:"references" json:"references,omitempty"`
-	Prefix      string                 `yaml:"prefix" json:"prefix,omitempty"`
-	JSONSchema  *JSONSchema            `yaml:"schema" json:"schema,omitempty"`
-	Definitions map[string]*JSONSchema `yaml:"definitions" json:"-"`
-	Extends     []string               `yaml:"extends" json:"extends,omitempty"`
-	Columns     ColumnConfigs          `yaml:"-" json:"-"`
-	Path        string                 `yaml:"-" json:"-"`
-	PluralPath  string                 `yaml:"-" json:"-"`
-	Children    []*Schema              `yaml:"-" json:"-"`
+	FileName         string                   `yaml:"-" json:"-"`
+	ID               string                   `yaml:"id" json:"id,omitempty"`
+	Plural           string                   `yaml:"plural" json:"plural,omitempty"`
+	Type             string                   `yaml:"type" json:"type,omitempty"`
+	Title            string                   `yaml:"title" json:"title,omitempty"`
+	Description      string                   `yaml:"description" json:"description,omitempty"`
+	Parents          map[string]*Reference    `yaml:"parents" json:"parents,omitempty"`
+	References       map[string]*Reference    `yaml:"references" json:"references,omitempty"`
+	Prefix           string                   `yaml:"prefix" json:"prefix,omitempty"`
+	JSONSchema       *JSONSchema              `yaml:"-" json:"schema,omitempty"`
+	JSONSchemaSlice  yaml.MapSlice            `yaml:"schema" json:"-"`
+	Definitions      map[string]*JSONSchema   `yaml:"-" json:"-"`
+	DefinitionsSlice map[string]yaml.MapSlice `yaml:"definitions" json:"-"`
+	Extends          []string                 `yaml:"extends" json:"extends,omitempty"`
+	Columns          ColumnConfigs            `yaml:"-" json:"-"`
+	Path             string                   `yaml:"-" json:"-"`
+	PluralPath       string                   `yaml:"-" json:"-"`
+	Children         []*Schema                `yaml:"-" json:"-"`
 }
 
 //JSONSchema is a standard JSONSchema representation plus data for code generation.
 type JSONSchema struct {
-	Title          string                 `yaml:"title" json:"title,omitempty"`
-	Description    string                 `yaml:"description" json:"description,omitempty"`
-	SQL            string                 `yaml:"sql" json:"-"`
-	Default        interface{}            `yaml:"default" json:"default,omitempty"`
-	Operation      string                 `yaml:"operation" json:"-"`
-	Presence       string                 `yaml:"presence" json:"-"`
-	Type           string                 `yaml:"type" json:"type,omitempty"`
-	Permission     []string               `yaml:"permission" json:"permission,omitempty"`
-	Properties     map[string]*JSONSchema `yaml:"properties" json:"properties,omitempty"`
-	Enum           []string               `yaml:"enum" json:"enum,omitempty"`
-	Minimum        interface{}            `yaml:"minimum" json:"minimum,omitempty"`
-	Maximum        interface{}            `yaml:"maximum" json:"maximum,omitempty"`
-	Ref            string                 `yaml:"$ref" json:"-"`
-	CollectionType string                 `yaml:"-" json:"-"`
-	Items          *JSONSchema            `yaml:"items" json:"items,omitempty"`
-	GoName         string                 `yaml:"-" json:"-"`
-	GoType         string                 `yaml:"-" json:"-"`
-	GoPremitive    bool                   `yaml:"-" json:"-"`
+	Title           string                 `yaml:"title" json:"title,omitempty"`
+	Description     string                 `yaml:"description" json:"description,omitempty"`
+	SQL             string                 `yaml:"sql" json:"-"`
+	Default         interface{}            `yaml:"default" json:"default,omitempty"`
+	Operation       string                 `yaml:"operation" json:"-"`
+	Presence        string                 `yaml:"presence" json:"-"`
+	Type            string                 `yaml:"type" json:"type,omitempty"`
+	Permission      []string               `yaml:"permission" json:"permission,omitempty"`
+	Properties      map[string]*JSONSchema `yaml:"properties" json:"properties,omitempty"`
+	PropertiesOrder []string               `yaml:"-" json:"propertiesOrder,omitempty"`
+	Enum            []string               `yaml:"enum" json:"enum,omitempty"`
+	Minimum         interface{}            `yaml:"minimum" json:"minimum,omitempty"`
+	Maximum         interface{}            `yaml:"maximum" json:"maximum,omitempty"`
+	Ref             string                 `yaml:"$ref" json:"-"`
+	CollectionType  string                 `yaml:"-" json:"-"`
+	Items           *JSONSchema            `yaml:"items" json:"items,omitempty"`
+	GoName          string                 `yaml:"-" json:"-"`
+	GoType          string                 `yaml:"-" json:"-"`
+	Required        []string               `yaml:"required" json:"-"`
+	GoPremitive     bool                   `yaml:"-" json:"-"`
 }
 
 //String makes string format for json schema
@@ -131,9 +137,10 @@ type Reference struct {
 	Presence    string        `yaml:"presence" json:"presence,omitempty"`
 	RefType     string        `yaml:"-" json:"-"`
 	Columns     ColumnConfigs `yaml:"-" json:"-"`
-	Attr        *JSONSchema
-	LinkTo      *Schema `yaml:"-" json:"-"`
-	Ref         string  `yaml:"$ref" json:"$ref,omitempty"`
+	Attr        *JSONSchema   `yaml:"-" json:"attr"`
+	AttrSlice   yaml.MapSlice `yaml:"attr" json:"-"`
+	LinkTo      *Schema       `yaml:"-" json:"-"`
+	Ref         string        `yaml:"$ref" json:"$ref,omitempty"`
 }
 
 func parseRef(ref string) (string, string) {
@@ -163,6 +170,7 @@ func (s *JSONSchema) Copy() *JSONSchema {
 		Operation:  s.Operation,
 		Type:       s.Type,
 		Presence:   s.Presence,
+		Required:   s.Required,
 		Properties: map[string]*JSONSchema{},
 	}
 	for name, property := range s.Properties {
@@ -206,6 +214,8 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 			s.Properties[name] = property.Copy()
 		}
 	}
+	s.Required = append(s2.Required, s.Required...)
+	s.PropertiesOrder = append(s2.PropertiesOrder, s.PropertiesOrder...)
 	if s.Type == "" {
 		s.Type = s2.Type
 	}
@@ -426,6 +436,7 @@ func (api *API) resolveAllSQL() error {
 
 func (api *API) resolveRelation(linkTo string, reference *Reference) error {
 	reference.GoName = SnakeToCamel(linkTo)
+	reference.Attr = mapSlice(reference.AttrSlice).JSONSchema()
 	linkToSchema := api.schemaByID(linkTo)
 	if linkToSchema == nil {
 		return fmt.Errorf("Can't find linked schema %s", linkTo)
@@ -511,6 +522,11 @@ func MakeAPI(dir string) (*API, error) {
 		schema.FileName = strings.Replace(filepath.Base(path), ".yml", ".json", 1)
 		if &schema == nil {
 			return nil
+		}
+		schema.JSONSchema = mapSlice(schema.JSONSchemaSlice).JSONSchema()
+		schema.Definitions = map[string]*JSONSchema{}
+		for key, definitionSlice := range schema.DefinitionsSlice {
+			schema.Definitions[key] = mapSlice(definitionSlice).JSONSchema()
 		}
 		schema.Path = strings.Replace(schema.ID, "_", "-", -1)
 		schema.PluralPath = strings.Replace(schema.Plural, "_", "-", -1)

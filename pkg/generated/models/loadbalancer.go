@@ -6,16 +6,16 @@ import "encoding/json"
 
 // Loadbalancer
 type Loadbalancer struct {
+	Annotations            *KeyValuePairs    `json:"annotations,omitempty"`
+	ParentUUID             string            `json:"parent_uuid,omitempty"`
+	FQName                 []string          `json:"fq_name,omitempty"`
 	LoadbalancerProperties *LoadbalancerType `json:"loadbalancer_properties,omitempty"`
 	LoadbalancerProvider   string            `json:"loadbalancer_provider,omitempty"`
-	DisplayName            string            `json:"display_name,omitempty"`
-	Annotations            *KeyValuePairs    `json:"annotations,omitempty"`
-	Perms2                 *PermType2        `json:"perms2,omitempty"`
-	ParentType             string            `json:"parent_type,omitempty"`
-	FQName                 []string          `json:"fq_name,omitempty"`
 	IDPerms                *IdPermsType      `json:"id_perms,omitempty"`
+	DisplayName            string            `json:"display_name,omitempty"`
+	Perms2                 *PermType2        `json:"perms2,omitempty"`
 	UUID                   string            `json:"uuid,omitempty"`
-	ParentUUID             string            `json:"parent_uuid,omitempty"`
+	ParentType             string            `json:"parent_type,omitempty"`
 
 	VirtualMachineInterfaceRefs []*LoadbalancerVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 	ServiceInstanceRefs         []*LoadbalancerServiceInstanceRef         `json:"service_instance_refs,omitempty"`
@@ -53,16 +53,16 @@ func (model *Loadbalancer) String() string {
 func MakeLoadbalancer() *Loadbalancer {
 	return &Loadbalancer{
 		//TODO(nati): Apply default
-		UUID:                   "",
-		ParentUUID:             "",
-		ParentType:             "",
-		FQName:                 []string{},
 		IDPerms:                MakeIdPermsType(),
-		Annotations:            MakeKeyValuePairs(),
+		DisplayName:            "",
 		Perms2:                 MakePermType2(),
+		UUID:                   "",
+		ParentType:             "",
 		LoadbalancerProperties: MakeLoadbalancerType(),
 		LoadbalancerProvider:   "",
-		DisplayName:            "",
+		FQName:                 []string{},
+		Annotations:            MakeKeyValuePairs(),
+		ParentUUID:             "",
 	}
 }
 

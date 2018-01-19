@@ -6,16 +6,16 @@ import "encoding/json"
 
 // VirtualIpType
 type VirtualIpType struct {
-	Status                string                   `json:"status,omitempty"`
-	SubnetID              UuidStringType           `json:"subnet_id,omitempty"`
-	PersistenceType       SessionPersistenceType   `json:"persistence_type,omitempty"`
-	AdminState            bool                     `json:"admin_state"`
-	Address               IpAddressType            `json:"address,omitempty"`
-	StatusDescription     string                   `json:"status_description,omitempty"`
-	Protocol              LoadbalancerProtocolType `json:"protocol,omitempty"`
 	PersistenceCookieName string                   `json:"persistence_cookie_name,omitempty"`
 	ConnectionLimit       int                      `json:"connection_limit,omitempty"`
+	AdminState            bool                     `json:"admin_state"`
 	ProtocolPort          int                      `json:"protocol_port,omitempty"`
+	Status                string                   `json:"status,omitempty"`
+	StatusDescription     string                   `json:"status_description,omitempty"`
+	SubnetID              UuidStringType           `json:"subnet_id,omitempty"`
+	Protocol              LoadbalancerProtocolType `json:"protocol,omitempty"`
+	PersistenceType       SessionPersistenceType   `json:"persistence_type,omitempty"`
+	Address               IpAddressType            `json:"address,omitempty"`
 }
 
 // String returns json representation of the object
@@ -28,15 +28,15 @@ func (model *VirtualIpType) String() string {
 func MakeVirtualIpType() *VirtualIpType {
 	return &VirtualIpType{
 		//TODO(nati): Apply default
-		StatusDescription:     "",
-		Protocol:              MakeLoadbalancerProtocolType(),
-		PersistenceCookieName: "",
 		ConnectionLimit:       0,
+		AdminState:            false,
 		ProtocolPort:          0,
 		Status:                "",
+		StatusDescription:     "",
 		SubnetID:              MakeUuidStringType(),
+		PersistenceCookieName: "",
+		Protocol:              MakeLoadbalancerProtocolType(),
 		PersistenceType:       MakeSessionPersistenceType(),
-		AdminState:            false,
 		Address:               MakeIpAddressType(),
 	}
 }

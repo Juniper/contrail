@@ -6,15 +6,15 @@ import "encoding/json"
 
 // DatabaseNode
 type DatabaseNode struct {
-	DisplayName           string         `json:"display_name,omitempty"`
-	Annotations           *KeyValuePairs `json:"annotations,omitempty"`
 	UUID                  string         `json:"uuid,omitempty"`
-	DatabaseNodeIPAddress IpAddressType  `json:"database_node_ip_address,omitempty"`
-	ParentUUID            string         `json:"parent_uuid,omitempty"`
-	IDPerms               *IdPermsType   `json:"id_perms,omitempty"`
-	Perms2                *PermType2     `json:"perms2,omitempty"`
 	ParentType            string         `json:"parent_type,omitempty"`
+	IDPerms               *IdPermsType   `json:"id_perms,omitempty"`
+	Annotations           *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2                *PermType2     `json:"perms2,omitempty"`
+	ParentUUID            string         `json:"parent_uuid,omitempty"`
 	FQName                []string       `json:"fq_name,omitempty"`
+	DisplayName           string         `json:"display_name,omitempty"`
+	DatabaseNodeIPAddress IpAddressType  `json:"database_node_ip_address,omitempty"`
 }
 
 // String returns json representation of the object
@@ -27,15 +27,15 @@ func (model *DatabaseNode) String() string {
 func MakeDatabaseNode() *DatabaseNode {
 	return &DatabaseNode{
 		//TODO(nati): Apply default
-		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
-		Perms2:      MakePermType2(),
-		ParentType:  "",
-		ParentUUID:  "",
-		DisplayName: "",
-		Annotations: MakeKeyValuePairs(),
-		UUID:        "",
+		FQName:                []string{},
+		DisplayName:           "",
 		DatabaseNodeIPAddress: MakeIpAddressType(),
+		Perms2:                MakePermType2(),
+		ParentUUID:            "",
+		IDPerms:               MakeIdPermsType(),
+		Annotations:           MakeKeyValuePairs(),
+		UUID:                  "",
+		ParentType:            "",
 	}
 }
 

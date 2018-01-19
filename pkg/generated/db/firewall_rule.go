@@ -112,9 +112,9 @@ var FirewallRuleBackRefFields = map[string][]string{}
 // FirewallRuleParentTypes is possible parents for FirewallRule
 var FirewallRuleParents = []string{
 
-	"policy_management",
-
 	"project",
+
+	"policy_management",
 }
 
 const insertFirewallRuleServiceGroupQuery = "insert into `ref_firewall_rule_service_group` (`from`, `to` ) values (?, ?);"

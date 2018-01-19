@@ -6,8 +6,8 @@ import "encoding/json"
 
 // ShareType
 type ShareType struct {
-	TenantAccess AccessType `json:"tenant_access,omitempty"`
 	Tenant       string     `json:"tenant,omitempty"`
+	TenantAccess AccessType `json:"tenant_access,omitempty"`
 }
 
 // String returns json representation of the object

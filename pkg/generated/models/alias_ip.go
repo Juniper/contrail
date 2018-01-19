@@ -6,19 +6,19 @@ import "encoding/json"
 
 // AliasIP
 type AliasIP struct {
-	UUID                 string              `json:"uuid,omitempty"`
-	ParentUUID           string              `json:"parent_uuid,omitempty"`
-	ParentType           string              `json:"parent_type,omitempty"`
-	IDPerms              *IdPermsType        `json:"id_perms,omitempty"`
+	Annotations          *KeyValuePairs      `json:"annotations,omitempty"`
 	AliasIPAddress       IpAddressType       `json:"alias_ip_address,omitempty"`
 	AliasIPAddressFamily IpAddressFamilyType `json:"alias_ip_address_family,omitempty"`
+	ParentUUID           string              `json:"parent_uuid,omitempty"`
 	DisplayName          string              `json:"display_name,omitempty"`
-	Annotations          *KeyValuePairs      `json:"annotations,omitempty"`
 	Perms2               *PermType2          `json:"perms2,omitempty"`
+	UUID                 string              `json:"uuid,omitempty"`
+	ParentType           string              `json:"parent_type,omitempty"`
 	FQName               []string            `json:"fq_name,omitempty"`
+	IDPerms              *IdPermsType        `json:"id_perms,omitempty"`
 
-	VirtualMachineInterfaceRefs []*AliasIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 	ProjectRefs                 []*AliasIPProjectRef                 `json:"project_refs,omitempty"`
+	VirtualMachineInterfaceRefs []*AliasIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 }
 
 // AliasIPProjectRef references each other
@@ -47,14 +47,14 @@ func MakeAliasIP() *AliasIP {
 		//TODO(nati): Apply default
 		AliasIPAddress:       MakeIpAddressType(),
 		AliasIPAddressFamily: MakeIpAddressFamilyType(),
-		DisplayName:          "",
-		Annotations:          MakeKeyValuePairs(),
-		Perms2:               MakePermType2(),
-		FQName:               []string{},
-		UUID:                 "",
 		ParentUUID:           "",
+		Annotations:          MakeKeyValuePairs(),
 		ParentType:           "",
+		FQName:               []string{},
 		IDPerms:              MakeIdPermsType(),
+		DisplayName:          "",
+		Perms2:               MakePermType2(),
+		UUID:                 "",
 	}
 }
 

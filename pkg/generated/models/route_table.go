@@ -6,15 +6,15 @@ import "encoding/json"
 
 // RouteTable
 type RouteTable struct {
-	ParentType  string          `json:"parent_type,omitempty"`
-	Annotations *KeyValuePairs  `json:"annotations,omitempty"`
+	DisplayName string          `json:"display_name,omitempty"`
 	Perms2      *PermType2      `json:"perms2,omitempty"`
-	ParentUUID  string          `json:"parent_uuid,omitempty"`
 	UUID        string          `json:"uuid,omitempty"`
+	ParentUUID  string          `json:"parent_uuid,omitempty"`
+	Routes      *RouteTableType `json:"routes,omitempty"`
+	Annotations *KeyValuePairs  `json:"annotations,omitempty"`
+	ParentType  string          `json:"parent_type,omitempty"`
 	FQName      []string        `json:"fq_name,omitempty"`
 	IDPerms     *IdPermsType    `json:"id_perms,omitempty"`
-	DisplayName string          `json:"display_name,omitempty"`
-	Routes      *RouteTableType `json:"routes,omitempty"`
 }
 
 // String returns json representation of the object
@@ -27,15 +27,15 @@ func (model *RouteTable) String() string {
 func MakeRouteTable() *RouteTable {
 	return &RouteTable{
 		//TODO(nati): Apply default
-		ParentUUID:  "",
-		ParentType:  "",
 		Annotations: MakeKeyValuePairs(),
-		Perms2:      MakePermType2(),
-		DisplayName: "",
-		Routes:      MakeRouteTableType(),
-		UUID:        "",
+		ParentType:  "",
 		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
+		DisplayName: "",
+		Perms2:      MakePermType2(),
+		UUID:        "",
+		ParentUUID:  "",
+		Routes:      MakeRouteTableType(),
 	}
 }
 

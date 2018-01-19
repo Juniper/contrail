@@ -6,12 +6,12 @@ import "encoding/json"
 
 // LoadbalancerMemberType
 type LoadbalancerMemberType struct {
-	ProtocolPort      int           `json:"protocol_port,omitempty"`
 	Status            string        `json:"status,omitempty"`
 	StatusDescription string        `json:"status_description,omitempty"`
 	Weight            int           `json:"weight,omitempty"`
 	AdminState        bool          `json:"admin_state"`
 	Address           IpAddressType `json:"address,omitempty"`
+	ProtocolPort      int           `json:"protocol_port,omitempty"`
 }
 
 // String returns json representation of the object

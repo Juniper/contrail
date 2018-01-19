@@ -22,10 +22,10 @@ func (model *DiscoveryPubSubEndPointType) String() string {
 func MakeDiscoveryPubSubEndPointType() *DiscoveryPubSubEndPointType {
 	return &DiscoveryPubSubEndPointType{
 		//TODO(nati): Apply default
-		EpType:    "",
-		EpPrefix:  MakeSubnetType(),
 		EpVersion: "",
 		EpID:      "",
+		EpType:    "",
+		EpPrefix:  MakeSubnetType(),
 	}
 }
 

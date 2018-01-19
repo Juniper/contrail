@@ -49,17 +49,17 @@ var LoadbalancerFields = []string{
 // LoadbalancerRefFields is db reference fields for Loadbalancer
 var LoadbalancerRefFields = map[string][]string{
 
-	"service_appliance_set": {
-	// <common.Schema Value>
-
-	},
-
 	"virtual_machine_interface": {
 	// <common.Schema Value>
 
 	},
 
 	"service_instance": {
+	// <common.Schema Value>
+
+	},
+
+	"service_appliance_set": {
 	// <common.Schema Value>
 
 	},

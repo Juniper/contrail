@@ -6,18 +6,18 @@ import "encoding/json"
 
 // ServiceTemplateType
 type ServiceTemplateType struct {
-	OrderedInterfaces         bool                            `json:"ordered_interfaces"`
-	ImageName                 string                          `json:"image_name,omitempty"`
-	Flavor                    string                          `json:"flavor,omitempty"`
-	InstanceData              string                          `json:"instance_data,omitempty"`
 	ServiceVirtualizationType ServiceVirtualizationType       `json:"service_virtualization_type,omitempty"`
-	InterfaceType             []*ServiceTemplateInterfaceType `json:"interface_type,omitempty"`
-	ServiceMode               ServiceModeType                 `json:"service_mode,omitempty"`
+	Flavor                    string                          `json:"flavor,omitempty"`
+	ServiceScaling            bool                            `json:"service_scaling"`
+	AvailabilityZoneEnable    bool                            `json:"availability_zone_enable"`
+	InstanceData              string                          `json:"instance_data,omitempty"`
+	OrderedInterfaces         bool                            `json:"ordered_interfaces"`
 	Version                   int                             `json:"version,omitempty"`
 	ServiceType               ServiceType                     `json:"service_type,omitempty"`
-	ServiceScaling            bool                            `json:"service_scaling"`
 	VrouterInstanceType       VRouterInstanceType             `json:"vrouter_instance_type,omitempty"`
-	AvailabilityZoneEnable    bool                            `json:"availability_zone_enable"`
+	InterfaceType             []*ServiceTemplateInterfaceType `json:"interface_type,omitempty"`
+	ImageName                 string                          `json:"image_name,omitempty"`
+	ServiceMode               ServiceModeType                 `json:"service_mode,omitempty"`
 }
 
 // String returns json representation of the object
@@ -30,20 +30,20 @@ func (model *ServiceTemplateType) String() string {
 func MakeServiceTemplateType() *ServiceTemplateType {
 	return &ServiceTemplateType{
 		//TODO(nati): Apply default
-		OrderedInterfaces:         false,
-		ImageName:                 "",
-		Flavor:                    "",
-		InstanceData:              "",
-		ServiceVirtualizationType: MakeServiceVirtualizationType(),
 
 		InterfaceType: MakeServiceTemplateInterfaceTypeSlice(),
 
-		ServiceMode:            MakeServiceModeType(),
-		Version:                0,
-		ServiceType:            MakeServiceType(),
-		ServiceScaling:         false,
-		VrouterInstanceType:    MakeVRouterInstanceType(),
-		AvailabilityZoneEnable: false,
+		ImageName:                 "",
+		ServiceMode:               MakeServiceModeType(),
+		Version:                   0,
+		ServiceType:               MakeServiceType(),
+		VrouterInstanceType:       MakeVRouterInstanceType(),
+		AvailabilityZoneEnable:    false,
+		InstanceData:              "",
+		OrderedInterfaces:         false,
+		ServiceVirtualizationType: MakeServiceVirtualizationType(),
+		Flavor:         "",
+		ServiceScaling: false,
 	}
 }
 
