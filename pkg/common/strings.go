@@ -16,7 +16,7 @@ func CamelToSnake(s string) string {
 	var buf bytes.Buffer
 	runes := []rune(s)
 	for i, c := range runes {
-		if i != 0 && i != len(runes)-1 && isUpperOrDigit(c) && !isUpperOrDigit(runes[i+1]) {
+		if i != 0 && i != len(runes)-1 && isUpperOrDigit(c) && (!isUpperOrDigit(runes[i+1]) || !isUpperOrDigit(runes[i-1])) {
 			buf.WriteRune('_')
 		}
 		buf.WriteRune(unicode.ToLower(c))

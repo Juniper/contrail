@@ -20,10 +20,9 @@ func (model *DiscoveryServiceAssignmentType) String() string {
 func MakeDiscoveryServiceAssignmentType() *DiscoveryServiceAssignmentType {
 	return &DiscoveryServiceAssignmentType{
 		//TODO(nati): Apply default
+		Publisher: MakeDiscoveryPubSubEndPointType(),
 
 		Subscriber: MakeDiscoveryPubSubEndPointTypeSlice(),
-
-		Publisher: MakeDiscoveryPubSubEndPointType(),
 	}
 }
 

@@ -2,9 +2,12 @@ package api
 
 import (
     "net/http"
+    "database/sql"
     "github.com/Juniper/contrail/pkg/generated/models"
     "github.com/Juniper/contrail/pkg/generated/db"
     "github.com/satori/go.uuid"
+    "github.com/labstack/echo"
+    "github.com/Juniper/contrail/pkg/common"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -16,6 +19,10 @@ type {{ schema.JSONSchema.GoName }}RESTAPI struct {
 
 type {{ schema.JSONSchema.GoName }}CreateRequest struct {
     Data *models.{{ schema.JSONSchema.GoName }} `json:"{{ schema.Path }}"`
+}
+
+type {{ schema.JSONSchema.GoName }}UpdateRequest struct {
+    Data map[string]interface{} `json:"{{ schema.Path }}"`
 }
 
 //Path returns api path for collections.
@@ -52,10 +59,10 @@ func (api *{{ schema.JSONSchema.GoName }}RESTAPI) Create(c echo.Context) error {
     if model.UUID == "" {
         model.UUID = uuid.NewV4().String()
     }
-    
+
     if model.FQName == nil {
        return echo.NewHTTPError(http.StatusBadRequest, "Missing FQName")
-    } 
+    }
 
     auth := common.GetAuthContext(c)
     model.Perms2.Owner = auth.ProjectID()
@@ -75,7 +82,40 @@ func (api *{{ schema.JSONSchema.GoName }}RESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *{{ schema.JSONSchema.GoName }}RESTAPI) Update(c echo.Context) error {
-    return nil
+    id := c.Param("id")
+    requestData := &{{ schema.JSONSchema.GoName }}UpdateRequest{}
+        if err := c.Bind(requestData); err != nil {
+                log.WithFields(log.Fields{
+                    "err": err,
+                    "resource": "{{ schema.ID }}",
+                }).Debug("bind failed on update")
+        		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+        }
+        model := requestData.Data
+        if model == nil {
+           return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+        }
+        auth := common.GetAuthContext(c)
+        ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+        if !ok {
+           return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+        }
+        if err := common.DoInTransaction(
+            api.DB,
+            func (tx *sql.Tx) error {
+                return db.Update{{ schema.JSONSchema.GoName }}(tx, id, model)
+            }); err != nil {
+            log.WithFields(log.Fields{
+                "err": err,
+                "resource": "{{ schema.ID }}",
+            }).Debug("db update failed")
+           return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+        }
+        return c.JSON(http.StatusOK, map[string]map[string]string{
+            "{{ schema.Path }}": {
+                "uuid":id,
+                "uri": "/" + "{{ schema.Path }}" + "/" + id},
+            })
 }
 
 //Delete handles a REST Delete request.

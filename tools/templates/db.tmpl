@@ -1,10 +1,7 @@
 package db
 
 import (
-    "strings"
-    "bytes"
-    "fmt"
-  	"database/sql"
+    "database/sql"
     "encoding/json"
     "github.com/Juniper/contrail/pkg/common"
     "github.com/Juniper/contrail/pkg/generated/models"
@@ -14,7 +11,6 @@ import (
 )
 
 const insert{{ schema.JSONSchema.GoName }}Query = "insert into `{{schema.ID}}` ({% for column in schema.Columns %}`{{column.Column }}`{% if not forloop.Last %},{% endif %}{% endfor %}) values ({% for column in schema.Columns %}?{% if not forloop.Last %},{% endif %}{% endfor %});"
-const update{{ schema.JSONSchema.GoName }}Query = "update `{{schema.ID}}` set {% for column in schema.Columns %}`{{column.Column }}` = ?{% if not forloop.Last %},{% endif %}{% endfor %};"
 const delete{{ schema.JSONSchema.GoName }}Query = "delete from `{{schema.ID}}` where uuid = ?"
 
 // {{ schema.JSONSchema.GoName }}Fields is db columns for {{ schema.JSONSchema.GoName }}
@@ -284,9 +280,50 @@ func List{{ schema.JSONSchema.GoName }}(tx *sql.Tx, spec *common.ListSpec) ([]*m
 }
 
 // Update{{ schema.JSONSchema.GoName }} updates a resource
-func Update{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string, model *models.{{ schema.JSONSchema.GoName }}) error {
-    //TODO(nati) support update
-    return nil
+func Update{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+    //TODO (handle references)
+    // Prepare statement for updating data
+    var update{{ schema.JSONSchema.GoName }}Query = "update `{{schema.ID}}` set "
+
+    updatedValues := make([]interface{}, 0)
+    {% for column in schema.Columns %}
+    if value, ok := common.GetValueByPath(model, "{{ column.Path }}" , "."); ok {
+        update{{ schema.JSONSchema.GoName }}Query += "`{{column.Column }}` = ?"
+        {% if column.Bind == "json" %}
+            updatedValues = append(updatedValues, common.MustJSON(value))
+        {% elif column.Bind == "int" %}
+            updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+        {% elif column.Bind == "bool" %}
+            updatedValues = append(updatedValues, common.InterfaceToBool(value))
+        {% elif column.Bind == "string" %}
+            updatedValues = append(updatedValues, common.InterfaceToString(value))
+        {% else %}
+            updatedValues = append(updatedValues, value.({{ column.Bind }}))
+        {% endif %}
+        update{{ schema.JSONSchema.GoName }}Query += ","
+    }
+    {% endfor %}
+    update{{ schema.JSONSchema.GoName }}Query =
+    update{{ schema.JSONSchema.GoName }}Query[:len(update{{ schema.JSONSchema.GoName }}Query)-1] + " where `uuid` = ? ;"
+    updatedValues = append(updatedValues, string(uuid))
+    stmt, err := tx.Prepare(update{{ schema.JSONSchema.GoName }}Query)
+    if err != nil {
+        return errors.Wrap(err, "preparing update statement failed")
+    }
+    defer stmt.Close()
+    log.WithFields(log.Fields{
+        "model": model,
+        "query": update{{ schema.JSONSchema.GoName }}Query,
+    }).Debug("update query")
+    _, err = stmt.Exec( updatedValues... )
+    if err != nil {
+        return errors.Wrap(err, "update failed")
+    }
+
+    log.WithFields(log.Fields{
+        "model": model,
+    }).Debug("updated")
+    return err
 }
 
 // Delete{{ schema.JSONSchema.GoName }} deletes a resource
@@ -295,7 +332,7 @@ func Delete{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string, auth *common.
     selectQuery := "select count(uuid) from {{ schema.ID }} where uuid = ?"
     var err error
     var count int
-    
+
     if auth.IsAdmin() {
         row := tx.QueryRow(selectQuery, uuid)
         if err != nil {

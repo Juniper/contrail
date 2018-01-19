@@ -22,6 +22,10 @@ type SecurityGroupCreateRequest struct {
 	Data *models.SecurityGroup `json:"security-group"`
 }
 
+type SecurityGroupUpdateRequest struct {
+	Data map[string]interface{} `json:"security-group"`
+}
+
 //Path returns api path for collections.
 func (api *SecurityGroupRESTAPI) Path() string {
 	return "/security-groups"
@@ -79,7 +83,40 @@ func (api *SecurityGroupRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *SecurityGroupRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &SecurityGroupUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "security_group",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateSecurityGroup(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "security_group",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"security-group": {
+			"uuid": id,
+			"uri":  "/" + "security-group" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

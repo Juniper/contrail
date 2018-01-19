@@ -146,6 +146,10 @@ func checkDiff(path string, expected, actual interface{}) error {
 				return err
 			}
 		}
+	case int:
+		if float64(t) != actual {
+			return fmt.Errorf("expected %d but actually we got %f for path %s", t, actual, path)
+		}
 	default:
 		if t != actual {
 			return fmt.Errorf("expected %s but actually we got %s for path %s", t, actual, path)

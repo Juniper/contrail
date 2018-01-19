@@ -12,7 +12,6 @@ import (
 )
 
 const insertContrailAnalyticsNodeQuery = "insert into `contrail_analytics_node` (`uuid`,`provisioning_state`,`provisioning_start_time`,`provisioning_progress_stage`,`provisioning_progress`,`provisioning_log`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const updateContrailAnalyticsNodeQuery = "update `contrail_analytics_node` set `uuid` = ?,`provisioning_state` = ?,`provisioning_start_time` = ?,`provisioning_progress_stage` = ?,`provisioning_progress` = ?,`provisioning_log` = ?,`share` = ?,`owner_access` = ?,`owner` = ?,`global_access` = ?,`parent_uuid` = ?,`parent_type` = ?,`user_visible` = ?,`permissions_owner_access` = ?,`permissions_owner` = ?,`other_access` = ?,`group_access` = ?,`group` = ?,`last_modified` = ?,`enable` = ?,`description` = ?,`creator` = ?,`created` = ?,`fq_name` = ?,`display_name` = ?,`key_value_pair` = ?;"
 const deleteContrailAnalyticsNodeQuery = "delete from `contrail_analytics_node` where uuid = ?"
 
 // ContrailAnalyticsNodeFields is db columns for ContrailAnalyticsNode
@@ -381,9 +380,242 @@ func ListContrailAnalyticsNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.Con
 }
 
 // UpdateContrailAnalyticsNode updates a resource
-func UpdateContrailAnalyticsNode(tx *sql.Tx, uuid string, model *models.ContrailAnalyticsNode) error {
-	//TODO(nati) support update
-	return nil
+func UpdateContrailAnalyticsNode(tx *sql.Tx, uuid string, model map[string]interface{}) error {
+	//TODO (handle references)
+	// Prepare statement for updating data
+	var updateContrailAnalyticsNodeQuery = "update `contrail_analytics_node` set "
+
+	updatedValues := make([]interface{}, 0)
+
+	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ProvisioningState", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`provisioning_state` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ProvisioningStartTime", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`provisioning_start_time` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ProvisioningProgressStage", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`provisioning_progress_stage` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ProvisioningProgress", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`provisioning_progress` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ProvisioningLog", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`provisioning_log` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`share` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`global_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`parent_uuid` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`parent_type` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`user_visible` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`permissions_owner_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`permissions_owner` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`other_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`group_access` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`group` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`last_modified` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`enable` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToBool(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`description` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`creator` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`created` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`fq_name` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`display_name` = ?"
+
+		updatedValues = append(updatedValues, common.InterfaceToString(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
+		updateContrailAnalyticsNodeQuery += "`key_value_pair` = ?"
+
+		updatedValues = append(updatedValues, common.MustJSON(value))
+
+		updateContrailAnalyticsNodeQuery += ","
+	}
+
+	updateContrailAnalyticsNodeQuery =
+		updateContrailAnalyticsNodeQuery[:len(updateContrailAnalyticsNodeQuery)-1] + " where `uuid` = ? ;"
+	updatedValues = append(updatedValues, string(uuid))
+	stmt, err := tx.Prepare(updateContrailAnalyticsNodeQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing update statement failed")
+	}
+	defer stmt.Close()
+	log.WithFields(log.Fields{
+		"model": model,
+		"query": updateContrailAnalyticsNodeQuery,
+	}).Debug("update query")
+	_, err = stmt.Exec(updatedValues...)
+	if err != nil {
+		return errors.Wrap(err, "update failed")
+	}
+
+	log.WithFields(log.Fields{
+		"model": model,
+	}).Debug("updated")
+	return err
 }
 
 // DeleteContrailAnalyticsNode deletes a resource

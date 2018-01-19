@@ -6,15 +6,15 @@ import "encoding/json"
 
 // SecurityLoggingObject
 type SecurityLoggingObject struct {
-	SecurityLoggingObjectRules *SecurityLoggingObjectRuleListType `json:"security_logging_object_rules,omitempty"`
-	DisplayName                string                             `json:"display_name,omitempty"`
-	Perms2                     *PermType2                         `json:"perms2,omitempty"`
+	ParentUUID                 string                             `json:"parent_uuid,omitempty"`
 	FQName                     []string                           `json:"fq_name,omitempty"`
 	SecurityLoggingObjectRate  int                                `json:"security_logging_object_rate,omitempty"`
 	IDPerms                    *IdPermsType                       `json:"id_perms,omitempty"`
-	Annotations                *KeyValuePairs                     `json:"annotations,omitempty"`
+	Perms2                     *PermType2                         `json:"perms2,omitempty"`
 	UUID                       string                             `json:"uuid,omitempty"`
-	ParentUUID                 string                             `json:"parent_uuid,omitempty"`
+	SecurityLoggingObjectRules *SecurityLoggingObjectRuleListType `json:"security_logging_object_rules,omitempty"`
+	DisplayName                string                             `json:"display_name,omitempty"`
+	Annotations                *KeyValuePairs                     `json:"annotations,omitempty"`
 	ParentType                 string                             `json:"parent_type,omitempty"`
 
 	SecurityGroupRefs []*SecurityLoggingObjectSecurityGroupRef `json:"security_group_refs,omitempty"`
@@ -47,16 +47,16 @@ func (model *SecurityLoggingObject) String() string {
 func MakeSecurityLoggingObject() *SecurityLoggingObject {
 	return &SecurityLoggingObject{
 		//TODO(nati): Apply default
-		SecurityLoggingObjectRate:  0,
-		IDPerms:                    MakeIdPermsType(),
 		Annotations:                MakeKeyValuePairs(),
-		UUID:                       "",
-		ParentUUID:                 "",
 		ParentType:                 "",
 		SecurityLoggingObjectRules: MakeSecurityLoggingObjectRuleListType(),
 		DisplayName:                "",
 		Perms2:                     MakePermType2(),
+		UUID:                       "",
+		ParentUUID:                 "",
 		FQName:                     []string{},
+		SecurityLoggingObjectRate: 0,
+		IDPerms:                   MakeIdPermsType(),
 	}
 }
 

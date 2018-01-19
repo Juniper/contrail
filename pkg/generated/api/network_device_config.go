@@ -22,6 +22,10 @@ type NetworkDeviceConfigCreateRequest struct {
 	Data *models.NetworkDeviceConfig `json:"network-device-config"`
 }
 
+type NetworkDeviceConfigUpdateRequest struct {
+	Data map[string]interface{} `json:"network-device-config"`
+}
+
 //Path returns api path for collections.
 func (api *NetworkDeviceConfigRESTAPI) Path() string {
 	return "/network-device-configs"
@@ -79,7 +83,40 @@ func (api *NetworkDeviceConfigRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *NetworkDeviceConfigRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &NetworkDeviceConfigUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "network_device_config",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateNetworkDeviceConfig(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "network_device_config",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"network-device-config": {
+			"uuid": id,
+			"uri":  "/" + "network-device-config" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

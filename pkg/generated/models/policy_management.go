@@ -6,7 +6,6 @@ import "encoding/json"
 
 // PolicyManagement
 type PolicyManagement struct {
-	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
 	DisplayName string         `json:"display_name,omitempty"`
 	Annotations *KeyValuePairs `json:"annotations,omitempty"`
 	Perms2      *PermType2     `json:"perms2,omitempty"`
@@ -14,6 +13,7 @@ type PolicyManagement struct {
 	ParentUUID  string         `json:"parent_uuid,omitempty"`
 	ParentType  string         `json:"parent_type,omitempty"`
 	FQName      []string       `json:"fq_name,omitempty"`
+	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
 
 	AddressGroups         []*AddressGroup         `json:"address_groups,omitempty"`
 	ApplicationPolicySets []*ApplicationPolicySet `json:"application_policy_sets,omitempty"`
@@ -32,6 +32,7 @@ func (model *PolicyManagement) String() string {
 func MakePolicyManagement() *PolicyManagement {
 	return &PolicyManagement{
 		//TODO(nati): Apply default
+		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
@@ -39,7 +40,6 @@ func MakePolicyManagement() *PolicyManagement {
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
-		ParentUUID:  "",
 	}
 }
 

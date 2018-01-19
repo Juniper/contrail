@@ -22,6 +22,10 @@ type QosQueueCreateRequest struct {
 	Data *models.QosQueue `json:"qos-queue"`
 }
 
+type QosQueueUpdateRequest struct {
+	Data map[string]interface{} `json:"qos-queue"`
+}
+
 //Path returns api path for collections.
 func (api *QosQueueRESTAPI) Path() string {
 	return "/qos-queues"
@@ -79,7 +83,40 @@ func (api *QosQueueRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *QosQueueRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &QosQueueUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "qos_queue",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateQosQueue(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "qos_queue",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"qos-queue": {
+			"uuid": id,
+			"uri":  "/" + "qos-queue" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.

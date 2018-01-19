@@ -22,6 +22,10 @@ type ServiceEndpointCreateRequest struct {
 	Data *models.ServiceEndpoint `json:"service-endpoint"`
 }
 
+type ServiceEndpointUpdateRequest struct {
+	Data map[string]interface{} `json:"service-endpoint"`
+}
+
 //Path returns api path for collections.
 func (api *ServiceEndpointRESTAPI) Path() string {
 	return "/service-endpoints"
@@ -79,7 +83,40 @@ func (api *ServiceEndpointRESTAPI) Create(c echo.Context) error {
 
 //Update handles a REST Update request.
 func (api *ServiceEndpointRESTAPI) Update(c echo.Context) error {
-	return nil
+	id := c.Param("id")
+	requestData := &ServiceEndpointUpdateRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_endpoint",
+		}).Debug("bind failed on update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	model := requestData.Data
+	if model == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	auth := common.GetAuthContext(c)
+	ok := common.SetValueByPath(model, "Perms2.Owner", ".", auth.ProjectID())
+	if !ok {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if err := common.DoInTransaction(
+		api.DB,
+		func(tx *sql.Tx) error {
+			return db.UpdateServiceEndpoint(tx, id, model)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_endpoint",
+		}).Debug("db update failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.JSON(http.StatusOK, map[string]map[string]string{
+		"service-endpoint": {
+			"uuid": id,
+			"uri":  "/" + "service-endpoint" + "/" + id},
+	})
 }
 
 //Delete handles a REST Delete request.
