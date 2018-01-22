@@ -6,19 +6,19 @@ import "encoding/json"
 
 // PolicyRuleType
 type PolicyRuleType struct {
+	Direction    DirectionType   `json:"direction,omitempty"`
 	ActionList   *ActionListType `json:"action_list,omitempty"`
 	Created      string          `json:"created,omitempty"`
 	DSTPorts     []*PortType     `json:"dst_ports,omitempty"`
 	Application  []string        `json:"application,omitempty"`
-	LastModified string          `json:"last_modified,omitempty"`
-	SRCPorts     []*PortType     `json:"src_ports,omitempty"`
-	Direction    DirectionType   `json:"direction,omitempty"`
-	DSTAddresses []*AddressType  `json:"dst_addresses,omitempty"`
 	Ethertype    EtherType       `json:"ethertype,omitempty"`
-	SRCAddresses []*AddressType  `json:"src_addresses,omitempty"`
 	RuleSequence *SequenceType   `json:"rule_sequence,omitempty"`
 	Protocol     string          `json:"protocol,omitempty"`
+	DSTAddresses []*AddressType  `json:"dst_addresses,omitempty"`
 	RuleUUID     string          `json:"rule_uuid,omitempty"`
+	LastModified string          `json:"last_modified,omitempty"`
+	SRCAddresses []*AddressType  `json:"src_addresses,omitempty"`
+	SRCPorts     []*PortType     `json:"src_ports,omitempty"`
 }
 
 // String returns json representation of the object
@@ -31,27 +31,26 @@ func (model *PolicyRuleType) String() string {
 func MakePolicyRuleType() *PolicyRuleType {
 	return &PolicyRuleType{
 		//TODO(nati): Apply default
-		Created: "",
+		Protocol: "",
+
+		DSTAddresses: MakeAddressTypeSlice(),
+
+		RuleUUID:     "",
+		LastModified: "",
+
+		SRCAddresses: MakeAddressTypeSlice(),
+
+		SRCPorts: MakePortTypeSlice(),
+
+		Direction:  MakeDirectionType(),
+		ActionList: MakeActionListType(),
+		Created:    "",
 
 		DSTPorts: MakePortTypeSlice(),
 
 		Application:  []string{},
-		LastModified: "",
-
-		SRCPorts: MakePortTypeSlice(),
-
-		Direction: MakeDirectionType(),
-
-		DSTAddresses: MakeAddressTypeSlice(),
-
-		ActionList: MakeActionListType(),
-
-		SRCAddresses: MakeAddressTypeSlice(),
-
-		RuleSequence: MakeSequenceType(),
-		Protocol:     "",
-		RuleUUID:     "",
 		Ethertype:    MakeEtherType(),
+		RuleSequence: MakeSequenceType(),
 	}
 }
 

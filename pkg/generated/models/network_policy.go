@@ -6,14 +6,14 @@ import "encoding/json"
 
 // NetworkPolicy
 type NetworkPolicy struct {
+	NetworkPolicyEntries *PolicyEntriesType `json:"network_policy_entries,omitempty"`
+	FQName               []string           `json:"fq_name,omitempty"`
+	IDPerms              *IdPermsType       `json:"id_perms,omitempty"`
 	ParentUUID           string             `json:"parent_uuid,omitempty"`
 	ParentType           string             `json:"parent_type,omitempty"`
-	IDPerms              *IdPermsType       `json:"id_perms,omitempty"`
 	DisplayName          string             `json:"display_name,omitempty"`
-	NetworkPolicyEntries *PolicyEntriesType `json:"network_policy_entries,omitempty"`
-	Perms2               *PermType2         `json:"perms2,omitempty"`
-	FQName               []string           `json:"fq_name,omitempty"`
 	Annotations          *KeyValuePairs     `json:"annotations,omitempty"`
+	Perms2               *PermType2         `json:"perms2,omitempty"`
 	UUID                 string             `json:"uuid,omitempty"`
 }
 
@@ -27,15 +27,15 @@ func (model *NetworkPolicy) String() string {
 func MakeNetworkPolicy() *NetworkPolicy {
 	return &NetworkPolicy{
 		//TODO(nati): Apply default
+		Annotations:          MakeKeyValuePairs(),
 		Perms2:               MakePermType2(),
+		UUID:                 "",
 		ParentUUID:           "",
 		ParentType:           "",
-		IDPerms:              MakeIdPermsType(),
 		DisplayName:          "",
-		NetworkPolicyEntries: MakePolicyEntriesType(),
-		UUID:                 "",
 		FQName:               []string{},
-		Annotations:          MakeKeyValuePairs(),
+		IDPerms:              MakeIdPermsType(),
+		NetworkPolicyEntries: MakePolicyEntriesType(),
 	}
 }
 

@@ -65,9 +65,9 @@ var ApplicationPolicySetParents = []string{
 	"policy_management",
 }
 
-const insertApplicationPolicySetFirewallPolicyQuery = "insert into `ref_application_policy_set_firewall_policy` (`from`, `to` ,`sequence`) values (?, ?,?);"
-
 const insertApplicationPolicySetGlobalVrouterConfigQuery = "insert into `ref_application_policy_set_global_vrouter_config` (`from`, `to` ) values (?, ?);"
+
+const insertApplicationPolicySetFirewallPolicyQuery = "insert into `ref_application_policy_set_firewall_policy` (`from`, `to` ,`sequence`) values (?, ?,?);"
 
 // CreateApplicationPolicySet inserts ApplicationPolicySet to DB
 func CreateApplicationPolicySet(tx *sql.Tx, model *models.ApplicationPolicySet) error {

@@ -20,8 +20,8 @@ func (model *RbacPermType) String() string {
 func MakeRbacPermType() *RbacPermType {
 	return &RbacPermType{
 		//TODO(nati): Apply default
-		RoleCrud: "",
 		RoleName: "",
+		RoleCrud: "",
 	}
 }
 

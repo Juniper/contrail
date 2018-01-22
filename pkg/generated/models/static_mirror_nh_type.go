@@ -6,9 +6,9 @@ import "encoding/json"
 
 // StaticMirrorNhType
 type StaticMirrorNhType struct {
+	VtepDSTMacAddress string                     `json:"vtep_dst_mac_address,omitempty"`
 	Vni               VxlanNetworkIdentifierType `json:"vni,omitempty"`
 	VtepDSTIPAddress  string                     `json:"vtep_dst_ip_address,omitempty"`
-	VtepDSTMacAddress string                     `json:"vtep_dst_mac_address,omitempty"`
 }
 
 // String returns json representation of the object

@@ -19,7 +19,7 @@ import (
 )
 
 var Log func(string, ...interface{}) = func(format string, a ...interface{}) {
-	log.Printf(format, a)
+	log.Printf(format, a...)
 }
 
 // Cache provides the interface for cache implementations.

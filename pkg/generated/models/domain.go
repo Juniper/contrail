@@ -6,12 +6,12 @@ import "encoding/json"
 
 // Domain
 type Domain struct {
-	Perms2       *PermType2        `json:"perms2,omitempty"`
 	ParentType   string            `json:"parent_type,omitempty"`
 	IDPerms      *IdPermsType      `json:"id_perms,omitempty"`
 	DisplayName  string            `json:"display_name,omitempty"`
-	DomainLimits *DomainLimitsType `json:"domain_limits,omitempty"`
 	Annotations  *KeyValuePairs    `json:"annotations,omitempty"`
+	DomainLimits *DomainLimitsType `json:"domain_limits,omitempty"`
+	Perms2       *PermType2        `json:"perms2,omitempty"`
 	UUID         string            `json:"uuid,omitempty"`
 	ParentUUID   string            `json:"parent_uuid,omitempty"`
 	FQName       []string          `json:"fq_name,omitempty"`
@@ -33,15 +33,15 @@ func (model *Domain) String() string {
 func MakeDomain() *Domain {
 	return &Domain{
 		//TODO(nati): Apply default
+		FQName:       []string{},
+		Annotations:  MakeKeyValuePairs(),
+		DomainLimits: MakeDomainLimitsType(),
 		Perms2:       MakePermType2(),
+		UUID:         "",
+		ParentUUID:   "",
 		ParentType:   "",
 		IDPerms:      MakeIdPermsType(),
 		DisplayName:  "",
-		DomainLimits: MakeDomainLimitsType(),
-		Annotations:  MakeKeyValuePairs(),
-		UUID:         "",
-		ParentUUID:   "",
-		FQName:       []string{},
 	}
 }
 

@@ -333,26 +333,6 @@ func scanAliasIP(values map[string]interface{}) (*models.AliasIP, error) {
 
 	}
 
-	if value, ok := values["ref_project"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.AliasIPProjectRef{}
-			referenceModel.UUID = uuid
-			m.ProjectRefs = append(m.ProjectRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -369,6 +349,26 @@ func scanAliasIP(values map[string]interface{}) (*models.AliasIP, error) {
 			referenceModel := &models.AliasIPVirtualMachineInterfaceRef{}
 			referenceModel.UUID = uuid
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_project"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.AliasIPProjectRef{}
+			referenceModel.UUID = uuid
+			m.ProjectRefs = append(m.ProjectRefs, referenceModel)
 
 		}
 	}

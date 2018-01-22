@@ -6,17 +6,17 @@ import "encoding/json"
 
 // Project
 type Project struct {
-	Quota        *QuotaType     `json:"quota,omitempty"`
-	IDPerms      *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName  string         `json:"display_name,omitempty"`
-	Annotations  *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2       *PermType2     `json:"perms2,omitempty"`
-	UUID         string         `json:"uuid,omitempty"`
-	ParentUUID   string         `json:"parent_uuid,omitempty"`
-	AlarmEnable  bool           `json:"alarm_enable"`
 	ParentType   string         `json:"parent_type,omitempty"`
-	FQName       []string       `json:"fq_name,omitempty"`
+	DisplayName  string         `json:"display_name,omitempty"`
+	Perms2       *PermType2     `json:"perms2,omitempty"`
 	VxlanRouting bool           `json:"vxlan_routing"`
+	Quota        *QuotaType     `json:"quota,omitempty"`
+	ParentUUID   string         `json:"parent_uuid,omitempty"`
+	FQName       []string       `json:"fq_name,omitempty"`
+	IDPerms      *IdPermsType   `json:"id_perms,omitempty"`
+	Annotations  *KeyValuePairs `json:"annotations,omitempty"`
+	AlarmEnable  bool           `json:"alarm_enable"`
+	UUID         string         `json:"uuid,omitempty"`
 
 	FloatingIPPoolRefs       []*ProjectFloatingIPPoolRef       `json:"floating_ip_pool_refs,omitempty"`
 	AliasIPPoolRefs          []*ProjectAliasIPPoolRef          `json:"alias_ip_pool_refs,omitempty"`
@@ -55,13 +55,6 @@ type Project struct {
 	VirtualNetworks            []*VirtualNetwork            `json:"virtual_networks,omitempty"`
 }
 
-// ProjectAliasIPPoolRef references each other
-type ProjectAliasIPPoolRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
 // ProjectNamespaceRef references each other
 type ProjectNamespaceRef struct {
 	UUID string   `json:"uuid"`
@@ -84,6 +77,13 @@ type ProjectFloatingIPPoolRef struct {
 
 }
 
+// ProjectAliasIPPoolRef references each other
+type ProjectAliasIPPoolRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
 // String returns json representation of the object
 func (model *Project) String() string {
 	b, _ := json.Marshal(model)
@@ -94,17 +94,17 @@ func (model *Project) String() string {
 func MakeProject() *Project {
 	return &Project{
 		//TODO(nati): Apply default
-		ParentUUID:   "",
-		AlarmEnable:  false,
-		Quota:        MakeQuotaType(),
 		IDPerms:      MakeIdPermsType(),
-		DisplayName:  "",
 		Annotations:  MakeKeyValuePairs(),
-		Perms2:       MakePermType2(),
+		AlarmEnable:  false,
 		UUID:         "",
-		VxlanRouting: false,
-		ParentType:   "",
+		ParentUUID:   "",
 		FQName:       []string{},
+		Perms2:       MakePermType2(),
+		VxlanRouting: false,
+		Quota:        MakeQuotaType(),
+		ParentType:   "",
+		DisplayName:  "",
 	}
 }
 

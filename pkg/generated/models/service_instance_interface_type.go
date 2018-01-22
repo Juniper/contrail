@@ -22,10 +22,10 @@ func (model *ServiceInstanceInterfaceType) String() string {
 func MakeServiceInstanceInterfaceType() *ServiceInstanceInterfaceType {
 	return &ServiceInstanceInterfaceType{
 		//TODO(nati): Apply default
-		IPAddress:           MakeIpAddressType(),
 		AllowedAddressPairs: MakeAllowedAddressPairs(),
 		StaticRoutes:        MakeRouteTableType(),
 		VirtualNetwork:      "",
+		IPAddress:           MakeIpAddressType(),
 	}
 }
 

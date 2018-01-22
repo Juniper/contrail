@@ -19,5 +19,6 @@ func TestSchema(t *testing.T) {
 	virtualNetwork := api.schemaByID("virtual_network")
 
 	assert.Equal(t, 3, len(virtualNetwork.JSONSchema.Properties))
+	assert.Equal(t, []string{"uuid", "display_name", "virtual_network_network_id"}, virtualNetwork.JSONSchema.PropertiesOrder)
 	assert.Equal(t, 3, len(virtualNetwork.Columns))
 }

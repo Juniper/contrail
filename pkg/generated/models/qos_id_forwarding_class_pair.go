@@ -20,8 +20,8 @@ func (model *QosIdForwardingClassPair) String() string {
 func MakeQosIdForwardingClassPair() *QosIdForwardingClassPair {
 	return &QosIdForwardingClassPair{
 		//TODO(nati): Apply default
-		Key:               0,
 		ForwardingClassID: MakeForwardingClassId(),
+		Key:               0,
 	}
 }
 

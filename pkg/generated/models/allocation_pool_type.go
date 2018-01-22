@@ -21,9 +21,9 @@ func (model *AllocationPoolType) String() string {
 func MakeAllocationPoolType() *AllocationPoolType {
 	return &AllocationPoolType{
 		//TODO(nati): Apply default
+		End:                 "",
 		VrouterSpecificPool: false,
 		Start:               "",
-		End:                 "",
 	}
 }
 

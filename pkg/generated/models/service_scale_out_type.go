@@ -20,8 +20,8 @@ func (model *ServiceScaleOutType) String() string {
 func MakeServiceScaleOutType() *ServiceScaleOutType {
 	return &ServiceScaleOutType{
 		//TODO(nati): Apply default
-		AutoScale:    false,
 		MaxInstances: 0,
+		AutoScale:    false,
 	}
 }
 

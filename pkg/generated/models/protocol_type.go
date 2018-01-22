@@ -20,8 +20,8 @@ func (model *ProtocolType) String() string {
 func MakeProtocolType() *ProtocolType {
 	return &ProtocolType{
 		//TODO(nati): Apply default
-		Port:     0,
 		Protocol: "",
+		Port:     0,
 	}
 }
 
