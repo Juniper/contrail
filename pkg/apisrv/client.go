@@ -50,6 +50,16 @@ func NewClient(endpoint, authURL, id, password string, scope *keystone.Scope) *C
 	return c
 }
 
+// NewClientForProxy makes an API client for proxy.
+func NewClientForProxy(endpoint, authToken string) *Client {
+	c := &Client{
+		Endpoint:  endpoint,
+		AuthToken: authToken,
+	}
+	c.Init()
+	return c
+}
+
 //Init is used to initialize a client.
 func (c *Client) Init() {
 	tr := &http.Transport{

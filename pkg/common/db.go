@@ -285,6 +285,9 @@ func (spec *ListSpec) BuildQuery() string {
 //ConnectDB connect to the db based on viper configuration.
 func ConnectDB() (*sql.DB, error) {
 	databaseConnection := viper.GetString("database.connection")
+	if databaseConnection == "" {
+		return nil, nil
+	}
 	maxConn := viper.GetInt("database.max_open_conn")
 	db, err := sql.Open("mysql", databaseConnection)
 	if err != nil {

@@ -7,12 +7,11 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/spf13/viper"
-
 	"github.com/Juniper/contrail/pkg/common"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 var testServer *httptest.Server
@@ -33,6 +32,7 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 	viper.Set("keystone.authurl", testServer.URL+"/v3")
+	viper.Set("sync.contrail", testServer.URL+"/")
 	err = server.Init()
 	if err != nil {
 		log.Fatal(err)

@@ -1,4 +1,5 @@
 # Database configuraion. Only MySQL supported
+# Comment out if you are using no DB.
 database:
     connection: "root:contrail123@tcp(localhost:3306)/contrail_test"
     # Max Open Connections for MySQL Server
@@ -33,6 +34,10 @@ static_files:
 proxy:
     /contrail:
     - http://localhost:8082
+
+#Sync configuraion. Currently only contrail supported.
+sync:
+    contrail: http://localhost:9091/
 
 #Keystone configuraion
 keystone:
