@@ -24,12 +24,12 @@ func (model *LoadbalancerListenerType) String() string {
 func MakeLoadbalancerListenerType() *LoadbalancerListenerType {
 	return &LoadbalancerListenerType{
 		//TODO(nati): Apply default
+		SniContainers:       []string{},
 		ProtocolPort:        0,
 		DefaultTLSContainer: "",
 		Protocol:            MakeLoadbalancerProtocolType(),
 		ConnectionLimit:     0,
 		AdminState:          false,
-		SniContainers:       []string{},
 	}
 }
 

@@ -24,12 +24,12 @@ func (model *IpamType) String() string {
 func MakeIpamType() *IpamType {
 	return &IpamType{
 		//TODO(nati): Apply default
-		DHCPOptionList: MakeDhcpOptionsListType(),
-		HostRoutes:     MakeRouteTableType(),
-		CidrBlock:      MakeSubnetType(),
 		IpamMethod:     MakeIpamMethodType(),
 		IpamDNSMethod:  MakeIpamDnsMethodType(),
 		IpamDNSServer:  MakeIpamDnsAddressType(),
+		DHCPOptionList: MakeDhcpOptionsListType(),
+		HostRoutes:     MakeRouteTableType(),
+		CidrBlock:      MakeSubnetType(),
 	}
 }
 

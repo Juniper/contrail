@@ -7,12 +7,12 @@ import "encoding/json"
 // ConfigNode
 type ConfigNode struct {
 	Annotations         *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2              *PermType2     `json:"perms2,omitempty"`
-	ConfigNodeIPAddress IpAddressType  `json:"config_node_ip_address,omitempty"`
+	UUID                string         `json:"uuid,omitempty"`
 	FQName              []string       `json:"fq_name,omitempty"`
+	ConfigNodeIPAddress IpAddressType  `json:"config_node_ip_address,omitempty"`
 	IDPerms             *IdPermsType   `json:"id_perms,omitempty"`
 	DisplayName         string         `json:"display_name,omitempty"`
-	UUID                string         `json:"uuid,omitempty"`
+	Perms2              *PermType2     `json:"perms2,omitempty"`
 	ParentUUID          string         `json:"parent_uuid,omitempty"`
 	ParentType          string         `json:"parent_type,omitempty"`
 }
@@ -28,14 +28,14 @@ func MakeConfigNode() *ConfigNode {
 	return &ConfigNode{
 		//TODO(nati): Apply default
 		ConfigNodeIPAddress: MakeIpAddressType(),
-		FQName:              []string{},
-		Annotations:         MakeKeyValuePairs(),
+		IDPerms:             MakeIdPermsType(),
+		DisplayName:         "",
 		Perms2:              MakePermType2(),
 		ParentUUID:          "",
 		ParentType:          "",
-		IDPerms:             MakeIdPermsType(),
-		DisplayName:         "",
+		Annotations:         MakeKeyValuePairs(),
 		UUID:                "",
+		FQName:              []string{},
 	}
 }
 

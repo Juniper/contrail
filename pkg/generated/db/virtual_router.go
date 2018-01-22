@@ -47,8 +47,8 @@ var VirtualRouterRefFields = map[string][]string{
 
 	"network_ipam": {
 		// <common.Schema Value>
-		"allocation_pools",
 		"subnet",
+		"allocation_pools",
 	},
 
 	"virtual_machine": {
@@ -125,9 +125,9 @@ var VirtualRouterParents = []string{
 	"global_system_config",
 }
 
-const insertVirtualRouterVirtualMachineQuery = "insert into `ref_virtual_router_virtual_machine` (`from`, `to` ) values (?, ?);"
+const insertVirtualRouterNetworkIpamQuery = "insert into `ref_virtual_router_network_ipam` (`from`, `to` ,`subnet`,`allocation_pools`) values (?, ?,?,?);"
 
-const insertVirtualRouterNetworkIpamQuery = "insert into `ref_virtual_router_network_ipam` (`from`, `to` ,`allocation_pools`,`subnet`) values (?, ?,?,?);"
+const insertVirtualRouterVirtualMachineQuery = "insert into `ref_virtual_router_virtual_machine` (`from`, `to` ) values (?, ?);"
 
 // CreateVirtualRouter inserts VirtualRouter to DB
 func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
@@ -180,8 +180,8 @@ func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
 			ref.Attr = models.MakeVirtualRouterNetworkIpamType()
 		}
 
-		_, err = stmtNetworkIpamRef.Exec(model.UUID, ref.UUID, common.MustJSON(ref.Attr.AllocationPools),
-			common.MustJSON(ref.Attr.Subnet))
+		_, err = stmtNetworkIpamRef.Exec(model.UUID, ref.UUID, common.MustJSON(ref.Attr.Subnet),
+			common.MustJSON(ref.Attr.AllocationPools))
 		if err != nil {
 			return errors.Wrap(err, "NetworkIpamRefs create failed")
 		}

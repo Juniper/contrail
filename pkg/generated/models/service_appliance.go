@@ -6,16 +6,16 @@ import "encoding/json"
 
 // ServiceAppliance
 type ServiceAppliance struct {
-	ParentType                      string           `json:"parent_type,omitempty"`
-	Perms2                          *PermType2       `json:"perms2,omitempty"`
+	ServiceApplianceUserCredentials *UserCredentials `json:"service_appliance_user_credentials,omitempty"`
 	ServiceApplianceProperties      *KeyValuePairs   `json:"service_appliance_properties,omitempty"`
-	UUID                            string           `json:"uuid,omitempty"`
-	ParentUUID                      string           `json:"parent_uuid,omitempty"`
+	Perms2                          *PermType2       `json:"perms2,omitempty"`
 	IDPerms                         *IdPermsType     `json:"id_perms,omitempty"`
+	ServiceApplianceIPAddress       IpAddressType    `json:"service_appliance_ip_address,omitempty"`
 	DisplayName                     string           `json:"display_name,omitempty"`
 	Annotations                     *KeyValuePairs   `json:"annotations,omitempty"`
-	ServiceApplianceUserCredentials *UserCredentials `json:"service_appliance_user_credentials,omitempty"`
-	ServiceApplianceIPAddress       IpAddressType    `json:"service_appliance_ip_address,omitempty"`
+	UUID                            string           `json:"uuid,omitempty"`
+	ParentUUID                      string           `json:"parent_uuid,omitempty"`
+	ParentType                      string           `json:"parent_type,omitempty"`
 	FQName                          []string         `json:"fq_name,omitempty"`
 
 	PhysicalInterfaceRefs []*ServiceAppliancePhysicalInterfaceRef `json:"physical_interface_refs,omitempty"`
@@ -39,17 +39,17 @@ func (model *ServiceAppliance) String() string {
 func MakeServiceAppliance() *ServiceAppliance {
 	return &ServiceAppliance{
 		//TODO(nati): Apply default
-		ServiceApplianceIPAddress: MakeIpAddressType(),
-		FQName:                          []string{},
-		IDPerms:                         MakeIdPermsType(),
-		DisplayName:                     "",
-		Annotations:                     MakeKeyValuePairs(),
+		Perms2:  MakePermType2(),
+		IDPerms: MakeIdPermsType(),
 		ServiceApplianceUserCredentials: MakeUserCredentials(),
-		UUID:       "",
-		ParentUUID: "",
-		ParentType: "",
-		Perms2:     MakePermType2(),
-		ServiceApplianceProperties: MakeKeyValuePairs(),
+		ServiceApplianceProperties:      MakeKeyValuePairs(),
+		Annotations:                     MakeKeyValuePairs(),
+		UUID:                            "",
+		ParentUUID:                      "",
+		ParentType:                      "",
+		FQName:                          []string{},
+		ServiceApplianceIPAddress: MakeIpAddressType(),
+		DisplayName:               "",
 	}
 }
 

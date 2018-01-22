@@ -49,9 +49,9 @@ var ServiceGroupBackRefFields = map[string][]string{}
 // ServiceGroupParentTypes is possible parents for ServiceGroup
 var ServiceGroupParents = []string{
 
-	"policy_management",
-
 	"project",
+
+	"policy_management",
 }
 
 // CreateServiceGroup inserts ServiceGroup to DB

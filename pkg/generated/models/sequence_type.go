@@ -20,8 +20,8 @@ func (model *SequenceType) String() string {
 func MakeSequenceType() *SequenceType {
 	return &SequenceType{
 		//TODO(nati): Apply default
-		Major: 0,
 		Minor: 0,
+		Major: 0,
 	}
 }
 

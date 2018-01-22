@@ -1,0 +1,26 @@
+description: SSH KeyPair for Openstack
+extends:
+- base
+id: keypair
+plural: keypairs
+prefix: /openstack
+schema:
+  properties:
+    name:
+      description: A name for the keypair which will be used to reference it later
+      type: string
+      nullable: false
+      permission:
+      - create
+    public_key:
+      description: The public ssh key to import
+      type: string
+      nullable: false
+      permission:
+      - create
+  required: []
+  type: object
+singular: keypair
+title: SSH KeyPair
+type: ""
+

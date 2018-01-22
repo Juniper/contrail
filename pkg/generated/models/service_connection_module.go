@@ -7,15 +7,15 @@ import "encoding/json"
 // ServiceConnectionModule
 type ServiceConnectionModule struct {
 	ServiceType ServiceConnectionType `json:"service_type,omitempty"`
-	DisplayName string                `json:"display_name,omitempty"`
-	Perms2      *PermType2            `json:"perms2,omitempty"`
-	ParentType  string                `json:"parent_type,omitempty"`
+	E2Service   E2servicetype         `json:"e2_service,omitempty"`
 	FQName      []string              `json:"fq_name,omitempty"`
+	DisplayName string                `json:"display_name,omitempty"`
+	ParentUUID  string                `json:"parent_uuid,omitempty"`
 	IDPerms     *IdPermsType          `json:"id_perms,omitempty"`
 	Annotations *KeyValuePairs        `json:"annotations,omitempty"`
-	E2Service   E2servicetype         `json:"e2_service,omitempty"`
+	Perms2      *PermType2            `json:"perms2,omitempty"`
 	UUID        string                `json:"uuid,omitempty"`
-	ParentUUID  string                `json:"parent_uuid,omitempty"`
+	ParentType  string                `json:"parent_type,omitempty"`
 
 	ServiceObjectRefs []*ServiceConnectionModuleServiceObjectRef `json:"service_object_refs,omitempty"`
 }
@@ -37,16 +37,16 @@ func (model *ServiceConnectionModule) String() string {
 func MakeServiceConnectionModule() *ServiceConnectionModule {
 	return &ServiceConnectionModule{
 		//TODO(nati): Apply default
-		ParentType:  "",
-		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
 		Annotations: MakeKeyValuePairs(),
-		E2Service:   MakeE2servicetype(),
-		UUID:        "",
-		ParentUUID:  "",
-		ServiceType: MakeServiceConnectionType(),
-		DisplayName: "",
 		Perms2:      MakePermType2(),
+		UUID:        "",
+		ParentType:  "",
+		ServiceType: MakeServiceConnectionType(),
+		E2Service:   MakeE2servicetype(),
+		FQName:      []string{},
+		DisplayName: "",
+		ParentUUID:  "",
 	}
 }
 

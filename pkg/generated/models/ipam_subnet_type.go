@@ -6,20 +6,20 @@ import "encoding/json"
 
 // IpamSubnetType
 type IpamSubnetType struct {
-	Subnet           *SubnetType           `json:"subnet,omitempty"`
+	AllocationPools  []*AllocationPoolType `json:"allocation_pools,omitempty"`
 	DHCPOptionList   *DhcpOptionsListType  `json:"dhcp_option_list,omitempty"`
-	SubnetUUID       string                `json:"subnet_uuid,omitempty"`
-	DNSServerAddress IpAddressType         `json:"dns_server_address,omitempty"`
-	AddrFromStart    bool                  `json:"addr_from_start"`
 	EnableDHCP       bool                  `json:"enable_dhcp"`
-	DefaultGateway   IpAddressType         `json:"default_gateway,omitempty"`
-	SubnetName       string                `json:"subnet_name,omitempty"`
 	AllocUnit        int                   `json:"alloc_unit,omitempty"`
 	DNSNameservers   []string              `json:"dns_nameservers,omitempty"`
-	Created          string                `json:"created,omitempty"`
-	AllocationPools  []*AllocationPoolType `json:"allocation_pools,omitempty"`
-	LastModified     string                `json:"last_modified,omitempty"`
 	HostRoutes       *RouteTableType       `json:"host_routes,omitempty"`
+	Subnet           *SubnetType           `json:"subnet,omitempty"`
+	DNSServerAddress IpAddressType         `json:"dns_server_address,omitempty"`
+	SubnetName       string                `json:"subnet_name,omitempty"`
+	AddrFromStart    bool                  `json:"addr_from_start"`
+	Created          string                `json:"created,omitempty"`
+	SubnetUUID       string                `json:"subnet_uuid,omitempty"`
+	LastModified     string                `json:"last_modified,omitempty"`
+	DefaultGateway   IpAddressType         `json:"default_gateway,omitempty"`
 }
 
 // String returns json representation of the object
@@ -32,22 +32,21 @@ func (model *IpamSubnetType) String() string {
 func MakeIpamSubnetType() *IpamSubnetType {
 	return &IpamSubnetType{
 		//TODO(nati): Apply default
-		LastModified: "",
-		HostRoutes:   MakeRouteTableType(),
-		Created:      "",
-
-		AllocationPools: MakeAllocationPoolTypeSlice(),
-
-		SubnetUUID:       "",
-		DNSServerAddress: MakeIpAddressType(),
 		Subnet:           MakeSubnetType(),
-		DHCPOptionList:   MakeDhcpOptionsListType(),
-		DefaultGateway:   MakeIpAddressType(),
-		SubnetName:       "",
-		AddrFromStart:    false,
 		EnableDHCP:       false,
 		AllocUnit:        0,
 		DNSNameservers:   []string{},
+		HostRoutes:       MakeRouteTableType(),
+		AddrFromStart:    false,
+		DNSServerAddress: MakeIpAddressType(),
+		SubnetName:       "",
+		DefaultGateway:   MakeIpAddressType(),
+		Created:          "",
+		SubnetUUID:       "",
+		LastModified:     "",
+		DHCPOptionList:   MakeDhcpOptionsListType(),
+
+		AllocationPools: MakeAllocationPoolTypeSlice(),
 	}
 }
 

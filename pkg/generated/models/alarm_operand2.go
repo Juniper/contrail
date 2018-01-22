@@ -6,8 +6,8 @@ import "encoding/json"
 
 // AlarmOperand2
 type AlarmOperand2 struct {
-	JSONValue    string `json:"json_value,omitempty"`
 	UveAttribute string `json:"uve_attribute,omitempty"`
+	JSONValue    string `json:"json_value,omitempty"`
 }
 
 // String returns json representation of the object

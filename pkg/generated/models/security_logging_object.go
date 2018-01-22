@@ -6,14 +6,14 @@ import "encoding/json"
 
 // SecurityLoggingObject
 type SecurityLoggingObject struct {
-	UUID                       string                             `json:"uuid,omitempty"`
-	ParentUUID                 string                             `json:"parent_uuid,omitempty"`
-	IDPerms                    *IdPermsType                       `json:"id_perms,omitempty"`
-	SecurityLoggingObjectRules *SecurityLoggingObjectRuleListType `json:"security_logging_object_rules,omitempty"`
-	SecurityLoggingObjectRate  int                                `json:"security_logging_object_rate,omitempty"`
 	DisplayName                string                             `json:"display_name,omitempty"`
 	Annotations                *KeyValuePairs                     `json:"annotations,omitempty"`
+	UUID                       string                             `json:"uuid,omitempty"`
+	SecurityLoggingObjectRules *SecurityLoggingObjectRuleListType `json:"security_logging_object_rules,omitempty"`
+	SecurityLoggingObjectRate  int                                `json:"security_logging_object_rate,omitempty"`
+	IDPerms                    *IdPermsType                       `json:"id_perms,omitempty"`
 	Perms2                     *PermType2                         `json:"perms2,omitempty"`
+	ParentUUID                 string                             `json:"parent_uuid,omitempty"`
 	ParentType                 string                             `json:"parent_type,omitempty"`
 	FQName                     []string                           `json:"fq_name,omitempty"`
 
@@ -21,16 +21,16 @@ type SecurityLoggingObject struct {
 	NetworkPolicyRefs []*SecurityLoggingObjectNetworkPolicyRef `json:"network_policy_refs,omitempty"`
 }
 
-// SecurityLoggingObjectNetworkPolicyRef references each other
-type SecurityLoggingObjectNetworkPolicyRef struct {
+// SecurityLoggingObjectSecurityGroupRef references each other
+type SecurityLoggingObjectSecurityGroupRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 
 	Attr *SecurityLoggingObjectRuleListType
 }
 
-// SecurityLoggingObjectSecurityGroupRef references each other
-type SecurityLoggingObjectSecurityGroupRef struct {
+// SecurityLoggingObjectNetworkPolicyRef references each other
+type SecurityLoggingObjectNetworkPolicyRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 
@@ -47,16 +47,16 @@ func (model *SecurityLoggingObject) String() string {
 func MakeSecurityLoggingObject() *SecurityLoggingObject {
 	return &SecurityLoggingObject{
 		//TODO(nati): Apply default
-		Perms2:     MakePermType2(),
-		ParentType: "",
-		FQName:     []string{},
 		SecurityLoggingObjectRules: MakeSecurityLoggingObjectRuleListType(),
 		SecurityLoggingObjectRate:  0,
 		DisplayName:                "",
 		Annotations:                MakeKeyValuePairs(),
 		UUID:                       "",
-		ParentUUID:                 "",
+		ParentType:                 "",
+		FQName:                     []string{},
 		IDPerms:                    MakeIdPermsType(),
+		Perms2:                     MakePermType2(),
+		ParentUUID:                 "",
 	}
 }
 

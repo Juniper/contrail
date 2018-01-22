@@ -160,6 +160,10 @@ var APIs = []common.RESTAPI{
 
 	&AppformixNodeRoleRESTAPI{},
 
+	&BaremetalNodeRESTAPI{},
+
+	&BaremetalPortRESTAPI{},
+
 	&ContrailAnalyticsDatabaseNodeRoleRESTAPI{},
 
 	&ContrailAnalyticsNodeRESTAPI{},
@@ -171,6 +175,8 @@ var APIs = []common.RESTAPI{
 	&ControllerNodeRoleRESTAPI{},
 
 	&DashboardRESTAPI{},
+
+	&KeypairRESTAPI{},
 
 	&KubernetesClusterRESTAPI{},
 

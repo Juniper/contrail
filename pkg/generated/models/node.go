@@ -6,30 +6,30 @@ import "encoding/json"
 
 // Node
 type Node struct {
-	ParentType                     string         `json:"parent_type,omitempty"`
-	Hostname                       string         `json:"hostname,omitempty"`
-	Type                           string         `json:"type,omitempty"`
-	AwsAmi                         string         `json:"aws_ami,omitempty"`
-	GCPMachineType                 string         `json:"gcp_machine_type,omitempty"`
-	PrivateMachineState            string         `json:"private_machine_state,omitempty"`
+	Annotations                    *KeyValuePairs `json:"annotations,omitempty"`
 	PrivatePowerManagementIP       string         `json:"private_power_management_ip,omitempty"`
-	Password                       string         `json:"password,omitempty"`
-	SSHKey                         string         `json:"ssh_key,omitempty"`
+	Type                           string         `json:"type,omitempty"`
 	Username                       string         `json:"username,omitempty"`
+	AwsAmi                         string         `json:"aws_ami,omitempty"`
 	PrivatePowerManagementPassword string         `json:"private_power_management_password,omitempty"`
+	ParentUUID                     string         `json:"parent_uuid,omitempty"`
 	FQName                         []string       `json:"fq_name,omitempty"`
 	DisplayName                    string         `json:"display_name,omitempty"`
-	Perms2                         *PermType2     `json:"perms2,omitempty"`
 	MacAddress                     string         `json:"mac_address,omitempty"`
+	Password                       string         `json:"password,omitempty"`
+	SSHKey                         string         `json:"ssh_key,omitempty"`
+	PrivateMachineState            string         `json:"private_machine_state,omitempty"`
+	PrivatePowerManagementUsername string         `json:"private_power_management_username,omitempty"`
+	Perms2                         *PermType2     `json:"perms2,omitempty"`
+	ParentType                     string         `json:"parent_type,omitempty"`
+	Hostname                       string         `json:"hostname,omitempty"`
 	AwsInstanceType                string         `json:"aws_instance_type,omitempty"`
 	GCPImage                       string         `json:"gcp_image,omitempty"`
-	IDPerms                        *IdPermsType   `json:"id_perms,omitempty"`
-	Annotations                    *KeyValuePairs `json:"annotations,omitempty"`
-	UUID                           string         `json:"uuid,omitempty"`
-	ParentUUID                     string         `json:"parent_uuid,omitempty"`
-	IPAddress                      string         `json:"ip_address,omitempty"`
+	GCPMachineType                 string         `json:"gcp_machine_type,omitempty"`
 	PrivateMachineProperties       string         `json:"private_machine_properties,omitempty"`
-	PrivatePowerManagementUsername string         `json:"private_power_management_username,omitempty"`
+	UUID                           string         `json:"uuid,omitempty"`
+	IDPerms                        *IdPermsType   `json:"id_perms,omitempty"`
+	IPAddress                      string         `json:"ip_address,omitempty"`
 }
 
 // String returns json representation of the object
@@ -42,30 +42,30 @@ func (model *Node) String() string {
 func MakeNode() *Node {
 	return &Node{
 		//TODO(nati): Apply default
-		Hostname:                       "",
-		Type:                           "",
-		AwsAmi:                         "",
-		ParentType:                     "",
-		Password:                       "",
-		SSHKey:                         "",
-		Username:                       "",
-		GCPMachineType:                 "",
-		PrivateMachineState:            "",
-		PrivatePowerManagementIP:       "",
-		MacAddress:                     "",
-		AwsInstanceType:                "",
-		GCPImage:                       "",
+		AwsInstanceType:          "",
+		GCPImage:                 "",
+		GCPMachineType:           "",
+		PrivateMachineProperties: "",
+		UUID:                     "",
+		IDPerms:                  MakeIdPermsType(),
+		IPAddress:                "",
+		Annotations:              MakeKeyValuePairs(),
+		PrivatePowerManagementIP: "",
+		Type:     "",
+		Username: "",
+		AwsAmi:   "",
 		PrivatePowerManagementPassword: "",
+		ParentUUID:                     "",
 		FQName:                         []string{},
 		DisplayName:                    "",
-		Perms2:                         MakePermType2(),
-		IPAddress:                      "",
-		PrivateMachineProperties:       "",
+		MacAddress:                     "",
+		Password:                       "",
+		SSHKey:                         "",
+		PrivateMachineState:            "",
 		PrivatePowerManagementUsername: "",
-		IDPerms:     MakeIdPermsType(),
-		Annotations: MakeKeyValuePairs(),
-		UUID:        "",
-		ParentUUID:  "",
+		Perms2:     MakePermType2(),
+		ParentType: "",
+		Hostname:   "",
 	}
 }
 

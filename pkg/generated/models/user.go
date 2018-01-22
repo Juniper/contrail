@@ -6,14 +6,14 @@ import "encoding/json"
 
 // User
 type User struct {
-	FQName      []string       `json:"fq_name,omitempty"`
-	DisplayName string         `json:"display_name,omitempty"`
-	Annotations *KeyValuePairs `json:"annotations,omitempty"`
-	Password    string         `json:"password,omitempty"`
-	UUID        string         `json:"uuid,omitempty"`
 	ParentUUID  string         `json:"parent_uuid,omitempty"`
 	ParentType  string         `json:"parent_type,omitempty"`
 	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
+	UUID        string         `json:"uuid,omitempty"`
+	FQName      []string       `json:"fq_name,omitempty"`
+	Password    string         `json:"password,omitempty"`
+	DisplayName string         `json:"display_name,omitempty"`
+	Annotations *KeyValuePairs `json:"annotations,omitempty"`
 	Perms2      *PermType2     `json:"perms2,omitempty"`
 }
 
@@ -27,15 +27,15 @@ func (model *User) String() string {
 func MakeUser() *User {
 	return &User{
 		//TODO(nati): Apply default
-		Password:    "",
-		UUID:        "",
-		ParentUUID:  "",
 		ParentType:  "",
 		IDPerms:     MakeIdPermsType(),
-		Perms2:      MakePermType2(),
-		FQName:      []string{},
+		ParentUUID:  "",
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
+		Perms2:      MakePermType2(),
+		UUID:        "",
+		FQName:      []string{},
+		Password:    "",
 	}
 }
 

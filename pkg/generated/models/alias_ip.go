@@ -6,15 +6,15 @@ import "encoding/json"
 
 // AliasIP
 type AliasIP struct {
-	Annotations          *KeyValuePairs      `json:"annotations,omitempty"`
 	AliasIPAddress       IpAddressType       `json:"alias_ip_address,omitempty"`
-	AliasIPAddressFamily IpAddressFamilyType `json:"alias_ip_address_family,omitempty"`
-	ParentUUID           string              `json:"parent_uuid,omitempty"`
-	DisplayName          string              `json:"display_name,omitempty"`
 	Perms2               *PermType2          `json:"perms2,omitempty"`
-	UUID                 string              `json:"uuid,omitempty"`
-	ParentType           string              `json:"parent_type,omitempty"`
 	FQName               []string            `json:"fq_name,omitempty"`
+	AliasIPAddressFamily IpAddressFamilyType `json:"alias_ip_address_family,omitempty"`
+	DisplayName          string              `json:"display_name,omitempty"`
+	Annotations          *KeyValuePairs      `json:"annotations,omitempty"`
+	UUID                 string              `json:"uuid,omitempty"`
+	ParentUUID           string              `json:"parent_uuid,omitempty"`
+	ParentType           string              `json:"parent_type,omitempty"`
 	IDPerms              *IdPermsType        `json:"id_perms,omitempty"`
 
 	ProjectRefs                 []*AliasIPProjectRef                 `json:"project_refs,omitempty"`
@@ -45,16 +45,16 @@ func (model *AliasIP) String() string {
 func MakeAliasIP() *AliasIP {
 	return &AliasIP{
 		//TODO(nati): Apply default
-		AliasIPAddress:       MakeIpAddressType(),
-		AliasIPAddressFamily: MakeIpAddressFamilyType(),
-		ParentUUID:           "",
-		Annotations:          MakeKeyValuePairs(),
-		ParentType:           "",
-		FQName:               []string{},
 		IDPerms:              MakeIdPermsType(),
+		AliasIPAddressFamily: MakeIpAddressFamilyType(),
 		DisplayName:          "",
-		Perms2:               MakePermType2(),
+		Annotations:          MakeKeyValuePairs(),
 		UUID:                 "",
+		ParentUUID:           "",
+		ParentType:           "",
+		AliasIPAddress:       MakeIpAddressType(),
+		Perms2:               MakePermType2(),
+		FQName:               []string{},
 	}
 }
 

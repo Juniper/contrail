@@ -330,26 +330,6 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	}
 
-	if value, ok := values["ref_service_object"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ServiceEndpointServiceObjectRef{}
-			referenceModel.UUID = uuid
-			m.ServiceObjectRefs = append(m.ServiceObjectRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_service_connection_module"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -386,6 +366,26 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 			referenceModel := &models.ServiceEndpointPhysicalRouterRef{}
 			referenceModel.UUID = uuid
 			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_service_object"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ServiceEndpointServiceObjectRef{}
+			referenceModel.UUID = uuid
+			m.ServiceObjectRefs = append(m.ServiceObjectRefs, referenceModel)
 
 		}
 	}

@@ -6,18 +6,18 @@ import "encoding/json"
 
 // BGPVPN
 type BGPVPN struct {
-	Perms2                *PermType2       `json:"perms2,omitempty"`
-	UUID                  string           `json:"uuid,omitempty"`
+	ImportRouteTargetList *RouteTargetList `json:"import_route_target_list,omitempty"`
+	BGPVPNType            VpnType          `json:"bgpvpn_type,omitempty"`
+	FQName                []string         `json:"fq_name,omitempty"`
+	DisplayName           string           `json:"display_name,omitempty"`
+	RouteTargetList       *RouteTargetList `json:"route_target_list,omitempty"`
+	ExportRouteTargetList *RouteTargetList `json:"export_route_target_list,omitempty"`
 	ParentUUID            string           `json:"parent_uuid,omitempty"`
 	ParentType            string           `json:"parent_type,omitempty"`
-	ExportRouteTargetList *RouteTargetList `json:"export_route_target_list,omitempty"`
-	Annotations           *KeyValuePairs   `json:"annotations,omitempty"`
-	BGPVPNType            VpnType          `json:"bgpvpn_type,omitempty"`
 	IDPerms               *IdPermsType     `json:"id_perms,omitempty"`
-	DisplayName           string           `json:"display_name,omitempty"`
-	FQName                []string         `json:"fq_name,omitempty"`
-	RouteTargetList       *RouteTargetList `json:"route_target_list,omitempty"`
-	ImportRouteTargetList *RouteTargetList `json:"import_route_target_list,omitempty"`
+	Annotations           *KeyValuePairs   `json:"annotations,omitempty"`
+	Perms2                *PermType2       `json:"perms2,omitempty"`
+	UUID                  string           `json:"uuid,omitempty"`
 }
 
 // String returns json representation of the object
@@ -32,16 +32,16 @@ func MakeBGPVPN() *BGPVPN {
 		//TODO(nati): Apply default
 		ImportRouteTargetList: MakeRouteTargetList(),
 		BGPVPNType:            MakeVpnType(),
-		IDPerms:               MakeIdPermsType(),
-		DisplayName:           "",
 		FQName:                []string{},
-		RouteTargetList:       MakeRouteTargetList(),
+		DisplayName:           "",
+		IDPerms:               MakeIdPermsType(),
 		Annotations:           MakeKeyValuePairs(),
 		Perms2:                MakePermType2(),
 		UUID:                  "",
+		RouteTargetList:       MakeRouteTargetList(),
+		ExportRouteTargetList: MakeRouteTargetList(),
 		ParentUUID:            "",
 		ParentType:            "",
-		ExportRouteTargetList: MakeRouteTargetList(),
 	}
 }
 
