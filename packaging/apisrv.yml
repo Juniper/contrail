@@ -25,11 +25,13 @@ tls:
 # key: URL path
 # value: file path. (absolute path recommended in production)
 static_files:
-    public: /usr/share/contrail/public
+    /: /usr/share/contrail/public
 
 # API Proxy configuraion
 # key: URL path
 # value: String list of backend host
 proxy:
-    /contrail:
+    /config:
     - http://localhost:8082
+    /telemetry:
+    - http://localhost:8081
