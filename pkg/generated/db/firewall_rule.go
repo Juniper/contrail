@@ -85,22 +85,22 @@ var FirewallRuleFields = []string{
 // FirewallRuleRefFields is db reference fields for FirewallRule
 var FirewallRuleRefFields = map[string][]string{
 
-	"service_group": {
-	// <common.Schema Value>
-
-	},
-
-	"address_group": {
-	// <common.Schema Value>
-
-	},
-
 	"security_logging_object": {
 	// <common.Schema Value>
 
 	},
 
 	"virtual_network": {
+	// <common.Schema Value>
+
+	},
+
+	"service_group": {
+	// <common.Schema Value>
+
+	},
+
+	"address_group": {
 	// <common.Schema Value>
 
 	},
@@ -205,6 +205,19 @@ func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtVirtualNetworkRef, err := tx.Prepare(insertFirewallRuleVirtualNetworkQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
+	}
+	defer stmtVirtualNetworkRef.Close()
+	for _, ref := range model.VirtualNetworkRefs {
+
+		_, err = stmtVirtualNetworkRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs create failed")
+		}
+	}
+
 	stmtServiceGroupRef, err := tx.Prepare(insertFirewallRuleServiceGroupQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ServiceGroupRefs create statement failed")
@@ -241,19 +254,6 @@ func CreateFirewallRule(tx *sql.Tx, model *models.FirewallRule) error {
 		_, err = stmtSecurityLoggingObjectRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "SecurityLoggingObjectRefs create failed")
-		}
-	}
-
-	stmtVirtualNetworkRef, err := tx.Prepare(insertFirewallRuleVirtualNetworkQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
-	}
-	defer stmtVirtualNetworkRef.Close()
-	for _, ref := range model.VirtualNetworkRefs {
-
-		_, err = stmtVirtualNetworkRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs create failed")
 		}
 	}
 

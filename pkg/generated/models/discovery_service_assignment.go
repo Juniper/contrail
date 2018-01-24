@@ -28,6 +28,7 @@ func (model *DiscoveryServiceAssignment) String() string {
 func MakeDiscoveryServiceAssignment() *DiscoveryServiceAssignment {
 	return &DiscoveryServiceAssignment{
 		//TODO(nati): Apply default
+		UUID:        "",
 		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
@@ -35,7 +36,6 @@ func MakeDiscoveryServiceAssignment() *DiscoveryServiceAssignment {
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
-		UUID:        "",
 	}
 }
 

@@ -6,16 +6,16 @@ import "encoding/json"
 
 // ServiceApplianceSet
 type ServiceApplianceSet struct {
-	ServiceApplianceDriver        string         `json:"service_appliance_driver,omitempty"`
-	ParentType                    string         `json:"parent_type,omitempty"`
-	FQName                        []string       `json:"fq_name,omitempty"`
-	DisplayName                   string         `json:"display_name,omitempty"`
-	Perms2                        *PermType2     `json:"perms2,omitempty"`
 	ServiceApplianceSetProperties *KeyValuePairs `json:"service_appliance_set_properties,omitempty"`
 	ServiceApplianceHaMode        string         `json:"service_appliance_ha_mode,omitempty"`
+	ServiceApplianceDriver        string         `json:"service_appliance_driver,omitempty"`
 	Annotations                   *KeyValuePairs `json:"annotations,omitempty"`
+	DisplayName                   string         `json:"display_name,omitempty"`
+	Perms2                        *PermType2     `json:"perms2,omitempty"`
 	UUID                          string         `json:"uuid,omitempty"`
 	ParentUUID                    string         `json:"parent_uuid,omitempty"`
+	ParentType                    string         `json:"parent_type,omitempty"`
+	FQName                        []string       `json:"fq_name,omitempty"`
 	IDPerms                       *IdPermsType   `json:"id_perms,omitempty"`
 
 	ServiceAppliances []*ServiceAppliance `json:"service_appliances,omitempty"`
@@ -31,17 +31,17 @@ func (model *ServiceApplianceSet) String() string {
 func MakeServiceApplianceSet() *ServiceApplianceSet {
 	return &ServiceApplianceSet{
 		//TODO(nati): Apply default
-		ServiceApplianceDriver: "",
-		ParentType:             "",
-		FQName:                 []string{},
-		DisplayName:            "",
-		Perms2:                 MakePermType2(),
+		ParentUUID:  "",
+		ParentType:  "",
+		FQName:      []string{},
+		IDPerms:     MakeIdPermsType(),
+		DisplayName: "",
+		Perms2:      MakePermType2(),
+		UUID:        "",
 		ServiceApplianceSetProperties: MakeKeyValuePairs(),
 		ServiceApplianceHaMode:        "",
+		ServiceApplianceDriver:        "",
 		Annotations:                   MakeKeyValuePairs(),
-		UUID:                          "",
-		ParentUUID:                    "",
-		IDPerms:                       MakeIdPermsType(),
 	}
 }
 

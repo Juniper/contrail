@@ -24317,6 +24317,563 @@
             ]
         },
         {
+            "id": "baremetal_node",
+            "plural": "baremetal_nodes",
+            "title": "Baremetal Server",
+            "description": "Baremetal Server",
+            "prefix": "/openstack",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "annotations": {
+                        "type": "object",
+                        "properties": {
+                            "key_value_pair": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "cpu_arch": {
+                        "default": "x86_64",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "cpu_count": {
+                        "type": "integer",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "deploy_kernel": {
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "deploy_ramdisk": {
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "disk_gb": {
+                        "type": "integer",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "display_name": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "fq_name": {
+                        "type": "array",
+                        "minimum": 0,
+                        "maximum": 0,
+                        "items": {
+                            "type": "string",
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    },
+                    "id_perms": {
+                        "type": "object",
+                        "properties": {
+                            "created": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "creator": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "description": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "enable": {
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "last_modified": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "permissions": {
+                                "type": "object",
+                                "properties": {
+                                    "group": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "group_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "other_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    }
+                                },
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "user_visible": {
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "ipmi_address": {
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "ipmi_password": {
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "ipmi_username": {
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "memory_mb": {
+                        "type": "integer",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "name": {
+                        "type": "string",
+                        "permission": [
+                            "create"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_type": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_uuid": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "perms2": {
+                        "type": "object",
+                        "properties": {
+                            "global_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "share": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tenant": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "tenant_access": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "uuid": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    }
+                },
+                "propertiesOrder": [
+                    "uuid",
+                    "parent_uuid",
+                    "parent_type",
+                    "fq_name",
+                    "id_perms",
+                    "display_name",
+                    "annotations",
+                    "perms2",
+                    "name",
+                    "ipmi_address",
+                    "ipmi_username",
+                    "ipmi_password",
+                    "cpu_count",
+                    "cpu_arch",
+                    "disk_gb",
+                    "memory_mb",
+                    "deploy_kernel",
+                    "deploy_ramdisk"
+                ],
+                "minimum": 0,
+                "maximum": 0
+            },
+            "extends": [
+                "base"
+            ]
+        },
+        {
+            "id": "baremetal_port",
+            "plural": "baremetal_ports",
+            "title": "Baremetal Server Port",
+            "description": "Ports for Baremetal Server",
+            "prefix": "/openstack",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "annotations": {
+                        "type": "object",
+                        "properties": {
+                            "key_value_pair": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "display_name": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "fq_name": {
+                        "type": "array",
+                        "minimum": 0,
+                        "maximum": 0,
+                        "items": {
+                            "type": "string",
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    },
+                    "id_perms": {
+                        "type": "object",
+                        "properties": {
+                            "created": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "creator": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "description": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "enable": {
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "last_modified": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "permissions": {
+                                "type": "object",
+                                "properties": {
+                                    "group": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "group_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "other_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    }
+                                },
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "user_visible": {
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "mac_address": {
+                        "type": "string",
+                        "permission": [
+                            "create"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "node": {
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_type": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_uuid": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "perms2": {
+                        "type": "object",
+                        "properties": {
+                            "global_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "share": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tenant": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "tenant_access": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "port_id": {
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "pxe_enabled": {
+                        "type": "boolean",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "switch_id": {
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "switch_info": {
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "uuid": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    }
+                },
+                "propertiesOrder": [
+                    "uuid",
+                    "parent_uuid",
+                    "parent_type",
+                    "fq_name",
+                    "id_perms",
+                    "display_name",
+                    "annotations",
+                    "perms2",
+                    "mac_address",
+                    "node",
+                    "switch_id",
+                    "port_id",
+                    "switch_info",
+                    "pxe_enabled"
+                ],
+                "minimum": 0,
+                "maximum": 0
+            },
+            "extends": [
+                "base"
+            ]
+        },
+        {
             "id": "contrail_analytics_database_node_role",
             "plural": "contrail_analytics_database_node_roles",
             "title": "Contrail Analytics Database Node Role",
@@ -25942,6 +26499,223 @@
                     "annotations",
                     "perms2",
                     "container_config"
+                ],
+                "minimum": 0,
+                "maximum": 0
+            },
+            "extends": [
+                "base"
+            ]
+        },
+        {
+            "id": "keypair",
+            "plural": "keypairs",
+            "title": "SSH KeyPair",
+            "description": "SSH KeyPair for Openstack",
+            "prefix": "/openstack",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "annotations": {
+                        "type": "object",
+                        "properties": {
+                            "key_value_pair": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "display_name": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "fq_name": {
+                        "type": "array",
+                        "minimum": 0,
+                        "maximum": 0,
+                        "items": {
+                            "type": "string",
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    },
+                    "id_perms": {
+                        "type": "object",
+                        "properties": {
+                            "created": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "creator": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "description": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "enable": {
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "last_modified": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "permissions": {
+                                "type": "object",
+                                "properties": {
+                                    "group": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "group_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "other_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    }
+                                },
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "user_visible": {
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "name": {
+                        "type": "string",
+                        "permission": [
+                            "create"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_type": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_uuid": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "perms2": {
+                        "type": "object",
+                        "properties": {
+                            "global_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "share": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tenant": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "tenant_access": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "public_key": {
+                        "type": "string",
+                        "permission": [
+                            "create"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "uuid": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    }
+                },
+                "propertiesOrder": [
+                    "uuid",
+                    "parent_uuid",
+                    "parent_type",
+                    "fq_name",
+                    "id_perms",
+                    "display_name",
+                    "annotations",
+                    "perms2",
+                    "name",
+                    "public_key"
                 ],
                 "minimum": 0,
                 "maximum": 0

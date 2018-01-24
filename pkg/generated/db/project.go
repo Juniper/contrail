@@ -77,8 +77,8 @@ var ProjectRefFields = map[string][]string{
 
 	"namespace": {
 		// <common.Schema Value>
-		"ip_prefix",
 		"ip_prefix_len",
+		"ip_prefix",
 	},
 
 	"application_policy_set": {
@@ -1047,7 +1047,7 @@ var ProjectParents = []string{
 
 const insertProjectAliasIPPoolQuery = "insert into `ref_project_alias_ip_pool` (`from`, `to` ) values (?, ?);"
 
-const insertProjectNamespaceQuery = "insert into `ref_project_namespace` (`from`, `to` ,`ip_prefix`,`ip_prefix_len`) values (?, ?,?,?);"
+const insertProjectNamespaceQuery = "insert into `ref_project_namespace` (`from`, `to` ,`ip_prefix_len`,`ip_prefix`) values (?, ?,?,?);"
 
 const insertProjectApplicationPolicySetQuery = "insert into `ref_project_application_policy_set` (`from`, `to` ) values (?, ?);"
 
@@ -1118,6 +1118,19 @@ func CreateProject(tx *sql.Tx, model *models.Project) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtFloatingIPPoolRef, err := tx.Prepare(insertProjectFloatingIPPoolQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing FloatingIPPoolRefs create statement failed")
+	}
+	defer stmtFloatingIPPoolRef.Close()
+	for _, ref := range model.FloatingIPPoolRefs {
+
+		_, err = stmtFloatingIPPoolRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "FloatingIPPoolRefs create failed")
+		}
+	}
+
 	stmtAliasIPPoolRef, err := tx.Prepare(insertProjectAliasIPPoolQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing AliasIPPoolRefs create statement failed")
@@ -1142,8 +1155,8 @@ func CreateProject(tx *sql.Tx, model *models.Project) error {
 			ref.Attr = models.MakeSubnetType()
 		}
 
-		_, err = stmtNamespaceRef.Exec(model.UUID, ref.UUID, string(ref.Attr.IPPrefix),
-			int(ref.Attr.IPPrefixLen))
+		_, err = stmtNamespaceRef.Exec(model.UUID, ref.UUID, int(ref.Attr.IPPrefixLen),
+			string(ref.Attr.IPPrefix))
 		if err != nil {
 			return errors.Wrap(err, "NamespaceRefs create failed")
 		}
@@ -1159,19 +1172,6 @@ func CreateProject(tx *sql.Tx, model *models.Project) error {
 		_, err = stmtApplicationPolicySetRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ApplicationPolicySetRefs create failed")
-		}
-	}
-
-	stmtFloatingIPPoolRef, err := tx.Prepare(insertProjectFloatingIPPoolQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing FloatingIPPoolRefs create statement failed")
-	}
-	defer stmtFloatingIPPoolRef.Close()
-	for _, ref := range model.FloatingIPPoolRefs {
-
-		_, err = stmtFloatingIPPoolRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "FloatingIPPoolRefs create failed")
 		}
 	}
 
@@ -1583,26 +1583,6 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 
 	}
 
-	if value, ok := values["ref_floating_ip_pool"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ProjectFloatingIPPoolRef{}
-			referenceModel.UUID = uuid
-			m.FloatingIPPoolRefs = append(m.FloatingIPPoolRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_alias_ip_pool"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -1662,6 +1642,26 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			referenceModel := &models.ProjectApplicationPolicySetRef{}
 			referenceModel.UUID = uuid
 			m.ApplicationPolicySetRefs = append(m.ApplicationPolicySetRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_floating_ip_pool"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ProjectFloatingIPPoolRef{}
+			referenceModel.UUID = uuid
+			m.FloatingIPPoolRefs = append(m.FloatingIPPoolRefs, referenceModel)
 
 		}
 	}

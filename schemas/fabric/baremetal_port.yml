@@ -1,0 +1,56 @@
+description: Ports for Baremetal Server
+extends:
+- base
+id: baremetal_port
+plural: baremetal_ports
+prefix: /openstack
+schema:
+  properties:
+    mac_address:
+      description: Mac Address of the NIC of Baremetal
+      type: string
+      format: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
+      nullable: false
+      permission:
+      - create
+    node:
+      description: UUID of the node where this port is connected
+      type: string
+      nullable: false
+      permission:
+      - create
+      - update
+    switch_id:
+      description: Switch hostname 
+      type: string
+      format: hostname
+      nullable: false
+      permission:
+      - create
+      - update
+    port_id:
+      description: Port ID of switch where Baremetal is connected
+      type: string
+      nullable: false
+      permission:
+      - create
+      - update
+    switch_info:
+      description: UUID of the Physical-Port with contrail database
+      type: string
+      nullable: false
+      permission:
+      - create
+      - update
+    pxe_enabled:
+      description: flag to control if 
+      type: boolean
+      nullable: false
+      permission:
+      - create
+      - update
+  required: ["mac_address","node", "switch_id", "port_id" ]
+  type: object
+singular: baremetal_port
+title: Baremetal Server Port
+type: "" 

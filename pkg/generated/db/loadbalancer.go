@@ -49,17 +49,17 @@ var LoadbalancerFields = []string{
 // LoadbalancerRefFields is db reference fields for Loadbalancer
 var LoadbalancerRefFields = map[string][]string{
 
+	"service_appliance_set": {
+	// <common.Schema Value>
+
+	},
+
 	"virtual_machine_interface": {
 	// <common.Schema Value>
 
 	},
 
 	"service_instance": {
-	// <common.Schema Value>
-
-	},
-
-	"service_appliance_set": {
 	// <common.Schema Value>
 
 	},
@@ -124,19 +124,6 @@ func CreateLoadbalancer(tx *sql.Tx, model *models.Loadbalancer) error {
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtServiceApplianceSetRef, err := tx.Prepare(insertLoadbalancerServiceApplianceSetQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceApplianceSetRefs create statement failed")
-	}
-	defer stmtServiceApplianceSetRef.Close()
-	for _, ref := range model.ServiceApplianceSetRefs {
-
-		_, err = stmtServiceApplianceSetRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
-		}
-	}
-
 	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertLoadbalancerVirtualMachineInterfaceQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
@@ -160,6 +147,19 @@ func CreateLoadbalancer(tx *sql.Tx, model *models.Loadbalancer) error {
 		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceInstanceRefs create failed")
+		}
+	}
+
+	stmtServiceApplianceSetRef, err := tx.Prepare(insertLoadbalancerServiceApplianceSetQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceApplianceSetRefs create statement failed")
+	}
+	defer stmtServiceApplianceSetRef.Close()
+	for _, ref := range model.ServiceApplianceSetRefs {
+
+		_, err = stmtServiceApplianceSetRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
 		}
 	}
 

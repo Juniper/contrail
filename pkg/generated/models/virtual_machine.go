@@ -6,7 +6,6 @@ import "encoding/json"
 
 // VirtualMachine
 type VirtualMachine struct {
-	ParentUUID  string         `json:"parent_uuid,omitempty"`
 	ParentType  string         `json:"parent_type,omitempty"`
 	FQName      []string       `json:"fq_name,omitempty"`
 	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
@@ -14,6 +13,7 @@ type VirtualMachine struct {
 	Annotations *KeyValuePairs `json:"annotations,omitempty"`
 	Perms2      *PermType2     `json:"perms2,omitempty"`
 	UUID        string         `json:"uuid,omitempty"`
+	ParentUUID  string         `json:"parent_uuid,omitempty"`
 
 	ServiceInstanceRefs []*VirtualMachineServiceInstanceRef `json:"service_instance_refs,omitempty"`
 

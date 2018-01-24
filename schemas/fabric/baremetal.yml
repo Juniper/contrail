@@ -1,0 +1,84 @@
+description: Baremetal Server
+extends:
+- base
+id: baremetal_node
+plural: baremetal_nodes
+prefix: /openstack
+schema:
+  properties:
+    name:
+      description: Name of the nodename to easily identify Baremetal
+      type: string
+      nullable: false
+      permission:
+      - create
+    ipmi_address:
+      description: IPMI address of the server to manage boot device and power management
+      type: string
+      format: ipv4
+      nullable: false
+      permission:
+      - create
+      - update
+    ipmi_username:
+      description: Username to access IPMI
+      type: string
+      nullable: false
+      permission:
+      - create
+      - update
+    ipmi_password:
+      description: Password to access IPMI
+      type: string
+      nullable: false
+      permission:
+      - create
+      - update
+    cpu_count:
+      description: Number of CPU cores on the baremetal
+      type: integer
+      nullable: false
+      permission:
+      - create
+      - update
+    cpu_arch:
+      description: Architecture of the baremetal server
+      type: string
+      default: x86_64
+      nullable: false
+      permission:
+      - create
+      - update
+    disk_gb:
+      description: Disk size of root device (in GB)
+      type: integer
+      nullable: false
+      permission:
+      - create
+      - update
+    memory_mb:
+      description: RAM of the Baremetal server (in MB)
+      type: integer
+      nullable: false
+      permission:
+      - create
+      - update
+    deploy_kernel:
+      description: UUID of the deploy kernel
+      type: string
+      nullable: false
+      permission:
+      - create
+      - update
+    deploy_ramdisk:
+      description: UUID of the deploy initrd/ramdisk
+      type: string
+      nullable: false
+      permission:
+      - create
+      - update
+  required: ["name", "ipmi_address", "ipmi_username", "ipmi_password", "cpu_count", "disk_gb", "memory_mb", "deploy_kernel", "deploy_ramdisk"]
+  type: object
+singular: baremetal_node
+title: Baremetal Server
+type: "" 

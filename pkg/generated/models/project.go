@@ -6,22 +6,22 @@ import "encoding/json"
 
 // Project
 type Project struct {
-	ParentType   string         `json:"parent_type,omitempty"`
-	DisplayName  string         `json:"display_name,omitempty"`
-	Perms2       *PermType2     `json:"perms2,omitempty"`
-	VxlanRouting bool           `json:"vxlan_routing"`
+	Annotations  *KeyValuePairs `json:"annotations,omitempty"`
+	UUID         string         `json:"uuid,omitempty"`
 	Quota        *QuotaType     `json:"quota,omitempty"`
-	ParentUUID   string         `json:"parent_uuid,omitempty"`
+	ParentType   string         `json:"parent_type,omitempty"`
 	FQName       []string       `json:"fq_name,omitempty"`
 	IDPerms      *IdPermsType   `json:"id_perms,omitempty"`
-	Annotations  *KeyValuePairs `json:"annotations,omitempty"`
+	DisplayName  string         `json:"display_name,omitempty"`
+	VxlanRouting bool           `json:"vxlan_routing"`
 	AlarmEnable  bool           `json:"alarm_enable"`
-	UUID         string         `json:"uuid,omitempty"`
+	Perms2       *PermType2     `json:"perms2,omitempty"`
+	ParentUUID   string         `json:"parent_uuid,omitempty"`
 
-	FloatingIPPoolRefs       []*ProjectFloatingIPPoolRef       `json:"floating_ip_pool_refs,omitempty"`
 	AliasIPPoolRefs          []*ProjectAliasIPPoolRef          `json:"alias_ip_pool_refs,omitempty"`
 	NamespaceRefs            []*ProjectNamespaceRef            `json:"namespace_refs,omitempty"`
 	ApplicationPolicySetRefs []*ProjectApplicationPolicySetRef `json:"application_policy_set_refs,omitempty"`
+	FloatingIPPoolRefs       []*ProjectFloatingIPPoolRef       `json:"floating_ip_pool_refs,omitempty"`
 
 	AddressGroups              []*AddressGroup              `json:"address_groups,omitempty"`
 	Alarms                     []*Alarm                     `json:"alarms,omitempty"`
@@ -55,6 +55,13 @@ type Project struct {
 	VirtualNetworks            []*VirtualNetwork            `json:"virtual_networks,omitempty"`
 }
 
+// ProjectAliasIPPoolRef references each other
+type ProjectAliasIPPoolRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
 // ProjectNamespaceRef references each other
 type ProjectNamespaceRef struct {
 	UUID string   `json:"uuid"`
@@ -77,13 +84,6 @@ type ProjectFloatingIPPoolRef struct {
 
 }
 
-// ProjectAliasIPPoolRef references each other
-type ProjectAliasIPPoolRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
 // String returns json representation of the object
 func (model *Project) String() string {
 	b, _ := json.Marshal(model)
@@ -94,17 +94,17 @@ func (model *Project) String() string {
 func MakeProject() *Project {
 	return &Project{
 		//TODO(nati): Apply default
-		IDPerms:      MakeIdPermsType(),
-		Annotations:  MakeKeyValuePairs(),
-		AlarmEnable:  false,
-		UUID:         "",
-		ParentUUID:   "",
 		FQName:       []string{},
-		Perms2:       MakePermType2(),
-		VxlanRouting: false,
+		IDPerms:      MakeIdPermsType(),
+		DisplayName:  "",
+		Annotations:  MakeKeyValuePairs(),
+		UUID:         "",
 		Quota:        MakeQuotaType(),
 		ParentType:   "",
-		DisplayName:  "",
+		Perms2:       MakePermType2(),
+		ParentUUID:   "",
+		VxlanRouting: false,
+		AlarmEnable:  false,
 	}
 }
 

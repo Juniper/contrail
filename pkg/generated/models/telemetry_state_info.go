@@ -6,9 +6,9 @@ import "encoding/json"
 
 // TelemetryStateInfo
 type TelemetryStateInfo struct {
-	Resource   []*TelemetryResourceInfo `json:"resource,omitempty"`
 	ServerPort int                      `json:"server_port,omitempty"`
 	ServerIP   string                   `json:"server_ip,omitempty"`
+	Resource   []*TelemetryResourceInfo `json:"resource,omitempty"`
 }
 
 // String returns json representation of the object
@@ -21,11 +21,10 @@ func (model *TelemetryStateInfo) String() string {
 func MakeTelemetryStateInfo() *TelemetryStateInfo {
 	return &TelemetryStateInfo{
 		//TODO(nati): Apply default
-
-		Resource: MakeTelemetryResourceInfoSlice(),
-
 		ServerPort: 0,
 		ServerIP:   "",
+
+		Resource: MakeTelemetryResourceInfoSlice(),
 	}
 }
 

@@ -6,19 +6,19 @@ import "encoding/json"
 
 // QosConfig
 type QosConfig struct {
-	MPLSExpEntries           *QosIdForwardingClassPairs `json:"mpls_exp_entries,omitempty"`
-	VlanPriorityEntries      *QosIdForwardingClassPairs `json:"vlan_priority_entries,omitempty"`
-	Annotations              *KeyValuePairs             `json:"annotations,omitempty"`
-	Perms2                   *PermType2                 `json:"perms2,omitempty"`
-	UUID                     string                     `json:"uuid,omitempty"`
+	FQName                   []string                   `json:"fq_name,omitempty"`
+	DisplayName              string                     `json:"display_name,omitempty"`
 	QosConfigType            QosConfigType              `json:"qos_config_type,omitempty"`
+	MPLSExpEntries           *QosIdForwardingClassPairs `json:"mpls_exp_entries,omitempty"`
 	DefaultForwardingClassID ForwardingClassId          `json:"default_forwarding_class_id,omitempty"`
 	DSCPEntries              *QosIdForwardingClassPairs `json:"dscp_entries,omitempty"`
-	IDPerms                  *IdPermsType               `json:"id_perms,omitempty"`
-	DisplayName              string                     `json:"display_name,omitempty"`
+	UUID                     string                     `json:"uuid,omitempty"`
 	ParentUUID               string                     `json:"parent_uuid,omitempty"`
+	VlanPriorityEntries      *QosIdForwardingClassPairs `json:"vlan_priority_entries,omitempty"`
+	Perms2                   *PermType2                 `json:"perms2,omitempty"`
 	ParentType               string                     `json:"parent_type,omitempty"`
-	FQName                   []string                   `json:"fq_name,omitempty"`
+	IDPerms                  *IdPermsType               `json:"id_perms,omitempty"`
+	Annotations              *KeyValuePairs             `json:"annotations,omitempty"`
 
 	GlobalSystemConfigRefs []*QosConfigGlobalSystemConfigRef `json:"global_system_config_refs,omitempty"`
 }
@@ -40,19 +40,19 @@ func (model *QosConfig) String() string {
 func MakeQosConfig() *QosConfig {
 	return &QosConfig{
 		//TODO(nati): Apply default
-		MPLSExpEntries:           MakeQosIdForwardingClassPairs(),
-		VlanPriorityEntries:      MakeQosIdForwardingClassPairs(),
-		Perms2:                   MakePermType2(),
-		UUID:                     "",
 		QosConfigType:            MakeQosConfigType(),
+		MPLSExpEntries:           MakeQosIdForwardingClassPairs(),
 		DefaultForwardingClassID: MakeForwardingClassId(),
 		DSCPEntries:              MakeQosIdForwardingClassPairs(),
-		IDPerms:                  MakeIdPermsType(),
-		DisplayName:              "",
-		Annotations:              MakeKeyValuePairs(),
+		UUID:                     "",
 		ParentUUID:               "",
-		ParentType:               "",
 		FQName:                   []string{},
+		DisplayName:              "",
+		VlanPriorityEntries:      MakeQosIdForwardingClassPairs(),
+		Perms2:                   MakePermType2(),
+		ParentType:               "",
+		IDPerms:                  MakeIdPermsType(),
+		Annotations:              MakeKeyValuePairs(),
 	}
 }
 

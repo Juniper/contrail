@@ -1,0 +1,99 @@
+description: Image Management
+extends:
+- base
+id: os_image
+plural: os_images
+prefix: /openstack/image
+schema:
+  properties:
+    name:
+      description: Name of the image to be created/updated
+      nullable: false
+      permission:
+        - create
+        - update
+      type: string
+    id:
+      description: A unique, user-defined image UUID, in the format "nnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn", Where n is a hexadecimal digit from 0 to f, or F.
+      nullable: false
+      permission:
+        - create
+      type: string
+    url:
+      description: URL of the image to download 
+      nullable: false
+      permission:
+        - create
+      type: string
+    file:
+      description: Abosolute path of file to be used for creating image
+      nullable: false
+      permission:
+        - create
+      type: string
+    container_format:
+      description:
+      nullable: false
+      permission:
+        - create
+        - update
+      type: 
+        enum:
+        - aki
+        - bare
+    disk_format:
+      description:
+      nullable: false
+      permission:
+        - create
+        - update
+      type: 
+        enum:
+        - aki
+        - raw
+        - qcow2
+    protected:
+      description:
+      nullable: false
+      permission:
+        - create
+        - update
+      type: boolean
+    visibility:
+      description: Visibility for this image
+      nullable: false
+      permission:
+        - create
+        - update
+      type:
+        enum:
+        - public
+        - private
+        - shared
+        - community
+    property:
+      description: Additional properties of the image (name=value pair)
+      nullable: false
+      permission:
+        - create
+        - update
+      type: string
+    min_disk:
+      description: Amount of disk space in GB that is required to boot the image
+      nullable: false
+      permission:
+        - create
+        - update
+      type: integer
+    min_ram:
+      description: Amount of RAM in MB that is required to boot the image
+      nullable: false
+      permission:
+        - create
+        - update
+      type: integer
+  required: []
+  type: object
+singulat: os_image
+title: Images for Virtual Machines and Baremetals
+type:""

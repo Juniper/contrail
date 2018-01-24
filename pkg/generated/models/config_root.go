@@ -6,6 +6,7 @@ import "encoding/json"
 
 // ConfigRoot
 type ConfigRoot struct {
+	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
 	DisplayName string         `json:"display_name,omitempty"`
 	Annotations *KeyValuePairs `json:"annotations,omitempty"`
 	Perms2      *PermType2     `json:"perms2,omitempty"`
@@ -13,7 +14,6 @@ type ConfigRoot struct {
 	ParentUUID  string         `json:"parent_uuid,omitempty"`
 	ParentType  string         `json:"parent_type,omitempty"`
 	FQName      []string       `json:"fq_name,omitempty"`
-	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
 
 	TagRefs []*ConfigRootTagRef `json:"tag_refs,omitempty"`
 
@@ -39,7 +39,6 @@ func (model *ConfigRoot) String() string {
 func MakeConfigRoot() *ConfigRoot {
 	return &ConfigRoot{
 		//TODO(nati): Apply default
-		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		UUID:        "",
 		ParentUUID:  "",
@@ -47,6 +46,7 @@ func MakeConfigRoot() *ConfigRoot {
 		FQName:      []string{},
 		IDPerms:     MakeIdPermsType(),
 		DisplayName: "",
+		Annotations: MakeKeyValuePairs(),
 	}
 }
 

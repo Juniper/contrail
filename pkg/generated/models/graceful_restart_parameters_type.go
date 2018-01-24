@@ -24,12 +24,12 @@ func (model *GracefulRestartParametersType) String() string {
 func MakeGracefulRestartParametersType() *GracefulRestartParametersType {
 	return &GracefulRestartParametersType{
 		//TODO(nati): Apply default
+		EndOfRibTimeout:      MakeEndOfRibTimeType(),
+		BGPHelperEnable:      false,
 		XMPPHelperEnable:     false,
 		RestartTime:          MakeGracefulRestartTimeType(),
 		LongLivedRestartTime: MakeLongLivedGracefulRestartTimeType(),
 		Enable:               false,
-		EndOfRibTimeout:      MakeEndOfRibTimeType(),
-		BGPHelperEnable:      false,
 	}
 }
 

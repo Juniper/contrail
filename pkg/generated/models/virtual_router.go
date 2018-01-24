@@ -7,16 +7,16 @@ import "encoding/json"
 // VirtualRouter
 type VirtualRouter struct {
 	VirtualRouterIPAddress   IpAddressType     `json:"virtual_router_ip_address,omitempty"`
-	UUID                     string            `json:"uuid,omitempty"`
-	ParentUUID               string            `json:"parent_uuid,omitempty"`
-	FQName                   []string          `json:"fq_name,omitempty"`
-	DisplayName              string            `json:"display_name,omitempty"`
+	Perms2                   *PermType2        `json:"perms2,omitempty"`
 	Annotations              *KeyValuePairs    `json:"annotations,omitempty"`
+	IDPerms                  *IdPermsType      `json:"id_perms,omitempty"`
+	DisplayName              string            `json:"display_name,omitempty"`
 	VirtualRouterDPDKEnabled bool              `json:"virtual_router_dpdk_enabled"`
 	VirtualRouterType        VirtualRouterType `json:"virtual_router_type,omitempty"`
-	Perms2                   *PermType2        `json:"perms2,omitempty"`
+	UUID                     string            `json:"uuid,omitempty"`
+	ParentUUID               string            `json:"parent_uuid,omitempty"`
 	ParentType               string            `json:"parent_type,omitempty"`
-	IDPerms                  *IdPermsType      `json:"id_perms,omitempty"`
+	FQName                   []string          `json:"fq_name,omitempty"`
 
 	NetworkIpamRefs    []*VirtualRouterNetworkIpamRef    `json:"network_ipam_refs,omitempty"`
 	VirtualMachineRefs []*VirtualRouterVirtualMachineRef `json:"virtual_machine_refs,omitempty"`
@@ -49,17 +49,17 @@ func (model *VirtualRouter) String() string {
 func MakeVirtualRouter() *VirtualRouter {
 	return &VirtualRouter{
 		//TODO(nati): Apply default
-		VirtualRouterDPDKEnabled: false,
-		VirtualRouterType:        MakeVirtualRouterType(),
-		Perms2:                   MakePermType2(),
+		UUID:                     "",
+		ParentUUID:               "",
 		ParentType:               "",
+		FQName:                   []string{},
 		IDPerms:                  MakeIdPermsType(),
 		DisplayName:              "",
+		VirtualRouterDPDKEnabled: false,
+		VirtualRouterType:        MakeVirtualRouterType(),
 		Annotations:              MakeKeyValuePairs(),
 		VirtualRouterIPAddress:   MakeIpAddressType(),
-		UUID:       "",
-		ParentUUID: "",
-		FQName:     []string{},
+		Perms2:                   MakePermType2(),
 	}
 }
 

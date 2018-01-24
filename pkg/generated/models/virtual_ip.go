@@ -6,18 +6,18 @@ import "encoding/json"
 
 // VirtualIP
 type VirtualIP struct {
+	ParentType          string         `json:"parent_type,omitempty"`
 	IDPerms             *IdPermsType   `json:"id_perms,omitempty"`
-	VirtualIPProperties *VirtualIpType `json:"virtual_ip_properties,omitempty"`
+	Perms2              *PermType2     `json:"perms2,omitempty"`
 	UUID                string         `json:"uuid,omitempty"`
+	ParentUUID          string         `json:"parent_uuid,omitempty"`
+	VirtualIPProperties *VirtualIpType `json:"virtual_ip_properties,omitempty"`
 	FQName              []string       `json:"fq_name,omitempty"`
 	DisplayName         string         `json:"display_name,omitempty"`
 	Annotations         *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2              *PermType2     `json:"perms2,omitempty"`
-	ParentUUID          string         `json:"parent_uuid,omitempty"`
-	ParentType          string         `json:"parent_type,omitempty"`
 
-	LoadbalancerPoolRefs        []*VirtualIPLoadbalancerPoolRef        `json:"loadbalancer_pool_refs,omitempty"`
 	VirtualMachineInterfaceRefs []*VirtualIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
+	LoadbalancerPoolRefs        []*VirtualIPLoadbalancerPoolRef        `json:"loadbalancer_pool_refs,omitempty"`
 }
 
 // VirtualIPLoadbalancerPoolRef references each other
@@ -44,15 +44,15 @@ func (model *VirtualIP) String() string {
 func MakeVirtualIP() *VirtualIP {
 	return &VirtualIP{
 		//TODO(nati): Apply default
-		VirtualIPProperties: MakeVirtualIpType(),
+		Perms2:              MakePermType2(),
 		UUID:                "",
-		IDPerms:             MakeIdPermsType(),
 		ParentUUID:          "",
-		ParentType:          "",
+		VirtualIPProperties: MakeVirtualIpType(),
 		FQName:              []string{},
 		DisplayName:         "",
 		Annotations:         MakeKeyValuePairs(),
-		Perms2:              MakePermType2(),
+		ParentType:          "",
+		IDPerms:             MakeIdPermsType(),
 	}
 }
 

@@ -48,12 +48,12 @@ var BGPAsAServiceFields = []string{
 // BGPAsAServiceRefFields is db reference fields for BGPAsAService
 var BGPAsAServiceRefFields = map[string][]string{
 
-	"virtual_machine_interface": {
+	"service_health_check": {
 	// <common.Schema Value>
 
 	},
 
-	"service_health_check": {
+	"virtual_machine_interface": {
 	// <common.Schema Value>
 
 	},
@@ -373,26 +373,6 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 
 	}
 
-	if value, ok := values["ref_service_health_check"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.BGPAsAServiceServiceHealthCheckRef{}
-			referenceModel.UUID = uuid
-			m.ServiceHealthCheckRefs = append(m.ServiceHealthCheckRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -409,6 +389,26 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 			referenceModel := &models.BGPAsAServiceVirtualMachineInterfaceRef{}
 			referenceModel.UUID = uuid
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_service_health_check"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.BGPAsAServiceServiceHealthCheckRef{}
+			referenceModel.UUID = uuid
+			m.ServiceHealthCheckRefs = append(m.ServiceHealthCheckRefs, referenceModel)
 
 		}
 	}
