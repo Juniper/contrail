@@ -21,7 +21,7 @@
     type: "object"
     properties: 
       service_group_firewall_service_list: 
-        operations: "CRUD"
+        operation: "CRUD"
         collectionType: "list"
         presence: "required"
         description: "list of service objects (protocol, source port and destination port"

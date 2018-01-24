@@ -28,32 +28,32 @@
     properties: 
       bgpaas_shared: 
         default: false
-        operations: "CRUD"
+        operation: "CRUD"
         type: "boolean"
         description: "True if only one BGP router needs to be created. Otherwise, one BGP router is created for each VMI"
         presence: "optional"
       bgpaas_session_attributes: 
-        operations: "CRUD"
+        operation: "CRUD"
         type: "string"
         description: "BGP peering session attributes."
         presence: "required"
       bgpaas_suppress_route_advertisement: 
-        operations: "CRUD"
+        operation: "CRUD"
         type: "boolean"
         description: "True when server should not advertise any routes to the client i.e. the client has static routes (typically a default) configured."
         presence: "optional"
       bgpaas_ipv4_mapped_ipv6_nexthop: 
-        operations: "CRUD"
+        operation: "CRUD"
         type: "boolean"
         description: "True when client bgp implementation expects to receive a ipv4-mapped ipv6 address (as opposed to regular ipv6 address) as the bgp nexthop for ipv6 routes."
         presence: "optional"
       bgpaas_ip_address: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Ip address of the BGP peer."
         $ref: "types.json#/definitions/IpAddressType"
       autonomous_system: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "16 bit BGP Autonomous System number for the cluster."
         $ref: "types.json#/definitions/AutonomousSystemType"

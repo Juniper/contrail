@@ -16,7 +16,7 @@
     type: "object"
     properties: 
       floating_ip_pool_subnets: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "Subnets that restrict floating ip allocation from the corresponding virtual network."
         $ref: "types.json#/definitions/FloatingIpPoolSubnetType"

@@ -26,13 +26,13 @@
     type: "object"
     properties: 
       service_instance_bindings: 
-        operations: "CRUD"
+        operation: "CRUD"
         collectionType: "map"
         presence: "optional"
         description: "Opaque key value pair for generating config for the service instance."
         $ref: "types.json#/definitions/KeyValuePairs"
       service_instance_properties: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Service instance configuration parameters."
         $ref: "types.json#/definitions/ServiceInstanceType"

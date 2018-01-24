@@ -17,22 +17,22 @@
     type: "object"
     properties: 
       route_target_list: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "List of route targets that are used as both import and export for this virtual network."
         $ref: "types.json#/definitions/RouteTargetList"
       import_route_target_list: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "List of route targets that are used as import for this virtual network."
         $ref: "types.json#/definitions/RouteTargetList"
       export_route_target_list: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "List of route targets that are used as export for this virtual network."
         $ref: "types.json#/definitions/RouteTargetList"
       bgpvpn_type: 
-        operations: "CR"
+        operation: "CR"
         presence: "required"
         description: "BGP VPN type selection between IP VPN (l3) and Ethernet VPN (l2) (default: l3)."
         $ref: "types.json#/definitions/VpnType"

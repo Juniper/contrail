@@ -25,7 +25,7 @@
     type: "object"
     properties: 
       virtual_ip_properties: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Virtual ip configuration like port, protocol, subnet etc."
         $ref: "types.json#/definitions/VirtualIpType"

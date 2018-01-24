@@ -44,12 +44,12 @@
     type: "object"
     properties: 
       vxlan_network_identifier: 
-        operations: "CRUD"
+        operation: "CRUD"
         type: "string"
         description: "The VNI that needs to be associated with the internal VN if vxlan_routing mode is enabled."
         presence: "optional"
       configured_route_target_list: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "List of route targets that represent this logical router, all virtual networks connected to this logical router will have this as their route target list."
         $ref: "types.json#/definitions/RouteTargetList"

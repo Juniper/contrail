@@ -17,7 +17,7 @@
     type: "object"
     properties: 
       dsa_rule_entry: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "rule entry defining publisher set and subscriber set."
         $ref: "types.json#/definitions/DiscoveryServiceAssignmentType"

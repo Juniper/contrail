@@ -20,7 +20,7 @@
     type: "object"
     properties: 
       loadbalancer_listener_properties: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: ""
         $ref: "types.json#/definitions/LoadbalancerListenerType"

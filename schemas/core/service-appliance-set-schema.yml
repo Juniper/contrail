@@ -16,17 +16,17 @@
     type: "object"
     properties: 
       service_appliance_set_properties: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "List of Key:Value pairs that are used by the provider driver and opaque to system."
         $ref: "types.json#/definitions/KeyValuePairs"
       service_appliance_ha_mode: 
-        operations: "CRUD"
+        operation: "CRUD"
         type: "string"
         description: "High availability mode for the service appliance set, active-active or active-backup."
         presence: "optional"
       service_appliance_driver: 
-        operations: "CRUD"
+        operation: "CRUD"
         type: "string"
         description: "Name of the provider driver for this service appliance set."
         presence: "optional"

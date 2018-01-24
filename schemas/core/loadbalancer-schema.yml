@@ -29,12 +29,12 @@
     type: "object"
     properties: 
       loadbalancer_properties: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Loadbalancer configuration like  admin state, VIP, VIP subnet etc."
         $ref: "types.json#/definitions/LoadbalancerType"
       loadbalancer_provider: 
-        operations: "CR"
+        operation: "CR"
         type: "string"
         description: "Provider field selects backend provider of the LBaaS, Cloudadmin could offer different levels of service like gold, silver, bronze. Provided by  HA-proxy or various HW or SW appliances in the backend."
         presence: "optional"

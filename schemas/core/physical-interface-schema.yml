@@ -20,7 +20,7 @@
     type: "object"
     properties: 
       ethernet_segment_identifier: 
-        operations: "CRUD"
+        operation: "CRUD"
         type: "string"
         description: "Ethernet Segment Id configured for the Physical Interface. In a multihomed environment, user should configure the peer Physical interface with the same ESI."
         presence: "optional"

@@ -17,7 +17,7 @@
     type: "object"
     properties: 
       control_traffic_dscp: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "DSCP value of IP header for control traffic"
         $ref: "types.json#/definitions/ControlTrafficDscpType"

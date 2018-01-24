@@ -30,7 +30,7 @@
     properties: 
       all_applications: 
         default: false
-        operations: "R"
+        operation: "R"
         type: "boolean"
         description: "If set, indicates application policy set to be applied to all application tags"
         presence: "optional"

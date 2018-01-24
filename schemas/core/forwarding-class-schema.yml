@@ -24,22 +24,22 @@
     type: "object"
     properties: 
       forwarding_class_dscp: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "DSCP value to be written on outgoing packet for this forwarding-class."
         $ref: "types.json#/definitions/DscpValueType"
       forwarding_class_vlan_priority: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "802.1p value to be written on outgoing packet for this forwarding-class."
         $ref: "types.json#/definitions/VlanPriorityType"
       forwarding_class_mpls_exp: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "MPLS exp value to be written on outgoing packet for this forwarding-class."
         $ref: "types.json#/definitions/MplsExpType"
       forwarding_class_id: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Unique ID for this forwarding class."
         $ref: "types.json#/definitions/ForwardingClassId"

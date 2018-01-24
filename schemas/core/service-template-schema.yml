@@ -21,7 +21,7 @@
     type: "object"
     properties: 
       service_template_properties: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Service template configuration parameters."
         $ref: "types.json#/definitions/ServiceTemplateType"

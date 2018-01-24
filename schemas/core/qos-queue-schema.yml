@@ -19,17 +19,17 @@
     type: "object"
     properties: 
       qos_queue_identifier: 
-        operations: "CRUD"
+        operation: "CRUD"
         type: "integer"
         description: "Unique id for this queue."
         presence: "required"
       max_bandwidth: 
-        operations: "CRUD"
+        operation: "CRUD"
         type: "integer"
         description: "Maximum bandwidth for this queue."
         presence: "required"
       min_bandwidth: 
-        operations: "CRUD"
+        operation: "CRUD"
         type: "integer"
         description: "Minimum bandwidth for this queue."
         presence: "required"

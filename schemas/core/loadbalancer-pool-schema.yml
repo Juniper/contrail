@@ -37,17 +37,17 @@
     type: "object"
     properties: 
       loadbalancer_pool_properties: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Configuration for loadbalancer pool like protocol, subnet, etc."
         $ref: "types.json#/definitions/LoadbalancerPoolType"
       loadbalancer_pool_custom_attributes: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "Custom loadbalancer config, opaque to the system. Specified as list of Key:Value pairs. Applicable to LBaaS V1."
         $ref: "types.json#/definitions/KeyValuePairs"
       loadbalancer_pool_provider: 
-        operations: "CR"
+        operation: "CR"
         type: "string"
         description: "Provider field selects backend provider of the LBaaS, Cloudadmin could offer different levels of service like gold, silver, bronze. Provided by  HA-proxy or various HW or SW appliances in the backend. Applicable to LBaaS V1"
         presence: "optional"

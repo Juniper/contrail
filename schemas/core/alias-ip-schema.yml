@@ -25,12 +25,12 @@
     type: "object"
     properties: 
       alias_ip_address: 
-        operations: "CR"
+        operation: "CR"
         presence: "required"
         description: "Alias ip address."
         $ref: "types.json#/definitions/IpAddressType"
       alias_ip_address_family: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "Ip address family of the alias ip, IpV4 or IpV6"
         $ref: "types.json#/definitions/IpAddressFamilyType"

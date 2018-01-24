@@ -16,42 +16,42 @@
     type: "object"
     properties: 
       ecmp_hashing_include_fields: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "ECMP hashing config at global level."
         $ref: "types.json#/definitions/EcmpHashingIncludeFields"
       flow_aging_timeout_list: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "Flow aging timeout per application (protocol, port) list."
         $ref: "types.json#/definitions/FlowAgingTimeoutList"
       forwarding_mode: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "Packet forwarding mode for this system L2-only, L3-only OR L2-L3. L2-L3 is default."
         $ref: "types.json#/definitions/ForwardingModeType"
       flow_export_rate: 
-        operations: "CRUD"
+        operation: "CRUD"
         type: "integer"
         description: "Flow export rate is global config, rate at which each vrouter will sample and export flow records to analytics"
         presence: "optional"
       linklocal_services: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "Global services provided on link local subnet to the virtual machines."
         $ref: "types.json#/definitions/LinklocalServicesTypes"
       encapsulation_priorities: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "Ordered list of encapsulations that vrouter will use in priority order."
         $ref: "types.json#/definitions/EncapsulationPrioritiesType"
       vxlan_network_identifier_mode: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         $ref: "types.json#/definitions/VxlanNetworkIdentifierModeType"
       enable_security_logging: 
         default: true
-        operations: "CRUD"
+        operation: "CRUD"
         type: "boolean"
         description: "Enable or disable security-logging in the system"
         presence: "optional"

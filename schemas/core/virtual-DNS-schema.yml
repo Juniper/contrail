@@ -17,7 +17,7 @@
     type: "object"
     properties: 
       virtual_DNS_data: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Virtual DNS data has configuration for virtual DNS like domain, dynamic records etc."
         $ref: "types.json#/definitions/VirtualDnsType"

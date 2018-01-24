@@ -17,7 +17,7 @@
     type: "object"
     properties: 
       subnet_ip_prefix: 
-        operations: "CRD"
+        operation: "CRD"
         presence: "required"
         description: "Ip prefix/length of the subnet."
         $ref: "types.json#/definitions/SubnetType"

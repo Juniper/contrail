@@ -23,7 +23,7 @@
     type: "object"
     properties: 
       interface_route_table_routes: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Interface route table used same structure as route table, however the next hop field is irrelevant."
         $ref: "types.json#/definitions/RouteTableType"

@@ -17,7 +17,7 @@
     type: "object"
     properties: 
       virtual_DNS_record_data: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "DNS record data has configuration like type, name, ip address, loadbalancing etc."
         $ref: "types.json#/definitions/VirtualDnsRecordType"

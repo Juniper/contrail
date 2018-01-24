@@ -29,39 +29,39 @@
     type: "object"
     properties: 
       floating_ip_address_family: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "Ip address family of the floating ip, IpV4 or IpV6"
         $ref: "types.json#/definitions/IpAddressFamilyType"
       floating_ip_port_mappings: 
-        operations: "CRUD"
+        operation: "CRUD"
         collectionType: "list"
         presence: "optional"
         description: "List of PortMaps for this floating-ip."
         $ref: "types.json#/definitions/PortMappings"
       floating_ip_is_virtual_ip: 
-        operations: "CRUD"
+        operation: "CRUD"
         type: "boolean"
         description: "This floating ip is used as virtual ip (VIP) in case of LBaaS."
         presence: "optional"
       floating_ip_address: 
-        operations: "CR"
+        operation: "CR"
         presence: "required"
         description: "Floating ip address."
         $ref: "types.json#/definitions/IpAddressType"
       floating_ip_port_mappings_enable: 
         default: false
-        operations: "CRUD"
+        operation: "CRUD"
         type: "boolean"
         description: "If it is false, floating-ip Nat is done for all Ports. If it is true, floating-ip Nat is done to the list of PortMaps."
         presence: "optional"
       floating_ip_fixed_ip_address: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "This floating is tracking given fixed ip of the interface. The given fixed ip is used in 1:1 NAT."
         $ref: "types.json#/definitions/IpAddressType"
       floating_ip_traffic_direction: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "Specifies direction of traffic for the floating-ip"
         $ref: "types.json#/definitions/TrafficDirectionType"

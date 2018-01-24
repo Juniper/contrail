@@ -16,7 +16,7 @@
     type: "object"
     properties: 
       namespace_cidr: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "All networks in this namespace belong to this list of Prefixes. Not implemented."
         $ref: "types.json#/definitions/SubnetType"

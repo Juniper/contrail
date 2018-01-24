@@ -17,7 +17,7 @@
     type: "object"
     properties: 
       network_policy_entries: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Network policy rule entries."
         $ref: "types.json#/definitions/PolicyEntriesType"

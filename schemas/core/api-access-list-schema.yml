@@ -25,7 +25,7 @@
     type: "object"
     properties: 
       api_access_list_entries: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "List of rules e.g network.* => admin:CRUD (admin can perform all ops on networks)."
         $ref: "types.json#/definitions/RbacRuleEntriesType"

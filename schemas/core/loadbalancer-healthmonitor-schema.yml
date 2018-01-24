@@ -17,7 +17,7 @@
     type: "object"
     properties: 
       loadbalancer_healthmonitor_properties: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Configuration parameters for health monitor like type, method, retries etc."
         $ref: "types.json#/definitions/LoadbalancerHealthmonitorType"

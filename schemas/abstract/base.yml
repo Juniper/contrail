@@ -32,23 +32,23 @@
           items:
             type: "string"
       id_perms:
-        operations: "R"
+        operation: "R"
         presence: "system-only"
         description: "System maintained identity, time  and permissions data."
         $ref: "types.json#/definitions/IdPermsType"
       display_name:
-        operations: "CRUD"
+        operation: "CRUD"
         type: "string"
         description: "Display name user configured string(name) that can be updated any time. Used as openstack name."
         presence: "optional"
       annotations:
-        operations: "CRUD"
+        operation: "CRUD"
         collectionType: "map"
         presence: "optional"
         description: "Dictionary of arbitrary (key, value) on a resource."
         $ref: "types.json#/definitions/KeyValuePairs"
       perms2:
-        operations: "R"
+        operation: "R"
         presence: "system-only"
         description: "Permissions data for role based access."
         $ref: "types.json#/definitions/PermType2"

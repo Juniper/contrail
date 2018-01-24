@@ -17,7 +17,7 @@
     type: "object"
     properties: 
       password: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "Domain level quota, not currently implemented"
         type: string

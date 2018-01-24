@@ -26,17 +26,17 @@
     type: "object"
     properties: 
       virtual_router_dpdk_enabled: 
-        operations: "CRUD"
+        operation: "CRUD"
         type: "boolean"
         description: "This vrouter's data path is using DPDK library, Virtual machines interfaces scheduled on this compute node will be tagged with additional flags so that they are spawned with user space virtio driver. It is only applicable for embedded vrouter."
         presence: "optional"
       virtual_router_type: 
-        operations: "CRD"
+        operation: "CRD"
         presence: "optional"
         description: "Different types of the vrouters in the system."
         $ref: "types.json#/definitions/VirtualRouterType"
       virtual_router_ip_address: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Ip address of the virtual router."
         $ref: "types.json#/definitions/IpAddressType"

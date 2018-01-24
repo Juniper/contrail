@@ -20,7 +20,7 @@
     type: "object"
     properties: 
       address_group_prefix: 
-        operations: "CRUD"
+        operation: "CRUD"
         collectionType: "list"
         presence: "optional"
         description: "List of IP prefix"

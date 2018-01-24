@@ -17,7 +17,7 @@
     type: "object"
     properties: 
       loadbalancer_member_properties: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Member configuration like ip address, destination port, weight etc."
         $ref: "types.json#/definitions/LoadbalancerMemberType"

@@ -18,12 +18,12 @@
     type: "object"
     properties: 
       service_type: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Type of service assigned for this object"
         $ref: "types.json#/definitions/ServiceConnectionType"
       e2_service: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "E2 service type."
         $ref: "types.json#/definitions/E2servicetype"

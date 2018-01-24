@@ -42,37 +42,37 @@
     type: "object"
     properties: 
       endpoint_1: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "match condition for traffic source"
         $ref: "types.json#/definitions/FirewallRuleEndpointType"
       endpoint_2: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "match condition for traffic destination"
         $ref: "types.json#/definitions/FirewallRuleEndpointType"
       action_list: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Actions to be performed if packets match condition"
         $ref: "types.json#/definitions/ActionListType"
       service: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "Service (port, protocol) for packets match condition"
         $ref: "types.json#/definitions/FirewallServiceType"
       direction: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Direction in the rule"
         $ref: "types.json#/definitions/FirewallRuleDirectionType"
       match_tag_types: 
-        operations: "R"
+        operation: "R"
         presence: "required"
         description: "matching tags ids for source and destination endpoints"
         $ref: "types.json#/definitions/FirewallRuleMatchTagsTypeIdList"
       match_tags: 
-        operations: "CRUD"
+        operation: "CRUD"
         collectionType: "list"
         presence: "required"
         description: "matching tags for source and destination endpoints"

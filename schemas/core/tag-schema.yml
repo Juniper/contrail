@@ -26,17 +26,17 @@
     type: "object"
     properties: 
       tag_type_name: 
-        operations: "CR"
+        operation: "CR"
         type: "string"
         description: "Tag type string representation"
         presence: "required"
       tag_id: 
-        operations: "R"
+        operation: "R"
         presence: "optional"
         description: "Internal Tag ID encapsulating tag type and value in                  hexadecimal fomat: 0xTTTTVVVV (T: type, V: value)"
         $ref: "types.json#/definitions/U32BitHexInt"
       tag_value: 
-        operations: "CR"
+        operation: "CR"
         type: "string"
         description: "Tag value string representation"
         presence: "required"

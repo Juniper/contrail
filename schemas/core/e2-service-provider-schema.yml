@@ -20,7 +20,7 @@
     type: "object"
     properties: 
       e2_service_provider_promiscuous: 
-        operations: "CRUD"
+        operation: "CRUD"
         type: "boolean"
         description: "This service provider is connected to all other service providers."
         presence: "optional"

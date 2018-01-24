@@ -23,7 +23,7 @@
     type: "object"
     properties: 
       service_health_check_properties: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Service health check has following fields."
         $ref: "types.json#/definitions/ServiceHealthCheckType"

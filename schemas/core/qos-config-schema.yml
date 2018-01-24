@@ -26,29 +26,29 @@
     type: "object"
     properties: 
       qos_config_type: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Specifies if qos-config is for vhost, fabric or for project."
         $ref: "types.json#/definitions/QosConfigType"
       mpls_exp_entries: 
-        operations: "CRUD"
+        operation: "CRUD"
         collectionType: "map"
         presence: "optional"
         description: "Map of MPLS EXP values to applicable forwarding class for packet."
         $ref: "types.json#/definitions/QosIdForwardingClassPairs"
       vlan_priority_entries: 
-        operations: "CRUD"
+        operation: "CRUD"
         collectionType: "map"
         presence: "optional"
         description: "Map of .1p priority code to applicable forwarding class for packet."
         $ref: "types.json#/definitions/QosIdForwardingClassPairs"
       default_forwarding_class_id: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "required"
         description: "Default forwarding class used for all non-specified QOS bits"
         $ref: "types.json#/definitions/ForwardingClassId"
       dscp_entries: 
-        operations: "CRUD"
+        operation: "CRUD"
         collectionType: "map"
         presence: "optional"
         description: "Map of DSCP match condition and applicable forwarding class for packet."

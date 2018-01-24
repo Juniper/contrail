@@ -30,13 +30,13 @@
     type: "object"
     properties: 
       security_logging_object_rules: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         description: "Security logging object rules derived internally."
         $ref: "types.json#/definitions/SecurityLoggingObjectRuleListType"
       security_logging_object_rate: 
         default: "100"
-        operations: "CRUD"
+        operation: "CRUD"
         type: "integer"
         description: "Security logging object rate defining rate of session logging"
         presence: "optional"

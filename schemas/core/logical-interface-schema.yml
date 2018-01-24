@@ -24,12 +24,12 @@
     type: "object"
     properties: 
       logical_interface_vlan_tag: 
-        operations: "CRUD"
+        operation: "CRUD"
         type: "integer"
         description: "VLAN tag (.1Q) classifier for this logical interface."
         presence: "optional"
       logical_interface_type: 
-        operations: "CRUD"
+        operation: "CRUD"
         presence: "optional"
         $ref: "types.json#/definitions/LogicalInterfaceType"
 
