@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestQosIdForwardingClassPair(t *testing.T) {
-	model := MakeQosIdForwardingClassPair()
-	fmt.Println(model)
+    model := MakeQosIdForwardingClassPair()
+    fmt.Println(model)
 }

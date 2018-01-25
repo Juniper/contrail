@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestFatFlowProtocols(t *testing.T) {
-	model := MakeFatFlowProtocols()
-	fmt.Println(model)
+    model := MakeFatFlowProtocols()
+    fmt.Println(model)
 }

@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestBridgeDomain(t *testing.T) {
-	model := MakeBridgeDomain()
-	fmt.Println(model)
+    model := MakeBridgeDomain()
+    fmt.Println(model)
 }

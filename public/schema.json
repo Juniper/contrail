@@ -720,7 +720,7 @@
                         "maximum": 0
                     },
                     "access_control_list_hash": {
-                        "type": "object",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },

@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestAddressGroup(t *testing.T) {
-	model := MakeAddressGroup()
-	fmt.Println(model)
+    model := MakeAddressGroup()
+    fmt.Println(model)
 }

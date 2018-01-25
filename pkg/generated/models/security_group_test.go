@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestSecurityGroup(t *testing.T) {
-	model := MakeSecurityGroup()
-	fmt.Println(model)
+    model := MakeSecurityGroup()
+    fmt.Println(model)
 }

@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestGlobalSystemConfig(t *testing.T) {
-	model := MakeGlobalSystemConfig()
-	fmt.Println(model)
+    model := MakeGlobalSystemConfig()
+    fmt.Println(model)
 }

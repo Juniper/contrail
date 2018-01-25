@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestRouteTargetList(t *testing.T) {
-	model := MakeRouteTargetList()
-	fmt.Println(model)
+    model := MakeRouteTargetList()
+    fmt.Println(model)
 }

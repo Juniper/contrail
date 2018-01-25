@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestKeypair(t *testing.T) {
-	model := MakeKeypair()
-	fmt.Println(model)
+    model := MakeKeypair()
+    fmt.Println(model)
 }

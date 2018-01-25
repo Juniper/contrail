@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestBGPRouter(t *testing.T) {
-	model := MakeBGPRouter()
-	fmt.Println(model)
+    model := MakeBGPRouter()
+    fmt.Println(model)
 }

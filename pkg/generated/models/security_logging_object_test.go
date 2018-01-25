@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestSecurityLoggingObject(t *testing.T) {
-	model := MakeSecurityLoggingObject()
-	fmt.Println(model)
+    model := MakeSecurityLoggingObject()
+    fmt.Println(model)
 }

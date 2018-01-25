@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestContrailCluster(t *testing.T) {
-	model := MakeContrailCluster()
-	fmt.Println(model)
+    model := MakeContrailCluster()
+    fmt.Println(model)
 }

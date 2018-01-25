@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestPeeringPolicy(t *testing.T) {
-	model := MakePeeringPolicy()
-	fmt.Println(model)
+    model := MakePeeringPolicy()
+    fmt.Println(model)
 }

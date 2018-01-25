@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestPluginProperties(t *testing.T) {
-	model := MakePluginProperties()
-	fmt.Println(model)
+    model := MakePluginProperties()
+    fmt.Println(model)
 }

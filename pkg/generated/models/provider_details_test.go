@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestProviderDetails(t *testing.T) {
-	model := MakeProviderDetails()
-	fmt.Println(model)
+    model := MakeProviderDetails()
+    fmt.Println(model)
 }

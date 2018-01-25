@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestFloatingIPPool(t *testing.T) {
-	model := MakeFloatingIPPool()
-	fmt.Println(model)
+    model := MakeFloatingIPPool()
+    fmt.Println(model)
 }

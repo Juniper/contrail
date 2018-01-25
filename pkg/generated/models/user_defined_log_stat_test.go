@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestUserDefinedLogStat(t *testing.T) {
-	model := MakeUserDefinedLogStat()
-	fmt.Println(model)
+    model := MakeUserDefinedLogStat()
+    fmt.Println(model)
 }

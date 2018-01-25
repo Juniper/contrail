@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestAPIAccessList(t *testing.T) {
-	model := MakeAPIAccessList()
-	fmt.Println(model)
+    model := MakeAPIAccessList()
+    fmt.Println(model)
 }

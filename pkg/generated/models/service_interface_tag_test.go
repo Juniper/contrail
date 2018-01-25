@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestServiceInterfaceTag(t *testing.T) {
-	model := MakeServiceInterfaceTag()
-	fmt.Println(model)
+    model := MakeServiceInterfaceTag()
+    fmt.Println(model)
 }

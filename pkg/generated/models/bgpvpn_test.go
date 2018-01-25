@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestBGPVPN(t *testing.T) {
-	model := MakeBGPVPN()
-	fmt.Println(model)
+    model := MakeBGPVPN()
+    fmt.Println(model)
 }

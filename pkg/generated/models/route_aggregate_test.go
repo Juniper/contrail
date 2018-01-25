@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestRouteAggregate(t *testing.T) {
-	model := MakeRouteAggregate()
-	fmt.Println(model)
+    model := MakeRouteAggregate()
+    fmt.Println(model)
 }

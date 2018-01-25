@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestSequenceType(t *testing.T) {
-	model := MakeSequenceType()
-	fmt.Println(model)
+    model := MakeSequenceType()
+    fmt.Println(model)
 }

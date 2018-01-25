@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestKubernetesNode(t *testing.T) {
-	model := MakeKubernetesNode()
-	fmt.Println(model)
+    model := MakeKubernetesNode()
+    fmt.Println(model)
 }

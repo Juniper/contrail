@@ -6,9 +6,10 @@ package models
 import "encoding/json"
 
 // {{ name }} {{ type.description }}
+//proteus:generate
 type {{ name }} struct {
-{% for propertyName, property in type.Properties %}
-    {{ property.GoName }} {% if property.Type == "object" and property.Properties %}*{% endif %}{% if property.GoType != "bool" %}{{ property.GoType }} `json:"{{propertyName}},omitempty"`{% else %}{{ property.GoType }} `json:"{{propertyName}}"`{% endif %}{% endfor %}
+{% for property in type.OrderedProperties %}
+    {{ property.GoName }} {% if property.Type == "object" and property.Properties %}*{% endif %}{% if property.GoType != "bool" %}{{ property.GoType }} `json:"{{ property.ID }},omitempty"`{% else %}{{ property.GoType }} `json:"{{ property.ID }}"`{% endif %}{% endfor %}
 {% for linkTo, reference in references %}
     {{ reference.GoName }}Refs []*{{ type.GoName }}{{ reference.GoName }}Ref `json:"{{linkTo}}_refs,omitempty"`{% endfor %}
 {% for child in children %}
@@ -36,7 +37,7 @@ func (model *{{ name }}) String() string {
 func Make{{ name }}() *{{name}}{
     return &{{name}}{
     //TODO(nati): Apply default
-    {% for name, property in type.Properties %}{% if property.GoType == "string" %}{{ property.GoName }}: "",
+    {% for property in type.OrderedProperties %}{% if property.GoType == "string" %}{{ property.GoName }}: "",
         {% elif property.GoType == "[]string" %}{{ property.GoName }}: []string{},
         {% elif property.GoType == "map[string]string" %}{{ property.GoName }}: map[string]string{},
         {% elif property.GoType == "map[string]interface{}" %}{{ property.GoName }}: map[string]interface{}{},
@@ -59,6 +60,7 @@ func Make{{ name }}() *{{name}}{
 }
 
 {% else %}
+//proteus:generate
 type {{ name }} {{ type.GoType }}
 
 // Make{{ name }} makes {{ name }}

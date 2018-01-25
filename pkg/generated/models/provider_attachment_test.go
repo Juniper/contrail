@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestProviderAttachment(t *testing.T) {
-	model := MakeProviderAttachment()
-	fmt.Println(model)
+    model := MakeProviderAttachment()
+    fmt.Println(model)
 }

@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestNetworkIpam(t *testing.T) {
-	model := MakeNetworkIpam()
-	fmt.Println(model)
+    model := MakeNetworkIpam()
+    fmt.Println(model)
 }

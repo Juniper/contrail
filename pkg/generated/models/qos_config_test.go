@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestQosConfig(t *testing.T) {
-	model := MakeQosConfig()
-	fmt.Println(model)
+    model := MakeQosConfig()
+    fmt.Println(model)
 }

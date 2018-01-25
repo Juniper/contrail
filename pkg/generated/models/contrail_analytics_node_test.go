@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestContrailAnalyticsNode(t *testing.T) {
-	model := MakeContrailAnalyticsNode()
-	fmt.Println(model)
+    model := MakeContrailAnalyticsNode()
+    fmt.Println(model)
 }

@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestOpenstackCluster(t *testing.T) {
-	model := MakeOpenstackCluster()
-	fmt.Println(model)
+    model := MakeOpenstackCluster()
+    fmt.Println(model)
 }

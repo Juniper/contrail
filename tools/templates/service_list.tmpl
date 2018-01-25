@@ -1,0 +1,21 @@
+package services
+
+type ContrailService struct {
+    DB *sql.DB
+}
+
+//SetDB sets db object
+func (service *ContrailService) SetDB(db *sql.DB)  {
+    service.DB = db
+}
+
+//RegisterRESTAPI register REST API service for path.
+func (service *ContrailService) RegisterRESTAPI(e *echo.Echo) {
+ {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+   e.POST("{{ schema.Prefix }}{{ schema.PluralPath }}", service.RESTCreate{{ schema.JSONSchema.GoName }})
+   e.GET("{{ schema.Prefix }}{{ schema.PluralPath }}", service.RESTList{{ schema.JSONSchema.GoName }})
+   e.PUT("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTUpdate{{ schema.JSONSchema.GoName }})
+   e.GET("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTShow{{ schema.JSONSchema.GoName }})
+   e.DELETE("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTDelete{{ schema.JSONSchema.GoName }})
+{% endif%}{% endfor %}   
+}

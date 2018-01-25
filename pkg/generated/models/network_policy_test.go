@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestNetworkPolicy(t *testing.T) {
-	model := MakeNetworkPolicy()
-	fmt.Println(model)
+    model := MakeNetworkPolicy()
+    fmt.Println(model)
 }

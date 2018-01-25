@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestDashboard(t *testing.T) {
-	model := MakeDashboard()
-	fmt.Println(model)
+    model := MakeDashboard()
+    fmt.Println(model)
 }

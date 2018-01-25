@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestFirewallRuleEndpointType(t *testing.T) {
-	model := MakeFirewallRuleEndpointType()
-	fmt.Println(model)
+    model := MakeFirewallRuleEndpointType()
+    fmt.Println(model)
 }

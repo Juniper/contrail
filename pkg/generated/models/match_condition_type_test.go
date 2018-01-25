@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestMatchConditionType(t *testing.T) {
-	model := MakeMatchConditionType()
-	fmt.Println(model)
+    model := MakeMatchConditionType()
+    fmt.Println(model)
 }

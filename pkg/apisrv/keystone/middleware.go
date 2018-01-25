@@ -1,6 +1,7 @@
 package keystone
 
 import (
+	"context"
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/common"
@@ -44,7 +45,13 @@ func AuthMiddleware(authURL string, skipPath []string) echo.MiddlewareFunc {
 				return echo.ErrUnauthorized
 			}
 			user := validatedToken.User
-			c.Set("auth", common.NewAuthContext(domain.ID, project.ID, user.ID, roles))
+			auth := common.NewAuthContext(domain.ID, project.ID, user.ID, roles)
+			request := c.Request()
+			var authKey interface{}
+			authKey = "auth"
+			ctx := context.WithValue(request.Context(), authKey, auth)
+			newRequest := request.WithContext(ctx)
+			c.SetRequest(newRequest)
 			return next(c)
 		}
 	}

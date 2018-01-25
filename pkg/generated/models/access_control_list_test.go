@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestAccessControlList(t *testing.T) {
-	model := MakeAccessControlList()
-	fmt.Println(model)
+    model := MakeAccessControlList()
+    fmt.Println(model)
 }

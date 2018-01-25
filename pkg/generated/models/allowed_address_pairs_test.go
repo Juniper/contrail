@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestAllowedAddressPairs(t *testing.T) {
-	model := MakeAllowedAddressPairs()
-	fmt.Println(model)
+    model := MakeAllowedAddressPairs()
+    fmt.Println(model)
 }

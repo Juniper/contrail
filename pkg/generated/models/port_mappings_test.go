@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestPortMappings(t *testing.T) {
-	model := MakePortMappings()
-	fmt.Println(model)
+    model := MakePortMappings()
+    fmt.Println(model)
 }

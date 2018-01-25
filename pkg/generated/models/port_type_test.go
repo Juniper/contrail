@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestPortType(t *testing.T) {
-	model := MakePortType()
-	fmt.Println(model)
+    model := MakePortType()
+    fmt.Println(model)
 }

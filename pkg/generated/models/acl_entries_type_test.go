@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestAclEntriesType(t *testing.T) {
-	model := MakeAclEntriesType()
-	fmt.Println(model)
+    model := MakeAclEntriesType()
+    fmt.Println(model)
 }

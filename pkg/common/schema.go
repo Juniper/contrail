@@ -104,26 +104,30 @@ type Schema struct {
 
 //JSONSchema is a standard JSONSchema representation plus data for code generation.
 type JSONSchema struct {
-	Title           string                 `yaml:"title" json:"title,omitempty"`
-	Description     string                 `yaml:"description" json:"description,omitempty"`
-	SQL             string                 `yaml:"sql" json:"-"`
-	Default         interface{}            `yaml:"default" json:"default,omitempty"`
-	Operation       string                 `yaml:"operation" json:"-"`
-	Presence        string                 `yaml:"presence" json:"-"`
-	Type            string                 `yaml:"type" json:"type,omitempty"`
-	Permission      []string               `yaml:"permission" json:"permission,omitempty"`
-	Properties      map[string]*JSONSchema `yaml:"properties" json:"properties,omitempty"`
-	PropertiesOrder []string               `yaml:"-" json:"propertiesOrder,omitempty"`
-	Enum            []string               `yaml:"enum" json:"enum,omitempty"`
-	Minimum         interface{}            `yaml:"minimum" json:"minimum,omitempty"`
-	Maximum         interface{}            `yaml:"maximum" json:"maximum,omitempty"`
-	Ref             string                 `yaml:"$ref" json:"-"`
-	CollectionType  string                 `yaml:"-" json:"-"`
-	Items           *JSONSchema            `yaml:"items" json:"items,omitempty"`
-	GoName          string                 `yaml:"-" json:"-"`
-	GoType          string                 `yaml:"-" json:"-"`
-	Required        []string               `yaml:"required" json:"-"`
-	GoPremitive     bool                   `yaml:"-" json:"-"`
+	ID                string                 `yaml:"-" json:"-"`
+	Index             int                    `yaml:"-" json:"-"`
+	Title             string                 `yaml:"title" json:"title,omitempty"`
+	Description       string                 `yaml:"description" json:"description,omitempty"`
+	SQL               string                 `yaml:"sql" json:"-"`
+	Default           interface{}            `yaml:"default" json:"default,omitempty"`
+	Operation         string                 `yaml:"operation" json:"-"`
+	Presence          string                 `yaml:"presence" json:"-"`
+	Type              string                 `yaml:"type" json:"type,omitempty"`
+	Permission        []string               `yaml:"permission" json:"permission,omitempty"`
+	Properties        map[string]*JSONSchema `yaml:"properties" json:"properties,omitempty"`
+	PropertiesOrder   []string               `yaml:"-" json:"propertiesOrder,omitempty"`
+	OrderedProperties []*JSONSchema          `yaml:"-" json:"-"`
+	Enum              []string               `yaml:"enum" json:"enum,omitempty"`
+	Minimum           interface{}            `yaml:"minimum" json:"minimum,omitempty"`
+	Maximum           interface{}            `yaml:"maximum" json:"maximum,omitempty"`
+	Ref               string                 `yaml:"$ref" json:"-"`
+	CollectionType    string                 `yaml:"-" json:"-"`
+	Items             *JSONSchema            `yaml:"items" json:"items,omitempty"`
+	GoName            string                 `yaml:"-" json:"-"`
+	GoType            string                 `yaml:"-" json:"-"`
+	ProtoType         string                 `yaml:"-" json:"-"`
+	Required          []string               `yaml:"required" json:"-"`
+	GoPremitive       bool                   `yaml:"-" json:"-"`
 }
 
 //String makes string format for json schema
@@ -163,6 +167,7 @@ func (s *JSONSchema) getRefType() string {
 //Copy copies a json schema
 func (s *JSONSchema) Copy() *JSONSchema {
 	copied := &JSONSchema{
+		ID:         s.ID,
 		Title:      s.Title,
 		SQL:        s.SQL,
 		Default:    s.Default,
@@ -220,10 +225,13 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 	}
 	s.Required = append(s2.Required, s.Required...)
 	s.PropertiesOrder = append(s2.PropertiesOrder, s.PropertiesOrder...)
+	s.OrderedProperties = []*JSONSchema{}
+	for _, id := range s.PropertiesOrder {
+		s.OrderedProperties = append(s.OrderedProperties, s.Properties[id])
+	}
 	if s.Type == "" {
 		s.Type = s2.Type
 	}
-
 	if s.Enum == nil {
 		s.Enum = s2.Enum
 	}
@@ -299,6 +307,8 @@ func (s *JSONSchema) resolveGoName(name string) error {
 	}
 	s.GoName = SnakeToCamel(name)
 	goType := s.getRefType()
+
+	protoType := ""
 	if goType == "" {
 		s.GoPremitive = true
 		switch s.Type {
@@ -329,6 +339,30 @@ func (s *JSONSchema) resolveGoName(name string) error {
 			}
 		}
 	}
+	switch s.Type {
+	case "integer":
+		protoType = "int64"
+	case "number":
+		protoType = "float"
+	case "string":
+		protoType = "string"
+	case "boolean":
+		protoType = "bool"
+	case "object":
+		if goType != "" {
+			protoType = goType
+		}
+		if s.Properties == nil {
+			protoType = "bytes"
+		}
+	case "array":
+		if s.Items == nil {
+			protoType = "repeated bytes"
+		} else {
+			protoType = "repeated " + s.Items.ProtoType
+		}
+	}
+
 	// if s.CollectionType == "list" {
 	// 	goType = "[]string"
 	// }
@@ -336,6 +370,7 @@ func (s *JSONSchema) resolveGoName(name string) error {
 	// 	goType = "map[string]string"
 	// }
 	s.GoType = goType
+	s.ProtoType = protoType
 	for name, property := range s.Properties {
 		err := property.resolveGoName(name)
 		if err != nil {
@@ -485,6 +520,20 @@ func (api *API) resolveAllRelation() error {
 	return nil
 }
 
+func (api *API) resolveIndex() error {
+	for _, s := range api.Schemas {
+		for index, property := range s.JSONSchema.OrderedProperties {
+			property.Index = index + 1
+		}
+	}
+	for _, t := range api.Types {
+		for index, property := range t.OrderedProperties {
+			property.Index = index + 1
+		}
+	}
+	return nil
+}
+
 func (api *API) resolveAllGoName() error {
 	for _, s := range api.Schemas {
 		err := s.JSONSchema.resolveGoName(s.ID)
@@ -558,6 +607,10 @@ func MakeAPI(dir string) (*API, error) {
 		return nil, err
 	}
 	err = api.resolveAllRelation()
+	if err != nil {
+		return nil, err
+	}
+	err = api.resolveIndex()
 	if err != nil {
 		return nil, err
 	}

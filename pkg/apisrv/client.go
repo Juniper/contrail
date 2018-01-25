@@ -8,7 +8,6 @@ import (
 	"net"
 	"net/http"
 	"net/http/httputil"
-	"time"
 
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/labstack/echo"
@@ -54,14 +53,14 @@ func NewClient(endpoint, authURL, id, password string, scope *keystone.Scope) *C
 func (c *Client) Init() {
 	tr := &http.Transport{
 		Dial: (&net.Dialer{
-			Timeout: 5 * time.Second,
+		//Timeout: 5 * time.Second,
 		}).Dial,
-		TLSHandshakeTimeout: 5 * time.Second,
-		TLSClientConfig:     &tls.Config{InsecureSkipVerify: c.InSecure},
+		//TLSHandshakeTimeout: 5 * time.Second,
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: c.InSecure},
 	}
 	client := &http.Client{
 		Transport: tr,
-		Timeout:   time.Second * 10,
+		//Timeout:   time.Second * 10,
 	}
 	c.httpClient = client
 }

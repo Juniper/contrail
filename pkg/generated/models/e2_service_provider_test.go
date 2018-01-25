@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestE2ServiceProvider(t *testing.T) {
-	model := MakeE2ServiceProvider()
-	fmt.Println(model)
+    model := MakeE2ServiceProvider()
+    fmt.Println(model)
 }

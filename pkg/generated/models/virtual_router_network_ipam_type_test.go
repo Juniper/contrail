@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestVirtualRouterNetworkIpamType(t *testing.T) {
-	model := MakeVirtualRouterNetworkIpamType()
-	fmt.Println(model)
+    model := MakeVirtualRouterNetworkIpamType()
+    fmt.Println(model)
 }

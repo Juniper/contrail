@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestIpAddressesType(t *testing.T) {
-	model := MakeIpAddressesType()
-	fmt.Println(model)
+    model := MakeIpAddressesType()
+    fmt.Println(model)
 }

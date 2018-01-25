@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestEcmpHashingIncludeFields(t *testing.T) {
-	model := MakeEcmpHashingIncludeFields()
-	fmt.Println(model)
+    model := MakeEcmpHashingIncludeFields()
+    fmt.Println(model)
 }

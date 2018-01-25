@@ -12,7 +12,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/api"
+	"github.com/Juniper/contrail/pkg/generated/services"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -45,11 +45,11 @@ func (s *Server) Init() error {
 	//e.Use(middleware.Recover())
 	e.Use(middleware.BodyLimit("10M"))
 
-	for _, a := range api.APIs {
-		a.SetDB(s.DB)
-		common.RegisterAPI(a)
+	service := &services.ContrailService{
+		DB: db,
 	}
-	common.Routes(e)
+	service.RegisterRESTAPI(e)
+
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
 	e.Server.ReadTimeout = time.Duration(readTimeout) * time.Second

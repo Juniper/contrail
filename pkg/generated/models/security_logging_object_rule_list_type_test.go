@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestSecurityLoggingObjectRuleListType(t *testing.T) {
-	model := MakeSecurityLoggingObjectRuleListType()
-	fmt.Println(model)
+    model := MakeSecurityLoggingObjectRuleListType()
+    fmt.Println(model)
 }

@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestOpenstackStorageNodeRole(t *testing.T) {
-	model := MakeOpenstackStorageNodeRole()
-	fmt.Println(model)
+    model := MakeOpenstackStorageNodeRole()
+    fmt.Println(model)
 }

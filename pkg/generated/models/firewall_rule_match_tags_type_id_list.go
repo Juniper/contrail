@@ -1,30 +1,42 @@
 package models
-
 // FirewallRuleMatchTagsTypeIdList
+
+
 
 import "encoding/json"
 
-// FirewallRuleMatchTagsTypeIdList
+// FirewallRuleMatchTagsTypeIdList 
+//proteus:generate
 type FirewallRuleMatchTagsTypeIdList struct {
-	TagType []int `json:"tag_type,omitempty"`
+
+    TagType []int `json:"tag_type,omitempty"`
+
+
 }
+
+
 
 // String returns json representation of the object
 func (model *FirewallRuleMatchTagsTypeIdList) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
+    b, _ := json.Marshal(model)
+    return string(b)
 }
 
 // MakeFirewallRuleMatchTagsTypeIdList makes FirewallRuleMatchTagsTypeIdList
-func MakeFirewallRuleMatchTagsTypeIdList() *FirewallRuleMatchTagsTypeIdList {
-	return &FirewallRuleMatchTagsTypeIdList{
-		//TODO(nati): Apply default
-
-		TagType: []int{},
-	}
+func MakeFirewallRuleMatchTagsTypeIdList() *FirewallRuleMatchTagsTypeIdList{
+    return &FirewallRuleMatchTagsTypeIdList{
+    //TODO(nati): Apply default
+    
+            
+                TagType: []int{},
+            
+        
+    }
 }
+
+
 
 // MakeFirewallRuleMatchTagsTypeIdListSlice() makes a slice of FirewallRuleMatchTagsTypeIdList
 func MakeFirewallRuleMatchTagsTypeIdListSlice() []*FirewallRuleMatchTagsTypeIdList {
-	return []*FirewallRuleMatchTagsTypeIdList{}
+    return []*FirewallRuleMatchTagsTypeIdList{}
 }

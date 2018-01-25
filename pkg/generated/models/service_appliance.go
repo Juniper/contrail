@@ -1,59 +1,69 @@
 package models
-
 // ServiceAppliance
+
+
 
 import "encoding/json"
 
-// ServiceAppliance
+// ServiceAppliance 
+//proteus:generate
 type ServiceAppliance struct {
-	ServiceApplianceIPAddress       IpAddressType    `json:"service_appliance_ip_address,omitempty"`
-	Perms2                          *PermType2       `json:"perms2,omitempty"`
-	ParentType                      string           `json:"parent_type,omitempty"`
-	IDPerms                         *IdPermsType     `json:"id_perms,omitempty"`
-	DisplayName                     string           `json:"display_name,omitempty"`
-	FQName                          []string         `json:"fq_name,omitempty"`
-	ServiceApplianceUserCredentials *UserCredentials `json:"service_appliance_user_credentials,omitempty"`
-	ServiceApplianceProperties      *KeyValuePairs   `json:"service_appliance_properties,omitempty"`
-	Annotations                     *KeyValuePairs   `json:"annotations,omitempty"`
-	UUID                            string           `json:"uuid,omitempty"`
-	ParentUUID                      string           `json:"parent_uuid,omitempty"`
 
-	PhysicalInterfaceRefs []*ServiceAppliancePhysicalInterfaceRef `json:"physical_interface_refs,omitempty"`
+    UUID string `json:"uuid,omitempty"`
+    ParentUUID string `json:"parent_uuid,omitempty"`
+    ParentType string `json:"parent_type,omitempty"`
+    FQName []string `json:"fq_name,omitempty"`
+    IDPerms *IdPermsType `json:"id_perms,omitempty"`
+    DisplayName string `json:"display_name,omitempty"`
+    Annotations *KeyValuePairs `json:"annotations,omitempty"`
+    Perms2 *PermType2 `json:"perms2,omitempty"`
+    ServiceApplianceUserCredentials *UserCredentials `json:"service_appliance_user_credentials,omitempty"`
+    ServiceApplianceIPAddress IpAddressType `json:"service_appliance_ip_address,omitempty"`
+    ServiceApplianceProperties *KeyValuePairs `json:"service_appliance_properties,omitempty"`
+
+    PhysicalInterfaceRefs []*ServiceAppliancePhysicalInterfaceRef `json:"physical_interface_refs,omitempty"`
+
 }
+
 
 // ServiceAppliancePhysicalInterfaceRef references each other
 type ServiceAppliancePhysicalInterfaceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-	Attr *ServiceApplianceInterfaceType
+    UUID string `json:"uuid"`
+    To   []string `json:"to"`//FQDN
+    
+    Attr *ServiceApplianceInterfaceType
+    
 }
+
 
 // String returns json representation of the object
 func (model *ServiceAppliance) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
+    b, _ := json.Marshal(model)
+    return string(b)
 }
 
 // MakeServiceAppliance makes ServiceAppliance
-func MakeServiceAppliance() *ServiceAppliance {
-	return &ServiceAppliance{
-		//TODO(nati): Apply default
-		ServiceApplianceUserCredentials: MakeUserCredentials(),
-		ServiceApplianceProperties:      MakeKeyValuePairs(),
-		Annotations:                     MakeKeyValuePairs(),
-		UUID:                            "",
-		ParentUUID:                      "",
-		FQName:                          []string{},
-		ServiceApplianceIPAddress: MakeIpAddressType(),
-		Perms2:      MakePermType2(),
-		ParentType:  "",
-		IDPerms:     MakeIdPermsType(),
-		DisplayName: "",
-	}
+func MakeServiceAppliance() *ServiceAppliance{
+    return &ServiceAppliance{
+    //TODO(nati): Apply default
+    UUID: "",
+        ParentUUID: "",
+        ParentType: "",
+        FQName: []string{},
+        IDPerms: MakeIdPermsType(),
+        DisplayName: "",
+        Annotations: MakeKeyValuePairs(),
+        Perms2: MakePermType2(),
+        ServiceApplianceUserCredentials: MakeUserCredentials(),
+        ServiceApplianceIPAddress: MakeIpAddressType(),
+        ServiceApplianceProperties: MakeKeyValuePairs(),
+        
+    }
 }
+
+
 
 // MakeServiceApplianceSlice() makes a slice of ServiceAppliance
 func MakeServiceApplianceSlice() []*ServiceAppliance {
-	return []*ServiceAppliance{}
+    return []*ServiceAppliance{}
 }

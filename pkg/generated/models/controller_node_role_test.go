@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestControllerNodeRole(t *testing.T) {
-	model := MakeControllerNodeRole()
-	fmt.Println(model)
+    model := MakeControllerNodeRole()
+    fmt.Println(model)
 }

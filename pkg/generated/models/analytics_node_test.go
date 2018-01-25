@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestAnalyticsNode(t *testing.T) {
-	model := MakeAnalyticsNode()
-	fmt.Println(model)
+    model := MakeAnalyticsNode()
+    fmt.Println(model)
 }

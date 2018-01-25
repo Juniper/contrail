@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestTelemetryStateInfo(t *testing.T) {
-	model := MakeTelemetryStateInfo()
-	fmt.Println(model)
+    model := MakeTelemetryStateInfo()
+    fmt.Println(model)
 }

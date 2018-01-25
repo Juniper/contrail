@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestBGPAsAService(t *testing.T) {
-	model := MakeBGPAsAService()
-	fmt.Println(model)
+    model := MakeBGPAsAService()
+    fmt.Println(model)
 }

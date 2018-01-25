@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestFirewallSequence(t *testing.T) {
-	model := MakeFirewallSequence()
-	fmt.Println(model)
+    model := MakeFirewallSequence()
+    fmt.Println(model)
 }

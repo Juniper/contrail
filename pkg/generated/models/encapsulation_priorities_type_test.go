@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestEncapsulationPrioritiesType(t *testing.T) {
-	model := MakeEncapsulationPrioritiesType()
-	fmt.Println(model)
+    model := MakeEncapsulationPrioritiesType()
+    fmt.Println(model)
 }

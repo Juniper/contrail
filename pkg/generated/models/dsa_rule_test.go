@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestDsaRule(t *testing.T) {
-	model := MakeDsaRule()
-	fmt.Println(model)
+    model := MakeDsaRule()
+    fmt.Println(model)
 }

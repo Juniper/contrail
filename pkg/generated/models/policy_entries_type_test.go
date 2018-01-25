@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestPolicyEntriesType(t *testing.T) {
-	model := MakePolicyEntriesType()
-	fmt.Println(model)
+    model := MakePolicyEntriesType()
+    fmt.Println(model)
 }

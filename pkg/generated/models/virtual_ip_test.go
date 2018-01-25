@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestVirtualIP(t *testing.T) {
-	model := MakeVirtualIP()
-	fmt.Println(model)
+    model := MakeVirtualIP()
+    fmt.Println(model)
 }

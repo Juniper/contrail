@@ -1,11 +1,9 @@
 package models
 
-import (
-	"fmt"
-	"testing"
-)
 
+import ("fmt"
+        "testing")
 func TestJunosServicePorts(t *testing.T) {
-	model := MakeJunosServicePorts()
-	fmt.Println(model)
+    model := MakeJunosServicePorts()
+    fmt.Println(model)
 }
