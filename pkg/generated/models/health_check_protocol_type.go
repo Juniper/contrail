@@ -2,6 +2,7 @@ package models
 
 // HealthCheckProtocolType
 
+//proteus:generate
 type HealthCheckProtocolType string
 
 // MakeHealthCheckProtocolType makes HealthCheckProtocolType

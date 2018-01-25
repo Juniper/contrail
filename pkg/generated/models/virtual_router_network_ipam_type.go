@@ -2,18 +2,11 @@ package models
 
 // VirtualRouterNetworkIpamType
 
-import "encoding/json"
-
 // VirtualRouterNetworkIpamType
+//proteus:generate
 type VirtualRouterNetworkIpamType struct {
 	Subnet          []*SubnetType         `json:"subnet,omitempty"`
 	AllocationPools []*AllocationPoolType `json:"allocation_pools,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *VirtualRouterNetworkIpamType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeVirtualRouterNetworkIpamType makes VirtualRouterNetworkIpamType

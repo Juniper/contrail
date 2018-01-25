@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -54,7 +55,11 @@ var ContrailAnalyticsDatabaseNodeRoleBackRefFields = map[string][]string{}
 var ContrailAnalyticsDatabaseNodeRoleParents = []string{}
 
 // CreateContrailAnalyticsDatabaseNodeRole inserts ContrailAnalyticsDatabaseNodeRole to DB
-func CreateContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, model *models.ContrailAnalyticsDatabaseNodeRole) error {
+func CreateContrailAnalyticsDatabaseNodeRole(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateContrailAnalyticsDatabaseNodeRoleRequest) error {
+	model := request.ContrailAnalyticsDatabaseNodeRole
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertContrailAnalyticsDatabaseNodeRoleQuery)
 	if err != nil {
@@ -65,7 +70,7 @@ func CreateContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, model *models.ContrailA
 		"model": model,
 		"query": insertContrailAnalyticsDatabaseNodeRoleQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		string(model.ProvisioningState),
 		string(model.ProvisioningStartTime),
 		string(model.ProvisioningProgressStage),
@@ -323,14 +328,16 @@ func scanContrailAnalyticsDatabaseNodeRole(values map[string]interface{}) (*mode
 }
 
 // ListContrailAnalyticsDatabaseNodeRole lists ContrailAnalyticsDatabaseNodeRole with list spec.
-func ListContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.ContrailAnalyticsDatabaseNodeRole, error) {
+func ListContrailAnalyticsDatabaseNodeRole(ctx context.Context, tx *sql.Tx, request *models.ListContrailAnalyticsDatabaseNodeRoleRequest) (response *models.ListContrailAnalyticsDatabaseNodeRoleResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "contrail_analytics_database_node_role"
-	spec.Fields = ContrailAnalyticsDatabaseNodeRoleFields
-	spec.RefFields = ContrailAnalyticsDatabaseNodeRoleRefFields
-	spec.BackRefFields = ContrailAnalyticsDatabaseNodeRoleBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "contrail_analytics_database_node_role"
+	qb.Fields = ContrailAnalyticsDatabaseNodeRoleFields
+	qb.RefFields = ContrailAnalyticsDatabaseNodeRoleRefFields
+	qb.BackRefFields = ContrailAnalyticsDatabaseNodeRoleBackRefFields
 	result := models.MakeContrailAnalyticsDatabaseNodeRoleSlice()
 
 	if spec.ParentFQName != nil {
@@ -341,14 +348,14 @@ func ListContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, spec *common.ListSpec) ([
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -356,6 +363,7 @@ func ListContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, spec *common.ListSpec) ([
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -376,264 +384,35 @@ func ListContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, spec *common.ListSpec) ([
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListContrailAnalyticsDatabaseNodeRoleResponse{
+		ContrailAnalyticsDatabaseNodeRoles: result,
+	}
+	return response, nil
 }
 
 // UpdateContrailAnalyticsDatabaseNodeRole updates a resource
-func UpdateContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateContrailAnalyticsDatabaseNodeRoleQuery = "update `contrail_analytics_database_node_role` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningState", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`provisioning_state` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningStartTime", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`provisioning_start_time` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningProgressStage", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`provisioning_progress_stage` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningProgress", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`provisioning_progress` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningLog", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`provisioning_log` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateContrailAnalyticsDatabaseNodeRoleQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateContrailAnalyticsDatabaseNodeRoleQuery += ","
-	}
-
-	updateContrailAnalyticsDatabaseNodeRoleQuery =
-		updateContrailAnalyticsDatabaseNodeRoleQuery[:len(updateContrailAnalyticsDatabaseNodeRoleQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateContrailAnalyticsDatabaseNodeRoleQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateContrailAnalyticsDatabaseNodeRoleQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "contrail_analytics_database_node_role", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateContrailAnalyticsDatabaseNodeRole(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateContrailAnalyticsDatabaseNodeRoleRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteContrailAnalyticsDatabaseNodeRole deletes a resource
-func DeleteContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteContrailAnalyticsDatabaseNodeRole(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteContrailAnalyticsDatabaseNodeRoleRequest) error {
 	deleteQuery := deleteContrailAnalyticsDatabaseNodeRoleQuery
 	selectQuery := "select count(uuid) from contrail_analytics_database_node_role where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -641,11 +420,11 @@ func DeleteContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, uuid string, auth *comm
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -653,7 +432,7 @@ func DeleteContrailAnalyticsDatabaseNodeRole(tx *sql.Tx, uuid string, auth *comm
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

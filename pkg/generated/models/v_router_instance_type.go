@@ -2,6 +2,7 @@ package models
 
 // VRouterInstanceType
 
+//proteus:generate
 type VRouterInstanceType string
 
 // MakeVRouterInstanceType makes VRouterInstanceType

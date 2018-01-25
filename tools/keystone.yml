@@ -1,0 +1,36 @@
+domains:
+  default: &default
+    id: default
+    name: default
+projects:
+  admin: &admin
+    id: admin
+    name: Admin
+    domain: *default
+  demo: &demo
+    id: demo
+    name: Demo
+    domain: *default
+users:
+  alice:
+    id: alice
+    name: Alice
+    domain: *default
+    password: alice_password
+    email: alice@juniper.nets
+    roles:
+    - id: admin
+      name: Admin
+      project: *admin
+  bob:
+    id: bob
+    name: Bob
+    domain: *default
+    password: bob_password
+    email: bob@juniper.net
+    roles:
+    - id: Member
+      name: Member
+      project: *demo
+
+

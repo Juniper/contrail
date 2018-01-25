@@ -2,6 +2,7 @@ package models
 
 // TrafficDirectionType
 
+//proteus:generate
 type TrafficDirectionType string
 
 // MakeTrafficDirectionType makes TrafficDirectionType

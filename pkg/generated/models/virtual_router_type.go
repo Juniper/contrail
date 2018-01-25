@@ -2,6 +2,7 @@ package models
 
 // VirtualRouterType
 
+//proteus:generate
 type VirtualRouterType string
 
 // MakeVirtualRouterType makes VirtualRouterType

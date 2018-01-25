@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -72,7 +73,11 @@ var ServiceTemplateParents = []string{
 const insertServiceTemplateServiceApplianceSetQuery = "insert into `ref_service_template_service_appliance_set` (`from`, `to` ) values (?, ?);"
 
 // CreateServiceTemplate inserts ServiceTemplate to DB
-func CreateServiceTemplate(tx *sql.Tx, model *models.ServiceTemplate) error {
+func CreateServiceTemplate(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateServiceTemplateRequest) error {
+	model := request.ServiceTemplate
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceTemplateQuery)
 	if err != nil {
@@ -83,7 +88,7 @@ func CreateServiceTemplate(tx *sql.Tx, model *models.ServiceTemplate) error {
 		"model": model,
 		"query": insertServiceTemplateQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		string(model.ServiceTemplateProperties.VrouterInstanceType),
 		int(model.ServiceTemplateProperties.Version),
 		string(model.ServiceTemplateProperties.ServiceVirtualizationType),
@@ -127,7 +132,7 @@ func CreateServiceTemplate(tx *sql.Tx, model *models.ServiceTemplate) error {
 	defer stmtServiceApplianceSetRef.Close()
 	for _, ref := range model.ServiceApplianceSetRefs {
 
-		_, err = stmtServiceApplianceSetRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtServiceApplianceSetRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
 		}
@@ -435,14 +440,16 @@ func scanServiceTemplate(values map[string]interface{}) (*models.ServiceTemplate
 }
 
 // ListServiceTemplate lists ServiceTemplate with list spec.
-func ListServiceTemplate(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceTemplate, error) {
+func ListServiceTemplate(ctx context.Context, tx *sql.Tx, request *models.ListServiceTemplateRequest) (response *models.ListServiceTemplateResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "service_template"
-	spec.Fields = ServiceTemplateFields
-	spec.RefFields = ServiceTemplateRefFields
-	spec.BackRefFields = ServiceTemplateBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "service_template"
+	qb.Fields = ServiceTemplateFields
+	qb.RefFields = ServiceTemplateRefFields
+	qb.BackRefFields = ServiceTemplateBackRefFields
 	result := models.MakeServiceTemplateSlice()
 
 	if spec.ParentFQName != nil {
@@ -453,14 +460,14 @@ func ListServiceTemplate(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceTe
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -468,6 +475,7 @@ func ListServiceTemplate(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceTe
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -488,370 +496,35 @@ func ListServiceTemplate(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceTe
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListServiceTemplateResponse{
+		ServiceTemplates: result,
+	}
+	return response, nil
 }
 
 // UpdateServiceTemplate updates a resource
-func UpdateServiceTemplate(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateServiceTemplateQuery = "update `service_template` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateServiceTemplateQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceTemplateProperties.VrouterInstanceType", "."); ok {
-		updateServiceTemplateQuery += "`vrouter_instance_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceTemplateProperties.Version", "."); ok {
-		updateServiceTemplateQuery += "`version` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceTemplateProperties.ServiceVirtualizationType", "."); ok {
-		updateServiceTemplateQuery += "`service_virtualization_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceTemplateProperties.ServiceType", "."); ok {
-		updateServiceTemplateQuery += "`service_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceTemplateProperties.ServiceScaling", "."); ok {
-		updateServiceTemplateQuery += "`service_scaling` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceTemplateProperties.ServiceMode", "."); ok {
-		updateServiceTemplateQuery += "`service_mode` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceTemplateProperties.OrderedInterfaces", "."); ok {
-		updateServiceTemplateQuery += "`ordered_interfaces` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceTemplateProperties.InterfaceType", "."); ok {
-		updateServiceTemplateQuery += "`interface_type` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceTemplateProperties.InstanceData", "."); ok {
-		updateServiceTemplateQuery += "`instance_data` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceTemplateProperties.ImageName", "."); ok {
-		updateServiceTemplateQuery += "`image_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceTemplateProperties.Flavor", "."); ok {
-		updateServiceTemplateQuery += "`flavor` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceTemplateProperties.AvailabilityZoneEnable", "."); ok {
-		updateServiceTemplateQuery += "`availability_zone_enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateServiceTemplateQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateServiceTemplateQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateServiceTemplateQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateServiceTemplateQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateServiceTemplateQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateServiceTemplateQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateServiceTemplateQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateServiceTemplateQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateServiceTemplateQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateServiceTemplateQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateServiceTemplateQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateServiceTemplateQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateServiceTemplateQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateServiceTemplateQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateServiceTemplateQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateServiceTemplateQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateServiceTemplateQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateServiceTemplateQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateServiceTemplateQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateServiceTemplateQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceTemplateQuery += ","
-	}
-
-	updateServiceTemplateQuery =
-		updateServiceTemplateQuery[:len(updateServiceTemplateQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateServiceTemplateQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateServiceTemplateQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "ServiceApplianceSetRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_service_template_service_appliance_set` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_service_template_service_appliance_set` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref ServiceApplianceSetRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_service_template_service_appliance_set` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing ServiceApplianceSetRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "ServiceApplianceSetRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "service_template", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateServiceTemplate(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateServiceTemplateRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteServiceTemplate deletes a resource
-func DeleteServiceTemplate(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteServiceTemplate(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteServiceTemplateRequest) error {
 	deleteQuery := deleteServiceTemplateQuery
 	selectQuery := "select count(uuid) from service_template where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -859,11 +532,11 @@ func DeleteServiceTemplate(tx *sql.Tx, uuid string, auth *common.AuthContext) er
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -871,7 +544,7 @@ func DeleteServiceTemplate(tx *sql.Tx, uuid string, auth *common.AuthContext) er
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

@@ -2,6 +2,7 @@ package models
 
 // E2servicetype
 
+//proteus:generate
 type E2servicetype string
 
 // MakeE2servicetype makes E2servicetype

@@ -2,6 +2,7 @@ package models
 
 // CommunityAttribute
 
+//proteus:generate
 type CommunityAttribute []string
 
 // MakeCommunityAttribute makes CommunityAttribute

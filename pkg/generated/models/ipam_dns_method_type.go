@@ -2,6 +2,7 @@ package models
 
 // IpamDnsMethodType
 
+//proteus:generate
 type IpamDnsMethodType string
 
 // MakeIpamDnsMethodType makes IpamDnsMethodType

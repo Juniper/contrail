@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -59,7 +60,11 @@ var ServiceConnectionModuleParents = []string{}
 const insertServiceConnectionModuleServiceObjectQuery = "insert into `ref_service_connection_module_service_object` (`from`, `to` ) values (?, ?);"
 
 // CreateServiceConnectionModule inserts ServiceConnectionModule to DB
-func CreateServiceConnectionModule(tx *sql.Tx, model *models.ServiceConnectionModule) error {
+func CreateServiceConnectionModule(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateServiceConnectionModuleRequest) error {
+	model := request.ServiceConnectionModule
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceConnectionModuleQuery)
 	if err != nil {
@@ -70,7 +75,7 @@ func CreateServiceConnectionModule(tx *sql.Tx, model *models.ServiceConnectionMo
 		"model": model,
 		"query": insertServiceConnectionModuleQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		string(model.ServiceType),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
@@ -104,7 +109,7 @@ func CreateServiceConnectionModule(tx *sql.Tx, model *models.ServiceConnectionMo
 	defer stmtServiceObjectRef.Close()
 	for _, ref := range model.ServiceObjectRefs {
 
-		_, err = stmtServiceObjectRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtServiceObjectRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceObjectRefs create failed")
 		}
@@ -334,14 +339,16 @@ func scanServiceConnectionModule(values map[string]interface{}) (*models.Service
 }
 
 // ListServiceConnectionModule lists ServiceConnectionModule with list spec.
-func ListServiceConnectionModule(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceConnectionModule, error) {
+func ListServiceConnectionModule(ctx context.Context, tx *sql.Tx, request *models.ListServiceConnectionModuleRequest) (response *models.ListServiceConnectionModuleResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "service_connection_module"
-	spec.Fields = ServiceConnectionModuleFields
-	spec.RefFields = ServiceConnectionModuleRefFields
-	spec.BackRefFields = ServiceConnectionModuleBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "service_connection_module"
+	qb.Fields = ServiceConnectionModuleFields
+	qb.RefFields = ServiceConnectionModuleRefFields
+	qb.BackRefFields = ServiceConnectionModuleBackRefFields
 	result := models.MakeServiceConnectionModuleSlice()
 
 	if spec.ParentFQName != nil {
@@ -352,14 +359,14 @@ func ListServiceConnectionModule(tx *sql.Tx, spec *common.ListSpec) ([]*models.S
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -367,6 +374,7 @@ func ListServiceConnectionModule(tx *sql.Tx, spec *common.ListSpec) ([]*models.S
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -387,290 +395,35 @@ func ListServiceConnectionModule(tx *sql.Tx, spec *common.ListSpec) ([]*models.S
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListServiceConnectionModuleResponse{
+		ServiceConnectionModules: result,
+	}
+	return response, nil
 }
 
 // UpdateServiceConnectionModule updates a resource
-func UpdateServiceConnectionModule(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateServiceConnectionModuleQuery = "update `service_connection_module` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateServiceConnectionModuleQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceType", "."); ok {
-		updateServiceConnectionModuleQuery += "`service_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateServiceConnectionModuleQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateServiceConnectionModuleQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateServiceConnectionModuleQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateServiceConnectionModuleQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateServiceConnectionModuleQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateServiceConnectionModuleQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateServiceConnectionModuleQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateServiceConnectionModuleQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateServiceConnectionModuleQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateServiceConnectionModuleQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateServiceConnectionModuleQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateServiceConnectionModuleQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateServiceConnectionModuleQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateServiceConnectionModuleQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateServiceConnectionModuleQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateServiceConnectionModuleQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateServiceConnectionModuleQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateServiceConnectionModuleQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".E2Service", "."); ok {
-		updateServiceConnectionModuleQuery += "`e2_service` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateServiceConnectionModuleQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateServiceConnectionModuleQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceConnectionModuleQuery += ","
-	}
-
-	updateServiceConnectionModuleQuery =
-		updateServiceConnectionModuleQuery[:len(updateServiceConnectionModuleQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateServiceConnectionModuleQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateServiceConnectionModuleQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "ServiceObjectRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_service_connection_module_service_object` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_service_connection_module_service_object` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref ServiceObjectRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_service_connection_module_service_object` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing ServiceObjectRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "ServiceObjectRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "service_connection_module", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateServiceConnectionModule(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateServiceConnectionModuleRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteServiceConnectionModule deletes a resource
-func DeleteServiceConnectionModule(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteServiceConnectionModule(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteServiceConnectionModuleRequest) error {
 	deleteQuery := deleteServiceConnectionModuleQuery
 	selectQuery := "select count(uuid) from service_connection_module where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -678,11 +431,11 @@ func DeleteServiceConnectionModule(tx *sql.Tx, uuid string, auth *common.AuthCon
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -690,7 +443,7 @@ func DeleteServiceConnectionModule(tx *sql.Tx, uuid string, auth *common.AuthCon
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

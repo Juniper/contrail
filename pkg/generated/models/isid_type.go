@@ -2,6 +2,7 @@ package models
 
 // IsidType
 
+//proteus:generate
 type IsidType int
 
 // MakeIsidType makes IsidType

@@ -2,17 +2,10 @@ package models
 
 // RouteTableType
 
-import "encoding/json"
-
 // RouteTableType
+//proteus:generate
 type RouteTableType struct {
 	Route []*RouteType `json:"route,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *RouteTableType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeRouteTableType makes RouteTableType

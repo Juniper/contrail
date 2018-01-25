@@ -81,11 +81,30 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 	if properties == nil {
 		schema.Properties = nil
 	}
+	schema.OrderedProperties = []*JSONSchema{}
 	for _, property := range properties {
 		key := property.Key.(string)
-		schema.Properties[key] = mapSlice(property.Value.(yaml.MapSlice)).JSONSchema()
+		propertySchema := mapSlice(property.Value.(yaml.MapSlice)).JSONSchema()
+		propertySchema.ID = key
+		schema.Properties[key] = propertySchema
+		schema.OrderedProperties = append(schema.OrderedProperties, propertySchema)
 	}
 	items := s.getMapSlice("items")
 	schema.Items = items.JSONSchema()
 	return schema
+}
+
+//Reference convert a mapslice for reference
+func (s mapSlice) Reference() *Reference {
+	if s == nil {
+		return nil
+	}
+	reference := &Reference{
+		Description: s.getString("description"),
+		Operations:  s.getString("operations"),
+		Presence:    s.getString("presence"),
+		Ref:         s.getString("$ref"),
+		AttrSlice:   yaml.MapSlice(s.getMapSlice("attr")),
+	}
+	return reference
 }

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -63,7 +64,11 @@ var VPNGroupParents = []string{}
 const insertVPNGroupLocationQuery = "insert into `ref_vpn_group_location` (`from`, `to` ) values (?, ?);"
 
 // CreateVPNGroup inserts VPNGroup to DB
-func CreateVPNGroup(tx *sql.Tx, model *models.VPNGroup) error {
+func CreateVPNGroup(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateVPNGroupRequest) error {
+	model := request.VPNGroup
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertVPNGroupQuery)
 	if err != nil {
@@ -74,7 +79,7 @@ func CreateVPNGroup(tx *sql.Tx, model *models.VPNGroup) error {
 		"model": model,
 		"query": insertVPNGroupQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		string(model.Type),
 		string(model.ProvisioningState),
 		string(model.ProvisioningStartTime),
@@ -112,7 +117,7 @@ func CreateVPNGroup(tx *sql.Tx, model *models.VPNGroup) error {
 	defer stmtLocationRef.Close()
 	for _, ref := range model.LocationRefs {
 
-		_, err = stmtLocationRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtLocationRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "LocationRefs create failed")
 		}
@@ -374,14 +379,16 @@ func scanVPNGroup(values map[string]interface{}) (*models.VPNGroup, error) {
 }
 
 // ListVPNGroup lists VPNGroup with list spec.
-func ListVPNGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.VPNGroup, error) {
+func ListVPNGroup(ctx context.Context, tx *sql.Tx, request *models.ListVPNGroupRequest) (response *models.ListVPNGroupResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "vpn_group"
-	spec.Fields = VPNGroupFields
-	spec.RefFields = VPNGroupRefFields
-	spec.BackRefFields = VPNGroupBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "vpn_group"
+	qb.Fields = VPNGroupFields
+	qb.RefFields = VPNGroupRefFields
+	qb.BackRefFields = VPNGroupBackRefFields
 	result := models.MakeVPNGroupSlice()
 
 	if spec.ParentFQName != nil {
@@ -392,14 +399,14 @@ func ListVPNGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.VPNGroup, error)
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -407,6 +414,7 @@ func ListVPNGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.VPNGroup, error)
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -427,322 +435,35 @@ func ListVPNGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.VPNGroup, error)
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListVPNGroupResponse{
+		VPNGroups: result,
+	}
+	return response, nil
 }
 
 // UpdateVPNGroup updates a resource
-func UpdateVPNGroup(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateVPNGroupQuery = "update `vpn_group` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateVPNGroupQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Type", "."); ok {
-		updateVPNGroupQuery += "`type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningState", "."); ok {
-		updateVPNGroupQuery += "`provisioning_state` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningStartTime", "."); ok {
-		updateVPNGroupQuery += "`provisioning_start_time` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningProgressStage", "."); ok {
-		updateVPNGroupQuery += "`provisioning_progress_stage` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningProgress", "."); ok {
-		updateVPNGroupQuery += "`provisioning_progress` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningLog", "."); ok {
-		updateVPNGroupQuery += "`provisioning_log` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateVPNGroupQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateVPNGroupQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateVPNGroupQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateVPNGroupQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateVPNGroupQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateVPNGroupQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateVPNGroupQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateVPNGroupQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateVPNGroupQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateVPNGroupQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateVPNGroupQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateVPNGroupQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateVPNGroupQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateVPNGroupQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateVPNGroupQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateVPNGroupQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateVPNGroupQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateVPNGroupQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateVPNGroupQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateVPNGroupQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateVPNGroupQuery += ","
-	}
-
-	updateVPNGroupQuery =
-		updateVPNGroupQuery[:len(updateVPNGroupQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateVPNGroupQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateVPNGroupQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "LocationRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_vpn_group_location` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_vpn_group_location` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref LocationRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_vpn_group_location` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing LocationRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "LocationRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "vpn_group", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateVPNGroup(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateVPNGroupRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteVPNGroup deletes a resource
-func DeleteVPNGroup(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteVPNGroup(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteVPNGroupRequest) error {
 	deleteQuery := deleteVPNGroupQuery
 	selectQuery := "select count(uuid) from vpn_group where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -750,11 +471,11 @@ func DeleteVPNGroup(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -762,7 +483,7 @@ func DeleteVPNGroup(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

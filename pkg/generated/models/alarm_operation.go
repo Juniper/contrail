@@ -2,6 +2,7 @@ package models
 
 // AlarmOperation
 
+//proteus:generate
 type AlarmOperation string
 
 // MakeAlarmOperation makes AlarmOperation

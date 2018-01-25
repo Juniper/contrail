@@ -2,18 +2,11 @@ package models
 
 // AlarmOperand2
 
-import "encoding/json"
-
 // AlarmOperand2
+//proteus:generate
 type AlarmOperand2 struct {
 	UveAttribute string `json:"uve_attribute,omitempty"`
 	JSONValue    string `json:"json_value,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *AlarmOperand2) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeAlarmOperand2 makes AlarmOperand2

@@ -2,18 +2,17 @@ package models
 
 // VirtualMachine
 
-import "encoding/json"
-
 // VirtualMachine
+//proteus:generate
 type VirtualMachine struct {
-	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName string         `json:"display_name,omitempty"`
-	Annotations *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2      *PermType2     `json:"perms2,omitempty"`
 	UUID        string         `json:"uuid,omitempty"`
 	ParentUUID  string         `json:"parent_uuid,omitempty"`
 	ParentType  string         `json:"parent_type,omitempty"`
 	FQName      []string       `json:"fq_name,omitempty"`
+	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName string         `json:"display_name,omitempty"`
+	Annotations *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2      *PermType2     `json:"perms2,omitempty"`
 
 	ServiceInstanceRefs []*VirtualMachineServiceInstanceRef `json:"service_instance_refs,omitempty"`
 
@@ -27,16 +26,11 @@ type VirtualMachineServiceInstanceRef struct {
 
 }
 
-// String returns json representation of the object
-func (model *VirtualMachine) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
-}
-
 // MakeVirtualMachine makes VirtualMachine
 func MakeVirtualMachine() *VirtualMachine {
 	return &VirtualMachine{
 		//TODO(nati): Apply default
+		UUID:        "",
 		ParentUUID:  "",
 		ParentType:  "",
 		FQName:      []string{},
@@ -44,7 +38,6 @@ func MakeVirtualMachine() *VirtualMachine {
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
-		UUID:        "",
 	}
 }
 

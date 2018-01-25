@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -76,7 +77,11 @@ const insertFloatingIPProjectQuery = "insert into `ref_floating_ip_project` (`fr
 const insertFloatingIPVirtualMachineInterfaceQuery = "insert into `ref_floating_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateFloatingIP inserts FloatingIP to DB
-func CreateFloatingIP(tx *sql.Tx, model *models.FloatingIP) error {
+func CreateFloatingIP(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateFloatingIPRequest) error {
+	model := request.FloatingIP
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertFloatingIPQuery)
 	if err != nil {
@@ -87,7 +92,7 @@ func CreateFloatingIP(tx *sql.Tx, model *models.FloatingIP) error {
 		"model": model,
 		"query": insertFloatingIPQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -126,7 +131,7 @@ func CreateFloatingIP(tx *sql.Tx, model *models.FloatingIP) error {
 	defer stmtProjectRef.Close()
 	for _, ref := range model.ProjectRefs {
 
-		_, err = stmtProjectRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtProjectRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ProjectRefs create failed")
 		}
@@ -139,7 +144,7 @@ func CreateFloatingIP(tx *sql.Tx, model *models.FloatingIP) error {
 	defer stmtVirtualMachineInterfaceRef.Close()
 	for _, ref := range model.VirtualMachineInterfaceRefs {
 
-		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
@@ -427,14 +432,16 @@ func scanFloatingIP(values map[string]interface{}) (*models.FloatingIP, error) {
 }
 
 // ListFloatingIP lists FloatingIP with list spec.
-func ListFloatingIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.FloatingIP, error) {
+func ListFloatingIP(ctx context.Context, tx *sql.Tx, request *models.ListFloatingIPRequest) (response *models.ListFloatingIPResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "floating_ip"
-	spec.Fields = FloatingIPFields
-	spec.RefFields = FloatingIPRefFields
-	spec.BackRefFields = FloatingIPBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "floating_ip"
+	qb.Fields = FloatingIPFields
+	qb.RefFields = FloatingIPRefFields
+	qb.BackRefFields = FloatingIPBackRefFields
 	result := models.MakeFloatingIPSlice()
 
 	if spec.ParentFQName != nil {
@@ -445,14 +452,14 @@ func ListFloatingIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.FloatingIP, er
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -460,6 +467,7 @@ func ListFloatingIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.FloatingIP, er
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -480,380 +488,35 @@ func ListFloatingIP(tx *sql.Tx, spec *common.ListSpec) ([]*models.FloatingIP, er
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListFloatingIPResponse{
+		FloatingIPs: result,
+	}
+	return response, nil
 }
 
 // UpdateFloatingIP updates a resource
-func UpdateFloatingIP(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateFloatingIPQuery = "update `floating_ip` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateFloatingIPQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateFloatingIPQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateFloatingIPQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateFloatingIPQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateFloatingIPQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateFloatingIPQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateFloatingIPQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateFloatingIPQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateFloatingIPQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateFloatingIPQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateFloatingIPQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateFloatingIPQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateFloatingIPQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateFloatingIPQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateFloatingIPQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateFloatingIPQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateFloatingIPQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateFloatingIPQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateFloatingIPQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FloatingIPTrafficDirection", "."); ok {
-		updateFloatingIPQuery += "`floating_ip_traffic_direction` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FloatingIPPortMappings.PortMappings", "."); ok {
-		updateFloatingIPQuery += "`port_mappings` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FloatingIPPortMappingsEnable", "."); ok {
-		updateFloatingIPQuery += "`floating_ip_port_mappings_enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FloatingIPIsVirtualIP", "."); ok {
-		updateFloatingIPQuery += "`floating_ip_is_virtual_ip` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FloatingIPFixedIPAddress", "."); ok {
-		updateFloatingIPQuery += "`floating_ip_fixed_ip_address` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FloatingIPAddressFamily", "."); ok {
-		updateFloatingIPQuery += "`floating_ip_address_family` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FloatingIPAddress", "."); ok {
-		updateFloatingIPQuery += "`floating_ip_address` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateFloatingIPQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateFloatingIPQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateFloatingIPQuery += ","
-	}
-
-	updateFloatingIPQuery =
-		updateFloatingIPQuery[:len(updateFloatingIPQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateFloatingIPQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateFloatingIPQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "VirtualMachineInterfaceRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_floating_ip_virtual_machine_interface` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_floating_ip_virtual_machine_interface` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref VirtualMachineInterfaceRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_floating_ip_virtual_machine_interface` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "VirtualMachineInterfaceRefs update failed")
-			}
-		}
-	}
-
-	if value, ok := common.GetValueByPath(model, "ProjectRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_floating_ip_project` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_floating_ip_project` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref ProjectRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_floating_ip_project` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing ProjectRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "ProjectRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "floating_ip", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateFloatingIP(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateFloatingIPRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteFloatingIP deletes a resource
-func DeleteFloatingIP(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteFloatingIP(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteFloatingIPRequest) error {
 	deleteQuery := deleteFloatingIPQuery
 	selectQuery := "select count(uuid) from floating_ip where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -861,11 +524,11 @@ func DeleteFloatingIP(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -873,7 +536,7 @@ func DeleteFloatingIP(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

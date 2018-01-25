@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -58,7 +59,11 @@ var VirtualDNSRecordParents = []string{
 }
 
 // CreateVirtualDNSRecord inserts VirtualDNSRecord to DB
-func CreateVirtualDNSRecord(tx *sql.Tx, model *models.VirtualDNSRecord) error {
+func CreateVirtualDNSRecord(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateVirtualDNSRecordRequest) error {
+	model := request.VirtualDNSRecord
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertVirtualDNSRecordQuery)
 	if err != nil {
@@ -69,7 +74,7 @@ func CreateVirtualDNSRecord(tx *sql.Tx, model *models.VirtualDNSRecord) error {
 		"model": model,
 		"query": insertVirtualDNSRecordQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.VirtualDNSRecordData.RecordType),
+	_, err = stmt.ExecContext(ctx, string(model.VirtualDNSRecordData.RecordType),
 		int(model.VirtualDNSRecordData.RecordTTLSeconds),
 		string(model.VirtualDNSRecordData.RecordName),
 		int(model.VirtualDNSRecordData.RecordMXPreference),
@@ -336,14 +341,16 @@ func scanVirtualDNSRecord(values map[string]interface{}) (*models.VirtualDNSReco
 }
 
 // ListVirtualDNSRecord lists VirtualDNSRecord with list spec.
-func ListVirtualDNSRecord(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualDNSRecord, error) {
+func ListVirtualDNSRecord(ctx context.Context, tx *sql.Tx, request *models.ListVirtualDNSRecordRequest) (response *models.ListVirtualDNSRecordResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "virtual_DNS_record"
-	spec.Fields = VirtualDNSRecordFields
-	spec.RefFields = VirtualDNSRecordRefFields
-	spec.BackRefFields = VirtualDNSRecordBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "virtual_DNS_record"
+	qb.Fields = VirtualDNSRecordFields
+	qb.RefFields = VirtualDNSRecordRefFields
+	qb.BackRefFields = VirtualDNSRecordBackRefFields
 	result := models.MakeVirtualDNSRecordSlice()
 
 	if spec.ParentFQName != nil {
@@ -354,14 +361,14 @@ func ListVirtualDNSRecord(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualD
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -369,6 +376,7 @@ func ListVirtualDNSRecord(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualD
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -389,272 +397,35 @@ func ListVirtualDNSRecord(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualD
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListVirtualDNSRecordResponse{
+		VirtualDNSRecords: result,
+	}
+	return response, nil
 }
 
 // UpdateVirtualDNSRecord updates a resource
-func UpdateVirtualDNSRecord(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateVirtualDNSRecordQuery = "update `virtual_DNS_record` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".VirtualDNSRecordData.RecordType", "."); ok {
-		updateVirtualDNSRecordQuery += "`record_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".VirtualDNSRecordData.RecordTTLSeconds", "."); ok {
-		updateVirtualDNSRecordQuery += "`record_ttl_seconds` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".VirtualDNSRecordData.RecordName", "."); ok {
-		updateVirtualDNSRecordQuery += "`record_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".VirtualDNSRecordData.RecordMXPreference", "."); ok {
-		updateVirtualDNSRecordQuery += "`record_mx_preference` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".VirtualDNSRecordData.RecordData", "."); ok {
-		updateVirtualDNSRecordQuery += "`record_data` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".VirtualDNSRecordData.RecordClass", "."); ok {
-		updateVirtualDNSRecordQuery += "`record_class` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateVirtualDNSRecordQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateVirtualDNSRecordQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateVirtualDNSRecordQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateVirtualDNSRecordQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateVirtualDNSRecordQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateVirtualDNSRecordQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateVirtualDNSRecordQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateVirtualDNSRecordQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateVirtualDNSRecordQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateVirtualDNSRecordQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateVirtualDNSRecordQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateVirtualDNSRecordQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateVirtualDNSRecordQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateVirtualDNSRecordQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateVirtualDNSRecordQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateVirtualDNSRecordQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateVirtualDNSRecordQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateVirtualDNSRecordQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateVirtualDNSRecordQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateVirtualDNSRecordQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateVirtualDNSRecordQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateVirtualDNSRecordQuery += ","
-	}
-
-	updateVirtualDNSRecordQuery =
-		updateVirtualDNSRecordQuery[:len(updateVirtualDNSRecordQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateVirtualDNSRecordQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateVirtualDNSRecordQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "virtual_DNS_record", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateVirtualDNSRecord(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateVirtualDNSRecordRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteVirtualDNSRecord deletes a resource
-func DeleteVirtualDNSRecord(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteVirtualDNSRecord(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteVirtualDNSRecordRequest) error {
 	deleteQuery := deleteVirtualDNSRecordQuery
 	selectQuery := "select count(uuid) from virtual_DNS_record where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -662,11 +433,11 @@ func DeleteVirtualDNSRecord(tx *sql.Tx, uuid string, auth *common.AuthContext) e
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -674,7 +445,7 @@ func DeleteVirtualDNSRecord(tx *sql.Tx, uuid string, auth *common.AuthContext) e
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

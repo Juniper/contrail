@@ -2,18 +2,11 @@ package models
 
 // PluginProperty
 
-import "encoding/json"
-
 // PluginProperty
+//proteus:generate
 type PluginProperty struct {
-	Value    string `json:"value,omitempty"`
 	Property string `json:"property,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *PluginProperty) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
+	Value    string `json:"value,omitempty"`
 }
 
 // MakePluginProperty makes PluginProperty

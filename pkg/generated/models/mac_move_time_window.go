@@ -2,6 +2,7 @@ package models
 
 // MACMoveTimeWindow
 
+//proteus:generate
 type MACMoveTimeWindow int
 
 // MakeMACMoveTimeWindow makes MACMoveTimeWindow

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -134,7 +135,11 @@ var LocationBackRefFields = map[string][]string{
 var LocationParents = []string{}
 
 // CreateLocation inserts Location to DB
-func CreateLocation(tx *sql.Tx, model *models.Location) error {
+func CreateLocation(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateLocationRequest) error {
+	model := request.Location
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertLocationQuery)
 	if err != nil {
@@ -145,7 +150,7 @@ func CreateLocation(tx *sql.Tx, model *models.Location) error {
 		"model": model,
 		"query": insertLocationQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		string(model.Type),
 		string(model.ProvisioningState),
 		string(model.ProvisioningStartTime),
@@ -1042,14 +1047,16 @@ func scanLocation(values map[string]interface{}) (*models.Location, error) {
 }
 
 // ListLocation lists Location with list spec.
-func ListLocation(tx *sql.Tx, spec *common.ListSpec) ([]*models.Location, error) {
+func ListLocation(ctx context.Context, tx *sql.Tx, request *models.ListLocationRequest) (response *models.ListLocationResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "location"
-	spec.Fields = LocationFields
-	spec.RefFields = LocationRefFields
-	spec.BackRefFields = LocationBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "location"
+	qb.Fields = LocationFields
+	qb.RefFields = LocationRefFields
+	qb.BackRefFields = LocationBackRefFields
 	result := models.MakeLocationSlice()
 
 	if spec.ParentFQName != nil {
@@ -1060,14 +1067,14 @@ func ListLocation(tx *sql.Tx, spec *common.ListSpec) ([]*models.Location, error)
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -1075,6 +1082,7 @@ func ListLocation(tx *sql.Tx, spec *common.ListSpec) ([]*models.Location, error)
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -1095,440 +1103,35 @@ func ListLocation(tx *sql.Tx, spec *common.ListSpec) ([]*models.Location, error)
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListLocationResponse{
+		Locations: result,
+	}
+	return response, nil
 }
 
 // UpdateLocation updates a resource
-func UpdateLocation(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateLocationQuery = "update `location` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateLocationQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Type", "."); ok {
-		updateLocationQuery += "`type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningState", "."); ok {
-		updateLocationQuery += "`provisioning_state` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningStartTime", "."); ok {
-		updateLocationQuery += "`provisioning_start_time` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningProgressStage", "."); ok {
-		updateLocationQuery += "`provisioning_progress_stage` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningProgress", "."); ok {
-		updateLocationQuery += "`provisioning_progress` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningLog", "."); ok {
-		updateLocationQuery += "`provisioning_log` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PrivateRedhatSubscriptionUser", "."); ok {
-		updateLocationQuery += "`private_redhat_subscription_user` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PrivateRedhatSubscriptionPasword", "."); ok {
-		updateLocationQuery += "`private_redhat_subscription_pasword` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PrivateRedhatSubscriptionKey", "."); ok {
-		updateLocationQuery += "`private_redhat_subscription_key` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PrivateRedhatPoolID", "."); ok {
-		updateLocationQuery += "`private_redhat_pool_id` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PrivateOspdVMVcpus", "."); ok {
-		updateLocationQuery += "`private_ospd_vm_vcpus` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PrivateOspdVMRAMMB", "."); ok {
-		updateLocationQuery += "`private_ospd_vm_ram_mb` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PrivateOspdVMName", "."); ok {
-		updateLocationQuery += "`private_ospd_vm_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PrivateOspdVMDiskGB", "."); ok {
-		updateLocationQuery += "`private_ospd_vm_disk_gb` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PrivateOspdUserPassword", "."); ok {
-		updateLocationQuery += "`private_ospd_user_password` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PrivateOspdUserName", "."); ok {
-		updateLocationQuery += "`private_ospd_user_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PrivateOspdPackageURL", "."); ok {
-		updateLocationQuery += "`private_ospd_package_url` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PrivateNTPHosts", "."); ok {
-		updateLocationQuery += "`private_ntp_hosts` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PrivateDNSServers", "."); ok {
-		updateLocationQuery += "`private_dns_servers` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateLocationQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateLocationQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateLocationQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateLocationQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateLocationQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateLocationQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateLocationQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateLocationQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateLocationQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateLocationQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateLocationQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateLocationQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateLocationQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateLocationQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateLocationQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateLocationQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateLocationQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".GCPSubnet", "."); ok {
-		updateLocationQuery += "`gcp_subnet` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".GCPRegion", "."); ok {
-		updateLocationQuery += "`gcp_region` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".GCPAsn", "."); ok {
-		updateLocationQuery += "`gcp_asn` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".GCPAccountInfo", "."); ok {
-		updateLocationQuery += "`gcp_account_info` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateLocationQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateLocationQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".AwsSubnet", "."); ok {
-		updateLocationQuery += "`aws_subnet` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".AwsSecretKey", "."); ok {
-		updateLocationQuery += "`aws_secret_key` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".AwsRegion", "."); ok {
-		updateLocationQuery += "`aws_region` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".AwsAccessKey", "."); ok {
-		updateLocationQuery += "`aws_access_key` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLocationQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateLocationQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateLocationQuery += ","
-	}
-
-	updateLocationQuery =
-		updateLocationQuery[:len(updateLocationQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateLocationQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateLocationQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "location", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateLocation(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateLocationRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteLocation deletes a resource
-func DeleteLocation(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteLocation(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteLocationRequest) error {
 	deleteQuery := deleteLocationQuery
 	selectQuery := "select count(uuid) from location where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -1536,11 +1139,11 @@ func DeleteLocation(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -1548,7 +1151,7 @@ func DeleteLocation(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

@@ -2,6 +2,7 @@ package models
 
 // UuidStringType
 
+//proteus:generate
 type UuidStringType string
 
 // MakeUuidStringType makes UuidStringType

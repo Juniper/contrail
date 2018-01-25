@@ -88,8 +88,10 @@ type Schema struct {
 	Type             string                   `yaml:"type" json:"type,omitempty"`
 	Title            string                   `yaml:"title" json:"title,omitempty"`
 	Description      string                   `yaml:"description" json:"description,omitempty"`
-	Parents          map[string]*Reference    `yaml:"parents" json:"parents,omitempty"`
-	References       map[string]*Reference    `yaml:"references" json:"references,omitempty"`
+	Parents          map[string]*Reference    `yaml:"-" json:"parents,omitempty"`
+	ParentsSlice     yaml.MapSlice            `yaml:"parents" json:"-"`
+	References       map[string]*Reference    `yaml:"-" json:"references,omitempty"`
+	ReferencesSlice  yaml.MapSlice            `yaml:"references" json:"-"`
 	Prefix           string                   `yaml:"prefix" json:"prefix,omitempty"`
 	JSONSchema       *JSONSchema              `yaml:"-" json:"schema,omitempty"`
 	JSONSchemaSlice  yaml.MapSlice            `yaml:"schema" json:"-"`
@@ -99,31 +101,36 @@ type Schema struct {
 	Columns          ColumnConfigs            `yaml:"-" json:"-"`
 	Path             string                   `yaml:"-" json:"-"`
 	PluralPath       string                   `yaml:"-" json:"-"`
-	Children         []*Schema                `yaml:"-" json:"-"`
+	Children         []*BackReference         `yaml:"-" json:"-"`
 }
 
 //JSONSchema is a standard JSONSchema representation plus data for code generation.
 type JSONSchema struct {
-	Title           string                 `yaml:"title" json:"title,omitempty"`
-	Description     string                 `yaml:"description" json:"description,omitempty"`
-	SQL             string                 `yaml:"sql" json:"-"`
-	Default         interface{}            `yaml:"default" json:"default,omitempty"`
-	Operation       string                 `yaml:"operation" json:"-"`
-	Presence        string                 `yaml:"presence" json:"-"`
-	Type            string                 `yaml:"type" json:"type,omitempty"`
-	Permission      []string               `yaml:"permission" json:"permission,omitempty"`
-	Properties      map[string]*JSONSchema `yaml:"properties" json:"properties,omitempty"`
-	PropertiesOrder []string               `yaml:"-" json:"propertiesOrder,omitempty"`
-	Enum            []string               `yaml:"enum" json:"enum,omitempty"`
-	Minimum         interface{}            `yaml:"minimum" json:"minimum,omitempty"`
-	Maximum         interface{}            `yaml:"maximum" json:"maximum,omitempty"`
-	Ref             string                 `yaml:"$ref" json:"-"`
-	CollectionType  string                 `yaml:"-" json:"-"`
-	Items           *JSONSchema            `yaml:"items" json:"items,omitempty"`
-	GoName          string                 `yaml:"-" json:"-"`
-	GoType          string                 `yaml:"-" json:"-"`
-	Required        []string               `yaml:"required" json:"-"`
-	GoPremitive     bool                   `yaml:"-" json:"-"`
+	ID                string                 `yaml:"-" json:"-"`
+	Index             int                    `yaml:"-" json:"-"`
+	Title             string                 `yaml:"title" json:"title,omitempty"`
+	Description       string                 `yaml:"description" json:"description,omitempty"`
+	SQL               string                 `yaml:"sql" json:"-"`
+	Default           interface{}            `yaml:"default" json:"default,omitempty"`
+	Operation         string                 `yaml:"operation" json:"-"`
+	Presence          string                 `yaml:"presence" json:"-"`
+	Type              string                 `yaml:"type" json:"type,omitempty"`
+	Permission        []string               `yaml:"permission" json:"permission,omitempty"`
+	Properties        map[string]*JSONSchema `yaml:"properties" json:"properties,omitempty"`
+	PropertiesOrder   []string               `yaml:"-" json:"propertiesOrder,omitempty"`
+	OrderedProperties []*JSONSchema          `yaml:"-" json:"-"`
+	Enum              []string               `yaml:"enum" json:"enum,omitempty"`
+	Minimum           interface{}            `yaml:"minimum" json:"minimum,omitempty"`
+	Maximum           interface{}            `yaml:"maximum" json:"maximum,omitempty"`
+	Ref               string                 `yaml:"$ref" json:"-"`
+	CollectionType    string                 `yaml:"-" json:"-"`
+	Items             *JSONSchema            `yaml:"items" json:"items,omitempty"`
+	GoName            string                 `yaml:"-" json:"-"`
+	GoType            string                 `yaml:"-" json:"-"`
+	ProtoType         string                 `yaml:"-" json:"-"`
+	ProtoCastType     string                 `yaml:"-" json:"-"`
+	Required          []string               `yaml:"required" json:"-"`
+	GoPremitive       bool                   `yaml:"-" json:"-"`
 }
 
 //String makes string format for json schema
@@ -135,8 +142,9 @@ func (s *JSONSchema) String() string {
 //Reference object represents many to many relationships between resources.
 type Reference struct {
 	GoName      string        `yaml:"-" json:"-"`
+	Index       int           `yaml:"-" json:"-"`
 	Description string        `yaml:"description" json:"description,omitempty"`
-	Operation   string        `yaml:"operation" json:"operation,omitempty"`
+	Operations  string        `yaml:"operations" json:"operations,omitempty"`
 	Presence    string        `yaml:"presence" json:"presence,omitempty"`
 	RefType     string        `yaml:"-" json:"-"`
 	Columns     ColumnConfigs `yaml:"-" json:"-"`
@@ -144,6 +152,12 @@ type Reference struct {
 	AttrSlice   yaml.MapSlice `yaml:"attr" json:"-"`
 	LinkTo      *Schema       `yaml:"-" json:"-"`
 	Ref         string        `yaml:"$ref" json:"$ref,omitempty"`
+}
+
+//BackReference for representing backward references.
+type BackReference struct {
+	Index  int     `yaml:"-" json:"-"`
+	LinkTo *Schema `yaml:"-" json:"-"`
 }
 
 func parseRef(ref string) (string, string) {
@@ -163,6 +177,7 @@ func (s *JSONSchema) getRefType() string {
 //Copy copies a json schema
 func (s *JSONSchema) Copy() *JSONSchema {
 	copied := &JSONSchema{
+		ID:         s.ID,
 		Title:      s.Title,
 		SQL:        s.SQL,
 		Default:    s.Default,
@@ -220,10 +235,13 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 	}
 	s.Required = append(s2.Required, s.Required...)
 	s.PropertiesOrder = append(s2.PropertiesOrder, s.PropertiesOrder...)
+	s.OrderedProperties = []*JSONSchema{}
+	for _, id := range s.PropertiesOrder {
+		s.OrderedProperties = append(s.OrderedProperties, s.Properties[id])
+	}
 	if s.Type == "" {
 		s.Type = s2.Type
 	}
-
 	if s.Enum == nil {
 		s.Enum = s2.Enum
 	}
@@ -299,11 +317,14 @@ func (s *JSONSchema) resolveGoName(name string) error {
 	}
 	s.GoName = SnakeToCamel(name)
 	goType := s.getRefType()
+	protoType := ""
+	protoCastType := ""
 	if goType == "" {
 		s.GoPremitive = true
 		switch s.Type {
 		case "integer":
 			goType = "int"
+			protoCastType = "int"
 		case "number":
 			goType = "float64"
 		case "string":
@@ -327,8 +348,43 @@ func (s *JSONSchema) resolveGoName(name string) error {
 			} else {
 				goType = "[]*" + s.Items.GoType
 			}
+			if s.Items.Type == "integer" {
+				protoCastType = "int"
+			}
+		}
+	} else {
+		if s.Type != "object" && s.Type != "array" {
+			protoCastType = goType
 		}
 	}
+	switch s.Type {
+	case "integer":
+		protoType = "int64"
+	case "number":
+		protoType = "float"
+	case "string":
+		protoType = "string"
+	case "boolean":
+		protoType = "bool"
+	case "object":
+		if goType != "" {
+			protoType = goType
+		}
+		if s.Properties == nil {
+			protoType = "bytes"
+		}
+	case "array":
+		err := s.Items.resolveGoName(name)
+		if err != nil {
+			return err
+		}
+		if s.Items == nil {
+			protoType = "repeated string"
+		} else {
+			protoType = "repeated " + s.Items.ProtoType
+		}
+	}
+
 	// if s.CollectionType == "list" {
 	// 	goType = "[]string"
 	// }
@@ -336,6 +392,8 @@ func (s *JSONSchema) resolveGoName(name string) error {
 	// 	goType = "map[string]string"
 	// }
 	s.GoType = goType
+	s.ProtoType = protoType
+	s.ProtoCastType = protoCastType
 	for name, property := range s.Properties {
 		err := property.resolveGoName(name)
 		if err != nil {
@@ -414,16 +472,6 @@ func (api *API) resolveAllRef() error {
 		if err != nil {
 			return err
 		}
-		if s.Type == "abstract" {
-			continue
-		}
-		for parent := range s.Parents {
-			parentSchema := api.schemaByID(parent)
-			if parentSchema == nil {
-				return fmt.Errorf("Parent schema %s not found", parent)
-			}
-			parentSchema.Children = append(parentSchema.Children, s)
-		}
 	}
 	return nil
 }
@@ -471,15 +519,60 @@ func (api *API) resolveRelation(linkTo string, reference *Reference) error {
 
 func (api *API) resolveAllRelation() error {
 	for _, s := range api.Schemas {
-		for linkTo, reference := range s.References {
+		if s.Type == "Abstract" {
+			continue
+		}
+		s.References = map[string]*Reference{}
+		s.Parents = map[string]*Reference{}
+		for _, m := range mapSlice(s.ReferencesSlice) {
+			linkTo := m.Key.(string)
+			referenceMap := mapSlice(m.Value.(yaml.MapSlice))
+			reference := referenceMap.Reference()
+			s.References[linkTo] = reference
 			if err := api.resolveRelation(linkTo, reference); err != nil {
 				return err
 			}
 		}
-		for linkTo, reference := range s.Parents {
+		for _, m := range mapSlice(s.ParentsSlice) {
+			linkTo := m.Key.(string)
+			referenceMap := mapSlice(m.Value.(yaml.MapSlice))
+			reference := referenceMap.Reference()
+			s.Parents[linkTo] = reference
 			if err := api.resolveRelation(linkTo, reference); err != nil {
 				return err
 			}
+			parentSchema := api.schemaByID(linkTo)
+			if parentSchema == nil {
+				return fmt.Errorf("Parent schema %s not found", linkTo)
+			}
+			parentSchema.Children = append(parentSchema.Children, &BackReference{LinkTo: s})
+		}
+	}
+	return nil
+}
+
+func (api *API) resolveIndex() error {
+	for _, s := range api.Schemas {
+		index := 1
+		for _, property := range s.JSONSchema.OrderedProperties {
+			property.Index = index
+			index++
+		}
+		index = index + 1000
+		for _, key := range mapSlice(s.ReferencesSlice).keys() {
+			reference := s.References[key]
+			reference.Index = index
+			index++
+		}
+		index = index + 2000
+		for _, backReference := range s.Children {
+			backReference.Index = index
+			index++
+		}
+	}
+	for _, t := range api.Types {
+		for index, property := range t.OrderedProperties {
+			property.Index = index + 1
 		}
 	}
 	return nil
@@ -541,6 +634,7 @@ func MakeAPI(dir string) (*API, error) {
 		api.Definitions = append(api.Definitions, &schema)
 		return nil
 	})
+
 	err = api.resolveAllRef()
 	if err != nil {
 		return nil, err
@@ -558,6 +652,10 @@ func MakeAPI(dir string) (*API, error) {
 		return nil, err
 	}
 	err = api.resolveAllRelation()
+	if err != nil {
+		return nil, err
+	}
+	err = api.resolveIndex()
 	if err != nil {
 		return nil, err
 	}

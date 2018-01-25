@@ -2,6 +2,7 @@ package models
 
 // DnsRecordOrderType
 
+//proteus:generate
 type DnsRecordOrderType string
 
 // MakeDnsRecordOrderType makes DnsRecordOrderType

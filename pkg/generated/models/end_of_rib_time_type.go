@@ -2,6 +2,7 @@ package models
 
 // EndOfRibTimeType
 
+//proteus:generate
 type EndOfRibTimeType int
 
 // MakeEndOfRibTimeType makes EndOfRibTimeType

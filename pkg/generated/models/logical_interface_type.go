@@ -2,6 +2,7 @@ package models
 
 // LogicalInterfaceType
 
+//proteus:generate
 type LogicalInterfaceType string
 
 // MakeLogicalInterfaceType makes LogicalInterfaceType

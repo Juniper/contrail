@@ -2,6 +2,7 @@ package models
 
 // HealthCheckType
 
+//proteus:generate
 type HealthCheckType string
 
 // MakeHealthCheckType makes HealthCheckType

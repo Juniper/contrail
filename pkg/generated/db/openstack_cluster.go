@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -68,7 +69,11 @@ var OpenstackClusterBackRefFields = map[string][]string{}
 var OpenstackClusterParents = []string{}
 
 // CreateOpenstackCluster inserts OpenstackCluster to DB
-func CreateOpenstackCluster(tx *sql.Tx, model *models.OpenstackCluster) error {
+func CreateOpenstackCluster(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateOpenstackClusterRequest) error {
+	model := request.OpenstackCluster
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertOpenstackClusterQuery)
 	if err != nil {
@@ -79,7 +84,7 @@ func CreateOpenstackCluster(tx *sql.Tx, model *models.OpenstackCluster) error {
 		"model": model,
 		"query": insertOpenstackClusterQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		string(model.PublicIP),
 		string(model.PublicGateway),
 		string(model.ProvisioningState),
@@ -463,14 +468,16 @@ func scanOpenstackCluster(values map[string]interface{}) (*models.OpenstackClust
 }
 
 // ListOpenstackCluster lists OpenstackCluster with list spec.
-func ListOpenstackCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.OpenstackCluster, error) {
+func ListOpenstackCluster(ctx context.Context, tx *sql.Tx, request *models.ListOpenstackClusterRequest) (response *models.ListOpenstackClusterResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "openstack_cluster"
-	spec.Fields = OpenstackClusterFields
-	spec.RefFields = OpenstackClusterRefFields
-	spec.BackRefFields = OpenstackClusterBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "openstack_cluster"
+	qb.Fields = OpenstackClusterFields
+	qb.RefFields = OpenstackClusterRefFields
+	qb.BackRefFields = OpenstackClusterBackRefFields
 	result := models.MakeOpenstackClusterSlice()
 
 	if spec.ParentFQName != nil {
@@ -481,14 +488,14 @@ func ListOpenstackCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.Openstac
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -496,6 +503,7 @@ func ListOpenstackCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.Openstac
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -516,376 +524,35 @@ func ListOpenstackCluster(tx *sql.Tx, spec *common.ListSpec) ([]*models.Openstac
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListOpenstackClusterResponse{
+		OpenstackClusters: result,
+	}
+	return response, nil
 }
 
 // UpdateOpenstackCluster updates a resource
-func UpdateOpenstackCluster(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateOpenstackClusterQuery = "update `openstack_cluster` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateOpenstackClusterQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PublicIP", "."); ok {
-		updateOpenstackClusterQuery += "`public_ip` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PublicGateway", "."); ok {
-		updateOpenstackClusterQuery += "`public_gateway` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningState", "."); ok {
-		updateOpenstackClusterQuery += "`provisioning_state` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningStartTime", "."); ok {
-		updateOpenstackClusterQuery += "`provisioning_start_time` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningProgressStage", "."); ok {
-		updateOpenstackClusterQuery += "`provisioning_progress_stage` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningProgress", "."); ok {
-		updateOpenstackClusterQuery += "`provisioning_progress` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningLog", "."); ok {
-		updateOpenstackClusterQuery += "`provisioning_log` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateOpenstackClusterQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateOpenstackClusterQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateOpenstackClusterQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateOpenstackClusterQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateOpenstackClusterQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateOpenstackClusterQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".OpenstackWebui", "."); ok {
-		updateOpenstackClusterQuery += "`openstack_webui` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateOpenstackClusterQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateOpenstackClusterQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateOpenstackClusterQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateOpenstackClusterQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateOpenstackClusterQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateOpenstackClusterQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateOpenstackClusterQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateOpenstackClusterQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateOpenstackClusterQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateOpenstackClusterQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateOpenstackClusterQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateOpenstackClusterQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ExternalNetCidr", "."); ok {
-		updateOpenstackClusterQuery += "`external_net_cidr` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ExternalAllocationPoolStart", "."); ok {
-		updateOpenstackClusterQuery += "`external_allocation_pool_start` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ExternalAllocationPoolEnd", "."); ok {
-		updateOpenstackClusterQuery += "`external_allocation_pool_end` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateOpenstackClusterQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DefaultStorageBackendBondInterfaceMembers", "."); ok {
-		updateOpenstackClusterQuery += "`default_storage_backend_bond_interface_members` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DefaultStorageAccessBondInterfaceMembers", "."); ok {
-		updateOpenstackClusterQuery += "`default_storage_access_bond_interface_members` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DefaultPerformanceDrives", "."); ok {
-		updateOpenstackClusterQuery += "`default_performance_drives` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DefaultOsdDrives", "."); ok {
-		updateOpenstackClusterQuery += "`default_osd_drives` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DefaultJournalDrives", "."); ok {
-		updateOpenstackClusterQuery += "`default_journal_drives` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DefaultCapacityDrives", "."); ok {
-		updateOpenstackClusterQuery += "`default_capacity_drives` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ContrailClusterID", "."); ok {
-		updateOpenstackClusterQuery += "`contrail_cluster_id` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateOpenstackClusterQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".AdminPassword", "."); ok {
-		updateOpenstackClusterQuery += "`admin_password` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackClusterQuery += ","
-	}
-
-	updateOpenstackClusterQuery =
-		updateOpenstackClusterQuery[:len(updateOpenstackClusterQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateOpenstackClusterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateOpenstackClusterQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "openstack_cluster", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateOpenstackCluster(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateOpenstackClusterRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteOpenstackCluster deletes a resource
-func DeleteOpenstackCluster(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteOpenstackCluster(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteOpenstackClusterRequest) error {
 	deleteQuery := deleteOpenstackClusterQuery
 	selectQuery := "select count(uuid) from openstack_cluster where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -893,11 +560,11 @@ func DeleteOpenstackCluster(tx *sql.Tx, uuid string, auth *common.AuthContext) e
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -905,7 +572,7 @@ func DeleteOpenstackCluster(tx *sql.Tx, uuid string, auth *common.AuthContext) e
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

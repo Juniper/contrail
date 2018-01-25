@@ -2,20 +2,13 @@ package models
 
 // PermType2
 
-import "encoding/json"
-
 // PermType2
+//proteus:generate
 type PermType2 struct {
-	Share        []*ShareType `json:"share,omitempty"`
 	Owner        string       `json:"owner,omitempty"`
 	OwnerAccess  AccessType   `json:"owner_access,omitempty"`
 	GlobalAccess AccessType   `json:"global_access,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *PermType2) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
+	Share        []*ShareType `json:"share,omitempty"`
 }
 
 // MakePermType2 makes PermType2

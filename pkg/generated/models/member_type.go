@@ -2,17 +2,10 @@ package models
 
 // MemberType
 
-import "encoding/json"
-
 // MemberType
+//proteus:generate
 type MemberType struct {
 	Role string `json:"role,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *MemberType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeMemberType makes MemberType

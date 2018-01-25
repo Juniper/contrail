@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -67,7 +68,11 @@ var QosConfigParents = []string{
 const insertQosConfigGlobalSystemConfigQuery = "insert into `ref_qos_config_global_system_config` (`from`, `to` ) values (?, ?);"
 
 // CreateQosConfig inserts QosConfig to DB
-func CreateQosConfig(tx *sql.Tx, model *models.QosConfig) error {
+func CreateQosConfig(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateQosConfigRequest) error {
+	model := request.QosConfig
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertQosConfigQuery)
 	if err != nil {
@@ -78,7 +83,7 @@ func CreateQosConfig(tx *sql.Tx, model *models.QosConfig) error {
 		"model": model,
 		"query": insertQosConfigQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(common.MustJSON(model.VlanPriorityEntries.QosIDForwardingClassPair),
+	_, err = stmt.ExecContext(ctx, common.MustJSON(model.VlanPriorityEntries.QosIDForwardingClassPair),
 		string(model.UUID),
 		string(model.QosConfigType),
 		common.MustJSON(model.Perms2.Share),
@@ -115,7 +120,7 @@ func CreateQosConfig(tx *sql.Tx, model *models.QosConfig) error {
 	defer stmtGlobalSystemConfigRef.Close()
 	for _, ref := range model.GlobalSystemConfigRefs {
 
-		_, err = stmtGlobalSystemConfigRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtGlobalSystemConfigRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "GlobalSystemConfigRefs create failed")
 		}
@@ -363,14 +368,16 @@ func scanQosConfig(values map[string]interface{}) (*models.QosConfig, error) {
 }
 
 // ListQosConfig lists QosConfig with list spec.
-func ListQosConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.QosConfig, error) {
+func ListQosConfig(ctx context.Context, tx *sql.Tx, request *models.ListQosConfigRequest) (response *models.ListQosConfigResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "qos_config"
-	spec.Fields = QosConfigFields
-	spec.RefFields = QosConfigRefFields
-	spec.BackRefFields = QosConfigBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "qos_config"
+	qb.Fields = QosConfigFields
+	qb.RefFields = QosConfigRefFields
+	qb.BackRefFields = QosConfigBackRefFields
 	result := models.MakeQosConfigSlice()
 
 	if spec.ParentFQName != nil {
@@ -381,14 +388,14 @@ func ListQosConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.QosConfig, erro
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -396,6 +403,7 @@ func ListQosConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.QosConfig, erro
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -416,314 +424,35 @@ func ListQosConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.QosConfig, erro
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListQosConfigResponse{
+		QosConfigs: result,
+	}
+	return response, nil
 }
 
 // UpdateQosConfig updates a resource
-func UpdateQosConfig(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateQosConfigQuery = "update `qos_config` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".VlanPriorityEntries.QosIDForwardingClassPair", "."); ok {
-		updateQosConfigQuery += "`qos_id_forwarding_class_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateQosConfigQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".QosConfigType", "."); ok {
-		updateQosConfigQuery += "`qos_config_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateQosConfigQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateQosConfigQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateQosConfigQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateQosConfigQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateQosConfigQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateQosConfigQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".MPLSExpEntries.QosIDForwardingClassPair", "."); ok {
-		updateQosConfigQuery += "`mpls_exp_entries_qos_id_forwarding_class_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateQosConfigQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateQosConfigQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateQosConfigQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateQosConfigQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateQosConfigQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateQosConfigQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateQosConfigQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateQosConfigQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateQosConfigQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateQosConfigQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateQosConfigQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateQosConfigQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DSCPEntries.QosIDForwardingClassPair", "."); ok {
-		updateQosConfigQuery += "`dscp_entries_qos_id_forwarding_class_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateQosConfigQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DefaultForwardingClassID", "."); ok {
-		updateQosConfigQuery += "`default_forwarding_class_id` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateQosConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateQosConfigQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateQosConfigQuery += ","
-	}
-
-	updateQosConfigQuery =
-		updateQosConfigQuery[:len(updateQosConfigQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateQosConfigQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateQosConfigQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "GlobalSystemConfigRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_qos_config_global_system_config` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_qos_config_global_system_config` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref GlobalSystemConfigRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_qos_config_global_system_config` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing GlobalSystemConfigRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "GlobalSystemConfigRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "qos_config", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateQosConfig(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateQosConfigRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteQosConfig deletes a resource
-func DeleteQosConfig(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteQosConfig(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteQosConfigRequest) error {
 	deleteQuery := deleteQosConfigQuery
 	selectQuery := "select count(uuid) from qos_config where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -731,11 +460,11 @@ func DeleteQosConfig(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -743,7 +472,7 @@ func DeleteQosConfig(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

@@ -37,7 +37,7 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 	ensureDir(config.OutputPath)
 	if config.TemplateType == "all" {
 		output, err :=
-			tpl.Execute(pongo2.Context{"schemas": api.Schemas})
+			tpl.Execute(pongo2.Context{"schemas": api.Schemas, "types": api.Types})
 		if err != nil {
 			return err
 		}

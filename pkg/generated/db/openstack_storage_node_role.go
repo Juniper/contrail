@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -58,7 +59,11 @@ var OpenstackStorageNodeRoleBackRefFields = map[string][]string{}
 var OpenstackStorageNodeRoleParents = []string{}
 
 // CreateOpenstackStorageNodeRole inserts OpenstackStorageNodeRole to DB
-func CreateOpenstackStorageNodeRole(tx *sql.Tx, model *models.OpenstackStorageNodeRole) error {
+func CreateOpenstackStorageNodeRole(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateOpenstackStorageNodeRoleRequest) error {
+	model := request.OpenstackStorageNodeRole
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertOpenstackStorageNodeRoleQuery)
 	if err != nil {
@@ -69,7 +74,7 @@ func CreateOpenstackStorageNodeRole(tx *sql.Tx, model *models.OpenstackStorageNo
 		"model": model,
 		"query": insertOpenstackStorageNodeRoleQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		string(model.StorageBackendBondInterfaceMembers),
 		string(model.StorageAccessBondInterfaceMembers),
 		string(model.ProvisioningState),
@@ -363,14 +368,16 @@ func scanOpenstackStorageNodeRole(values map[string]interface{}) (*models.Openst
 }
 
 // ListOpenstackStorageNodeRole lists OpenstackStorageNodeRole with list spec.
-func ListOpenstackStorageNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.OpenstackStorageNodeRole, error) {
+func ListOpenstackStorageNodeRole(ctx context.Context, tx *sql.Tx, request *models.ListOpenstackStorageNodeRoleRequest) (response *models.ListOpenstackStorageNodeRoleResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "openstack_storage_node_role"
-	spec.Fields = OpenstackStorageNodeRoleFields
-	spec.RefFields = OpenstackStorageNodeRoleRefFields
-	spec.BackRefFields = OpenstackStorageNodeRoleBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "openstack_storage_node_role"
+	qb.Fields = OpenstackStorageNodeRoleFields
+	qb.RefFields = OpenstackStorageNodeRoleRefFields
+	qb.BackRefFields = OpenstackStorageNodeRoleBackRefFields
 	result := models.MakeOpenstackStorageNodeRoleSlice()
 
 	if spec.ParentFQName != nil {
@@ -381,14 +388,14 @@ func ListOpenstackStorageNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -396,6 +403,7 @@ func ListOpenstackStorageNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -416,296 +424,35 @@ func ListOpenstackStorageNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListOpenstackStorageNodeRoleResponse{
+		OpenstackStorageNodeRoles: result,
+	}
+	return response, nil
 }
 
 // UpdateOpenstackStorageNodeRole updates a resource
-func UpdateOpenstackStorageNodeRole(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateOpenstackStorageNodeRoleQuery = "update `openstack_storage_node_role` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".StorageBackendBondInterfaceMembers", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`storage_backend_bond_interface_members` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".StorageAccessBondInterfaceMembers", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`storage_access_bond_interface_members` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningState", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`provisioning_state` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningStartTime", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`provisioning_start_time` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningProgressStage", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`provisioning_progress_stage` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningProgress", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`provisioning_progress` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningLog", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`provisioning_log` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".OsdDrives", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`osd_drives` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".JournalDrives", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`journal_drives` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateOpenstackStorageNodeRoleQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateOpenstackStorageNodeRoleQuery += ","
-	}
-
-	updateOpenstackStorageNodeRoleQuery =
-		updateOpenstackStorageNodeRoleQuery[:len(updateOpenstackStorageNodeRoleQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateOpenstackStorageNodeRoleQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateOpenstackStorageNodeRoleQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "openstack_storage_node_role", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateOpenstackStorageNodeRole(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateOpenstackStorageNodeRoleRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteOpenstackStorageNodeRole deletes a resource
-func DeleteOpenstackStorageNodeRole(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteOpenstackStorageNodeRole(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteOpenstackStorageNodeRoleRequest) error {
 	deleteQuery := deleteOpenstackStorageNodeRoleQuery
 	selectQuery := "select count(uuid) from openstack_storage_node_role where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -713,11 +460,11 @@ func DeleteOpenstackStorageNodeRole(tx *sql.Tx, uuid string, auth *common.AuthCo
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -725,7 +472,7 @@ func DeleteOpenstackStorageNodeRole(tx *sql.Tx, uuid string, auth *common.AuthCo
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

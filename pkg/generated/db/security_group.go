@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -83,7 +84,11 @@ var SecurityGroupParents = []string{
 }
 
 // CreateSecurityGroup inserts SecurityGroup to DB
-func CreateSecurityGroup(tx *sql.Tx, model *models.SecurityGroup) error {
+func CreateSecurityGroup(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateSecurityGroupRequest) error {
+	model := request.SecurityGroup
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertSecurityGroupQuery)
 	if err != nil {
@@ -94,7 +99,7 @@ func CreateSecurityGroup(tx *sql.Tx, model *models.SecurityGroup) error {
 		"model": model,
 		"query": insertSecurityGroupQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		int(model.SecurityGroupID),
 		common.MustJSON(model.SecurityGroupEntries.PolicyRule),
 		common.MustJSON(model.Perms2.Share),
@@ -508,7 +513,9 @@ func scanSecurityGroup(values map[string]interface{}) (*models.SecurityGroup, er
 
 			if propertyValue, ok := childResourceMap["access_control_list_hash"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.AccessControlListHash)
+				castedValue := common.InterfaceToInt(propertyValue)
+
+				childModel.AccessControlListHash = castedValue
 
 			}
 
@@ -533,14 +540,16 @@ func scanSecurityGroup(values map[string]interface{}) (*models.SecurityGroup, er
 }
 
 // ListSecurityGroup lists SecurityGroup with list spec.
-func ListSecurityGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.SecurityGroup, error) {
+func ListSecurityGroup(ctx context.Context, tx *sql.Tx, request *models.ListSecurityGroupRequest) (response *models.ListSecurityGroupResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "security_group"
-	spec.Fields = SecurityGroupFields
-	spec.RefFields = SecurityGroupRefFields
-	spec.BackRefFields = SecurityGroupBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "security_group"
+	qb.Fields = SecurityGroupFields
+	qb.RefFields = SecurityGroupRefFields
+	qb.BackRefFields = SecurityGroupBackRefFields
 	result := models.MakeSecurityGroupSlice()
 
 	if spec.ParentFQName != nil {
@@ -551,14 +560,14 @@ func ListSecurityGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.SecurityGro
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -566,6 +575,7 @@ func ListSecurityGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.SecurityGro
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -586,248 +596,35 @@ func ListSecurityGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.SecurityGro
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListSecurityGroupResponse{
+		SecurityGroups: result,
+	}
+	return response, nil
 }
 
 // UpdateSecurityGroup updates a resource
-func UpdateSecurityGroup(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateSecurityGroupQuery = "update `security_group` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateSecurityGroupQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".SecurityGroupID", "."); ok {
-		updateSecurityGroupQuery += "`security_group_id` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".SecurityGroupEntries.PolicyRule", "."); ok {
-		updateSecurityGroupQuery += "`policy_rule` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateSecurityGroupQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateSecurityGroupQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateSecurityGroupQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateSecurityGroupQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateSecurityGroupQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateSecurityGroupQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateSecurityGroupQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateSecurityGroupQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateSecurityGroupQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateSecurityGroupQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateSecurityGroupQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateSecurityGroupQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateSecurityGroupQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateSecurityGroupQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateSecurityGroupQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateSecurityGroupQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateSecurityGroupQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateSecurityGroupQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateSecurityGroupQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ConfiguredSecurityGroupID", "."); ok {
-		updateSecurityGroupQuery += "`configured_security_group_id` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateSecurityGroupQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateSecurityGroupQuery += ","
-	}
-
-	updateSecurityGroupQuery =
-		updateSecurityGroupQuery[:len(updateSecurityGroupQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateSecurityGroupQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateSecurityGroupQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "security_group", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateSecurityGroup(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateSecurityGroupRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteSecurityGroup deletes a resource
-func DeleteSecurityGroup(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteSecurityGroup(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteSecurityGroupRequest) error {
 	deleteQuery := deleteSecurityGroupQuery
 	selectQuery := "select count(uuid) from security_group where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -835,11 +632,11 @@ func DeleteSecurityGroup(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -847,7 +644,7 @@ func DeleteSecurityGroup(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

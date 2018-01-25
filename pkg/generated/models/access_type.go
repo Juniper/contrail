@@ -2,6 +2,7 @@ package models
 
 // AccessType
 
+//proteus:generate
 type AccessType int
 
 // MakeAccessType makes AccessType

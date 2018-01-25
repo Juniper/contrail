@@ -2,17 +2,10 @@ package models
 
 // FirewallRuleMatchTagsTypeIdList
 
-import "encoding/json"
-
 // FirewallRuleMatchTagsTypeIdList
+//proteus:generate
 type FirewallRuleMatchTagsTypeIdList struct {
 	TagType []int `json:"tag_type,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *FirewallRuleMatchTagsTypeIdList) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeFirewallRuleMatchTagsTypeIdList makes FirewallRuleMatchTagsTypeIdList

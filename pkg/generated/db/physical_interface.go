@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -88,7 +89,11 @@ var PhysicalInterfaceParents = []string{
 const insertPhysicalInterfacePhysicalInterfaceQuery = "insert into `ref_physical_interface_physical_interface` (`from`, `to` ) values (?, ?);"
 
 // CreatePhysicalInterface inserts PhysicalInterface to DB
-func CreatePhysicalInterface(tx *sql.Tx, model *models.PhysicalInterface) error {
+func CreatePhysicalInterface(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreatePhysicalInterfaceRequest) error {
+	model := request.PhysicalInterface
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertPhysicalInterfaceQuery)
 	if err != nil {
@@ -99,7 +104,7 @@ func CreatePhysicalInterface(tx *sql.Tx, model *models.PhysicalInterface) error 
 		"model": model,
 		"query": insertPhysicalInterfaceQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -132,7 +137,7 @@ func CreatePhysicalInterface(tx *sql.Tx, model *models.PhysicalInterface) error 
 	defer stmtPhysicalInterfaceRef.Close()
 	for _, ref := range model.PhysicalInterfaceRefs {
 
-		_, err = stmtPhysicalInterfaceRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtPhysicalInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PhysicalInterfaceRefs create failed")
 		}
@@ -551,14 +556,16 @@ func scanPhysicalInterface(values map[string]interface{}) (*models.PhysicalInter
 }
 
 // ListPhysicalInterface lists PhysicalInterface with list spec.
-func ListPhysicalInterface(tx *sql.Tx, spec *common.ListSpec) ([]*models.PhysicalInterface, error) {
+func ListPhysicalInterface(ctx context.Context, tx *sql.Tx, request *models.ListPhysicalInterfaceRequest) (response *models.ListPhysicalInterfaceResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "physical_interface"
-	spec.Fields = PhysicalInterfaceFields
-	spec.RefFields = PhysicalInterfaceRefFields
-	spec.BackRefFields = PhysicalInterfaceBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "physical_interface"
+	qb.Fields = PhysicalInterfaceFields
+	qb.RefFields = PhysicalInterfaceRefFields
+	qb.BackRefFields = PhysicalInterfaceBackRefFields
 	result := models.MakePhysicalInterfaceSlice()
 
 	if spec.ParentFQName != nil {
@@ -569,14 +576,14 @@ func ListPhysicalInterface(tx *sql.Tx, spec *common.ListSpec) ([]*models.Physica
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -584,6 +591,7 @@ func ListPhysicalInterface(tx *sql.Tx, spec *common.ListSpec) ([]*models.Physica
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -604,282 +612,35 @@ func ListPhysicalInterface(tx *sql.Tx, spec *common.ListSpec) ([]*models.Physica
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListPhysicalInterfaceResponse{
+		PhysicalInterfaces: result,
+	}
+	return response, nil
 }
 
 // UpdatePhysicalInterface updates a resource
-func UpdatePhysicalInterface(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updatePhysicalInterfaceQuery = "update `physical_interface` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updatePhysicalInterfaceQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updatePhysicalInterfaceQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updatePhysicalInterfaceQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updatePhysicalInterfaceQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updatePhysicalInterfaceQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updatePhysicalInterfaceQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updatePhysicalInterfaceQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updatePhysicalInterfaceQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updatePhysicalInterfaceQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updatePhysicalInterfaceQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updatePhysicalInterfaceQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updatePhysicalInterfaceQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updatePhysicalInterfaceQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updatePhysicalInterfaceQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updatePhysicalInterfaceQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updatePhysicalInterfaceQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updatePhysicalInterfaceQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updatePhysicalInterfaceQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updatePhysicalInterfaceQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".EthernetSegmentIdentifier", "."); ok {
-		updatePhysicalInterfaceQuery += "`ethernet_segment_identifier` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updatePhysicalInterfaceQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updatePhysicalInterfaceQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updatePhysicalInterfaceQuery += ","
-	}
-
-	updatePhysicalInterfaceQuery =
-		updatePhysicalInterfaceQuery[:len(updatePhysicalInterfaceQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updatePhysicalInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updatePhysicalInterfaceQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "PhysicalInterfaceRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_physical_interface_physical_interface` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_physical_interface_physical_interface` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref PhysicalInterfaceRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_physical_interface_physical_interface` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing PhysicalInterfaceRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "PhysicalInterfaceRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "physical_interface", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdatePhysicalInterface(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdatePhysicalInterfaceRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeletePhysicalInterface deletes a resource
-func DeletePhysicalInterface(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeletePhysicalInterface(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeletePhysicalInterfaceRequest) error {
 	deleteQuery := deletePhysicalInterfaceQuery
 	selectQuery := "select count(uuid) from physical_interface where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -887,11 +648,11 @@ func DeletePhysicalInterface(tx *sql.Tx, uuid string, auth *common.AuthContext) 
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -899,7 +660,7 @@ func DeletePhysicalInterface(tx *sql.Tx, uuid string, auth *common.AuthContext) 
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

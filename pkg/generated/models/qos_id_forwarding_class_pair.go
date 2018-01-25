@@ -2,18 +2,11 @@ package models
 
 // QosIdForwardingClassPair
 
-import "encoding/json"
-
 // QosIdForwardingClassPair
+//proteus:generate
 type QosIdForwardingClassPair struct {
 	Key               int               `json:"key,omitempty"`
 	ForwardingClassID ForwardingClassId `json:"forwarding_class_id,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *QosIdForwardingClassPair) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeQosIdForwardingClassPair makes QosIdForwardingClassPair

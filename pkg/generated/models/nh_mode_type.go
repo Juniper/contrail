@@ -2,6 +2,7 @@ package models
 
 // NHModeType
 
+//proteus:generate
 type NHModeType string
 
 // MakeNHModeType makes NHModeType

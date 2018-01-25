@@ -2,17 +2,10 @@ package models
 
 // AllowedAddressPairs
 
-import "encoding/json"
-
 // AllowedAddressPairs
+//proteus:generate
 type AllowedAddressPairs struct {
 	AllowedAddressPair []*AllowedAddressPair `json:"allowed_address_pair,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *AllowedAddressPairs) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeAllowedAddressPairs makes AllowedAddressPairs

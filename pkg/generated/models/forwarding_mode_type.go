@@ -2,6 +2,7 @@ package models
 
 // ForwardingModeType
 
+//proteus:generate
 type ForwardingModeType string
 
 // MakeForwardingModeType makes ForwardingModeType

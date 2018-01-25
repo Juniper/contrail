@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -80,7 +81,11 @@ var DiscoveryServiceAssignmentBackRefFields = map[string][]string{
 var DiscoveryServiceAssignmentParents = []string{}
 
 // CreateDiscoveryServiceAssignment inserts DiscoveryServiceAssignment to DB
-func CreateDiscoveryServiceAssignment(tx *sql.Tx, model *models.DiscoveryServiceAssignment) error {
+func CreateDiscoveryServiceAssignment(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateDiscoveryServiceAssignmentRequest) error {
+	model := request.DiscoveryServiceAssignment
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertDiscoveryServiceAssignmentQuery)
 	if err != nil {
@@ -91,7 +96,7 @@ func CreateDiscoveryServiceAssignment(tx *sql.Tx, model *models.DiscoveryService
 		"model": model,
 		"query": insertDiscoveryServiceAssignmentQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -531,14 +536,16 @@ func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.Disc
 }
 
 // ListDiscoveryServiceAssignment lists DiscoveryServiceAssignment with list spec.
-func ListDiscoveryServiceAssignment(tx *sql.Tx, spec *common.ListSpec) ([]*models.DiscoveryServiceAssignment, error) {
+func ListDiscoveryServiceAssignment(ctx context.Context, tx *sql.Tx, request *models.ListDiscoveryServiceAssignmentRequest) (response *models.ListDiscoveryServiceAssignmentResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "discovery_service_assignment"
-	spec.Fields = DiscoveryServiceAssignmentFields
-	spec.RefFields = DiscoveryServiceAssignmentRefFields
-	spec.BackRefFields = DiscoveryServiceAssignmentBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "discovery_service_assignment"
+	qb.Fields = DiscoveryServiceAssignmentFields
+	qb.RefFields = DiscoveryServiceAssignmentRefFields
+	qb.BackRefFields = DiscoveryServiceAssignmentBackRefFields
 	result := models.MakeDiscoveryServiceAssignmentSlice()
 
 	if spec.ParentFQName != nil {
@@ -549,14 +556,14 @@ func ListDiscoveryServiceAssignment(tx *sql.Tx, spec *common.ListSpec) ([]*model
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -564,6 +571,7 @@ func ListDiscoveryServiceAssignment(tx *sql.Tx, spec *common.ListSpec) ([]*model
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -584,224 +592,35 @@ func ListDiscoveryServiceAssignment(tx *sql.Tx, spec *common.ListSpec) ([]*model
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListDiscoveryServiceAssignmentResponse{
+		DiscoveryServiceAssignments: result,
+	}
+	return response, nil
 }
 
 // UpdateDiscoveryServiceAssignment updates a resource
-func UpdateDiscoveryServiceAssignment(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateDiscoveryServiceAssignmentQuery = "update `discovery_service_assignment` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateDiscoveryServiceAssignmentQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateDiscoveryServiceAssignmentQuery += ","
-	}
-
-	updateDiscoveryServiceAssignmentQuery =
-		updateDiscoveryServiceAssignmentQuery[:len(updateDiscoveryServiceAssignmentQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateDiscoveryServiceAssignmentQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateDiscoveryServiceAssignmentQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "discovery_service_assignment", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateDiscoveryServiceAssignment(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateDiscoveryServiceAssignmentRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteDiscoveryServiceAssignment deletes a resource
-func DeleteDiscoveryServiceAssignment(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteDiscoveryServiceAssignment(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteDiscoveryServiceAssignmentRequest) error {
 	deleteQuery := deleteDiscoveryServiceAssignmentQuery
 	selectQuery := "select count(uuid) from discovery_service_assignment where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -809,11 +628,11 @@ func DeleteDiscoveryServiceAssignment(tx *sql.Tx, uuid string, auth *common.Auth
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -821,7 +640,7 @@ func DeleteDiscoveryServiceAssignment(tx *sql.Tx, uuid string, auth *common.Auth
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

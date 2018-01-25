@@ -2,6 +2,7 @@ package models
 
 // AddressMode
 
+//proteus:generate
 type AddressMode string
 
 // MakeAddressMode makes AddressMode

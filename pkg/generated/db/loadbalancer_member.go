@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -58,7 +59,11 @@ var LoadbalancerMemberParents = []string{
 }
 
 // CreateLoadbalancerMember inserts LoadbalancerMember to DB
-func CreateLoadbalancerMember(tx *sql.Tx, model *models.LoadbalancerMember) error {
+func CreateLoadbalancerMember(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateLoadbalancerMemberRequest) error {
+	model := request.LoadbalancerMember
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertLoadbalancerMemberQuery)
 	if err != nil {
@@ -69,7 +74,7 @@ func CreateLoadbalancerMember(tx *sql.Tx, model *models.LoadbalancerMember) erro
 		"model": model,
 		"query": insertLoadbalancerMemberQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -336,14 +341,16 @@ func scanLoadbalancerMember(values map[string]interface{}) (*models.Loadbalancer
 }
 
 // ListLoadbalancerMember lists LoadbalancerMember with list spec.
-func ListLoadbalancerMember(tx *sql.Tx, spec *common.ListSpec) ([]*models.LoadbalancerMember, error) {
+func ListLoadbalancerMember(ctx context.Context, tx *sql.Tx, request *models.ListLoadbalancerMemberRequest) (response *models.ListLoadbalancerMemberResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "loadbalancer_member"
-	spec.Fields = LoadbalancerMemberFields
-	spec.RefFields = LoadbalancerMemberRefFields
-	spec.BackRefFields = LoadbalancerMemberBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "loadbalancer_member"
+	qb.Fields = LoadbalancerMemberFields
+	qb.RefFields = LoadbalancerMemberRefFields
+	qb.BackRefFields = LoadbalancerMemberBackRefFields
 	result := models.MakeLoadbalancerMemberSlice()
 
 	if spec.ParentFQName != nil {
@@ -354,14 +361,14 @@ func ListLoadbalancerMember(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadba
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -369,6 +376,7 @@ func ListLoadbalancerMember(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadba
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -389,272 +397,35 @@ func ListLoadbalancerMember(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadba
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListLoadbalancerMemberResponse{
+		LoadbalancerMembers: result,
+	}
+	return response, nil
 }
 
 // UpdateLoadbalancerMember updates a resource
-func UpdateLoadbalancerMember(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateLoadbalancerMemberQuery = "update `loadbalancer_member` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateLoadbalancerMemberQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateLoadbalancerMemberQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateLoadbalancerMemberQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateLoadbalancerMemberQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateLoadbalancerMemberQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateLoadbalancerMemberQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateLoadbalancerMemberQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".LoadbalancerMemberProperties.Weight", "."); ok {
-		updateLoadbalancerMemberQuery += "`weight` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".LoadbalancerMemberProperties.StatusDescription", "."); ok {
-		updateLoadbalancerMemberQuery += "`status_description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".LoadbalancerMemberProperties.Status", "."); ok {
-		updateLoadbalancerMemberQuery += "`status` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".LoadbalancerMemberProperties.ProtocolPort", "."); ok {
-		updateLoadbalancerMemberQuery += "`protocol_port` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".LoadbalancerMemberProperties.AdminState", "."); ok {
-		updateLoadbalancerMemberQuery += "`admin_state` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".LoadbalancerMemberProperties.Address", "."); ok {
-		updateLoadbalancerMemberQuery += "`address` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateLoadbalancerMemberQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateLoadbalancerMemberQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateLoadbalancerMemberQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateLoadbalancerMemberQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateLoadbalancerMemberQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateLoadbalancerMemberQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateLoadbalancerMemberQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateLoadbalancerMemberQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateLoadbalancerMemberQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateLoadbalancerMemberQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateLoadbalancerMemberQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateLoadbalancerMemberQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateLoadbalancerMemberQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateLoadbalancerMemberQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateLoadbalancerMemberQuery += ","
-	}
-
-	updateLoadbalancerMemberQuery =
-		updateLoadbalancerMemberQuery[:len(updateLoadbalancerMemberQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateLoadbalancerMemberQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateLoadbalancerMemberQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "loadbalancer_member", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateLoadbalancerMember(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateLoadbalancerMemberRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteLoadbalancerMember deletes a resource
-func DeleteLoadbalancerMember(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteLoadbalancerMember(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteLoadbalancerMemberRequest) error {
 	deleteQuery := deleteLoadbalancerMemberQuery
 	selectQuery := "select count(uuid) from loadbalancer_member where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -662,11 +433,11 @@ func DeleteLoadbalancerMember(tx *sql.Tx, uuid string, auth *common.AuthContext)
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -674,7 +445,7 @@ func DeleteLoadbalancerMember(tx *sql.Tx, uuid string, auth *common.AuthContext)
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

@@ -1,12 +1,14 @@
 package apisrv
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http/httptest"
 	"os"
 	"strconv"
 	"testing"
 
+	"github.com/k0kubun/pp"
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/common"
@@ -26,8 +28,11 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	testServer = httptest.NewServer(server.Echo)
+	testServer = httptest.NewUnstartedServer(server.Echo)
+	testServer.TLS = new(tls.Config)
+	testServer.TLS.NextProtos = append(testServer.TLS.NextProtos, "h2")
+	testServer.StartTLS()
+	defer testServer.Close()
 
 	viper.Set("keystone.authurl", testServer.URL+"/v3")
 	err = server.Init()
@@ -55,9 +60,11 @@ func RunTest(file string) error {
 		//Rewrite endpoint for test server
 		client.Endpoint = testServer.URL
 		client.AuthURL = testServer.URL + "/v3"
+		client.InSecure = true
+		client.Init()
+
 		clients[key] = client
 
-		client.Init()
 		err := clients[key].Login()
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("client %s failed to login", key))
@@ -82,10 +89,10 @@ func RunTest(file string) error {
 				log.Fields{
 					"scenario": testData.Name,
 					"step":     task.Name,
-					"expected": task.Expect,
-					"actual":   task.Request.Output,
 					"err":      err,
 				}).Debug("output mismatch")
+			pp.Println("expected", task.Expect)
+			pp.Println("actual", task.Request.Output)
 			return errors.Wrap(err, fmt.Sprintf("task %v failed", task))
 		}
 	}

@@ -2,26 +2,19 @@ package models
 
 // VirtualIpType
 
-import "encoding/json"
-
 // VirtualIpType
+//proteus:generate
 type VirtualIpType struct {
 	Status                string                   `json:"status,omitempty"`
 	StatusDescription     string                   `json:"status_description,omitempty"`
 	Protocol              LoadbalancerProtocolType `json:"protocol,omitempty"`
-	PersistenceType       SessionPersistenceType   `json:"persistence_type,omitempty"`
-	AdminState            bool                     `json:"admin_state"`
-	ProtocolPort          int                      `json:"protocol_port,omitempty"`
 	SubnetID              UuidStringType           `json:"subnet_id,omitempty"`
 	PersistenceCookieName string                   `json:"persistence_cookie_name,omitempty"`
 	ConnectionLimit       int                      `json:"connection_limit,omitempty"`
+	PersistenceType       SessionPersistenceType   `json:"persistence_type,omitempty"`
+	AdminState            bool                     `json:"admin_state"`
 	Address               IpAddressType            `json:"address,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *VirtualIpType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
+	ProtocolPort          int                      `json:"protocol_port,omitempty"`
 }
 
 // MakeVirtualIpType makes VirtualIpType
@@ -31,13 +24,13 @@ func MakeVirtualIpType() *VirtualIpType {
 		Status:                "",
 		StatusDescription:     "",
 		Protocol:              MakeLoadbalancerProtocolType(),
-		PersistenceType:       MakeSessionPersistenceType(),
-		AdminState:            false,
-		ProtocolPort:          0,
 		SubnetID:              MakeUuidStringType(),
 		PersistenceCookieName: "",
 		ConnectionLimit:       0,
+		PersistenceType:       MakeSessionPersistenceType(),
+		AdminState:            false,
 		Address:               MakeIpAddressType(),
+		ProtocolPort:          0,
 	}
 }
 

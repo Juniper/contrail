@@ -32,6 +32,14 @@ go get github.com/Juniper/contrail
 
 ## Generate Code
 
+### Setup protoc
+
+see https://github.com/grpc/grpc/blob/master/INSTALL.md
+
+Install protoc for go code generation
+
+### Use make generate
+
 ``` shell
 make generate
 ```

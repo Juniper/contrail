@@ -2,58 +2,51 @@ package models
 
 // BaremetalNode
 
-import "encoding/json"
-
 // BaremetalNode
+//proteus:generate
 type BaremetalNode struct {
-	Annotations   *KeyValuePairs `json:"annotations,omitempty"`
 	UUID          string         `json:"uuid,omitempty"`
-	IpmiUsername  string         `json:"ipmi_username,omitempty"`
-	DiskGB        int            `json:"disk_gb,omitempty"`
-	MemoryMB      int            `json:"memory_mb,omitempty"`
-	DeployRamdisk string         `json:"deploy_ramdisk,omitempty"`
-	Name          string         `json:"name,omitempty"`
-	CPUArch       string         `json:"cpu_arch,omitempty"`
-	IDPerms       *IdPermsType   `json:"id_perms,omitempty"`
-	Perms2        *PermType2     `json:"perms2,omitempty"`
-	IpmiAddress   string         `json:"ipmi_address,omitempty"`
-	ParentType    string         `json:"parent_type,omitempty"`
-	DisplayName   string         `json:"display_name,omitempty"`
 	ParentUUID    string         `json:"parent_uuid,omitempty"`
+	ParentType    string         `json:"parent_type,omitempty"`
+	FQName        []string       `json:"fq_name,omitempty"`
+	IDPerms       *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName   string         `json:"display_name,omitempty"`
+	Annotations   *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2        *PermType2     `json:"perms2,omitempty"`
+	Name          string         `json:"name,omitempty"`
+	IpmiAddress   string         `json:"ipmi_address,omitempty"`
+	IpmiUsername  string         `json:"ipmi_username,omitempty"`
 	IpmiPassword  string         `json:"ipmi_password,omitempty"`
 	CPUCount      int            `json:"cpu_count,omitempty"`
+	CPUArch       string         `json:"cpu_arch,omitempty"`
+	DiskGB        int            `json:"disk_gb,omitempty"`
+	MemoryMB      int            `json:"memory_mb,omitempty"`
 	DeployKernel  string         `json:"deploy_kernel,omitempty"`
-	FQName        []string       `json:"fq_name,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *BaremetalNode) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
+	DeployRamdisk string         `json:"deploy_ramdisk,omitempty"`
 }
 
 // MakeBaremetalNode makes BaremetalNode
 func MakeBaremetalNode() *BaremetalNode {
 	return &BaremetalNode{
 		//TODO(nati): Apply default
+		UUID:          "",
+		ParentUUID:    "",
+		ParentType:    "",
+		FQName:        []string{},
+		IDPerms:       MakeIdPermsType(),
+		DisplayName:   "",
+		Annotations:   MakeKeyValuePairs(),
+		Perms2:        MakePermType2(),
+		Name:          "",
+		IpmiAddress:   "",
+		IpmiUsername:  "",
 		IpmiPassword:  "",
 		CPUCount:      0,
-		DeployKernel:  "",
-		FQName:        []string{},
-		DisplayName:   "",
-		ParentUUID:    "",
-		IpmiUsername:  "",
+		CPUArch:       "",
 		DiskGB:        0,
 		MemoryMB:      0,
+		DeployKernel:  "",
 		DeployRamdisk: "",
-		Annotations:   MakeKeyValuePairs(),
-		UUID:          "",
-		Name:          "",
-		CPUArch:       "",
-		IDPerms:       MakeIdPermsType(),
-		Perms2:        MakePermType2(),
-		IpmiAddress:   "",
-		ParentType:    "",
 	}
 }
 

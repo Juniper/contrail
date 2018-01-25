@@ -2,18 +2,11 @@ package models
 
 // IpamDnsAddressType
 
-import "encoding/json"
-
 // IpamDnsAddressType
+//proteus:generate
 type IpamDnsAddressType struct {
 	TenantDNSServerAddress *IpAddressesType `json:"tenant_dns_server_address,omitempty"`
 	VirtualDNSServerName   string           `json:"virtual_dns_server_name,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *IpamDnsAddressType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeIpamDnsAddressType makes IpamDnsAddressType

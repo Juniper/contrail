@@ -2,17 +2,10 @@ package models
 
 // PolicyEntriesType
 
-import "encoding/json"
-
 // PolicyEntriesType
+//proteus:generate
 type PolicyEntriesType struct {
 	PolicyRule []*PolicyRuleType `json:"policy_rule,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *PolicyEntriesType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakePolicyEntriesType makes PolicyEntriesType

@@ -2,19 +2,12 @@ package models
 
 // ControlTrafficDscpType
 
-import "encoding/json"
-
 // ControlTrafficDscpType
+//proteus:generate
 type ControlTrafficDscpType struct {
 	Control   DscpValueType `json:"control,omitempty"`
 	Analytics DscpValueType `json:"analytics,omitempty"`
 	DNS       DscpValueType `json:"dns,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *ControlTrafficDscpType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeControlTrafficDscpType makes ControlTrafficDscpType

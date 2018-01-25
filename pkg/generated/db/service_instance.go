@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -55,14 +56,14 @@ var ServiceInstanceFields = []string{
 // ServiceInstanceRefFields is db reference fields for ServiceInstance
 var ServiceInstanceRefFields = map[string][]string{
 
-	"instance_ip": {
-		// <common.Schema Value>
-		"interface_type",
-	},
-
 	"service_template": {
 	// <common.Schema Value>
 
+	},
+
+	"instance_ip": {
+		// <common.Schema Value>
+		"interface_type",
 	},
 }
 
@@ -105,7 +106,11 @@ const insertServiceInstanceServiceTemplateQuery = "insert into `ref_service_inst
 const insertServiceInstanceInstanceIPQuery = "insert into `ref_service_instance_instance_ip` (`from`, `to` ,`interface_type`) values (?, ?,?);"
 
 // CreateServiceInstance inserts ServiceInstance to DB
-func CreateServiceInstance(tx *sql.Tx, model *models.ServiceInstance) error {
+func CreateServiceInstance(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateServiceInstanceRequest) error {
+	model := request.ServiceInstance
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceInstanceQuery)
 	if err != nil {
@@ -116,7 +121,7 @@ func CreateServiceInstance(tx *sql.Tx, model *models.ServiceInstance) error {
 		"model": model,
 		"query": insertServiceInstanceQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		string(model.ServiceInstanceProperties.VirtualRouterID),
 		int(model.ServiceInstanceProperties.ScaleOut.MaxInstances),
 		bool(model.ServiceInstanceProperties.ScaleOut.AutoScale),
@@ -161,7 +166,7 @@ func CreateServiceInstance(tx *sql.Tx, model *models.ServiceInstance) error {
 	defer stmtServiceTemplateRef.Close()
 	for _, ref := range model.ServiceTemplateRefs {
 
-		_, err = stmtServiceTemplateRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtServiceTemplateRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceTemplateRefs create failed")
 		}
@@ -178,7 +183,7 @@ func CreateServiceInstance(tx *sql.Tx, model *models.ServiceInstance) error {
 			ref.Attr = models.MakeServiceInterfaceTag()
 		}
 
-		_, err = stmtInstanceIPRef.Exec(model.UUID, ref.UUID, string(ref.Attr.InterfaceType))
+		_, err = stmtInstanceIPRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.InterfaceType))
 		if err != nil {
 			return errors.Wrap(err, "InstanceIPRefs create failed")
 		}
@@ -696,14 +701,16 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 }
 
 // ListServiceInstance lists ServiceInstance with list spec.
-func ListServiceInstance(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceInstance, error) {
+func ListServiceInstance(ctx context.Context, tx *sql.Tx, request *models.ListServiceInstanceRequest) (response *models.ListServiceInstanceResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "service_instance"
-	spec.Fields = ServiceInstanceFields
-	spec.RefFields = ServiceInstanceRefFields
-	spec.BackRefFields = ServiceInstanceBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "service_instance"
+	qb.Fields = ServiceInstanceFields
+	qb.RefFields = ServiceInstanceRefFields
+	qb.BackRefFields = ServiceInstanceBackRefFields
 	result := models.MakeServiceInstanceSlice()
 
 	if spec.ParentFQName != nil {
@@ -714,14 +721,14 @@ func ListServiceInstance(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceIn
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -729,6 +736,7 @@ func ListServiceInstance(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceIn
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -749,440 +757,35 @@ func ListServiceInstance(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceIn
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListServiceInstanceResponse{
+		ServiceInstances: result,
+	}
+	return response, nil
 }
 
 // UpdateServiceInstance updates a resource
-func UpdateServiceInstance(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateServiceInstanceQuery = "update `service_instance` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateServiceInstanceQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceInstanceProperties.VirtualRouterID", "."); ok {
-		updateServiceInstanceQuery += "`virtual_router_id` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceInstanceProperties.ScaleOut.MaxInstances", "."); ok {
-		updateServiceInstanceQuery += "`max_instances` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceInstanceProperties.ScaleOut.AutoScale", "."); ok {
-		updateServiceInstanceQuery += "`auto_scale` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceInstanceProperties.RightVirtualNetwork", "."); ok {
-		updateServiceInstanceQuery += "`right_virtual_network` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceInstanceProperties.RightIPAddress", "."); ok {
-		updateServiceInstanceQuery += "`right_ip_address` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceInstanceProperties.ManagementVirtualNetwork", "."); ok {
-		updateServiceInstanceQuery += "`management_virtual_network` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceInstanceProperties.LeftVirtualNetwork", "."); ok {
-		updateServiceInstanceQuery += "`left_virtual_network` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceInstanceProperties.LeftIPAddress", "."); ok {
-		updateServiceInstanceQuery += "`left_ip_address` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceInstanceProperties.InterfaceList", "."); ok {
-		updateServiceInstanceQuery += "`interface_list` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceInstanceProperties.HaMode", "."); ok {
-		updateServiceInstanceQuery += "`ha_mode` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceInstanceProperties.AvailabilityZone", "."); ok {
-		updateServiceInstanceQuery += "`availability_zone` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceInstanceProperties.AutoPolicy", "."); ok {
-		updateServiceInstanceQuery += "`auto_policy` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceInstanceBindings.KeyValuePair", "."); ok {
-		updateServiceInstanceQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateServiceInstanceQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateServiceInstanceQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateServiceInstanceQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateServiceInstanceQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateServiceInstanceQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateServiceInstanceQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateServiceInstanceQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateServiceInstanceQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateServiceInstanceQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateServiceInstanceQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateServiceInstanceQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateServiceInstanceQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateServiceInstanceQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateServiceInstanceQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateServiceInstanceQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateServiceInstanceQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateServiceInstanceQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateServiceInstanceQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateServiceInstanceQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateServiceInstanceQuery += "`annotations_key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceInstanceQuery += ","
-	}
-
-	updateServiceInstanceQuery =
-		updateServiceInstanceQuery[:len(updateServiceInstanceQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateServiceInstanceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateServiceInstanceQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "InstanceIPRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			attrValues, ok := common.GetValueByPath(ref.(map[string]interface{}), "Attr", ".")
-			if ok {
-
-				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".InterfaceType", "."); ok {
-					refKeys = append(refKeys, "interface_type")
-
-					refValues = append(refValues, common.InterfaceToString(value))
-
-				}
-
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_service_instance_instance_ip` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_service_instance_instance_ip` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref InstanceIPRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_service_instance_instance_ip` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing InstanceIPRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "InstanceIPRefs update failed")
-			}
-		}
-	}
-
-	if value, ok := common.GetValueByPath(model, "ServiceTemplateRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_service_instance_service_template` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_service_instance_service_template` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref ServiceTemplateRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_service_instance_service_template` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing ServiceTemplateRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "ServiceTemplateRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "service_instance", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateServiceInstance(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateServiceInstanceRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteServiceInstance deletes a resource
-func DeleteServiceInstance(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteServiceInstance(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteServiceInstanceRequest) error {
 	deleteQuery := deleteServiceInstanceQuery
 	selectQuery := "select count(uuid) from service_instance where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -1190,11 +793,11 @@ func DeleteServiceInstance(tx *sql.Tx, uuid string, auth *common.AuthContext) er
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -1202,7 +805,7 @@ func DeleteServiceInstance(tx *sql.Tx, uuid string, auth *common.AuthContext) er
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

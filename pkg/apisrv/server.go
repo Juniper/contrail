@@ -9,10 +9,11 @@ import (
 	"github.com/labstack/echo/middleware"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+	"google.golang.org/grpc"
 
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/api"
+	"github.com/Juniper/contrail/pkg/generated/services"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -41,15 +42,15 @@ func (s *Server) Init() error {
 	s.DB = db
 
 	e := s.Echo
-
+	e.Use(middleware.Logger())
 	//e.Use(middleware.Recover())
 	e.Use(middleware.BodyLimit("10M"))
 
-	for _, a := range api.APIs {
-		a.SetDB(s.DB)
-		common.RegisterAPI(a)
+	service := &services.ContrailService{
+		DB: db,
 	}
-	common.Routes(e)
+	service.RegisterRESTAPI(e)
+
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
 	e.Server.ReadTimeout = time.Duration(readTimeout) * time.Second
@@ -102,6 +103,7 @@ func (s *Server) Init() error {
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	if keystoneAuthURL != "" {
 		e.Use(keystone.AuthMiddleware(keystoneAuthURL,
+			viper.GetBool("keystone.insecure"),
 			[]string{
 				"/v3/auth/tokens",
 				"/public"}))
@@ -112,6 +114,18 @@ func (s *Server) Init() error {
 		if err != nil {
 			return errors.Wrap(err, "Failed to init local keystone server")
 		}
+	}
+
+	if viper.GetBool("enable_grpc") {
+		if !viper.GetBool("tls.enabled") {
+			log.Fatal("GRPC support requires TLS configuraion.")
+		}
+		log.Debug("enabling grpc")
+		grpcServer := grpc.NewServer(
+			grpc.UnaryInterceptor(
+				keystone.AuthInterceptor(keystoneAuthURL, viper.GetBool("keystone.insecure"))))
+		services.RegisterContrailServiceServer(grpcServer, service)
+		e.Use(gRPCMiddleware(grpcServer))
 	}
 	return nil
 }
@@ -131,6 +145,7 @@ func (s *Server) Run() error {
 	if tlsEnabled {
 		keyFile = viper.GetString("tls.key_file")
 		certFile = viper.GetString("tls.cert_file")
+
 		e.Logger.Fatal(e.StartTLS(address, certFile, keyFile))
 	} else {
 		e.Logger.Fatal(e.Start(address))

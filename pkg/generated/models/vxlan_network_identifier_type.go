@@ -2,6 +2,7 @@ package models
 
 // VxlanNetworkIdentifierType
 
+//proteus:generate
 type VxlanNetworkIdentifierType int
 
 // MakeVxlanNetworkIdentifierType makes VxlanNetworkIdentifierType

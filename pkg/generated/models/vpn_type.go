@@ -2,6 +2,7 @@ package models
 
 // VpnType
 
+//proteus:generate
 type VpnType string
 
 // MakeVpnType makes VpnType

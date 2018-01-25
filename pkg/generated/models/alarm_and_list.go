@@ -2,17 +2,10 @@ package models
 
 // AlarmAndList
 
-import "encoding/json"
-
 // AlarmAndList
+//proteus:generate
 type AlarmAndList struct {
 	AndList []*AlarmExpression `json:"and_list,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *AlarmAndList) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeAlarmAndList makes AlarmAndList

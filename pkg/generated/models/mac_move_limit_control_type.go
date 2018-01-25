@@ -2,19 +2,12 @@ package models
 
 // MACMoveLimitControlType
 
-import "encoding/json"
-
 // MACMoveLimitControlType
+//proteus:generate
 type MACMoveLimitControlType struct {
 	MacMoveTimeWindow  MACMoveTimeWindow        `json:"mac_move_time_window,omitempty"`
 	MacMoveLimit       int                      `json:"mac_move_limit,omitempty"`
 	MacMoveLimitAction MACLimitExceedActionType `json:"mac_move_limit_action,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *MACMoveLimitControlType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeMACMoveLimitControlType makes MACMoveLimitControlType

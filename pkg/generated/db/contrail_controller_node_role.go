@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -54,7 +55,11 @@ var ContrailControllerNodeRoleBackRefFields = map[string][]string{}
 var ContrailControllerNodeRoleParents = []string{}
 
 // CreateContrailControllerNodeRole inserts ContrailControllerNodeRole to DB
-func CreateContrailControllerNodeRole(tx *sql.Tx, model *models.ContrailControllerNodeRole) error {
+func CreateContrailControllerNodeRole(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateContrailControllerNodeRoleRequest) error {
+	model := request.ContrailControllerNodeRole
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertContrailControllerNodeRoleQuery)
 	if err != nil {
@@ -65,7 +70,7 @@ func CreateContrailControllerNodeRole(tx *sql.Tx, model *models.ContrailControll
 		"model": model,
 		"query": insertContrailControllerNodeRoleQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		string(model.ProvisioningState),
 		string(model.ProvisioningStartTime),
 		string(model.ProvisioningProgressStage),
@@ -323,14 +328,16 @@ func scanContrailControllerNodeRole(values map[string]interface{}) (*models.Cont
 }
 
 // ListContrailControllerNodeRole lists ContrailControllerNodeRole with list spec.
-func ListContrailControllerNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.ContrailControllerNodeRole, error) {
+func ListContrailControllerNodeRole(ctx context.Context, tx *sql.Tx, request *models.ListContrailControllerNodeRoleRequest) (response *models.ListContrailControllerNodeRoleResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "contrail_controller_node_role"
-	spec.Fields = ContrailControllerNodeRoleFields
-	spec.RefFields = ContrailControllerNodeRoleRefFields
-	spec.BackRefFields = ContrailControllerNodeRoleBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "contrail_controller_node_role"
+	qb.Fields = ContrailControllerNodeRoleFields
+	qb.RefFields = ContrailControllerNodeRoleRefFields
+	qb.BackRefFields = ContrailControllerNodeRoleBackRefFields
 	result := models.MakeContrailControllerNodeRoleSlice()
 
 	if spec.ParentFQName != nil {
@@ -341,14 +348,14 @@ func ListContrailControllerNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*model
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -356,6 +363,7 @@ func ListContrailControllerNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*model
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -376,264 +384,35 @@ func ListContrailControllerNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*model
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListContrailControllerNodeRoleResponse{
+		ContrailControllerNodeRoles: result,
+	}
+	return response, nil
 }
 
 // UpdateContrailControllerNodeRole updates a resource
-func UpdateContrailControllerNodeRole(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateContrailControllerNodeRoleQuery = "update `contrail_controller_node_role` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningState", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`provisioning_state` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningStartTime", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`provisioning_start_time` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningProgressStage", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`provisioning_progress_stage` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningProgress", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`provisioning_progress` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningLog", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`provisioning_log` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateContrailControllerNodeRoleQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateContrailControllerNodeRoleQuery += ","
-	}
-
-	updateContrailControllerNodeRoleQuery =
-		updateContrailControllerNodeRoleQuery[:len(updateContrailControllerNodeRoleQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateContrailControllerNodeRoleQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateContrailControllerNodeRoleQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "contrail_controller_node_role", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateContrailControllerNodeRole(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateContrailControllerNodeRoleRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteContrailControllerNodeRole deletes a resource
-func DeleteContrailControllerNodeRole(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteContrailControllerNodeRole(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteContrailControllerNodeRoleRequest) error {
 	deleteQuery := deleteContrailControllerNodeRoleQuery
 	selectQuery := "select count(uuid) from contrail_controller_node_role where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -641,11 +420,11 @@ func DeleteContrailControllerNodeRole(tx *sql.Tx, uuid string, auth *common.Auth
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -653,7 +432,7 @@ func DeleteContrailControllerNodeRole(tx *sql.Tx, uuid string, auth *common.Auth
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

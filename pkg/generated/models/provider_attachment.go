@@ -2,11 +2,9 @@ package models
 
 // ProviderAttachment
 
-import "encoding/json"
-
 // ProviderAttachment
+//proteus:generate
 type ProviderAttachment struct {
-	Perms2      *PermType2     `json:"perms2,omitempty"`
 	UUID        string         `json:"uuid,omitempty"`
 	ParentUUID  string         `json:"parent_uuid,omitempty"`
 	ParentType  string         `json:"parent_type,omitempty"`
@@ -14,6 +12,7 @@ type ProviderAttachment struct {
 	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
 	DisplayName string         `json:"display_name,omitempty"`
 	Annotations *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2      *PermType2     `json:"perms2,omitempty"`
 
 	VirtualRouterRefs []*ProviderAttachmentVirtualRouterRef `json:"virtual_router_refs,omitempty"`
 }
@@ -23,12 +22,6 @@ type ProviderAttachmentVirtualRouterRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 
-}
-
-// String returns json representation of the object
-func (model *ProviderAttachment) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeProviderAttachment makes ProviderAttachment

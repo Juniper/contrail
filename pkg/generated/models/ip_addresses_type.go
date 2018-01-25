@@ -2,17 +2,10 @@ package models
 
 // IpAddressesType
 
-import "encoding/json"
-
 // IpAddressesType
+//proteus:generate
 type IpAddressesType struct {
 	IPAddress IpAddressType `json:"ip_address,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *IpAddressesType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeIpAddressesType makes IpAddressesType
