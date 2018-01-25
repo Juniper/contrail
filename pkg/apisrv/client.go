@@ -171,13 +171,10 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 	}
 
 	log.WithFields(log.Fields{
-		"method":         request.Method,
-		"url":            request.URL,
-		"header":         request.Header,
-		"body":           request.Body,
-		"param-path":     path,
-		"param-data":     data,
-		"param-expected": expected,
+		"method": request.Method,
+		"url":    request.URL,
+		"header": request.Header,
+		"data":   data,
 	}).Debug("Executing API Server request")
 	resp, err := c.httpClient.Do(request)
 	if err != nil {

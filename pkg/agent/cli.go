@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
-	"strings"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/flosch/pongo2"
@@ -12,85 +11,38 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const showTemplate = ` Show resource data
-
-{% for schema in schemas%} contrail show {{ schema.ID }} $ID
-{% endfor %}`
-
-const setTemplate = ` Set data on resource property
-
-{% for schema in schemas%} contrail set {{ schema.ID }} $ID $YAML
-{% endfor %}`
-
-const listTemplate = ` List resource data
-
-{% for schema in schemas%} contrail list {{ schema.ID }}
-{% endfor %}`
-
-const deleteTemplate = ` Delete resource data
-
-{% for schema in schemas%} contrail rm {{ schema.ID }} $ID
-{% endfor %}`
-
-const schemaTemplate = `{% for schema in schemas%}
-# {{schema.Title}} {{schema.Description}}
+const schemaTemplate = `
+{% for schema in schemas %}
+# {{ schema.Title }} {{ schema.Description }}
 - kind: {{ schema.ID }}
   data: {% for key, value in schema.JSONSchema.Properties %}
-    {{ key }}: {{ value.Default }} # {{ value.Title}} ({{ value.Type }}) {% endfor %}
+    {{ key }}: {{ value.Default }} # {{ value.Title }} ({{ value.Type }}) {% endfor %}
+{% endfor %}`
+
+const showHelpTemplate = ` Show resource data (example usages):
+
+{% for schema in schemas %} contrail show {{ schema.ID }} $ID
+{% endfor %}`
+
+const listHelpTemplate = ` List resource data (example usages):
+
+{% for schema in schemas %} contrail list {{ schema.ID }}
+{% endfor %}`
+
+const setHelpTemplate = ` Set data on resource property (example usages):
+
+{% for schema in schemas %} contrail set {{ schema.ID }} $ID $YAML
+{% endfor %}`
+
+const removeHelpTemplate = ` Remove resource data (example usages):
+
+{% for schema in schemas %} contrail rm {{ schema.ID }} $ID
 {% endfor %}`
 
 // ResourceData is data output by CLI tool.
 type ResourceData struct {
 	Kind string      `yaml:"kind"`
 	Data interface{} `yaml:"data"`
-}
-
-// getInputResources decodes from YAML single or array of input data.
-func getInputResources(data []byte) ([]*ResourceData, error) {
-	var resources []*ResourceData
-	var err error
-	if err = yaml.Unmarshal(data, &resources); err != nil {
-		var resource *ResourceData
-		err = yaml.Unmarshal(data, &resource)
-		if err == nil {
-			resources = append(resources, resource)
-		}
-	}
-	return resources, err
-}
-
-// ShowCLI returns YAML-formatted data resource with given schemaID and id.
-// TODO(daniel): FIXME duplication
-// nolint: dupl
-func (a *Agent) ShowCLI(schemaID, id string) (string, error) {
-	if schemaID == "" {
-		tpl, err := pongo2.FromString(showTemplate)
-		if err != nil {
-			a.log.Fatal(err)
-		}
-		out, err := tpl.Execute(pongo2.Context{"schemas": a.serverAPI.Schemas})
-		if err != nil {
-			a.log.Fatal(err)
-		}
-		return out, nil
-	} else if id == "" {
-		return "", fmt.Errorf("missing ID")
-	}
-
-	data, err := a.show(schemaID, id)
-	if err != nil {
-		a.log.Fatalf("error: %v", err)
-	}
-	output, err := yaml.Marshal(
-		&ResourceData{
-			Kind: schemaID,
-			Data: data,
-		},
-	)
-	if err != nil {
-		return "", err
-	}
-	return string(output), nil
 }
 
 // SchemaCLI returns YAML-formatted schema information of resource with given schemaID.
@@ -106,28 +58,54 @@ func (a *Agent) SchemaCLI(schemaID string) (string, error) {
 	}
 	tpl, err := pongo2.FromString(schemaTemplate)
 	if err != nil {
-		a.log.Fatal(err)
+		return "", err
 	}
-	out, err := tpl.Execute(pongo2.Context{"schemas": schemas})
+	o, err := tpl.Execute(pongo2.Context{"schemas": schemas})
 	if err != nil {
-		a.log.Fatal(err)
+		return "", err
 	}
-	return out, nil
+	return o, nil
+}
+
+// ShowCLI returns YAML-formatted data resource with given schemaID and UUID.
+// TODO(daniel): FIXME duplication
+// nolint: dupl
+func (a *Agent) ShowCLI(schemaID, uuid string) (string, error) {
+	if schemaID == "" {
+		tpl, err := pongo2.FromString(showHelpTemplate)
+		if err != nil {
+			return "", err
+		}
+		o, err := tpl.Execute(pongo2.Context{"schemas": a.serverAPI.Schemas})
+		if err != nil {
+			return "", err
+		}
+		return o, nil
+	} else if uuid == "" {
+		return "", fmt.Errorf("missing UUID")
+	}
+
+	data, err := a.show(schemaID, uuid)
+	if err != nil {
+		a.log.Fatalf("error: %v", err)
+	}
+	output, err := yaml.Marshal(
+		&ResourceData{
+			Kind: schemaID,
+			Data: data,
+		},
+	)
+	if err != nil {
+		return "", err
+	}
+	return string(output), nil
 }
 
 // ListCLI returns YAML-formatted data of all resources with given schemaID
 // that satisfy filter, offset and limit.
-func (a *Agent) ListCLI(schemaID string, filter string, offset, limit string) (string, error) {
+func (a *Agent) ListCLI(schemaID string, queryParameters url.Values) (string, error) {
 	if schemaID == "" {
-		tpl, err := pongo2.FromString(listTemplate)
-		if err != nil {
-			a.log.Fatal(err)
-		}
-		out, err := tpl.Execute(pongo2.Context{"schemas": a.serverAPI.Schemas})
-		if err != nil {
-			a.log.Fatal(err)
-		}
-		return out, nil
+		return buildListHelpMessage(a.serverAPI.Schemas)
 	}
 
 	var schemas []string
@@ -139,10 +117,9 @@ func (a *Agent) ListCLI(schemaID string, filter string, offset, limit string) (s
 		schemas = append(schemas, schemaID)
 	}
 
-	p := getListQueryParameters(filter, limit, offset)
 	var resourceData []*ResourceData
 	for _, sID := range schemas {
-		data, err := a.list(sID, p)
+		data, err := a.list(sID, queryParameters)
 		if err != nil {
 			return "", err
 		}
@@ -159,18 +136,16 @@ func (a *Agent) ListCLI(schemaID string, filter string, offset, limit string) (s
 	return string(output), nil
 }
 
-func getListQueryParameters(filter string, limit string, offset string) url.Values {
-	params := url.Values{}
-	for _, kv := range strings.Split(filter, ",") {
-		if kv == "" {
-			continue
-		}
-		parts := strings.Split(kv, "=")
-		params.Add(parts[0], parts[1])
+func buildListHelpMessage(schemas []*common.Schema) (string, error) {
+	tpl, err := pongo2.FromString(listHelpTemplate)
+	if err != nil {
+		return "", err
 	}
-	params.Add("limit", limit)
-	params.Add("offset", offset)
-	return params
+	o, err := tpl.Execute(pongo2.Context{"schemas": schemas})
+	if err != nil {
+		return "", err
+	}
+	return o, nil
 }
 
 // CreateCLI creates resources with data specified in file with given dataPath.
@@ -201,6 +176,44 @@ func (a *Agent) CreateCLI(dataPath string) (string, error) {
 		resource.Data = createdData
 	}
 	output, err := yaml.Marshal(&resources)
+	if err != nil {
+		return "", err
+	}
+	return string(output), nil
+}
+
+// SetCLI updates properties specified in yamlString of resource with given schemaID and UUID.
+// TODO(daniel): FIXME duplication
+// nolint: dupl
+func (a *Agent) SetCLI(schemaID, uuid, yamlString string) (string, error) {
+	if schemaID == "" {
+		tpl, err := pongo2.FromString(setHelpTemplate)
+		if err != nil {
+			return "", err
+		}
+
+		o, err := tpl.Execute(pongo2.Context{"schemas": a.serverAPI.Schemas})
+		if err != nil {
+			return "", err
+		}
+		return o, nil
+	} else if uuid == "" {
+		return "", fmt.Errorf("missing UUID")
+	}
+
+	var data map[interface{}]interface{}
+	err := yaml.Unmarshal([]byte(yamlString), &data)
+	if err != nil {
+		return "", err
+	}
+
+	data["uuid"] = uuid
+	updated, err := a.update(schemaID, data)
+	if err != nil {
+		return "", err
+	}
+
+	output, err := yaml.Marshal(&updated)
 	if err != nil {
 		return "", err
 	}
@@ -242,7 +255,7 @@ func (a *Agent) UpdateCLI(dataPath string) (string, error) {
 }
 
 // SyncCLI updates resources with data specified in given dataPath.
-// It creates new resource for every non-existing resource ID.
+// It creates new resource for every non-existing resource UUID.
 // TODO(daniel): FIXME duplication
 // nolint: dupl
 func (a *Agent) SyncCLI(dataPath string) (string, error) {
@@ -276,60 +289,22 @@ func (a *Agent) SyncCLI(dataPath string) (string, error) {
 	return string(output), nil
 }
 
-// SetCLI updates properties specified in yamlString of resource with given schemaID and id.
-// TODO(daniel): FIXME duplication
-// nolint: dupl
-func (a *Agent) SetCLI(schemaID, id, yamlString string) (string, error) {
+// RemoveCLI removes a resource with given schemaID and UUID.
+func (a *Agent) RemoveCLI(schemaID, uuid string) (string, error) {
 	if schemaID == "" {
-		tpl, err := pongo2.FromString(setTemplate)
-		if err != nil {
-			a.log.Fatal(err)
-		}
-
-		out, err := tpl.Execute(pongo2.Context{"schemas": a.serverAPI.Schemas})
-		if err != nil {
-			a.log.Fatal(err)
-		}
-		return out, nil
-	} else if id == "" {
-		return "", fmt.Errorf("missing ID")
-	}
-
-	var data map[interface{}]interface{}
-	err := yaml.Unmarshal([]byte(yamlString), &data)
-	if err != nil {
-		return "", err
-	}
-
-	data["id"] = id
-	updated, err := a.update(schemaID, data)
-	if err != nil {
-		return "", err
-	}
-
-	output, err := yaml.Marshal(&updated)
-	if err != nil {
-		return "", err
-	}
-	return string(output), nil
-}
-
-// RemoveCLI removes a resource with given schemaID and id.
-func (a *Agent) RemoveCLI(schemaID, id string) (string, error) {
-	if schemaID == "" {
-		tpl, err := pongo2.FromString(deleteTemplate)
+		tpl, err := pongo2.FromString(removeHelpTemplate)
 		if err != nil {
 			return "", err
 		}
-		out, err := tpl.Execute(pongo2.Context{"schemas": a.serverAPI.Schemas})
+		o, err := tpl.Execute(pongo2.Context{"schemas": a.serverAPI.Schemas})
 		if err != nil {
 			return "", err
 		}
-		return out, nil
-	} else if id == "" {
-		return "", fmt.Errorf("missing ID")
+		return o, nil
+	} else if uuid == "" {
+		return "", fmt.Errorf("missing UUID")
 	}
-	err := a.delete(schemaID, id)
+	err := a.delete(schemaID, uuid)
 	if err != nil {
 		return "", err
 	}
@@ -353,12 +328,29 @@ func (a *Agent) DeleteCLI(datafile string) error {
 			list = []interface{}{resource.Data}
 		}
 		for _, resourceData := range list {
-			dataMap := resourceData.(map[interface{}]interface{})
-			err := a.delete(resource.Kind, dataMap["id"].(string))
+			uuid, err := uuidFromRawProperties(resourceData)
 			if err != nil {
+				return err
+			}
+
+			if err = a.delete(resource.Kind, uuid); err != nil {
 				return err
 			}
 		}
 	}
 	return nil
+}
+
+// getInputResources decodes single or array of input data from YAML.
+func getInputResources(yamlData []byte) ([]*ResourceData, error) {
+	var resources []*ResourceData
+	var err error
+	if err = yaml.Unmarshal(yamlData, &resources); err != nil {
+		var resource *ResourceData
+		err = yaml.Unmarshal(yamlData, &resource)
+		if err == nil {
+			resources = append(resources, resource)
+		}
+	}
+	return resources, err
 }

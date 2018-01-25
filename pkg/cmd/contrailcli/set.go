@@ -15,6 +15,7 @@ func init() {
 var SetCmd = &cobra.Command{
 	Use:   "set [SchemaID] [ID] [Update data in YAML format]",
 	Short: "Set a parameter of a resource",
+	Long:  "Invoke command with empty SchemaID in order to show available schemas",
 	Args:  cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		setResourceParameter(args)

@@ -15,6 +15,7 @@ func init() {
 var ShowCmd = &cobra.Command{
 	Use:   "show [SchemaID] [ID]",
 	Short: "Show resource data",
+	Long:  "Invoke command with empty SchemaID in order to show available schemas",
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		showResource(args)

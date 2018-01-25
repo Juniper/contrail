@@ -113,6 +113,7 @@ func buildSchemaMapping(schemas []*common.Schema) map[string]*common.Schema {
 	s := make(map[string]*common.Schema)
 	for _, schema := range schemas {
 		// Compensate for empty Path and PluralPath fields in schema
+		// TODO(daniel): remove this after following issue is fixed: https://github.com/Juniper/contrail/issues/72
 		schema.Path = path.Join(schema.Prefix, strings.Replace(schema.ID, "_", "-", -1))
 		schema.PluralPath = path.Join(schema.Prefix, strings.Replace(schema.Plural, "_", "-", -1))
 		s[schema.ID] = schema

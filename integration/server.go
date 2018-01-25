@@ -9,6 +9,8 @@ import (
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Server is embedded API Server for testing purposes.
@@ -20,9 +22,9 @@ type Server struct {
 
 // NewServer creates new test API Server.
 func NewServer(t *testing.T) *Server {
-	if err := pkglog.Configure("debug"); err != nil {
-		t.Fatal("cannot configure logger")
-	}
+	err := pkglog.Configure("debug")
+	require.NoError(t, err, "cannot configure logger")
+
 	setServerConfig(map[string]interface{}{
 		"address":                  ":9091",
 		"database.connection":      "root:contrail123@tcp(localhost:3306)/contrail_test",
@@ -41,17 +43,13 @@ func NewServer(t *testing.T) *Server {
 	})
 
 	s, err := apisrv.NewServer()
-	if err != nil {
-		t.Fatalf("creating API Server failed: %s", err)
-	}
+	require.NoError(t, err, "creating API Server failed")
 
 	ts := httptest.NewServer(s.Echo)
 
 	viper.Set("keystone.authurl", ts.URL+"/v3")
 	err = s.Init()
-	if err != nil {
-		t.Fatalf("server initialization failed: %s", err)
-	}
+	require.NoError(t, err, "server initialization failed")
 
 	return &Server{
 		apiServer:  s,
@@ -72,7 +70,7 @@ func (s *Server) URL() string {
 	return s.testServer.URL
 }
 
-// Database return API Server database handle.
+// Database returns API Server database handle.
 func (s *Server) Database() *sql.DB {
 	return s.apiServer.DB
 }
@@ -80,8 +78,8 @@ func (s *Server) Database() *sql.DB {
 // Close closes Server.
 func (s *Server) Close(t *testing.T) {
 	s.log.Debug("Closing test server")
-	if err := s.apiServer.Close(); err != nil {
-		t.Fatalf("closing API Server failed: %s", err)
-	}
+	err := s.apiServer.Close()
+	assert.NoError(t, err, "closing API Server failed")
+
 	s.testServer.Close()
 }

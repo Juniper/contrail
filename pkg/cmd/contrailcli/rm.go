@@ -15,6 +15,7 @@ func init() {
 var RmCmd = &cobra.Command{
 	Use:   "rm [SchemaID] [ID]",
 	Short: "Remove a resource",
+	Long:  "Invoke command with empty SchemaID in order to show available schemas",
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		deleteResource(args)
