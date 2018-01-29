@@ -6,7 +6,7 @@
   references: {}
   parents: 
     virtual_DNS: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Static DNS records in virtual DNS server."
       presence: "optional"
   plural: "virtual_DNS_records"
@@ -17,7 +17,7 @@
     type: "object"
     properties: 
       virtual_DNS_record_data: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "DNS record data has configuration like type, name, ip address, loadbalancing etc."
         $ref: "types.json#/definitions/VirtualDnsRecordType"

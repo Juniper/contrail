@@ -6,7 +6,7 @@
   references: {}
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Network Policy is set access control rules that can be attached to virtual networks. Network ACL(s) and connectivity information is derived from Network policies that are attached to virtual networks."
       presence: "optional"
   plural: "network_policys"
@@ -17,7 +17,7 @@
     type: "object"
     properties: 
       network_policy_entries: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "Network policy rule entries."
         $ref: "types.json#/definitions/PolicyEntriesType"

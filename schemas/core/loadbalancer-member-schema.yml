@@ -6,7 +6,7 @@
   references: {}
   parents: 
     loadbalancer_pool: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Configuration object representing each member of load balancer pool."
       presence: "optional"
   plural: "loadbalancer_members"
@@ -17,7 +17,7 @@
     type: "object"
     properties: 
       loadbalancer_member_properties: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "Member configuration like ip address, destination port, weight etc."
         $ref: "types.json#/definitions/LoadbalancerMemberType"

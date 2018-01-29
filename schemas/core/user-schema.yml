@@ -6,7 +6,7 @@
   references: {}
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       $ref: "types.json#definitions/MemberType"
       description: "Reference to a project of this user."
       presence: "optional"
@@ -17,7 +17,7 @@
     type: "object"
     properties: 
       password: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "Domain level quota, not currently implemented"
         type: string

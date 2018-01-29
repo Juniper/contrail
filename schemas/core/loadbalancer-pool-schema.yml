@@ -5,28 +5,28 @@
     - "base"
   references: 
     service_appliance_set: 
-      operation: "RReference to service-appliance-set where this loadbalancer-pool is hosted. Applicable to LBaaS V1."
+      operations: "RReference to service-appliance-set where this loadbalancer-pool is hosted. Applicable to LBaaS V1."
       description: ""
       presence: "system-only"
     virtual_machine_interface: 
-      operation: "CR"
+      operations: "CR"
       description: "Reference to the virtual machine interface reaching pool subnet, applicable to LBaaS V1."
       presence: "system-only"
     loadbalancer_listener: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to loadbalancer listener served by this pool, applicable to LBaaS V2."
       presence: "optional"
     service_instance: 
-      operation: "CR"
+      operations: "CR"
       description: "Reference to the service instance serving this pool, applicable to LBaaS V1."
       presence: "system-only"
     loadbalancer_healthmonitor: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to loadbalancer healthmonitor that this pool uses."
       presence: "optional"
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Loadbalancer pool object represent set(pool) member servers which needs load balancing."
       presence: "optional"
   plural: "loadbalancer_pools"
@@ -37,17 +37,17 @@
     type: "object"
     properties: 
       loadbalancer_pool_properties: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "Configuration for loadbalancer pool like protocol, subnet, etc."
         $ref: "types.json#/definitions/LoadbalancerPoolType"
       loadbalancer_pool_custom_attributes: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "Custom loadbalancer config, opaque to the system. Specified as list of Key:Value pairs. Applicable to LBaaS V1."
         $ref: "types.json#/definitions/KeyValuePairs"
       loadbalancer_pool_provider: 
-        operation: "CR"
+        operations: "CR"
         type: "string"
         description: "Provider field selects backend provider of the LBaaS, Cloudadmin could offer different levels of service like gold, silver, bronze. Provided by  HA-proxy or various HW or SW appliances in the backend. Applicable to LBaaS V1"
         presence: "optional"

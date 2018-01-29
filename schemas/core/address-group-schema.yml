@@ -6,11 +6,11 @@
   references: {}
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Project level address Group object"
       presence: "optional"
     policy_management: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Address Group object"
       presence: "optional"
   plural: "address_groups"
@@ -20,7 +20,7 @@
     type: "object"
     properties: 
       address_group_prefix: 
-        operation: "CRUD"
+        operations: "CRUD"
         collectionType: "list"
         presence: "optional"
         description: "List of IP prefix"

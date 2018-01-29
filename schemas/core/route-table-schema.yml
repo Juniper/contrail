@@ -6,7 +6,7 @@
   references: {}
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Network route table is mechanism of adding static routes in the virtual network"
       presence: "optional"
   plural: "route_tables"
@@ -17,7 +17,7 @@
     type: "object"
     properties: 
       routes: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "Routes in the route table are configured in following way."
         $ref: "types.json#/definitions/RouteTableType"

@@ -6,7 +6,7 @@
   references: {}
   parents: 
     discovery_service_assignment: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Discovery service rule for assigning subscriber to publisher. (set of subscriber) can be assigned to (set of publisher)."
       presence: "optional"
   plural: "dsa_rules"
@@ -17,7 +17,7 @@
     type: "object"
     properties: 
       dsa_rule_entry: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "rule entry defining publisher set and subscriber set."
         $ref: "types.json#/definitions/DiscoveryServiceAssignmentType"

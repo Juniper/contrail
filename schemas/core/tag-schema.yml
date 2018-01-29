@@ -5,16 +5,16 @@
     - "base"
   references: 
     tag_type: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Tag type reference which is limited to one"
       presence: "optional"
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Attribute attached to objects - has a type and value"
       presence: "optional"
     config_root: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Attribute attached to objects - has a type and value"
       presence: "optional"
   plural: "tags"
@@ -26,17 +26,17 @@
     type: "object"
     properties: 
       tag_type_name: 
-        operation: "CR"
+        operations: "CR"
         type: "string"
         description: "Tag type string representation"
         presence: "required"
       tag_id: 
-        operation: "R"
+        operations: "R"
         presence: "optional"
         description: "Internal Tag ID encapsulating tag type and value in                  hexadecimal fomat: 0xTTTTVVVV (T: type, V: value)"
         $ref: "types.json#/definitions/U32BitHexInt"
       tag_value: 
-        operation: "CR"
+        operations: "CR"
         type: "string"
         description: "Tag value string representation"
         presence: "required"

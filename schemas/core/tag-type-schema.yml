@@ -13,7 +13,7 @@
     type: "object"
     properties: 
       tag_type_id: 
-        operation: "R"
+        operations: "R"
         presence: "required"
         description: "Internal Tag type ID                  coded on 16 bits where the first 255 IDs are reserved                  and pre-defined. Users (principally cloud admin) can define                  arbitrary types but its automatically shared to all project as                  it is a global resource."
         $ref: "types.json#/definitions/U16BitHexInt"

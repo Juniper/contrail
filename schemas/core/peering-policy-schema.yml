@@ -13,7 +13,7 @@
     type: "object"
     properties: 
       peering_service: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "Peering policy service type."
         $ref: "types.json#/definitions/PeeringServiceType"

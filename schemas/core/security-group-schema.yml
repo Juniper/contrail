@@ -6,7 +6,7 @@
   references: {}
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Security Groups are set of state full access control rules attached to interfaces.It can be used to implement microsegmentation."
       presence: "optional"
   plural: "security_groups"
@@ -17,17 +17,17 @@
     type: "object"
     properties: 
       security_group_entries: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "Security group rule entries."
         $ref: "types.json#/definitions/PolicyEntriesType"
       configured_security_group_id: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "Unique 32 bit user defined ID assigned to this security group [1, 8M - 1]."
         $ref: "types.json#/definitions/ConfiguredSecurityGroupIdType"
       security_group_id: 
-        operation: "R"
+        operations: "R"
         presence: "system-only"
         description: "Unique 32 bit ID automatically assigned to this security group [8M+1, 32G]."
         $ref: "types.json#/definitions/SecurityGroupIdType"

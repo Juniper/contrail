@@ -6,7 +6,7 @@
   references: {}
   parents: 
     global_system_config: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Database node is object representing a logical node in system which host Cassandra DB and Zookeeper."
       presence: "required"
   plural: "database_nodes"
@@ -17,7 +17,7 @@
     type: "object"
     properties: 
       database_node_ip_address: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "Ip address of the database node, set while provisioning."
         $ref: "types.json#/definitions/IpAddressType"

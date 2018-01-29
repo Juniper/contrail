@@ -6,7 +6,7 @@
   references: {}
   parents: 
     domain: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Namespace is unique networking namespace within this domain. If namespace is not present then default namespace of default project is used."
       presence: "optional"
   plural: "namespaces"
@@ -16,7 +16,7 @@
     type: "object"
     properties: 
       namespace_cidr: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "All networks in this namespace belong to this list of Prefixes. Not implemented."
         $ref: "types.json#/definitions/SubnetType"

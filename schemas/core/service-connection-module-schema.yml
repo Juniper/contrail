@@ -5,7 +5,7 @@
     - "base"
   references: 
     service_object: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Links the service-connection-module to a service object."
       presence: "optional"
   parents: {}
@@ -18,12 +18,12 @@
     type: "object"
     properties: 
       service_type: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "Type of service assigned for this object"
         $ref: "types.json#/definitions/ServiceConnectionType"
       e2_service: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "E2 service type."
         $ref: "types.json#/definitions/E2servicetype"

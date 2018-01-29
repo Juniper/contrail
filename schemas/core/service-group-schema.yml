@@ -6,11 +6,11 @@
   references: {}
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Project level service Group object"
       presence: "optional"
     policy_management: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Service Group object"
       presence: "optional"
   plural: "service_groups"
@@ -21,7 +21,7 @@
     type: "object"
     properties: 
       service_group_firewall_service_list: 
-        operation: "CRUD"
+        operations: "CRUD"
         collectionType: "list"
         presence: "required"
         description: "list of service objects (protocol, source port and destination port"

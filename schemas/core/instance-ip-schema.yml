@@ -5,23 +5,23 @@
     - "base"
   references: 
     network_ipam: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to network ipam of this instance ip."
       presence: "required"
     virtual_network: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to virtual network of this instance ip."
       presence: "required"
     virtual_machine_interface: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to virtual machine interface to which this instance ip is attached."
       presence: "optional"
     physical_router: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "This instance ip is used as IRB address on the referenced physical router (e.g.MX), In case of OVSDB TOR usecase this address will be used as default gateway for Host behind the TOR."
       presence: "optional"
     virtual_router: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to virtual router of this instance ip."
       presence: "optional"
   parents: {}
@@ -34,50 +34,50 @@
     properties: 
       service_health_check_ip: 
         default: false
-        operation: "CRUD"
+        operations: "CRUD"
         type: "boolean"
         description: "This instance ip is used as service health check source ip"
         presence: "system-only"
       secondary_ip_tracking_ip: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "When this instance ip is secondary ip, it can track activeness of another ip."
         $ref: "types.json#/definitions/SubnetType"
       instance_ip_address: 
-        operation: "CR"
+        operations: "CR"
         presence: "required"
         description: "Ip address value for instance ip."
         $ref: "types.json#/definitions/IpAddressType"
       instance_ip_mode: 
-        operation: "CR"
+        operations: "CR"
         presence: "optional"
         description: "Ip address HA mode in case this instance ip is used in more than one interface, active-Active or active-Standby."
         $ref: "types.json#/definitions/AddressMode"
       subnet_uuid: 
-        operation: "CR"
+        operations: "CR"
         type: "string"
         description: "This instance ip was allocated from this Subnet(UUID)."
         presence: "optional"
       instance_ip_family: 
-        operation: "CR"
+        operations: "CR"
         presence: "optional"
         description: "Ip address family for instance ip, IPv4(v4) or IPv6(v6)."
         $ref: "types.json#/definitions/IpAddressFamilyType"
       service_instance_ip: 
         default: false
-        operation: "CRUD"
+        operations: "CRUD"
         type: "boolean"
         description: "This instance ip is used as service chain next hop"
         presence: "system-only"
       instance_ip_local_ip: 
         default: false
-        operation: "CRUD"
+        operations: "CRUD"
         type: "boolean"
         description: "This instance ip is local to compute and will not be exported to other nodes."
         presence: "optional"
       instance_ip_secondary: 
         default: false
-        operation: "CRUD"
+        operations: "CRUD"
         type: "boolean"
         description: "This instance ip is secondary ip of the interface."
         presence: "optional"

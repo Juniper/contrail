@@ -5,38 +5,38 @@
     - "base"
   references: 
     network_ipam: 
-      operation: "CRUD"
+      operations: "CRUD"
       $ref: "types.json#definitions/VnSubnetsType"
       description: "Reference to network-ipam this network is using. It has list of subnets that are being used as property of the reference."
       presence: "required"
     security_logging_object: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to security logging object for this virtual network."
       presence: "optional"
     network_policy: 
-      operation: "CRUD"
+      operations: "CRUD"
       $ref: "types.json#definitions/VirtualNetworkPolicyType"
       description: "Reference to network-policy attached to this network. It has sequence number to specify attachment order."
       presence: "optional"
     qos_config: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to QoS configuration for this virtual network."
       presence: "optional"
     route_table: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to route table attached to this virtual network."
       presence: "optional"
     virtual_network: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to a virtual network which is the provider network for the given virtual network. Traffic forwarding happens in the routing instance of the provider network."
       presence: "optional"
     bgpvpn: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Back reference to virtual network associated to the BGP VPN resource"
       presence: "optional"
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Virtual network is collection of end points (interface or ip(s) or MAC(s)) that can talk to each other by default. It is collection of subnets connected by implicit router which default gateway in each subnet."
       presence: "optional"
   plural: "virtual_networks"
@@ -46,112 +46,112 @@
     type: "object"
     properties: 
       virtual_network_properties: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "Virtual network miscellaneous configurations."
         $ref: "types.json#/definitions/VirtualNetworkType"
       ecmp_hashing_include_fields: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "ECMP hashing config at global level."
         $ref: "types.json#/definitions/EcmpHashingIncludeFields"
       virtual_network_network_id: 
-        operation: "CR"
+        operations: "CR"
         presence: "system-only"
         description: "System assigned unique 32 bit ID for every virtual network."
         $ref: "types.json#/definitions/VirtualNetworkIdType"
       address_allocation_mode: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "Address allocation mode for virtual network."
         $ref: "types.json#/definitions/AddressAllocationModeType"
       pbb_evpn_enable: 
         default: false
-        operation: "CRUD"
+        operations: "CRUD"
         type: "boolean"
         description: "Enable/Disable PBB EVPN tunneling on the network"
         presence: "optional"
       router_external: 
-        operation: "CRUD"
+        operations: "CRUD"
         type: "boolean"
         description: "When true, this virtual network is openstack router external network."
         presence: "optional"
       import_route_target_list: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "List of route targets that are used as import for this virtual network."
         $ref: "types.json#/definitions/RouteTargetList"
       mac_aging_time: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "MAC aging time on the network"
         $ref: "types.json#/definitions/MACAgingTime"
       provider_properties: 
-        operation: "CRD"
+        operations: "CRD"
         presence: "optional"
         description: "Virtual network is provider network. Specifies VLAN tag and physical network name."
         $ref: "types.json#/definitions/ProviderDetails"
       route_target_list: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "List of route targets that are used as both import and export for this virtual network."
         $ref: "types.json#/definitions/RouteTargetList"
       mac_learning_enabled: 
         default: false
-        operation: "CRUD"
+        operations: "CRUD"
         type: "boolean"
         description: "Enable MAC learning on the network"
         presence: "optional"
       export_route_target_list: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "List of route targets that are used as export for this virtual network."
         $ref: "types.json#/definitions/RouteTargetList"
       flood_unknown_unicast: 
         default: false
-        operation: "CRUD"
+        operations: "CRUD"
         type: "boolean"
         description: "When true, packets with unknown unicast MAC address are flooded within the network. Default they are dropped."
         presence: "optional"
       pbb_etree_enable: 
         default: false
-        operation: "CRUD"
+        operations: "CRUD"
         type: "boolean"
         description: "Enable/Disable PBB ETREE mode on the network"
         presence: "optional"
       layer2_control_word: 
         default: false
-        operation: "CRUD"
+        operations: "CRUD"
         type: "boolean"
         description: "Enable/Disable adding control word to the Layer 2 encapsulation"
         presence: "optional"
       external_ipam: 
-        operation: "CRUD"
+        operations: "CRUD"
         type: "boolean"
         description: "IP address assignment to VM is done statically, outside of (external to) Contrail Ipam. vCenter only feature."
         presence: "optional"
       port_security_enabled: 
         default: true
-        operation: "CRUD"
+        operations: "CRUD"
         type: "boolean"
         description: "Port security status on the network"
         presence: "optional"
       mac_move_control: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "MAC move control on the network"
         $ref: "types.json#/definitions/MACMoveLimitControlType"
       multi_policy_service_chains_enabled: 
-        operation: "CRUD"
+        operations: "CRUD"
         type: "boolean"
         presence: "optional"
       mac_limit_control: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "MAC limit control on the network"
         $ref: "types.json#/definitions/MACLimitControlType"
       is_shared: 
-        operation: "CRUD"
+        operations: "CRUD"
         type: "boolean"
         description: "When true, this virtual network is shared with all tenants."
         presence: "optional"

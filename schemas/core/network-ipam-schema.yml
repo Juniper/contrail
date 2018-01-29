@@ -5,12 +5,12 @@
     - "base"
   references: 
     virtual_DNS: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to virtual DNS used by this IPAM."
       presence: "optional"
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "IP Address Management object that controls, ip allocation, DNS and DHCP"
       presence: "optional"
   plural: "network_ipams"
@@ -20,18 +20,18 @@
     type: "object"
     properties: 
       network_ipam_mgmt: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "Network IP Address Management configuration."
         $ref: "types.json#/definitions/IpamType"
       ipam_subnets: 
-        operation: "CRD"
+        operations: "CRD"
         collectionType: "list"
         presence: "optional"
         description: "List of subnets for this ipam."
         $ref: "types.json#/definitions/IpamSubnets"
       ipam_subnet_method: 
-        operation: "CRD"
+        operations: "CRD"
         presence: "optional"
         description: "Subnet method configuration for ipam, user can configure user-defined, flat or auto."
         $ref: "types.json#/definitions/SubnetMethodType"

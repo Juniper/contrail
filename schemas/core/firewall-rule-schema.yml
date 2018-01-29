@@ -5,28 +5,28 @@
     - "base"
   references: 
     service_group: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to service-group attached to this firewall policy"
       presence: "optional"
     address_group: 
-      operation: "R"
+      operations: "R"
       description: "Reference to address group attached to endpoints"
       presence: "optional"
     security_logging_object: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to security-logging-object attached to this firewall-rule"
       presence: "optional"
     virtual_network: 
-      operation: "R"
+      operations: "R"
       description: "Reference to virtual network attached to endpoints"
       presence: "optional"
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Project level firewall-rule object"
       presence: "optional"
     policy_management: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Firewall-rule object"
       presence: "optional"
   plural: "firewall_rules"
@@ -42,37 +42,37 @@
     type: "object"
     properties: 
       endpoint_1: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "match condition for traffic source"
         $ref: "types.json#/definitions/FirewallRuleEndpointType"
       endpoint_2: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "match condition for traffic destination"
         $ref: "types.json#/definitions/FirewallRuleEndpointType"
       action_list: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "Actions to be performed if packets match condition"
         $ref: "types.json#/definitions/ActionListType"
       service: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "Service (port, protocol) for packets match condition"
         $ref: "types.json#/definitions/FirewallServiceType"
       direction: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "Direction in the rule"
         $ref: "types.json#/definitions/FirewallRuleDirectionType"
       match_tag_types: 
-        operation: "R"
+        operations: "R"
         presence: "required"
         description: "matching tags ids for source and destination endpoints"
         $ref: "types.json#/definitions/FirewallRuleMatchTagsTypeIdList"
       match_tags: 
-        operation: "CRUD"
+        operations: "CRUD"
         collectionType: "list"
         presence: "required"
         description: "matching tags for source and destination endpoints"

@@ -5,12 +5,12 @@
     - "base"
   references: 
     qos_queue: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Qos queue to be used for this forwarding class."
       presence: "required"
   parents: 
     global_qos_config: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Link to global-qos config."
       presence: "optional"
   plural: "forwarding_classs"
@@ -24,22 +24,22 @@
     type: "object"
     properties: 
       forwarding_class_dscp: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "DSCP value to be written on outgoing packet for this forwarding-class."
         $ref: "types.json#/definitions/DscpValueType"
       forwarding_class_vlan_priority: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "802.1p value to be written on outgoing packet for this forwarding-class."
         $ref: "types.json#/definitions/VlanPriorityType"
       forwarding_class_mpls_exp: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "MPLS exp value to be written on outgoing packet for this forwarding-class."
         $ref: "types.json#/definitions/MplsExpType"
       forwarding_class_id: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "Unique ID for this forwarding class."
         $ref: "types.json#/definitions/ForwardingClassId"

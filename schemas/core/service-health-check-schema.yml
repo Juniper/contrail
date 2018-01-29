@@ -5,14 +5,14 @@
     - "base"
   references: 
     service_instance: 
-      operation: "CRUD"
+      operations: "CRUD"
       $ref: "types.json#definitions/ServiceInterfaceTag"
       derived: true
       description: "Reference to service instance using this service health check."
       presence: "optional"
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Service health check is a keepalive mechanism for the virtual machine interface. Liveliness of the interface is determined based on configuration in the service health check. It is mainly designed for service instance interfaces. However it will work with any interface which present on contrail vrouter."
       presence: "optional"
   plural: "service_health_checks"
@@ -23,7 +23,7 @@
     type: "object"
     properties: 
       service_health_check_properties: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "Service health check has following fields."
         $ref: "types.json#/definitions/ServiceHealthCheckType"

@@ -5,36 +5,36 @@
     - "base"
   references: 
     route_target: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Route target that represent this logical router."
       presence: "system-only"
     virtual_machine_interface: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to the interface attached to this logical router. By attaching a interface to logical network all subnets in the virtual network of the interface has this router."
       presence: "optional"
     service_instance: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to service instance doing SNAT functionality for external gateway."
       presence: "system-only"
     route_table: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to the route table attached to this logical router. By attaching route table, system will create static routes with the route target only of route targets linked to this logical router"
       presence: "optional"
     virtual_network: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to virtual network used as external gateway for this logical network. This link will cause a SNAT being spawned between all networks connected to logical router and external network."
       presence: "optional"
     physical_router: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to physical router, when this link is present device manager configures logical router associated route targets/interfaces on the Physical Router."
       presence: "optional"
     bgpvpn: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Back reference to logical router associated to the BGP VPN resource"
       presence: "optional"
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Logical router is a mechanism to connect multiple virtual network as they have been connected by a router."
       presence: "optional"
   plural: "logical_routers"
@@ -44,12 +44,12 @@
     type: "object"
     properties: 
       vxlan_network_identifier: 
-        operation: "CRUD"
+        operations: "CRUD"
         type: "string"
         description: "The VNI that needs to be associated with the internal VN if vxlan_routing mode is enabled."
         presence: "optional"
       configured_route_target_list: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "List of route targets that represent this logical router, all virtual networks connected to this logical router will have this as their route target list."
         $ref: "types.json#/definitions/RouteTargetList"

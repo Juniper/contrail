@@ -5,16 +5,16 @@
     - "base"
   references: 
     global_system_config: 
-      operation: "CR"
+      operations: "CR"
       description: "This link is internally created and may be removed in future. End users should not set this link or assume it to be there"
       presence: "system-only"
   parents: 
     project: 
-      operation: "CRUDQOS configuration specifying marking and queuing value for various QoS values"
+      operations: "CRUDQOS configuration specifying marking and queuing value for various QoS values"
       description: ""
       presence: "optional"
     global_qos_config: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Global system QoS config for vhost and fabric traffic ."
       presence: "optional"
   plural: "qos_configs"
@@ -26,29 +26,29 @@
     type: "object"
     properties: 
       qos_config_type: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "Specifies if qos-config is for vhost, fabric or for project."
         $ref: "types.json#/definitions/QosConfigType"
       mpls_exp_entries: 
-        operation: "CRUD"
+        operations: "CRUD"
         collectionType: "map"
         presence: "optional"
         description: "Map of MPLS EXP values to applicable forwarding class for packet."
         $ref: "types.json#/definitions/QosIdForwardingClassPairs"
       vlan_priority_entries: 
-        operation: "CRUD"
+        operations: "CRUD"
         collectionType: "map"
         presence: "optional"
         description: "Map of .1p priority code to applicable forwarding class for packet."
         $ref: "types.json#/definitions/QosIdForwardingClassPairs"
       default_forwarding_class_id: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "Default forwarding class used for all non-specified QOS bits"
         $ref: "types.json#/definitions/ForwardingClassId"
       dscp_entries: 
-        operation: "CRUD"
+        operations: "CRUD"
         collectionType: "map"
         presence: "optional"
         description: "Map of DSCP match condition and applicable forwarding class for packet."

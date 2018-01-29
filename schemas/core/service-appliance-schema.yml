@@ -5,13 +5,13 @@
     - "base"
   references: 
     physical_interface: 
-      operation: "CRUD"
+      operations: "CRUD"
       $ref: "types.json#definitions/ServiceApplianceInterfaceType"
       description: "Reference to physical interface that can be used as (service interface type)left, right, management OR other."
       presence: "optional"
   parents: 
     service_appliance_set: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Service appliance is a member in service appliance set (e.g. Loadbalancer, Firewall provider).By default system will create \"ha-proxy\" based service appliance."
       presence: "optional"
   plural: "service_appliances"
@@ -23,17 +23,17 @@
     type: "object"
     properties: 
       service_appliance_user_credentials: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "optional"
         description: "Authentication credentials for driver to access service appliance."
         $ref: "types.json#/definitions/UserCredentials"
       service_appliance_ip_address: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "Management Ip address of the service-appliance."
         $ref: "types.json#/definitions/IpAddressType"
       service_appliance_properties: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "List of Key:Value pairs used by the provider driver of this service appliance."
         $ref: "types.json#/definitions/KeyValuePairs"

@@ -5,25 +5,25 @@
     - "base"
   references: 
     alias_ip_pool: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to alias ip pool in this project."
       presence: "optional"
     namespace: 
-      operation: "CRUD"
+      operations: "CRUD"
       $ref: "types.json#definitions/SubnetType"
       description: "Reference to network namespace of this project."
       presence: "optional"
     application_policy_set: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to default application-policy-set is automatically createdby system for default socped application policy sets. Needed by vrouter to identify default application-policy-set rules of a virtual machine interface"
       presence: "system-only"
     floating_ip_pool: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to floating ip pool in this project."
       presence: "optional"
   parents: 
     domain: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Project represent one instance of application or tenant."
       presence: "system-only"
   plural: "projects"
@@ -34,17 +34,17 @@
     type: "object"
     properties: 
       vxlan_routing: 
-        operation: "CRUD"
+        operations: "CRUD"
         type: "boolean"
         description: "When this knob is enabled for a project, an internal system VN (VN-Int) is created for every logical router in the project."
         presence: "optional"
       alarm_enable: 
-        operation: "CRUD"
+        operations: "CRUD"
         type: "boolean"
         description: "Flag to enable/disable alarms configured under global-system-config. True, if not set."
         presence: "optional"
       quota: 
-        operation: "CRUD"
+        operations: "CRUD"
         presence: "required"
         description: "Max instances limits for various objects under project."
         $ref: "types.json#/definitions/QuotaType"
