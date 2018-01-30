@@ -5,16 +5,16 @@
     - "base"
   references: 
     tag_type: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Tag type reference which is limited to one"
       presence: "optional"
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Attribute attached to objects - has a type and value"
       presence: "optional"
     config_root: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Attribute attached to objects - has a type and value"
       presence: "optional"
   plural: "tags"

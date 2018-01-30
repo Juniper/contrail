@@ -6,7 +6,7 @@
   references: {}
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Security Groups are set of state full access control rules attached to interfaces.It can be used to implement microsegmentation."
       presence: "optional"
   plural: "security_groups"

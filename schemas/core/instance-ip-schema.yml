@@ -5,23 +5,23 @@
     - "base"
   references: 
     network_ipam: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to network ipam of this instance ip."
       presence: "required"
     virtual_network: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to virtual network of this instance ip."
       presence: "required"
     virtual_machine_interface: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to virtual machine interface to which this instance ip is attached."
       presence: "optional"
     physical_router: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "This instance ip is used as IRB address on the referenced physical router (e.g.MX), In case of OVSDB TOR usecase this address will be used as default gateway for Host behind the TOR."
       presence: "optional"
     virtual_router: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to virtual router of this instance ip."
       presence: "optional"
   parents: {}

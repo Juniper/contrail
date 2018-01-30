@@ -5,24 +5,24 @@
     - "base"
   references: 
     virtual_network: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to virtual network, whose VRF is present on this physical router, Applicable when only VRF is present with no physical interfaces from this physical vrouter. Generally used when using device manager and option A+B for this virtual network in L3VPN use case."
       presence: "optional"
     bgp_router:
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to BGP peer representing this physical router."
       presence: "optional"
     virtual_router: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to vrouter responsible for this physical router. Currently only applicable for vrouters that are TOR agents."
       presence: "optional"
   parents: 
     global_system_config: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Physical router object represent any physical device that participates in virtual networking, like routers, switches, servers, firewalls etc."
       presence: "optional"
     location: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Physical router location."
       presence: "optional"
   plural: "physical_routers"

@@ -6,11 +6,11 @@
   references: {}
   parents: 
     global_system_config: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "List of alarms that are applicable to objects anchored under global-system-config."
       presence: "optional"
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "List of alarms that are applicable to objects anchored under the project."
       presence: "optional"
   plural: "alarms"

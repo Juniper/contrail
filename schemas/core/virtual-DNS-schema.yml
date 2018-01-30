@@ -6,7 +6,7 @@
   references: {}
   parents: 
     domain: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Virtual DNS server is DNS as service for tenants. It is inbound DNS service for virtual machines in this project. DNS requests by end points inside this project/IPAM are served by this DNS server rules."
       presence: "optional"
   plural: "virtual_DNSs"

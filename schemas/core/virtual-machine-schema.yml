@@ -5,7 +5,7 @@
     - "base"
   references: 
     service_instance: 
-      operation: "CRUD"
+      operations: "CRUD"
       derived: true
       description: "Reference to the service instance of this virtual machine."
       presence: "system-only"

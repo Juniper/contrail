@@ -5,16 +5,16 @@
     - "base"
   references: 
     virtual_machine_interface: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to VMI on which BGPaaS BGP peering will happen."
       presence: "required"
     service_health_check: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to health check object attached to BGPaaS object, used to enable BFD health check over active BGPaaS VMI."
       presence: "optional"
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "BGP as service object represents BGP peer in the virtual network that can participate in dynamic routing with implicit default gateway of the virtual network."
       presence: "optional"
   plural: "bgp_as_a_services"

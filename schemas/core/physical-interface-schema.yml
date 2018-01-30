@@ -5,12 +5,12 @@
     - "base"
   references: 
     physical_interface: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to the other physical interface that is connected to this  physical interface."
       presence: "optional"
   parents: 
     physical_router: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Physical interfaces on physical routers."
       presence: "optional"
   plural: "physical_interfaces"

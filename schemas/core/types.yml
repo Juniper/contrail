@@ -737,7 +737,7 @@
     AlarmExpression:
       type: "object"
       properties:
-        operation:
+        operations:
           presence: "true"
           description: "operation to compare operand1 and operand2"
           $ref: "types.json#/definitions/AlarmOperation"

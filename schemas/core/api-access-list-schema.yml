@@ -6,15 +6,15 @@
   references: {}
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "API access list is list of rules that define role based access to each API and its properties at project level."
       presence: "optional"
     global_system_config: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Global API access list applicable to all domain and projects"
       presence: "required"
     domain: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "API access list is list of rules that define role based access to each API and its properties at domain level."
       presence: "optional"
   plural: "api_access_lists"

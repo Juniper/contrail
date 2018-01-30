@@ -6,7 +6,7 @@
   references: {}
   parents: 
     virtual_network: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Floating ip pool is set of ip address that are carved out of a given network. Ip(s) from this set can be assigned to (virtual machine interface, ip) so that they become members of this network using one:one NAT."
       presence: "optional"
   plural: "floating_ip_pools"

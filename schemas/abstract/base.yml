@@ -3,7 +3,7 @@
   prefix: "/"
   references:
     tag:
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Tag attached to an object - has a type and value"
       presence: "optional"
   parents: {}

@@ -6,7 +6,7 @@
   references: {}
   parents: 
     global_system_config: 
-      operation: "R"
+      operations: "R"
       description: "Global vrouter config is object where all global vrouter config is present."
       presence: "required"
   plural: "global_vrouter_configs"

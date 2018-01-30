@@ -6,7 +6,7 @@
   references: {}
   parents: 
     global_system_config: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Config node is object representing a logical node in system which serves config API."
       presence: "admin-only"
   plural: "config_nodes"

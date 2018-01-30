@@ -5,20 +5,20 @@
     - "base"
   references: 
     service_appliance_set: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: ""
       presence: "optional"
     virtual_machine_interface: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to the virtual machine interface for VIP, created automatically by the system."
       presence: "system-only"
     service_instance: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to the service instance, created automatically by the system."
       presence: "system-only"
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Loadbalancer object represents a LBaaS instance. One single Virtual IP and multiple (listeners, pools). Applicable to LBaaS V2."
       presence: "optional"
   plural: "loadbalancers"

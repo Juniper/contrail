@@ -5,38 +5,38 @@
     - "base"
   references: 
     network_ipam: 
-      operation: "CRUD"
+      operations: "CRUD"
       $ref: "types.json#definitions/VnSubnetsType"
       description: "Reference to network-ipam this network is using. It has list of subnets that are being used as property of the reference."
       presence: "required"
     security_logging_object: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to security logging object for this virtual network."
       presence: "optional"
     network_policy: 
-      operation: "CRUD"
+      operations: "CRUD"
       $ref: "types.json#definitions/VirtualNetworkPolicyType"
       description: "Reference to network-policy attached to this network. It has sequence number to specify attachment order."
       presence: "optional"
     qos_config: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to QoS configuration for this virtual network."
       presence: "optional"
     route_table: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to route table attached to this virtual network."
       presence: "optional"
     virtual_network: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to a virtual network which is the provider network for the given virtual network. Traffic forwarding happens in the routing instance of the provider network."
       presence: "optional"
     bgpvpn: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Back reference to virtual network associated to the BGP VPN resource"
       presence: "optional"
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Virtual network is collection of end points (interface or ip(s) or MAC(s)) that can talk to each other by default. It is collection of subnets connected by implicit router which default gateway in each subnet."
       presence: "optional"
   plural: "virtual_networks"

@@ -6,7 +6,7 @@
   references: {}
   parents: 
     virtual_network: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "List of references of routing instances for this virtual network, routing instances are internal to the system."
       presence: "system-only"
   plural: "routing_instances"

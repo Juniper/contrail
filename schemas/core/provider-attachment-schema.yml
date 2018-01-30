@@ -5,7 +5,7 @@
     - "base"
   references: 
     virtual_router: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Not in Use."
       presence: "optional"
   parents: {}

@@ -5,11 +5,11 @@
     - "base"
   references: 
     virtual_machine_interface: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Not in Use."
       presence: "optional"
     floating_ip: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Not in Use."
       presence: "optional"
   parents: {}

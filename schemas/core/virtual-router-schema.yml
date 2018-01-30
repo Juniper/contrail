@@ -5,17 +5,17 @@
     - "base"
   references: 
     network_ipam: 
-      operation: "CRUD"
+      operations: "CRUD"
       $ref: "types.json#definitions/VirtualRouterNetworkIpamType"
       description: "Reference to network-ipam this virtual-router is using. It has list of virtual-router specific allocation-pools and cidrs that are being used as property of the reference."
       presence: "optional"
     virtual_machine: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "References to all virtual machines on this vrouter. This link is not present for dynamically scheduled VMs by Nova."
       presence: "optional"
   parents: 
     global_system_config: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Virtual router is packet forwarding system on devices such as compute nodes(servers), TOR(s), routers."
       presence: "optional"
   plural: "virtual_routers"

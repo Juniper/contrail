@@ -6,7 +6,7 @@
   references: {}
   parents: 
     service_instance: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: ""
       presence: "optional"
   plural: "port_tuples"
