@@ -51,9 +51,9 @@ var AccessControlListBackRefFields = map[string][]string{}
 // AccessControlListParentTypes is possible parents for AccessControlList
 var AccessControlListParents = []string{
 
-	"security_group",
-
 	"virtual_network",
+
+	"security_group",
 }
 
 // CreateAccessControlList inserts AccessControlList to DB
@@ -362,7 +362,6 @@ func ListAccessControlList(tx *sql.Tx, spec *common.ListSpec) ([]*models.AccessC
 
 // UpdateAccessControlList updates a resource
 func UpdateAccessControlList(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateAccessControlListQuery = "update `access_control_list` set "
 
@@ -575,6 +574,14 @@ func UpdateAccessControlList(tx *sql.Tx, uuid string, model map[string]interface
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "access_control_list", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

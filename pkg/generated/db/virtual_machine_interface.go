@@ -76,19 +76,31 @@ var VirtualMachineInterfaceFields = []string{
 // VirtualMachineInterfaceRefFields is db reference fields for VirtualMachineInterface
 var VirtualMachineInterfaceRefFields = map[string][]string{
 
-	"virtual_machine": {
+	"qos_config": {
 	// <common.Schema Value>
 
 	},
 
-	"interface_route_table": {
+	"service_endpoint": {
 	// <common.Schema Value>
 
 	},
 
-	"service_health_check": {
+	"virtual_machine_interface": {
 	// <common.Schema Value>
 
+	},
+
+	"routing_instance": {
+		// <common.Schema Value>
+		"service_chain_address",
+		"dst_mac",
+		"protocol",
+		"ipv6_service_chain_address",
+		"direction",
+		"mpls_label",
+		"vlan_tag",
+		"src_mac",
 	},
 
 	"port_tuple": {
@@ -96,17 +108,7 @@ var VirtualMachineInterfaceRefFields = map[string][]string{
 
 	},
 
-	"qos_config": {
-	// <common.Schema Value>
-
-	},
-
 	"physical_interface": {
-	// <common.Schema Value>
-
-	},
-
-	"security_group": {
 	// <common.Schema Value>
 
 	},
@@ -121,12 +123,7 @@ var VirtualMachineInterfaceRefFields = map[string][]string{
 		"vlan_tag",
 	},
 
-	"service_endpoint": {
-	// <common.Schema Value>
-
-	},
-
-	"virtual_machine_interface": {
+	"virtual_machine": {
 	// <common.Schema Value>
 
 	},
@@ -141,16 +138,19 @@ var VirtualMachineInterfaceRefFields = map[string][]string{
 
 	},
 
-	"routing_instance": {
-		// <common.Schema Value>
-		"direction",
-		"mpls_label",
-		"vlan_tag",
-		"src_mac",
-		"service_chain_address",
-		"dst_mac",
-		"protocol",
-		"ipv6_service_chain_address",
+	"interface_route_table": {
+	// <common.Schema Value>
+
+	},
+
+	"service_health_check": {
+	// <common.Schema Value>
+
+	},
+
+	"security_group": {
+	// <common.Schema Value>
+
 	},
 }
 
@@ -167,33 +167,33 @@ var VirtualMachineInterfaceParents = []string{
 	"virtual_router",
 }
 
-const insertVirtualMachineInterfaceBridgeDomainQuery = "insert into `ref_virtual_machine_interface_bridge_domain` (`from`, `to` ,`vlan_tag`) values (?, ?,?);"
+const insertVirtualMachineInterfaceVirtualMachineInterfaceQuery = "insert into `ref_virtual_machine_interface_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
+
+const insertVirtualMachineInterfaceRoutingInstanceQuery = "insert into `ref_virtual_machine_interface_routing_instance` (`from`, `to` ,`service_chain_address`,`dst_mac`,`protocol`,`ipv6_service_chain_address`,`direction`,`mpls_label`,`vlan_tag`,`src_mac`) values (?, ?,?,?,?,?,?,?,?,?);"
+
+const insertVirtualMachineInterfacePortTupleQuery = "insert into `ref_virtual_machine_interface_port_tuple` (`from`, `to` ) values (?, ?);"
+
+const insertVirtualMachineInterfacePhysicalInterfaceQuery = "insert into `ref_virtual_machine_interface_physical_interface` (`from`, `to` ) values (?, ?);"
+
+const insertVirtualMachineInterfaceVirtualNetworkQuery = "insert into `ref_virtual_machine_interface_virtual_network` (`from`, `to` ) values (?, ?);"
 
 const insertVirtualMachineInterfaceServiceEndpointQuery = "insert into `ref_virtual_machine_interface_service_endpoint` (`from`, `to` ) values (?, ?);"
 
-const insertVirtualMachineInterfaceVirtualMachineInterfaceQuery = "insert into `ref_virtual_machine_interface_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
+const insertVirtualMachineInterfaceVirtualMachineQuery = "insert into `ref_virtual_machine_interface_virtual_machine` (`from`, `to` ) values (?, ?);"
 
 const insertVirtualMachineInterfaceBGPRouterQuery = "insert into `ref_virtual_machine_interface_bgp_router` (`from`, `to` ) values (?, ?);"
 
 const insertVirtualMachineInterfaceSecurityLoggingObjectQuery = "insert into `ref_virtual_machine_interface_security_logging_object` (`from`, `to` ) values (?, ?);"
 
-const insertVirtualMachineInterfaceRoutingInstanceQuery = "insert into `ref_virtual_machine_interface_routing_instance` (`from`, `to` ,`direction`,`mpls_label`,`vlan_tag`,`src_mac`,`service_chain_address`,`dst_mac`,`protocol`,`ipv6_service_chain_address`) values (?, ?,?,?,?,?,?,?,?,?);"
-
-const insertVirtualMachineInterfaceVirtualNetworkQuery = "insert into `ref_virtual_machine_interface_virtual_network` (`from`, `to` ) values (?, ?);"
-
-const insertVirtualMachineInterfaceVirtualMachineQuery = "insert into `ref_virtual_machine_interface_virtual_machine` (`from`, `to` ) values (?, ?);"
-
 const insertVirtualMachineInterfaceInterfaceRouteTableQuery = "insert into `ref_virtual_machine_interface_interface_route_table` (`from`, `to` ) values (?, ?);"
 
 const insertVirtualMachineInterfaceServiceHealthCheckQuery = "insert into `ref_virtual_machine_interface_service_health_check` (`from`, `to` ) values (?, ?);"
 
-const insertVirtualMachineInterfacePortTupleQuery = "insert into `ref_virtual_machine_interface_port_tuple` (`from`, `to` ) values (?, ?);"
-
-const insertVirtualMachineInterfaceQosConfigQuery = "insert into `ref_virtual_machine_interface_qos_config` (`from`, `to` ) values (?, ?);"
-
-const insertVirtualMachineInterfacePhysicalInterfaceQuery = "insert into `ref_virtual_machine_interface_physical_interface` (`from`, `to` ) values (?, ?);"
+const insertVirtualMachineInterfaceBridgeDomainQuery = "insert into `ref_virtual_machine_interface_bridge_domain` (`from`, `to` ,`vlan_tag`) values (?, ?,?);"
 
 const insertVirtualMachineInterfaceSecurityGroupQuery = "insert into `ref_virtual_machine_interface_security_group` (`from`, `to` ) values (?, ?);"
+
+const insertVirtualMachineInterfaceQosConfigQuery = "insert into `ref_virtual_machine_interface_qos_config` (`from`, `to` ) values (?, ?);"
 
 // CreateVirtualMachineInterface inserts VirtualMachineInterface to DB
 func CreateVirtualMachineInterface(tx *sql.Tx, model *models.VirtualMachineInterface) error {
@@ -266,85 +266,16 @@ func CreateVirtualMachineInterface(tx *sql.Tx, model *models.VirtualMachineInter
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtQosConfigRef, err := tx.Prepare(insertVirtualMachineInterfaceQosConfigQuery)
+	stmtVirtualMachineRef, err := tx.Prepare(insertVirtualMachineInterfaceVirtualMachineQuery)
 	if err != nil {
-		return errors.Wrap(err, "preparing QosConfigRefs create statement failed")
+		return errors.Wrap(err, "preparing VirtualMachineRefs create statement failed")
 	}
-	defer stmtQosConfigRef.Close()
-	for _, ref := range model.QosConfigRefs {
+	defer stmtVirtualMachineRef.Close()
+	for _, ref := range model.VirtualMachineRefs {
 
-		_, err = stmtQosConfigRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtVirtualMachineRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
-			return errors.Wrap(err, "QosConfigRefs create failed")
-		}
-	}
-
-	stmtPhysicalInterfaceRef, err := tx.Prepare(insertVirtualMachineInterfacePhysicalInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing PhysicalInterfaceRefs create statement failed")
-	}
-	defer stmtPhysicalInterfaceRef.Close()
-	for _, ref := range model.PhysicalInterfaceRefs {
-
-		_, err = stmtPhysicalInterfaceRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "PhysicalInterfaceRefs create failed")
-		}
-	}
-
-	stmtSecurityGroupRef, err := tx.Prepare(insertVirtualMachineInterfaceSecurityGroupQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing SecurityGroupRefs create statement failed")
-	}
-	defer stmtSecurityGroupRef.Close()
-	for _, ref := range model.SecurityGroupRefs {
-
-		_, err = stmtSecurityGroupRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "SecurityGroupRefs create failed")
-		}
-	}
-
-	stmtBridgeDomainRef, err := tx.Prepare(insertVirtualMachineInterfaceBridgeDomainQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing BridgeDomainRefs create statement failed")
-	}
-	defer stmtBridgeDomainRef.Close()
-	for _, ref := range model.BridgeDomainRefs {
-
-		if ref.Attr == nil {
-			ref.Attr = models.MakeBridgeDomainMembershipType()
-		}
-
-		_, err = stmtBridgeDomainRef.Exec(model.UUID, ref.UUID, int(ref.Attr.VlanTag))
-		if err != nil {
-			return errors.Wrap(err, "BridgeDomainRefs create failed")
-		}
-	}
-
-	stmtServiceEndpointRef, err := tx.Prepare(insertVirtualMachineInterfaceServiceEndpointQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceEndpointRefs create statement failed")
-	}
-	defer stmtServiceEndpointRef.Close()
-	for _, ref := range model.ServiceEndpointRefs {
-
-		_, err = stmtServiceEndpointRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceEndpointRefs create failed")
-		}
-	}
-
-	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertVirtualMachineInterfaceVirtualMachineInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
-	}
-	defer stmtVirtualMachineInterfaceRef.Close()
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+			return errors.Wrap(err, "VirtualMachineRefs create failed")
 		}
 	}
 
@@ -374,56 +305,6 @@ func CreateVirtualMachineInterface(tx *sql.Tx, model *models.VirtualMachineInter
 		}
 	}
 
-	stmtRoutingInstanceRef, err := tx.Prepare(insertVirtualMachineInterfaceRoutingInstanceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing RoutingInstanceRefs create statement failed")
-	}
-	defer stmtRoutingInstanceRef.Close()
-	for _, ref := range model.RoutingInstanceRefs {
-
-		if ref.Attr == nil {
-			ref.Attr = models.MakePolicyBasedForwardingRuleType()
-		}
-
-		_, err = stmtRoutingInstanceRef.Exec(model.UUID, ref.UUID, string(ref.Attr.Direction),
-			int(ref.Attr.MPLSLabel),
-			int(ref.Attr.VlanTag),
-			string(ref.Attr.SRCMac),
-			string(ref.Attr.ServiceChainAddress),
-			string(ref.Attr.DSTMac),
-			string(ref.Attr.Protocol),
-			string(ref.Attr.Ipv6ServiceChainAddress))
-		if err != nil {
-			return errors.Wrap(err, "RoutingInstanceRefs create failed")
-		}
-	}
-
-	stmtVirtualNetworkRef, err := tx.Prepare(insertVirtualMachineInterfaceVirtualNetworkQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
-	}
-	defer stmtVirtualNetworkRef.Close()
-	for _, ref := range model.VirtualNetworkRefs {
-
-		_, err = stmtVirtualNetworkRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs create failed")
-		}
-	}
-
-	stmtVirtualMachineRef, err := tx.Prepare(insertVirtualMachineInterfaceVirtualMachineQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineRefs create statement failed")
-	}
-	defer stmtVirtualMachineRef.Close()
-	for _, ref := range model.VirtualMachineRefs {
-
-		_, err = stmtVirtualMachineRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineRefs create failed")
-		}
-	}
-
 	stmtInterfaceRouteTableRef, err := tx.Prepare(insertVirtualMachineInterfaceInterfaceRouteTableQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing InterfaceRouteTableRefs create statement failed")
@@ -450,6 +331,86 @@ func CreateVirtualMachineInterface(tx *sql.Tx, model *models.VirtualMachineInter
 		}
 	}
 
+	stmtBridgeDomainRef, err := tx.Prepare(insertVirtualMachineInterfaceBridgeDomainQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing BridgeDomainRefs create statement failed")
+	}
+	defer stmtBridgeDomainRef.Close()
+	for _, ref := range model.BridgeDomainRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = models.MakeBridgeDomainMembershipType()
+		}
+
+		_, err = stmtBridgeDomainRef.Exec(model.UUID, ref.UUID, int(ref.Attr.VlanTag))
+		if err != nil {
+			return errors.Wrap(err, "BridgeDomainRefs create failed")
+		}
+	}
+
+	stmtSecurityGroupRef, err := tx.Prepare(insertVirtualMachineInterfaceSecurityGroupQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing SecurityGroupRefs create statement failed")
+	}
+	defer stmtSecurityGroupRef.Close()
+	for _, ref := range model.SecurityGroupRefs {
+
+		_, err = stmtSecurityGroupRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "SecurityGroupRefs create failed")
+		}
+	}
+
+	stmtQosConfigRef, err := tx.Prepare(insertVirtualMachineInterfaceQosConfigQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing QosConfigRefs create statement failed")
+	}
+	defer stmtQosConfigRef.Close()
+	for _, ref := range model.QosConfigRefs {
+
+		_, err = stmtQosConfigRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "QosConfigRefs create failed")
+		}
+	}
+
+	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertVirtualMachineInterfaceVirtualMachineInterfaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
+	}
+	defer stmtVirtualMachineInterfaceRef.Close()
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
+	}
+
+	stmtRoutingInstanceRef, err := tx.Prepare(insertVirtualMachineInterfaceRoutingInstanceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing RoutingInstanceRefs create statement failed")
+	}
+	defer stmtRoutingInstanceRef.Close()
+	for _, ref := range model.RoutingInstanceRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = models.MakePolicyBasedForwardingRuleType()
+		}
+
+		_, err = stmtRoutingInstanceRef.Exec(model.UUID, ref.UUID, string(ref.Attr.ServiceChainAddress),
+			string(ref.Attr.DSTMac),
+			string(ref.Attr.Protocol),
+			string(ref.Attr.Ipv6ServiceChainAddress),
+			string(ref.Attr.Direction),
+			int(ref.Attr.MPLSLabel),
+			int(ref.Attr.VlanTag),
+			string(ref.Attr.SRCMac))
+		if err != nil {
+			return errors.Wrap(err, "RoutingInstanceRefs create failed")
+		}
+	}
+
 	stmtPortTupleRef, err := tx.Prepare(insertVirtualMachineInterfacePortTupleQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing PortTupleRefs create statement failed")
@@ -460,6 +421,45 @@ func CreateVirtualMachineInterface(tx *sql.Tx, model *models.VirtualMachineInter
 		_, err = stmtPortTupleRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PortTupleRefs create failed")
+		}
+	}
+
+	stmtPhysicalInterfaceRef, err := tx.Prepare(insertVirtualMachineInterfacePhysicalInterfaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing PhysicalInterfaceRefs create statement failed")
+	}
+	defer stmtPhysicalInterfaceRef.Close()
+	for _, ref := range model.PhysicalInterfaceRefs {
+
+		_, err = stmtPhysicalInterfaceRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "PhysicalInterfaceRefs create failed")
+		}
+	}
+
+	stmtVirtualNetworkRef, err := tx.Prepare(insertVirtualMachineInterfaceVirtualNetworkQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
+	}
+	defer stmtVirtualNetworkRef.Close()
+	for _, ref := range model.VirtualNetworkRefs {
+
+		_, err = stmtVirtualNetworkRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs create failed")
+		}
+	}
+
+	stmtServiceEndpointRef, err := tx.Prepare(insertVirtualMachineInterfaceServiceEndpointQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceEndpointRefs create statement failed")
+	}
+	defer stmtServiceEndpointRef.Close()
+	for _, ref := range model.ServiceEndpointRefs {
+
+		_, err = stmtServiceEndpointRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceEndpointRefs create failed")
 		}
 	}
 
@@ -925,6 +925,49 @@ func scanVirtualMachineInterface(values map[string]interface{}) (*models.Virtual
 		}
 	}
 
+	if value, ok := values["ref_routing_instance"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualMachineInterfaceRoutingInstanceRef{}
+			referenceModel.UUID = uuid
+			m.RoutingInstanceRefs = append(m.RoutingInstanceRefs, referenceModel)
+
+			attr := models.MakePolicyBasedForwardingRuleType()
+			referenceModel.Attr = attr
+
+		}
+	}
+
+	if value, ok := values["ref_port_tuple"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualMachineInterfacePortTupleRef{}
+			referenceModel.UUID = uuid
+			m.PortTupleRefs = append(m.PortTupleRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_physical_interface"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -945,26 +988,6 @@ func scanVirtualMachineInterface(values map[string]interface{}) (*models.Virtual
 		}
 	}
 
-	if value, ok := values["ref_security_group"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualMachineInterfaceSecurityGroupRef{}
-			referenceModel.UUID = uuid
-			m.SecurityGroupRefs = append(m.SecurityGroupRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_network"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -981,29 +1004,6 @@ func scanVirtualMachineInterface(values map[string]interface{}) (*models.Virtual
 			referenceModel := &models.VirtualMachineInterfaceVirtualNetworkRef{}
 			referenceModel.UUID = uuid
 			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_bridge_domain"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualMachineInterfaceBridgeDomainRef{}
-			referenceModel.UUID = uuid
-			m.BridgeDomainRefs = append(m.BridgeDomainRefs, referenceModel)
-
-			attr := models.MakeBridgeDomainMembershipType()
-			referenceModel.Attr = attr
 
 		}
 	}
@@ -1088,49 +1088,6 @@ func scanVirtualMachineInterface(values map[string]interface{}) (*models.Virtual
 		}
 	}
 
-	if value, ok := values["ref_routing_instance"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualMachineInterfaceRoutingInstanceRef{}
-			referenceModel.UUID = uuid
-			m.RoutingInstanceRefs = append(m.RoutingInstanceRefs, referenceModel)
-
-			attr := models.MakePolicyBasedForwardingRuleType()
-			referenceModel.Attr = attr
-
-		}
-	}
-
-	if value, ok := values["ref_virtual_machine"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualMachineInterfaceVirtualMachineRef{}
-			referenceModel.UUID = uuid
-			m.VirtualMachineRefs = append(m.VirtualMachineRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_interface_route_table"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -1171,7 +1128,7 @@ func scanVirtualMachineInterface(values map[string]interface{}) (*models.Virtual
 		}
 	}
 
-	if value, ok := values["ref_port_tuple"]; ok {
+	if value, ok := values["ref_bridge_domain"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
@@ -1184,9 +1141,52 @@ func scanVirtualMachineInterface(values map[string]interface{}) (*models.Virtual
 			if uuid == "" {
 				continue
 			}
-			referenceModel := &models.VirtualMachineInterfacePortTupleRef{}
+			referenceModel := &models.VirtualMachineInterfaceBridgeDomainRef{}
 			referenceModel.UUID = uuid
-			m.PortTupleRefs = append(m.PortTupleRefs, referenceModel)
+			m.BridgeDomainRefs = append(m.BridgeDomainRefs, referenceModel)
+
+			attr := models.MakeBridgeDomainMembershipType()
+			referenceModel.Attr = attr
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_machine"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualMachineInterfaceVirtualMachineRef{}
+			referenceModel.UUID = uuid
+			m.VirtualMachineRefs = append(m.VirtualMachineRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_security_group"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualMachineInterfaceSecurityGroupRef{}
+			referenceModel.UUID = uuid
+			m.SecurityGroupRefs = append(m.SecurityGroupRefs, referenceModel)
 
 		}
 	}
@@ -1253,7 +1253,6 @@ func ListVirtualMachineInterface(tx *sql.Tx, spec *common.ListSpec) ([]*models.V
 
 // UpdateVirtualMachineInterface updates a resource
 func UpdateVirtualMachineInterface(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateVirtualMachineInterfaceQuery = "update `virtual_machine_interface` set "
 
@@ -1714,6 +1713,787 @@ func UpdateVirtualMachineInterface(tx *sql.Tx, uuid string, model map[string]int
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	if value, ok := common.GetValueByPath(model, "VirtualMachineInterfaceRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_virtual_machine_interface_virtual_machine_interface` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_virtual_machine_interface_virtual_machine_interface` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref VirtualMachineInterfaceRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_virtual_machine_interface_virtual_machine_interface` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "VirtualMachineInterfaceRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "RoutingInstanceRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			attrValues, ok := common.GetValueByPath(ref.(map[string]interface{}), "Attr", ".")
+			if ok {
+
+				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".ServiceChainAddress", "."); ok {
+					refKeys = append(refKeys, "service_chain_address")
+
+					refValues = append(refValues, common.InterfaceToString(value))
+
+				}
+
+				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".DSTMac", "."); ok {
+					refKeys = append(refKeys, "dst_mac")
+
+					refValues = append(refValues, common.InterfaceToString(value))
+
+				}
+
+				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".Protocol", "."); ok {
+					refKeys = append(refKeys, "protocol")
+
+					refValues = append(refValues, common.InterfaceToString(value))
+
+				}
+
+				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".Ipv6ServiceChainAddress", "."); ok {
+					refKeys = append(refKeys, "ipv6_service_chain_address")
+
+					refValues = append(refValues, common.InterfaceToString(value))
+
+				}
+
+				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".Direction", "."); ok {
+					refKeys = append(refKeys, "direction")
+
+					refValues = append(refValues, common.InterfaceToString(value))
+
+				}
+
+				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".MPLSLabel", "."); ok {
+					refKeys = append(refKeys, "mpls_label")
+
+					refValues = append(refValues, common.InterfaceToInt(value.(float64)))
+
+				}
+
+				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".VlanTag", "."); ok {
+					refKeys = append(refKeys, "vlan_tag")
+
+					refValues = append(refValues, common.InterfaceToInt(value.(float64)))
+
+				}
+
+				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".SRCMac", "."); ok {
+					refKeys = append(refKeys, "src_mac")
+
+					refValues = append(refValues, common.InterfaceToString(value))
+
+				}
+
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_virtual_machine_interface_routing_instance` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_virtual_machine_interface_routing_instance` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref RoutingInstanceRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_virtual_machine_interface_routing_instance` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing RoutingInstanceRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "RoutingInstanceRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "PortTupleRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_virtual_machine_interface_port_tuple` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_virtual_machine_interface_port_tuple` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref PortTupleRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_virtual_machine_interface_port_tuple` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing PortTupleRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "PortTupleRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "PhysicalInterfaceRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_virtual_machine_interface_physical_interface` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_virtual_machine_interface_physical_interface` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref PhysicalInterfaceRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_virtual_machine_interface_physical_interface` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing PhysicalInterfaceRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "PhysicalInterfaceRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "VirtualNetworkRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_virtual_machine_interface_virtual_network` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_virtual_machine_interface_virtual_network` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref VirtualNetworkRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_virtual_machine_interface_virtual_network` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing VirtualNetworkRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "VirtualNetworkRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "ServiceEndpointRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_virtual_machine_interface_service_endpoint` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_virtual_machine_interface_service_endpoint` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref ServiceEndpointRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_virtual_machine_interface_service_endpoint` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing ServiceEndpointRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "ServiceEndpointRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "VirtualMachineRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_virtual_machine_interface_virtual_machine` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_virtual_machine_interface_virtual_machine` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref VirtualMachineRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_virtual_machine_interface_virtual_machine` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing VirtualMachineRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "VirtualMachineRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "BGPRouterRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_virtual_machine_interface_bgp_router` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_virtual_machine_interface_bgp_router` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref BGPRouterRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_virtual_machine_interface_bgp_router` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing BGPRouterRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "BGPRouterRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "SecurityLoggingObjectRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_virtual_machine_interface_security_logging_object` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_virtual_machine_interface_security_logging_object` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref SecurityLoggingObjectRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_virtual_machine_interface_security_logging_object` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing SecurityLoggingObjectRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "SecurityLoggingObjectRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "InterfaceRouteTableRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_virtual_machine_interface_interface_route_table` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_virtual_machine_interface_interface_route_table` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref InterfaceRouteTableRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_virtual_machine_interface_interface_route_table` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing InterfaceRouteTableRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "InterfaceRouteTableRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "ServiceHealthCheckRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_virtual_machine_interface_service_health_check` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_virtual_machine_interface_service_health_check` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref ServiceHealthCheckRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_virtual_machine_interface_service_health_check` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing ServiceHealthCheckRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "ServiceHealthCheckRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "BridgeDomainRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			attrValues, ok := common.GetValueByPath(ref.(map[string]interface{}), "Attr", ".")
+			if ok {
+
+				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".VlanTag", "."); ok {
+					refKeys = append(refKeys, "vlan_tag")
+
+					refValues = append(refValues, common.InterfaceToInt(value.(float64)))
+
+				}
+
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_virtual_machine_interface_bridge_domain` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_virtual_machine_interface_bridge_domain` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref BridgeDomainRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_virtual_machine_interface_bridge_domain` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing BridgeDomainRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "BridgeDomainRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "SecurityGroupRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_virtual_machine_interface_security_group` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_virtual_machine_interface_security_group` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref SecurityGroupRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_virtual_machine_interface_security_group` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing SecurityGroupRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "SecurityGroupRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "QosConfigRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_virtual_machine_interface_qos_config` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_virtual_machine_interface_qos_config` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref QosConfigRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_virtual_machine_interface_qos_config` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing QosConfigRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "QosConfigRefs update failed")
+			}
+		}
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "virtual_machine_interface", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

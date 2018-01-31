@@ -7,7 +7,6 @@
             "references": {
                 "tag": {
                     "description": "Tag attached to an object - has a type and value",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -245,7 +244,6 @@
             "parents": {
                 "node": {
                     "description": "Node role",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -349,13 +347,11 @@
             "parents": {
                 "security_group": {
                     "description": "port access control list is  automatically derived from all the security groups attached to port.",
-                    "operation": "CRUD",
                     "presence": "system-only",
                     "attr": null
                 },
                 "virtual_network": {
                     "description": "Virtual network access control list are automatically derived from all the network policies attached to virtual network.",
-                    "operation": "CRUD",
                     "presence": "system-only",
                     "attr": null
                 }
@@ -926,13 +922,11 @@
             "parents": {
                 "policy_management": {
                     "description": "Address Group object",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "project": {
                     "description": "Project level address Group object",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -1174,13 +1168,11 @@
             "parents": {
                 "global_system_config": {
                     "description": "List of alarms that are applicable to objects anchored under global-system-config.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "project": {
                     "description": "List of alarms that are applicable to objects anchored under the project.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -1228,7 +1220,7 @@
                                                         "minimum": 0,
                                                         "maximum": 0
                                                     },
-                                                    "operation": {
+                                                    "operations": {
                                                         "type": "string",
                                                         "enum": [
                                                             "==",
@@ -1500,7 +1492,6 @@
             "parents": {
                 "virtual_network": {
                     "description": "Alias ip pool is set of addresses that are carved out of a given network. Ip(s) from this set can be assigned to virtual-machine-interface so that they become members of this network",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -1705,7 +1696,6 @@
             "parents": {
                 "alias_ip_pool": {
                     "description": "alias ip is a ip that can be assigned to virtual-machine-interface(VMI), By doing so VMI can now be part of the alias ip network. packets originating with alias-ip as the source-ip belongs to alias-ip-network",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -1713,13 +1703,11 @@
             "references": {
                 "project": {
                     "description": "Reference to project from which this alias ip was allocated.",
-                    "operation": "CRUD",
                     "presence": "required",
                     "attr": null
                 },
                 "virtual_machine_interface": {
                     "description": "Reference to virtual machine interface to which this alias ip is attached.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -1940,7 +1928,6 @@
             "parents": {
                 "global_system_config": {
                     "description": "Analytics node is object representing a logical node in system which serves operational API and analytics collector.",
-                    "operation": "CRUD",
                     "presence": "admin-only",
                     "attr": null
                 }
@@ -2151,19 +2138,16 @@
             "parents": {
                 "domain": {
                     "description": "API access list is list of rules that define role based access to each API and its properties at domain level.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "global_system_config": {
                     "description": "Global API access list applicable to all domain and projects",
-                    "operation": "CRUD",
                     "presence": "required",
                     "attr": null
                 },
                 "project": {
                     "description": "API access list is list of rules that define role based access to each API and its properties at project level.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -2428,13 +2412,11 @@
             "parents": {
                 "policy_management": {
                     "description": "Application-policy object defining policies to apply for a given application tag",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "project": {
                     "description": "Project level application-policy object defining policies to apply for a given application tag",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -2442,7 +2424,6 @@
             "references": {
                 "firewall_policy": {
                     "description": "Reference to firewall-policy attached to this application-policy",
-                    "operation": "CRUD",
                     "presence": "required",
                     "attr": {
                         "type": "object",
@@ -2463,7 +2444,6 @@
                 },
                 "global_vrouter_config": {
                     "description": "Reference to global-vrouter-config is automatically created by system for global           application policy sets",
-                    "operation": "CRUD",
                     "presence": "system-only",
                     "attr": null
                 }
@@ -2675,7 +2655,6 @@
             "parents": {
                 "project": {
                     "description": "BGP as service object represents BGP peer in the virtual network that can participate in dynamic routing with implicit default gateway of the virtual network.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -2683,13 +2662,11 @@
             "references": {
                 "service_health_check": {
                     "description": "Reference to health check object attached to BGPaaS object, used to enable BFD health check over active BGPaaS VMI.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "virtual_machine_interface": {
                     "description": "Reference to VMI on which BGPaaS BGP peering will happen.",
-                    "operation": "CRUD",
                     "presence": "required",
                     "attr": null
                 }
@@ -3128,7 +3105,6 @@
             "parents": {
                 "project": {
                     "description": "BGP VPN resource contains a set of parameters for a BGP-based VPN",
-                    "operation": "CR",
                     "presence": "optional",
                     "attr": null
                 }
@@ -3407,7 +3383,6 @@
             "parents": {
                 "virtual_network": {
                     "description": "bridge-domains configured in a virtual network",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -3694,7 +3669,6 @@
             "parents": {
                 "global_system_config": {
                     "description": "Config node is object representing a logical node in system which serves config API.",
-                    "operation": "CRUD",
                     "presence": "admin-only",
                     "attr": null
                 }
@@ -3905,7 +3879,6 @@
             "references": {
                 "tag": {
                     "description": "Attribute attached to objects - has a type and value",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -4110,13 +4083,11 @@
             "references": {
                 "floating_ip": {
                     "description": "Not in Use.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "virtual_machine_interface": {
                     "description": "Not in Use.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -4321,7 +4292,6 @@
             "parents": {
                 "global_system_config": {
                     "description": "Database node is object representing a logical node in system which host Cassandra DB and Zookeeper.",
-                    "operation": "CRUD",
                     "presence": "required",
                     "attr": null
                 }
@@ -4729,7 +4699,6 @@
             "parents": {
                 "config_root": {
                     "description": "Domain is authentication namespace, a collection of projects.",
-                    "operation": "CRUD",
                     "presence": "system-only",
                     "attr": null
                 }
@@ -4962,7 +4931,6 @@
             "parents": {
                 "discovery_service_assignment": {
                     "description": "Discovery service rule for assigning subscriber to publisher. (set of subscriber) can be assigned to (set of publisher).",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -5278,13 +5246,11 @@
             "references": {
                 "peering_policy": {
                     "description": "Links the service provider to a peering policy.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "physical_router": {
                     "description": "Links the service provider to peer routers.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -5495,13 +5461,11 @@
             "parents": {
                 "policy_management": {
                     "description": "firewall-policy object consisting of one or more firewall rules",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "project": {
                     "description": "Project level firewall-policy object consisting of one or more firewall rules",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -5509,7 +5473,6 @@
             "references": {
                 "firewall_rule": {
                     "description": "Reference to firewall-rule attached to this firewall-policy",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": {
                         "type": "object",
@@ -5530,7 +5493,6 @@
                 },
                 "security_logging_object": {
                     "description": "Reference to security-logging-object attached to this firewall-policy",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -5735,13 +5697,11 @@
             "parents": {
                 "policy_management": {
                     "description": "Firewall-rule object",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "project": {
                     "description": "Project level firewall-rule object",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -5749,25 +5709,21 @@
             "references": {
                 "address_group": {
                     "description": "Reference to address group attached to endpoints",
-                    "operation": "R",
                     "presence": "optional",
                     "attr": null
                 },
                 "security_logging_object": {
                     "description": "Reference to security-logging-object attached to this firewall-rule",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "service_group": {
                     "description": "Reference to service-group attached to this firewall policy",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "virtual_network": {
                     "description": "Reference to virtual network attached to endpoints",
-                    "operation": "R",
                     "presence": "optional",
                     "attr": null
                 }
@@ -6398,7 +6354,6 @@
             "parents": {
                 "virtual_network": {
                     "description": "Floating ip pool is set of ip address that are carved out of a given network. Ip(s) from this set can be assigned to (virtual machine interface, ip) so that they become members of this network using one:one NAT.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -6624,13 +6579,11 @@
             "parents": {
                 "floating_ip_pool": {
                     "description": "Floating ip is a ip that can be assigned to (virtual machine interface(VMI), ip), By doing so VMI can no be part of the floating ip network and floating ip is used as one:one to NAT for doing so.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "instance_ip": {
                     "description": "floating-ip can be child of instance-ip. By doing so instance-ip can be used as floating-ip.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -6638,13 +6591,11 @@
             "references": {
                 "project": {
                     "description": "Reference to project is which this floating ip was allocated.",
-                    "operation": "CRUD",
                     "presence": "required",
                     "attr": null
                 },
                 "virtual_machine_interface": {
                     "description": "Reference to virtual machine interface to which this floating ip is attached.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -6939,7 +6890,6 @@
             "parents": {
                 "global_qos_config": {
                     "description": "Link to global-qos config.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -6947,7 +6897,6 @@
             "references": {
                 "qos_queue": {
                     "description": "Qos queue to be used for this forwarding class.",
-                    "operation": "CRUD",
                     "presence": "required",
                     "attr": null
                 }
@@ -7177,7 +7126,6 @@
             "parents": {
                 "global_system_config": {
                     "description": "Global QoS system config is object where all global system QoS configuration is present.",
-                    "operation": "R",
                     "presence": "required",
                     "attr": null
                 }
@@ -7410,7 +7358,6 @@
             "parents": {
                 "config_root": {
                     "description": "Global system config is object where all global system configuration is present.",
-                    "operation": "R",
                     "presence": "required",
                     "attr": null
                 }
@@ -7418,7 +7365,6 @@
             "references": {
                 "bgp_router": {
                     "description": "List of references to all bgp routers in systems.",
-                    "operation": "R",
                     "presence": "required",
                     "attr": null
                 }
@@ -7901,7 +7847,6 @@
             "parents": {
                 "global_system_config": {
                     "description": "Global vrouter config is object where all global vrouter config is present.",
-                    "operation": "R",
                     "presence": "required",
                     "attr": null
                 }
@@ -8311,31 +8256,26 @@
             "references": {
                 "network_ipam": {
                     "description": "Reference to network ipam of this instance ip.",
-                    "operation": "CRUD",
                     "presence": "required",
                     "attr": null
                 },
                 "physical_router": {
                     "description": "This instance ip is used as IRB address on the referenced physical router (e.g.MX), In case of OVSDB TOR usecase this address will be used as default gateway for Host behind the TOR.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "virtual_machine_interface": {
                     "description": "Reference to virtual machine interface to which this instance ip is attached.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "virtual_network": {
                     "description": "Reference to virtual network of this instance ip.",
-                    "operation": "CRUD",
                     "presence": "required",
                     "attr": null
                 },
                 "virtual_router": {
                     "description": "Reference to virtual router of this instance ip.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -8622,7 +8562,6 @@
             "parents": {
                 "project": {
                     "description": "Interface route table is mechanism to add static routes pointing to this interface.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -8630,7 +8569,6 @@
             "references": {
                 "service_instance": {
                     "description": "Reference to interface route table attached to (service instance, interface), This is used to add interface static routes to service instance interface.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": {
                         "type": "object",
@@ -8910,7 +8848,6 @@
             "parents": {
                 "project": {
                     "description": "Health monitor objects is configuration to monitor health of individual pool members.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -9179,14 +9116,12 @@
             "parents": {
                 "project": {
                     "description": "Listener represents the application(protocol, port) to be load balanced.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
             },
             "references": {
                 "loadbalancer": {
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -9449,7 +9384,6 @@
             "parents": {
                 "loadbalancer_pool": {
                     "description": "Configuration object representing each member of load balancer pool.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -9700,7 +9634,6 @@
             "parents": {
                 "project": {
                     "description": "Loadbalancer pool object represent set(pool) member servers which needs load balancing.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -9708,30 +9641,25 @@
             "references": {
                 "loadbalancer_healthmonitor": {
                     "description": "Reference to loadbalancer healthmonitor that this pool uses.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "loadbalancer_listener": {
                     "description": "Reference to loadbalancer listener served by this pool, applicable to LBaaS V2.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "service_appliance_set": {
-                    "operation": "RReference to service-appliance-set where this loadbalancer-pool is hosted. Applicable to LBaaS V1.",
                     "presence": "system-only",
                     "attr": null
                 },
                 "service_instance": {
                     "description": "Reference to the service instance serving this pool, applicable to LBaaS V1.",
-                    "operation": "CR",
                     "presence": "system-only",
                     "attr": null
                 },
                 "virtual_machine_interface": {
                     "description": "Reference to the virtual machine interface reaching pool subnet, applicable to LBaaS V1.",
-                    "operation": "CR",
                     "presence": "system-only",
                     "attr": null
                 }
@@ -10054,26 +9982,22 @@
             "parents": {
                 "project": {
                     "description": "Loadbalancer object represents a LBaaS instance. One single Virtual IP and multiple (listeners, pools). Applicable to LBaaS V2.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
             },
             "references": {
                 "service_appliance_set": {
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "service_instance": {
                     "description": "Reference to the service instance, created automatically by the system.",
-                    "operation": "CRUD",
                     "presence": "system-only",
                     "attr": null
                 },
                 "virtual_machine_interface": {
                     "description": "Reference to the virtual machine interface for VIP, created automatically by the system.",
-                    "operation": "CRUD",
                     "presence": "system-only",
                     "attr": null
                 }
@@ -10330,13 +10254,11 @@
             "parents": {
                 "physical_interface": {
                     "description": "Logical interfaces on physical interface on physical routers.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "physical_router": {
                     "description": "Logical interfaces on physical routers.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -10344,7 +10266,6 @@
             "references": {
                 "virtual_machine_interface": {
                     "description": "References to virtual machine interfaces that represent end points that are reachable by this logical interface.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -10565,7 +10486,6 @@
             "parents": {
                 "project": {
                     "description": "Logical router is a mechanism to connect multiple virtual network as they have been connected by a router.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -10573,43 +10493,36 @@
             "references": {
                 "bgpvpn": {
                     "description": "Back reference to logical router associated to the BGP VPN resource",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "physical_router": {
                     "description": "Reference to physical router, when this link is present device manager configures logical router associated route targets/interfaces on the Physical Router.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "route_table": {
                     "description": "Reference to the route table attached to this logical router. By attaching route table, system will create static routes with the route target only of route targets linked to this logical router",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "route_target": {
                     "description": "Route target that represent this logical router.",
-                    "operation": "CRUD",
                     "presence": "system-only",
                     "attr": null
                 },
                 "service_instance": {
                     "description": "Reference to service instance doing SNAT functionality for external gateway.",
-                    "operation": "CRUD",
                     "presence": "system-only",
                     "attr": null
                 },
                 "virtual_machine_interface": {
                     "description": "Reference to the interface attached to this logical router. By attaching a interface to logical network all subnets in the virtual network of the interface has this router.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "virtual_network": {
                     "description": "Reference to virtual network used as external gateway for this logical network. This link will cause a SNAT being spawned between all networks connected to logical router and external network.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -10841,7 +10754,6 @@
             "parents": {
                 "domain": {
                     "description": "Namespace is unique networking namespace within this domain. If namespace is not present then default namespace of default project is used.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -11068,7 +10980,6 @@
             "references": {
                 "physical_router": {
                     "description": "Network device config of a physical router.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -11273,7 +11184,6 @@
             "parents": {
                 "project": {
                     "description": "IP Address Management object that controls, ip allocation, DNS and DHCP",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -11281,7 +11191,6 @@
             "references": {
                 "virtual_DNS": {
                     "description": "Reference to virtual DNS used by this IPAM.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -11908,7 +11817,6 @@
             "parents": {
                 "project": {
                     "description": "Network Policy is set access control rules that can be attached to virtual networks. Network ACL(s) and connectivity information is derived from Network policies that are attached to virtual networks.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -12732,7 +12640,6 @@
             "parents": {
                 "physical_router": {
                     "description": "Physical interfaces on physical routers.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -12740,7 +12647,6 @@
             "references": {
                 "physical_interface": {
                     "description": "Reference to the other physical interface that is connected to this  physical interface.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -12951,13 +12857,11 @@
             "parents": {
                 "global_system_config": {
                     "description": "Physical router object represent any physical device that participates in virtual networking, like routers, switches, servers, firewalls etc.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "location": {
                     "description": "Physical router location.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -12965,19 +12869,16 @@
             "references": {
                 "bgp_router": {
                     "description": "Reference to BGP peer representing this physical router.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "virtual_network": {
                     "description": "Reference to virtual network, whose VRF is present on this physical router, Applicable when only VRF is present with no physical interfaces from this physical vrouter. Generally used when using device manager and option A+B for this virtual network in L3VPN use case.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "virtual_router": {
                     "description": "Reference to vrouter responsible for this physical router. Currently only applicable for vrouters that are TOR agents.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -13656,7 +13557,6 @@
             "plural": "port_tuples",
             "parents": {
                 "service_instance": {
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -13861,7 +13761,6 @@
             "parents": {
                 "domain": {
                     "description": "Project represent one instance of application or tenant.",
-                    "operation": "CRUD",
                     "presence": "system-only",
                     "attr": null
                 }
@@ -13869,25 +13768,21 @@
             "references": {
                 "alias_ip_pool": {
                     "description": "Reference to alias ip pool in this project.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "application_policy_set": {
                     "description": "Reference to default application-policy-set is automatically createdby system for default socped application policy sets. Needed by vrouter to identify default application-policy-set rules of a virtual machine interface",
-                    "operation": "CRUD",
                     "presence": "system-only",
                     "attr": null
                 },
                 "floating_ip_pool": {
                     "description": "Reference to floating ip pool in this project.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "namespace": {
                     "description": "Reference to network namespace of this project.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": {
                         "type": "object",
@@ -14291,7 +14186,6 @@
             "references": {
                 "virtual_router": {
                     "description": "Not in Use.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -14496,12 +14390,10 @@
             "parents": {
                 "global_qos_config": {
                     "description": "Global system QoS config for vhost and fabric traffic .",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "project": {
-                    "operation": "CRUDQOS configuration specifying marking and queuing value for various QoS values",
                     "presence": "optional",
                     "attr": null
                 }
@@ -14509,7 +14401,6 @@
             "references": {
                 "global_system_config": {
                     "description": "This link is internally created and may be removed in future. End users should not set this link or assume it to be there",
-                    "operation": "CR",
                     "presence": "system-only",
                     "attr": null
                 }
@@ -14846,7 +14737,6 @@
             "parents": {
                 "global_qos_config": {
                     "description": "QOS queue config object in this project.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -15069,7 +14959,6 @@
             "parents": {
                 "project": {
                     "description": "List of references of child routing route aggregate objects. automatically maintained by system.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -15077,7 +14966,6 @@
             "references": {
                 "service_instance": {
                     "description": "Reference to route-aggregate policy attached to (service instance, interface).",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": {
                         "type": "object",
@@ -15297,7 +15185,6 @@
             "parents": {
                 "project": {
                     "description": "Network route table is mechanism of adding static routes in the virtual network",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -15759,7 +15646,6 @@
             "parents": {
                 "virtual_network": {
                     "description": "List of references of routing instances for this virtual network, routing instances are internal to the system.",
-                    "operation": "CRUD",
                     "presence": "system-only",
                     "attr": null
                 }
@@ -15964,7 +15850,6 @@
             "parents": {
                 "project": {
                     "description": "List of references of child routing policy objects. automatically maintained by system.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -15972,7 +15857,6 @@
             "references": {
                 "service_instance": {
                     "description": "Reference to routing policy attached to (service instance, interface).",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": {
                         "type": "object",
@@ -16198,7 +16082,6 @@
             "parents": {
                 "project": {
                     "description": "Security Groups are set of state full access control rules attached to interfaces.It can be used to implement microsegmentation.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -16829,13 +16712,11 @@
             "parents": {
                 "global_vrouter_config": {
                     "description": "Reference to security logging object for global-vrouter-config.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "project": {
                     "description": "Security logging object configuration for specifying session logging criteria",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -16843,7 +16724,6 @@
             "references": {
                 "network_policy": {
                     "description": "Reference to network-policy attached to this security-logging-object",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": {
                         "type": "object",
@@ -16885,7 +16765,6 @@
                 },
                 "security_group": {
                     "description": "Reference to security-group attached to this security-logging-object",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": {
                         "type": "object",
@@ -17170,7 +17049,6 @@
             "parents": {
                 "service_appliance_set": {
                     "description": "Service appliance is a member in service appliance set (e.g. Loadbalancer, Firewall provider).By default system will create \"ha-proxy\" based service appliance.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -17178,7 +17056,6 @@
             "references": {
                 "physical_interface": {
                     "description": "Reference to physical interface that can be used as (service interface type)left, right, management OR other.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": {
                         "type": "object",
@@ -17462,7 +17339,6 @@
             "plural": "service_appliance_sets",
             "parents": {
                 "global_system_config": {
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -17716,7 +17592,6 @@
             "references": {
                 "service_object": {
                     "description": "Links the service-connection-module to a service object.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -17944,19 +17819,16 @@
             "references": {
                 "physical_router": {
                     "description": "Reference to Router for a given service.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "service_connection_module": {
                     "description": "Link the service endpoint to service connection node",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "service_object": {
                     "description": "Links the service-endpoints to a service object.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -18161,13 +18033,11 @@
             "parents": {
                 "policy_management": {
                     "description": "Service Group object",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "project": {
                     "description": "Project level service Group object",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -18445,7 +18315,6 @@
             "parents": {
                 "project": {
                     "description": "Service health check is a keepalive mechanism for the virtual machine interface. Liveliness of the interface is determined based on configuration in the service health check. It is mainly designed for service instance interfaces. However it will work with any interface which present on contrail vrouter.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -18453,7 +18322,6 @@
             "references": {
                 "service_instance": {
                     "description": "Reference to service instance using this service health check.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": {
                         "type": "object",
@@ -18759,7 +18627,6 @@
             "parents": {
                 "project": {
                     "description": "Service instance represents logical instance service used in the virtual world, e.g. firewall, load balancer etc. It can represent one or multiple virtual machines or physical devices. Many service instances can share a virtual machine or physical device.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -18767,7 +18634,6 @@
             "references": {
                 "instance_ip": {
                     "description": "Reference to ip address, which is used as nexthop pointing to (service instance, service interface).",
-                    "operation": "CRUD",
                     "presence": "system-only",
                     "attr": {
                         "type": "object",
@@ -18788,7 +18654,6 @@
                 },
                 "service_template": {
                     "description": "Reference to the service template of this service instance.",
-                    "operation": "CRUD",
                     "presence": "required",
                     "attr": null
                 }
@@ -19446,7 +19311,6 @@
             "parents": {
                 "domain": {
                     "description": "Service template defines how a service may be deployed in the network. Service instance is instantiated from config in service template.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -19454,7 +19318,6 @@
             "references": {
                 "service_appliance_set": {
                     "description": "Reference to the service appliance set represented by this service template.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -19789,7 +19652,6 @@
             "references": {
                 "virtual_machine_interface": {
                     "description": "Subnet belongs of the referenced virtual machine interface. This is used in CPE use case when a subnet is reachable via the interface. It also serves as dynamic DHCP pool for host on this LAN, where vrouter is DHCP server.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -20016,13 +19878,11 @@
             "parents": {
                 "config_root": {
                     "description": "Attribute attached to objects - has a type and value",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "project": {
                     "description": "Attribute attached to objects - has a type and value",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -20030,7 +19890,6 @@
             "references": {
                 "tag_type": {
                     "description": "Tag type reference which is limited to one",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -20456,7 +20315,6 @@
             "parents": {
                 "project": {
                     "description": "Reference to a project of this user.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": {
                         "type": "object",
@@ -20682,7 +20540,6 @@
             "parents": {
                 "virtual_DNS": {
                     "description": "Static DNS records in virtual DNS server.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -20944,7 +20801,6 @@
             "parents": {
                 "domain": {
                     "description": "Virtual DNS server is DNS as service for tenants. It is inbound DNS service for virtual machines in this project. DNS requests by end points inside this project/IPAM are served by this DNS server rules.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -21218,7 +21074,6 @@
             "parents": {
                 "project": {
                     "description": "Virtual ip object application(protocol, port). Applicable only to LBaaS V1",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -21226,13 +21081,11 @@
             "references": {
                 "loadbalancer_pool": {
                     "description": "Reference to the load balancer pool that this virtual ip represent. Applicable only to LBaaS V1",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "virtual_machine_interface": {
                     "description": "Reference to the virtual machine interface for virtual ip. Applicable only to LBaaS V1",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -21519,19 +21372,16 @@
             "parents": {
                 "project": {
                     "description": "Virtual machine interface represent a interface(port) into virtual network. It may or may not have corresponding virtual machine. A virtual machine interface has atleast a MAC address and Ip address.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "virtual_machine": {
                     "description": "References to child interfaces this virtual machine has, this is DEPRECATED.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "virtual_router": {
                     "description": "An interface on a virtual-router, e.g. vhost0",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -21539,13 +21389,11 @@
             "references": {
                 "bgp_router": {
                     "description": "Reference to bgp-router from the virtual machine interface.",
-                    "operation": "CRUD",
                     "presence": "required",
                     "attr": null
                 },
                 "bridge_domain": {
                     "description": "Virtual Machine interface maps to a bridge-domain by defaultor based on in coming 802.1Q vlan tag",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": {
                         "type": "object",
@@ -21566,30 +21414,25 @@
                 },
                 "interface_route_table": {
                     "description": "Reference to the interface route table attached to this interface.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "physical_interface": {
                     "description": "Reference to the physical interface of service appliance this service interface represents.",
-                    "operation": "CRUD",
                     "presence": "system-only",
                     "attr": null
                 },
                 "port_tuple": {
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "qos_config": {
                     "description": "Reference to QoS config for this virtual machine interface.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "routing_instance": {
                     "description": "Automatically generated Forwarding policy. This will be deprecated in future in favour of VRF assign rules.",
-                    "operation": "CRUD",
                     "presence": "system-only",
                     "attr": {
                         "type": "object",
@@ -21658,43 +21501,36 @@
                 },
                 "security_group": {
                     "description": "Interface ACL, Automatically generated by system based on security groups attached to this interface.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "security_logging_object": {
                     "description": "Reference to security logging object for this virtual machine interface",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "service_endpoint": {
                     "description": "Links the access endpoint i.e virtual-machine-interface to service endpoint.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "service_health_check": {
                     "description": "Reference to health check object attached to this interface.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "virtual_machine": {
                     "description": "This interface belongs to the referenced virtual machine.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "virtual_machine_interface": {
                     "description": "List of references to the sub interfaces of this interface.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "virtual_network": {
                     "description": "This interface is member of the referenced virtual network.",
-                    "operation": "CRUD",
                     "presence": "required",
                     "attr": null
                 }
@@ -22602,7 +22438,6 @@
             "references": {
                 "service_instance": {
                     "description": "Reference to the service instance of this virtual machine.",
-                    "operation": "CRUD",
                     "presence": "system-only",
                     "attr": null
                 }
@@ -22807,7 +22642,6 @@
             "parents": {
                 "project": {
                     "description": "Virtual network is collection of end points (interface or ip(s) or MAC(s)) that can talk to each other by default. It is collection of subnets connected by implicit router which default gateway in each subnet.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -22815,13 +22649,11 @@
             "references": {
                 "bgpvpn": {
                     "description": "Back reference to virtual network associated to the BGP VPN resource",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "network_ipam": {
                     "description": "Reference to network-ipam this network is using. It has list of subnets that are being used as property of the reference.",
-                    "operation": "CRUD",
                     "presence": "required",
                     "attr": {
                         "type": "object",
@@ -23108,7 +22940,6 @@
                 },
                 "network_policy": {
                     "description": "Reference to network-policy attached to this network. It has sequence number to specify attachment order.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": {
                         "type": "object",
@@ -23179,25 +23010,21 @@
                 },
                 "qos_config": {
                     "description": "Reference to QoS configuration for this virtual network.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "route_table": {
                     "description": "Reference to route table attached to this virtual network.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "security_logging_object": {
                     "description": "Reference to security logging object for this virtual network.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 },
                 "virtual_network": {
                     "description": "Reference to a virtual network which is the provider network for the given virtual network. Traffic forwarding happens in the routing instance of the provider network.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -23741,7 +23568,6 @@
             "parents": {
                 "global_system_config": {
                     "description": "Virtual router is packet forwarding system on devices such as compute nodes(servers), TOR(s), routers.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -23749,7 +23575,6 @@
             "references": {
                 "network_ipam": {
                     "description": "Reference to network-ipam this virtual-router is using. It has list of virtual-router specific allocation-pools and cidrs that are being used as property of the reference.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": {
                         "type": "object",
@@ -23824,7 +23649,6 @@
                 },
                 "virtual_machine": {
                     "description": "References to all virtual machines on this vrouter. This link is not present for dynamically scheduled VMs by Nova.",
-                    "operation": "CRUD",
                     "presence": "optional",
                     "attr": null
                 }
@@ -29241,7 +29065,6 @@
             "references": {
                 "location": {
                     "description": "Reference to the locations",
-                    "operation": "CRUD",
                     "presence": "required",
                     "attr": null
                 }

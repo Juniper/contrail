@@ -77,8 +77,8 @@ var ProjectRefFields = map[string][]string{
 
 	"namespace": {
 		// <common.Schema Value>
-		"ip_prefix_len",
 		"ip_prefix",
+		"ip_prefix_len",
 	},
 
 	"application_policy_set": {
@@ -1045,13 +1045,13 @@ var ProjectParents = []string{
 	"domain",
 }
 
-const insertProjectAliasIPPoolQuery = "insert into `ref_project_alias_ip_pool` (`from`, `to` ) values (?, ?);"
-
-const insertProjectNamespaceQuery = "insert into `ref_project_namespace` (`from`, `to` ,`ip_prefix_len`,`ip_prefix`) values (?, ?,?,?);"
+const insertProjectNamespaceQuery = "insert into `ref_project_namespace` (`from`, `to` ,`ip_prefix`,`ip_prefix_len`) values (?, ?,?,?);"
 
 const insertProjectApplicationPolicySetQuery = "insert into `ref_project_application_policy_set` (`from`, `to` ) values (?, ?);"
 
 const insertProjectFloatingIPPoolQuery = "insert into `ref_project_floating_ip_pool` (`from`, `to` ) values (?, ?);"
+
+const insertProjectAliasIPPoolQuery = "insert into `ref_project_alias_ip_pool` (`from`, `to` ) values (?, ?);"
 
 // CreateProject inserts Project to DB
 func CreateProject(tx *sql.Tx, model *models.Project) error {
@@ -1155,8 +1155,8 @@ func CreateProject(tx *sql.Tx, model *models.Project) error {
 			ref.Attr = models.MakeSubnetType()
 		}
 
-		_, err = stmtNamespaceRef.Exec(model.UUID, ref.UUID, int(ref.Attr.IPPrefixLen),
-			string(ref.Attr.IPPrefix))
+		_, err = stmtNamespaceRef.Exec(model.UUID, ref.UUID, string(ref.Attr.IPPrefix),
+			int(ref.Attr.IPPrefixLen))
 		if err != nil {
 			return errors.Wrap(err, "NamespaceRefs create failed")
 		}
@@ -1583,6 +1583,46 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 
 	}
 
+	if value, ok := values["ref_application_policy_set"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ProjectApplicationPolicySetRef{}
+			referenceModel.UUID = uuid
+			m.ApplicationPolicySetRefs = append(m.ApplicationPolicySetRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_floating_ip_pool"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ProjectFloatingIPPoolRef{}
+			referenceModel.UUID = uuid
+			m.FloatingIPPoolRefs = append(m.FloatingIPPoolRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_alias_ip_pool"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -1622,46 +1662,6 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 
 			attr := models.MakeSubnetType()
 			referenceModel.Attr = attr
-
-		}
-	}
-
-	if value, ok := values["ref_application_policy_set"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ProjectApplicationPolicySetRef{}
-			referenceModel.UUID = uuid
-			m.ApplicationPolicySetRefs = append(m.ApplicationPolicySetRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_floating_ip_pool"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ProjectFloatingIPPoolRef{}
-			referenceModel.UUID = uuid
-			m.FloatingIPPoolRefs = append(m.FloatingIPPoolRefs, referenceModel)
 
 		}
 	}
@@ -8860,7 +8860,6 @@ func ListProject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Project, error) {
 
 // UpdateProject updates a resource
 func UpdateProject(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateProjectQuery = "update `project` set "
 
@@ -9273,6 +9272,233 @@ func UpdateProject(tx *sql.Tx, uuid string, model map[string]interface{}) error 
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	if value, ok := common.GetValueByPath(model, "AliasIPPoolRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_project_alias_ip_pool` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_project_alias_ip_pool` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref AliasIPPoolRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_project_alias_ip_pool` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing AliasIPPoolRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "AliasIPPoolRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "NamespaceRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			attrValues, ok := common.GetValueByPath(ref.(map[string]interface{}), "Attr", ".")
+			if ok {
+
+				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".IPPrefix", "."); ok {
+					refKeys = append(refKeys, "ip_prefix")
+
+					refValues = append(refValues, common.InterfaceToString(value))
+
+				}
+
+				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".IPPrefixLen", "."); ok {
+					refKeys = append(refKeys, "ip_prefix_len")
+
+					refValues = append(refValues, common.InterfaceToInt(value.(float64)))
+
+				}
+
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_project_namespace` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_project_namespace` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref NamespaceRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_project_namespace` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing NamespaceRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "NamespaceRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "ApplicationPolicySetRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_project_application_policy_set` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_project_application_policy_set` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref ApplicationPolicySetRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_project_application_policy_set` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing ApplicationPolicySetRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "ApplicationPolicySetRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "FloatingIPPoolRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_project_floating_ip_pool` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_project_floating_ip_pool` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref FloatingIPPoolRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_project_floating_ip_pool` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing FloatingIPPoolRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "FloatingIPPoolRefs update failed")
+			}
+		}
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "project", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

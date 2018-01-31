@@ -341,7 +341,6 @@ func ListTagType(tx *sql.Tx, spec *common.ListSpec) ([]*models.TagType, error) {
 
 // UpdateTagType updates a resource
 func UpdateTagType(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateTagTypeQuery = "update `tag_type` set "
 
@@ -538,6 +537,14 @@ func UpdateTagType(tx *sql.Tx, uuid string, model map[string]interface{}) error 
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "tag_type", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

@@ -6,15 +6,15 @@ import "encoding/json"
 
 // InterfaceRouteTable
 type InterfaceRouteTable struct {
-	IDPerms                   *IdPermsType    `json:"id_perms,omitempty"`
-	InterfaceRouteTableRoutes *RouteTableType `json:"interface_route_table_routes,omitempty"`
-	ParentUUID                string          `json:"parent_uuid,omitempty"`
-	UUID                      string          `json:"uuid,omitempty"`
-	ParentType                string          `json:"parent_type,omitempty"`
 	FQName                    []string        `json:"fq_name,omitempty"`
+	IDPerms                   *IdPermsType    `json:"id_perms,omitempty"`
 	DisplayName               string          `json:"display_name,omitempty"`
-	Annotations               *KeyValuePairs  `json:"annotations,omitempty"`
 	Perms2                    *PermType2      `json:"perms2,omitempty"`
+	ParentType                string          `json:"parent_type,omitempty"`
+	InterfaceRouteTableRoutes *RouteTableType `json:"interface_route_table_routes,omitempty"`
+	UUID                      string          `json:"uuid,omitempty"`
+	ParentUUID                string          `json:"parent_uuid,omitempty"`
+	Annotations               *KeyValuePairs  `json:"annotations,omitempty"`
 
 	ServiceInstanceRefs []*InterfaceRouteTableServiceInstanceRef `json:"service_instance_refs,omitempty"`
 }
@@ -38,14 +38,14 @@ func MakeInterfaceRouteTable() *InterfaceRouteTable {
 	return &InterfaceRouteTable{
 		//TODO(nati): Apply default
 		IDPerms:                   MakeIdPermsType(),
-		InterfaceRouteTableRoutes: MakeRouteTableType(),
-		ParentUUID:                "",
-		UUID:                      "",
-		ParentType:                "",
-		FQName:                    []string{},
 		DisplayName:               "",
-		Annotations:               MakeKeyValuePairs(),
 		Perms2:                    MakePermType2(),
+		ParentType:                "",
+		InterfaceRouteTableRoutes: MakeRouteTableType(),
+		FQName:      []string{},
+		ParentUUID:  "",
+		Annotations: MakeKeyValuePairs(),
+		UUID:        "",
 	}
 }
 

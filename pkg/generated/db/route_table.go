@@ -342,7 +342,6 @@ func ListRouteTable(tx *sql.Tx, spec *common.ListSpec) ([]*models.RouteTable, er
 
 // UpdateRouteTable updates a resource
 func UpdateRouteTable(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateRouteTableQuery = "update `route_table` set "
 
@@ -539,6 +538,14 @@ func UpdateRouteTable(tx *sql.Tx, uuid string, model map[string]interface{}) err
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "route_table", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

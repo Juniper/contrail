@@ -24,14 +24,13 @@ func (model *FirewallRuleEndpointType) String() string {
 func MakeFirewallRuleEndpointType() *FirewallRuleEndpointType {
 	return &FirewallRuleEndpointType{
 		//TODO(nati): Apply default
-		Tags: []string{},
-
-		TagIds: []int{},
-
 		VirtualNetwork: "",
 		Any:            false,
 		AddressGroup:   "",
 		Subnet:         MakeSubnetType(),
+		Tags:           []string{},
+
+		TagIds: []int{},
 	}
 }
 

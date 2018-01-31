@@ -44,16 +44,6 @@ var LogicalRouterFields = []string{
 // LogicalRouterRefFields is db reference fields for LogicalRouter
 var LogicalRouterRefFields = map[string][]string{
 
-	"virtual_machine_interface": {
-	// <common.Schema Value>
-
-	},
-
-	"service_instance": {
-	// <common.Schema Value>
-
-	},
-
 	"route_table": {
 	// <common.Schema Value>
 
@@ -78,6 +68,16 @@ var LogicalRouterRefFields = map[string][]string{
 	// <common.Schema Value>
 
 	},
+
+	"virtual_machine_interface": {
+	// <common.Schema Value>
+
+	},
+
+	"service_instance": {
+	// <common.Schema Value>
+
+	},
 }
 
 // LogicalRouterBackRefFields is db back reference fields for LogicalRouter
@@ -89,6 +89,10 @@ var LogicalRouterParents = []string{
 	"project",
 }
 
+const insertLogicalRouterRouteTableQuery = "insert into `ref_logical_router_route_table` (`from`, `to` ) values (?, ?);"
+
+const insertLogicalRouterVirtualNetworkQuery = "insert into `ref_logical_router_virtual_network` (`from`, `to` ) values (?, ?);"
+
 const insertLogicalRouterPhysicalRouterQuery = "insert into `ref_logical_router_physical_router` (`from`, `to` ) values (?, ?);"
 
 const insertLogicalRouterBGPVPNQuery = "insert into `ref_logical_router_bgpvpn` (`from`, `to` ) values (?, ?);"
@@ -98,10 +102,6 @@ const insertLogicalRouterRouteTargetQuery = "insert into `ref_logical_router_rou
 const insertLogicalRouterVirtualMachineInterfaceQuery = "insert into `ref_logical_router_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 const insertLogicalRouterServiceInstanceQuery = "insert into `ref_logical_router_service_instance` (`from`, `to` ) values (?, ?);"
-
-const insertLogicalRouterRouteTableQuery = "insert into `ref_logical_router_route_table` (`from`, `to` ) values (?, ?);"
-
-const insertLogicalRouterVirtualNetworkQuery = "insert into `ref_logical_router_virtual_network` (`from`, `to` ) values (?, ?);"
 
 // CreateLogicalRouter inserts LogicalRouter to DB
 func CreateLogicalRouter(tx *sql.Tx, model *models.LogicalRouter) error {
@@ -140,6 +140,19 @@ func CreateLogicalRouter(tx *sql.Tx, model *models.LogicalRouter) error {
 		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
+	}
+
+	stmtRouteTargetRef, err := tx.Prepare(insertLogicalRouterRouteTargetQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing RouteTargetRefs create statement failed")
+	}
+	defer stmtRouteTargetRef.Close()
+	for _, ref := range model.RouteTargetRefs {
+
+		_, err = stmtRouteTargetRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "RouteTargetRefs create failed")
+		}
 	}
 
 	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertLogicalRouterVirtualMachineInterfaceQuery)
@@ -217,19 +230,6 @@ func CreateLogicalRouter(tx *sql.Tx, model *models.LogicalRouter) error {
 		_, err = stmtBGPVPNRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "BGPVPNRefs create failed")
-		}
-	}
-
-	stmtRouteTargetRef, err := tx.Prepare(insertLogicalRouterRouteTargetQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing RouteTargetRefs create statement failed")
-	}
-	defer stmtRouteTargetRef.Close()
-	for _, ref := range model.RouteTargetRefs {
-
-		_, err = stmtRouteTargetRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "RouteTargetRefs create failed")
 		}
 	}
 
@@ -431,26 +431,6 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 
 	}
 
-	if value, ok := values["ref_physical_router"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LogicalRouterPhysicalRouterRef{}
-			referenceModel.UUID = uuid
-			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_bgpvpn"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -571,6 +551,26 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 		}
 	}
 
+	if value, ok := values["ref_physical_router"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterPhysicalRouterRef{}
+			referenceModel.UUID = uuid
+			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
+
+		}
+	}
+
 	return m, nil
 }
 
@@ -633,7 +633,6 @@ func ListLogicalRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.LogicalRout
 
 // UpdateLogicalRouter updates a resource
 func UpdateLogicalRouter(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateLogicalRouterQuery = "update `logical_router` set "
 
@@ -838,6 +837,364 @@ func UpdateLogicalRouter(tx *sql.Tx, uuid string, model map[string]interface{}) 
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	if value, ok := common.GetValueByPath(model, "RouteTargetRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_logical_router_route_target` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_logical_router_route_target` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref RouteTargetRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_logical_router_route_target` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing RouteTargetRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "RouteTargetRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "VirtualMachineInterfaceRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_logical_router_virtual_machine_interface` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_logical_router_virtual_machine_interface` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref VirtualMachineInterfaceRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_logical_router_virtual_machine_interface` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "VirtualMachineInterfaceRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "ServiceInstanceRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_logical_router_service_instance` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_logical_router_service_instance` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref ServiceInstanceRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_logical_router_service_instance` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing ServiceInstanceRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "ServiceInstanceRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "RouteTableRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_logical_router_route_table` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_logical_router_route_table` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref RouteTableRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_logical_router_route_table` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing RouteTableRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "RouteTableRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "VirtualNetworkRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_logical_router_virtual_network` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_logical_router_virtual_network` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref VirtualNetworkRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_logical_router_virtual_network` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing VirtualNetworkRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "VirtualNetworkRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "PhysicalRouterRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_logical_router_physical_router` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_logical_router_physical_router` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref PhysicalRouterRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_logical_router_physical_router` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing PhysicalRouterRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "PhysicalRouterRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "BGPVPNRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_logical_router_bgpvpn` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_logical_router_bgpvpn` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref BGPVPNRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_logical_router_bgpvpn` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing BGPVPNRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "BGPVPNRefs update failed")
+			}
+		}
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "logical_router", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

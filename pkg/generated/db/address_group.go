@@ -344,7 +344,6 @@ func ListAddressGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.AddressGroup
 
 // UpdateAddressGroup updates a resource
 func UpdateAddressGroup(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateAddressGroupQuery = "update `address_group` set "
 
@@ -541,6 +540,14 @@ func UpdateAddressGroup(tx *sql.Tx, uuid string, model map[string]interface{}) e
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "address_group", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

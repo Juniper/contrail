@@ -6,10 +6,10 @@ import "encoding/json"
 
 // AclRuleType
 type AclRuleType struct {
-	RuleUUID       string              `json:"rule_uuid,omitempty"`
 	MatchCondition *MatchConditionType `json:"match_condition,omitempty"`
 	Direction      DirectionType       `json:"direction,omitempty"`
 	ActionList     *ActionListType     `json:"action_list,omitempty"`
+	RuleUUID       string              `json:"rule_uuid,omitempty"`
 }
 
 // String returns json representation of the object
