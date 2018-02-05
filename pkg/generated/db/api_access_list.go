@@ -49,11 +49,11 @@ var APIAccessListBackRefFields = map[string][]string{}
 // APIAccessListParentTypes is possible parents for APIAccessList
 var APIAccessListParents = []string{
 
-	"project",
-
 	"global_system_config",
 
 	"domain",
+
+	"project",
 }
 
 // CreateAPIAccessList inserts APIAccessList to DB
@@ -346,7 +346,6 @@ func ListAPIAccessList(tx *sql.Tx, spec *common.ListSpec) ([]*models.APIAccessLi
 
 // UpdateAPIAccessList updates a resource
 func UpdateAPIAccessList(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateAPIAccessListQuery = "update `api_access_list` set "
 
@@ -543,6 +542,14 @@ func UpdateAPIAccessList(tx *sql.Tx, uuid string, model map[string]interface{}) 
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "api_access_list", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

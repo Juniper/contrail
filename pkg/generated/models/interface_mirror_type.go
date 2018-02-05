@@ -6,8 +6,8 @@ import "encoding/json"
 
 // InterfaceMirrorType
 type InterfaceMirrorType struct {
-	MirrorTo         *MirrorActionType    `json:"mirror_to,omitempty"`
 	TrafficDirection TrafficDirectionType `json:"traffic_direction,omitempty"`
+	MirrorTo         *MirrorActionType    `json:"mirror_to,omitempty"`
 }
 
 // String returns json representation of the object

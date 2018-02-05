@@ -6,10 +6,10 @@ import "encoding/json"
 
 // ServiceInstanceInterfaceType
 type ServiceInstanceInterfaceType struct {
+	AllowedAddressPairs *AllowedAddressPairs `json:"allowed_address_pairs,omitempty"`
 	StaticRoutes        *RouteTableType      `json:"static_routes,omitempty"`
 	VirtualNetwork      string               `json:"virtual_network,omitempty"`
 	IPAddress           IpAddressType        `json:"ip_address,omitempty"`
-	AllowedAddressPairs *AllowedAddressPairs `json:"allowed_address_pairs,omitempty"`
 }
 
 // String returns json representation of the object

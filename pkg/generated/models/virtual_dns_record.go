@@ -6,15 +6,15 @@ import "encoding/json"
 
 // VirtualDNSRecord
 type VirtualDNSRecord struct {
-	IDPerms              *IdPermsType          `json:"id_perms,omitempty"`
-	Annotations          *KeyValuePairs        `json:"annotations,omitempty"`
 	Perms2               *PermType2            `json:"perms2,omitempty"`
-	ParentUUID           string                `json:"parent_uuid,omitempty"`
-	FQName               []string              `json:"fq_name,omitempty"`
-	VirtualDNSRecordData *VirtualDnsRecordType `json:"virtual_DNS_record_data,omitempty"`
-	DisplayName          string                `json:"display_name,omitempty"`
 	UUID                 string                `json:"uuid,omitempty"`
+	ParentUUID           string                `json:"parent_uuid,omitempty"`
 	ParentType           string                `json:"parent_type,omitempty"`
+	VirtualDNSRecordData *VirtualDnsRecordType `json:"virtual_DNS_record_data,omitempty"`
+	Annotations          *KeyValuePairs        `json:"annotations,omitempty"`
+	IDPerms              *IdPermsType          `json:"id_perms,omitempty"`
+	DisplayName          string                `json:"display_name,omitempty"`
+	FQName               []string              `json:"fq_name,omitempty"`
 }
 
 // String returns json representation of the object
@@ -27,15 +27,15 @@ func (model *VirtualDNSRecord) String() string {
 func MakeVirtualDNSRecord() *VirtualDNSRecord {
 	return &VirtualDNSRecord{
 		//TODO(nati): Apply default
-		Annotations:          MakeKeyValuePairs(),
-		Perms2:               MakePermType2(),
-		ParentUUID:           "",
-		FQName:               []string{},
-		IDPerms:              MakeIdPermsType(),
-		DisplayName:          "",
 		UUID:                 "",
+		ParentUUID:           "",
 		ParentType:           "",
 		VirtualDNSRecordData: MakeVirtualDnsRecordType(),
+		Annotations:          MakeKeyValuePairs(),
+		Perms2:               MakePermType2(),
+		DisplayName:          "",
+		FQName:               []string{},
+		IDPerms:              MakeIdPermsType(),
 	}
 }
 

@@ -20,8 +20,8 @@ func (model *IpamDnsAddressType) String() string {
 func MakeIpamDnsAddressType() *IpamDnsAddressType {
 	return &IpamDnsAddressType{
 		//TODO(nati): Apply default
-		VirtualDNSServerName:   "",
 		TenantDNSServerAddress: MakeIpAddressesType(),
+		VirtualDNSServerName:   "",
 	}
 }
 

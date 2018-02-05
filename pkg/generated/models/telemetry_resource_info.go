@@ -21,9 +21,9 @@ func (model *TelemetryResourceInfo) String() string {
 func MakeTelemetryResourceInfo() *TelemetryResourceInfo {
 	return &TelemetryResourceInfo{
 		//TODO(nati): Apply default
-		Path: "",
 		Rate: "",
 		Name: "",
+		Path: "",
 	}
 }
 

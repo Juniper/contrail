@@ -151,6 +151,138 @@ workflow:
       virtual-network: *vn_blue
   expect:
     virtual-network: *vn_blue
+- name: create network ipam1
+  request:
+    path: /network-ipams
+    method: POST
+    expected:
+    - 201
+    data:
+      network-ipam:
+        network_ipam_mgmt:
+          host_routes: 
+            route:
+              - prefix: "test_prefix"
+                next_hop: "1.2.3.5"
+        uuid: test_ipam1
+        display_name: test_ipam1
+        parent_type: project
+        parent_uuid: admin_project_uuid     
+        fq_name: ["domain","admin","test_ipam1"]
+  expect:
+    network-ipam:
+      uuid: test_ipam1
+      display_name: test_ipam1
+      parent_type: project
+      parent_uuid: admin_project_uuid     
+      fq_name: ["domain","admin","test_ipam1"]
+- name: create network ipam2
+  request:
+    path: /network-ipams
+    method: POST
+    expected:
+    - 201
+    data:
+      network-ipam:
+        network_ipam_mgmt:
+          host_routes: 
+            route:
+              - prefix: "test_prefix"
+                next_hop: "1.2.3.5"
+        uuid: test_ipam2
+        display_name: test_ipam2
+        parent_type: project
+        parent_uuid: admin_project_uuid     
+        fq_name: ["domain","admin","test_ipam2"]
+  expect:
+    network-ipam:
+      uuid: test_ipam2
+      display_name: test_ipam2
+      parent_type: project
+      parent_uuid: admin_project_uuid     
+      fq_name: ["domain","admin","test_ipam2"]
+- name: create virtual network ref
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 201
+    data:
+      virtual-network:
+        fq_name: ["default", "admin", "vn_test_ref"]
+        uuid: "vn_test_ref"
+        display_name: "vn_test_ref"
+        parent_type: "project"
+        parent_uuid: "admin_project_uuid"
+        network_ipam_refs:
+          - uuid: "test_ipam1"
+            to: ["domain","admin","test_ipam1"]
+            attr:
+              host_routes:
+                route:
+                  - prefix: "test_prefix"
+                    next_hop: "1.2.3.5"
+  expect:
+    virtual-network:
+      fq_name: ["default", "admin", "vn_test_ref"]
+      uuid: vn_test_ref
+      display_name: vn_test_ref
+      parent_type: project
+      parent_uuid: admin_project_uuid      
+- name: update virtual network ref
+  request:
+    path: /virtual-network/vn_test_ref
+    method: PUT
+    expected:
+    - 200
+    data:
+      virtual-network:
+        fq_name: ["default", "admin", "vn_test_ref"]
+        uuid: "vn_test_ref"
+        display_name: "vn_test_ref"
+        parent_type: "project"
+        parent_uuid: "admin_project_uuid"
+        perms2:
+          share:
+            - tenant: "default:demo"
+              tenant_access: 7
+        network_ipam_refs:
+          - uuid: "test_ipam1"
+            operation: "delete"
+            to: ["domain","admin","test_ipam1"]
+          - uuid: "test_ipam2"
+            operation: "add"
+            to: ["domain","admin","test_ipam2"]
+            attr:
+              host_routes:
+                route:
+                  - prefix: "test_prefix"
+                    next_hop: "1.2.3.5"          
+  expect:
+    virtual-network:
+      uri: /virtual-network/vn_test_ref
+      uuid: vn_test_ref    
+- name: delete virtual network
+  request:
+    path: /virtual-network/vn_test_ref
+    method: DELETE
+    expected:
+    - 204
+  expect: null 
+- name: delete network ipam
+  request:
+    path: /network-ipam/test_ipam1
+    method: DELETE
+    expected:
+    - 204
+  expect: null 
+- name: delete network ipam
+  request:
+    path: /network-ipam/test_ipam2
+    method: DELETE
+    expected:
+    - 204
+  expect: null            
 - name: create virtual network red
   request:
     path: /virtual-networks

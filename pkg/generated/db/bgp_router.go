@@ -331,7 +331,6 @@ func ListBGPRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPRouter, erro
 
 // UpdateBGPRouter updates a resource
 func UpdateBGPRouter(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateBGPRouterQuery = "update `bgp_router` set "
 
@@ -520,6 +519,14 @@ func UpdateBGPRouter(tx *sql.Tx, uuid string, model map[string]interface{}) erro
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "bgp_router", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

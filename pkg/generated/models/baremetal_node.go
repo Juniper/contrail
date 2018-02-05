@@ -6,24 +6,24 @@ import "encoding/json"
 
 // BaremetalNode
 type BaremetalNode struct {
-	IpmiAddress   string         `json:"ipmi_address,omitempty"`
-	ParentType    string         `json:"parent_type,omitempty"`
+	Annotations   *KeyValuePairs `json:"annotations,omitempty"`
 	UUID          string         `json:"uuid,omitempty"`
 	IpmiUsername  string         `json:"ipmi_username,omitempty"`
 	DiskGB        int            `json:"disk_gb,omitempty"`
-	FQName        []string       `json:"fq_name,omitempty"`
-	IDPerms       *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName   string         `json:"display_name,omitempty"`
-	Annotations   *KeyValuePairs `json:"annotations,omitempty"`
-	CPUArch       string         `json:"cpu_arch,omitempty"`
 	MemoryMB      int            `json:"memory_mb,omitempty"`
-	DeployKernel  string         `json:"deploy_kernel,omitempty"`
+	DeployRamdisk string         `json:"deploy_ramdisk,omitempty"`
 	Name          string         `json:"name,omitempty"`
+	CPUArch       string         `json:"cpu_arch,omitempty"`
+	IDPerms       *IdPermsType   `json:"id_perms,omitempty"`
+	Perms2        *PermType2     `json:"perms2,omitempty"`
+	IpmiAddress   string         `json:"ipmi_address,omitempty"`
+	ParentType    string         `json:"parent_type,omitempty"`
+	DisplayName   string         `json:"display_name,omitempty"`
+	ParentUUID    string         `json:"parent_uuid,omitempty"`
 	IpmiPassword  string         `json:"ipmi_password,omitempty"`
 	CPUCount      int            `json:"cpu_count,omitempty"`
-	DeployRamdisk string         `json:"deploy_ramdisk,omitempty"`
-	ParentUUID    string         `json:"parent_uuid,omitempty"`
-	Perms2        *PermType2     `json:"perms2,omitempty"`
+	DeployKernel  string         `json:"deploy_kernel,omitempty"`
+	FQName        []string       `json:"fq_name,omitempty"`
 }
 
 // String returns json representation of the object
@@ -36,24 +36,24 @@ func (model *BaremetalNode) String() string {
 func MakeBaremetalNode() *BaremetalNode {
 	return &BaremetalNode{
 		//TODO(nati): Apply default
-		CPUArch:       "",
-		MemoryMB:      0,
-		DeployKernel:  "",
-		ParentUUID:    "",
-		Perms2:        MakePermType2(),
-		Name:          "",
 		IpmiPassword:  "",
 		CPUCount:      0,
-		DeployRamdisk: "",
-		IpmiAddress:   "",
-		ParentType:    "",
-		UUID:          "",
+		DeployKernel:  "",
+		FQName:        []string{},
 		DisplayName:   "",
-		Annotations:   MakeKeyValuePairs(),
+		ParentUUID:    "",
 		IpmiUsername:  "",
 		DiskGB:        0,
-		FQName:        []string{},
+		MemoryMB:      0,
+		DeployRamdisk: "",
+		Annotations:   MakeKeyValuePairs(),
+		UUID:          "",
+		Name:          "",
+		CPUArch:       "",
 		IDPerms:       MakeIdPermsType(),
+		Perms2:        MakePermType2(),
+		IpmiAddress:   "",
+		ParentType:    "",
 	}
 }
 

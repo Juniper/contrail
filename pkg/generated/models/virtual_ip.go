@@ -6,18 +6,18 @@ import "encoding/json"
 
 // VirtualIP
 type VirtualIP struct {
-	ParentType          string         `json:"parent_type,omitempty"`
-	IDPerms             *IdPermsType   `json:"id_perms,omitempty"`
-	Perms2              *PermType2     `json:"perms2,omitempty"`
-	UUID                string         `json:"uuid,omitempty"`
-	ParentUUID          string         `json:"parent_uuid,omitempty"`
-	VirtualIPProperties *VirtualIpType `json:"virtual_ip_properties,omitempty"`
-	FQName              []string       `json:"fq_name,omitempty"`
 	DisplayName         string         `json:"display_name,omitempty"`
 	Annotations         *KeyValuePairs `json:"annotations,omitempty"`
+	VirtualIPProperties *VirtualIpType `json:"virtual_ip_properties,omitempty"`
+	UUID                string         `json:"uuid,omitempty"`
+	FQName              []string       `json:"fq_name,omitempty"`
+	IDPerms             *IdPermsType   `json:"id_perms,omitempty"`
+	ParentUUID          string         `json:"parent_uuid,omitempty"`
+	ParentType          string         `json:"parent_type,omitempty"`
+	Perms2              *PermType2     `json:"perms2,omitempty"`
 
-	VirtualMachineInterfaceRefs []*VirtualIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 	LoadbalancerPoolRefs        []*VirtualIPLoadbalancerPoolRef        `json:"loadbalancer_pool_refs,omitempty"`
+	VirtualMachineInterfaceRefs []*VirtualIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 }
 
 // VirtualIPLoadbalancerPoolRef references each other
@@ -44,15 +44,15 @@ func (model *VirtualIP) String() string {
 func MakeVirtualIP() *VirtualIP {
 	return &VirtualIP{
 		//TODO(nati): Apply default
-		Perms2:              MakePermType2(),
-		UUID:                "",
 		ParentUUID:          "",
+		ParentType:          "",
+		Perms2:              MakePermType2(),
 		VirtualIPProperties: MakeVirtualIpType(),
+		UUID:                "",
 		FQName:              []string{},
+		IDPerms:             MakeIdPermsType(),
 		DisplayName:         "",
 		Annotations:         MakeKeyValuePairs(),
-		ParentType:          "",
-		IDPerms:             MakeIdPermsType(),
 	}
 }
 
