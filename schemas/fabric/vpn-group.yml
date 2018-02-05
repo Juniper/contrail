@@ -8,7 +8,7 @@ plural: vpn_groups
 prefix: /
 references: 
   location: 
-    operation: "CRUD"
+    operations: "CRUD"
     description: "Reference to the locations"
     presence: "required"
 schema:

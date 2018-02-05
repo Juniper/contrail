@@ -5,16 +5,16 @@
     - "base"
   references: 
     loadbalancer_pool: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to the load balancer pool that this virtual ip represent. Applicable only to LBaaS V1"
       presence: "optional"
     virtual_machine_interface: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to the virtual machine interface for virtual ip. Applicable only to LBaaS V1"
       presence: "optional"
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Virtual ip object application(protocol, port). Applicable only to LBaaS V1"
       presence: "optional"
   plural: "virtual_ips"

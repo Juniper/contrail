@@ -331,7 +331,6 @@ func ListServiceObject(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceObje
 
 // UpdateServiceObject updates a resource
 func UpdateServiceObject(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateServiceObjectQuery = "update `service_object` set "
 
@@ -520,6 +519,14 @@ func UpdateServiceObject(tx *sql.Tx, uuid string, model map[string]interface{}) 
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "service_object", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

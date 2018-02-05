@@ -6,15 +6,15 @@ import "encoding/json"
 
 // KubernetesCluster
 type KubernetesCluster struct {
-	KuberunetesDashboard string         `json:"kuberunetes_dashboard,omitempty"`
-	Perms2               *PermType2     `json:"perms2,omitempty"`
-	UUID                 string         `json:"uuid,omitempty"`
-	ParentType           string         `json:"parent_type,omitempty"`
 	FQName               []string       `json:"fq_name,omitempty"`
 	IDPerms              *IdPermsType   `json:"id_perms,omitempty"`
 	Annotations          *KeyValuePairs `json:"annotations,omitempty"`
-	ContrailClusterID    string         `json:"contrail_cluster_id,omitempty"`
+	Perms2               *PermType2     `json:"perms2,omitempty"`
+	UUID                 string         `json:"uuid,omitempty"`
+	KuberunetesDashboard string         `json:"kuberunetes_dashboard,omitempty"`
+	ParentType           string         `json:"parent_type,omitempty"`
 	ParentUUID           string         `json:"parent_uuid,omitempty"`
+	ContrailClusterID    string         `json:"contrail_cluster_id,omitempty"`
 	DisplayName          string         `json:"display_name,omitempty"`
 }
 
@@ -28,16 +28,16 @@ func (model *KubernetesCluster) String() string {
 func MakeKubernetesCluster() *KubernetesCluster {
 	return &KubernetesCluster{
 		//TODO(nati): Apply default
-		ContrailClusterID:    "",
-		ParentUUID:           "",
-		DisplayName:          "",
+		KuberunetesDashboard: "",
 		ParentType:           "",
 		FQName:               []string{},
 		IDPerms:              MakeIdPermsType(),
 		Annotations:          MakeKeyValuePairs(),
-		KuberunetesDashboard: "",
 		Perms2:               MakePermType2(),
 		UUID:                 "",
+		ContrailClusterID:    "",
+		DisplayName:          "",
+		ParentUUID:           "",
 	}
 }
 

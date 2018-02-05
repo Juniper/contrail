@@ -6,7 +6,7 @@
   references: {}
   parents: 
     global_system_config: 
-      operation: "R"
+      operations: "R"
       description: "Global QoS system config is object where all global system QoS configuration is present."
       presence: "required"
   plural: "global_qos_configs"

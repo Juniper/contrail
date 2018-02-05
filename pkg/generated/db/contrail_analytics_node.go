@@ -381,7 +381,6 @@ func ListContrailAnalyticsNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.Con
 
 // UpdateContrailAnalyticsNode updates a resource
 func UpdateContrailAnalyticsNode(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateContrailAnalyticsNodeQuery = "update `contrail_analytics_node` set "
 
@@ -610,6 +609,14 @@ func UpdateContrailAnalyticsNode(tx *sql.Tx, uuid string, model map[string]inter
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "contrail_analytics_node", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

@@ -6,7 +6,7 @@
   references: {}
   parents: 
     global_system_config: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Analytics node is object representing a logical node in system which serves operational API and analytics collector."
       presence: "admin-only"
   plural: "analytics_nodes"

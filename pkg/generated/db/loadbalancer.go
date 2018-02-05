@@ -124,19 +124,6 @@ func CreateLoadbalancer(tx *sql.Tx, model *models.Loadbalancer) error {
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertLoadbalancerVirtualMachineInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
-	}
-	defer stmtVirtualMachineInterfaceRef.Close()
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
 	stmtServiceInstanceRef, err := tx.Prepare(insertLoadbalancerServiceInstanceQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ServiceInstanceRefs create statement failed")
@@ -160,6 +147,19 @@ func CreateLoadbalancer(tx *sql.Tx, model *models.Loadbalancer) error {
 		_, err = stmtServiceApplianceSetRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
+		}
+	}
+
+	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertLoadbalancerVirtualMachineInterfaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
+	}
+	defer stmtVirtualMachineInterfaceRef.Close()
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
 	}
 
@@ -403,26 +403,6 @@ func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, erro
 
 	}
 
-	if value, ok := values["ref_service_appliance_set"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LoadbalancerServiceApplianceSetRef{}
-			referenceModel.UUID = uuid
-			m.ServiceApplianceSetRefs = append(m.ServiceApplianceSetRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -459,6 +439,26 @@ func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, erro
 			referenceModel := &models.LoadbalancerServiceInstanceRef{}
 			referenceModel.UUID = uuid
 			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_service_appliance_set"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LoadbalancerServiceApplianceSetRef{}
+			referenceModel.UUID = uuid
+			m.ServiceApplianceSetRefs = append(m.ServiceApplianceSetRefs, referenceModel)
 
 		}
 	}
@@ -525,7 +525,6 @@ func ListLoadbalancer(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadbalancer
 
 // UpdateLoadbalancer updates a resource
 func UpdateLoadbalancer(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateLoadbalancerQuery = "update `loadbalancer` set "
 
@@ -770,6 +769,164 @@ func UpdateLoadbalancer(tx *sql.Tx, uuid string, model map[string]interface{}) e
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	if value, ok := common.GetValueByPath(model, "ServiceApplianceSetRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_loadbalancer_service_appliance_set` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_loadbalancer_service_appliance_set` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref ServiceApplianceSetRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_loadbalancer_service_appliance_set` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing ServiceApplianceSetRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "ServiceApplianceSetRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "VirtualMachineInterfaceRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_loadbalancer_virtual_machine_interface` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_loadbalancer_virtual_machine_interface` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref VirtualMachineInterfaceRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_loadbalancer_virtual_machine_interface` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "VirtualMachineInterfaceRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "ServiceInstanceRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_loadbalancer_service_instance` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_loadbalancer_service_instance` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref ServiceInstanceRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_loadbalancer_service_instance` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing ServiceInstanceRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "ServiceInstanceRefs update failed")
+			}
+		}
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "loadbalancer", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

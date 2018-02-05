@@ -6,14 +6,14 @@ import "encoding/json"
 
 // Dashboard
 type Dashboard struct {
+	Perms2          *PermType2     `json:"perms2,omitempty"`
 	ParentUUID      string         `json:"parent_uuid,omitempty"`
-	ParentType      string         `json:"parent_type,omitempty"`
-	IDPerms         *IdPermsType   `json:"id_perms,omitempty"`
-	Annotations     *KeyValuePairs `json:"annotations,omitempty"`
-	ContainerConfig string         `json:"container_config,omitempty"`
 	FQName          []string       `json:"fq_name,omitempty"`
 	DisplayName     string         `json:"display_name,omitempty"`
-	Perms2          *PermType2     `json:"perms2,omitempty"`
+	Annotations     *KeyValuePairs `json:"annotations,omitempty"`
+	ParentType      string         `json:"parent_type,omitempty"`
+	IDPerms         *IdPermsType   `json:"id_perms,omitempty"`
+	ContainerConfig string         `json:"container_config,omitempty"`
 	UUID            string         `json:"uuid,omitempty"`
 }
 
@@ -27,15 +27,15 @@ func (model *Dashboard) String() string {
 func MakeDashboard() *Dashboard {
 	return &Dashboard{
 		//TODO(nati): Apply default
+		DisplayName:     "",
+		Annotations:     MakeKeyValuePairs(),
+		Perms2:          MakePermType2(),
 		ParentUUID:      "",
+		FQName:          []string{},
+		ContainerConfig: "",
+		UUID:            "",
 		ParentType:      "",
 		IDPerms:         MakeIdPermsType(),
-		Annotations:     MakeKeyValuePairs(),
-		UUID:            "",
-		ContainerConfig: "",
-		FQName:          []string{},
-		DisplayName:     "",
-		Perms2:          MakePermType2(),
 	}
 }
 

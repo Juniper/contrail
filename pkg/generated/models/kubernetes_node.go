@@ -6,19 +6,19 @@ import "encoding/json"
 
 // KubernetesNode
 type KubernetesNode struct {
-	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
-	ProvisioningProgressStage string         `json:"provisioning_progress_stage,omitempty"`
-	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
 	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
+	DisplayName               string         `json:"display_name,omitempty"`
 	Perms2                    *PermType2     `json:"perms2,omitempty"`
 	UUID                      string         `json:"uuid,omitempty"`
-	ParentUUID                string         `json:"parent_uuid,omitempty"`
+	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
+	ProvisioningState         string         `json:"provisioning_state,omitempty"`
+	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
 	ParentType                string         `json:"parent_type,omitempty"`
 	FQName                    []string       `json:"fq_name,omitempty"`
-	ProvisioningProgress      int            `json:"provisioning_progress,omitempty"`
-	ProvisioningState         string         `json:"provisioning_state,omitempty"`
-	DisplayName               string         `json:"display_name,omitempty"`
 	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
+	ParentUUID                string         `json:"parent_uuid,omitempty"`
+	ProvisioningProgressStage string         `json:"provisioning_progress_stage,omitempty"`
+	ProvisioningProgress      int            `json:"provisioning_progress,omitempty"`
 }
 
 // String returns json representation of the object
@@ -31,19 +31,19 @@ func (model *KubernetesNode) String() string {
 func MakeKubernetesNode() *KubernetesNode {
 	return &KubernetesNode{
 		//TODO(nati): Apply default
-		IDPerms:                   MakeIdPermsType(),
-		Perms2:                    MakePermType2(),
-		ProvisioningLog:           "",
+		ParentUUID:                "",
 		ProvisioningProgressStage: "",
 		ProvisioningStartTime:     "",
-		FQName:                    []string{},
-		ProvisioningProgress:      0,
 		ProvisioningState:         "",
-		DisplayName:               "",
-		Annotations:               MakeKeyValuePairs(),
-		UUID:                      "",
-		ParentUUID:                "",
+		ProvisioningLog:           "",
 		ParentType:                "",
+		FQName:                    []string{},
+		Annotations:               MakeKeyValuePairs(),
+		ProvisioningProgress:      0,
+		UUID:                      "",
+		IDPerms:                   MakeIdPermsType(),
+		DisplayName:               "",
+		Perms2:                    MakePermType2(),
 	}
 }
 

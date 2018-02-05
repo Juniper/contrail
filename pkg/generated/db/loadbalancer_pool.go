@@ -52,6 +52,11 @@ var LoadbalancerPoolFields = []string{
 // LoadbalancerPoolRefFields is db reference fields for LoadbalancerPool
 var LoadbalancerPoolRefFields = map[string][]string{
 
+	"loadbalancer_healthmonitor": {
+	// <common.Schema Value>
+
+	},
+
 	"service_appliance_set": {
 	// <common.Schema Value>
 
@@ -68,11 +73,6 @@ var LoadbalancerPoolRefFields = map[string][]string{
 	},
 
 	"service_instance": {
-	// <common.Schema Value>
-
-	},
-
-	"loadbalancer_healthmonitor": {
 	// <common.Schema Value>
 
 	},
@@ -118,6 +118,8 @@ var LoadbalancerPoolParents = []string{
 	"project",
 }
 
+const insertLoadbalancerPoolServiceApplianceSetQuery = "insert into `ref_loadbalancer_pool_service_appliance_set` (`from`, `to` ) values (?, ?);"
+
 const insertLoadbalancerPoolVirtualMachineInterfaceQuery = "insert into `ref_loadbalancer_pool_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerPoolLoadbalancerListenerQuery = "insert into `ref_loadbalancer_pool_loadbalancer_listener` (`from`, `to` ) values (?, ?);"
@@ -125,8 +127,6 @@ const insertLoadbalancerPoolLoadbalancerListenerQuery = "insert into `ref_loadba
 const insertLoadbalancerPoolServiceInstanceQuery = "insert into `ref_loadbalancer_pool_service_instance` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerPoolLoadbalancerHealthmonitorQuery = "insert into `ref_loadbalancer_pool_loadbalancer_healthmonitor` (`from`, `to` ) values (?, ?);"
-
-const insertLoadbalancerPoolServiceApplianceSetQuery = "insert into `ref_loadbalancer_pool_service_appliance_set` (`from`, `to` ) values (?, ?);"
 
 // CreateLoadbalancerPool inserts LoadbalancerPool to DB
 func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
@@ -175,6 +175,32 @@ func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtLoadbalancerHealthmonitorRef, err := tx.Prepare(insertLoadbalancerPoolLoadbalancerHealthmonitorQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing LoadbalancerHealthmonitorRefs create statement failed")
+	}
+	defer stmtLoadbalancerHealthmonitorRef.Close()
+	for _, ref := range model.LoadbalancerHealthmonitorRefs {
+
+		_, err = stmtLoadbalancerHealthmonitorRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "LoadbalancerHealthmonitorRefs create failed")
+		}
+	}
+
+	stmtServiceApplianceSetRef, err := tx.Prepare(insertLoadbalancerPoolServiceApplianceSetQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceApplianceSetRefs create statement failed")
+	}
+	defer stmtServiceApplianceSetRef.Close()
+	for _, ref := range model.ServiceApplianceSetRefs {
+
+		_, err = stmtServiceApplianceSetRef.Exec(model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
+		}
+	}
+
 	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertLoadbalancerPoolVirtualMachineInterfaceQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
@@ -211,32 +237,6 @@ func CreateLoadbalancerPool(tx *sql.Tx, model *models.LoadbalancerPool) error {
 		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceInstanceRefs create failed")
-		}
-	}
-
-	stmtLoadbalancerHealthmonitorRef, err := tx.Prepare(insertLoadbalancerPoolLoadbalancerHealthmonitorQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing LoadbalancerHealthmonitorRefs create statement failed")
-	}
-	defer stmtLoadbalancerHealthmonitorRef.Close()
-	for _, ref := range model.LoadbalancerHealthmonitorRefs {
-
-		_, err = stmtLoadbalancerHealthmonitorRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "LoadbalancerHealthmonitorRefs create failed")
-		}
-	}
-
-	stmtServiceApplianceSetRef, err := tx.Prepare(insertLoadbalancerPoolServiceApplianceSetQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceApplianceSetRefs create statement failed")
-	}
-	defer stmtServiceApplianceSetRef.Close()
-	for _, ref := range model.ServiceApplianceSetRefs {
-
-		_, err = stmtServiceApplianceSetRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
 		}
 	}
 
@@ -502,6 +502,26 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 
 	}
 
+	if value, ok := values["ref_service_appliance_set"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LoadbalancerPoolServiceApplianceSetRef{}
+			referenceModel.UUID = uuid
+			m.ServiceApplianceSetRefs = append(m.ServiceApplianceSetRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -578,26 +598,6 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 			referenceModel := &models.LoadbalancerPoolLoadbalancerHealthmonitorRef{}
 			referenceModel.UUID = uuid
 			m.LoadbalancerHealthmonitorRefs = append(m.LoadbalancerHealthmonitorRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_service_appliance_set"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LoadbalancerPoolServiceApplianceSetRef{}
-			referenceModel.UUID = uuid
-			m.ServiceApplianceSetRefs = append(m.ServiceApplianceSetRefs, referenceModel)
 
 		}
 	}
@@ -893,7 +893,6 @@ func ListLoadbalancerPool(tx *sql.Tx, spec *common.ListSpec) ([]*models.Loadbala
 
 // UpdateLoadbalancerPool updates a resource
 func UpdateLoadbalancerPool(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateLoadbalancerPoolQuery = "update `loadbalancer_pool` set "
 
@@ -1162,6 +1161,264 @@ func UpdateLoadbalancerPool(tx *sql.Tx, uuid string, model map[string]interface{
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	if value, ok := common.GetValueByPath(model, "ServiceApplianceSetRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_loadbalancer_pool_service_appliance_set` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_loadbalancer_pool_service_appliance_set` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref ServiceApplianceSetRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_loadbalancer_pool_service_appliance_set` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing ServiceApplianceSetRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "ServiceApplianceSetRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "VirtualMachineInterfaceRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_loadbalancer_pool_virtual_machine_interface` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_loadbalancer_pool_virtual_machine_interface` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref VirtualMachineInterfaceRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_loadbalancer_pool_virtual_machine_interface` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "VirtualMachineInterfaceRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "LoadbalancerListenerRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_loadbalancer_pool_loadbalancer_listener` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_loadbalancer_pool_loadbalancer_listener` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref LoadbalancerListenerRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_loadbalancer_pool_loadbalancer_listener` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing LoadbalancerListenerRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "LoadbalancerListenerRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "ServiceInstanceRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_loadbalancer_pool_service_instance` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_loadbalancer_pool_service_instance` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref ServiceInstanceRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_loadbalancer_pool_service_instance` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing ServiceInstanceRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "ServiceInstanceRefs update failed")
+			}
+		}
+	}
+
+	if value, ok := common.GetValueByPath(model, "LoadbalancerHealthmonitorRefs", "."); ok {
+		for _, ref := range value.([]interface{}) {
+			refQuery := ""
+			refValues := make([]interface{}, 0)
+			refKeys := make([]string, 0)
+			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+			if !ok {
+				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+			}
+
+			refValues = append(refValues, uuid)
+			refValues = append(refValues, refUUID)
+			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+			switch operation {
+			case common.ADD:
+				refQuery = "insert into `ref_loadbalancer_pool_loadbalancer_healthmonitor` ("
+				values := "values("
+				for _, value := range refKeys {
+					refQuery += "`" + value + "`, "
+					values += "?,"
+				}
+				refQuery += "`from`, `to`) "
+				values += "?,?);"
+				refQuery += values
+			case common.UPDATE:
+				refQuery = "update `ref_loadbalancer_pool_loadbalancer_healthmonitor` set "
+				if len(refKeys) == 0 {
+					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref LoadbalancerHealthmonitorRefs")
+				}
+				for _, value := range refKeys {
+					refQuery += "`" + value + "` = ?,"
+				}
+				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+			case common.DELETE:
+				refQuery = "delete from `ref_loadbalancer_pool_loadbalancer_healthmonitor` where `from` = ? AND `to`= ?;"
+				refValues = refValues[len(refValues)-2:]
+			default:
+				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+			}
+			stmt, err := tx.Prepare(refQuery)
+			if err != nil {
+				return errors.Wrap(err, "preparing LoadbalancerHealthmonitorRefs update statement failed")
+			}
+			_, err = stmt.Exec(refValues...)
+			if err != nil {
+				return errors.Wrap(err, "LoadbalancerHealthmonitorRefs update failed")
+			}
+		}
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "loadbalancer_pool", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

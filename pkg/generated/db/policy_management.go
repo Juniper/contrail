@@ -1753,7 +1753,6 @@ func ListPolicyManagement(tx *sql.Tx, spec *common.ListSpec) ([]*models.PolicyMa
 
 // UpdatePolicyManagement updates a resource
 func UpdatePolicyManagement(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updatePolicyManagementQuery = "update `policy_management` set "
 
@@ -1942,6 +1941,14 @@ func UpdatePolicyManagement(tx *sql.Tx, uuid string, model map[string]interface{
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "policy_management", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

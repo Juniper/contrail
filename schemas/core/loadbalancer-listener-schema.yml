@@ -5,12 +5,12 @@
     - "base"
   references: 
     loadbalancer: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: ""
       presence: "optional"
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Listener represents the application(protocol, port) to be load balanced."
       presence: "optional"
   plural: "loadbalancer_listeners"

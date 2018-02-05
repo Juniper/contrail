@@ -6,10 +6,10 @@ import "encoding/json"
 
 // AlarmExpression
 type AlarmExpression struct {
-	Operand1  string         `json:"operand1,omitempty"`
-	Variables []string       `json:"variables,omitempty"`
-	Operand2  *AlarmOperand2 `json:"operand2,omitempty"`
-	Operation AlarmOperation `json:"operation,omitempty"`
+	Operand2   *AlarmOperand2 `json:"operand2,omitempty"`
+	Operations AlarmOperation `json:"operations,omitempty"`
+	Operand1   string         `json:"operand1,omitempty"`
+	Variables  []string       `json:"variables,omitempty"`
 }
 
 // String returns json representation of the object
@@ -22,10 +22,10 @@ func (model *AlarmExpression) String() string {
 func MakeAlarmExpression() *AlarmExpression {
 	return &AlarmExpression{
 		//TODO(nati): Apply default
-		Operand2:  MakeAlarmOperand2(),
-		Operation: MakeAlarmOperation(),
-		Operand1:  "",
-		Variables: []string{},
+		Operand2:   MakeAlarmOperand2(),
+		Operations: MakeAlarmOperation(),
+		Operand1:   "",
+		Variables:  []string{},
 	}
 }
 

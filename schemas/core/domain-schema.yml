@@ -6,7 +6,7 @@
   references: {}
   parents: 
     config_root: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Domain is authentication namespace, a collection of projects."
       presence: "system-only"
   plural: "domains"

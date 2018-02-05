@@ -15,7 +15,7 @@ func TestGetValueByPathSingleField(t *testing.T) {
 
 func TestGetValueByPathSingleDeep(t *testing.T) {
 	current := map[string]interface{}{"name": map[string]interface{}{"first": "Tom", "last": "Hanks"}}
-	result, ok := GetValueByPath(current, "name.first", ".")
+	result, ok := GetValueByPath(current, ".name.first", ".")
 	assert.Equal(t, true, ok)
 	assert.Equal(t, "Tom", result)
 	result, ok = GetValueByPath(current, "name.last", ".")

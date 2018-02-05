@@ -5,7 +5,7 @@
     - "base"
   references: 
     physical_router: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Network device config of a physical router."
       presence: "optional"
   parents: {}

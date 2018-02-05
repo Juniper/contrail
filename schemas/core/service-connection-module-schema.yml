@@ -5,7 +5,7 @@
     - "base"
   references: 
     service_object: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Links the service-connection-module to a service object."
       presence: "optional"
   parents: {}

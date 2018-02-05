@@ -609,7 +609,6 @@ func ListFloatingIPPool(tx *sql.Tx, spec *common.ListSpec) ([]*models.FloatingIP
 
 // UpdateFloatingIPPool updates a resource
 func UpdateFloatingIPPool(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateFloatingIPPoolQuery = "update `floating_ip_pool` set "
 
@@ -806,6 +805,14 @@ func UpdateFloatingIPPool(tx *sql.Tx, uuid string, model map[string]interface{})
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "floating_ip_pool", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

@@ -6,23 +6,23 @@ import "encoding/json"
 
 // LoadbalancerPool
 type LoadbalancerPool struct {
-	LoadbalancerPoolProvider         string                `json:"loadbalancer_pool_provider,omitempty"`
-	IDPerms                          *IdPermsType          `json:"id_perms,omitempty"`
-	ParentUUID                       string                `json:"parent_uuid,omitempty"`
-	Annotations                      *KeyValuePairs        `json:"annotations,omitempty"`
+	LoadbalancerPoolCustomAttributes *KeyValuePairs        `json:"loadbalancer_pool_custom_attributes,omitempty"`
 	Perms2                           *PermType2            `json:"perms2,omitempty"`
 	UUID                             string                `json:"uuid,omitempty"`
+	ParentUUID                       string                `json:"parent_uuid,omitempty"`
 	ParentType                       string                `json:"parent_type,omitempty"`
+	Annotations                      *KeyValuePairs        `json:"annotations,omitempty"`
 	LoadbalancerPoolProperties       *LoadbalancerPoolType `json:"loadbalancer_pool_properties,omitempty"`
-	LoadbalancerPoolCustomAttributes *KeyValuePairs        `json:"loadbalancer_pool_custom_attributes,omitempty"`
 	FQName                           []string              `json:"fq_name,omitempty"`
+	IDPerms                          *IdPermsType          `json:"id_perms,omitempty"`
 	DisplayName                      string                `json:"display_name,omitempty"`
+	LoadbalancerPoolProvider         string                `json:"loadbalancer_pool_provider,omitempty"`
 
-	LoadbalancerHealthmonitorRefs []*LoadbalancerPoolLoadbalancerHealthmonitorRef `json:"loadbalancer_healthmonitor_refs,omitempty"`
 	ServiceApplianceSetRefs       []*LoadbalancerPoolServiceApplianceSetRef       `json:"service_appliance_set_refs,omitempty"`
 	VirtualMachineInterfaceRefs   []*LoadbalancerPoolVirtualMachineInterfaceRef   `json:"virtual_machine_interface_refs,omitempty"`
 	LoadbalancerListenerRefs      []*LoadbalancerPoolLoadbalancerListenerRef      `json:"loadbalancer_listener_refs,omitempty"`
 	ServiceInstanceRefs           []*LoadbalancerPoolServiceInstanceRef           `json:"service_instance_refs,omitempty"`
+	LoadbalancerHealthmonitorRefs []*LoadbalancerPoolLoadbalancerHealthmonitorRef `json:"loadbalancer_healthmonitor_refs,omitempty"`
 
 	LoadbalancerMembers []*LoadbalancerMember `json:"loadbalancer_members,omitempty"`
 }
@@ -72,17 +72,17 @@ func (model *LoadbalancerPool) String() string {
 func MakeLoadbalancerPool() *LoadbalancerPool {
 	return &LoadbalancerPool{
 		//TODO(nati): Apply default
-		LoadbalancerPoolProvider:         "",
+		FQName:                           []string{},
 		IDPerms:                          MakeIdPermsType(),
-		ParentUUID:                       "",
-		Annotations:                      MakeKeyValuePairs(),
-		Perms2:                           MakePermType2(),
-		UUID:                             "",
-		ParentType:                       "",
-		LoadbalancerPoolProperties:       MakeLoadbalancerPoolType(),
+		DisplayName:                      "",
+		LoadbalancerPoolProvider:         "",
 		LoadbalancerPoolCustomAttributes: MakeKeyValuePairs(),
-		FQName:      []string{},
-		DisplayName: "",
+		Perms2:                     MakePermType2(),
+		UUID:                       "",
+		ParentUUID:                 "",
+		ParentType:                 "",
+		Annotations:                MakeKeyValuePairs(),
+		LoadbalancerPoolProperties: MakeLoadbalancerPoolType(),
 	}
 }
 

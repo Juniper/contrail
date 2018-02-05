@@ -5,16 +5,16 @@
     - "base"
   references: 
     virtual_machine_interface: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "References to virtual machine interfaces that represent end points that are reachable by this logical interface."
       presence: "optional"
   parents: 
     physical_router: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Logical interfaces on physical routers."
       presence: "optional"
     physical_interface: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Logical interfaces on physical interface on physical routers."
       presence: "optional"
   plural: "logical_interfaces"

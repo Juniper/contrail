@@ -1082,7 +1082,6 @@ func ListGlobalQosConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.GlobalQos
 
 // UpdateGlobalQosConfig updates a resource
 func UpdateGlobalQosConfig(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateGlobalQosConfigQuery = "update `global_qos_config` set "
 
@@ -1295,6 +1294,14 @@ func UpdateGlobalQosConfig(tx *sql.Tx, uuid string, model map[string]interface{}
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "global_qos_config", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

@@ -6,17 +6,17 @@ import "encoding/json"
 
 // ServiceHealthCheckType
 type ServiceHealthCheckType struct {
-	TimeoutUsecs    int                     `json:"timeoutUsecs,omitempty"`
-	Enabled         bool                    `json:"enabled"`
-	Delay           int                     `json:"delay,omitempty"`
-	ExpectedCodes   string                  `json:"expected_codes,omitempty"`
-	MaxRetries      int                     `json:"max_retries,omitempty"`
 	HealthCheckType HealthCheckType         `json:"health_check_type,omitempty"`
-	DelayUsecs      int                     `json:"delayUsecs,omitempty"`
 	HTTPMethod      string                  `json:"http_method,omitempty"`
 	Timeout         int                     `json:"timeout,omitempty"`
 	URLPath         string                  `json:"url_path,omitempty"`
+	DelayUsecs      int                     `json:"delayUsecs,omitempty"`
+	Delay           int                     `json:"delay,omitempty"`
+	ExpectedCodes   string                  `json:"expected_codes,omitempty"`
+	MaxRetries      int                     `json:"max_retries,omitempty"`
 	MonitorType     HealthCheckProtocolType `json:"monitor_type,omitempty"`
+	TimeoutUsecs    int                     `json:"timeoutUsecs,omitempty"`
+	Enabled         bool                    `json:"enabled"`
 }
 
 // String returns json representation of the object
@@ -29,17 +29,17 @@ func (model *ServiceHealthCheckType) String() string {
 func MakeServiceHealthCheckType() *ServiceHealthCheckType {
 	return &ServiceHealthCheckType{
 		//TODO(nati): Apply default
-		HealthCheckType: MakeHealthCheckType(),
-		TimeoutUsecs:    0,
-		Enabled:         false,
-		Delay:           0,
-		ExpectedCodes:   "",
-		MaxRetries:      0,
-		DelayUsecs:      0,
-		HTTPMethod:      "",
 		Timeout:         0,
 		URLPath:         "",
+		DelayUsecs:      0,
+		Delay:           0,
+		HealthCheckType: MakeHealthCheckType(),
+		HTTPMethod:      "",
 		MonitorType:     MakeHealthCheckProtocolType(),
+		TimeoutUsecs:    0,
+		Enabled:         false,
+		ExpectedCodes:   "",
+		MaxRetries:      0,
 	}
 }
 

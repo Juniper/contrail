@@ -6,7 +6,7 @@
   references: {}
   parents: 
     project: 
-      operation: "CR"
+      operations: "CR"
       description: "BGP VPN resource contains a set of parameters for a BGP-based VPN"
       presence: "optional"
   plural: "bgpvpns"

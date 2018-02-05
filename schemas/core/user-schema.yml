@@ -6,7 +6,7 @@
   references: {}
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       $ref: "types.json#definitions/MemberType"
       description: "Reference to a project of this user."
       presence: "optional"

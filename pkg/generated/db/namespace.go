@@ -354,7 +354,6 @@ func ListNamespace(tx *sql.Tx, spec *common.ListSpec) ([]*models.Namespace, erro
 
 // UpdateNamespace updates a resource
 func UpdateNamespace(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateNamespaceQuery = "update `namespace` set "
 
@@ -559,6 +558,14 @@ func UpdateNamespace(tx *sql.Tx, uuid string, model map[string]interface{}) erro
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "namespace", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

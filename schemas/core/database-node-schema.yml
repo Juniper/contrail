@@ -6,7 +6,7 @@
   references: {}
   parents: 
     global_system_config: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Database node is object representing a logical node in system which host Cassandra DB and Zookeeper."
       presence: "required"
   plural: "database_nodes"

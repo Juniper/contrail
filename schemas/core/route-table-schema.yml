@@ -6,7 +6,7 @@
   references: {}
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Network route table is mechanism of adding static routes in the virtual network"
       presence: "optional"
   plural: "route_tables"

@@ -5,12 +5,12 @@
     - "base"
   references: 
     bgp_router: 
-      operation: "R"
+      operations: "R"
       description: "List of references to all bgp routers in systems."
       presence: "required"
   parents: 
     config_root: 
-      operation: "R"
+      operations: "R"
       description: "Global system config is object where all global system configuration is present."
       presence: "required"
   plural: "global_system_configs"

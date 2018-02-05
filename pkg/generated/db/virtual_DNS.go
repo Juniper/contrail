@@ -674,7 +674,6 @@ func ListVirtualDNS(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualDNS, er
 
 // UpdateVirtualDNS updates a resource
 func UpdateVirtualDNS(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateVirtualDNSQuery = "update `virtual_DNS` set "
 
@@ -927,6 +926,14 @@ func UpdateVirtualDNS(tx *sql.Tx, uuid string, model map[string]interface{}) err
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "virtual_DNS", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{
