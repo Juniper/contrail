@@ -14,9 +14,11 @@ func init() {
 // SyncCmd defines sync command.
 var SyncCmd = &cobra.Command{
 	Use:   "sync [FilePath]",
-	Short: "Update resources or create new ones if they do not already exist",
-	Long:  "Use resource format just like in 'schema' command output or 'list' command output",
-	Args:  cobra.ExactArgs(1),
+	Short: "Synchronise resources with data defined in given YAML file",
+	Long: `
+Sync creates new resource for every not already existing resource
+Use resource format just like in 'schema' command output`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		synchronizeResources(args)
 	},

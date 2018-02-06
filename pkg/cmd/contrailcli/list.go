@@ -59,7 +59,7 @@ func init() {
 // ListCmd defines list command.
 var ListCmd = &cobra.Command{
 	Use:   "list [SchemaID]",
-	Short: "List resources data",
+	Short: "List data of specified resources",
 	Long:  "Invoke command with empty SchemaID in order to show available schemas",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

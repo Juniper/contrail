@@ -14,7 +14,7 @@ func init() {
 // SchemaCmd defines schema command.
 var SchemaCmd = &cobra.Command{
 	Use:   "schema [SchemaID]",
-	Short: "Show schema data",
+	Short: "Show schema for specified resource",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		schema(args)

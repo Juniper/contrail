@@ -12,8 +12,8 @@ func init() {
 // DeleteCmd defines delete command.
 var DeleteCmd = &cobra.Command{
 	Use:   "delete [FilePath]",
-	Short: "Delete resources defined in given file",
-	Long:  "Use resource format just like in 'schema' command output or 'list' command output",
+	Short: "Delete resources specified in given YAML file",
+	Long:  "Use resource format just like in 'schema' command output",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		deleteResources(args)

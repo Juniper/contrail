@@ -8,7 +8,9 @@
 - Apply lint tools
 - Go get must simply work
 - Follow best practices
-  Effective Go: https://golang.org/doc/effective_go.html
+  - comply to [Effective Go](https://golang.org/doc/effective_go.html)
+  - comply to [Code review comments](https://github.com/golang/go/wiki/CodeReviewComments)
+  - keep `make lint` output clean
 
 ## Build pre-requisites
 
@@ -62,15 +64,43 @@ Executing the script below, will drop the contrail_test schema if it exists, rec
 ./tools/reset_db.sh
 ```
 
-At this point the tests can be executed
+At this point the tests can be executed:
 
 ``` shell
 make test
 ```
 
+Run integration tests:
+
+``` shell
+make integration
+```
+
+## Commands
+
+Repository holds source code for following CLI applications:
+- `contrail` - contains API Server, [Agent](doc/agent.md) and [API Server command line client][cli] 
+- `contrailcli` - contains [API Server command line client][cli]
+- `contrailutil` - contains development utilities
+
+Show possible commands of application:
+
+``` shell
+contrail -h
+```
+
+Show detailed information about specific command:
+
+``` shell
+contrail <command> -h
+```
+
+[cli]: doc/cli.md
+
 ## API Server
 
-You can run API server using this command.
+API Server is shipped within `contrail` executable.
+You can run API server using following command:
 
 ``` shell
 go run cmd/contrail/main.go server -c packaging/apisrv.yml
@@ -82,55 +112,22 @@ API Server supports Keystone V3 authentication and RBAC.
 API Server has minimal Keystone API V3 support for standalone use case.
 See a configuration example in tools/test_config.yml
 
+### More
+
+Find out more about API Server:
+- [Authentication](doc/authentication.md)
+- [Policy](doc/policy.md)
+- [REST API](doc/rest_api.md)
+
 ## Binary
 
 Deb, RPM and Binaries are stored in release page.
 
 See [releases](https://github.com/Juniper/contrail/releases)
 
-## Commands
-
-- contrail  command for running intent api server/intent compiler etc
-
-``` Shell
-Contrail command
-
-Usage:
-  contrail [flags]
-  contrail [command]
-
-Available Commands:
-  help        Help about any command
-  server      Start API Server
-
-Flags:
-  -c, --config string   Configuration File
-  -h, --help            help for contrail
-
-Use "contrail [command] --help" for more information about a command.
-```
-
-- contrailutil utility command for help developments
-
-``` shell
-Contrail Utility Command
-
-Usage:
-  contrailutil [flags]
-  contrailutil [command]
-
-Available Commands:
-  generate    generate code from schema
-  help        Help about any command
-  package     make a deb and rpm package
-
-Flags:
-  -h, --help   help for contrailutil
-```
-
 ## Packaging
 
-Build the packages
+Build the packages:
 
 ``` shell
 make package

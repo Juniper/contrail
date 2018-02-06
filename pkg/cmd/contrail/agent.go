@@ -12,7 +12,7 @@ func init() {
 
 var agentCmd = &cobra.Command{
 	Use:   "agent",
-	Short: "Start Agent",
+	Short: "Start Agent service",
 	Run: func(cmd *cobra.Command, args []string) {
 		startAgent()
 	},

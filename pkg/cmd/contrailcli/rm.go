@@ -14,7 +14,7 @@ func init() {
 // RmCmd defines rm command.
 var RmCmd = &cobra.Command{
 	Use:   "rm [SchemaID] [ID]",
-	Short: "Remove a resource",
+	Short: "Remove a resource with given ID",
 	Long:  "Invoke command with empty SchemaID in order to show available schemas",
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
