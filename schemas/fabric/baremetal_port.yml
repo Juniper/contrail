@@ -13,44 +13,25 @@ schema:
       nullable: false
       permission:
       - create
+      - detail
+    created_at:
+      description: The UTC date and time when the resource was created, ISO 8601 format
+      type: string
+    updated_at:
+      description: The UTC date and time when the resource was created, ISO 8601 format
+      type: string
     node:
       description: UUID of the node where this port is connected
       type: string
-      nullable: false
-      permission:
-      - create
-      - update
-    switch_id:
-      description: Switch hostname 
-      type: string
-      format: hostname
-      nullable: false
-      permission:
-      - create
-      - update
-    port_id:
-      description: Port ID of switch where Baremetal is connected
-      type: string
-      nullable: false
-      permission:
-      - create
-      - update
-    switch_info:
-      description: UUID of the Physical-Port with contrail database
-      type: string
-      nullable: false
-      permission:
-      - create
-      - update
     pxe_enabled:
-      description: flag to control if 
+      description: Indicates whether PXE is enabled or disabled on the Port.
       type: boolean
-      nullable: false
-      permission:
-      - create
-      - update
-  required: ["mac_address","node", "switch_id", "port_id" ]
+    local_link_connection:
+      presence: "true"
+      description: "The Port binding profile"
+      $ref: "openstack_types.json#/definitions/LocalLinkConnection"
+  required: []
   type: object
 singular: baremetal_port
 title: Baremetal Server Port
-type: "" 
+type: "object" 

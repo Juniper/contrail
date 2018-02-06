@@ -60,9 +60,9 @@ var QosConfigBackRefFields = map[string][]string{}
 // QosConfigParentTypes is possible parents for QosConfig
 var QosConfigParents = []string{
 
-	"global_qos_config",
-
 	"project",
+
+	"global_qos_config",
 }
 
 const insertQosConfigGlobalSystemConfigQuery = "insert into `ref_qos_config_global_system_config` (`from`, `to` ) values (?, ?);"

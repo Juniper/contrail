@@ -78,8 +78,8 @@ var ProjectRefFields = map[string][]string{
 
 	"namespace": {
 		// <common.Schema Value>
-		"ip_prefix",
 		"ip_prefix_len",
+		"ip_prefix",
 	},
 
 	"application_policy_set": {
@@ -1046,13 +1046,13 @@ var ProjectParents = []string{
 	"domain",
 }
 
-const insertProjectNamespaceQuery = "insert into `ref_project_namespace` (`from`, `to` ,`ip_prefix`,`ip_prefix_len`) values (?, ?,?,?);"
+const insertProjectAliasIPPoolQuery = "insert into `ref_project_alias_ip_pool` (`from`, `to` ) values (?, ?);"
+
+const insertProjectNamespaceQuery = "insert into `ref_project_namespace` (`from`, `to` ,`ip_prefix_len`,`ip_prefix`) values (?, ?,?,?);"
 
 const insertProjectApplicationPolicySetQuery = "insert into `ref_project_application_policy_set` (`from`, `to` ) values (?, ?);"
 
 const insertProjectFloatingIPPoolQuery = "insert into `ref_project_floating_ip_pool` (`from`, `to` ) values (?, ?);"
-
-const insertProjectAliasIPPoolQuery = "insert into `ref_project_alias_ip_pool` (`from`, `to` ) values (?, ?);"
 
 // CreateProject inserts Project to DB
 func CreateProject(
@@ -1123,6 +1123,19 @@ func CreateProject(
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtFloatingIPPoolRef, err := tx.Prepare(insertProjectFloatingIPPoolQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing FloatingIPPoolRefs create statement failed")
+	}
+	defer stmtFloatingIPPoolRef.Close()
+	for _, ref := range model.FloatingIPPoolRefs {
+
+		_, err = stmtFloatingIPPoolRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "FloatingIPPoolRefs create failed")
+		}
+	}
+
 	stmtAliasIPPoolRef, err := tx.Prepare(insertProjectAliasIPPoolQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing AliasIPPoolRefs create statement failed")
@@ -1147,8 +1160,8 @@ func CreateProject(
 			ref.Attr = models.MakeSubnetType()
 		}
 
-		_, err = stmtNamespaceRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.IPPrefix),
-			int(ref.Attr.IPPrefixLen))
+		_, err = stmtNamespaceRef.ExecContext(ctx, model.UUID, ref.UUID, int(ref.Attr.IPPrefixLen),
+			string(ref.Attr.IPPrefix))
 		if err != nil {
 			return errors.Wrap(err, "NamespaceRefs create failed")
 		}
@@ -1164,19 +1177,6 @@ func CreateProject(
 		_, err = stmtApplicationPolicySetRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ApplicationPolicySetRefs create failed")
-		}
-	}
-
-	stmtFloatingIPPoolRef, err := tx.Prepare(insertProjectFloatingIPPoolQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing FloatingIPPoolRefs create statement failed")
-	}
-	defer stmtFloatingIPPoolRef.Close()
-	for _, ref := range model.FloatingIPPoolRefs {
-
-		_, err = stmtFloatingIPPoolRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "FloatingIPPoolRefs create failed")
 		}
 	}
 

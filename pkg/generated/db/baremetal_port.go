@@ -12,16 +12,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertBaremetalPortQuery = "insert into `baremetal_port` (`uuid`,`switch_info`,`switch_id`,`pxe_enabled`,`port_id`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`node`,`mac_address`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const insertBaremetalPortQuery = "insert into `baremetal_port` (`uuid`,`updated_at`,`pxe_enabled`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`node`,`mac_address`,`switch_info`,`switch_id`,`port_id`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`created_at`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
 const deleteBaremetalPortQuery = "delete from `baremetal_port` where uuid = ?"
 
 // BaremetalPortFields is db columns for BaremetalPort
 var BaremetalPortFields = []string{
 	"uuid",
-	"switch_info",
-	"switch_id",
+	"updated_at",
 	"pxe_enabled",
-	"port_id",
 	"share",
 	"owner_access",
 	"owner",
@@ -30,6 +28,9 @@ var BaremetalPortFields = []string{
 	"parent_type",
 	"node",
 	"mac_address",
+	"switch_info",
+	"switch_id",
+	"port_id",
 	"user_visible",
 	"permissions_owner_access",
 	"permissions_owner",
@@ -43,6 +44,7 @@ var BaremetalPortFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"created_at",
 	"key_value_pair",
 }
 
@@ -72,10 +74,8 @@ func CreateBaremetalPort(
 		"query": insertBaremetalPortQuery,
 	}).Debug("create query")
 	_, err = stmt.ExecContext(ctx, string(model.UUID),
-		string(model.SwitchInfo),
-		string(model.SwitchID),
+		string(model.UpdatedAt),
 		bool(model.PxeEnabled),
-		string(model.PortID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -84,6 +84,9 @@ func CreateBaremetalPort(
 		string(model.ParentType),
 		string(model.Node),
 		string(model.MacAddress),
+		string(model.LocalLinkConnection.SwitchInfo),
+		string(model.LocalLinkConnection.SwitchID),
+		string(model.LocalLinkConnection.PortID),
 		bool(model.IDPerms.UserVisible),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		string(model.IDPerms.Permissions.Owner),
@@ -97,6 +100,7 @@ func CreateBaremetalPort(
 		string(model.IDPerms.Created),
 		common.MustJSON(model.FQName),
 		string(model.DisplayName),
+		string(model.CreatedAt),
 		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -132,19 +136,11 @@ func scanBaremetalPort(values map[string]interface{}) (*models.BaremetalPort, er
 
 	}
 
-	if value, ok := values["switch_info"]; ok {
+	if value, ok := values["updated_at"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.SwitchInfo = castedValue
-
-	}
-
-	if value, ok := values["switch_id"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.SwitchID = castedValue
+		m.UpdatedAt = castedValue
 
 	}
 
@@ -153,14 +149,6 @@ func scanBaremetalPort(values map[string]interface{}) (*models.BaremetalPort, er
 		castedValue := common.InterfaceToBool(value)
 
 		m.PxeEnabled = castedValue
-
-	}
-
-	if value, ok := values["port_id"]; ok {
-
-		castedValue := common.InterfaceToString(value)
-
-		m.PortID = castedValue
 
 	}
 
@@ -223,6 +211,30 @@ func scanBaremetalPort(values map[string]interface{}) (*models.BaremetalPort, er
 		castedValue := common.InterfaceToString(value)
 
 		m.MacAddress = castedValue
+
+	}
+
+	if value, ok := values["switch_info"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.LocalLinkConnection.SwitchInfo = castedValue
+
+	}
+
+	if value, ok := values["switch_id"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.LocalLinkConnection.SwitchID = castedValue
+
+	}
+
+	if value, ok := values["port_id"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.LocalLinkConnection.PortID = castedValue
 
 	}
 
@@ -325,6 +337,14 @@ func scanBaremetalPort(values map[string]interface{}) (*models.BaremetalPort, er
 		castedValue := common.InterfaceToString(value)
 
 		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["created_at"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.CreatedAt = castedValue
 
 	}
 

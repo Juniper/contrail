@@ -534,6 +534,18 @@ func (service *ContrailService) RegisterRESTAPI(e *echo.Echo) {
 	e.GET("/dashboard/:id", service.RESTGetDashboard)
 	e.DELETE("/dashboard/:id", service.RESTDeleteDashboard)
 
+	e.POST("/openstackflavors", service.RESTCreateFlavor)
+	e.GET("/openstackflavors", service.RESTListFlavor)
+	e.PUT("/openstackflavor/:id", service.RESTUpdateFlavor)
+	e.GET("/openstackflavor/:id", service.RESTGetFlavor)
+	e.DELETE("/openstackflavor/:id", service.RESTDeleteFlavor)
+
+	e.POST("/openstackos-images", service.RESTCreateOsImage)
+	e.GET("/openstackos-images", service.RESTListOsImage)
+	e.PUT("/openstackos-image/:id", service.RESTUpdateOsImage)
+	e.GET("/openstackos-image/:id", service.RESTGetOsImage)
+	e.DELETE("/openstackos-image/:id", service.RESTDeleteOsImage)
+
 	e.POST("/openstackkeypairs", service.RESTCreateKeypair)
 	e.GET("/openstackkeypairs", service.RESTListKeypair)
 	e.PUT("/openstackkeypair/:id", service.RESTUpdateKeypair)
@@ -581,6 +593,12 @@ func (service *ContrailService) RegisterRESTAPI(e *echo.Echo) {
 	e.PUT("/openstack-storage-node-role/:id", service.RESTUpdateOpenstackStorageNodeRole)
 	e.GET("/openstack-storage-node-role/:id", service.RESTGetOpenstackStorageNodeRole)
 	e.DELETE("/openstack-storage-node-role/:id", service.RESTDeleteOpenstackStorageNodeRole)
+
+	e.POST("/openserverservers", service.RESTCreateServer)
+	e.GET("/openserverservers", service.RESTListServer)
+	e.PUT("/openserverserver/:id", service.RESTUpdateServer)
+	e.GET("/openserverserver/:id", service.RESTGetServer)
+	e.DELETE("/openserverserver/:id", service.RESTDeleteServer)
 
 	e.POST("/vpn-groups", service.RESTCreateVPNGroup)
 	e.GET("/vpn-groups", service.RESTListVPNGroup)

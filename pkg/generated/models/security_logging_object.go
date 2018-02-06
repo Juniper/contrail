@@ -20,16 +20,16 @@ type SecurityLoggingObject struct {
 	NetworkPolicyRefs []*SecurityLoggingObjectNetworkPolicyRef `json:"network_policy_refs,omitempty"`
 }
 
-// SecurityLoggingObjectNetworkPolicyRef references each other
-type SecurityLoggingObjectNetworkPolicyRef struct {
+// SecurityLoggingObjectSecurityGroupRef references each other
+type SecurityLoggingObjectSecurityGroupRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 
 	Attr *SecurityLoggingObjectRuleListType
 }
 
-// SecurityLoggingObjectSecurityGroupRef references each other
-type SecurityLoggingObjectSecurityGroupRef struct {
+// SecurityLoggingObjectNetworkPolicyRef references each other
+type SecurityLoggingObjectNetworkPolicyRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 

@@ -16,9 +16,16 @@ type Loadbalancer struct {
 	LoadbalancerProperties *LoadbalancerType `json:"loadbalancer_properties,omitempty"`
 	LoadbalancerProvider   string            `json:"loadbalancer_provider,omitempty"`
 
-	ServiceInstanceRefs         []*LoadbalancerServiceInstanceRef         `json:"service_instance_refs,omitempty"`
 	ServiceApplianceSetRefs     []*LoadbalancerServiceApplianceSetRef     `json:"service_appliance_set_refs,omitempty"`
 	VirtualMachineInterfaceRefs []*LoadbalancerVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
+	ServiceInstanceRefs         []*LoadbalancerServiceInstanceRef         `json:"service_instance_refs,omitempty"`
+}
+
+// LoadbalancerVirtualMachineInterfaceRef references each other
+type LoadbalancerVirtualMachineInterfaceRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
 }
 
 // LoadbalancerServiceInstanceRef references each other
@@ -30,13 +37,6 @@ type LoadbalancerServiceInstanceRef struct {
 
 // LoadbalancerServiceApplianceSetRef references each other
 type LoadbalancerServiceApplianceSetRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// LoadbalancerVirtualMachineInterfaceRef references each other
-type LoadbalancerVirtualMachineInterfaceRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 

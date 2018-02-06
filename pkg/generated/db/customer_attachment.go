@@ -43,12 +43,12 @@ var CustomerAttachmentFields = []string{
 // CustomerAttachmentRefFields is db reference fields for CustomerAttachment
 var CustomerAttachmentRefFields = map[string][]string{
 
-	"virtual_machine_interface": {
+	"floating_ip": {
 	// <common.Schema Value>
 
 	},
 
-	"floating_ip": {
+	"virtual_machine_interface": {
 	// <common.Schema Value>
 
 	},
