@@ -5,12 +5,12 @@
     - "base"
   references: 
     qos_queue: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Qos queue to be used for this forwarding class."
       presence: "required"
   parents: 
     global_qos_config: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Link to global-qos config."
       presence: "optional"
   plural: "forwarding_classs"

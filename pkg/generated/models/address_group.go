@@ -6,15 +6,15 @@ import "encoding/json"
 
 // AddressGroup
 type AddressGroup struct {
-	IDPerms            *IdPermsType    `json:"id_perms,omitempty"`
-	Annotations        *KeyValuePairs  `json:"annotations,omitempty"`
+	Perms2             *PermType2      `json:"perms2,omitempty"`
 	UUID               string          `json:"uuid,omitempty"`
-	ParentUUID         string          `json:"parent_uuid,omitempty"`
-	FQName             []string        `json:"fq_name,omitempty"`
+	ParentType         string          `json:"parent_type,omitempty"`
 	AddressGroupPrefix *SubnetListType `json:"address_group_prefix,omitempty"`
 	DisplayName        string          `json:"display_name,omitempty"`
-	Perms2             *PermType2      `json:"perms2,omitempty"`
-	ParentType         string          `json:"parent_type,omitempty"`
+	Annotations        *KeyValuePairs  `json:"annotations,omitempty"`
+	ParentUUID         string          `json:"parent_uuid,omitempty"`
+	FQName             []string        `json:"fq_name,omitempty"`
+	IDPerms            *IdPermsType    `json:"id_perms,omitempty"`
 }
 
 // String returns json representation of the object
@@ -29,13 +29,13 @@ func MakeAddressGroup() *AddressGroup {
 		//TODO(nati): Apply default
 		AddressGroupPrefix: MakeSubnetListType(),
 		DisplayName:        "",
+		Annotations:        MakeKeyValuePairs(),
 		Perms2:             MakePermType2(),
+		UUID:               "",
 		ParentType:         "",
+		ParentUUID:         "",
 		FQName:             []string{},
 		IDPerms:            MakeIdPermsType(),
-		Annotations:        MakeKeyValuePairs(),
-		UUID:               "",
-		ParentUUID:         "",
 	}
 }
 

@@ -602,7 +602,6 @@ func ListServiceApplianceSet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Servi
 
 // UpdateServiceApplianceSet updates a resource
 func UpdateServiceApplianceSet(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateServiceApplianceSetQuery = "update `service_appliance_set` set "
 
@@ -815,6 +814,14 @@ func UpdateServiceApplianceSet(tx *sql.Tx, uuid string, model map[string]interfa
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "service_appliance_set", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

@@ -5,11 +5,11 @@
     - "base"
   references: 
     physical_router: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Links the service provider to peer routers."
       presence: "optional"
     peering_policy: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Links the service provider to a peering policy."
       presence: "optional"
   parents: {}

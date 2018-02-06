@@ -344,7 +344,6 @@ func ListDatabaseNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.DatabaseNode
 
 // UpdateDatabaseNode updates a resource
 func UpdateDatabaseNode(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateDatabaseNodeQuery = "update `database_node` set "
 
@@ -541,6 +540,14 @@ func UpdateDatabaseNode(tx *sql.Tx, uuid string, model map[string]interface{}) e
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "database_node", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

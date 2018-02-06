@@ -6,12 +6,12 @@ import "encoding/json"
 
 // LoadbalancerType
 type LoadbalancerType struct {
-	Status             string         `json:"status,omitempty"`
 	ProvisioningStatus string         `json:"provisioning_status,omitempty"`
 	AdminState         bool           `json:"admin_state"`
 	VipAddress         IpAddressType  `json:"vip_address,omitempty"`
 	VipSubnetID        UuidStringType `json:"vip_subnet_id,omitempty"`
 	OperatingStatus    string         `json:"operating_status,omitempty"`
+	Status             string         `json:"status,omitempty"`
 }
 
 // String returns json representation of the object

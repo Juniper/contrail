@@ -4,7 +4,7 @@ plural: has_nodes
 prefix: /
 parents: 
   node: 
-    operation: "CRUD"
+    operations: "CRUD"
     description: "Node role"
     presence: "optional"
 schema:

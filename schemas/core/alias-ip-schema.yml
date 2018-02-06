@@ -5,16 +5,16 @@
     - "base"
   references: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to project from which this alias ip was allocated."
       presence: "required"
     virtual_machine_interface: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to virtual machine interface to which this alias ip is attached."
       presence: "optional"
   parents: 
     alias_ip_pool: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "alias ip is a ip that can be assigned to virtual-machine-interface(VMI), By doing so VMI can now be part of the alias ip network. packets originating with alias-ip as the source-ip belongs to alias-ip-network"
       presence: "optional"
   plural: "alias_ips"

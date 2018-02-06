@@ -6,15 +6,15 @@ import "encoding/json"
 
 // ServiceTemplate
 type ServiceTemplate struct {
+	ServiceTemplateProperties *ServiceTemplateType `json:"service_template_properties,omitempty"`
+	UUID                      string               `json:"uuid,omitempty"`
+	ParentUUID                string               `json:"parent_uuid,omitempty"`
 	FQName                    []string             `json:"fq_name,omitempty"`
 	IDPerms                   *IdPermsType         `json:"id_perms,omitempty"`
-	Annotations               *KeyValuePairs       `json:"annotations,omitempty"`
-	UUID                      string               `json:"uuid,omitempty"`
 	Perms2                    *PermType2           `json:"perms2,omitempty"`
-	ParentUUID                string               `json:"parent_uuid,omitempty"`
 	ParentType                string               `json:"parent_type,omitempty"`
 	DisplayName               string               `json:"display_name,omitempty"`
-	ServiceTemplateProperties *ServiceTemplateType `json:"service_template_properties,omitempty"`
+	Annotations               *KeyValuePairs       `json:"annotations,omitempty"`
 
 	ServiceApplianceSetRefs []*ServiceTemplateServiceApplianceSetRef `json:"service_appliance_set_refs,omitempty"`
 }
@@ -36,15 +36,15 @@ func (model *ServiceTemplate) String() string {
 func MakeServiceTemplate() *ServiceTemplate {
 	return &ServiceTemplate{
 		//TODO(nati): Apply default
+		ParentType:                "",
+		DisplayName:               "",
+		Annotations:               MakeKeyValuePairs(),
 		ServiceTemplateProperties: MakeServiceTemplateType(),
-		Perms2:      MakePermType2(),
-		ParentUUID:  "",
-		ParentType:  "",
-		DisplayName: "",
-		UUID:        "",
-		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
-		Annotations: MakeKeyValuePairs(),
+		UUID:       "",
+		ParentUUID: "",
+		FQName:     []string{},
+		IDPerms:    MakeIdPermsType(),
+		Perms2:     MakePermType2(),
 	}
 }
 

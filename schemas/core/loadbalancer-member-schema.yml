@@ -6,7 +6,7 @@
   references: {}
   parents: 
     loadbalancer_pool: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Configuration object representing each member of load balancer pool."
       presence: "optional"
   plural: "loadbalancer_members"

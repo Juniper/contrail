@@ -6,16 +6,16 @@ import "encoding/json"
 
 // AliasIP
 type AliasIP struct {
-	AliasIPAddress       IpAddressType       `json:"alias_ip_address,omitempty"`
-	Perms2               *PermType2          `json:"perms2,omitempty"`
-	FQName               []string            `json:"fq_name,omitempty"`
 	AliasIPAddressFamily IpAddressFamilyType `json:"alias_ip_address_family,omitempty"`
-	DisplayName          string              `json:"display_name,omitempty"`
-	Annotations          *KeyValuePairs      `json:"annotations,omitempty"`
-	UUID                 string              `json:"uuid,omitempty"`
 	ParentUUID           string              `json:"parent_uuid,omitempty"`
 	ParentType           string              `json:"parent_type,omitempty"`
+	FQName               []string            `json:"fq_name,omitempty"`
 	IDPerms              *IdPermsType        `json:"id_perms,omitempty"`
+	DisplayName          string              `json:"display_name,omitempty"`
+	AliasIPAddress       IpAddressType       `json:"alias_ip_address,omitempty"`
+	UUID                 string              `json:"uuid,omitempty"`
+	Annotations          *KeyValuePairs      `json:"annotations,omitempty"`
+	Perms2               *PermType2          `json:"perms2,omitempty"`
 
 	ProjectRefs                 []*AliasIPProjectRef                 `json:"project_refs,omitempty"`
 	VirtualMachineInterfaceRefs []*AliasIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
@@ -46,15 +46,15 @@ func MakeAliasIP() *AliasIP {
 	return &AliasIP{
 		//TODO(nati): Apply default
 		IDPerms:              MakeIdPermsType(),
-		AliasIPAddressFamily: MakeIpAddressFamilyType(),
 		DisplayName:          "",
-		Annotations:          MakeKeyValuePairs(),
-		UUID:                 "",
+		AliasIPAddress:       MakeIpAddressType(),
+		AliasIPAddressFamily: MakeIpAddressFamilyType(),
 		ParentUUID:           "",
 		ParentType:           "",
-		AliasIPAddress:       MakeIpAddressType(),
-		Perms2:               MakePermType2(),
 		FQName:               []string{},
+		Perms2:               MakePermType2(),
+		UUID:                 "",
+		Annotations:          MakeKeyValuePairs(),
 	}
 }
 

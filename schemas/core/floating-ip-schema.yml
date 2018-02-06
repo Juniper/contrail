@@ -5,20 +5,20 @@
     - "base"
   references: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to project is which this floating ip was allocated."
       presence: "required"
     virtual_machine_interface: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to virtual machine interface to which this floating ip is attached."
       presence: "optional"
   parents: 
     instance_ip: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "floating-ip can be child of instance-ip. By doing so instance-ip can be used as floating-ip."
       presence: "optional"
     floating_ip_pool: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Floating ip is a ip that can be assigned to (virtual machine interface(VMI), ip), By doing so VMI can no be part of the floating ip network and floating ip is used as one:one to NAT for doing so."
       presence: "optional"
   plural: "floating_ips"

@@ -281,7 +281,6 @@ func List{{ schema.JSONSchema.GoName }}(tx *sql.Tx, spec *common.ListSpec) ([]*m
 
 // Update{{ schema.JSONSchema.GoName }} updates a resource
 func Update{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-    //TODO (handle references)
     // Prepare statement for updating data
     var update{{ schema.JSONSchema.GoName }}Query = "update `{{schema.ID}}` set "
 
@@ -318,6 +317,85 @@ func Update{{ schema.JSONSchema.GoName }}(tx *sql.Tx, uuid string, model map[str
     _, err = stmt.Exec( updatedValues... )
     if err != nil {
         return errors.Wrap(err, "update failed")
+    }
+
+    {% for linkTo, reference in schema.References %}
+        if value, ok := common.GetValueByPath(model, "{{ reference.GoName }}Refs" , "."); ok {
+            for _, ref := range value.([]interface{}) {
+                refQuery := ""
+                refValues := make([]interface{}, 0)
+                refKeys := make([]string, 0)
+                refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
+                if !ok {
+                    return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
+                }
+                {% if reference.RefType  %}
+                    attrValues, ok := common.GetValueByPath(ref.(map[string]interface{}), "Attr", ".")
+                    if ok {
+                        {% for column in reference.Columns %}
+                        if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), "{{ column.Path }}" , "."); ok {
+                            refKeys = append(refKeys, "{{column.Column}}")
+                            {% if column.Bind == "json" %}
+                                refValues = append(refValues, common.MustJSON(value))
+                            {% elif column.Bind == "int" %}
+                                refValues = append(refValues, common.InterfaceToInt(value.(float64)))
+                            {% elif column.Bind == "bool" %}
+                                refValues = append(refValues, common.InterfaceToBool(value))
+                            {% elif column.Bind == "string" %}
+                                refValues = append(refValues, common.InterfaceToString(value))
+                            {% else %}
+                                refValues = append(refValues, value.({{ column.Bind }}))
+                            {% endif %}
+                        }
+                        {% endfor %}
+                    }
+                {% endif %}
+                refValues = append(refValues, uuid)
+                refValues = append(refValues, refUUID)
+                operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
+                switch operation {
+                    case common.ADD:
+                        refQuery = "insert into `ref_{{ schema.ID }}_{{ linkTo }}` ("
+                        values := "values(" 
+                        for _, value := range refKeys {
+                            refQuery += "`" + value + "`, "
+                            values += "?,"
+                        }
+                        refQuery += "`from`, `to`) "
+                        values += "?,?);"
+                        refQuery += values
+                    case common.UPDATE:
+                        refQuery = "update `ref_{{ schema.ID }}_{{ linkTo }}` set "
+                        if len(refKeys) == 0 {
+                            return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref {{ reference.GoName }}Refs")
+                        } 
+                        for _, value := range refKeys {
+                            refQuery += "`" + value + "` = ?,"
+                        }
+                        refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
+                    case common.DELETE:
+                        refQuery = "delete from `ref_{{ schema.ID }}_{{ linkTo }}` where `from` = ? AND `to`= ?;"
+                        refValues = refValues[len(refValues)-2:]
+                    default:
+                        return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
+                }
+                stmt, err := tx.Prepare(refQuery)
+                if err != nil {
+                    return errors.Wrap(err, "preparing {{ reference.GoName }}Refs update statement failed")
+                }
+                _, err = stmt.Exec( refValues... )
+                if err != nil {
+                    return errors.Wrap(err, "{{ reference.GoName }}Refs update failed")
+                }
+            }
+        }
+    {% endfor %}
+    share, ok := common.GetValueByPath(model, ".Perms2.Share" , ".")
+    if ok {
+        err = common.UpdateSharing(tx, "{{ schema.ID }}", string(uuid), share.([]interface{}))
+        if err != nil {
+            return err
+        }
     }
 
     log.WithFields(log.Fields{

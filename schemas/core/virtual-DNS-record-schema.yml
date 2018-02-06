@@ -6,7 +6,7 @@
   references: {}
   parents: 
     virtual_DNS: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Static DNS records in virtual DNS server."
       presence: "optional"
   plural: "virtual_DNS_records"

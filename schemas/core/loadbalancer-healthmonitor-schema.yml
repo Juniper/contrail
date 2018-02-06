@@ -6,7 +6,7 @@
   references: {}
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Health monitor objects is configuration to monitor health of individual pool members."
       presence: "optional"
   plural: "loadbalancer_healthmonitors"

@@ -5,28 +5,28 @@
     - "base"
   references: 
     service_appliance_set: 
-      operation: "RReference to service-appliance-set where this loadbalancer-pool is hosted. Applicable to LBaaS V1."
+      operations: "RReference to service-appliance-set where this loadbalancer-pool is hosted. Applicable to LBaaS V1."
       description: ""
       presence: "system-only"
     virtual_machine_interface: 
-      operation: "CR"
+      operations: "CR"
       description: "Reference to the virtual machine interface reaching pool subnet, applicable to LBaaS V1."
       presence: "system-only"
     loadbalancer_listener: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to loadbalancer listener served by this pool, applicable to LBaaS V2."
       presence: "optional"
     service_instance: 
-      operation: "CR"
+      operations: "CR"
       description: "Reference to the service instance serving this pool, applicable to LBaaS V1."
       presence: "system-only"
     loadbalancer_healthmonitor: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Reference to loadbalancer healthmonitor that this pool uses."
       presence: "optional"
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Loadbalancer pool object represent set(pool) member servers which needs load balancing."
       presence: "optional"
   plural: "loadbalancer_pools"

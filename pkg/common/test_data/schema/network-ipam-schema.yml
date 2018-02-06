@@ -6,7 +6,7 @@
   references: {}
   parents: 
     project: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "IP Address Management object that controls, ip allocation, DNS and DHCP"
       presence: "optional"
   plural: "network_ipams"

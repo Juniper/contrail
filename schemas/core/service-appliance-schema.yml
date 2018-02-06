@@ -5,13 +5,13 @@
     - "base"
   references: 
     physical_interface: 
-      operation: "CRUD"
+      operations: "CRUD"
       $ref: "types.json#definitions/ServiceApplianceInterfaceType"
       description: "Reference to physical interface that can be used as (service interface type)left, right, management OR other."
       presence: "optional"
   parents: 
     service_appliance_set: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Service appliance is a member in service appliance set (e.g. Loadbalancer, Firewall provider).By default system will create \"ha-proxy\" based service appliance."
       presence: "optional"
   plural: "service_appliances"

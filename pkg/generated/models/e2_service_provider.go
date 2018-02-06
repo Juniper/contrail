@@ -6,15 +6,15 @@ import "encoding/json"
 
 // E2ServiceProvider
 type E2ServiceProvider struct {
-	E2ServiceProviderPromiscuous bool           `json:"e2_service_provider_promiscuous"`
+	ParentUUID                   string         `json:"parent_uuid,omitempty"`
+	FQName                       []string       `json:"fq_name,omitempty"`
 	IDPerms                      *IdPermsType   `json:"id_perms,omitempty"`
 	DisplayName                  string         `json:"display_name,omitempty"`
 	Annotations                  *KeyValuePairs `json:"annotations,omitempty"`
+	E2ServiceProviderPromiscuous bool           `json:"e2_service_provider_promiscuous"`
+	ParentType                   string         `json:"parent_type,omitempty"`
 	Perms2                       *PermType2     `json:"perms2,omitempty"`
 	UUID                         string         `json:"uuid,omitempty"`
-	ParentUUID                   string         `json:"parent_uuid,omitempty"`
-	ParentType                   string         `json:"parent_type,omitempty"`
-	FQName                       []string       `json:"fq_name,omitempty"`
 
 	PhysicalRouterRefs []*E2ServiceProviderPhysicalRouterRef `json:"physical_router_refs,omitempty"`
 	PeeringPolicyRefs  []*E2ServiceProviderPeeringPolicyRef  `json:"peering_policy_refs,omitempty"`
@@ -45,14 +45,14 @@ func MakeE2ServiceProvider() *E2ServiceProvider {
 	return &E2ServiceProvider{
 		//TODO(nati): Apply default
 		E2ServiceProviderPromiscuous: false,
-		IDPerms:     MakeIdPermsType(),
-		DisplayName: "",
-		Annotations: MakeKeyValuePairs(),
-		Perms2:      MakePermType2(),
-		UUID:        "",
-		ParentUUID:  "",
-		ParentType:  "",
-		FQName:      []string{},
+		ParentType:                   "",
+		Perms2:                       MakePermType2(),
+		UUID:                         "",
+		ParentUUID:                   "",
+		FQName:                       []string{},
+		IDPerms:                      MakeIdPermsType(),
+		DisplayName:                  "",
+		Annotations:                  MakeKeyValuePairs(),
 	}
 }
 

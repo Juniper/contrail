@@ -21,6 +21,7 @@ create table {{schema.ID }} (
 create table ref_{{ schema.ID }}_{{ linkTo }} (
     `from` varchar(255),
     `to` varchar(255),
+    primary key (`from`,`to`),
     {% for column in reference.Columns %}`{{column.Column}}` {{column.Type}},
     {% endfor %} foreign key (`from`) references {{ schema.ID }}(uuid) on delete cascade, 
     foreign key (`to`) references {{ linkTo }}(uuid),
@@ -30,6 +31,7 @@ create table ref_{{ schema.ID }}_{{ linkTo }} (
 create table tenant_share_{{ schema.ID }} (
     `uuid` varchar(255),
     `to` varchar(255),
+    primary key (`uuid`,`to`),
     `access` integer,
     foreign key (`uuid`) references {{ schema.ID }}(uuid) on delete cascade,
     foreign key (`to`) references project(uuid) on delete cascade,
@@ -40,6 +42,7 @@ create table tenant_share_{{ schema.ID }} (
 create table domain_share_{{ schema.ID }} (
     `uuid` varchar(255),
     `to` varchar(255),
+    primary key (`uuid`,`to`),
     `access` integer,
     foreign key (`uuid`) references {{ schema.ID }}(uuid) on delete cascade,
     foreign key (`to`) references domain(uuid) on delete cascade,

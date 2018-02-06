@@ -6,19 +6,19 @@ import "encoding/json"
 
 // PolicyRuleType
 type PolicyRuleType struct {
-	Direction    DirectionType   `json:"direction,omitempty"`
-	ActionList   *ActionListType `json:"action_list,omitempty"`
-	Application  []string        `json:"application,omitempty"`
-	LastModified string          `json:"last_modified,omitempty"`
-	Ethertype    EtherType       `json:"ethertype,omitempty"`
-	RuleSequence *SequenceType   `json:"rule_sequence,omitempty"`
-	SRCPorts     []*PortType     `json:"src_ports,omitempty"`
-	Protocol     string          `json:"protocol,omitempty"`
-	DSTAddresses []*AddressType  `json:"dst_addresses,omitempty"`
 	Created      string          `json:"created,omitempty"`
 	RuleUUID     string          `json:"rule_uuid,omitempty"`
-	DSTPorts     []*PortType     `json:"dst_ports,omitempty"`
+	Application  []string        `json:"application,omitempty"`
+	Ethertype    EtherType       `json:"ethertype,omitempty"`
 	SRCAddresses []*AddressType  `json:"src_addresses,omitempty"`
+	Direction    DirectionType   `json:"direction,omitempty"`
+	Protocol     string          `json:"protocol,omitempty"`
+	DSTAddresses []*AddressType  `json:"dst_addresses,omitempty"`
+	SRCPorts     []*PortType     `json:"src_ports,omitempty"`
+	RuleSequence *SequenceType   `json:"rule_sequence,omitempty"`
+	ActionList   *ActionListType `json:"action_list,omitempty"`
+	DSTPorts     []*PortType     `json:"dst_ports,omitempty"`
+	LastModified string          `json:"last_modified,omitempty"`
 }
 
 // String returns json representation of the object
@@ -31,25 +31,26 @@ func (model *PolicyRuleType) String() string {
 func MakePolicyRuleType() *PolicyRuleType {
 	return &PolicyRuleType{
 		//TODO(nati): Apply default
-		Protocol: "",
-
-		DSTAddresses: MakeAddressTypeSlice(),
-
-		Created:  "",
-		RuleUUID: "",
-
-		DSTPorts: MakePortTypeSlice(),
+		Created:     "",
+		RuleUUID:    "",
+		Application: []string{},
+		Ethertype:   MakeEtherType(),
 
 		SRCAddresses: MakeAddressTypeSlice(),
 
+		Direction: MakeDirectionType(),
+		Protocol:  "",
+
+		DSTAddresses: MakeAddressTypeSlice(),
+
 		SRCPorts: MakePortTypeSlice(),
 
-		Direction:    MakeDirectionType(),
-		ActionList:   MakeActionListType(),
-		Application:  []string{},
-		LastModified: "",
-		Ethertype:    MakeEtherType(),
 		RuleSequence: MakeSequenceType(),
+		ActionList:   MakeActionListType(),
+
+		DSTPorts: MakePortTypeSlice(),
+
+		LastModified: "",
 	}
 }
 

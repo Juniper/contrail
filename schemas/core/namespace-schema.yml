@@ -6,7 +6,7 @@
   references: {}
   parents: 
     domain: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "Namespace is unique networking namespace within this domain. If namespace is not present then default namespace of default project is used."
       presence: "optional"
   plural: "namespaces"

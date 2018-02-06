@@ -591,7 +591,6 @@ func ListSecurityGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.SecurityGro
 
 // UpdateSecurityGroup updates a resource
 func UpdateSecurityGroup(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	//TODO (handle references)
 	// Prepare statement for updating data
 	var updateSecurityGroupQuery = "update `security_group` set "
 
@@ -804,6 +803,14 @@ func UpdateSecurityGroup(tx *sql.Tx, uuid string, model map[string]interface{}) 
 	_, err = stmt.Exec(updatedValues...)
 	if err != nil {
 		return errors.Wrap(err, "update failed")
+	}
+
+	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
+	if ok {
+		err = common.UpdateSharing(tx, "security_group", string(uuid), share.([]interface{}))
+		if err != nil {
+			return err
+		}
 	}
 
 	log.WithFields(log.Fields{

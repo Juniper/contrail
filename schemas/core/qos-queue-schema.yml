@@ -6,7 +6,7 @@
   references: {}
   parents: 
     global_qos_config: 
-      operation: "CRUD"
+      operations: "CRUD"
       description: "QOS queue config object in this project."
       presence: "optional"
   plural: "qos_queues"
