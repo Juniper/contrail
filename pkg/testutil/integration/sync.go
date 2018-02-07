@@ -1,11 +1,13 @@
 package integration
 
 import (
+	"strings"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/sync"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Juniper/contrail/pkg/sync"
 )
 
 // RunSync runs Sync process and returns function closing Sync.
@@ -25,6 +27,15 @@ func RunSync(t *testing.T) (closeSync func()) {
 
 	return func() {
 		s.Close()
-		assert.NoError(t, <-runError, "unexpected Sync runtime error")
+		err := <-runError
+		// TODO(Daniel): ignore premature Sync close errors in a better way
+		if !isContextCancellationError(err) {
+			assert.NoError(t, err, "unexpected Sync runtime error")
+		}
 	}
+}
+
+func isContextCancellationError(err error) bool {
+	return strings.Contains(err.Error(), "context canceled") ||
+		strings.Contains(err.Error(), "canceling statement due to user request")
 }

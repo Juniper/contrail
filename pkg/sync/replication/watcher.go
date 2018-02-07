@@ -2,7 +2,6 @@ package replication
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"time"
 
@@ -10,6 +9,7 @@ import (
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/jackc/pgx"
 	"github.com/kyleconroy/pgoutput"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -107,7 +107,7 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 	var snapshotName string
 	slotLSN, snapshotName, err := w.conn.GetReplicationSlot(w.conf.Slot)
 	if err != nil {
-		return fmt.Errorf("error getting replication slot: %v", err)
+		return errors.Wrap(err, "error getting replication slot")
 	}
 	w.log.Debug("consistentPoint: ", pgx.FormatLSN(slotLSN))
 	w.log.Debug("snapshotName: ", snapshotName)
@@ -115,19 +115,19 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 	w.lastLSN = slotLSN // TODO(Michal): get lastLSN from etcd
 
 	if err := w.conn.RenewPublication(ctx, w.conf.Publication); err != nil {
-		return fmt.Errorf("failed to create publication: %s", err)
+		return errors.Wrap(err, "failed to create publication")
 	}
 	w.log.Debug("Created publication: ", w.conf.Publication)
 
 	w.log.Debug("Starting dump phase")
 	dumpStart := time.Now()
 	if err := w.conn.DumpSnapshot(ctx, w.dumpWriter, snapshotName); err != nil {
-		return fmt.Errorf("dumping snapshot failed: %v", err)
+		return errors.Wrap(err, "dumping snapshot failed")
 	}
 	w.log.WithField("dumpTime", time.Since(dumpStart)).Debugf("Dump phase finished - starting replication")
 
 	if err := w.conn.StartReplication(w.conf.Slot, w.conf.Publication, 0); err != nil {
-		return fmt.Errorf("failed to start replication: %s", err)
+		return errors.Wrap(err, "failed to start replication")
 	}
 
 	feed := make(chan *pgx.ReplicationMessage)
@@ -179,7 +179,7 @@ func (w *PostgresWatcher) waitForMessageWithTimeout(ctx context.Context) (*pgx.R
 		return nil, nil
 	}
 	if err != nil {
-		return nil, fmt.Errorf("replication failed: %s", err)
+		return nil, errors.Wrap(err, "replication failed")
 	}
 
 	return msg, nil
@@ -208,11 +208,11 @@ func (w *PostgresWatcher) handleWalMessage(msg *pgx.WalMessage) error {
 
 	logmsg, err := pgoutput.Parse(msg.WalData)
 	if err != nil {
-		return fmt.Errorf("invalid pgoutput message: %s", err)
+		return errors.Wrap(err, "invalid pgoutput message")
 	}
 
 	if err := w.handler(logmsg); err != nil {
-		return fmt.Errorf("error handling waldata: %s", err)
+		return errors.Wrap(err, "error handling waldata")
 	}
 
 	return nil
