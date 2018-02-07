@@ -1,8 +1,6 @@
 package common
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
 	"strconv"
 	"strings"
@@ -10,7 +8,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -171,31 +168,4 @@ func AssertEqual(t *testing.T, expected, actual interface{}, message string) boo
 		logDiff(expected, actual)
 	}
 	return assert.NoError(t, err, message)
-}
-
-// MustDecodeInt64Value tries to decode Int64 from binary form and fails test in case of an error.
-func MustDecodeInt64Value(t *testing.T, encodedValue string) interface{} {
-	var value int64
-	err := binary.Read(bytes.NewBufferString(encodedValue), binary.BigEndian, &value)
-	require.NoError(t, err)
-
-	return value
-}
-
-// MustDecodeFloat64Value tries to decode Float64 from binary form and fails test in case of an error.
-func MustDecodeFloat64Value(t *testing.T, encodedValue string) interface{} {
-	var value float64
-	err := binary.Read(bytes.NewBufferString(encodedValue), binary.BigEndian, &value)
-	require.NoError(t, err)
-
-	return value
-}
-
-// MustDecodeBoolValue tries to decode Bool from binary form and fails test in case of an error.
-func MustDecodeBoolValue(t *testing.T, encodedValue string) interface{} {
-	var value bool
-	err := binary.Read(bytes.NewBufferString(encodedValue), binary.BigEndian, &value)
-	require.NoError(t, err)
-
-	return value
 }
