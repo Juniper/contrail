@@ -1,0 +1,87 @@
+name: Test Sync API
+description: test sync API for create and delete
+tables:
+- metadata
+- project
+- network_policy
+- virtual_network
+test_data:
+  admin_project: &admin_project
+    fq_name: ["default", "admin"]
+    uuid: admin_project_uuid
+  network_policy1: &network_policy1
+    fq_name: ["default", "admin", "policy1"]
+    uuid: network_policy_uuid
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    network_policy_entries:
+      policy_rule:
+        - direction: "<"
+          protocol: tcp
+          rule_sequence:
+            major: 4
+            minor: 1
+  vn_blue: &vn_blue
+    fq_name: ["default", "admin", "vn_blue"]
+    uuid: vn_blue
+    display_name: blue
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    is_shared: false
+    route_target_list:
+       route_target: ["100:200"]
+    virtual_network_network_id: 50
+    network_policy_refs:
+    - uuid: network_policy_uuid
+  sync_request: &sync_request
+    resources:
+    - type: project
+      body: *admin_project   
+    - type: network-policy
+      body: *network_policy1
+    - type: virtual-network
+      body: *vn_blue
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        id: admin
+workflow:
+- name: create resoruces by sync API
+  request:
+    path: /sync
+    method: POST
+    expected:
+    - 201
+    data: *sync_request
+  expect: *sync_request
+- name: list virtual networks with detail
+  request:
+    path: /virtual-networks?detail=true
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - *vn_blue
+  request:
+    path: /network-policys
+    method: GET
+    expected:
+    - 200
+  expect:
+    network-policys:
+    - uuid: network_policy_uuid
+      perms2:
+        owner: admin
+- name: delete by sync api
+  request:
+    path: /sync
+    method: DELETE
+    body: *sync_request
+    expected:
+    - 204
+  expect: null

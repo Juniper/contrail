@@ -50,11 +50,17 @@ func (s *Server) Init() error {
 	//e.Use(middleware.Recover())
 	e.Use(middleware.BodyLimit("10M"))
 
-	for _, a := range api.APIs {
-		a.SetDB(s.DB)
-		common.RegisterAPI(a)
+	if s.DB != nil {
+		for _, a := range api.APIs {
+			a.SetDB(s.DB)
+			common.RegisterAPI(a)
+		}
+		common.Routes(e)
 	}
-	common.Routes(e)
+
+	e.POST("/sync", syncCreateOrUpdate)
+	e.DELETE("/sync", syncDelete)
+
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
 	e.Server.ReadTimeout = time.Duration(readTimeout) * time.Second

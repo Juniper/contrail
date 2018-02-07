@@ -300,3 +300,83 @@ Example Response
     ]
 }
 ```
+
+# Sync API
+
+Sync API support creating or deleting multiple resoruces in one time. 
+This API tries to update resources if same resource with UUID has already exists.
+
+POST or DELETE
+/sync
+
+Body
+
+```
+{
+  "resources": [
+    {
+      "type": "project",
+      "body": {
+        "admin_project": {
+          "fq_name": [
+            "default",
+            "admin"
+          ],
+          "uuid": "admin_project_uuid"
+        }
+      }
+    },
+    {
+      "type": "network-policy",
+      "body": {
+        "fq_name": [
+          "default",
+          "admin",
+          "policy1"
+        ],
+        "uuid": "network_policy_uuid",
+        "parent_type": "project",
+        "parent_uuid": "admin_project_uuid",
+        "network_policy_entries": {
+          "policy_rule": [
+            {
+              "direction": "<",
+              "protocol": "tcp",
+              "rule_sequence": {
+                "major": 4,
+                "minor": 1
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "virtual-network",
+      "body": {
+        "fq_name": [
+          "default",
+          "admin",
+          "vn_blue"
+        ],
+        "uuid": "vn_blue",
+        "display_name": "blue",
+        "parent_type": "project",
+        "parent_uuid": "admin_project_uuid",
+        "is_shared": false,
+        "route_target_list": {
+          "route_target": [
+            "100:200"
+          ]
+        },
+        "virtual_network_network_id": 50,
+        "network_policy_refs": [
+          {
+            "uuid": "network_policy_uuid"
+          }
+        ]
+      }
+    }
+  ]
+}
+```
