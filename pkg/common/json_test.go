@@ -6,6 +6,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestMustJSONReturnsEmptyStringOnMarshalError(t *testing.T) {
+	invalidData := map[float64]interface{}{1.337: "value"}
+	assert.Equal(t, "", MustJSON(invalidData))
+}
+
 func TestGetValueByPathSingleField(t *testing.T) {
 	current := map[string]interface{}{"name": "Tom"}
 	result, ok := GetValueByPath(current, "name", ".")

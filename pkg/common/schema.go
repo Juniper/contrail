@@ -128,10 +128,7 @@ type JSONSchema struct {
 
 //String makes string format for json schema
 func (s *JSONSchema) String() string {
-	data, err := json.Marshal(s)
-	if err != nil {
-		return ""
-	}
+	data, _ := json.Marshal(s) // nolint: gas
 	return string(data)
 }
 
