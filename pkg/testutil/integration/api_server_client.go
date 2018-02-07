@@ -65,7 +65,7 @@ func (c *HTTPAPIClient) CreateResource(t *testing.T, path string, requestData in
 		"response":     r,
 		"responseData": responseData,
 	}).Debug("Got Create response")
-	assert.NoError(t, err, fmt.Sprintf("creating resource failed; requestData: %v; response: %v", requestData, r))
+	assert.NoError(t, err, fmt.Sprintf("creating resource failed, requestData: %v, response: %v", requestData, r))
 }
 
 // GetResource gets resource from API Server and checks operation error.
@@ -75,23 +75,24 @@ func (c *HTTPAPIClient) GetResource(t *testing.T, path string, responseData inte
 		"response":     r,
 		"responseData": responseData,
 	}).Debug("Got Get response")
-	assert.NoError(t, err, fmt.Sprintf("getting resource failed; response: %v", r))
+	assert.NoError(t, err, fmt.Sprintf("getting resource failed, response: %v", r))
 }
 
 // DeleteResource deletes resource from API Server and checks operation error.
 func (c *HTTPAPIClient) DeleteResource(t *testing.T, path string) {
-	_, err := c.Delete(path, nil)
-	assert.NoError(t, err, "deleting resource failed")
+	r, err := c.Delete(path, nil)
+	c.log.WithField("response", r).Debug("Got Delete response")
+	assert.NoError(t, err, "deleting resource failed, response: %v", r)
 }
 
 // CheckResourceDoesNotExist checks that there is no resource with given path.
 func (c *HTTPAPIClient) CheckResourceDoesNotExist(t *testing.T, path string) {
-	_, err := c.Do(
+	r, err := c.Do(
 		echo.GET,
 		path,
 		nil,
 		nil,
 		[]int{http.StatusNotFound},
 	)
-	assert.NoError(t, err, "getting resource failed")
+	assert.NoError(t, err, "getting resource failed, response: %v", r)
 }

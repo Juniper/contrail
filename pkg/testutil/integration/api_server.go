@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"database/sql"
 	"fmt"
 	"net/http/httptest"
 	"path"
@@ -11,6 +10,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/db"
 	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -75,7 +75,7 @@ func NewRunningAPIServer(t *testing.T, repoRootPath string) *APIServer {
 	s, err := apisrv.NewServer()
 	require.NoError(t, err, "creating API Server failed")
 
-	ts := httptest.NewServer(s.Echo)
+	ts := testutil.NewTestHTTPServer(s.Echo)
 
 	viper.Set("keystone.authurl", ts.URL+authEndpointSuffix)
 	err = s.Init()
@@ -134,11 +134,6 @@ func configureDebugLogging(t *testing.T) {
 // URL returns server base URL.
 func (s *APIServer) URL() string {
 	return s.testServer.URL
-}
-
-// Database returns database handle.
-func (s *APIServer) Database() *sql.DB {
-	return s.apiServer.DB
 }
 
 // Close closes server.
