@@ -6,11 +6,12 @@ import (
 	"testing"
 	"time"
 
-	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	pkglog "github.com/Juniper/contrail/pkg/log"
 )
 
 const (
@@ -43,7 +44,7 @@ func NewEtcdClient(t *testing.T) *EtcdClient {
 // GetAllWithPrefix returns etcd Get response for all keys starting from given prefix.
 func (e *EtcdClient) GetAllWithPrefix(t *testing.T, prefix string) *clientv3.GetResponse {
 	r, err := e.Get(context.Background(), prefix, clientv3.WithPrefix())
-	assert.NoError(t, err, "getting resource from etcd failed")
+	assert.NoError(t, err, fmt.Sprintf("getting resource from etcd failed\n response: %+v", r))
 	e.log.WithFields(logrus.Fields{"prefix": prefix, "response": r}).Debug("Received etcd Get response")
 	return r
 }

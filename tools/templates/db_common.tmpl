@@ -22,10 +22,13 @@ func (db *Service) initQueryBuilders() {
 
 func (db *Service) dump(ctx context.Context, ow ObjectWriter) error {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-    list{{ schema.JSONSchema.GoName }}Request := &services.List{{ schema.JSONSchema.GoName }}Request{&services.ListSpec{}}
     list{{ schema.JSONSchema.GoName }}Response, err := db.list{{ schema.JSONSchema.GoName }}(
         ctx,
-        list{{ schema.JSONSchema.GoName }}Request,
+        &services.List{{ schema.JSONSchema.GoName }}Request{
+        	Spec: &services.ListSpec{
+        		Detail: true,
+        	},
+        },
     )
     if err != nil {
         return err

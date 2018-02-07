@@ -1,11 +1,11 @@
 package contrailcli
 
 import (
-	"crypto/tls"
 	"net/http/httptest"
 	"os"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/apisrv"
@@ -30,10 +30,8 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	testServer = httptest.NewUnstartedServer(server.Echo)
-	testServer.TLS = new(tls.Config)
-	testServer.TLS.NextProtos = append(testServer.TLS.NextProtos, "h2")
-	testServer.StartTLS()
+
+	testServer = testutil.NewTestHTTPServer(server.Echo)
 	defer testServer.Close()
 
 	viper.Set("keystone.authurl", testServer.URL+"/keystone/v3")
