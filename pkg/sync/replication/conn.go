@@ -122,11 +122,15 @@ func (c *postgresReplicationConnection) SendStatus(maxWal uint64) error {
 
 // Close closes underlying connections.
 func (c *postgresReplicationConnection) Close() error {
-	errs := []string{}
-	errs = append(errs, c.db.DB().Close().Error())
-	errs = append(errs, c.replConn.Close().Error())
+	var errs []string
+	if dbErr := c.db.DB().Close(); dbErr != nil {
+		errs = append(errs, dbErr.Error())
+	}
+	if replConnErr := c.replConn.Close(); replConnErr != nil {
+		errs = append(errs, replConnErr.Error())
+	}
 	if len(errs) > 0 {
-		return fmt.Errorf("errors while closing: %s", strings.Join(errs, "\n"))
+		return fmt.Errorf("errors while closing: %s", strings.Join(errs, "; "))
 	}
 	return nil
 }
