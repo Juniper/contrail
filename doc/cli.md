@@ -22,7 +22,7 @@ CLI reads configuration from YAML file on path specified `--config-file` flag.
 Required fields are defined in [source code](../pkg/agent/agent.go) as the `Config` structure.
 Note that Agent-specific fields, such as `watcher` and `tasks` are not required - to be changed in the future.
 
-Example configuration can be found [here](../tools/test_cli_config.yml).  
+Example configuration can be found [here](../sample/contrailcli.yml).  
 
 ## Running
 
@@ -32,9 +32,9 @@ Usage examples for available commands are presented below.
 
 Schema command shows schema for specified resource.
 
-	contrailcli schema virtual_network -c integration/contrailcli.yml
+	contrailcli schema virtual_network -c sample/contrailcli.yml
 
-Schema command output (`integration/cli/testdata/virtual_network_schema.yml`):
+Schema command output (`pkg/cli/testdata/virtual_network_schema.yml`):
 ``` yaml
 #  
 - kind: virtual_network
@@ -74,9 +74,9 @@ Schema command output (`integration/cli/testdata/virtual_network_schema.yml`):
 
 Show command shows data of specified resource.
 
-	contrailcli show virtual_network first-uuid -c integration/contrailcli.yml
+	contrailcli show virtual_network first-uuid -c sample/contrailcli.yml
 
-Show command output (`integration/cli/testdata/virtual_networks_showed.yml`):
+Show command output (`pkg/cli/testdata/virtual_networks_showed.yml`):
 ``` yaml
 kind: virtual_network
 data:
@@ -121,7 +121,7 @@ data:
 
 Invoke command with empty schema identifier in order to show possible usages.
 
-	contrailcli show "" "" -c integration/contrailcli.yml
+	contrailcli show "" "" -c sample/contrailcli.yml
 
 Show command output (shortened):
 ```
@@ -152,9 +152,9 @@ List command lists data of specified resources.
 There are also multiple parameters available, such as filters.
 Display them with `contrailcli list -h` command.
 
-	contrailcli list virtual_network -c integration/contrailcli.yml
+	contrailcli list virtual_network -c sample/contrailcli.yml
 
-List command output (`integration/cli/testdata/virtual_networks_listed.yml`):
+List command output (`pkg/cli/testdata/virtual_networks_listed.yml`):
 ``` yaml
 - kind: virtual_network
   data:
@@ -235,7 +235,7 @@ List command output (`integration/cli/testdata/virtual_networks_listed.yml`):
 
 Invoke command with empty schema identifier in order to show possible usages.
 
-	contrailcli list "" -c integration/contrailcli.yml
+	contrailcli list "" -c sample/contrailcli.yml
 
 List command output (shortened):
 ```
@@ -263,9 +263,9 @@ contrail list bridge_domain
 
 Create command creates resources defined in given YAML file.
 
-	contrailcli create integration/cli/testdata/virtual_networks.yml -c integration/contrailcli.yml
+	contrailcli create pkg/cli/testdata/virtual_networks.yml -c sample/contrailcli.yml
 	
-Input file content (`integration/cli/testdata/virtual_networks.yml`):
+Input file content (`pkg/cli/testdata/virtual_networks.yml`):
 ``` yaml
 - kind: virtual_network
   data:
@@ -349,9 +349,9 @@ Create command output after successful operation should be the same as input con
 
 Set updates properties of specified resource.
 
-	contrailcli set virtual_network first-uuid "external_ipam: true" -c integration/contrailcli.yml
+	contrailcli set virtual_network first-uuid "external_ipam: true" -c sample/contrailcli.yml
 
-Set command output (`integration/cli/testdata/virtual_networks_set_output.yml`):
+Set command output (`pkg/cli/testdata/virtual_networks_set_output.yml`):
 ``` yaml
 uri: /virtual-network/first-uuid
 uuid: first-uuid
@@ -359,7 +359,7 @@ uuid: first-uuid
 
 Invoke command with empty schema identifier in order to show possible usages.
 
-	contrailcli set "" "" "" -c integration/contrailcli.yml
+	contrailcli set "" "" "" -c sample/contrailcli.yml
 
 Set command output (shortened):
 ```
@@ -387,9 +387,9 @@ contrail set bridge_domain $UUID $YAML
 
 Update updates resources with data defined in given YAML file.
 
-	contrailcli update integration/cli/testdata/virtual_networks_update.yml -c integration/contrailcli.yml
+	contrailcli update pkg/cli/testdata/virtual_networks_update.yml -c sample/contrailcli.yml
 
-Input file content (`integration/cli/testdata/virtual_networks_update.yml`):
+Input file content (`pkg/cli/testdata/virtual_networks_update.yml`):
 ``` yaml
 - kind: virtual_network
   data:
@@ -398,7 +398,7 @@ Input file content (`integration/cli/testdata/virtual_networks_update.yml`):
     uuid: first-uuid
 ```
 
-Update command output (`integration/cli/testdata/virtual_networks_update_output.yml`):
+Update command output (`pkg/cli/testdata/virtual_networks_update_output.yml`):
 ``` yaml
 - kind: virtual_network
   data:
@@ -411,9 +411,9 @@ Update command output (`integration/cli/testdata/virtual_networks_update_output.
 Sync synchronises resources with data defined in given YAML file.
 It creates new resource for every not already existing resource.
 
-	contrailcli sync integration/cli/testdata/virtual_networks_update.yml -c integration/contrailcli.yml
+	contrailcli sync pkg/cli/testdata/virtual_networks_update.yml -c sample/contrailcli.yml
 
-Input file content (`integration/cli/testdata/virtual_networks_update.yml`):
+Input file content (`pkg/cli/testdata/virtual_networks_update.yml`):
 ``` yaml
 - kind: virtual_network
   data:
@@ -422,7 +422,7 @@ Input file content (`integration/cli/testdata/virtual_networks_update.yml`):
     uuid: first-uuid
 ```
 
-Update command output (`integration/cli/testdata/virtual_networks_update_output.yml`):
+Update command output (`pkg/cli/testdata/virtual_networks_update_output.yml`):
 ``` yaml
 - kind: virtual_network
   data:
@@ -434,13 +434,13 @@ Update command output (`integration/cli/testdata/virtual_networks_update_output.
 
 Rm removes a resource with specified UUID.
 
-	contrailcli rm virtual_network second-uuid -c integration/contrailcli.yml
+	contrailcli rm virtual_network second-uuid -c sample/contrailcli.yml
 	
 Rm command output is empty on successful operation.
 
 Invoke command with empty schema identifier in order to show possible usages.
 
-	contrailcli rm -c integration/contrailcli.yml
+	contrailcli rm -c sample/contrailcli.yml
 
 Rm command output (shortened):
 ```
@@ -468,9 +468,9 @@ contrail rm bridge_domain $UUID
 
 Delete removes resources specified in given YAML file.
 
-	contrailcli delete integration/cli/testdata/virtual_networks.yml
+	contrailcli delete pkg/cli/testdata/virtual_networks.yml
 	
-Input file content (`integration/cli/testdata/virtual_networks.yml`):
+Input file content (`pkg/cli/testdata/virtual_networks.yml`):
 ``` yaml
 - kind: virtual_network
   data:
