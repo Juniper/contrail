@@ -5,11 +5,11 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/testutil"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -118,7 +118,7 @@ func checkDataEqual(t *testing.T, expectedYAMLFile, actualYAML string) {
 	var actual interface{}
 	err = yaml.Unmarshal([]byte(actualYAML), &actual)
 	require.NoError(t, err, "cannot parse actual data")
-	if !common.AssertEqual(t, expected, actual, "") {
+	if !testutil.AssertEqual(t, expected, actual, "") {
 		fmt.Println("expected ")
 		fmt.Println(string(expectedBytes))
 		fmt.Println("actual ")

@@ -44,7 +44,7 @@ func (w *MySQLWatcher) Close() {
 	w.canal.Close()
 }
 
-// PostgresSubscriptionConfig stores configuration for logical replication connection used for Subsctiption object.
+// PostgresSubscriptionConfig stores configuration for logical replication connection used for Subscription object.
 type PostgresSubscriptionConfig struct {
 	Slot          string
 	Publication   string
@@ -62,7 +62,7 @@ type postgresWatcherConnection interface {
 	DumpSnapshot(context.Context, db.RowWriter, string) error
 }
 
-// PostgresWatcher allows subscribing to Postgresql logical replication messages.
+// PostgresWatcher allows subscribing to PostgreSQL logical replication messages.
 type PostgresWatcher struct {
 	conf PostgresSubscriptionConfig
 
@@ -150,10 +150,12 @@ func (w *PostgresWatcher) loop(ctx context.Context) error {
 			cancel()
 			if err == context.DeadlineExceeded {
 				continue
-			}
-			if err != nil {
+			} else if err == context.Canceled {
+				return nil
+			} else if err != nil {
 				return fmt.Errorf("replication failed: %s", err)
 			}
+
 			if err = w.handleMessage(message); err != nil {
 				return err
 			}

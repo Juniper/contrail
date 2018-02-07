@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -114,7 +115,7 @@ func RunTestScenario(t *testing.T, testScenario *TestScenario) {
 		_, err := client.DoRequest(task.Request)
 		assert.NoError(t, err, fmt.Sprintf("task %v failed", task))
 		task.Expect = common.YAMLtoJSONCompat(task.Expect)
-		ok := common.AssertEqual(t, task.Expect, task.Request.Output, fmt.Sprintf("task %v failed", task))
+		ok := testutil.AssertEqual(t, task.Expect, task.Request.Output, fmt.Sprintf("task %v failed", task))
 		if !ok {
 			break
 		}

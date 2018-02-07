@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
@@ -86,7 +86,7 @@ func verifyProxy(t *testing.T, testScenario *TestScenario, url string,
 		if !ok {
 			return ok
 		}
-		ok = common.AssertEqual(t,
+		ok = testutil.AssertEqual(t,
 			map[string]interface{}{key: clusterName + expected},
 			response,
 			fmt.Sprintf("Unexpected Response: %s", response))

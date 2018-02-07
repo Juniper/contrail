@@ -1,19 +1,18 @@
-package common
+package testutil
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
 	"strconv"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/common"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 //CheckDiff checks diff
+// nolint: gocyclo
 func CheckDiff(path string, expected, actual interface{}) error {
 	if expected == nil {
 		return nil
@@ -52,7 +51,7 @@ func CheckDiff(path string, expected, actual interface{}) error {
 			}
 		}
 	case int:
-		if float64(t) != InterfaceToFloat(actual) {
+		if float64(t) != common.InterfaceToFloat(actual) {
 			return fmt.Errorf("ffff expected %d but actually we got %f for path %s", t, actual, path)
 		}
 	default:
@@ -74,38 +73,11 @@ func logDiff(expected, actual interface{}) {
 
 //AssertEqual test if it is correct
 func AssertEqual(t *testing.T, expected, actual interface{}, message string) bool {
-	expected = YAMLtoJSONCompat(expected)
-	actual = YAMLtoJSONCompat(actual)
+	expected = common.YAMLtoJSONCompat(expected)
+	actual = common.YAMLtoJSONCompat(actual)
 	err := CheckDiff("", expected, actual)
 	if err != nil {
 		logDiff(expected, actual)
 	}
 	return assert.NoError(t, err, message)
-}
-
-// MustDecodeInt64Value tries to decode Int64 from binary form and fails test in case of an error.
-func MustDecodeInt64Value(t *testing.T, encodedValue string) interface{} {
-	var value int64
-	err := binary.Read(bytes.NewBufferString(encodedValue), binary.BigEndian, &value)
-	require.NoError(t, err)
-
-	return value
-}
-
-// MustDecodeFloat64Value tries to decode Float64 from binary form and fails test in case of an error.
-func MustDecodeFloat64Value(t *testing.T, encodedValue string) interface{} {
-	var value float64
-	err := binary.Read(bytes.NewBufferString(encodedValue), binary.BigEndian, &value)
-	require.NoError(t, err)
-
-	return value
-}
-
-// MustDecodeBoolValue tries to decode Bool from binary form and fails test in case of an error.
-func MustDecodeBoolValue(t *testing.T, encodedValue string) interface{} {
-	var value bool
-	err := binary.Read(bytes.NewBufferString(encodedValue), binary.BigEndian, &value)
-	require.NoError(t, err)
-
-	return value
 }
