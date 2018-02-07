@@ -150,10 +150,12 @@ func (w *PostgresWatcher) loop(ctx context.Context) error {
 			cancel()
 			if err == context.DeadlineExceeded {
 				continue
-			}
-			if err != nil {
+				//} else if err == context.Canceled {
+				//	return nil
+			} else if err != nil {
 				return fmt.Errorf("replication failed: %s", err)
 			}
+
 			if err = w.handleMessage(message); err != nil {
 				return err
 			}
