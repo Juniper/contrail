@@ -36,7 +36,7 @@ gometalinter \
 	--deadline 10m \
 	--concurrency 1 \
 	--line-length 120 \
-	--dupl-threshold=70 \
+	--dupl-threshold=115 \
 	--vendor \
 	--skip pkg/services \
 	--skip pkg/serviceif \
@@ -58,6 +58,6 @@ gometalinter \
 	--deadline 10m \
 	--concurrency 1 \
 	--line-length 120 \
-	--dupl-threshold=70 \
+	--dupl-threshold=115 \
 	--vendor \
-	./cmd/... ./pkg/cmd/... ./pkg/agent/... ./pkg/log/... \
+	./cmd/... ./pkg/cmd/... ./pkg/agent/... ./pkg/log/... ./pkg/testutil/... ./pkg/watcher/...

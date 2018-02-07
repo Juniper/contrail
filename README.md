@@ -123,7 +123,8 @@ CONTRAIL_DATABASE_DEBUG=true make test
 ## Commands
 
 Repository holds source code for following CLI applications:
-- `contrail` - contains API Server, [Agent](doc/agent.md) and [API Server command line client][cli]
+- `contrail` - contains API Server, [Agent](doc/agent.md), [Watcher](doc/watcher.md)
+and [API Server command line client][cli] 
 - `contrailcli` - contains [API Server command line client][cli]
 - `contrailutil` - contains development utilities
 
