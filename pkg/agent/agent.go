@@ -17,7 +17,13 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const serverSchemaPath = "/public/schema.json"
+// Agent constants.
+const (
+	FileBackend    = "file"
+	PollingWatcher = "polling"
+
+	serverSchemaPath = "/public/schema.json"
+)
 
 // Config represents Agent configuration.
 type Config struct {

@@ -18,11 +18,11 @@ The following software is required to build this project:
 
 - Install [git](https://www.atlassian.com/git/tutorials/install-git)
 - Install [go](https://golang.org/doc/install)
-- Install [dep](https://github.com/golang/dep)
 - Install [mysql](https://dev.mysql.com/doc/en/installing.html)
 - Install [fpm](https://github.com/jordansissel/fpm), only required if building packages (described below)
   - Install [ruby](https://www.ruby-lang.org/en/documentation/installation/)
   - Install [rubygems](https://rubygems.org/pages/download)
+- Run `make deps` to acquire development dependencies  
 
 ## Retrieve the code (using go get)
 
@@ -57,14 +57,32 @@ JSON version stored in public/schema.json
 
 ## Testing
 
-You need to run a local mysql instance running with test configuration.
+In order to run tests you need to configure and start local MySQL and etcd, as described below.
 
-It is expected that the root password is 'contrail123', you can set this on an existing installation
+Running tests:
+
+``` shell
+make test
+```
+
+### MySQL configuration
+
+It is expected that the root password is `contrail123`, you can set this on an existing installation
 from the mysql prompt as follows:
 
 ``` shell
 MariaDB [(none)]> ALTER USER 'root'@'localhost' IDENTIFIED BY 'contrail123';
 ```
+
+Add following section to `/etc/mysql/my.cnf`: 
+
+``` shell
+[mysqld]
+log_bin=/var/log/mysql/mysql-bin
+server_id=1
+```
+
+Restart MySQL to apply changes: `service mysql restart`
 
 Executing the script below, will drop the contrail_test schema if it exists, recreate it and initialise this schema
 
@@ -72,22 +90,40 @@ Executing the script below, will drop the contrail_test schema if it exists, rec
 ./tools/reset_db.sh
 ```
 
-At this point the tests can be executed:
+### Running etcd
+
+Etcd can be run with local installation or inside Docker container.
+
+#### Local etcd
+
+Download etcd 3.3.1 from [release page][etcd-releases], extract it and put `etcd` and `etcdctl` binaries
+within system PATH, e.g:
 
 ``` shell
-make test
+wget https://github.com/coreos/etcd/releases/download/v3.3.1/etcd-v3.3.1-linux-amd64.tar.gz
+tar -zxf etcd-v3.3.1-linux-amd64.tar.gz
+sudo mv etcd-v3.3.1-linux-amd64/etcd etcd-v3.3.1-linux-amd64/etcdctl /usr/local/bin/
+rm -rf  etcd-v3.3.1-linux-amd64 etcd-v3.3.1-linux-amd64.tar.gz
 ```
 
-Run integration tests:
+Run etcd service with `make run_etcd`.
+
+[etcd-releases]: https://github.com/coreos/etcd/releases/
+
+#### Etcd in Docker
+
+Run etcd in Docker container:
 
 ``` shell
-make integration
+docker run -d --name etcd -p 2379:2379 gcr.io/etcd-development/etcd:v3.3.1 etcd \
+	--advertise-client-urls http://0.0.0.0:2379 --listen-client-urls http://0.0.0.0:2379
 ```
 
 ## Commands
 
 Repository holds source code for following CLI applications:
-- `contrail` - contains API Server, [Agent](doc/agent.md) and [API Server command line client][cli] 
+- `contrail` - contains API Server, [Agent](doc/agent.md), [Watcher](doc/watcher.md)
+and [API Server command line client][cli] 
 - `contrailcli` - contains [API Server command line client][cli]
 - `contrailutil` - contains development utilities
 
