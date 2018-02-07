@@ -40,6 +40,13 @@ var apiServerCmd = &cobra.Command{
 				wg.Done()
 			}()
 		}
+		if watcherConfigFile != "" {
+			wg.Add(1)
+			go func() {
+				startWatcher()
+				wg.Done()
+			}()
+		}
 		wg.Wait()
 	},
 }

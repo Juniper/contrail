@@ -32,5 +32,3 @@ users:
     - id: Member
       name: Member
       project: *demo
-
-

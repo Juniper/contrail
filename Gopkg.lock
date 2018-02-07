@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/BurntSushi/toml"
+  packages = ["."]
+  revision = "b26d9c308763d68093482582cea63d69be07a0f0"
+  version = "v0.3.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/DavidCai1993/etcd-lock"
   packages = ["."]
@@ -146,10 +152,30 @@
   version = "v1.0"
 
 [[projects]]
+  name = "github.com/jackc/pgx"
+  packages = [
+    ".",
+    "chunkreader",
+    "internal/sanitize",
+    "pgio",
+    "pgproto3",
+    "pgtype",
+    "stdlib"
+  ]
+  revision = "da3231b0b66e2e74cdb779f1d46c5e958ba8be27"
+  version = "v3.1.0"
+
+[[projects]]
   name = "github.com/joho/godotenv"
   packages = ["."]
   revision = "a79fa1e548e2c689c241d10173efd51e5d689d5b"
   version = "v1.2.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/juju/errors"
+  packages = ["."]
+  revision = "c7d06af17c68cd34c835053720b21f6549d9b0ee"
 
 [[projects]]
   name = "github.com/k0kubun/pp"
@@ -168,6 +194,12 @@
   name = "github.com/kr/text"
   packages = ["."]
   revision = "7cafcd837844e784b526369c9bce262804aebc60"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/kyleconroy/pgoutput"
+  packages = ["."]
+  revision = "3fd8343739daf3f4bbb7a49c54ab20c9f6179874"
 
 [[projects]]
   name = "github.com/labstack/echo"
@@ -263,6 +295,32 @@
   version = "v1.2.0"
 
 [[projects]]
+  name = "github.com/shopspring/decimal"
+  packages = ["."]
+  revision = "69b3a8ad1f5f2c8bd855cb6506d18593064a346b"
+  version = "1.0.1"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/siddontang/go"
+  packages = ["hack"]
+  revision = "cb568a3e5cc06256f91a2da5a87455f717eb33f4"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/siddontang/go-mysql"
+  packages = [
+    "canal",
+    "client",
+    "dump",
+    "mysql",
+    "packet",
+    "replication",
+    "schema"
+  ]
+  revision = "5b24def0560e05198f0cd7a7e6abd35b5a13187b"
+
+[[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
@@ -308,9 +366,16 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/stretchr/objx"
+  packages = ["."]
+  revision = "facf9a85c22f48d2f52f2380e4efce1768749a89"
+  version = "v0.1"
+
+[[projects]]
   name = "github.com/stretchr/testify"
   packages = [
     "assert",
+    "mock",
     "require"
   ]
   revision = "b91bfb9ebec76498946beb6af7c0230c7cc7ba6c"
@@ -447,6 +512,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6abb2c38e870bc835908a8a5598f983965310f4bb135ce027f236ada36075304"
+  inputs-digest = "4d65d7673487c2b82e1c33705e0544b992d3f241c5688399acf0da94c220b2e0"
   solver-name = "gps-cdcl"
   solver-version = 1
