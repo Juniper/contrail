@@ -2,11 +2,27 @@ package common
 
 import (
 	"database/sql"
-	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/labstack/echo"
+)
+
+// Block of constants consumed by client code.
+const (
+	FiltersKey      = "filters"
+	PageMarkerKey   = "pageMarker"
+	PageLimitKey    = "pageLimit"
+	DetailKey       = "detail"
+	CountKey        = "is_count"
+	SharedKey       = "shared"
+	ExcludeHRefsKey = "exclude_hrefs"
+	ParentTypeKey   = "parent_type"
+	ParentFQNameKey = "parent_fq_name_str"
+	ParentUUIDsKey  = "parent_id"
+	BackrefUUIDsKey = "back_ref_id"
+	ObjectUUIDsKey  = "obj_uuids"
+	FieldsKey       = "fields"
 )
 
 //RESTAPI defines handlers for REST API calls.
@@ -49,7 +65,6 @@ func RegisterAPI(api RESTAPI) {
 //Routes registers routes
 func Routes(e *echo.Echo) {
 	for _, api := range apiRegistory {
-		fmt.Println(api.Path())
 		e.POST(api.Path(), api.Create)
 		e.PUT(api.LongPath(), api.Update)
 		e.DELETE(api.LongPath(), api.Delete)
@@ -73,10 +88,6 @@ func parseBool(query string) bool {
 	return strings.ToLower(query) == "true"
 }
 
-func parseFlag(query string) bool {
-	return query != ""
-}
-
 func parseStringList(query string) []string {
 	if query == "" {
 		return nil
@@ -86,19 +97,19 @@ func parseStringList(query string) []string {
 
 //GetListSpec makes ListSpec from Query Parameters
 func GetListSpec(c echo.Context) *ListSpec {
-	filter := ParseFilter(c.QueryParam("filters"))
-	pageMarker := parsePositiveNumber(c.QueryParam("pageMarker"), 0)
-	pageLimit := parsePositiveNumber(c.QueryParam("pageLimit"), 100)
-	detail := parseBool(c.QueryParam("detail"))
-	count := parseBool(c.QueryParam("is_count"))
-	shared := parseBool(c.QueryParam("shared"))
-	excludeHrefs := parseFlag(c.QueryParam("exclude_hrefs"))
-	parentType := c.QueryParam("parent_type")
-	parentFQName := ParseFQName(c.QueryParam("parent_fq_name_str"))
-	parentUUIDs := parseStringList(c.QueryParam("parent_id"))
-	backrefUUIDs := parseStringList(c.QueryParam("back_ref_id"))
-	objectUUIDs := parseStringList(c.QueryParam("obj_uuids"))
-	fields := parseStringList(c.QueryParam("fields"))
+	filter := ParseFilter(c.QueryParam(FiltersKey))
+	pageMarker := parsePositiveNumber(c.QueryParam(PageMarkerKey), 0)
+	pageLimit := parsePositiveNumber(c.QueryParam(PageLimitKey), 100)
+	detail := parseBool(c.QueryParam(DetailKey))
+	count := parseBool(c.QueryParam(CountKey))
+	shared := parseBool(c.QueryParam(SharedKey))
+	excludeHrefs := parseBool(c.QueryParam(ExcludeHRefsKey))
+	parentType := c.QueryParam(ParentTypeKey)
+	parentFQName := ParseFQName(c.QueryParam(ParentFQNameKey))
+	parentUUIDs := parseStringList(c.QueryParam(ParentUUIDsKey))
+	backrefUUIDs := parseStringList(c.QueryParam(BackrefUUIDsKey))
+	objectUUIDs := parseStringList(c.QueryParam(ObjectUUIDsKey))
+	fields := parseStringList(c.QueryParam(FieldsKey))
 	return &ListSpec{
 		Filter:          filter,
 		RequestedFields: fields,

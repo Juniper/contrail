@@ -60,6 +60,12 @@
   version = "v1.0"
 
 [[projects]]
+  name = "github.com/joho/godotenv"
+  packages = ["."]
+  revision = "a79fa1e548e2c689c241d10173efd51e5d689d5b"
+  version = "v1.2.0"
+
+[[projects]]
   name = "github.com/labstack/echo"
   packages = [
     ".",
@@ -96,6 +102,12 @@
   packages = ["."]
   revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
   version = "v0.0.3"
+
+[[projects]]
+  name = "github.com/mattn/go-shellwords"
+  packages = ["."]
+  revision = "02e3cf038dcea8290e44424da473dd12be796a8a"
+  version = "v1.0.3"
 
 [[projects]]
   branch = "master"
@@ -174,7 +186,10 @@
 
 [[projects]]
   name = "github.com/stretchr/testify"
-  packages = ["assert"]
+  packages = [
+    "assert",
+    "require"
+  ]
   revision = "b91bfb9ebec76498946beb6af7c0230c7cc7ba6c"
   version = "v1.2.0"
 
@@ -243,6 +258,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "72f4ad3afd85cc2f444fc4370440bfd878d27143a7ccac44558e4683443823ae"
+  inputs-digest = "abdb43220b20094734bb50d2fed051eabc9a88822de3d4c4af5eb9d24cd773ca"
   solver-name = "gps-cdcl"
   solver-version = 1

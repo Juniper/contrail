@@ -36,7 +36,7 @@ type API struct {
 	Types       map[string]*JSONSchema `yaml:"-" json:"-"`
 }
 
-//ColumnConfig is for database configuraion.
+//ColumnConfig is for database configuration.
 type ColumnConfig struct {
 	Path         string
 	Type         string
@@ -59,7 +59,10 @@ func (c ColumnConfigs) Swap(i, j int) {
 }
 
 func (c ColumnConfigs) Less(i, j int) bool {
-	return strings.Compare(strings.Join(c[i].ParentColumn, "")+c[i].Column, strings.Join(c[j].ParentColumn, "")+c[j].Column) > 0
+	return strings.Compare(
+		strings.Join(c[i].ParentColumn, "")+c[i].Column,
+		strings.Join(c[j].ParentColumn, "")+c[j].Column,
+	) > 0
 }
 
 func (c ColumnConfigs) shortenColumn() {
@@ -125,7 +128,7 @@ type JSONSchema struct {
 
 //String makes string format for json schema
 func (s *JSONSchema) String() string {
-	data, _ := json.Marshal(s)
+	data, _ := json.Marshal(s) // nolint: gas
 	return string(data)
 }
 
@@ -152,8 +155,9 @@ func parseRef(ref string) (string, string) {
 	return refs[0], types[len(types)-1]
 }
 
-func (s *JSONSchema) getRef() (string, string) {
-	return parseRef(s.Ref)
+func (s *JSONSchema) getRefType() string {
+	_, goType := parseRef(s.Ref)
+	return goType
 }
 
 //Copy copies a json schema
@@ -231,20 +235,20 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 	}
 }
 
-//Walk apply one function for json schema recursivly.
-func (s *JSONSchema) Walk(name string, do func(name string, s2 *JSONSchema) error) error {
+//Walk apply one function for json schema recursively.
+func (s *JSONSchema) Walk(do func(s2 *JSONSchema) error) error {
 	if s == nil {
 		return nil
 	}
-	err := do(name, s)
+	err := do(s)
 	if err != nil {
 		return err
 	}
 	if s.Properties == nil {
 		return nil
 	}
-	for name, property := range s.Properties {
-		err = property.Walk(name, do)
+	for _, property := range s.Properties {
+		err = property.Walk(do)
 		if err != nil {
 			return err
 		}
@@ -294,7 +298,7 @@ func (s *JSONSchema) resolveGoName(name string) error {
 		return nil
 	}
 	s.GoName = SnakeToCamel(name)
-	_, goType := s.getRef()
+	goType := s.getRefType()
 	if goType == "" {
 		s.GoPremitive = true
 		switch s.Type {
@@ -317,7 +321,8 @@ func (s *JSONSchema) resolveGoName(name string) error {
 			}
 			if s.Items == nil {
 				goType = "[]interface{}"
-			} else if s.Items.Type == "integer" || s.Items.Type == "number" || s.Items.Type == "boolean" || s.Items.Type == "string" {
+			} else if s.Items.Type == "integer" || s.Items.Type == "number" || s.Items.Type == "boolean" ||
+				s.Items.Type == "string" {
 				goType = "[]" + s.Items.GoType
 			} else {
 				goType = "[]*" + s.Items.GoType
@@ -370,7 +375,7 @@ func (api *API) loadType(schemaFile, typeName string) (*JSONSchema, error) {
 	if !ok {
 		return nil, fmt.Errorf("%s isn't defined in %s", typeName, schemaFile)
 	}
-	err := definition.Walk("", api.resolveRef)
+	err := definition.Walk(api.resolveRef)
 	if err != nil {
 		return nil, err
 	}
@@ -382,12 +387,12 @@ func (api *API) loadType(schemaFile, typeName string) (*JSONSchema, error) {
 	return definition, nil
 }
 
-func (api *API) resolveRef(name string, schema *JSONSchema) error {
+func (api *API) resolveRef(schema *JSONSchema) error {
 	if schema == nil {
 		return nil
 	}
 	if schema.Type == "array" {
-		err := api.resolveRef("", schema.Items)
+		err := api.resolveRef(schema.Items)
 		if err != nil {
 			return err
 		}
@@ -405,7 +410,7 @@ func (api *API) resolveRef(name string, schema *JSONSchema) error {
 
 func (api *API) resolveAllRef() error {
 	for _, s := range api.Schemas {
-		err := s.JSONSchema.Walk("", api.resolveRef)
+		err := s.JSONSchema.Walk(api.resolveRef)
 		if err != nil {
 			return err
 		}

@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	Cmd.AddCommand(packageCmd)
+	ContrailUtil.AddCommand(packageCmd)
 }
 
 var (
@@ -234,7 +234,7 @@ func runPrint(cmd string, args ...string) {
 
 var packageCmd = &cobra.Command{
 	Use:   "package",
-	Short: "make a dep and rpm package",
+	Short: "make a deb and rpm package",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		createLinuxPackages()

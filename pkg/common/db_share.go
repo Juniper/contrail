@@ -36,7 +36,8 @@ func UpdateSharing(tx *sql.Tx, table string, uuid string, shares []interface{}) 
 		return err
 	}
 	for _, share := range shares {
-		err = createSharingEntry(tx, table, uuid, InterfaceToString(share.(map[string]interface{})["tenant"]), InterfaceToInt(share.(map[string]interface{})["tenant_access"]))
+		err = createSharingEntry(tx, table, uuid, InterfaceToString(share.(map[string]interface{})["tenant"]),
+			InterfaceToInt(share.(map[string]interface{})["tenant_access"]))
 		if err != nil {
 			return err
 		}

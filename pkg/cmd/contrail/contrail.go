@@ -10,13 +10,12 @@ import (
 var configFile string
 
 func init() {
-	cobra.OnInitialize()
 	cobra.OnInitialize(initConfig)
-	Cmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "Configuraion File")
+	Contrail.PersistentFlags().StringVarP(&configFile, "config", "c", "", "Configuration File")
 }
 
-//Cmd for main process commands
-var Cmd = &cobra.Command{
+// Contrail defines root Contrail command.
+var Contrail = &cobra.Command{
 	Use:   "contrail",
 	Short: "Contrail command",
 	Long:  ``,

@@ -6,6 +6,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestMustJSONReturnsEmptyStringOnMarshalError(t *testing.T) {
+	invalidData := map[float64]interface{}{1.337: "value"}
+	assert.Equal(t, "", MustJSON(invalidData))
+}
+
 func TestGetValueByPathSingleField(t *testing.T) {
 	current := map[string]interface{}{"name": "Tom"}
 	result, ok := GetValueByPath(current, "name", ".")
@@ -25,7 +30,8 @@ func TestGetValueByPathSingleDeep(t *testing.T) {
 }
 
 func TestGetValueByPathDeepDeep(t *testing.T) {
-	current := map[string]interface{}{"one": map[string]interface{}{"two": map[string]interface{}{"three": map[string]interface{}{"four": 4}}}}
+	current := map[string]interface{}{"one": map[string]interface{}{"two": map[string]interface{}{
+		"three": map[string]interface{}{"four": 4}}}}
 	result, ok := GetValueByPath(current, "one.two.three.four", ".")
 	assert.Equal(t, true, ok)
 	assert.Equal(t, 4, result)
@@ -63,5 +69,6 @@ func TestSetValueByPathDeepDeep(t *testing.T) {
 	current := map[string]interface{}{"one": map[string]interface{}{}}
 	ok := SetValueByPath(current, "one.two.three.four", ".", 4)
 	assert.Equal(t, true, ok)
-	assert.Equal(t, 4, current["one"].(map[string]interface{})["two"].(map[string]interface{})["three"].(map[string]interface{})["four"])
+	assert.Equal(t, 4, current["one"].(map[string]interface{})["two"].(map[string]interface {
+	})["three"].(map[string]interface{})["four"])
 }

@@ -17,12 +17,12 @@ type MetaData struct {
 	Type   string
 }
 
-//FQNameToString returns string representaion of FQName.
+//FQNameToString returns string representation of FQName.
 func FQNameToString(fqName []string) string {
 	return strings.Join(fqName, ":")
 }
 
-//ParseFQName parse string representaion of FQName.
+//ParseFQName parse string representation of FQName.
 func ParseFQName(fqNameString string) []string {
 	if fqNameString == "" {
 		return nil

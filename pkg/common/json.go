@@ -7,7 +7,10 @@ import (
 
 //MustJSON Marshal json
 func MustJSON(data interface{}) string {
-	b, _ := json.Marshal(data)
+	b, err := json.Marshal(data)
+	if err != nil {
+		return ""
+	}
 	return string(b)
 }
 
@@ -56,7 +59,7 @@ func GetValueByPath(dataSource map[string]interface{}, path string, delimiter st
 	if ok {
 		value, ok = dataSourceRef[attributeName]
 	}
-	return
+	return value, ok
 }
 
 //SetValueByPath method set the value for the given path in the nested map.
@@ -67,7 +70,7 @@ func SetValueByPath(dataSource map[string]interface{}, path string, delimiter st
 	if ok {
 		dataSourceRef[attributeName] = value
 	}
-	return
+	return ok
 }
 
 func getPathAsList(path string, delimiter string) ([]string, string) {

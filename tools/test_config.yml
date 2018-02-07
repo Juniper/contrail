@@ -1,4 +1,4 @@
-# Database configuraion. Only MySQL supported
+# Database configuration. Only MySQL supported
 database:
     connection: "root:contrail123@tcp(localhost:3306)/contrail_test"
     # Max Open Connections for MySQL Server
@@ -7,7 +7,7 @@ database:
 # Log Level
 log_level: debug
 
-# Server configuraion
+# Server configuration
 server:
     read_timeout: 10
     write_timeout: 5
@@ -15,7 +15,7 @@ server:
 # Bind addresss
 address: ":9091"
 
-# TLS Configuraion
+# TLS Configuration
 tls:
     enabled: false
     key_file: key
@@ -27,14 +27,14 @@ tls:
 static_files:
     public: public
 
-# API Proxy configuraion
+# API Proxy configuration
 # key: URL path
 # value: String list of backend host
 proxy:
     /contrail:
     - http://localhost:8082
 
-#Keystone configuraion
+# Keystone configuration
 keystone:
     local: true # Enable local keystone v3. This is only for testing now.
     assignment:

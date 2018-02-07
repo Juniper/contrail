@@ -97,7 +97,7 @@ func (c *Client) Login() error {
 	defer resp.Body.Close()
 	err = checkStatusCode([]int{200}, resp.StatusCode)
 	if err != nil {
-		output, _ := httputil.DumpResponse(resp, true)
+		output, _ := httputil.DumpResponse(resp, true) // nolint: gas
 		log.Println(string(output))
 		return err
 	}
@@ -169,6 +169,13 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 	if c.AuthToken != "" {
 		request.Header.Set("X-Auth-Token", c.AuthToken)
 	}
+
+	log.WithFields(log.Fields{
+		"method": request.Method,
+		"url":    request.URL,
+		"header": request.Header,
+		"data":   data,
+	}).Debug("Executing API Server request")
 	resp, err := c.httpClient.Do(request)
 	if err != nil {
 		return nil, err
@@ -176,7 +183,7 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 	defer resp.Body.Close()
 	err = checkStatusCode(expected, resp.StatusCode)
 	if err != nil {
-		output, _ := httputil.DumpResponse(resp, true)
+		output, _ := httputil.DumpResponse(resp, true) // nolint:  gas
 		log.Println(string(output))
 		return resp, err
 	}

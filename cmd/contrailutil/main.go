@@ -1,13 +1,12 @@
 package main
 
 import (
-	"log"
-
 	"github.com/Juniper/contrail/pkg/cmd/contrailutil"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
-	err := contrailutil.Cmd.Execute()
+	err := contrailutil.ContrailUtil.Execute()
 	if err != nil {
 		log.Fatal(err)
 	}

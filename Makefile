@@ -1,6 +1,6 @@
-all: deps lint test build
+all: deps lint test build integration
 
-deps: ## Setup the go dependencies 
+deps: ## Setup the go dependencies
 	./tools/deps.sh
 
 lint: ## Runs gometalinter on the source code
@@ -11,6 +11,10 @@ test: ## Run go test with race and coverage args
 
 build: ## Run go build
 	go build ./cmd/...
+
+.PHONY: integration
+integration: ## Run integration tests
+	./integration/test.sh
 
 generate: ## Run the source code generator
 	go run cmd/contrailutil/main.go generate --schemas schemas --templates tools/templates/template_config.yaml --schema-output public/schema.json

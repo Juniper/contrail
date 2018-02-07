@@ -7,7 +7,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-//Store is used to provide a persistance layer for tokens.
+//Store is used to provide a persistence layer for tokens.
 type Store interface {
 	CreateToken(*User, *Project) (string, *Token)
 	ValidateToken(string) (*Token, bool)
@@ -28,7 +28,7 @@ func MakeInMemoryStore(expire time.Duration) *InMemoryStore {
 }
 
 //CreateToken is used to create a token for a user.
-//This method also persistance a token.
+//This method also persists a token.
 func (store *InMemoryStore) CreateToken(user *User, project *Project) (string, *Token) {
 	tokenID := uuid.NewV4().String()
 	token := &Token{
