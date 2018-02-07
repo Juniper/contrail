@@ -23,10 +23,12 @@ const (
 
 func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) (context.Context, error) {
 	if tokenString == "" {
+		log.Debug("No auth token in request")
 		return nil, common.ErrorUnauthenticated
 	}
 	validatedToken, err := auth.Validate(tokenString)
 	if err != nil {
+		log.Debug("Auth token validation failed: ", err)
 		return nil, common.ErrorUnauthenticated
 	}
 	log.WithField("token", validatedToken).Debug("Authenticated")
@@ -90,7 +92,7 @@ func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
 			}
 			keystoneEndpoint, err := getKeystoneEndpoint(endpoints)
 			if err != nil {
-				log.Error(err)
+				log.Error("Getting Keystone endpoint failed: ", err)
 				return common.ToHTTPError(common.ErrorUnauthenticated)
 			}
 			if keystoneEndpoint != "" {
