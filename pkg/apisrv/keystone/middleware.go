@@ -26,6 +26,7 @@ const (
 
 func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) (context.Context, error) {
 	if tokenString == "" {
+		log.Debug("No auth token in request")
 		return nil, common.ErrorUnauthenticated
 	}
 	validatedToken, err := auth.Validate(tokenString)

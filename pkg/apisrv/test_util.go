@@ -23,10 +23,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// TestServer is http test server
+// TestServer is httptest.Server instance
 var TestServer *httptest.Server
 
-// APIServer is echo server
+// APIServer is test API Server instance
 var APIServer *Server
 
 // LogFatalIfErr logs the err during function call
