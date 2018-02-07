@@ -22,7 +22,7 @@ CLI reads configuration from YAML file on path specified `--config-file` flag.
 Required fields are defined in [source code](../pkg/agent/agent.go) as the `Config` structure.
 Note that Agent-specific fields, such as `watcher` and `tasks` are not required - to be changed in the future.
 
-Example configuration can be found [here](../integration/contrailcli.yml).  
+Example configuration can be found [here](../tools/contrailcli.yml).  
 
 ## Running
 

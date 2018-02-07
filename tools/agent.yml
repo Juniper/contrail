@@ -1,0 +1,32 @@
+# Configuration for Agent service.
+id: alice
+password: alice_password
+project_id: admin
+auth_url: http://localhost:9091/v3
+endpoint: http://localhost:9091
+backend: file
+watcher: polling
+tasks:
+- schema_id: private_cloud_
+  common:
+  - vars:
+      dir: "./work/{{ resource.account_id }}/"
+  on_create:
+  - command: mkdir -p "{{ dir }}"
+  - save:
+      dest: "{{ dir }}/{{ resource.schema_id }}s/{{ resource.id }}.yaml"
+      format: yaml
+  # - command: pwd
+  #   args:
+  #     chdir: "{{ dir }}"
+  # - command: date
+  # - template:
+  #     src: "./agent/cluster.tmpl"
+  #     dest: "{{ dir }}/cluster.txt"
+  - command: echo created
+  #  register: date
+  on_update:
+  - command: "echo updated"
+  on_delete:
+  - command: "echo deleted"
+  - command: "rm -rf  {{ dir }}"

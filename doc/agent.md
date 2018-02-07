@@ -19,7 +19,7 @@ Depending on chosen operation mode it might be:
 Service reads configuration from YAML file on path specified `--config-file` flag.
 Required fields are defined in [source code](../pkg/agent/agent.go) as the `Config` structure.
 
-Example configuration can be found [here](../integration/agent.yml).  
+Example configuration can be found [here](../tools/agent.yml).  
 
 ## Running
 

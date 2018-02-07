@@ -18,11 +18,13 @@ The following software is required to build this project:
 
 - Install [git](https://www.atlassian.com/git/tutorials/install-git)
 - Install [go](https://golang.org/doc/install)
-- Install [dep](https://github.com/golang/dep)
 - Install [mysql](https://dev.mysql.com/doc/en/installing.html)
+- Install [Docker Engine CE](https://www.docker.com/community-edition), required by integration tests
+- Install [Docker Compose](https://docs.docker.com/compose/install/), required by integration tests)
 - Install [fpm](https://github.com/jordansissel/fpm), only required if building packages (described below)
   - Install [ruby](https://www.ruby-lang.org/en/documentation/installation/)
   - Install [rubygems](https://rubygems.org/pages/download)
+- Run `make deps` to acquire development dependencies  
 
 ## Retrieve the code (using go get)
 
@@ -57,9 +59,11 @@ JSON version stored in public/schema.json
 
 ## Testing
 
-You need to run a local mysql instance running with test configuration.
+### Unit and API Server tests
 
-It is expected that the root password is 'contrail123', you can set this on an existing installation
+You need to run a local MySQL instance running with test configuration.
+
+It is expected that the root password is `contrail123`, you can set this on an existing installation
 from the mysql prompt as follows:
 
 ``` shell
@@ -72,22 +76,28 @@ Executing the script below, will drop the contrail_test schema if it exists, rec
 ./tools/reset_db.sh
 ```
 
-At this point the tests can be executed:
+At this point the tests can be executed (unit tests of other packages are run as well):
 
 ``` shell
 make test
 ```
 
-Run integration tests:
+### Integration tests
+
+Integration tests of backend services are located inside [integration](integration) directory.
+Find more information in [integration/doc.go](integration/doc.go) file.
+
+Build containers and run integration tests:
 
 ``` shell
-make integration
+make build docker integration
 ```
 
 ## Commands
 
 Repository holds source code for following CLI applications:
-- `contrail` - contains API Server, [Agent](doc/agent.md) and [API Server command line client][cli] 
+- `contrail` - contains API Server, [Agent](doc/agent.md), [Watcher](doc/watcher.md)
+and [API Server command line client][cli] 
 - `contrailcli` - contains [API Server command line client][cli]
 - `contrailutil` - contains development utilities
 

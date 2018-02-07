@@ -11,12 +11,32 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+gometalinter \
+	--enable-all \
+	--exclude "Subprocess launching with variable.*\(gas\)$" \
+	--exclude "TLS InsecureSkipVerify may be true.*\(gas\)$" \
+	--disable megacheck \
+	--disable safesql \
+	--disable staticcheck \
+	--disable test \
+	--disable testify \
+	--tests \
+	--aggregate \
+	--sort path \
+	--deadline 1m \
+	--concurrency 1 \
+	--line-length 120 \
+	--dupl-threshold=115 \
+	--vendor \
+	--skip pkg/generated \
+	./cmd/... ./pkg/cmd/... ./pkg/agent/... ./pkg/log/... ./pkg/testutil/... ./pkg/watcher/...
+
 # Several tools for majority of the code are disabled.
 # TODO(daniel): run the same set of tools for all Go files
 gometalinter \
 	--enable-all \
-	--exclude "Subprocess launching with variable" \
-	--exclude "TLS InsecureSkipVerify may be true" \
+	--exclude "Subprocess launching with variable.*\(gas\)$" \
+	--exclude "TLS InsecureSkipVerify may be true.*\(gas\)$" \
 	--disable errcheck \
 	--disable deadcode \
 	--disable dupl \
@@ -36,28 +56,7 @@ gometalinter \
 	--deadline 1m \
 	--concurrency 1 \
 	--line-length 120 \
-	--dupl-threshold=70 \
+	--dupl-threshold=115 \
 	--vendor \
 	--skip pkg/generated \
 	./...
-
-gometalinter \
-	--enable-all \
-	--exclude "Subprocess launching with variable" \
-	--exclude "TLS InsecureSkipVerify may be true" \
-	--disable megacheck \
-	--disable safesql \
-	--disable staticcheck \
-	--disable test \
-	--disable testify \
-	--tests \
-	--aggregate \
-	--sort path \
-	--deadline 1m \
-	--concurrency 1 \
-	--line-length 120 \
-	--dupl-threshold=70 \
-	--vendor \
-	--skip pkg/generated \
-	./cmd/... \
-	./pkg/agent/... \
