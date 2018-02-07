@@ -1,0 +1,12 @@
+# Configuration for Watcher service.
+database:
+  host: localhost:3306
+  user: root
+  password: contrail123
+  name: server
+etcd:
+  endpoints:
+    - localhost:2379
+  username: ""
+  password: ""
+storage: json

@@ -1,4 +1,4 @@
-all: deps lint test build integration
+all: deps lint test build
 
 deps: ## Setup the go dependencies
 	./tools/deps.sh
@@ -9,7 +9,7 @@ lint: ## Runs gometalinter on the source code
 test: ## Run go test with race and coverage args
 	./tools/test.sh
 
-build: ## Run go build
+build: ## Build executables
 	go build ./cmd/...
 
 generate: ## Run the source code generator
@@ -23,8 +23,11 @@ generate: ## Run the source code generator
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package
 
-reset_db: ## Reset Database with latest schema.
+reset_db: ## Reset Database with latest schema
 	./tools/reset_db.sh
+
+run_etcd: ## Run etcd service
+	./tools/run_etcd.sh
 
 binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrail_{{.OS}}_{{.Arch}}" ./cmd/contrail

@@ -14,7 +14,7 @@ import (
 
 // Configuration for new logger instances.
 var (
-	minimalLevel logrus.Level
+	minimalLevel           = logrus.DebugLevel
 	writer       io.Writer = os.Stdout
 )
 

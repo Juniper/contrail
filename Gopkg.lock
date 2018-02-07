@@ -2,6 +2,25 @@
 
 
 [[projects]]
+  name = "github.com/BurntSushi/toml"
+  packages = ["."]
+  revision = "b26d9c308763d68093482582cea63d69be07a0f0"
+  version = "v0.3.0"
+
+[[projects]]
+  name = "github.com/coreos/etcd"
+  packages = [
+    "auth/authpb",
+    "clientv3",
+    "etcdserver/api/v3rpc/rpctypes",
+    "etcdserver/etcdserverpb",
+    "mvcc/mvccpb",
+    "pkg/types"
+  ]
+  revision = "28f3f26c0e303392556035b694f75768d449d33d"
+  version = "v3.3.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/databus23/keystone"
   packages = ["."]
@@ -90,6 +109,12 @@
   version = "v1.2.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/juju/errors"
+  packages = ["."]
+  revision = "c7d06af17c68cd34c835053720b21f6549d9b0ee"
+
+[[projects]]
   name = "github.com/k0kubun/pp"
   packages = ["."]
   revision = "027a6d1765d673d337e687394dbe780dd64e2a1e"
@@ -170,6 +195,32 @@
   version = "v1.2.0"
 
 [[projects]]
+  name = "github.com/shopspring/decimal"
+  packages = ["."]
+  revision = "9ca7f51822d222ae4e246f070f9aad863599bd1a"
+  version = "1.0.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/siddontang/go"
+  packages = ["hack"]
+  revision = "cb568a3e5cc06256f91a2da5a87455f717eb33f4"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/siddontang/go-mysql"
+  packages = [
+    "canal",
+    "client",
+    "dump",
+    "mysql",
+    "packet",
+    "replication",
+    "schema"
+  ]
+  revision = "f77cd2a3cb46c6ceba6c3439cf5b937f6a314569"
+
+[[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
@@ -215,9 +266,16 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/stretchr/objx"
+  packages = ["."]
+  revision = "facf9a85c22f48d2f52f2380e4efce1768749a89"
+  version = "v0.1"
+
+[[projects]]
   name = "github.com/stretchr/testify"
   packages = [
     "assert",
+    "mock",
     "require"
   ]
   revision = "b91bfb9ebec76498946beb6af7c0230c7cc7ba6c"
@@ -321,6 +379,7 @@
     "encoding/proto",
     "grpclb/grpc_lb_v1/messages",
     "grpclog",
+    "health/grpc_health_v1",
     "internal",
     "keepalive",
     "metadata",
@@ -346,6 +405,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0a7cee0848d2305c6582e79e586fa2d8d8bea5ef2ed6f0ea3b7236625418ea13"
+  inputs-digest = "90a0f78403452544f4b46a3ddc4481b579efed7881bb18a41ff53bfab53b5286"
   solver-name = "gps-cdcl"
   solver-version = 1
