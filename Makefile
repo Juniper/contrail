@@ -1,6 +1,4 @@
-all: deps lint test build
-
-.PHONY: docker
+all: check lint test build
 
 deps: ## Setup the go dependencies
 	./tools/deps.sh
@@ -8,7 +6,7 @@ deps: ## Setup the go dependencies
 check: ## Check vendored dependencies
 	./tools/check.sh
 
-lint: ## Runs gometalinter on the source code
+lint: ## Run gometalinter on the source code
 	./tools/lint.sh
 
 test: ## Run go test with race and coverage args
@@ -53,7 +51,7 @@ install:
 	go install ./cmd/contrailcli
 	go install ./cmd/contrailutil
 
-testenv: ## setup docker based test environment. (You need docker)
+testenv: ## Setup docker based test environment. (You need docker)
 	./tools/testenv.sh
 
 reset_db: ## Reset Database with latest schema.
@@ -64,6 +62,7 @@ binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrail_{{.OS}}_{{.Arch}}" ./cmd/contrail
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailcli_{{.OS}}_{{.Arch}}" ./cmd/contrailcli
 
+.PHONY: docker
 docker: ## Generate docker files
 	CGO_ENABLED=0 gox -osarch="linux/amd64" --output "docker/contrail_go/contrail" ./cmd/contrail
 	CGO_ENABLED=0 gox -osarch="linux/amd64" --output "docker/contrail_go/contrailcli" ./cmd/contrailcli
@@ -74,7 +73,7 @@ docker: ## Generate docker files
 	cp -r public docker/contrail_go/public
 	docker build -t "contrail-go" docker/contrail_go
 
-help:
+help: ## Display help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .DEFAULT_GOAL := help
