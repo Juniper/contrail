@@ -1,37 +1,41 @@
 package integration
 
 import (
-	"database/sql"
 	"fmt"
 	"net/http/httptest"
 	"path"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/apisrv"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
-	"github.com/Juniper/contrail/pkg/db"
-	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/db"
+	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/testutil"
 )
 
 const (
-	dbUser     = "root"
-	dbPassword = "contrail123"
-	dbName     = "contrail_test"
-
 	authEndpointSuffix = "/keystone/v3"
-	defaultDomainID    = "default"
-	defaultDomainName  = "DefaultDomain"
-	adminProjectID     = "admin"
-	adminProjectName   = "AdminProject"
-	adminRoleID        = "admin"
-	adminRoleName      = "AdminRole"
-	adminUserID        = "admin"
-	adminUserName      = "adminUser"
-	adminUserPassword  = "adminPassword"
+	dbUser             = "root"
+	dbPassword         = "contrail123"
+	dbName             = "contrail_test"
+)
+
+// Keystone credentials
+const (
+	DefaultDomainID   = "default"
+	DefaultDomainName = "DefaultDomain"
+	AdminProjectID    = "admin"
+	AdminProjectName  = "AdminProject"
+	AdminRoleID       = "admin"
+	AdminRoleName     = "AdminRole"
+	AdminUserID       = "admin"
+	AdminUserName     = "adminUser"
+	AdminUserPassword = "adminPassword"
 )
 
 // APIServer is embedded API Server for testing purposes.
@@ -75,7 +79,7 @@ func NewRunningAPIServer(t *testing.T, repoRootPath string) *APIServer {
 	s, err := apisrv.NewServer()
 	require.NoError(t, err, "creating API Server failed")
 
-	ts := httptest.NewServer(s.Echo)
+	ts := testutil.NewTestHTTPServer(s.Echo)
 
 	viper.Set("keystone.authurl", ts.URL+authEndpointSuffix)
 	err = s.Init()
@@ -91,29 +95,29 @@ func NewRunningAPIServer(t *testing.T, repoRootPath string) *APIServer {
 func keystoneAssignment() *keystone.StaticAssignment {
 	a := keystone.StaticAssignment{
 		Domains: map[string]*keystone.Domain{
-			defaultDomainID: {
-				ID:   defaultDomainID,
-				Name: defaultDomainName,
+			DefaultDomainID: {
+				ID:   DefaultDomainID,
+				Name: DefaultDomainName,
 			},
 		},
 		Projects: make(map[string]*keystone.Project),
 		Users:    make(map[string]*keystone.User),
 	}
-	a.Projects[adminProjectID] = &keystone.Project{
-		Domain: a.Domains[defaultDomainID],
-		ID:     adminProjectID,
-		Name:   adminProjectName,
+	a.Projects[AdminProjectID] = &keystone.Project{
+		Domain: a.Domains[DefaultDomainID],
+		ID:     AdminProjectID,
+		Name:   AdminProjectName,
 	}
-	a.Users[adminUserID] = &keystone.User{
-		Domain:   a.Domains[defaultDomainID],
-		ID:       adminUserID,
-		Name:     adminUserName,
-		Password: adminUserPassword,
+	a.Users[AdminUserID] = &keystone.User{
+		Domain:   a.Domains[DefaultDomainID],
+		ID:       AdminUserID,
+		Name:     AdminUserName,
+		Password: AdminUserPassword,
 		Roles: []*keystone.Role{
 			{
-				ID:      adminRoleID,
-				Name:    adminRoleName,
-				Project: a.Projects[adminProjectID],
+				ID:      AdminRoleID,
+				Name:    AdminRoleName,
+				Project: a.Projects[AdminProjectID],
 			},
 		},
 	}
@@ -134,11 +138,6 @@ func configureDebugLogging(t *testing.T) {
 // URL returns server base URL.
 func (s *APIServer) URL() string {
 	return s.testServer.URL
-}
-
-// Database returns database handle.
-func (s *APIServer) Database() *sql.DB {
-	return s.apiServer.DB()
 }
 
 // Close closes server.
