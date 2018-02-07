@@ -33,5 +33,7 @@
           name: contrail_postgres
           environment:
             POSTGRES_USER: root
-            POSTGRES_DB: contrail123 
-
+            POSTGRES_DB: contrail123
+          command: postgres -c wal_level=logical
+        - image: gcr.io/etcd-development/etcd:v3.3.2
+          name: contrail_etcd
