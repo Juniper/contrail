@@ -3,15 +3,35 @@ package integration
 import (
 	"fmt"
 	"net/http"
+	"path"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/apisrv"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
-	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
+)
+
+// Resource constants
+const (
+	DomainType                 = "domain"
+	DefaultDomainUUID          = "beefbeef-beef-beef-beef-beefbeef0002"
+	ProjectType                = "project"
+	ProjectSchemaID            = "project"
+	ProjectSingularPath        = "/project"
+	ProjectPluralPath          = "/projects"
+	NetworkIPAMSchemaID        = "network_ipam"
+	NetworkIpamSingularPath    = "/network-ipam"
+	NetworkIpamPluralPath      = "/network-ipams"
+	VirtualNetworkSchemaID     = "virtual_network"
+	VirtualNetworkSingularPath = "/virtual-network"
+	VirtualNetworkPluralPath   = "/virtual-networks"
 )
 
 // HTTPAPIClient is API Server client for tests purposes.
@@ -27,16 +47,16 @@ func NewHTTPAPIClient(t *testing.T, apiServerURL string) *HTTPAPIClient {
 	c := apisrv.NewClient(
 		apiServerURL,
 		apiServerURL+authEndpointSuffix,
-		adminUserID,
-		adminUserPassword,
-		defaultDomainID,
+		AdminUserID,
+		AdminUserPassword,
+		DefaultDomainID,
 		true,
 		&keystone.Scope{
 			Project: &keystone.Project{
-				ID:   adminProjectID,
-				Name: adminProjectName,
+				ID:   AdminProjectID,
+				Name: AdminProjectName,
 				Domain: &keystone.Domain{
-					ID: defaultDomainID,
+					ID: DefaultDomainID,
 				},
 			},
 		},
@@ -52,7 +72,44 @@ func NewHTTPAPIClient(t *testing.T, apiServerURL string) *HTTPAPIClient {
 	}
 }
 
-// CreateResource creates resource in API Server and checks operation error.
+// CreateProject creates Project resource.
+func (c *HTTPAPIClient) CreateProject(t *testing.T, p *models.Project) {
+	c.CreateResource(t, ProjectPluralPath, &services.CreateProjectRequest{Project: p})
+}
+
+// DeleteProject deletes Project resource.
+func (c *HTTPAPIClient) DeleteProject(t *testing.T, uuid string) {
+	c.DeleteResource(t, path.Join(ProjectSingularPath, uuid))
+}
+
+// CreateNetworkIPAM creates NetworkIPAM resource.
+func (c *HTTPAPIClient) CreateNetworkIPAM(t *testing.T, ni *models.NetworkIpam) {
+	c.CreateResource(t, NetworkIpamPluralPath, &services.CreateNetworkIpamRequest{NetworkIpam: ni})
+}
+
+// DeleteNetworkIPAM deletes NetworkIPAM resource.
+func (c *HTTPAPIClient) DeleteNetworkIPAM(t *testing.T, uuid string) {
+	c.DeleteResource(t, path.Join(NetworkIpamSingularPath, uuid))
+}
+
+// CreateVirtualNetwork creates VirtualNetwork resource.
+func (c *HTTPAPIClient) CreateVirtualNetwork(t *testing.T, vn *models.VirtualNetwork) {
+	c.CreateResource(t, VirtualNetworkPluralPath, &services.CreateVirtualNetworkRequest{VirtualNetwork: vn})
+}
+
+// GetVirtualNetwork gets VirtualNetwork resource.
+func (c *HTTPAPIClient) GetVirtualNetwork(t *testing.T, uuid string) *models.VirtualNetwork {
+	var responseData services.GetVirtualNetworkResponse
+	c.GetResource(t, path.Join(VirtualNetworkSingularPath, uuid), &responseData)
+	return responseData.VirtualNetwork
+}
+
+// DeleteVirtualNetwork deletes VirtualNetwork resource.
+func (c *HTTPAPIClient) DeleteVirtualNetwork(t *testing.T, uuid string) {
+	c.DeleteResource(t, path.Join(VirtualNetworkSingularPath, uuid))
+}
+
+// CreateResource creates resource.
 func (c *HTTPAPIClient) CreateResource(t *testing.T, path string, requestData interface{}) {
 	var responseData interface{}
 	r, err := c.Create(
@@ -65,33 +122,34 @@ func (c *HTTPAPIClient) CreateResource(t *testing.T, path string, requestData in
 		"response":     r,
 		"responseData": responseData,
 	}).Debug("Got Create response")
-	assert.NoError(t, err, fmt.Sprintf("creating resource failed; requestData: %v; response: %v", requestData, r))
+	assert.NoError(t, err, fmt.Sprintf("creating resource failed\n requestData: %v\n response: %+v", requestData, r))
 }
 
-// GetResource gets resource from API Server and checks operation error.
+// GetResource gets resource.
 func (c *HTTPAPIClient) GetResource(t *testing.T, path string, responseData interface{}) {
 	r, err := c.Read(path, &responseData)
 	c.log.WithFields(logrus.Fields{
 		"response":     r,
 		"responseData": responseData,
 	}).Debug("Got Get response")
-	assert.NoError(t, err, fmt.Sprintf("getting resource failed; response: %v", r))
+	assert.NoError(t, err, fmt.Sprintf("getting resource failed\n response: %+v", r))
 }
 
-// DeleteResource deletes resource from API Server and checks operation error.
+// DeleteResource deletes resource.
 func (c *HTTPAPIClient) DeleteResource(t *testing.T, path string) {
-	_, err := c.Delete(path, nil)
-	assert.NoError(t, err, "deleting resource failed")
+	r, err := c.Delete(path, nil)
+	c.log.WithField("response", r).Debug("Got Delete response")
+	assert.NoError(t, err, "deleting resource failed\n response: %+v", r)
 }
 
 // CheckResourceDoesNotExist checks that there is no resource with given path.
 func (c *HTTPAPIClient) CheckResourceDoesNotExist(t *testing.T, path string) {
-	_, err := c.Do(
+	r, err := c.Do(
 		echo.GET,
 		path,
 		nil,
 		nil,
 		[]int{http.StatusNotFound},
 	)
-	assert.NoError(t, err, "getting resource failed")
+	assert.NoError(t, err, "getting resource failed\n response: %+v", r)
 }
