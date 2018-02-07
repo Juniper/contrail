@@ -1,0 +1,13 @@
+# Configuration for Watcher service.
+database:
+  type: postgresql
+  host: localhost
+  user: root
+  password: contrail123
+  name: contrail
+etcd:
+  endpoints:
+    - localhost:2379
+  username: ""
+  password: ""
+storage: json

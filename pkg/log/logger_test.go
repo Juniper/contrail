@@ -8,17 +8,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestConfigureLoggingFailsWhenInvalidLevelGiven(t *testing.T) {
+func TestConfigureFailsWhenInvalidLevelGiven(t *testing.T) {
 	tests := []struct {
-		name  string
 		level string
 	}{
-		{"Empty", ""},
-		{"Invalid", "invalid"},
-		{"TrailingWhitespace", "warn "},
+		{""},
+		{"invalid"},
+		{"warn "},
 	}
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.level, func(t *testing.T) {
 			err := Configure(test.level)
 
 			assert.Error(t, err)
@@ -26,20 +25,19 @@ func TestConfigureLoggingFailsWhenInvalidLevelGiven(t *testing.T) {
 	}
 }
 
-func TestConfigureLoggingSetsMinimalLevelPackageVariable(t *testing.T) {
+func TestConfigureSetsMinimalLevelPackageVariable(t *testing.T) {
 	tests := []struct {
-		name  string
 		level string
 		out   logrus.Level
 	}{
-		{"Debug", "debug", logrus.DebugLevel},
-		{"Info", "info", logrus.InfoLevel},
-		{"Warn", "warn", logrus.WarnLevel},
-		{"Error", "error", logrus.ErrorLevel},
-		{"MixedCase", "InFo", logrus.InfoLevel},
+		{"debug", logrus.DebugLevel},
+		{"info", logrus.InfoLevel},
+		{"warn", logrus.WarnLevel},
+		{"error", logrus.ErrorLevel},
+		{"InFo", logrus.InfoLevel},
 	}
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.level, func(t *testing.T) {
 			err := Configure(test.level)
 
 			assert.Nil(t, err)
@@ -48,7 +46,7 @@ func TestConfigureLoggingSetsMinimalLevelPackageVariable(t *testing.T) {
 	}
 }
 
-func TestConfigureLoggingConfiguresGlobalLogger(t *testing.T) {
+func TestConfigureConfiguresGlobalLogger(t *testing.T) {
 	globalLogger := logrus.StandardLogger()
 
 	err := Configure("warn")

@@ -60,3 +60,11 @@
 [[constraint]]
   branch = "master"
   name = "github.com/go-openapi/spec"
+
+[[constraint]]
+  name = "github.com/jackc/pgx"
+  version = "3.1.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/kyleconroy/pgoutput"

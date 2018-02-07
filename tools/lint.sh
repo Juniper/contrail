@@ -15,8 +15,8 @@ set -o pipefail
 # TODO(daniel): run the same set of tools for all Go files
 gometalinter \
 	--enable-all \
-	--exclude "Subprocess launching with variable" \
-	--exclude "TLS InsecureSkipVerify may be true" \
+	--exclude "Subprocess launching with variable.*\(gas\)$" \
+	--exclude "TLS InsecureSkipVerify.*\(gas\)$" \
 	--disable errcheck \
 	--disable deadcode \
 	--disable dupl \
@@ -36,7 +36,7 @@ gometalinter \
 	--deadline 10m \
 	--concurrency 1 \
 	--line-length 120 \
-	--dupl-threshold=70 \
+	--dupl-threshold=115 \
 	--vendor \
 	--skip pkg/services \
 	--skip pkg/serviceif \
@@ -45,8 +45,8 @@ gometalinter \
 
 gometalinter \
 	--enable-all \
-	--exclude "Subprocess launching with variable" \
-	--exclude "TLS InsecureSkipVerify may be true" \
+	--exclude "Subprocess launching with variable.*\(gas\)$" \
+	--exclude "TLS InsecureSkipVerify.*\(gas\)$" \
 	--disable megacheck \
 	--disable safesql \
 	--disable staticcheck \
@@ -58,9 +58,6 @@ gometalinter \
 	--deadline 10m \
 	--concurrency 1 \
 	--line-length 120 \
-	--dupl-threshold=70 \
+	--dupl-threshold=115 \
 	--vendor \
-	--skip pkg/models \
-	--skip pkg/services \
-	./cmd/... \
-	./pkg/agent/... \
+	./cmd/... ./pkg/cmd/... ./pkg/agent/... ./pkg/log/... ./pkg/testutil/... ./pkg/watcher/...
