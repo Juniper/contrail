@@ -13,9 +13,9 @@ func init() {
 
 // ShowCmd defines show command.
 var ShowCmd = &cobra.Command{
-	Use:   "show [SchemaID] [ID]",
+	Use:   "show [SchemaID] [UUID]",
 	Short: "Show data of specified resource",
-	Long:  "Invoke command with empty SchemaID in order to show available schemas",
+	Long:  "Invoke command with empty SchemaID in order to show possible usages",
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		showResource(args)

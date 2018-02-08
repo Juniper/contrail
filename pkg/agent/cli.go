@@ -19,24 +19,24 @@ const schemaTemplate = `
     {{ key }}: {{ value.Default }} # {{ value.Title }} ({{ value.Type }}) {% endfor %}
 {% endfor %}`
 
-const showHelpTemplate = ` Show resource data (example usages):
+const showHelpTemplate = `Show command possible usages:
 
-{% for schema in schemas %} contrail show {{ schema.ID }} $ID
+{% for schema in schemas %}contrail show {{ schema.ID }} $UUID
 {% endfor %}`
 
-const listHelpTemplate = ` List resource data (example usages):
+const listHelpTemplate = `List command possible usages:
 
-{% for schema in schemas %} contrail list {{ schema.ID }}
+{% for schema in schemas %}contrail list {{ schema.ID }}
 {% endfor %}`
 
-const setHelpTemplate = ` Set data on resource property (example usages):
+const setHelpTemplate = `Set command possible usages:
 
-{% for schema in schemas %} contrail set {{ schema.ID }} $ID $YAML
+{% for schema in schemas %}contrail set {{ schema.ID }} $UUID $YAML
 {% endfor %}`
 
-const removeHelpTemplate = ` Remove resource data (example usages):
+const removeHelpTemplate = `Remove command possible usages:
 
-{% for schema in schemas %} contrail rm {{ schema.ID }} $ID
+{% for schema in schemas %}contrail rm {{ schema.ID }} $UUID
 {% endfor %}`
 
 // ResourceData is data output by CLI tool.

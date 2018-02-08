@@ -11,12 +11,12 @@ import (
 
 var (
 	filters      string
-	pageMarker   string
-	pageLimit    string
-	detail       string
-	count        string
-	shared       string
-	excludeHRefs string
+	pageMarker   int
+	pageLimit    int
+	detail       bool
+	count        bool
+	shared       bool
+	excludeHRefs bool
 	parentType   string
 	parentFQName string
 	parentUUIDs  string
@@ -30,18 +30,18 @@ func init() {
 
 	ListCmd.Flags().StringVarP(&filters, common.FiltersKey, "f", "",
 		"Comma-separated filter parameters (e.g. check==a,check==b,name==Bob)")
-	ListCmd.Flags().StringVarP(&pageMarker, common.PageMarkerKey, "m", "",
-		"Page marker that returned resources start from (i.e. offset) [integer]")
-	ListCmd.Flags().StringVarP(&pageLimit, common.PageLimitKey, "l", "",
-		"Limit number of returned resources [integer]")
-	ListCmd.Flags().StringVarP(&detail, common.DetailKey, "d", "",
-		"Detailed data in response [bool]")
-	ListCmd.Flags().StringVar(&count, common.CountKey, "",
-		"Return only resource count in response [bool]")
-	ListCmd.Flags().StringVarP(&shared, common.SharedKey, "s", "",
-		"Include shared object in response [bool]")
-	ListCmd.Flags().StringVarP(&excludeHRefs, common.ExcludeHRefsKey, "e", "",
-		"Exclude HRefs from response [bool]")
+	ListCmd.Flags().IntVarP(&pageMarker, common.PageMarkerKey, "m", 0,
+		"Page marker that returned resources start from (i.e. offset)")
+	ListCmd.Flags().IntVarP(&pageLimit, common.PageLimitKey, "l", 0,
+		"Limit number of returned resources")
+	ListCmd.Flags().BoolVarP(&detail, common.DetailKey, "d", false,
+		"Detailed data in response")
+	ListCmd.Flags().BoolVar(&count, common.CountKey, false,
+		"Return only resource count in response")
+	ListCmd.Flags().BoolVarP(&shared, common.SharedKey, "s", false,
+		"Include shared object in response")
+	ListCmd.Flags().BoolVarP(&excludeHRefs, common.ExcludeHRefsKey, "e", false,
+		"Exclude HRefs from response")
 	ListCmd.Flags().StringVarP(&parentType, common.ParentTypeKey, "t", "",
 		"Parent's type")
 	ListCmd.Flags().StringVarP(&parentFQName, common.ParentFQNameKey, "n", "",
@@ -60,7 +60,7 @@ func init() {
 var ListCmd = &cobra.Command{
 	Use:   "list [SchemaID]",
 	Short: "List data of specified resources",
-	Long:  "Invoke command with empty SchemaID in order to show available schemas",
+	Long:  "Invoke command with empty SchemaID in order to show possible usages",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		listResources(args)
@@ -82,7 +82,7 @@ func listResources(args []string) {
 }
 
 func queryParameters() url.Values {
-	m := map[string]string{
+	m := map[string]interface{}{
 		common.FiltersKey:      filters,
 		common.PageMarkerKey:   pageMarker,
 		common.PageLimitKey:    pageLimit,
@@ -99,9 +99,14 @@ func queryParameters() url.Values {
 
 	values := url.Values{}
 	for k, v := range m {
-		if v != "" {
-			values.Set(k, v)
+		value := fmt.Sprint(v)
+		if !isZeroValue(value) {
+			values.Set(k, value)
 		}
 	}
 	return values
+}
+
+func isZeroValue(value interface{}) bool {
+	return value == "" || value == 0 || value == false
 }
