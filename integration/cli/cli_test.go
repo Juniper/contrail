@@ -1,5 +1,7 @@
 //+build integration
 
+// Package cli contains integration tests of CLI for API Server.
+// Keep command example inputs and outputs in doc/cli.md up to date with actual ones.
 package cli
 
 import (
@@ -21,6 +23,7 @@ const (
 	vnSchemaId       = "virtual_network"
 	metadataSchemaId = "metadata"
 
+	virtualNetworkSchema         = "testdata/virtual_network_schema.yml"
 	virtualNetwork               = "testdata/virtual_network.yml"
 	virtualNetworkListed         = "testdata/virtual_network_listed.yml"
 	virtualNetworkShowed         = "testdata/virtual_network_showed.yml"
@@ -41,7 +44,7 @@ func TestCLISchema(t *testing.T) {
 
 	schema, err := a.SchemaCLI(vnSchemaId)
 	assert.NoError(t, err)
-	assert.NotNil(t, schema)
+	checkDataEqual(t, virtualNetworkSchema, schema)
 }
 
 func TestCLIHelpMessagesWhenGivenEmptySchemaID(t *testing.T) {
@@ -51,8 +54,8 @@ func TestCLIHelpMessagesWhenGivenEmptySchemaID(t *testing.T) {
 
 	o, err := a.ShowCLI("", "")
 	assert.NoError(t, err)
-	assert.Contains(t, o, "contrail show user $ID")
-	assert.Contains(t, o, "contrail show virtual_network $ID")
+	assert.Contains(t, o, "contrail show user $UUID")
+	assert.Contains(t, o, "contrail show virtual_network $UUID")
 
 	o, err = a.ListCLI("", nil)
 	assert.NoError(t, err)
@@ -61,13 +64,13 @@ func TestCLIHelpMessagesWhenGivenEmptySchemaID(t *testing.T) {
 
 	o, err = a.SetCLI("", "", "")
 	assert.NoError(t, err)
-	assert.Contains(t, o, "contrail set user $ID $YAML")
-	assert.Contains(t, o, "contrail set virtual_network $ID $YAML")
+	assert.Contains(t, o, "contrail set user $UUID $YAML")
+	assert.Contains(t, o, "contrail set virtual_network $UUID $YAML")
 
 	o, err = a.RemoveCLI("", "")
 	assert.NoError(t, err)
-	assert.Contains(t, o, "contrail rm user $ID")
-	assert.Contains(t, o, "contrail rm virtual_network $ID")
+	assert.Contains(t, o, "contrail rm user $UUID")
+	assert.Contains(t, o, "contrail rm virtual_network $UUID")
 }
 
 func TestCLICreateListAndShowVirtualNetworks(t *testing.T) {
@@ -226,9 +229,6 @@ func checkDataEqual(t *testing.T, expectedYAMLFile, actualYAML string) {
 	var expected interface{}
 	err = yaml.Unmarshal(expectedBytes, &expected)
 	require.NoError(t, err, "cannot parse expected data file")
-
-	fmt.Println("string(expectedBytes)\n", string(expectedBytes))
-	fmt.Println("actualYAML\n", actualYAML)
 
 	var actual interface{}
 	err = yaml.Unmarshal([]byte(actualYAML), &actual)
