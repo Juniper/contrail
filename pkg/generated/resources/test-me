@@ -1,0 +1,7 @@
+#!/bin/sh
+
+CONTRAIL_API_SERVER='10.10.1.251'
+CONTRAIL_API_PASSWORD='secret123'
+export CONTRAIL_API_SERVER CONTRAIL_API_PASSWORD
+
+go test ./virtual_network_test.go
