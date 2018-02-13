@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTServiceEndpointUpdateRequest for update request for REST.
+type RESTServiceEndpointUpdateRequest struct {
+    Data map[string]interface{} `json:"service-endpoint"`
+}
+
 //RESTCreateServiceEndpoint handle a Create REST service.
 func (service *ContrailService) RESTCreateServiceEndpoint(c echo.Context) error {
     requestData := &models.ServiceEndpointCreateRequest{

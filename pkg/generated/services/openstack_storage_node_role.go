@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTOpenstackStorageNodeRoleUpdateRequest for update request for REST.
+type RESTOpenstackStorageNodeRoleUpdateRequest struct {
+    Data map[string]interface{} `json:"openstack-storage-node-role"`
+}
+
 //RESTCreateOpenstackStorageNodeRole handle a Create REST service.
 func (service *ContrailService) RESTCreateOpenstackStorageNodeRole(c echo.Context) error {
     requestData := &models.OpenstackStorageNodeRoleCreateRequest{

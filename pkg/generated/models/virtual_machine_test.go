@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestVirtualMachine(t *testing.T) {
-    model := MakeVirtualMachine()
-    fmt.Println(model)
+	model := MakeVirtualMachine()
+	fmt.Println(model)
 }

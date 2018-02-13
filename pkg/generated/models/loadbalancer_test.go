@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestLoadbalancer(t *testing.T) {
-    model := MakeLoadbalancer()
-    fmt.Println(model)
+	model := MakeLoadbalancer()
+	fmt.Println(model)
 }

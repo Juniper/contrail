@@ -18,9 +18,9 @@ integration: ## Run integration tests
 
 generate: ## Run the source code generator
 	rm pkg/generated/models/generated.pb.go || echo "ok"
-	#git checkout pkg/generated
+	git checkout pkg/generated
 	go run cmd/contrailutil/main.go generate --schemas schemas --templates tools/templates/template_config.yaml --schema-output public/schema.json
-	proteus -f proto -p github.com/Juniper/contrail/pkg/generated/models
+	protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --gofast_out=plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/generated/models/generated.proto
 	protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --gofast_out=plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/generated/services/services.proto
 	./tools/fmt.sh
 

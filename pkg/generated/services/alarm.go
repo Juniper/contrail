@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTAlarmUpdateRequest for update request for REST.
+type RESTAlarmUpdateRequest struct {
+    Data map[string]interface{} `json:"alarm"`
+}
+
 //RESTCreateAlarm handle a Create REST service.
 func (service *ContrailService) RESTCreateAlarm(c echo.Context) error {
     requestData := &models.AlarmCreateRequest{

@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestIpamSubnetType(t *testing.T) {
-    model := MakeIpamSubnetType()
-    fmt.Println(model)
+	model := MakeIpamSubnetType()
+	fmt.Println(model)
 }

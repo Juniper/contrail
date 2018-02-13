@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTBridgeDomainUpdateRequest for update request for REST.
+type RESTBridgeDomainUpdateRequest struct {
+    Data map[string]interface{} `json:"bridge-domain"`
+}
+
 //RESTCreateBridgeDomain handle a Create REST service.
 func (service *ContrailService) RESTCreateBridgeDomain(c echo.Context) error {
     requestData := &models.BridgeDomainCreateRequest{

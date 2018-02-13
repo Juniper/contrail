@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestAlarmExpression(t *testing.T) {
-    model := MakeAlarmExpression()
-    fmt.Println(model)
+	model := MakeAlarmExpression()
+	fmt.Println(model)
 }

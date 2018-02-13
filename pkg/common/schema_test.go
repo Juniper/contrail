@@ -23,4 +23,5 @@ func TestSchema(t *testing.T) {
 	assert.Equal(t, []string{"uuid", "display_name", "virtual_network_network_id"},
 		virtualNetwork.JSONSchema.PropertiesOrder)
 	assert.Equal(t, 3, len(virtualNetwork.Columns))
+	assert.Equal(t, 4, virtualNetwork.References["network_ipam"].Index)
 }

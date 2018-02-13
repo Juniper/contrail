@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestQuotaType(t *testing.T) {
-    model := MakeQuotaType()
-    fmt.Println(model)
+	model := MakeQuotaType()
+	fmt.Println(model)
 }

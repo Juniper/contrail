@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestVirtualMachineInterfacePropertiesType(t *testing.T) {
-    model := MakeVirtualMachineInterfacePropertiesType()
-    fmt.Println(model)
+	model := MakeVirtualMachineInterfacePropertiesType()
+	fmt.Println(model)
 }

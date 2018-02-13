@@ -1,7 +1,6 @@
 package common
 
 import (
-	"database/sql"
 	"strconv"
 	"strings"
 
@@ -24,7 +23,6 @@ const (
 	ObjectUUIDsKey  = "obj_uuids"
 	FieldsKey       = "fields"
 )
-
 
 //Filter is used to filter API response.
 type Filter map[string][]string

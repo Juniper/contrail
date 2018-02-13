@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestUser(t *testing.T) {
-    model := MakeUser()
-    fmt.Println(model)
+	model := MakeUser()
+	fmt.Println(model)
 }

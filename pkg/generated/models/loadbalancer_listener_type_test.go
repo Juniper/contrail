@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestLoadbalancerListenerType(t *testing.T) {
-    model := MakeLoadbalancerListenerType()
-    fmt.Println(model)
+	model := MakeLoadbalancerListenerType()
+	fmt.Println(model)
 }

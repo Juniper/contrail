@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTVirtualRouterUpdateRequest for update request for REST.
+type RESTVirtualRouterUpdateRequest struct {
+    Data map[string]interface{} `json:"virtual-router"`
+}
+
 //RESTCreateVirtualRouter handle a Create REST service.
 func (service *ContrailService) RESTCreateVirtualRouter(c echo.Context) error {
     requestData := &models.VirtualRouterCreateRequest{

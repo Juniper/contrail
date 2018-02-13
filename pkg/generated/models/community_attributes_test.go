@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestCommunityAttributes(t *testing.T) {
-    model := MakeCommunityAttributes()
-    fmt.Println(model)
+	model := MakeCommunityAttributes()
+	fmt.Println(model)
 }

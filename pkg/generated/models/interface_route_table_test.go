@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestInterfaceRouteTable(t *testing.T) {
-    model := MakeInterfaceRouteTable()
-    fmt.Println(model)
+	model := MakeInterfaceRouteTable()
+	fmt.Println(model)
 }

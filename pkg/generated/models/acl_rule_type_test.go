@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestAclRuleType(t *testing.T) {
-    model := MakeAclRuleType()
-    fmt.Println(model)
+	model := MakeAclRuleType()
+	fmt.Println(model)
 }

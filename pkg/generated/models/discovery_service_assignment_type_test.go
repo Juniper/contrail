@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestDiscoveryServiceAssignmentType(t *testing.T) {
-    model := MakeDiscoveryServiceAssignmentType()
-    fmt.Println(model)
+	model := MakeDiscoveryServiceAssignmentType()
+	fmt.Println(model)
 }

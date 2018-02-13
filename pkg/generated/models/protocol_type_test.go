@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestProtocolType(t *testing.T) {
-    model := MakeProtocolType()
-    fmt.Println(model)
+	model := MakeProtocolType()
+	fmt.Println(model)
 }

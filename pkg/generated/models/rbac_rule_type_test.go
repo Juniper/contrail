@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestRbacRuleType(t *testing.T) {
-    model := MakeRbacRuleType()
-    fmt.Println(model)
+	model := MakeRbacRuleType()
+	fmt.Println(model)
 }

@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTSecurityLoggingObjectUpdateRequest for update request for REST.
+type RESTSecurityLoggingObjectUpdateRequest struct {
+    Data map[string]interface{} `json:"security-logging-object"`
+}
+
 //RESTCreateSecurityLoggingObject handle a Create REST service.
 func (service *ContrailService) RESTCreateSecurityLoggingObject(c echo.Context) error {
     requestData := &models.SecurityLoggingObjectCreateRequest{

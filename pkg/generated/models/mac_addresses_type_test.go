@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestMacAddressesType(t *testing.T) {
-    model := MakeMacAddressesType()
-    fmt.Println(model)
+	model := MakeMacAddressesType()
+	fmt.Println(model)
 }

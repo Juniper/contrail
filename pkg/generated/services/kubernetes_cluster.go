@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTKubernetesClusterUpdateRequest for update request for REST.
+type RESTKubernetesClusterUpdateRequest struct {
+    Data map[string]interface{} `json:"kubernetes-cluster"`
+}
+
 //RESTCreateKubernetesCluster handle a Create REST service.
 func (service *ContrailService) RESTCreateKubernetesCluster(c echo.Context) error {
     requestData := &models.KubernetesClusterCreateRequest{

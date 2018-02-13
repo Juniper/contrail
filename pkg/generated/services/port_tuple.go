@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTPortTupleUpdateRequest for update request for REST.
+type RESTPortTupleUpdateRequest struct {
+    Data map[string]interface{} `json:"port-tuple"`
+}
+
 //RESTCreatePortTuple handle a Create REST service.
 func (service *ContrailService) RESTCreatePortTuple(c echo.Context) error {
     requestData := &models.PortTupleCreateRequest{

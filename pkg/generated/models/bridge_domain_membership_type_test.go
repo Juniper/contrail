@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestBridgeDomainMembershipType(t *testing.T) {
-    model := MakeBridgeDomainMembershipType()
-    fmt.Println(model)
+	model := MakeBridgeDomainMembershipType()
+	fmt.Println(model)
 }

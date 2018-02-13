@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestStaticMirrorNhType(t *testing.T) {
-    model := MakeStaticMirrorNhType()
-    fmt.Println(model)
+	model := MakeStaticMirrorNhType()
+	fmt.Println(model)
 }

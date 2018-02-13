@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTBGPAsAServiceUpdateRequest for update request for REST.
+type RESTBGPAsAServiceUpdateRequest struct {
+    Data map[string]interface{} `json:"bgp-as-a-service"`
+}
+
 //RESTCreateBGPAsAService handle a Create REST service.
 func (service *ContrailService) RESTCreateBGPAsAService(c echo.Context) error {
     requestData := &models.BGPAsAServiceCreateRequest{

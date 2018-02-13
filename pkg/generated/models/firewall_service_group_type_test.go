@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestFirewallServiceGroupType(t *testing.T) {
-    model := MakeFirewallServiceGroupType()
-    fmt.Println(model)
+	model := MakeFirewallServiceGroupType()
+	fmt.Println(model)
 }

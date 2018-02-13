@@ -88,8 +88,10 @@ type Schema struct {
 	Type             string                   `yaml:"type" json:"type,omitempty"`
 	Title            string                   `yaml:"title" json:"title,omitempty"`
 	Description      string                   `yaml:"description" json:"description,omitempty"`
-	Parents          map[string]*Reference    `yaml:"parents" json:"parents,omitempty"`
-	References       map[string]*Reference    `yaml:"references" json:"references,omitempty"`
+	Parents          map[string]*Reference    `yaml:"-" json:"parents,omitempty"`
+	ParentsSlice     yaml.MapSlice            `yaml:"parents" json:"-"`
+	References       map[string]*Reference    `yaml:"-" json:"references,omitempty"`
+	ReferencesSlice  yaml.MapSlice            `yaml:"references" json:"-"`
 	Prefix           string                   `yaml:"prefix" json:"prefix,omitempty"`
 	JSONSchema       *JSONSchema              `yaml:"-" json:"schema,omitempty"`
 	JSONSchemaSlice  yaml.MapSlice            `yaml:"schema" json:"-"`
@@ -139,8 +141,9 @@ func (s *JSONSchema) String() string {
 //Reference object represents many to many relationships between resources.
 type Reference struct {
 	GoName      string        `yaml:"-" json:"-"`
+	Index       int           `yaml:"-" json:"-"`
 	Description string        `yaml:"description" json:"description,omitempty"`
-	Operation   string        `yaml:"operation" json:"operation,omitempty"`
+	Operations  string        `yaml:"operations" json:"operations,omitempty"`
 	Presence    string        `yaml:"presence" json:"presence,omitempty"`
 	RefType     string        `yaml:"-" json:"-"`
 	Columns     ColumnConfigs `yaml:"-" json:"-"`
@@ -457,7 +460,7 @@ func (api *API) resolveAllRef() error {
 			if parentSchema == nil {
 				return fmt.Errorf("Parent schema %s not found", parent)
 			}
-			parentSchema.Children = append(parentSchema.Children, s)
+			parentSchema.Children = append(parentSchema.Children, s.Copy())
 		}
 	}
 	return nil
@@ -506,12 +509,23 @@ func (api *API) resolveRelation(linkTo string, reference *Reference) error {
 
 func (api *API) resolveAllRelation() error {
 	for _, s := range api.Schemas {
-		for linkTo, reference := range s.References {
+		s.References = map[string]*Reference{}
+		s.Parents = map[string]*Reference{}
+		for _, m := range mapSlice(s.ReferencesSlice) {
+			linkTo := m.Key.(string)
+			referenceMap := mapSlice(m.Value.(yaml.MapSlice))
+			reference := referenceMap.Reference()
+			s.References[linkTo] = reference
 			if err := api.resolveRelation(linkTo, reference); err != nil {
 				return err
 			}
 		}
-		for linkTo, reference := range s.Parents {
+		for _, m := range mapSlice(s.ParentsSlice) {
+			linkTo := m.Key.(string)
+			referenceMap := mapSlice(m.Value.(yaml.MapSlice))
+			fmt.Println(referenceMap)
+			reference := referenceMap.Reference()
+			s.Parents[linkTo] = reference
 			if err := api.resolveRelation(linkTo, reference); err != nil {
 				return err
 			}
@@ -522,8 +536,15 @@ func (api *API) resolveAllRelation() error {
 
 func (api *API) resolveIndex() error {
 	for _, s := range api.Schemas {
-		for index, property := range s.JSONSchema.OrderedProperties {
-			property.Index = index + 1
+		index := 1
+		for _, property := range s.JSONSchema.OrderedProperties {
+			property.Index = index
+			index++
+		}
+		for _, key := range mapSlice(s.ReferencesSlice).keys() {
+			reference := s.References[key]
+			reference.Index = index
+			index++
 		}
 	}
 	for _, t := range api.Types {

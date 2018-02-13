@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestDatabaseNode(t *testing.T) {
-    model := MakeDatabaseNode()
-    fmt.Println(model)
+	model := MakeDatabaseNode()
+	fmt.Println(model)
 }

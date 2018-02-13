@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestIdPermsType(t *testing.T) {
-    model := MakeIdPermsType()
-    fmt.Println(model)
+	model := MakeIdPermsType()
+	fmt.Println(model)
 }

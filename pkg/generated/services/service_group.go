@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTServiceGroupUpdateRequest for update request for REST.
+type RESTServiceGroupUpdateRequest struct {
+    Data map[string]interface{} `json:"service-group"`
+}
+
 //RESTCreateServiceGroup handle a Create REST service.
 func (service *ContrailService) RESTCreateServiceGroup(c echo.Context) error {
     requestData := &models.ServiceGroupCreateRequest{

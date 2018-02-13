@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestVirtualNetworkType(t *testing.T) {
-    model := MakeVirtualNetworkType()
-    fmt.Println(model)
+	model := MakeVirtualNetworkType()
+	fmt.Println(model)
 }

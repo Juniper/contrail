@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTDomainUpdateRequest for update request for REST.
+type RESTDomainUpdateRequest struct {
+    Data map[string]interface{} `json:"domain"`
+}
+
 //RESTCreateDomain handle a Create REST service.
 func (service *ContrailService) RESTCreateDomain(c echo.Context) error {
     requestData := &models.DomainCreateRequest{

@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTPhysicalRouterUpdateRequest for update request for REST.
+type RESTPhysicalRouterUpdateRequest struct {
+    Data map[string]interface{} `json:"physical-router"`
+}
+
 //RESTCreatePhysicalRouter handle a Create REST service.
 func (service *ContrailService) RESTCreatePhysicalRouter(c echo.Context) error {
     requestData := &models.PhysicalRouterCreateRequest{

@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestUveKeysType(t *testing.T) {
-    model := MakeUveKeysType()
-    fmt.Println(model)
+	model := MakeUveKeysType()
+	fmt.Println(model)
 }

@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTBaremetalNodeUpdateRequest for update request for REST.
+type RESTBaremetalNodeUpdateRequest struct {
+    Data map[string]interface{} `json:"baremetal-node"`
+}
+
 //RESTCreateBaremetalNode handle a Create REST service.
 func (service *ContrailService) RESTCreateBaremetalNode(c echo.Context) error {
     requestData := &models.BaremetalNodeCreateRequest{

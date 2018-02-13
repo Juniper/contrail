@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestPhysicalInterface(t *testing.T) {
-    model := MakePhysicalInterface()
-    fmt.Println(model)
+	model := MakePhysicalInterface()
+	fmt.Println(model)
 }

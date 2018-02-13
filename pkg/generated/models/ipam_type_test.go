@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestIpamType(t *testing.T) {
-    model := MakeIpamType()
-    fmt.Println(model)
+	model := MakeIpamType()
+	fmt.Println(model)
 }

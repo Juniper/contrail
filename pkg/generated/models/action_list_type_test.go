@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestActionListType(t *testing.T) {
-    model := MakeActionListType()
-    fmt.Println(model)
+	model := MakeActionListType()
+	fmt.Println(model)
 }

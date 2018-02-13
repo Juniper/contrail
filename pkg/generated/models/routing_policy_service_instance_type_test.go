@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestRoutingPolicyServiceInstanceType(t *testing.T) {
-    model := MakeRoutingPolicyServiceInstanceType()
-    fmt.Println(model)
+	model := MakeRoutingPolicyServiceInstanceType()
+	fmt.Println(model)
 }

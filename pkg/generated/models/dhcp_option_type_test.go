@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestDhcpOptionType(t *testing.T) {
-    model := MakeDhcpOptionType()
-    fmt.Println(model)
+	model := MakeDhcpOptionType()
+	fmt.Println(model)
 }

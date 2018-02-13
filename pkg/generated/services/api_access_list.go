@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTAPIAccessListUpdateRequest for update request for REST.
+type RESTAPIAccessListUpdateRequest struct {
+    Data map[string]interface{} `json:"api-access-list"`
+}
+
 //RESTCreateAPIAccessList handle a Create REST service.
 func (service *ContrailService) RESTCreateAPIAccessList(c echo.Context) error {
     requestData := &models.APIAccessListCreateRequest{

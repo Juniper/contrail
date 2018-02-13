@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestMACLimitControlType(t *testing.T) {
-    model := MakeMACLimitControlType()
-    fmt.Println(model)
+	model := MakeMACLimitControlType()
+	fmt.Println(model)
 }

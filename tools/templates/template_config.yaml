@@ -1,15 +1,12 @@
 - type: type
   template_path: model.tmpl
   output_path: pkg/generated/models/__resource__.go
-- type: resource
-  template_path: model_api.tmpl
-  output_path: pkg/generated/models/__resource___api.go
+# - type: resource
+#   template_path: model_api.tmpl
+#   output_path: pkg/generated/models/__resource___api.go
 - type: type
   template_path: model_test.tmpl
   output_path: pkg/generated/models/__resource___test.go
-- type: all 
-  template_path: proto.tmpl
-  output_path: proto/contrail.proto
 - type: all
   template_path: sql.tmpl
   output_path: tools/init.sql
@@ -29,8 +26,8 @@
   template_path: service.tmpl
   output_path: pkg/generated/services/__resource__.go
 - type: all
-  template_path: proto.tmpl
-  output_path: proto/github.com/Juniper/contrail/pkg/generated/services/services.proto
+  template_path: proto_model.tmpl
+  output_path: proto/github.com/Juniper/contrail/pkg/generated/models/generated.proto
 - type: all
   template_path: db_test_main.tmpl
   output_path: pkg/generated/db/main_test.go

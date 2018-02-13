@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestLoadbalancerPoolType(t *testing.T) {
-    model := MakeLoadbalancerPoolType()
-    fmt.Println(model)
+	model := MakeLoadbalancerPoolType()
+	fmt.Println(model)
 }

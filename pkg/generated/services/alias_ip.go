@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTAliasIPUpdateRequest for update request for REST.
+type RESTAliasIPUpdateRequest struct {
+    Data map[string]interface{} `json:"alias-ip"`
+}
+
 //RESTCreateAliasIP handle a Create REST service.
 func (service *ContrailService) RESTCreateAliasIP(c echo.Context) error {
     requestData := &models.AliasIPCreateRequest{

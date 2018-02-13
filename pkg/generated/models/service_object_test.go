@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestServiceObject(t *testing.T) {
-    model := MakeServiceObject()
-    fmt.Println(model)
+	model := MakeServiceObject()
+	fmt.Println(model)
 }

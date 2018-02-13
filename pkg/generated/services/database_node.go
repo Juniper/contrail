@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTDatabaseNodeUpdateRequest for update request for REST.
+type RESTDatabaseNodeUpdateRequest struct {
+    Data map[string]interface{} `json:"database-node"`
+}
+
 //RESTCreateDatabaseNode handle a Create REST service.
 func (service *ContrailService) RESTCreateDatabaseNode(c echo.Context) error {
     requestData := &models.DatabaseNodeCreateRequest{

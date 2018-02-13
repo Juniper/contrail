@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTGlobalSystemConfigUpdateRequest for update request for REST.
+type RESTGlobalSystemConfigUpdateRequest struct {
+    Data map[string]interface{} `json:"global-system-config"`
+}
+
 //RESTCreateGlobalSystemConfig handle a Create REST service.
 func (service *ContrailService) RESTCreateGlobalSystemConfig(c echo.Context) error {
     requestData := &models.GlobalSystemConfigCreateRequest{

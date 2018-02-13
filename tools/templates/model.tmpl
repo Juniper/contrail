@@ -6,7 +6,6 @@ package models
 import "encoding/json"
 
 // {{ name }} {{ type.description }}
-//proteus:generate
 type {{ name }} struct {
 {% for property in type.OrderedProperties %}
     {{ property.GoName }} {% if property.Type == "object" and property.Properties %}*{% endif %}{% if property.GoType != "bool" %}{{ property.GoType }} `json:"{{ property.ID }},omitempty"`{% else %}{{ property.GoType }} `json:"{{ property.ID }}"`{% endif %}{% endfor %}

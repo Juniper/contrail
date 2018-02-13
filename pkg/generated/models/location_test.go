@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestLocation(t *testing.T) {
-    model := MakeLocation()
-    fmt.Println(model)
+	model := MakeLocation()
+	fmt.Println(model)
 }

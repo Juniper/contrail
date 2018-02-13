@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTQosConfigUpdateRequest for update request for REST.
+type RESTQosConfigUpdateRequest struct {
+    Data map[string]interface{} `json:"qos-config"`
+}
+
 //RESTCreateQosConfig handle a Create REST service.
 func (service *ContrailService) RESTCreateQosConfig(c echo.Context) error {
     requestData := &models.QosConfigCreateRequest{

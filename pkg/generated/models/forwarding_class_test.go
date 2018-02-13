@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestForwardingClass(t *testing.T) {
-    model := MakeForwardingClass()
-    fmt.Println(model)
+	model := MakeForwardingClass()
+	fmt.Println(model)
 }

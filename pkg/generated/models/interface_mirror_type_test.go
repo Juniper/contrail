@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestInterfaceMirrorType(t *testing.T) {
-    model := MakeInterfaceMirrorType()
-    fmt.Println(model)
+	model := MakeInterfaceMirrorType()
+	fmt.Println(model)
 }

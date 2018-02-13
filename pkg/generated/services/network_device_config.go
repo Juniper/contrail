@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTNetworkDeviceConfigUpdateRequest for update request for REST.
+type RESTNetworkDeviceConfigUpdateRequest struct {
+    Data map[string]interface{} `json:"network-device-config"`
+}
+
 //RESTCreateNetworkDeviceConfig handle a Create REST service.
 func (service *ContrailService) RESTCreateNetworkDeviceConfig(c echo.Context) error {
     requestData := &models.NetworkDeviceConfigCreateRequest{

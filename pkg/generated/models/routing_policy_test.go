@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestRoutingPolicy(t *testing.T) {
-    model := MakeRoutingPolicy()
-    fmt.Println(model)
+	model := MakeRoutingPolicy()
+	fmt.Println(model)
 }

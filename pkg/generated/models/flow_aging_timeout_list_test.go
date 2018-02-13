@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestFlowAgingTimeoutList(t *testing.T) {
-    model := MakeFlowAgingTimeoutList()
-    fmt.Println(model)
+	model := MakeFlowAgingTimeoutList()
+	fmt.Println(model)
 }

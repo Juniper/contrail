@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestRoutingInstance(t *testing.T) {
-    model := MakeRoutingInstance()
-    fmt.Println(model)
+	model := MakeRoutingInstance()
+	fmt.Println(model)
 }

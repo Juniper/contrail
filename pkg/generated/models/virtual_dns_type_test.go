@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestVirtualDnsType(t *testing.T) {
-    model := MakeVirtualDnsType()
-    fmt.Println(model)
+	model := MakeVirtualDnsType()
+	fmt.Println(model)
 }

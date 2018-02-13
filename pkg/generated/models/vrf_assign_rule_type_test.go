@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestVrfAssignRuleType(t *testing.T) {
-    model := MakeVrfAssignRuleType()
-    fmt.Println(model)
+	model := MakeVrfAssignRuleType()
+	fmt.Println(model)
 }

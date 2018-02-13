@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestFirewallRuleMatchTagsType(t *testing.T) {
-    model := MakeFirewallRuleMatchTagsType()
-    fmt.Println(model)
+	model := MakeFirewallRuleMatchTagsType()
+	fmt.Println(model)
 }

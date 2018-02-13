@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTContrailClusterUpdateRequest for update request for REST.
+type RESTContrailClusterUpdateRequest struct {
+    Data map[string]interface{} `json:"contrail-cluster"`
+}
+
 //RESTCreateContrailCluster handle a Create REST service.
 func (service *ContrailService) RESTCreateContrailCluster(c echo.Context) error {
     requestData := &models.ContrailClusterCreateRequest{

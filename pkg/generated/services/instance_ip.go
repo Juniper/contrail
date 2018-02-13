@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTInstanceIPUpdateRequest for update request for REST.
+type RESTInstanceIPUpdateRequest struct {
+    Data map[string]interface{} `json:"instance-ip"`
+}
+
 //RESTCreateInstanceIP handle a Create REST service.
 func (service *ContrailService) RESTCreateInstanceIP(c echo.Context) error {
     requestData := &models.InstanceIPCreateRequest{

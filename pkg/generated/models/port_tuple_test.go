@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestPortTuple(t *testing.T) {
-    model := MakePortTuple()
-    fmt.Println(model)
+	model := MakePortTuple()
+	fmt.Println(model)
 }

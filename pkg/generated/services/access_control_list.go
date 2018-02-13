@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTAccessControlListUpdateRequest for update request for REST.
+type RESTAccessControlListUpdateRequest struct {
+    Data map[string]interface{} `json:"access-control-list"`
+}
+
 //RESTCreateAccessControlList handle a Create REST service.
 func (service *ContrailService) RESTCreateAccessControlList(c echo.Context) error {
     requestData := &models.AccessControlListCreateRequest{

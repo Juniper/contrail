@@ -1,42 +1,31 @@
 package models
+
 // AllowedAddressPairs
-
-
 
 import "encoding/json"
 
-// AllowedAddressPairs 
+// AllowedAddressPairs
 //proteus:generate
 type AllowedAddressPairs struct {
-
-    AllowedAddressPair []*AllowedAddressPair `json:"allowed_address_pair,omitempty"`
-
-
+	AllowedAddressPair []*AllowedAddressPair `json:"allowed_address_pair,omitempty"`
 }
-
-
 
 // String returns json representation of the object
 func (model *AllowedAddressPairs) String() string {
-    b, _ := json.Marshal(model)
-    return string(b)
+	b, _ := json.Marshal(model)
+	return string(b)
 }
 
 // MakeAllowedAddressPairs makes AllowedAddressPairs
-func MakeAllowedAddressPairs() *AllowedAddressPairs{
-    return &AllowedAddressPairs{
-    //TODO(nati): Apply default
-    
-            
-                AllowedAddressPair:  MakeAllowedAddressPairSlice(),
-            
-        
-    }
+func MakeAllowedAddressPairs() *AllowedAddressPairs {
+	return &AllowedAddressPairs{
+		//TODO(nati): Apply default
+
+		AllowedAddressPair: MakeAllowedAddressPairSlice(),
+	}
 }
-
-
 
 // MakeAllowedAddressPairsSlice() makes a slice of AllowedAddressPairs
 func MakeAllowedAddressPairsSlice() []*AllowedAddressPairs {
-    return []*AllowedAddressPairs{}
+	return []*AllowedAddressPairs{}
 }

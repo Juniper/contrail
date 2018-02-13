@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestVirtualDNSRecord(t *testing.T) {
-    model := MakeVirtualDNSRecord()
-    fmt.Println(model)
+	model := MakeVirtualDNSRecord()
+	fmt.Println(model)
 }

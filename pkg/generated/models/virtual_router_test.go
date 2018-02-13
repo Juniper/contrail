@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestVirtualRouter(t *testing.T) {
-    model := MakeVirtualRouter()
-    fmt.Println(model)
+	model := MakeVirtualRouter()
+	fmt.Println(model)
 }

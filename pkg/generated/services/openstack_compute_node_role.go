@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTOpenstackComputeNodeRoleUpdateRequest for update request for REST.
+type RESTOpenstackComputeNodeRoleUpdateRequest struct {
+    Data map[string]interface{} `json:"openstack-compute-node-role"`
+}
+
 //RESTCreateOpenstackComputeNodeRole handle a Create REST service.
 func (service *ContrailService) RESTCreateOpenstackComputeNodeRole(c echo.Context) error {
     requestData := &models.OpenstackComputeNodeRoleCreateRequest{

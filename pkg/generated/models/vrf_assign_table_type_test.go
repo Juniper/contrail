@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestVrfAssignTableType(t *testing.T) {
-    model := MakeVrfAssignTableType()
-    fmt.Println(model)
+	model := MakeVrfAssignTableType()
+	fmt.Println(model)
 }

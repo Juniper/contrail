@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestBaremetalPort(t *testing.T) {
-    model := MakeBaremetalPort()
-    fmt.Println(model)
+	model := MakeBaremetalPort()
+	fmt.Println(model)
 }

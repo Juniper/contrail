@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTRouteAggregateUpdateRequest for update request for REST.
+type RESTRouteAggregateUpdateRequest struct {
+    Data map[string]interface{} `json:"route-aggregate"`
+}
+
 //RESTCreateRouteAggregate handle a Create REST service.
 func (service *ContrailService) RESTCreateRouteAggregate(c echo.Context) error {
     requestData := &models.RouteAggregateCreateRequest{

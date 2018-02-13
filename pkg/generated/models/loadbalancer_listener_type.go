@@ -1,49 +1,40 @@
 package models
+
 // LoadbalancerListenerType
-
-
 
 import "encoding/json"
 
-// LoadbalancerListenerType 
+// LoadbalancerListenerType
 //proteus:generate
 type LoadbalancerListenerType struct {
-
-    DefaultTLSContainer string `json:"default_tls_container,omitempty"`
-    Protocol LoadbalancerProtocolType `json:"protocol,omitempty"`
-    ConnectionLimit int `json:"connection_limit,omitempty"`
-    AdminState bool `json:"admin_state"`
-    SniContainers []string `json:"sni_containers,omitempty"`
-    ProtocolPort int `json:"protocol_port,omitempty"`
-
-
+	DefaultTLSContainer string                   `json:"default_tls_container,omitempty"`
+	Protocol            LoadbalancerProtocolType `json:"protocol,omitempty"`
+	ConnectionLimit     int                      `json:"connection_limit,omitempty"`
+	AdminState          bool                     `json:"admin_state"`
+	SniContainers       []string                 `json:"sni_containers,omitempty"`
+	ProtocolPort        int                      `json:"protocol_port,omitempty"`
 }
-
-
 
 // String returns json representation of the object
 func (model *LoadbalancerListenerType) String() string {
-    b, _ := json.Marshal(model)
-    return string(b)
+	b, _ := json.Marshal(model)
+	return string(b)
 }
 
 // MakeLoadbalancerListenerType makes LoadbalancerListenerType
-func MakeLoadbalancerListenerType() *LoadbalancerListenerType{
-    return &LoadbalancerListenerType{
-    //TODO(nati): Apply default
-    DefaultTLSContainer: "",
-        Protocol: MakeLoadbalancerProtocolType(),
-        ConnectionLimit: 0,
-        AdminState: false,
-        SniContainers: []string{},
-        ProtocolPort: 0,
-        
-    }
+func MakeLoadbalancerListenerType() *LoadbalancerListenerType {
+	return &LoadbalancerListenerType{
+		//TODO(nati): Apply default
+		DefaultTLSContainer: "",
+		Protocol:            MakeLoadbalancerProtocolType(),
+		ConnectionLimit:     0,
+		AdminState:          false,
+		SniContainers:       []string{},
+		ProtocolPort:        0,
+	}
 }
-
-
 
 // MakeLoadbalancerListenerTypeSlice() makes a slice of LoadbalancerListenerType
 func MakeLoadbalancerListenerTypeSlice() []*LoadbalancerListenerType {
-    return []*LoadbalancerListenerType{}
+	return []*LoadbalancerListenerType{}
 }

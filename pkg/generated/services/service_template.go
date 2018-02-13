@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTServiceTemplateUpdateRequest for update request for REST.
+type RESTServiceTemplateUpdateRequest struct {
+    Data map[string]interface{} `json:"service-template"`
+}
+
 //RESTCreateServiceTemplate handle a Create REST service.
 func (service *ContrailService) RESTCreateServiceTemplate(c echo.Context) error {
     requestData := &models.ServiceTemplateCreateRequest{

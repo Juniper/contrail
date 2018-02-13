@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestControlTrafficDscpType(t *testing.T) {
-    model := MakeControlTrafficDscpType()
-    fmt.Println(model)
+	model := MakeControlTrafficDscpType()
+	fmt.Println(model)
 }

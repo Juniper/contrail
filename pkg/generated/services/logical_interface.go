@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTLogicalInterfaceUpdateRequest for update request for REST.
+type RESTLogicalInterfaceUpdateRequest struct {
+    Data map[string]interface{} `json:"logical-interface"`
+}
+
 //RESTCreateLogicalInterface handle a Create REST service.
 func (service *ContrailService) RESTCreateLogicalInterface(c echo.Context) error {
     requestData := &models.LogicalInterfaceCreateRequest{

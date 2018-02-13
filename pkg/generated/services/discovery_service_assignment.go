@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTDiscoveryServiceAssignmentUpdateRequest for update request for REST.
+type RESTDiscoveryServiceAssignmentUpdateRequest struct {
+    Data map[string]interface{} `json:"discovery-service-assignment"`
+}
+
 //RESTCreateDiscoveryServiceAssignment handle a Create REST service.
 func (service *ContrailService) RESTCreateDiscoveryServiceAssignment(c echo.Context) error {
     requestData := &models.DiscoveryServiceAssignmentCreateRequest{

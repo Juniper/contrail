@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTPhysicalInterfaceUpdateRequest for update request for REST.
+type RESTPhysicalInterfaceUpdateRequest struct {
+    Data map[string]interface{} `json:"physical-interface"`
+}
+
 //RESTCreatePhysicalInterface handle a Create REST service.
 func (service *ContrailService) RESTCreatePhysicalInterface(c echo.Context) error {
     requestData := &models.PhysicalInterfaceCreateRequest{

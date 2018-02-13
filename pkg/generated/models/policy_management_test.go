@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestPolicyManagement(t *testing.T) {
-    model := MakePolicyManagement()
-    fmt.Println(model)
+	model := MakePolicyManagement()
+	fmt.Println(model)
 }

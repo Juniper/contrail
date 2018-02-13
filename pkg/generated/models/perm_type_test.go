@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestPermType(t *testing.T) {
-    model := MakePermType()
-    fmt.Println(model)
+	model := MakePermType()
+	fmt.Println(model)
 }

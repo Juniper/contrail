@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestDiscoveryPubSubEndPointType(t *testing.T) {
-    model := MakeDiscoveryPubSubEndPointType()
-    fmt.Println(model)
+	model := MakeDiscoveryPubSubEndPointType()
+	fmt.Println(model)
 }

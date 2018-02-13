@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTKubernetesNodeUpdateRequest for update request for REST.
+type RESTKubernetesNodeUpdateRequest struct {
+    Data map[string]interface{} `json:"kubernetes-node"`
+}
+
 //RESTCreateKubernetesNode handle a Create REST service.
 func (service *ContrailService) RESTCreateKubernetesNode(c echo.Context) error {
     requestData := &models.KubernetesNodeCreateRequest{

@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestWidget(t *testing.T) {
-    model := MakeWidget()
-    fmt.Println(model)
+	model := MakeWidget()
+	fmt.Println(model)
 }

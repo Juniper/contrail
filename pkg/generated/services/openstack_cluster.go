@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTOpenstackClusterUpdateRequest for update request for REST.
+type RESTOpenstackClusterUpdateRequest struct {
+    Data map[string]interface{} `json:"openstack-cluster"`
+}
+
 //RESTCreateOpenstackCluster handle a Create REST service.
 func (service *ContrailService) RESTCreateOpenstackCluster(c echo.Context) error {
     requestData := &models.OpenstackClusterCreateRequest{

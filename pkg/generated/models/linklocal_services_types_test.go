@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestLinklocalServicesTypes(t *testing.T) {
-    model := MakeLinklocalServicesTypes()
-    fmt.Println(model)
+	model := MakeLinklocalServicesTypes()
+	fmt.Println(model)
 }

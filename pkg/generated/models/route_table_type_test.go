@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestRouteTableType(t *testing.T) {
-    model := MakeRouteTableType()
-    fmt.Println(model)
+	model := MakeRouteTableType()
+	fmt.Println(model)
 }

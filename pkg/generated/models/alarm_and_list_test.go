@@ -1,9 +1,11 @@
 package models
 
+import (
+	"fmt"
+	"testing"
+)
 
-import ("fmt"
-        "testing")
 func TestAlarmAndList(t *testing.T) {
-    model := MakeAlarmAndList()
-    fmt.Println(model)
+	model := MakeAlarmAndList()
+	fmt.Println(model)
 }

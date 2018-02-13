@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//RESTDashboardUpdateRequest for update request for REST.
+type RESTDashboardUpdateRequest struct {
+    Data map[string]interface{} `json:"dashboard"`
+}
+
 //RESTCreateDashboard handle a Create REST service.
 func (service *ContrailService) RESTCreateDashboard(c echo.Context) error {
     requestData := &models.DashboardCreateRequest{
