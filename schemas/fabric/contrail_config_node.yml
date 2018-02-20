@@ -1,0 +1,23 @@
+description: Contrail Config Node
+extends:
+- base
+- has_status
+id: contrail_config_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this config node."
+      presence: "optional"
+parent: contrail_cluster
+plural: contrail_config_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: contrail_config_node
+title: Contrail Config Node
+type: ""

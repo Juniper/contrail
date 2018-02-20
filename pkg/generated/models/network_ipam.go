@@ -1,67 +1,73 @@
 package models
 
 import (
-	"github.com/Juniper/contrail/pkg/schema"
+    "github.com/Juniper/contrail/pkg/schema"
 )
 
 //To skip import error.
 var _ = schema.Version
 
+
 // MakeNetworkIpam makes NetworkIpam
-func MakeNetworkIpam() *NetworkIpam {
-	return &NetworkIpam{
-		//TODO(nati): Apply default
-		UUID:             "",
-		ParentUUID:       "",
-		ParentType:       "",
-		FQName:           []string{},
-		IDPerms:          MakeIdPermsType(),
-		DisplayName:      "",
-		Annotations:      MakeKeyValuePairs(),
-		Perms2:           MakePermType2(),
-		NetworkIpamMGMT:  MakeIpamType(),
-		IpamSubnets:      MakeIpamSubnets(),
-		IpamSubnetMethod: "",
-	}
+func MakeNetworkIpam() *NetworkIpam{
+    return &NetworkIpam{
+    //TODO(nati): Apply default
+    UUID: "",
+        ParentUUID: "",
+        ParentType: "",
+        FQName: []string{},
+        IDPerms: MakeIdPermsType(),
+        DisplayName: "",
+        Annotations: MakeKeyValuePairs(),
+        Perms2: MakePermType2(),
+        NetworkIpamMGMT: MakeIpamType(),
+        IpamSubnets: MakeIpamSubnets(),
+        IpamSubnetMethod: "",
+        
+    }
 }
 
 // MakeNetworkIpam makes NetworkIpam
-func InterfaceToNetworkIpam(i interface{}) *NetworkIpam {
-	m, ok := i.(map[string]interface{})
-	_ = m
-	if !ok {
-		return nil
-	}
-	return &NetworkIpam{
-		//TODO(nati): Apply default
-		UUID:             schema.InterfaceToString(m["uuid"]),
-		ParentUUID:       schema.InterfaceToString(m["parent_uuid"]),
-		ParentType:       schema.InterfaceToString(m["parent_type"]),
-		FQName:           schema.InterfaceToStringList(m["fq_name"]),
-		IDPerms:          InterfaceToIdPermsType(m["id_perms"]),
-		DisplayName:      schema.InterfaceToString(m["display_name"]),
-		Annotations:      InterfaceToKeyValuePairs(m["annotations"]),
-		Perms2:           InterfaceToPermType2(m["perms2"]),
-		NetworkIpamMGMT:  InterfaceToIpamType(m["network_ipam_mgmt"]),
-		IpamSubnets:      InterfaceToIpamSubnets(m["ipam_subnets"]),
-		IpamSubnetMethod: schema.InterfaceToString(m["ipam_subnet_method"]),
-	}
+func InterfaceToNetworkIpam(i interface{}) *NetworkIpam{
+    m, ok := i.(map[string]interface{})
+    _ = m
+    if !ok {
+        return nil 
+    } 
+    return &NetworkIpam{
+    //TODO(nati): Apply default
+    UUID: schema.InterfaceToString(m["uuid"]),
+        ParentUUID: schema.InterfaceToString(m["parent_uuid"]),
+        ParentType: schema.InterfaceToString(m["parent_type"]),
+        FQName: schema.InterfaceToStringList(m["fq_name"]),
+        IDPerms: InterfaceToIdPermsType(m["id_perms"]),
+        DisplayName: schema.InterfaceToString(m["display_name"]),
+        Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+        Perms2: InterfaceToPermType2(m["perms2"]),
+        NetworkIpamMGMT: InterfaceToIpamType(m["network_ipam_mgmt"]),
+        IpamSubnets: InterfaceToIpamSubnets(m["ipam_subnets"]),
+        IpamSubnetMethod: schema.InterfaceToString(m["ipam_subnet_method"]),
+        
+    }
 }
 
 // MakeNetworkIpamSlice() makes a slice of NetworkIpam
 func MakeNetworkIpamSlice() []*NetworkIpam {
-	return []*NetworkIpam{}
+    return []*NetworkIpam{}
 }
 
 // InterfaceToNetworkIpamSlice() makes a slice of NetworkIpam
 func InterfaceToNetworkIpamSlice(i interface{}) []*NetworkIpam {
-	list := schema.InterfaceToInterfaceList(i)
-	if list == nil {
-		return nil
-	}
-	result := []*NetworkIpam{}
-	for _, item := range list {
-		result = append(result, InterfaceToNetworkIpam(item))
-	}
-	return result
+    list := schema.InterfaceToInterfaceList(i)
+    if list == nil {
+        return nil
+    }
+    result := []*NetworkIpam{}
+    for _, item := range list {
+        result = append(result, InterfaceToNetworkIpam(item) )
+    }
+    return result
 }
+
+
+

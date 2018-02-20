@@ -85,7 +85,7 @@ func (a *Agent) ShowCLI(schemaID, uuid string) (string, error) {
 		return "", fmt.Errorf("missing UUID")
 	}
 
-	data, err := a.show(schemaID, uuid)
+	data, err := a.Show(schemaID, uuid)
 	if err != nil {
 		a.log.Fatalf("error: %v", err)
 	}
@@ -119,7 +119,7 @@ func (a *Agent) ListCLI(schemaID string, queryParameters url.Values) (string, er
 
 	var resourceData []*ResourceData
 	for _, sID := range schemas {
-		data, err := a.list(sID, queryParameters)
+		data, err := a.List(sID, queryParameters)
 		if err != nil {
 			return "", err
 		}
@@ -167,7 +167,7 @@ func (a *Agent) CreateCLI(dataPath string) (string, error) {
 		}
 		var createdData []interface{}
 		for _, resourceData := range list {
-			data, cErr := a.create(resource.Kind, resourceData)
+			data, cErr := a.Create(resource.Kind, resourceData)
 			if cErr != nil {
 				return "", cErr
 			}
@@ -208,7 +208,7 @@ func (a *Agent) SetCLI(schemaID, uuid, yamlString string) (string, error) {
 	}
 
 	data["uuid"] = uuid
-	updated, err := a.update(schemaID, data)
+	updated, err := a.Update(schemaID, data)
 	if err != nil {
 		return "", err
 	}
@@ -239,7 +239,7 @@ func (a *Agent) UpdateCLI(dataPath string) (string, error) {
 		}
 		var updatedData []interface{}
 		for _, resourceData := range list {
-			data, uErr := a.update(resource.Kind, resourceData)
+			data, uErr := a.Update(resource.Kind, resourceData)
 			if uErr != nil {
 				return "", uErr
 			}
@@ -304,7 +304,7 @@ func (a *Agent) RemoveCLI(schemaID, uuid string) (string, error) {
 	} else if uuid == "" {
 		return "", fmt.Errorf("missing UUID")
 	}
-	err := a.delete(schemaID, uuid)
+	err := a.Delete(schemaID, uuid)
 	if err != nil {
 		return "", err
 	}
@@ -333,7 +333,7 @@ func (a *Agent) DeleteCLI(datafile string) error {
 				return err
 			}
 
-			if err = a.delete(resource.Kind, uuid); err != nil {
+			if err = a.Delete(resource.Kind, uuid); err != nil {
 				return err
 			}
 		}

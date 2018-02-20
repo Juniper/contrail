@@ -1,0 +1,23 @@
+description: Contrail Controller Node
+extends:
+- base
+- has_status
+id: contrail_controller_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this webui node."
+      presence: "optional"
+parent: contrail_cluster
+plural: contrail_controller_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: contrail_controller_node
+title: Contrail Controller Node
+type: ""

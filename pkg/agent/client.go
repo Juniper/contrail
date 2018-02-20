@@ -12,7 +12,7 @@ import (
 
 const uuidKey = "uuid"
 
-func (a *Agent) show(schemaID, uuid string) (interface{}, error) {
+func (a *Agent) Show(schemaID, uuid string) (interface{}, error) {
 	s, ok := a.schemas[schemaID]
 	if !ok {
 		return nil, fmt.Errorf("%s is undefined in API", schemaID)
@@ -22,7 +22,7 @@ func (a *Agent) show(schemaID, uuid string) (interface{}, error) {
 	return &data, errors.Wrap(err, "show operation failed")
 }
 
-func (a *Agent) list(schemaID string, queryParameters url.Values) (interface{}, error) {
+func (a *Agent) List(schemaID string, queryParameters url.Values) (interface{}, error) {
 	s, ok := a.schemas[schemaID]
 	if !ok {
 		return nil, fmt.Errorf("%s is undefined in API", schemaID)
@@ -32,7 +32,7 @@ func (a *Agent) list(schemaID string, queryParameters url.Values) (interface{}, 
 	return &data, errors.Wrap(err, "list operation failed")
 }
 
-func (a *Agent) create(schemaID string, data interface{}) (interface{}, error) {
+func (a *Agent) Create(schemaID string, data interface{}) (interface{}, error) {
 	var output interface{}
 	s, ok := a.schemas[schemaID]
 	if !ok {
@@ -52,7 +52,7 @@ func (a *Agent) create(schemaID string, data interface{}) (interface{}, error) {
 	return extractServerOutput(output, schemaID)
 }
 
-func (a *Agent) update(schemaID string, data interface{}) (interface{}, error) {
+func (a *Agent) Update(schemaID string, data interface{}) (interface{}, error) {
 	var output interface{}
 	s, ok := a.schemas[schemaID]
 	if !ok {
@@ -136,11 +136,11 @@ func (a *Agent) resourceSync(schemaID string, data interface{}) (interface{}, er
 		return nil, err
 	}
 
-	_, err = a.show(schemaID, uuid)
+	_, err = a.Show(schemaID, uuid)
 	if err == nil {
-		return a.update(schemaID, data)
+		return a.Update(schemaID, data)
 	}
-	return a.create(schemaID, data)
+	return a.Create(schemaID, data)
 }
 
 func uuidFromRawProperties(rawProperties interface{}) (string, error) {
@@ -161,7 +161,7 @@ func uuidFromRawProperties(rawProperties interface{}) (string, error) {
 	return uuid, nil
 }
 
-func (a *Agent) delete(schemaID, uuid string) error {
+func (a *Agent) Delete(schemaID, uuid string) error {
 	var output interface{}
 	s, ok := a.schemas[schemaID]
 	if !ok {
