@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -61,7 +62,11 @@ var InterfaceRouteTableParents = []string{
 const insertInterfaceRouteTableServiceInstanceQuery = "insert into `ref_interface_route_table_service_instance` (`from`, `to` ,`interface_type`) values (?, ?,?);"
 
 // CreateInterfaceRouteTable inserts InterfaceRouteTable to DB
-func CreateInterfaceRouteTable(tx *sql.Tx, model *models.InterfaceRouteTable) error {
+func CreateInterfaceRouteTable(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateInterfaceRouteTableRequest) error {
+	model := request.InterfaceRouteTable
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertInterfaceRouteTableQuery)
 	if err != nil {
@@ -72,7 +77,7 @@ func CreateInterfaceRouteTable(tx *sql.Tx, model *models.InterfaceRouteTable) er
 		"model": model,
 		"query": insertInterfaceRouteTableQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -109,7 +114,7 @@ func CreateInterfaceRouteTable(tx *sql.Tx, model *models.InterfaceRouteTable) er
 			ref.Attr = models.MakeServiceInterfaceTag()
 		}
 
-		_, err = stmtServiceInstanceRef.Exec(model.UUID, ref.UUID, string(ref.Attr.InterfaceType))
+		_, err = stmtServiceInstanceRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.InterfaceType))
 		if err != nil {
 			return errors.Wrap(err, "ServiceInstanceRefs create failed")
 		}
@@ -332,14 +337,16 @@ func scanInterfaceRouteTable(values map[string]interface{}) (*models.InterfaceRo
 }
 
 // ListInterfaceRouteTable lists InterfaceRouteTable with list spec.
-func ListInterfaceRouteTable(tx *sql.Tx, spec *common.ListSpec) ([]*models.InterfaceRouteTable, error) {
+func ListInterfaceRouteTable(ctx context.Context, tx *sql.Tx, request *models.ListInterfaceRouteTableRequest) (response *models.ListInterfaceRouteTableResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "interface_route_table"
-	spec.Fields = InterfaceRouteTableFields
-	spec.RefFields = InterfaceRouteTableRefFields
-	spec.BackRefFields = InterfaceRouteTableBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "interface_route_table"
+	qb.Fields = InterfaceRouteTableFields
+	qb.RefFields = InterfaceRouteTableRefFields
+	qb.BackRefFields = InterfaceRouteTableBackRefFields
 	result := models.MakeInterfaceRouteTableSlice()
 
 	if spec.ParentFQName != nil {
@@ -350,14 +357,14 @@ func ListInterfaceRouteTable(tx *sql.Tx, spec *common.ListSpec) ([]*models.Inter
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -365,6 +372,7 @@ func ListInterfaceRouteTable(tx *sql.Tx, spec *common.ListSpec) ([]*models.Inter
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -385,294 +393,35 @@ func ListInterfaceRouteTable(tx *sql.Tx, spec *common.ListSpec) ([]*models.Inter
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListInterfaceRouteTableResponse{
+		InterfaceRouteTables: result,
+	}
+	return response, nil
 }
 
 // UpdateInterfaceRouteTable updates a resource
-func UpdateInterfaceRouteTable(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateInterfaceRouteTableQuery = "update `interface_route_table` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateInterfaceRouteTableQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateInterfaceRouteTableQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateInterfaceRouteTableQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateInterfaceRouteTableQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateInterfaceRouteTableQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateInterfaceRouteTableQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateInterfaceRouteTableQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".InterfaceRouteTableRoutes.Route", "."); ok {
-		updateInterfaceRouteTableQuery += "`route` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateInterfaceRouteTableQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateInterfaceRouteTableQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateInterfaceRouteTableQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateInterfaceRouteTableQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateInterfaceRouteTableQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateInterfaceRouteTableQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateInterfaceRouteTableQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateInterfaceRouteTableQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateInterfaceRouteTableQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateInterfaceRouteTableQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateInterfaceRouteTableQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateInterfaceRouteTableQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateInterfaceRouteTableQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateInterfaceRouteTableQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateInterfaceRouteTableQuery += ","
-	}
-
-	updateInterfaceRouteTableQuery =
-		updateInterfaceRouteTableQuery[:len(updateInterfaceRouteTableQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateInterfaceRouteTableQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateInterfaceRouteTableQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "ServiceInstanceRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			attrValues, ok := common.GetValueByPath(ref.(map[string]interface{}), "Attr", ".")
-			if ok {
-
-				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".InterfaceType", "."); ok {
-					refKeys = append(refKeys, "interface_type")
-
-					refValues = append(refValues, common.InterfaceToString(value))
-
-				}
-
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_interface_route_table_service_instance` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_interface_route_table_service_instance` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref ServiceInstanceRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_interface_route_table_service_instance` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing ServiceInstanceRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "ServiceInstanceRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "interface_route_table", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateInterfaceRouteTable(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateInterfaceRouteTableRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteInterfaceRouteTable deletes a resource
-func DeleteInterfaceRouteTable(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteInterfaceRouteTable(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteInterfaceRouteTableRequest) error {
 	deleteQuery := deleteInterfaceRouteTableQuery
 	selectQuery := "select count(uuid) from interface_route_table where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -680,11 +429,11 @@ func DeleteInterfaceRouteTable(tx *sql.Tx, uuid string, auth *common.AuthContext
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -692,7 +441,7 @@ func DeleteInterfaceRouteTable(tx *sql.Tx, uuid string, auth *common.AuthContext
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -1045,16 +1046,20 @@ var ProjectParents = []string{
 	"domain",
 }
 
+const insertProjectAliasIPPoolQuery = "insert into `ref_project_alias_ip_pool` (`from`, `to` ) values (?, ?);"
+
 const insertProjectNamespaceQuery = "insert into `ref_project_namespace` (`from`, `to` ,`ip_prefix`,`ip_prefix_len`) values (?, ?,?,?);"
 
 const insertProjectApplicationPolicySetQuery = "insert into `ref_project_application_policy_set` (`from`, `to` ) values (?, ?);"
 
 const insertProjectFloatingIPPoolQuery = "insert into `ref_project_floating_ip_pool` (`from`, `to` ) values (?, ?);"
 
-const insertProjectAliasIPPoolQuery = "insert into `ref_project_alias_ip_pool` (`from`, `to` ) values (?, ?);"
-
 // CreateProject inserts Project to DB
-func CreateProject(tx *sql.Tx, model *models.Project) error {
+func CreateProject(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateProjectRequest) error {
+	model := request.Project
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertProjectQuery)
 	if err != nil {
@@ -1065,7 +1070,7 @@ func CreateProject(tx *sql.Tx, model *models.Project) error {
 		"model": model,
 		"query": insertProjectQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(bool(model.VxlanRouting),
+	_, err = stmt.ExecContext(ctx, bool(model.VxlanRouting),
 		string(model.UUID),
 		int(model.Quota.VirtualRouter),
 		int(model.Quota.VirtualNetwork),
@@ -1118,19 +1123,6 @@ func CreateProject(tx *sql.Tx, model *models.Project) error {
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtFloatingIPPoolRef, err := tx.Prepare(insertProjectFloatingIPPoolQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing FloatingIPPoolRefs create statement failed")
-	}
-	defer stmtFloatingIPPoolRef.Close()
-	for _, ref := range model.FloatingIPPoolRefs {
-
-		_, err = stmtFloatingIPPoolRef.Exec(model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "FloatingIPPoolRefs create failed")
-		}
-	}
-
 	stmtAliasIPPoolRef, err := tx.Prepare(insertProjectAliasIPPoolQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing AliasIPPoolRefs create statement failed")
@@ -1138,7 +1130,7 @@ func CreateProject(tx *sql.Tx, model *models.Project) error {
 	defer stmtAliasIPPoolRef.Close()
 	for _, ref := range model.AliasIPPoolRefs {
 
-		_, err = stmtAliasIPPoolRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtAliasIPPoolRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "AliasIPPoolRefs create failed")
 		}
@@ -1155,7 +1147,7 @@ func CreateProject(tx *sql.Tx, model *models.Project) error {
 			ref.Attr = models.MakeSubnetType()
 		}
 
-		_, err = stmtNamespaceRef.Exec(model.UUID, ref.UUID, string(ref.Attr.IPPrefix),
+		_, err = stmtNamespaceRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.IPPrefix),
 			int(ref.Attr.IPPrefixLen))
 		if err != nil {
 			return errors.Wrap(err, "NamespaceRefs create failed")
@@ -1169,9 +1161,22 @@ func CreateProject(tx *sql.Tx, model *models.Project) error {
 	defer stmtApplicationPolicySetRef.Close()
 	for _, ref := range model.ApplicationPolicySetRefs {
 
-		_, err = stmtApplicationPolicySetRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtApplicationPolicySetRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ApplicationPolicySetRefs create failed")
+		}
+	}
+
+	stmtFloatingIPPoolRef, err := tx.Prepare(insertProjectFloatingIPPoolQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing FloatingIPPoolRefs create statement failed")
+	}
+	defer stmtFloatingIPPoolRef.Close()
+	for _, ref := range model.FloatingIPPoolRefs {
+
+		_, err = stmtFloatingIPPoolRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "FloatingIPPoolRefs create failed")
 		}
 	}
 
@@ -1583,46 +1588,6 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 
 	}
 
-	if value, ok := values["ref_application_policy_set"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ProjectApplicationPolicySetRef{}
-			referenceModel.UUID = uuid
-			m.ApplicationPolicySetRefs = append(m.ApplicationPolicySetRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_floating_ip_pool"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ProjectFloatingIPPoolRef{}
-			referenceModel.UUID = uuid
-			m.FloatingIPPoolRefs = append(m.FloatingIPPoolRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_alias_ip_pool"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -1662,6 +1627,46 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 
 			attr := models.MakeSubnetType()
 			referenceModel.Attr = attr
+
+		}
+	}
+
+	if value, ok := values["ref_application_policy_set"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ProjectApplicationPolicySetRef{}
+			referenceModel.UUID = uuid
+			m.ApplicationPolicySetRefs = append(m.ApplicationPolicySetRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_floating_ip_pool"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ProjectFloatingIPPoolRef{}
+			referenceModel.UUID = uuid
+			m.FloatingIPPoolRefs = append(m.FloatingIPPoolRefs, referenceModel)
 
 		}
 	}
@@ -8802,14 +8807,16 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 }
 
 // ListProject lists Project with list spec.
-func ListProject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Project, error) {
+func ListProject(ctx context.Context, tx *sql.Tx, request *models.ListProjectRequest) (response *models.ListProjectResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "project"
-	spec.Fields = ProjectFields
-	spec.RefFields = ProjectRefFields
-	spec.BackRefFields = ProjectBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "project"
+	qb.Fields = ProjectFields
+	qb.RefFields = ProjectRefFields
+	qb.BackRefFields = ProjectBackRefFields
 	result := models.MakeProjectSlice()
 
 	if spec.ParentFQName != nil {
@@ -8820,14 +8827,14 @@ func ListProject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Project, error) {
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -8835,6 +8842,7 @@ func ListProject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Project, error) {
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -8855,667 +8863,35 @@ func ListProject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Project, error) {
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListProjectResponse{
+		Projects: result,
+	}
+	return response, nil
 }
 
 // UpdateProject updates a resource
-func UpdateProject(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateProjectQuery = "update `project` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".VxlanRouting", "."); ok {
-		updateProjectQuery += "`vxlan_routing` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateProjectQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.VirtualRouter", "."); ok {
-		updateProjectQuery += "`virtual_router` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.VirtualNetwork", "."); ok {
-		updateProjectQuery += "`virtual_network` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.VirtualMachineInterface", "."); ok {
-		updateProjectQuery += "`virtual_machine_interface` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.VirtualIP", "."); ok {
-		updateProjectQuery += "`virtual_ip` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.VirtualDNSRecord", "."); ok {
-		updateProjectQuery += "`virtual_DNS_record` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.VirtualDNS", "."); ok {
-		updateProjectQuery += "`virtual_DNS` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.Subnet", "."); ok {
-		updateProjectQuery += "`subnet` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.ServiceTemplate", "."); ok {
-		updateProjectQuery += "`service_template` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.ServiceInstance", "."); ok {
-		updateProjectQuery += "`service_instance` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.SecurityLoggingObject", "."); ok {
-		updateProjectQuery += "`security_logging_object` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.SecurityGroupRule", "."); ok {
-		updateProjectQuery += "`security_group_rule` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.SecurityGroup", "."); ok {
-		updateProjectQuery += "`security_group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.RouteTable", "."); ok {
-		updateProjectQuery += "`route_table` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.NetworkPolicy", "."); ok {
-		updateProjectQuery += "`network_policy` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.NetworkIpam", "."); ok {
-		updateProjectQuery += "`network_ipam` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.LogicalRouter", "."); ok {
-		updateProjectQuery += "`logical_router` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.LoadbalancerPool", "."); ok {
-		updateProjectQuery += "`loadbalancer_pool` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.LoadbalancerMember", "."); ok {
-		updateProjectQuery += "`loadbalancer_member` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.LoadbalancerHealthmonitor", "."); ok {
-		updateProjectQuery += "`loadbalancer_healthmonitor` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.InstanceIP", "."); ok {
-		updateProjectQuery += "`instance_ip` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.GlobalVrouterConfig", "."); ok {
-		updateProjectQuery += "`global_vrouter_config` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.FloatingIPPool", "."); ok {
-		updateProjectQuery += "`floating_ip_pool` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.FloatingIP", "."); ok {
-		updateProjectQuery += "`floating_ip` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.Defaults", "."); ok {
-		updateProjectQuery += "`defaults` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.BGPRouter", "."); ok {
-		updateProjectQuery += "`bgp_router` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Quota.AccessControlList", "."); ok {
-		updateProjectQuery += "`access_control_list` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateProjectQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateProjectQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateProjectQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateProjectQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateProjectQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateProjectQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateProjectQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateProjectQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateProjectQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateProjectQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateProjectQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateProjectQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateProjectQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateProjectQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateProjectQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateProjectQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateProjectQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateProjectQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateProjectQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateProjectQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateProjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".AlarmEnable", "."); ok {
-		updateProjectQuery += "`alarm_enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateProjectQuery += ","
-	}
-
-	updateProjectQuery =
-		updateProjectQuery[:len(updateProjectQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateProjectQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateProjectQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "AliasIPPoolRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_project_alias_ip_pool` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_project_alias_ip_pool` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref AliasIPPoolRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_project_alias_ip_pool` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing AliasIPPoolRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "AliasIPPoolRefs update failed")
-			}
-		}
-	}
-
-	if value, ok := common.GetValueByPath(model, "NamespaceRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			attrValues, ok := common.GetValueByPath(ref.(map[string]interface{}), "Attr", ".")
-			if ok {
-
-				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".IPPrefix", "."); ok {
-					refKeys = append(refKeys, "ip_prefix")
-
-					refValues = append(refValues, common.InterfaceToString(value))
-
-				}
-
-				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".IPPrefixLen", "."); ok {
-					refKeys = append(refKeys, "ip_prefix_len")
-
-					refValues = append(refValues, common.InterfaceToInt(value.(float64)))
-
-				}
-
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_project_namespace` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_project_namespace` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref NamespaceRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_project_namespace` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing NamespaceRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "NamespaceRefs update failed")
-			}
-		}
-	}
-
-	if value, ok := common.GetValueByPath(model, "ApplicationPolicySetRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_project_application_policy_set` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_project_application_policy_set` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref ApplicationPolicySetRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_project_application_policy_set` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing ApplicationPolicySetRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "ApplicationPolicySetRefs update failed")
-			}
-		}
-	}
-
-	if value, ok := common.GetValueByPath(model, "FloatingIPPoolRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_project_floating_ip_pool` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_project_floating_ip_pool` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref FloatingIPPoolRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_project_floating_ip_pool` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing FloatingIPPoolRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "FloatingIPPoolRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "project", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateProject(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateProjectRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteProject deletes a resource
-func DeleteProject(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteProject(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteProjectRequest) error {
 	deleteQuery := deleteProjectQuery
 	selectQuery := "select count(uuid) from project where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -9523,11 +8899,11 @@ func DeleteProject(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -9535,7 +8911,7 @@ func DeleteProject(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

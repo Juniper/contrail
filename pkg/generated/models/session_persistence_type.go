@@ -2,6 +2,7 @@ package models
 
 // SessionPersistenceType
 
+//proteus:generate
 type SessionPersistenceType string
 
 // MakeSessionPersistenceType makes SessionPersistenceType

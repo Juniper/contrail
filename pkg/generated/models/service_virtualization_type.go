@@ -2,6 +2,7 @@ package models
 
 // ServiceVirtualizationType
 
+//proteus:generate
 type ServiceVirtualizationType string
 
 // MakeServiceVirtualizationType makes ServiceVirtualizationType

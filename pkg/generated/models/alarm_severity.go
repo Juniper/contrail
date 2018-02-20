@@ -2,6 +2,7 @@ package models
 
 // AlarmSeverity
 
+//proteus:generate
 type AlarmSeverity int
 
 // MakeAlarmSeverity makes AlarmSeverity

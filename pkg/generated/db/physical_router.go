@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -149,19 +150,23 @@ var PhysicalRouterBackRefFields = map[string][]string{
 // PhysicalRouterParentTypes is possible parents for PhysicalRouter
 var PhysicalRouterParents = []string{
 
-	"global_system_config",
-
 	"location",
+
+	"global_system_config",
 }
+
+const insertPhysicalRouterVirtualNetworkQuery = "insert into `ref_physical_router_virtual_network` (`from`, `to` ) values (?, ?);"
 
 const insertPhysicalRouterBGPRouterQuery = "insert into `ref_physical_router_bgp_router` (`from`, `to` ) values (?, ?);"
 
 const insertPhysicalRouterVirtualRouterQuery = "insert into `ref_physical_router_virtual_router` (`from`, `to` ) values (?, ?);"
 
-const insertPhysicalRouterVirtualNetworkQuery = "insert into `ref_physical_router_virtual_network` (`from`, `to` ) values (?, ?);"
-
 // CreatePhysicalRouter inserts PhysicalRouter to DB
-func CreatePhysicalRouter(tx *sql.Tx, model *models.PhysicalRouter) error {
+func CreatePhysicalRouter(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreatePhysicalRouterRequest) error {
+	model := request.PhysicalRouter
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertPhysicalRouterQuery)
 	if err != nil {
@@ -172,7 +177,7 @@ func CreatePhysicalRouter(tx *sql.Tx, model *models.PhysicalRouter) error {
 		"model": model,
 		"query": insertPhysicalRouterQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		int(model.TelemetryInfo.ServerPort),
 		string(model.TelemetryInfo.ServerIP),
 		common.MustJSON(model.TelemetryInfo.Resource),
@@ -237,7 +242,7 @@ func CreatePhysicalRouter(tx *sql.Tx, model *models.PhysicalRouter) error {
 	defer stmtVirtualNetworkRef.Close()
 	for _, ref := range model.VirtualNetworkRefs {
 
-		_, err = stmtVirtualNetworkRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtVirtualNetworkRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualNetworkRefs create failed")
 		}
@@ -250,7 +255,7 @@ func CreatePhysicalRouter(tx *sql.Tx, model *models.PhysicalRouter) error {
 	defer stmtBGPRouterRef.Close()
 	for _, ref := range model.BGPRouterRefs {
 
-		_, err = stmtBGPRouterRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtBGPRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "BGPRouterRefs create failed")
 		}
@@ -263,7 +268,7 @@ func CreatePhysicalRouter(tx *sql.Tx, model *models.PhysicalRouter) error {
 	defer stmtVirtualRouterRef.Close()
 	for _, ref := range model.VirtualRouterRefs {
 
-		_, err = stmtVirtualRouterRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtVirtualRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualRouterRefs create failed")
 		}
@@ -713,26 +718,6 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 
 	}
 
-	if value, ok := values["ref_virtual_router"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.PhysicalRouterVirtualRouterRef{}
-			referenceModel.UUID = uuid
-			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_network"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -769,6 +754,26 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 			referenceModel := &models.PhysicalRouterBGPRouterRef{}
 			referenceModel.UUID = uuid
 			m.BGPRouterRefs = append(m.BGPRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_router"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.PhysicalRouterVirtualRouterRef{}
+			referenceModel.UUID = uuid
+			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
 
 		}
 	}
@@ -1163,14 +1168,16 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 }
 
 // ListPhysicalRouter lists PhysicalRouter with list spec.
-func ListPhysicalRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.PhysicalRouter, error) {
+func ListPhysicalRouter(ctx context.Context, tx *sql.Tx, request *models.ListPhysicalRouterRequest) (response *models.ListPhysicalRouterResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "physical_router"
-	spec.Fields = PhysicalRouterFields
-	spec.RefFields = PhysicalRouterRefFields
-	spec.BackRefFields = PhysicalRouterBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "physical_router"
+	qb.Fields = PhysicalRouterFields
+	qb.RefFields = PhysicalRouterRefFields
+	qb.BackRefFields = PhysicalRouterBackRefFields
 	result := models.MakePhysicalRouterSlice()
 
 	if spec.ParentFQName != nil {
@@ -1181,14 +1188,14 @@ func ListPhysicalRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.PhysicalRo
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -1196,6 +1203,7 @@ func ListPhysicalRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.PhysicalRo
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -1216,638 +1224,35 @@ func ListPhysicalRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.PhysicalRo
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListPhysicalRouterResponse{
+		PhysicalRouters: result,
+	}
+	return response, nil
 }
 
 // UpdatePhysicalRouter updates a resource
-func UpdatePhysicalRouter(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updatePhysicalRouterQuery = "update `physical_router` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updatePhysicalRouterQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".TelemetryInfo.ServerPort", "."); ok {
-		updatePhysicalRouterQuery += "`server_port` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".TelemetryInfo.ServerIP", "."); ok {
-		updatePhysicalRouterQuery += "`server_ip` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".TelemetryInfo.Resource", "."); ok {
-		updatePhysicalRouterQuery += "`resource` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterVNCManaged", "."); ok {
-		updatePhysicalRouterQuery += "`physical_router_vnc_managed` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterVendorName", "."); ok {
-		updatePhysicalRouterQuery += "`physical_router_vendor_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterUserCredentials.Username", "."); ok {
-		updatePhysicalRouterQuery += "`username` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterUserCredentials.Password", "."); ok {
-		updatePhysicalRouterQuery += "`password` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.Version", "."); ok {
-		updatePhysicalRouterQuery += "`version` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.V3SecurityName", "."); ok {
-		updatePhysicalRouterQuery += "`v3_security_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.V3SecurityLevel", "."); ok {
-		updatePhysicalRouterQuery += "`v3_security_level` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.V3SecurityEngineID", "."); ok {
-		updatePhysicalRouterQuery += "`v3_security_engine_id` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.V3PrivacyProtocol", "."); ok {
-		updatePhysicalRouterQuery += "`v3_privacy_protocol` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.V3PrivacyPassword", "."); ok {
-		updatePhysicalRouterQuery += "`v3_privacy_password` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.V3EngineTime", "."); ok {
-		updatePhysicalRouterQuery += "`v3_engine_time` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.V3EngineID", "."); ok {
-		updatePhysicalRouterQuery += "`v3_engine_id` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.V3EngineBoots", "."); ok {
-		updatePhysicalRouterQuery += "`v3_engine_boots` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.V3ContextEngineID", "."); ok {
-		updatePhysicalRouterQuery += "`v3_context_engine_id` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.V3Context", "."); ok {
-		updatePhysicalRouterQuery += "`v3_context` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.V3AuthenticationProtocol", "."); ok {
-		updatePhysicalRouterQuery += "`v3_authentication_protocol` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.V3AuthenticationPassword", "."); ok {
-		updatePhysicalRouterQuery += "`v3_authentication_password` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.V2Community", "."); ok {
-		updatePhysicalRouterQuery += "`v2_community` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.Timeout", "."); ok {
-		updatePhysicalRouterQuery += "`timeout` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.Retries", "."); ok {
-		updatePhysicalRouterQuery += "`retries` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMPCredentials.LocalPort", "."); ok {
-		updatePhysicalRouterQuery += "`local_port` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterSNMP", "."); ok {
-		updatePhysicalRouterQuery += "`physical_router_snmp` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterRole", "."); ok {
-		updatePhysicalRouterQuery += "`physical_router_role` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterProductName", "."); ok {
-		updatePhysicalRouterQuery += "`physical_router_product_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterManagementIP", "."); ok {
-		updatePhysicalRouterQuery += "`physical_router_management_ip` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterLoopbackIP", "."); ok {
-		updatePhysicalRouterQuery += "`physical_router_loopback_ip` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterLLDP", "."); ok {
-		updatePhysicalRouterQuery += "`physical_router_lldp` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterJunosServicePorts.ServicePort", "."); ok {
-		updatePhysicalRouterQuery += "`service_port` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterImageURI", "."); ok {
-		updatePhysicalRouterQuery += "`physical_router_image_uri` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PhysicalRouterDataplaneIP", "."); ok {
-		updatePhysicalRouterQuery += "`physical_router_dataplane_ip` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updatePhysicalRouterQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updatePhysicalRouterQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updatePhysicalRouterQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updatePhysicalRouterQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updatePhysicalRouterQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updatePhysicalRouterQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updatePhysicalRouterQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updatePhysicalRouterQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updatePhysicalRouterQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updatePhysicalRouterQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updatePhysicalRouterQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updatePhysicalRouterQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updatePhysicalRouterQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updatePhysicalRouterQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updatePhysicalRouterQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updatePhysicalRouterQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updatePhysicalRouterQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updatePhysicalRouterQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updatePhysicalRouterQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updatePhysicalRouterQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updatePhysicalRouterQuery += ","
-	}
-
-	updatePhysicalRouterQuery =
-		updatePhysicalRouterQuery[:len(updatePhysicalRouterQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updatePhysicalRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updatePhysicalRouterQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "VirtualNetworkRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_physical_router_virtual_network` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_physical_router_virtual_network` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref VirtualNetworkRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_physical_router_virtual_network` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing VirtualNetworkRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "VirtualNetworkRefs update failed")
-			}
-		}
-	}
-
-	if value, ok := common.GetValueByPath(model, "BGPRouterRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_physical_router_bgp_router` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_physical_router_bgp_router` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref BGPRouterRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_physical_router_bgp_router` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing BGPRouterRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "BGPRouterRefs update failed")
-			}
-		}
-	}
-
-	if value, ok := common.GetValueByPath(model, "VirtualRouterRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_physical_router_virtual_router` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_physical_router_virtual_router` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref VirtualRouterRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_physical_router_virtual_router` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing VirtualRouterRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "VirtualRouterRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "physical_router", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdatePhysicalRouter(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdatePhysicalRouterRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeletePhysicalRouter deletes a resource
-func DeletePhysicalRouter(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeletePhysicalRouter(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeletePhysicalRouterRequest) error {
 	deleteQuery := deletePhysicalRouterQuery
 	selectQuery := "select count(uuid) from physical_router where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -1855,11 +1260,11 @@ func DeletePhysicalRouter(tx *sql.Tx, uuid string, auth *common.AuthContext) err
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -1867,7 +1272,7 @@ func DeletePhysicalRouter(tx *sql.Tx, uuid string, auth *common.AuthContext) err
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

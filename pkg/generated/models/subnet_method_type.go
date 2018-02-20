@@ -2,6 +2,7 @@ package models
 
 // SubnetMethodType
 
+//proteus:generate
 type SubnetMethodType string
 
 // MakeSubnetMethodType makes SubnetMethodType

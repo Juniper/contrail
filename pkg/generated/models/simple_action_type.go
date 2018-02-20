@@ -2,6 +2,7 @@ package models
 
 // SimpleActionType
 
+//proteus:generate
 type SimpleActionType string
 
 // MakeSimpleActionType makes SimpleActionType

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -51,13 +52,17 @@ var AccessControlListBackRefFields = map[string][]string{}
 // AccessControlListParentTypes is possible parents for AccessControlList
 var AccessControlListParents = []string{
 
-	"virtual_network",
-
 	"security_group",
+
+	"virtual_network",
 }
 
 // CreateAccessControlList inserts AccessControlList to DB
-func CreateAccessControlList(tx *sql.Tx, model *models.AccessControlList) error {
+func CreateAccessControlList(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateAccessControlListRequest) error {
+	model := request.AccessControlList
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertAccessControlListQuery)
 	if err != nil {
@@ -68,7 +73,7 @@ func CreateAccessControlList(tx *sql.Tx, model *models.AccessControlList) error 
 		"model": model,
 		"query": insertAccessControlListQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -89,7 +94,7 @@ func CreateAccessControlList(tx *sql.Tx, model *models.AccessControlList) error 
 		common.MustJSON(model.FQName),
 		string(model.DisplayName),
 		common.MustJSON(model.Annotations.KeyValuePair),
-		common.MustJSON(model.AccessControlListHash),
+		int(model.AccessControlListHash),
 		bool(model.AccessControlListEntries.Dynamic),
 		common.MustJSON(model.AccessControlListEntries.ACLRule))
 	if err != nil {
@@ -282,7 +287,9 @@ func scanAccessControlList(values map[string]interface{}) (*models.AccessControl
 
 	if value, ok := values["access_control_list_hash"]; ok {
 
-		json.Unmarshal(value.([]byte), &m.AccessControlListHash)
+		castedValue := common.InterfaceToInt(value)
+
+		m.AccessControlListHash = castedValue
 
 	}
 
@@ -304,14 +311,16 @@ func scanAccessControlList(values map[string]interface{}) (*models.AccessControl
 }
 
 // ListAccessControlList lists AccessControlList with list spec.
-func ListAccessControlList(tx *sql.Tx, spec *common.ListSpec) ([]*models.AccessControlList, error) {
+func ListAccessControlList(ctx context.Context, tx *sql.Tx, request *models.ListAccessControlListRequest) (response *models.ListAccessControlListResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "access_control_list"
-	spec.Fields = AccessControlListFields
-	spec.RefFields = AccessControlListRefFields
-	spec.BackRefFields = AccessControlListBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "access_control_list"
+	qb.Fields = AccessControlListFields
+	qb.RefFields = AccessControlListRefFields
+	qb.BackRefFields = AccessControlListBackRefFields
 	result := models.MakeAccessControlListSlice()
 
 	if spec.ParentFQName != nil {
@@ -322,14 +331,14 @@ func ListAccessControlList(tx *sql.Tx, spec *common.ListSpec) ([]*models.AccessC
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -337,6 +346,7 @@ func ListAccessControlList(tx *sql.Tx, spec *common.ListSpec) ([]*models.AccessC
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -357,248 +367,35 @@ func ListAccessControlList(tx *sql.Tx, spec *common.ListSpec) ([]*models.AccessC
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListAccessControlListResponse{
+		AccessControlLists: result,
+	}
+	return response, nil
 }
 
 // UpdateAccessControlList updates a resource
-func UpdateAccessControlList(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateAccessControlListQuery = "update `access_control_list` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateAccessControlListQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateAccessControlListQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateAccessControlListQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateAccessControlListQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateAccessControlListQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateAccessControlListQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateAccessControlListQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateAccessControlListQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateAccessControlListQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateAccessControlListQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateAccessControlListQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateAccessControlListQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateAccessControlListQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateAccessControlListQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateAccessControlListQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateAccessControlListQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateAccessControlListQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateAccessControlListQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateAccessControlListQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateAccessControlListQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateAccessControlListQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".AccessControlListHash", "."); ok {
-		updateAccessControlListQuery += "`access_control_list_hash` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".AccessControlListEntries.Dynamic", "."); ok {
-		updateAccessControlListQuery += "`dynamic` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".AccessControlListEntries.ACLRule", "."); ok {
-		updateAccessControlListQuery += "`acl_rule` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateAccessControlListQuery += ","
-	}
-
-	updateAccessControlListQuery =
-		updateAccessControlListQuery[:len(updateAccessControlListQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateAccessControlListQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateAccessControlListQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "access_control_list", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateAccessControlList(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateAccessControlListRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteAccessControlList deletes a resource
-func DeleteAccessControlList(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteAccessControlList(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteAccessControlListRequest) error {
 	deleteQuery := deleteAccessControlListQuery
 	selectQuery := "select count(uuid) from access_control_list where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -606,11 +403,11 @@ func DeleteAccessControlList(tx *sql.Tx, uuid string, auth *common.AuthContext) 
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -618,7 +415,7 @@ func DeleteAccessControlList(tx *sql.Tx, uuid string, auth *common.AuthContext) 
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

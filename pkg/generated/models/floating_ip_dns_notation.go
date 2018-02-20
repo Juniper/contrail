@@ -2,6 +2,7 @@ package models
 
 // FloatingIpDnsNotation
 
+//proteus:generate
 type FloatingIpDnsNotation string
 
 // MakeFloatingIpDnsNotation makes FloatingIpDnsNotation

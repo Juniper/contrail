@@ -2,9 +2,8 @@ package models
 
 // PermType
 
-import "encoding/json"
-
 // PermType
+//proteus:generate
 type PermType struct {
 	Owner       string     `json:"owner,omitempty"`
 	OwnerAccess AccessType `json:"owner_access,omitempty"`
@@ -13,21 +12,15 @@ type PermType struct {
 	GroupAccess AccessType `json:"group_access,omitempty"`
 }
 
-// String returns json representation of the object
-func (model *PermType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
-}
-
 // MakePermType makes PermType
 func MakePermType() *PermType {
 	return &PermType{
 		//TODO(nati): Apply default
+		Owner:       "",
 		OwnerAccess: MakeAccessType(),
 		OtherAccess: MakeAccessType(),
 		Group:       "",
 		GroupAccess: MakeAccessType(),
-		Owner:       "",
 	}
 }
 

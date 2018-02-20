@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -71,7 +72,11 @@ const insertSecurityLoggingObjectSecurityGroupQuery = "insert into `ref_security
 const insertSecurityLoggingObjectNetworkPolicyQuery = "insert into `ref_security_logging_object_network_policy` (`from`, `to` ,`rule`) values (?, ?,?);"
 
 // CreateSecurityLoggingObject inserts SecurityLoggingObject to DB
-func CreateSecurityLoggingObject(tx *sql.Tx, model *models.SecurityLoggingObject) error {
+func CreateSecurityLoggingObject(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateSecurityLoggingObjectRequest) error {
+	model := request.SecurityLoggingObject
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertSecurityLoggingObjectQuery)
 	if err != nil {
@@ -82,7 +87,7 @@ func CreateSecurityLoggingObject(tx *sql.Tx, model *models.SecurityLoggingObject
 		"model": model,
 		"query": insertSecurityLoggingObjectQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.SecurityLoggingObjectRules.Rule),
 		int(model.SecurityLoggingObjectRate),
 		common.MustJSON(model.Perms2.Share),
@@ -120,7 +125,7 @@ func CreateSecurityLoggingObject(tx *sql.Tx, model *models.SecurityLoggingObject
 			ref.Attr = models.MakeSecurityLoggingObjectRuleListType()
 		}
 
-		_, err = stmtSecurityGroupRef.Exec(model.UUID, ref.UUID, common.MustJSON(ref.Attr.Rule))
+		_, err = stmtSecurityGroupRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.Rule))
 		if err != nil {
 			return errors.Wrap(err, "SecurityGroupRefs create failed")
 		}
@@ -137,7 +142,7 @@ func CreateSecurityLoggingObject(tx *sql.Tx, model *models.SecurityLoggingObject
 			ref.Attr = models.MakeSecurityLoggingObjectRuleListType()
 		}
 
-		_, err = stmtNetworkPolicyRef.Exec(model.UUID, ref.UUID, common.MustJSON(ref.Attr.Rule))
+		_, err = stmtNetworkPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.Rule))
 		if err != nil {
 			return errors.Wrap(err, "NetworkPolicyRefs create failed")
 		}
@@ -391,14 +396,16 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 }
 
 // ListSecurityLoggingObject lists SecurityLoggingObject with list spec.
-func ListSecurityLoggingObject(tx *sql.Tx, spec *common.ListSpec) ([]*models.SecurityLoggingObject, error) {
+func ListSecurityLoggingObject(ctx context.Context, tx *sql.Tx, request *models.ListSecurityLoggingObjectRequest) (response *models.ListSecurityLoggingObjectResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "security_logging_object"
-	spec.Fields = SecurityLoggingObjectFields
-	spec.RefFields = SecurityLoggingObjectRefFields
-	spec.BackRefFields = SecurityLoggingObjectBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "security_logging_object"
+	qb.Fields = SecurityLoggingObjectFields
+	qb.RefFields = SecurityLoggingObjectRefFields
+	qb.BackRefFields = SecurityLoggingObjectBackRefFields
 	result := models.MakeSecurityLoggingObjectSlice()
 
 	if spec.ParentFQName != nil {
@@ -409,14 +416,14 @@ func ListSecurityLoggingObject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Sec
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -424,6 +431,7 @@ func ListSecurityLoggingObject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Sec
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -444,364 +452,35 @@ func ListSecurityLoggingObject(tx *sql.Tx, spec *common.ListSpec) ([]*models.Sec
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListSecurityLoggingObjectResponse{
+		SecurityLoggingObjects: result,
+	}
+	return response, nil
 }
 
 // UpdateSecurityLoggingObject updates a resource
-func UpdateSecurityLoggingObject(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateSecurityLoggingObjectQuery = "update `security_logging_object` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateSecurityLoggingObjectQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".SecurityLoggingObjectRules.Rule", "."); ok {
-		updateSecurityLoggingObjectQuery += "`rule` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".SecurityLoggingObjectRate", "."); ok {
-		updateSecurityLoggingObjectQuery += "`security_logging_object_rate` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateSecurityLoggingObjectQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateSecurityLoggingObjectQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateSecurityLoggingObjectQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateSecurityLoggingObjectQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateSecurityLoggingObjectQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateSecurityLoggingObjectQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateSecurityLoggingObjectQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateSecurityLoggingObjectQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateSecurityLoggingObjectQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateSecurityLoggingObjectQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateSecurityLoggingObjectQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateSecurityLoggingObjectQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateSecurityLoggingObjectQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateSecurityLoggingObjectQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateSecurityLoggingObjectQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateSecurityLoggingObjectQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateSecurityLoggingObjectQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateSecurityLoggingObjectQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateSecurityLoggingObjectQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateSecurityLoggingObjectQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateSecurityLoggingObjectQuery += ","
-	}
-
-	updateSecurityLoggingObjectQuery =
-		updateSecurityLoggingObjectQuery[:len(updateSecurityLoggingObjectQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateSecurityLoggingObjectQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateSecurityLoggingObjectQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "SecurityGroupRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			attrValues, ok := common.GetValueByPath(ref.(map[string]interface{}), "Attr", ".")
-			if ok {
-
-				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".Rule", "."); ok {
-					refKeys = append(refKeys, "rule")
-
-					refValues = append(refValues, common.MustJSON(value))
-
-				}
-
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_security_logging_object_security_group` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_security_logging_object_security_group` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref SecurityGroupRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_security_logging_object_security_group` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing SecurityGroupRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "SecurityGroupRefs update failed")
-			}
-		}
-	}
-
-	if value, ok := common.GetValueByPath(model, "NetworkPolicyRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			attrValues, ok := common.GetValueByPath(ref.(map[string]interface{}), "Attr", ".")
-			if ok {
-
-				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".Rule", "."); ok {
-					refKeys = append(refKeys, "rule")
-
-					refValues = append(refValues, common.MustJSON(value))
-
-				}
-
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_security_logging_object_network_policy` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_security_logging_object_network_policy` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref NetworkPolicyRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_security_logging_object_network_policy` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing NetworkPolicyRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "NetworkPolicyRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "security_logging_object", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateSecurityLoggingObject(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateSecurityLoggingObjectRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteSecurityLoggingObject deletes a resource
-func DeleteSecurityLoggingObject(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteSecurityLoggingObject(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteSecurityLoggingObjectRequest) error {
 	deleteQuery := deleteSecurityLoggingObjectQuery
 	selectQuery := "select count(uuid) from security_logging_object where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -809,11 +488,11 @@ func DeleteSecurityLoggingObject(tx *sql.Tx, uuid string, auth *common.AuthConte
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -821,7 +500,7 @@ func DeleteSecurityLoggingObject(tx *sql.Tx, uuid string, auth *common.AuthConte
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

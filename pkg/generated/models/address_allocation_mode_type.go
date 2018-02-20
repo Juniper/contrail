@@ -2,6 +2,7 @@ package models
 
 // AddressAllocationModeType
 
+//proteus:generate
 type AddressAllocationModeType string
 
 // MakeAddressAllocationModeType makes AddressAllocationModeType

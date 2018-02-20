@@ -2,6 +2,7 @@ package models
 
 // DirectionType
 
+//proteus:generate
 type DirectionType string
 
 // MakeDirectionType makes DirectionType

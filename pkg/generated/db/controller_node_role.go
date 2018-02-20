@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -58,7 +59,11 @@ var ControllerNodeRoleBackRefFields = map[string][]string{}
 var ControllerNodeRoleParents = []string{}
 
 // CreateControllerNodeRole inserts ControllerNodeRole to DB
-func CreateControllerNodeRole(tx *sql.Tx, model *models.ControllerNodeRole) error {
+func CreateControllerNodeRole(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateControllerNodeRoleRequest) error {
+	model := request.ControllerNodeRole
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertControllerNodeRoleQuery)
 	if err != nil {
@@ -69,7 +74,7 @@ func CreateControllerNodeRole(tx *sql.Tx, model *models.ControllerNodeRole) erro
 		"model": model,
 		"query": insertControllerNodeRoleQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		string(model.StorageManagementBondInterfaceMembers),
 		string(model.ProvisioningState),
 		string(model.ProvisioningStartTime),
@@ -363,14 +368,16 @@ func scanControllerNodeRole(values map[string]interface{}) (*models.ControllerNo
 }
 
 // ListControllerNodeRole lists ControllerNodeRole with list spec.
-func ListControllerNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.ControllerNodeRole, error) {
+func ListControllerNodeRole(ctx context.Context, tx *sql.Tx, request *models.ListControllerNodeRoleRequest) (response *models.ListControllerNodeRoleResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "controller_node_role"
-	spec.Fields = ControllerNodeRoleFields
-	spec.RefFields = ControllerNodeRoleRefFields
-	spec.BackRefFields = ControllerNodeRoleBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "controller_node_role"
+	qb.Fields = ControllerNodeRoleFields
+	qb.RefFields = ControllerNodeRoleRefFields
+	qb.BackRefFields = ControllerNodeRoleBackRefFields
 	result := models.MakeControllerNodeRoleSlice()
 
 	if spec.ParentFQName != nil {
@@ -381,14 +388,14 @@ func ListControllerNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.Contro
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -396,6 +403,7 @@ func ListControllerNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.Contro
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -416,296 +424,35 @@ func ListControllerNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.Contro
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListControllerNodeRoleResponse{
+		ControllerNodeRoles: result,
+	}
+	return response, nil
 }
 
 // UpdateControllerNodeRole updates a resource
-func UpdateControllerNodeRole(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateControllerNodeRoleQuery = "update `controller_node_role` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateControllerNodeRoleQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".StorageManagementBondInterfaceMembers", "."); ok {
-		updateControllerNodeRoleQuery += "`storage_management_bond_interface_members` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningState", "."); ok {
-		updateControllerNodeRoleQuery += "`provisioning_state` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningStartTime", "."); ok {
-		updateControllerNodeRoleQuery += "`provisioning_start_time` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningProgressStage", "."); ok {
-		updateControllerNodeRoleQuery += "`provisioning_progress_stage` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningProgress", "."); ok {
-		updateControllerNodeRoleQuery += "`provisioning_progress` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningLog", "."); ok {
-		updateControllerNodeRoleQuery += "`provisioning_log` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateControllerNodeRoleQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateControllerNodeRoleQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateControllerNodeRoleQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateControllerNodeRoleQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PerformanceDrives", "."); ok {
-		updateControllerNodeRoleQuery += "`performance_drives` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateControllerNodeRoleQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateControllerNodeRoleQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".InternalapiBondInterfaceMembers", "."); ok {
-		updateControllerNodeRoleQuery += "`internalapi_bond_interface_members` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateControllerNodeRoleQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateControllerNodeRoleQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateControllerNodeRoleQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateControllerNodeRoleQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateControllerNodeRoleQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateControllerNodeRoleQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateControllerNodeRoleQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateControllerNodeRoleQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateControllerNodeRoleQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateControllerNodeRoleQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateControllerNodeRoleQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateControllerNodeRoleQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateControllerNodeRoleQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".CapacityDrives", "."); ok {
-		updateControllerNodeRoleQuery += "`capacity_drives` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateControllerNodeRoleQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateControllerNodeRoleQuery += ","
-	}
-
-	updateControllerNodeRoleQuery =
-		updateControllerNodeRoleQuery[:len(updateControllerNodeRoleQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateControllerNodeRoleQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateControllerNodeRoleQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "controller_node_role", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateControllerNodeRole(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateControllerNodeRoleRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteControllerNodeRole deletes a resource
-func DeleteControllerNodeRole(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteControllerNodeRole(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteControllerNodeRoleRequest) error {
 	deleteQuery := deleteControllerNodeRoleQuery
 	selectQuery := "select count(uuid) from controller_node_role where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -713,11 +460,11 @@ func DeleteControllerNodeRole(tx *sql.Tx, uuid string, auth *common.AuthContext)
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -725,7 +472,7 @@ func DeleteControllerNodeRole(tx *sql.Tx, uuid string, auth *common.AuthContext)
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

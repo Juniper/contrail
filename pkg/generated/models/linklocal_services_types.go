@@ -2,17 +2,10 @@ package models
 
 // LinklocalServicesTypes
 
-import "encoding/json"
-
 // LinklocalServicesTypes
+//proteus:generate
 type LinklocalServicesTypes struct {
 	LinklocalServiceEntry []*LinklocalServiceEntryType `json:"linklocal_service_entry,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *LinklocalServicesTypes) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeLinklocalServicesTypes makes LinklocalServicesTypes

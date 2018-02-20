@@ -2,6 +2,7 @@ package models
 
 // DnsRecordClassType
 
+//proteus:generate
 type DnsRecordClassType string
 
 // MakeDnsRecordClassType makes DnsRecordClassType

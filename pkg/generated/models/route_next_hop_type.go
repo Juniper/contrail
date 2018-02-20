@@ -2,6 +2,7 @@ package models
 
 // RouteNextHopType
 
+//proteus:generate
 type RouteNextHopType string
 
 // MakeRouteNextHopType makes RouteNextHopType

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -53,7 +54,11 @@ var AnalyticsNodeParents = []string{
 }
 
 // CreateAnalyticsNode inserts AnalyticsNode to DB
-func CreateAnalyticsNode(tx *sql.Tx, model *models.AnalyticsNode) error {
+func CreateAnalyticsNode(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateAnalyticsNodeRequest) error {
+	model := request.AnalyticsNode
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertAnalyticsNodeQuery)
 	if err != nil {
@@ -64,7 +69,7 @@ func CreateAnalyticsNode(tx *sql.Tx, model *models.AnalyticsNode) error {
 		"model": model,
 		"query": insertAnalyticsNodeQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -286,14 +291,16 @@ func scanAnalyticsNode(values map[string]interface{}) (*models.AnalyticsNode, er
 }
 
 // ListAnalyticsNode lists AnalyticsNode with list spec.
-func ListAnalyticsNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.AnalyticsNode, error) {
+func ListAnalyticsNode(ctx context.Context, tx *sql.Tx, request *models.ListAnalyticsNodeRequest) (response *models.ListAnalyticsNodeResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "analytics_node"
-	spec.Fields = AnalyticsNodeFields
-	spec.RefFields = AnalyticsNodeRefFields
-	spec.BackRefFields = AnalyticsNodeBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "analytics_node"
+	qb.Fields = AnalyticsNodeFields
+	qb.RefFields = AnalyticsNodeRefFields
+	qb.BackRefFields = AnalyticsNodeBackRefFields
 	result := models.MakeAnalyticsNodeSlice()
 
 	if spec.ParentFQName != nil {
@@ -304,14 +311,14 @@ func ListAnalyticsNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.AnalyticsNo
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -319,6 +326,7 @@ func ListAnalyticsNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.AnalyticsNo
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -339,232 +347,35 @@ func ListAnalyticsNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.AnalyticsNo
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListAnalyticsNodeResponse{
+		AnalyticsNodes: result,
+	}
+	return response, nil
 }
 
 // UpdateAnalyticsNode updates a resource
-func UpdateAnalyticsNode(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateAnalyticsNodeQuery = "update `analytics_node` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateAnalyticsNodeQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateAnalyticsNodeQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateAnalyticsNodeQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateAnalyticsNodeQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateAnalyticsNodeQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateAnalyticsNodeQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateAnalyticsNodeQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateAnalyticsNodeQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateAnalyticsNodeQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateAnalyticsNodeQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateAnalyticsNodeQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateAnalyticsNodeQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateAnalyticsNodeQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateAnalyticsNodeQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateAnalyticsNodeQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateAnalyticsNodeQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateAnalyticsNodeQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateAnalyticsNodeQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateAnalyticsNodeQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateAnalyticsNodeQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateAnalyticsNodeQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".AnalyticsNodeIPAddress", "."); ok {
-		updateAnalyticsNodeQuery += "`analytics_node_ip_address` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAnalyticsNodeQuery += ","
-	}
-
-	updateAnalyticsNodeQuery =
-		updateAnalyticsNodeQuery[:len(updateAnalyticsNodeQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateAnalyticsNodeQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateAnalyticsNodeQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "analytics_node", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateAnalyticsNode(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateAnalyticsNodeRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteAnalyticsNode deletes a resource
-func DeleteAnalyticsNode(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteAnalyticsNode(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteAnalyticsNodeRequest) error {
 	deleteQuery := deleteAnalyticsNodeQuery
 	selectQuery := "select count(uuid) from analytics_node where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -572,11 +383,11 @@ func DeleteAnalyticsNode(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -584,7 +395,7 @@ func DeleteAnalyticsNode(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

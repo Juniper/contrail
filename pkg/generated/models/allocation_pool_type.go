@@ -2,19 +2,12 @@ package models
 
 // AllocationPoolType
 
-import "encoding/json"
-
 // AllocationPoolType
+//proteus:generate
 type AllocationPoolType struct {
 	VrouterSpecificPool bool   `json:"vrouter_specific_pool"`
 	Start               string `json:"start,omitempty"`
 	End                 string `json:"end,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *AllocationPoolType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeAllocationPoolType makes AllocationPoolType

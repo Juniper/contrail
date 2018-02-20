@@ -2,17 +2,10 @@ package models
 
 // BridgeDomainMembershipType
 
-import "encoding/json"
-
 // BridgeDomainMembershipType
+//proteus:generate
 type BridgeDomainMembershipType struct {
 	VlanTag Dot1QTagType `json:"vlan_tag,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *BridgeDomainMembershipType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeBridgeDomainMembershipType makes BridgeDomainMembershipType

@@ -2,6 +2,7 @@ package models
 
 // SecurityGroupIdType
 
+//proteus:generate
 type SecurityGroupIdType int
 
 // MakeSecurityGroupIdType makes SecurityGroupIdType

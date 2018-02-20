@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -57,7 +58,11 @@ var NetworkDeviceConfigParents = []string{}
 const insertNetworkDeviceConfigPhysicalRouterQuery = "insert into `ref_network_device_config_physical_router` (`from`, `to` ) values (?, ?);"
 
 // CreateNetworkDeviceConfig inserts NetworkDeviceConfig to DB
-func CreateNetworkDeviceConfig(tx *sql.Tx, model *models.NetworkDeviceConfig) error {
+func CreateNetworkDeviceConfig(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateNetworkDeviceConfigRequest) error {
+	model := request.NetworkDeviceConfig
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertNetworkDeviceConfigQuery)
 	if err != nil {
@@ -68,7 +73,7 @@ func CreateNetworkDeviceConfig(tx *sql.Tx, model *models.NetworkDeviceConfig) er
 		"model": model,
 		"query": insertNetworkDeviceConfigQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -100,7 +105,7 @@ func CreateNetworkDeviceConfig(tx *sql.Tx, model *models.NetworkDeviceConfig) er
 	defer stmtPhysicalRouterRef.Close()
 	for _, ref := range model.PhysicalRouterRefs {
 
-		_, err = stmtPhysicalRouterRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtPhysicalRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PhysicalRouterRefs create failed")
 		}
@@ -314,14 +319,16 @@ func scanNetworkDeviceConfig(values map[string]interface{}) (*models.NetworkDevi
 }
 
 // ListNetworkDeviceConfig lists NetworkDeviceConfig with list spec.
-func ListNetworkDeviceConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.NetworkDeviceConfig, error) {
+func ListNetworkDeviceConfig(ctx context.Context, tx *sql.Tx, request *models.ListNetworkDeviceConfigRequest) (response *models.ListNetworkDeviceConfigResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "network_device_config"
-	spec.Fields = NetworkDeviceConfigFields
-	spec.RefFields = NetworkDeviceConfigRefFields
-	spec.BackRefFields = NetworkDeviceConfigBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "network_device_config"
+	qb.Fields = NetworkDeviceConfigFields
+	qb.RefFields = NetworkDeviceConfigRefFields
+	qb.BackRefFields = NetworkDeviceConfigBackRefFields
 	result := models.MakeNetworkDeviceConfigSlice()
 
 	if spec.ParentFQName != nil {
@@ -332,14 +339,14 @@ func ListNetworkDeviceConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Netwo
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -347,6 +354,7 @@ func ListNetworkDeviceConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Netwo
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -367,274 +375,35 @@ func ListNetworkDeviceConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Netwo
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListNetworkDeviceConfigResponse{
+		NetworkDeviceConfigs: result,
+	}
+	return response, nil
 }
 
 // UpdateNetworkDeviceConfig updates a resource
-func UpdateNetworkDeviceConfig(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateNetworkDeviceConfigQuery = "update `network_device_config` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateNetworkDeviceConfigQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateNetworkDeviceConfigQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateNetworkDeviceConfigQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateNetworkDeviceConfigQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateNetworkDeviceConfigQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateNetworkDeviceConfigQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateNetworkDeviceConfigQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateNetworkDeviceConfigQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateNetworkDeviceConfigQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateNetworkDeviceConfigQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateNetworkDeviceConfigQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateNetworkDeviceConfigQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateNetworkDeviceConfigQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateNetworkDeviceConfigQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateNetworkDeviceConfigQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateNetworkDeviceConfigQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateNetworkDeviceConfigQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateNetworkDeviceConfigQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateNetworkDeviceConfigQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateNetworkDeviceConfigQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateNetworkDeviceConfigQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateNetworkDeviceConfigQuery += ","
-	}
-
-	updateNetworkDeviceConfigQuery =
-		updateNetworkDeviceConfigQuery[:len(updateNetworkDeviceConfigQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateNetworkDeviceConfigQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateNetworkDeviceConfigQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "PhysicalRouterRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_network_device_config_physical_router` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_network_device_config_physical_router` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref PhysicalRouterRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_network_device_config_physical_router` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing PhysicalRouterRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "PhysicalRouterRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "network_device_config", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateNetworkDeviceConfig(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateNetworkDeviceConfigRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteNetworkDeviceConfig deletes a resource
-func DeleteNetworkDeviceConfig(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteNetworkDeviceConfig(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteNetworkDeviceConfigRequest) error {
 	deleteQuery := deleteNetworkDeviceConfigQuery
 	selectQuery := "select count(uuid) from network_device_config where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -642,11 +411,11 @@ func DeleteNetworkDeviceConfig(tx *sql.Tx, uuid string, auth *common.AuthContext
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -654,7 +423,7 @@ func DeleteNetworkDeviceConfig(tx *sql.Tx, uuid string, auth *common.AuthContext
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

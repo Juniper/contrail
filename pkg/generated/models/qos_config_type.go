@@ -2,6 +2,7 @@ package models
 
 // QosConfigType
 
+//proteus:generate
 type QosConfigType string
 
 // MakeQosConfigType makes QosConfigType

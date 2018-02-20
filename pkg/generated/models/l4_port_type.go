@@ -2,6 +2,7 @@ package models
 
 // L4PortType
 
+//proteus:generate
 type L4PortType int
 
 // MakeL4PortType makes L4PortType

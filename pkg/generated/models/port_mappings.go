@@ -2,17 +2,10 @@ package models
 
 // PortMappings
 
-import "encoding/json"
-
 // PortMappings
+//proteus:generate
 type PortMappings struct {
 	PortMappings []*PortMap `json:"port_mappings,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *PortMappings) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakePortMappings makes PortMappings

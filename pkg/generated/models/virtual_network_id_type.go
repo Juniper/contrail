@@ -2,6 +2,7 @@ package models
 
 // VirtualNetworkIdType
 
+//proteus:generate
 type VirtualNetworkIdType int
 
 // MakeVirtualNetworkIdType makes VirtualNetworkIdType

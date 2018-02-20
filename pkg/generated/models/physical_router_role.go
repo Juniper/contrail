@@ -2,6 +2,7 @@ package models
 
 // PhysicalRouterRole
 
+//proteus:generate
 type PhysicalRouterRole string
 
 // MakePhysicalRouterRole makes PhysicalRouterRole

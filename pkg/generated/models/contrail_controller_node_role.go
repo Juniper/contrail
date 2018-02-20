@@ -2,48 +2,41 @@ package models
 
 // ContrailControllerNodeRole
 
-import "encoding/json"
-
 // ContrailControllerNodeRole
+//proteus:generate
 type ContrailControllerNodeRole struct {
-	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
-	UUID                      string         `json:"uuid,omitempty"`
-	ProvisioningState         string         `json:"provisioning_state,omitempty"`
 	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
+	ProvisioningProgress      int            `json:"provisioning_progress,omitempty"`
 	ProvisioningProgressStage string         `json:"provisioning_progress_stage,omitempty"`
-	DisplayName               string         `json:"display_name,omitempty"`
-	Perms2                    *PermType2     `json:"perms2,omitempty"`
+	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
+	ProvisioningState         string         `json:"provisioning_state,omitempty"`
+	UUID                      string         `json:"uuid,omitempty"`
 	ParentUUID                string         `json:"parent_uuid,omitempty"`
 	ParentType                string         `json:"parent_type,omitempty"`
 	FQName                    []string       `json:"fq_name,omitempty"`
-	ProvisioningProgress      int            `json:"provisioning_progress,omitempty"`
-	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
 	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *ContrailControllerNodeRole) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
+	DisplayName               string         `json:"display_name,omitempty"`
+	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
+	Perms2                    *PermType2     `json:"perms2,omitempty"`
 }
 
 // MakeContrailControllerNodeRole makes ContrailControllerNodeRole
 func MakeContrailControllerNodeRole() *ContrailControllerNodeRole {
 	return &ContrailControllerNodeRole{
 		//TODO(nati): Apply default
-		Annotations:               MakeKeyValuePairs(),
-		UUID:                      "",
-		ProvisioningState:         "",
 		ProvisioningLog:           "",
+		ProvisioningProgress:      0,
 		ProvisioningProgressStage: "",
-		DisplayName:               "",
-		Perms2:                    MakePermType2(),
+		ProvisioningStartTime:     "",
+		ProvisioningState:         "",
+		UUID:                      "",
 		ParentUUID:                "",
 		ParentType:                "",
 		FQName:                    []string{},
-		ProvisioningProgress:      0,
-		ProvisioningStartTime:     "",
 		IDPerms:                   MakeIdPermsType(),
+		DisplayName:               "",
+		Annotations:               MakeKeyValuePairs(),
+		Perms2:                    MakePermType2(),
 	}
 }
 

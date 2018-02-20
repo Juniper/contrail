@@ -2,6 +2,7 @@ package models
 
 // ServiceConnectionType
 
+//proteus:generate
 type ServiceConnectionType string
 
 // MakeServiceConnectionType makes ServiceConnectionType

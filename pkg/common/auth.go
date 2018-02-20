@@ -1,6 +1,10 @@
 package common
 
-import "github.com/labstack/echo"
+import (
+	"context"
+
+	"github.com/labstack/echo"
+)
 
 //AuthContext is used to represents AuthContext.
 // API layer and DB layer depends on this.
@@ -52,7 +56,13 @@ func (context *AuthContext) DomainID() string {
 
 //GetAuthContext is used to get an authentication from echo.Context.
 func GetAuthContext(c echo.Context) *AuthContext {
-	iAuth := c.Get("auth")
+	ctx := c.Request().Context()
+	return GetAuthCTX(ctx)
+}
+
+//GetAuthCTX is used to get an authentication from ctx.Context.
+func GetAuthCTX(ctx context.Context) *AuthContext {
+	iAuth := ctx.Value("auth")
 	auth, _ := iAuth.(*AuthContext)
 	return auth
 }

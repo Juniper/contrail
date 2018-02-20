@@ -2,6 +2,7 @@ package models
 
 // PeeringServiceType
 
+//proteus:generate
 type PeeringServiceType string
 
 // MakePeeringServiceType makes PeeringServiceType

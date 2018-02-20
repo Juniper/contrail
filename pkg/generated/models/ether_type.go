@@ -2,6 +2,7 @@ package models
 
 // EtherType
 
+//proteus:generate
 type EtherType string
 
 // MakeEtherType makes EtherType

@@ -2,6 +2,7 @@ package models
 
 // MACLimitExceedActionType
 
+//proteus:generate
 type MACLimitExceedActionType string
 
 // MakeMACLimitExceedActionType makes MACLimitExceedActionType

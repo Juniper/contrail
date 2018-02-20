@@ -2,6 +2,7 @@ package models
 
 // Dot1QTagType
 
+//proteus:generate
 type Dot1QTagType int
 
 // MakeDot1QTagType makes Dot1QTagType

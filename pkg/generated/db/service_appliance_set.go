@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -84,7 +85,11 @@ var ServiceApplianceSetParents = []string{
 }
 
 // CreateServiceApplianceSet inserts ServiceApplianceSet to DB
-func CreateServiceApplianceSet(tx *sql.Tx, model *models.ServiceApplianceSet) error {
+func CreateServiceApplianceSet(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateServiceApplianceSetRequest) error {
+	model := request.ServiceApplianceSet
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceApplianceSetQuery)
 	if err != nil {
@@ -95,7 +100,7 @@ func CreateServiceApplianceSet(tx *sql.Tx, model *models.ServiceApplianceSet) er
 		"model": model,
 		"query": insertServiceApplianceSetQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.ServiceApplianceSetProperties.KeyValuePair),
 		string(model.ServiceApplianceHaMode),
 		string(model.ServiceApplianceDriver),
@@ -544,14 +549,16 @@ func scanServiceApplianceSet(values map[string]interface{}) (*models.ServiceAppl
 }
 
 // ListServiceApplianceSet lists ServiceApplianceSet with list spec.
-func ListServiceApplianceSet(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceApplianceSet, error) {
+func ListServiceApplianceSet(ctx context.Context, tx *sql.Tx, request *models.ListServiceApplianceSetRequest) (response *models.ListServiceApplianceSetResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "service_appliance_set"
-	spec.Fields = ServiceApplianceSetFields
-	spec.RefFields = ServiceApplianceSetRefFields
-	spec.BackRefFields = ServiceApplianceSetBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "service_appliance_set"
+	qb.Fields = ServiceApplianceSetFields
+	qb.RefFields = ServiceApplianceSetRefFields
+	qb.BackRefFields = ServiceApplianceSetBackRefFields
 	result := models.MakeServiceApplianceSetSlice()
 
 	if spec.ParentFQName != nil {
@@ -562,14 +569,14 @@ func ListServiceApplianceSet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Servi
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -577,6 +584,7 @@ func ListServiceApplianceSet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Servi
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -597,248 +605,35 @@ func ListServiceApplianceSet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Servi
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListServiceApplianceSetResponse{
+		ServiceApplianceSets: result,
+	}
+	return response, nil
 }
 
 // UpdateServiceApplianceSet updates a resource
-func UpdateServiceApplianceSet(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateServiceApplianceSetQuery = "update `service_appliance_set` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateServiceApplianceSetQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceApplianceSetProperties.KeyValuePair", "."); ok {
-		updateServiceApplianceSetQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceApplianceHaMode", "."); ok {
-		updateServiceApplianceSetQuery += "`service_appliance_ha_mode` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceApplianceDriver", "."); ok {
-		updateServiceApplianceSetQuery += "`service_appliance_driver` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateServiceApplianceSetQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateServiceApplianceSetQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateServiceApplianceSetQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateServiceApplianceSetQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateServiceApplianceSetQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateServiceApplianceSetQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateServiceApplianceSetQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateServiceApplianceSetQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateServiceApplianceSetQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateServiceApplianceSetQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateServiceApplianceSetQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateServiceApplianceSetQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateServiceApplianceSetQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateServiceApplianceSetQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateServiceApplianceSetQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateServiceApplianceSetQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateServiceApplianceSetQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateServiceApplianceSetQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateServiceApplianceSetQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateServiceApplianceSetQuery += "`annotations_key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceApplianceSetQuery += ","
-	}
-
-	updateServiceApplianceSetQuery =
-		updateServiceApplianceSetQuery[:len(updateServiceApplianceSetQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateServiceApplianceSetQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateServiceApplianceSetQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "service_appliance_set", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateServiceApplianceSet(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateServiceApplianceSetRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteServiceApplianceSet deletes a resource
-func DeleteServiceApplianceSet(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteServiceApplianceSet(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteServiceApplianceSetRequest) error {
 	deleteQuery := deleteServiceApplianceSetQuery
 	selectQuery := "select count(uuid) from service_appliance_set where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -846,11 +641,11 @@ func DeleteServiceApplianceSet(tx *sql.Tx, uuid string, auth *common.AuthContext
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -858,7 +653,7 @@ func DeleteServiceApplianceSet(tx *sql.Tx, uuid string, auth *common.AuthContext
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

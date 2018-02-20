@@ -2,6 +2,7 @@ package models
 
 // EncapsulationType
 
+//proteus:generate
 type EncapsulationType []string
 
 // MakeEncapsulationType makes EncapsulationType

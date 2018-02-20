@@ -2,20 +2,13 @@ package models
 
 // RouteType
 
-import "encoding/json"
-
 // RouteType
+//proteus:generate
 type RouteType struct {
-	NextHopType         RouteNextHopType     `json:"next_hop_type,omitempty"`
 	Prefix              string               `json:"prefix,omitempty"`
 	NextHop             string               `json:"next_hop,omitempty"`
 	CommunityAttributes *CommunityAttributes `json:"community_attributes,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *RouteType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
+	NextHopType         RouteNextHopType     `json:"next_hop_type,omitempty"`
 }
 
 // MakeRouteType makes RouteType

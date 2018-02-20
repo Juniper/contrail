@@ -2,6 +2,7 @@ package models
 
 // IpAddressFamilyType
 
+//proteus:generate
 type IpAddressFamilyType string
 
 // MakeIpAddressFamilyType makes IpAddressFamilyType

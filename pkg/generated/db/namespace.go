@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -54,7 +55,11 @@ var NamespaceParents = []string{
 }
 
 // CreateNamespace inserts Namespace to DB
-func CreateNamespace(tx *sql.Tx, model *models.Namespace) error {
+func CreateNamespace(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateNamespaceRequest) error {
+	model := request.Namespace
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertNamespaceQuery)
 	if err != nil {
@@ -65,7 +70,7 @@ func CreateNamespace(tx *sql.Tx, model *models.Namespace) error {
 		"model": model,
 		"query": insertNamespaceQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -296,14 +301,16 @@ func scanNamespace(values map[string]interface{}) (*models.Namespace, error) {
 }
 
 // ListNamespace lists Namespace with list spec.
-func ListNamespace(tx *sql.Tx, spec *common.ListSpec) ([]*models.Namespace, error) {
+func ListNamespace(ctx context.Context, tx *sql.Tx, request *models.ListNamespaceRequest) (response *models.ListNamespaceResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "namespace"
-	spec.Fields = NamespaceFields
-	spec.RefFields = NamespaceRefFields
-	spec.BackRefFields = NamespaceBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "namespace"
+	qb.Fields = NamespaceFields
+	qb.RefFields = NamespaceRefFields
+	qb.BackRefFields = NamespaceBackRefFields
 	result := models.MakeNamespaceSlice()
 
 	if spec.ParentFQName != nil {
@@ -314,14 +321,14 @@ func ListNamespace(tx *sql.Tx, spec *common.ListSpec) ([]*models.Namespace, erro
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -329,6 +336,7 @@ func ListNamespace(tx *sql.Tx, spec *common.ListSpec) ([]*models.Namespace, erro
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -349,240 +357,35 @@ func ListNamespace(tx *sql.Tx, spec *common.ListSpec) ([]*models.Namespace, erro
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListNamespaceResponse{
+		Namespaces: result,
+	}
+	return response, nil
 }
 
 // UpdateNamespace updates a resource
-func UpdateNamespace(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateNamespaceQuery = "update `namespace` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateNamespaceQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateNamespaceQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateNamespaceQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateNamespaceQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateNamespaceQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateNamespaceQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateNamespaceQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".NamespaceCidr.IPPrefixLen", "."); ok {
-		updateNamespaceQuery += "`ip_prefix_len` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".NamespaceCidr.IPPrefix", "."); ok {
-		updateNamespaceQuery += "`ip_prefix` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateNamespaceQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateNamespaceQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateNamespaceQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateNamespaceQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateNamespaceQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateNamespaceQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateNamespaceQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateNamespaceQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateNamespaceQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateNamespaceQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateNamespaceQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateNamespaceQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateNamespaceQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateNamespaceQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateNamespaceQuery += ","
-	}
-
-	updateNamespaceQuery =
-		updateNamespaceQuery[:len(updateNamespaceQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateNamespaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateNamespaceQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "namespace", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateNamespace(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateNamespaceRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteNamespace deletes a resource
-func DeleteNamespace(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteNamespace(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteNamespaceRequest) error {
 	deleteQuery := deleteNamespaceQuery
 	selectQuery := "select count(uuid) from namespace where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -590,11 +393,11 @@ func DeleteNamespace(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -602,7 +405,7 @@ func DeleteNamespace(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

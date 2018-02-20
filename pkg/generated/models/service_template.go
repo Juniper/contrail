@@ -2,19 +2,18 @@ package models
 
 // ServiceTemplate
 
-import "encoding/json"
-
 // ServiceTemplate
+//proteus:generate
 type ServiceTemplate struct {
-	ServiceTemplateProperties *ServiceTemplateType `json:"service_template_properties,omitempty"`
 	UUID                      string               `json:"uuid,omitempty"`
 	ParentUUID                string               `json:"parent_uuid,omitempty"`
+	ParentType                string               `json:"parent_type,omitempty"`
 	FQName                    []string             `json:"fq_name,omitempty"`
 	IDPerms                   *IdPermsType         `json:"id_perms,omitempty"`
-	Perms2                    *PermType2           `json:"perms2,omitempty"`
-	ParentType                string               `json:"parent_type,omitempty"`
 	DisplayName               string               `json:"display_name,omitempty"`
 	Annotations               *KeyValuePairs       `json:"annotations,omitempty"`
+	Perms2                    *PermType2           `json:"perms2,omitempty"`
+	ServiceTemplateProperties *ServiceTemplateType `json:"service_template_properties,omitempty"`
 
 	ServiceApplianceSetRefs []*ServiceTemplateServiceApplianceSetRef `json:"service_appliance_set_refs,omitempty"`
 }
@@ -26,25 +25,19 @@ type ServiceTemplateServiceApplianceSetRef struct {
 
 }
 
-// String returns json representation of the object
-func (model *ServiceTemplate) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
-}
-
 // MakeServiceTemplate makes ServiceTemplate
 func MakeServiceTemplate() *ServiceTemplate {
 	return &ServiceTemplate{
 		//TODO(nati): Apply default
-		ParentType:                "",
-		DisplayName:               "",
-		Annotations:               MakeKeyValuePairs(),
+		UUID:        "",
+		ParentUUID:  "",
+		ParentType:  "",
+		FQName:      []string{},
+		IDPerms:     MakeIdPermsType(),
+		DisplayName: "",
+		Annotations: MakeKeyValuePairs(),
+		Perms2:      MakePermType2(),
 		ServiceTemplateProperties: MakeServiceTemplateType(),
-		UUID:       "",
-		ParentUUID: "",
-		FQName:     []string{},
-		IDPerms:    MakeIdPermsType(),
-		Perms2:     MakePermType2(),
 	}
 }
 

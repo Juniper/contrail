@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -64,7 +65,11 @@ var ForwardingClassParents = []string{
 const insertForwardingClassQosQueueQuery = "insert into `ref_forwarding_class_qos_queue` (`from`, `to` ) values (?, ?);"
 
 // CreateForwardingClass inserts ForwardingClass to DB
-func CreateForwardingClass(tx *sql.Tx, model *models.ForwardingClass) error {
+func CreateForwardingClass(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateForwardingClassRequest) error {
+	model := request.ForwardingClass
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertForwardingClassQuery)
 	if err != nil {
@@ -75,7 +80,7 @@ func CreateForwardingClass(tx *sql.Tx, model *models.ForwardingClass) error {
 		"model": model,
 		"query": insertForwardingClassQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -111,7 +116,7 @@ func CreateForwardingClass(tx *sql.Tx, model *models.ForwardingClass) error {
 	defer stmtQosQueueRef.Close()
 	for _, ref := range model.QosQueueRefs {
 
-		_, err = stmtQosQueueRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtQosQueueRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "QosQueueRefs create failed")
 		}
@@ -357,14 +362,16 @@ func scanForwardingClass(values map[string]interface{}) (*models.ForwardingClass
 }
 
 // ListForwardingClass lists ForwardingClass with list spec.
-func ListForwardingClass(tx *sql.Tx, spec *common.ListSpec) ([]*models.ForwardingClass, error) {
+func ListForwardingClass(ctx context.Context, tx *sql.Tx, request *models.ListForwardingClassRequest) (response *models.ListForwardingClassResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "forwarding_class"
-	spec.Fields = ForwardingClassFields
-	spec.RefFields = ForwardingClassRefFields
-	spec.BackRefFields = ForwardingClassBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "forwarding_class"
+	qb.Fields = ForwardingClassFields
+	qb.RefFields = ForwardingClassRefFields
+	qb.BackRefFields = ForwardingClassBackRefFields
 	result := models.MakeForwardingClassSlice()
 
 	if spec.ParentFQName != nil {
@@ -375,14 +382,14 @@ func ListForwardingClass(tx *sql.Tx, spec *common.ListSpec) ([]*models.Forwardin
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -390,6 +397,7 @@ func ListForwardingClass(tx *sql.Tx, spec *common.ListSpec) ([]*models.Forwardin
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -410,306 +418,35 @@ func ListForwardingClass(tx *sql.Tx, spec *common.ListSpec) ([]*models.Forwardin
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListForwardingClassResponse{
+		ForwardingClasss: result,
+	}
+	return response, nil
 }
 
 // UpdateForwardingClass updates a resource
-func UpdateForwardingClass(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateForwardingClassQuery = "update `forwarding_class` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateForwardingClassQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateForwardingClassQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateForwardingClassQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateForwardingClassQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateForwardingClassQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateForwardingClassQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateForwardingClassQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateForwardingClassQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateForwardingClassQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateForwardingClassQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateForwardingClassQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateForwardingClassQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateForwardingClassQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateForwardingClassQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateForwardingClassQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateForwardingClassQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateForwardingClassQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateForwardingClassQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateForwardingClassQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ForwardingClassVlanPriority", "."); ok {
-		updateForwardingClassQuery += "`forwarding_class_vlan_priority` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ForwardingClassMPLSExp", "."); ok {
-		updateForwardingClassQuery += "`forwarding_class_mpls_exp` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ForwardingClassID", "."); ok {
-		updateForwardingClassQuery += "`forwarding_class_id` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ForwardingClassDSCP", "."); ok {
-		updateForwardingClassQuery += "`forwarding_class_dscp` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateForwardingClassQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateForwardingClassQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateForwardingClassQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateForwardingClassQuery += ","
-	}
-
-	updateForwardingClassQuery =
-		updateForwardingClassQuery[:len(updateForwardingClassQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateForwardingClassQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateForwardingClassQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "QosQueueRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_forwarding_class_qos_queue` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_forwarding_class_qos_queue` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref QosQueueRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_forwarding_class_qos_queue` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing QosQueueRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "QosQueueRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "forwarding_class", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateForwardingClass(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateForwardingClassRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteForwardingClass deletes a resource
-func DeleteForwardingClass(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteForwardingClass(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteForwardingClassRequest) error {
 	deleteQuery := deleteForwardingClassQuery
 	selectQuery := "select count(uuid) from forwarding_class where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -717,11 +454,11 @@ func DeleteForwardingClass(tx *sql.Tx, uuid string, auth *common.AuthContext) er
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -729,7 +466,7 @@ func DeleteForwardingClass(tx *sql.Tx, uuid string, auth *common.AuthContext) er
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

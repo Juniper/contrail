@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -49,13 +50,17 @@ var ServiceGroupBackRefFields = map[string][]string{}
 // ServiceGroupParentTypes is possible parents for ServiceGroup
 var ServiceGroupParents = []string{
 
-	"policy_management",
-
 	"project",
+
+	"policy_management",
 }
 
 // CreateServiceGroup inserts ServiceGroup to DB
-func CreateServiceGroup(tx *sql.Tx, model *models.ServiceGroup) error {
+func CreateServiceGroup(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateServiceGroupRequest) error {
+	model := request.ServiceGroup
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceGroupQuery)
 	if err != nil {
@@ -66,7 +71,7 @@ func CreateServiceGroup(tx *sql.Tx, model *models.ServiceGroup) error {
 		"model": model,
 		"query": insertServiceGroupQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.ServiceGroupFirewallServiceList.FirewallService),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
@@ -286,14 +291,16 @@ func scanServiceGroup(values map[string]interface{}) (*models.ServiceGroup, erro
 }
 
 // ListServiceGroup lists ServiceGroup with list spec.
-func ListServiceGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceGroup, error) {
+func ListServiceGroup(ctx context.Context, tx *sql.Tx, request *models.ListServiceGroupRequest) (response *models.ListServiceGroupResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "service_group"
-	spec.Fields = ServiceGroupFields
-	spec.RefFields = ServiceGroupRefFields
-	spec.BackRefFields = ServiceGroupBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "service_group"
+	qb.Fields = ServiceGroupFields
+	qb.RefFields = ServiceGroupRefFields
+	qb.BackRefFields = ServiceGroupBackRefFields
 	result := models.MakeServiceGroupSlice()
 
 	if spec.ParentFQName != nil {
@@ -304,14 +311,14 @@ func ListServiceGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceGroup
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -319,6 +326,7 @@ func ListServiceGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceGroup
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -339,232 +347,35 @@ func ListServiceGroup(tx *sql.Tx, spec *common.ListSpec) ([]*models.ServiceGroup
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListServiceGroupResponse{
+		ServiceGroups: result,
+	}
+	return response, nil
 }
 
 // UpdateServiceGroup updates a resource
-func UpdateServiceGroup(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateServiceGroupQuery = "update `service_group` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateServiceGroupQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ServiceGroupFirewallServiceList.FirewallService", "."); ok {
-		updateServiceGroupQuery += "`firewall_service` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateServiceGroupQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateServiceGroupQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateServiceGroupQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateServiceGroupQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateServiceGroupQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateServiceGroupQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateServiceGroupQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateServiceGroupQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateServiceGroupQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateServiceGroupQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateServiceGroupQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateServiceGroupQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateServiceGroupQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateServiceGroupQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateServiceGroupQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateServiceGroupQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateServiceGroupQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateServiceGroupQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateServiceGroupQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateServiceGroupQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateServiceGroupQuery += ","
-	}
-
-	updateServiceGroupQuery =
-		updateServiceGroupQuery[:len(updateServiceGroupQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateServiceGroupQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateServiceGroupQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "service_group", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateServiceGroup(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateServiceGroupRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteServiceGroup deletes a resource
-func DeleteServiceGroup(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteServiceGroup(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteServiceGroupRequest) error {
 	deleteQuery := deleteServiceGroupQuery
 	selectQuery := "select count(uuid) from service_group where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -572,11 +383,11 @@ func DeleteServiceGroup(tx *sql.Tx, uuid string, auth *common.AuthContext) error
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -584,7 +395,7 @@ func DeleteServiceGroup(tx *sql.Tx, uuid string, auth *common.AuthContext) error
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

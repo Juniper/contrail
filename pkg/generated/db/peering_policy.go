@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -50,7 +51,11 @@ var PeeringPolicyBackRefFields = map[string][]string{}
 var PeeringPolicyParents = []string{}
 
 // CreatePeeringPolicy inserts PeeringPolicy to DB
-func CreatePeeringPolicy(tx *sql.Tx, model *models.PeeringPolicy) error {
+func CreatePeeringPolicy(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreatePeeringPolicyRequest) error {
+	model := request.PeeringPolicy
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertPeeringPolicyQuery)
 	if err != nil {
@@ -61,7 +66,7 @@ func CreatePeeringPolicy(tx *sql.Tx, model *models.PeeringPolicy) error {
 		"model": model,
 		"query": insertPeeringPolicyQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -283,14 +288,16 @@ func scanPeeringPolicy(values map[string]interface{}) (*models.PeeringPolicy, er
 }
 
 // ListPeeringPolicy lists PeeringPolicy with list spec.
-func ListPeeringPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.PeeringPolicy, error) {
+func ListPeeringPolicy(ctx context.Context, tx *sql.Tx, request *models.ListPeeringPolicyRequest) (response *models.ListPeeringPolicyResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "peering_policy"
-	spec.Fields = PeeringPolicyFields
-	spec.RefFields = PeeringPolicyRefFields
-	spec.BackRefFields = PeeringPolicyBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "peering_policy"
+	qb.Fields = PeeringPolicyFields
+	qb.RefFields = PeeringPolicyRefFields
+	qb.BackRefFields = PeeringPolicyBackRefFields
 	result := models.MakePeeringPolicySlice()
 
 	if spec.ParentFQName != nil {
@@ -301,14 +308,14 @@ func ListPeeringPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.PeeringPoli
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -316,6 +323,7 @@ func ListPeeringPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.PeeringPoli
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -336,232 +344,35 @@ func ListPeeringPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.PeeringPoli
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListPeeringPolicyResponse{
+		PeeringPolicys: result,
+	}
+	return response, nil
 }
 
 // UpdatePeeringPolicy updates a resource
-func UpdatePeeringPolicy(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updatePeeringPolicyQuery = "update `peering_policy` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updatePeeringPolicyQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updatePeeringPolicyQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updatePeeringPolicyQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updatePeeringPolicyQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updatePeeringPolicyQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PeeringService", "."); ok {
-		updatePeeringPolicyQuery += "`peering_service` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updatePeeringPolicyQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updatePeeringPolicyQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updatePeeringPolicyQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updatePeeringPolicyQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updatePeeringPolicyQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updatePeeringPolicyQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updatePeeringPolicyQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updatePeeringPolicyQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updatePeeringPolicyQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updatePeeringPolicyQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updatePeeringPolicyQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updatePeeringPolicyQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updatePeeringPolicyQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updatePeeringPolicyQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updatePeeringPolicyQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updatePeeringPolicyQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updatePeeringPolicyQuery += ","
-	}
-
-	updatePeeringPolicyQuery =
-		updatePeeringPolicyQuery[:len(updatePeeringPolicyQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updatePeeringPolicyQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updatePeeringPolicyQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "peering_policy", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdatePeeringPolicy(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdatePeeringPolicyRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeletePeeringPolicy deletes a resource
-func DeletePeeringPolicy(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeletePeeringPolicy(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeletePeeringPolicyRequest) error {
 	deleteQuery := deletePeeringPolicyQuery
 	selectQuery := "select count(uuid) from peering_policy where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -569,11 +380,11 @@ func DeletePeeringPolicy(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -581,7 +392,7 @@ func DeletePeeringPolicy(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

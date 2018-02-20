@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -69,7 +70,11 @@ const insertFirewallPolicyFirewallRuleQuery = "insert into `ref_firewall_policy_
 const insertFirewallPolicySecurityLoggingObjectQuery = "insert into `ref_firewall_policy_security_logging_object` (`from`, `to` ) values (?, ?);"
 
 // CreateFirewallPolicy inserts FirewallPolicy to DB
-func CreateFirewallPolicy(tx *sql.Tx, model *models.FirewallPolicy) error {
+func CreateFirewallPolicy(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateFirewallPolicyRequest) error {
+	model := request.FirewallPolicy
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertFirewallPolicyQuery)
 	if err != nil {
@@ -80,7 +85,7 @@ func CreateFirewallPolicy(tx *sql.Tx, model *models.FirewallPolicy) error {
 		"model": model,
 		"query": insertFirewallPolicyQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -116,7 +121,7 @@ func CreateFirewallPolicy(tx *sql.Tx, model *models.FirewallPolicy) error {
 			ref.Attr = models.MakeFirewallSequence()
 		}
 
-		_, err = stmtFirewallRuleRef.Exec(model.UUID, ref.UUID, string(ref.Attr.Sequence))
+		_, err = stmtFirewallRuleRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.Sequence))
 		if err != nil {
 			return errors.Wrap(err, "FirewallRuleRefs create failed")
 		}
@@ -129,7 +134,7 @@ func CreateFirewallPolicy(tx *sql.Tx, model *models.FirewallPolicy) error {
 	defer stmtSecurityLoggingObjectRef.Close()
 	for _, ref := range model.SecurityLoggingObjectRefs {
 
-		_, err = stmtSecurityLoggingObjectRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtSecurityLoggingObjectRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "SecurityLoggingObjectRefs create failed")
 		}
@@ -319,26 +324,6 @@ func scanFirewallPolicy(values map[string]interface{}) (*models.FirewallPolicy, 
 
 	}
 
-	if value, ok := values["ref_security_logging_object"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.FirewallPolicySecurityLoggingObjectRef{}
-			referenceModel.UUID = uuid
-			m.SecurityLoggingObjectRefs = append(m.SecurityLoggingObjectRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_firewall_rule"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -362,18 +347,40 @@ func scanFirewallPolicy(values map[string]interface{}) (*models.FirewallPolicy, 
 		}
 	}
 
+	if value, ok := values["ref_security_logging_object"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.FirewallPolicySecurityLoggingObjectRef{}
+			referenceModel.UUID = uuid
+			m.SecurityLoggingObjectRefs = append(m.SecurityLoggingObjectRefs, referenceModel)
+
+		}
+	}
+
 	return m, nil
 }
 
 // ListFirewallPolicy lists FirewallPolicy with list spec.
-func ListFirewallPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.FirewallPolicy, error) {
+func ListFirewallPolicy(ctx context.Context, tx *sql.Tx, request *models.ListFirewallPolicyRequest) (response *models.ListFirewallPolicyResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "firewall_policy"
-	spec.Fields = FirewallPolicyFields
-	spec.RefFields = FirewallPolicyRefFields
-	spec.BackRefFields = FirewallPolicyBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "firewall_policy"
+	qb.Fields = FirewallPolicyFields
+	qb.RefFields = FirewallPolicyRefFields
+	qb.BackRefFields = FirewallPolicyBackRefFields
 	result := models.MakeFirewallPolicySlice()
 
 	if spec.ParentFQName != nil {
@@ -384,14 +391,14 @@ func ListFirewallPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.FirewallPo
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -399,6 +406,7 @@ func ListFirewallPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.FirewallPo
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -419,336 +427,35 @@ func ListFirewallPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.FirewallPo
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListFirewallPolicyResponse{
+		FirewallPolicys: result,
+	}
+	return response, nil
 }
 
 // UpdateFirewallPolicy updates a resource
-func UpdateFirewallPolicy(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateFirewallPolicyQuery = "update `firewall_policy` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateFirewallPolicyQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateFirewallPolicyQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateFirewallPolicyQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateFirewallPolicyQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateFirewallPolicyQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateFirewallPolicyQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateFirewallPolicyQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateFirewallPolicyQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateFirewallPolicyQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateFirewallPolicyQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateFirewallPolicyQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateFirewallPolicyQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateFirewallPolicyQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateFirewallPolicyQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateFirewallPolicyQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateFirewallPolicyQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateFirewallPolicyQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateFirewallPolicyQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateFirewallPolicyQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateFirewallPolicyQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateFirewallPolicyQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateFirewallPolicyQuery += ","
-	}
-
-	updateFirewallPolicyQuery =
-		updateFirewallPolicyQuery[:len(updateFirewallPolicyQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateFirewallPolicyQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateFirewallPolicyQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "FirewallRuleRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			attrValues, ok := common.GetValueByPath(ref.(map[string]interface{}), "Attr", ".")
-			if ok {
-
-				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".Sequence", "."); ok {
-					refKeys = append(refKeys, "sequence")
-
-					refValues = append(refValues, common.InterfaceToString(value))
-
-				}
-
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_firewall_policy_firewall_rule` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_firewall_policy_firewall_rule` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref FirewallRuleRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_firewall_policy_firewall_rule` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing FirewallRuleRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "FirewallRuleRefs update failed")
-			}
-		}
-	}
-
-	if value, ok := common.GetValueByPath(model, "SecurityLoggingObjectRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_firewall_policy_security_logging_object` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_firewall_policy_security_logging_object` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref SecurityLoggingObjectRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_firewall_policy_security_logging_object` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing SecurityLoggingObjectRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "SecurityLoggingObjectRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "firewall_policy", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateFirewallPolicy(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateFirewallPolicyRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteFirewallPolicy deletes a resource
-func DeleteFirewallPolicy(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteFirewallPolicy(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteFirewallPolicyRequest) error {
 	deleteQuery := deleteFirewallPolicyQuery
 	selectQuery := "select count(uuid) from firewall_policy where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -756,11 +463,11 @@ func DeleteFirewallPolicy(tx *sql.Tx, uuid string, auth *common.AuthContext) err
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -768,7 +475,7 @@ func DeleteFirewallPolicy(tx *sql.Tx, uuid string, auth *common.AuthContext) err
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

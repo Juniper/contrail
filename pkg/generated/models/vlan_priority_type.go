@@ -2,6 +2,7 @@ package models
 
 // VlanPriorityType
 
+//proteus:generate
 type VlanPriorityType int
 
 // MakeVlanPriorityType makes VlanPriorityType

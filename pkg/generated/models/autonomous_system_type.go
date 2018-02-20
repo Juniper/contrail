@@ -2,6 +2,7 @@ package models
 
 // AutonomousSystemType
 
+//proteus:generate
 type AutonomousSystemType int
 
 // MakeAutonomousSystemType makes AutonomousSystemType

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -51,13 +52,17 @@ var AlarmBackRefFields = map[string][]string{}
 // AlarmParentTypes is possible parents for Alarm
 var AlarmParents = []string{
 
-	"global_system_config",
-
 	"project",
+
+	"global_system_config",
 }
 
 // CreateAlarm inserts Alarm to DB
-func CreateAlarm(tx *sql.Tx, model *models.Alarm) error {
+func CreateAlarm(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateAlarmRequest) error {
+	model := request.Alarm
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertAlarmQuery)
 	if err != nil {
@@ -68,7 +73,7 @@ func CreateAlarm(tx *sql.Tx, model *models.Alarm) error {
 		"model": model,
 		"query": insertAlarmQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(common.MustJSON(model.UveKeys.UveKey),
+	_, err = stmt.ExecContext(ctx, common.MustJSON(model.UveKeys.UveKey),
 		string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
@@ -304,14 +309,16 @@ func scanAlarm(values map[string]interface{}) (*models.Alarm, error) {
 }
 
 // ListAlarm lists Alarm with list spec.
-func ListAlarm(tx *sql.Tx, spec *common.ListSpec) ([]*models.Alarm, error) {
+func ListAlarm(ctx context.Context, tx *sql.Tx, request *models.ListAlarmRequest) (response *models.ListAlarmResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "alarm"
-	spec.Fields = AlarmFields
-	spec.RefFields = AlarmRefFields
-	spec.BackRefFields = AlarmBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "alarm"
+	qb.Fields = AlarmFields
+	qb.RefFields = AlarmRefFields
+	qb.BackRefFields = AlarmBackRefFields
 	result := models.MakeAlarmSlice()
 
 	if spec.ParentFQName != nil {
@@ -322,14 +329,14 @@ func ListAlarm(tx *sql.Tx, spec *common.ListSpec) ([]*models.Alarm, error) {
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -337,6 +344,7 @@ func ListAlarm(tx *sql.Tx, spec *common.ListSpec) ([]*models.Alarm, error) {
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -357,248 +365,35 @@ func ListAlarm(tx *sql.Tx, spec *common.ListSpec) ([]*models.Alarm, error) {
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListAlarmResponse{
+		Alarms: result,
+	}
+	return response, nil
 }
 
 // UpdateAlarm updates a resource
-func UpdateAlarm(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateAlarmQuery = "update `alarm` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UveKeys.UveKey", "."); ok {
-		updateAlarmQuery += "`uve_key` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateAlarmQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateAlarmQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateAlarmQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateAlarmQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateAlarmQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateAlarmQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateAlarmQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateAlarmQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateAlarmQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateAlarmQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateAlarmQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateAlarmQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateAlarmQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateAlarmQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateAlarmQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateAlarmQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateAlarmQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateAlarmQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateAlarmQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateAlarmQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateAlarmQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".AlarmSeverity", "."); ok {
-		updateAlarmQuery += "`alarm_severity` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAlarmQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".AlarmRules.OrList", "."); ok {
-		updateAlarmQuery += "`or_list` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateAlarmQuery += ","
-	}
-
-	updateAlarmQuery =
-		updateAlarmQuery[:len(updateAlarmQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateAlarmQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateAlarmQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "alarm", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateAlarm(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateAlarmRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteAlarm deletes a resource
-func DeleteAlarm(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteAlarm(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteAlarmRequest) error {
 	deleteQuery := deleteAlarmQuery
 	selectQuery := "select count(uuid) from alarm where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -606,11 +401,11 @@ func DeleteAlarm(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -618,7 +413,7 @@ func DeleteAlarm(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

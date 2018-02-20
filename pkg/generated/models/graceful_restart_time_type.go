@@ -2,6 +2,7 @@ package models
 
 // GracefulRestartTimeType
 
+//proteus:generate
 type GracefulRestartTimeType int
 
 // MakeGracefulRestartTimeType makes GracefulRestartTimeType

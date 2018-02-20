@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -60,7 +61,11 @@ var LoadbalancerHealthmonitorParents = []string{
 }
 
 // CreateLoadbalancerHealthmonitor inserts LoadbalancerHealthmonitor to DB
-func CreateLoadbalancerHealthmonitor(tx *sql.Tx, model *models.LoadbalancerHealthmonitor) error {
+func CreateLoadbalancerHealthmonitor(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateLoadbalancerHealthmonitorRequest) error {
+	model := request.LoadbalancerHealthmonitor
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertLoadbalancerHealthmonitorQuery)
 	if err != nil {
@@ -71,7 +76,7 @@ func CreateLoadbalancerHealthmonitor(tx *sql.Tx, model *models.LoadbalancerHealt
 		"model": model,
 		"query": insertLoadbalancerHealthmonitorQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -356,14 +361,16 @@ func scanLoadbalancerHealthmonitor(values map[string]interface{}) (*models.Loadb
 }
 
 // ListLoadbalancerHealthmonitor lists LoadbalancerHealthmonitor with list spec.
-func ListLoadbalancerHealthmonitor(tx *sql.Tx, spec *common.ListSpec) ([]*models.LoadbalancerHealthmonitor, error) {
+func ListLoadbalancerHealthmonitor(ctx context.Context, tx *sql.Tx, request *models.ListLoadbalancerHealthmonitorRequest) (response *models.ListLoadbalancerHealthmonitorResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "loadbalancer_healthmonitor"
-	spec.Fields = LoadbalancerHealthmonitorFields
-	spec.RefFields = LoadbalancerHealthmonitorRefFields
-	spec.BackRefFields = LoadbalancerHealthmonitorBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "loadbalancer_healthmonitor"
+	qb.Fields = LoadbalancerHealthmonitorFields
+	qb.RefFields = LoadbalancerHealthmonitorRefFields
+	qb.BackRefFields = LoadbalancerHealthmonitorBackRefFields
 	result := models.MakeLoadbalancerHealthmonitorSlice()
 
 	if spec.ParentFQName != nil {
@@ -374,14 +381,14 @@ func ListLoadbalancerHealthmonitor(tx *sql.Tx, spec *common.ListSpec) ([]*models
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -389,6 +396,7 @@ func ListLoadbalancerHealthmonitor(tx *sql.Tx, spec *common.ListSpec) ([]*models
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -409,288 +417,35 @@ func ListLoadbalancerHealthmonitor(tx *sql.Tx, spec *common.ListSpec) ([]*models
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListLoadbalancerHealthmonitorResponse{
+		LoadbalancerHealthmonitors: result,
+	}
+	return response, nil
 }
 
 // UpdateLoadbalancerHealthmonitor updates a resource
-func UpdateLoadbalancerHealthmonitor(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateLoadbalancerHealthmonitorQuery = "update `loadbalancer_healthmonitor` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".LoadbalancerHealthmonitorProperties.URLPath", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`url_path` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".LoadbalancerHealthmonitorProperties.Timeout", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`timeout` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".LoadbalancerHealthmonitorProperties.MonitorType", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`monitor_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".LoadbalancerHealthmonitorProperties.MaxRetries", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`max_retries` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".LoadbalancerHealthmonitorProperties.HTTPMethod", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`http_method` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".LoadbalancerHealthmonitorProperties.ExpectedCodes", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`expected_codes` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".LoadbalancerHealthmonitorProperties.Delay", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`delay` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".LoadbalancerHealthmonitorProperties.AdminState", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`admin_state` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateLoadbalancerHealthmonitorQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateLoadbalancerHealthmonitorQuery += ","
-	}
-
-	updateLoadbalancerHealthmonitorQuery =
-		updateLoadbalancerHealthmonitorQuery[:len(updateLoadbalancerHealthmonitorQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateLoadbalancerHealthmonitorQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateLoadbalancerHealthmonitorQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "loadbalancer_healthmonitor", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateLoadbalancerHealthmonitor(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateLoadbalancerHealthmonitorRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteLoadbalancerHealthmonitor deletes a resource
-func DeleteLoadbalancerHealthmonitor(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteLoadbalancerHealthmonitor(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteLoadbalancerHealthmonitorRequest) error {
 	deleteQuery := deleteLoadbalancerHealthmonitorQuery
 	selectQuery := "select count(uuid) from loadbalancer_healthmonitor where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -698,11 +453,11 @@ func DeleteLoadbalancerHealthmonitor(tx *sql.Tx, uuid string, auth *common.AuthC
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -710,7 +465,7 @@ func DeleteLoadbalancerHealthmonitor(tx *sql.Tx, uuid string, auth *common.AuthC
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

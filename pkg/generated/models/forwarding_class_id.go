@@ -2,6 +2,7 @@ package models
 
 // ForwardingClassId
 
+//proteus:generate
 type ForwardingClassId int
 
 // MakeForwardingClassId makes ForwardingClassId

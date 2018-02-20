@@ -2,17 +2,10 @@ package models
 
 // JunosServicePorts
 
-import "encoding/json"
-
 // JunosServicePorts
+//proteus:generate
 type JunosServicePorts struct {
 	ServicePort []string `json:"service_port,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *JunosServicePorts) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeJunosServicePorts makes JunosServicePorts

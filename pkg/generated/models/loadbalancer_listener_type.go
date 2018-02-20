@@ -2,34 +2,27 @@ package models
 
 // LoadbalancerListenerType
 
-import "encoding/json"
-
 // LoadbalancerListenerType
+//proteus:generate
 type LoadbalancerListenerType struct {
-	ProtocolPort        int                      `json:"protocol_port,omitempty"`
 	DefaultTLSContainer string                   `json:"default_tls_container,omitempty"`
 	Protocol            LoadbalancerProtocolType `json:"protocol,omitempty"`
 	ConnectionLimit     int                      `json:"connection_limit,omitempty"`
 	AdminState          bool                     `json:"admin_state"`
 	SniContainers       []string                 `json:"sni_containers,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *LoadbalancerListenerType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
+	ProtocolPort        int                      `json:"protocol_port,omitempty"`
 }
 
 // MakeLoadbalancerListenerType makes LoadbalancerListenerType
 func MakeLoadbalancerListenerType() *LoadbalancerListenerType {
 	return &LoadbalancerListenerType{
 		//TODO(nati): Apply default
+		DefaultTLSContainer: "",
 		Protocol:            MakeLoadbalancerProtocolType(),
 		ConnectionLimit:     0,
 		AdminState:          false,
 		SniContainers:       []string{},
 		ProtocolPort:        0,
-		DefaultTLSContainer: "",
 	}
 }
 

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -130,7 +131,11 @@ const insertVirtualRouterNetworkIpamQuery = "insert into `ref_virtual_router_net
 const insertVirtualRouterVirtualMachineQuery = "insert into `ref_virtual_router_virtual_machine` (`from`, `to` ) values (?, ?);"
 
 // CreateVirtualRouter inserts VirtualRouter to DB
-func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
+func CreateVirtualRouter(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateVirtualRouterRequest) error {
+	model := request.VirtualRouter
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertVirtualRouterQuery)
 	if err != nil {
@@ -141,7 +146,7 @@ func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
 		"model": model,
 		"query": insertVirtualRouterQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.VirtualRouterType),
+	_, err = stmt.ExecContext(ctx, string(model.VirtualRouterType),
 		string(model.VirtualRouterIPAddress),
 		bool(model.VirtualRouterDPDKEnabled),
 		string(model.UUID),
@@ -180,7 +185,7 @@ func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
 			ref.Attr = models.MakeVirtualRouterNetworkIpamType()
 		}
 
-		_, err = stmtNetworkIpamRef.Exec(model.UUID, ref.UUID, common.MustJSON(ref.Attr.Subnet),
+		_, err = stmtNetworkIpamRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.Subnet),
 			common.MustJSON(ref.Attr.AllocationPools))
 		if err != nil {
 			return errors.Wrap(err, "NetworkIpamRefs create failed")
@@ -194,7 +199,7 @@ func CreateVirtualRouter(tx *sql.Tx, model *models.VirtualRouter) error {
 	defer stmtVirtualMachineRef.Close()
 	for _, ref := range model.VirtualMachineRefs {
 
-		_, err = stmtVirtualMachineRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtVirtualMachineRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineRefs create failed")
 		}
@@ -894,14 +899,16 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 }
 
 // ListVirtualRouter lists VirtualRouter with list spec.
-func ListVirtualRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualRouter, error) {
+func ListVirtualRouter(ctx context.Context, tx *sql.Tx, request *models.ListVirtualRouterRequest) (response *models.ListVirtualRouterResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "virtual_router"
-	spec.Fields = VirtualRouterFields
-	spec.RefFields = VirtualRouterRefFields
-	spec.BackRefFields = VirtualRouterBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "virtual_router"
+	qb.Fields = VirtualRouterFields
+	qb.RefFields = VirtualRouterRefFields
+	qb.BackRefFields = VirtualRouterBackRefFields
 	result := models.MakeVirtualRouterSlice()
 
 	if spec.ParentFQName != nil {
@@ -912,14 +919,14 @@ func ListVirtualRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualRout
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -927,6 +934,7 @@ func ListVirtualRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualRout
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -947,367 +955,35 @@ func ListVirtualRouter(tx *sql.Tx, spec *common.ListSpec) ([]*models.VirtualRout
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListVirtualRouterResponse{
+		VirtualRouters: result,
+	}
+	return response, nil
 }
 
 // UpdateVirtualRouter updates a resource
-func UpdateVirtualRouter(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateVirtualRouterQuery = "update `virtual_router` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".VirtualRouterType", "."); ok {
-		updateVirtualRouterQuery += "`virtual_router_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".VirtualRouterIPAddress", "."); ok {
-		updateVirtualRouterQuery += "`virtual_router_ip_address` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".VirtualRouterDPDKEnabled", "."); ok {
-		updateVirtualRouterQuery += "`virtual_router_dpdk_enabled` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateVirtualRouterQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateVirtualRouterQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateVirtualRouterQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateVirtualRouterQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateVirtualRouterQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateVirtualRouterQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateVirtualRouterQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateVirtualRouterQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateVirtualRouterQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateVirtualRouterQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateVirtualRouterQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateVirtualRouterQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateVirtualRouterQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateVirtualRouterQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateVirtualRouterQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateVirtualRouterQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateVirtualRouterQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateVirtualRouterQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateVirtualRouterQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateVirtualRouterQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateVirtualRouterQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateVirtualRouterQuery += ","
-	}
-
-	updateVirtualRouterQuery =
-		updateVirtualRouterQuery[:len(updateVirtualRouterQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateVirtualRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateVirtualRouterQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "NetworkIpamRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			attrValues, ok := common.GetValueByPath(ref.(map[string]interface{}), "Attr", ".")
-			if ok {
-
-				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".Subnet", "."); ok {
-					refKeys = append(refKeys, "subnet")
-
-					refValues = append(refValues, common.MustJSON(value))
-
-				}
-
-				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".AllocationPools", "."); ok {
-					refKeys = append(refKeys, "allocation_pools")
-
-					refValues = append(refValues, common.MustJSON(value))
-
-				}
-
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_virtual_router_network_ipam` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_virtual_router_network_ipam` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref NetworkIpamRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_virtual_router_network_ipam` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing NetworkIpamRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "NetworkIpamRefs update failed")
-			}
-		}
-	}
-
-	if value, ok := common.GetValueByPath(model, "VirtualMachineRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_virtual_router_virtual_machine` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_virtual_router_virtual_machine` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref VirtualMachineRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_virtual_router_virtual_machine` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing VirtualMachineRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "VirtualMachineRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "virtual_router", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateVirtualRouter(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateVirtualRouterRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteVirtualRouter deletes a resource
-func DeleteVirtualRouter(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteVirtualRouter(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteVirtualRouterRequest) error {
 	deleteQuery := deleteVirtualRouterQuery
 	selectQuery := "select count(uuid) from virtual_router where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -1315,11 +991,11 @@ func DeleteVirtualRouter(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -1327,7 +1003,7 @@ func DeleteVirtualRouter(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

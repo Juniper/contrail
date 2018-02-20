@@ -2,9 +2,8 @@ package models
 
 // FirewallRuleEndpointType
 
-import "encoding/json"
-
 // FirewallRuleEndpointType
+//proteus:generate
 type FirewallRuleEndpointType struct {
 	AddressGroup   string      `json:"address_group,omitempty"`
 	Subnet         *SubnetType `json:"subnet,omitempty"`
@@ -14,23 +13,18 @@ type FirewallRuleEndpointType struct {
 	Any            bool        `json:"any"`
 }
 
-// String returns json representation of the object
-func (model *FirewallRuleEndpointType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
-}
-
 // MakeFirewallRuleEndpointType makes FirewallRuleEndpointType
 func MakeFirewallRuleEndpointType() *FirewallRuleEndpointType {
 	return &FirewallRuleEndpointType{
 		//TODO(nati): Apply default
-		VirtualNetwork: "",
-		Any:            false,
-		AddressGroup:   "",
-		Subnet:         MakeSubnetType(),
-		Tags:           []string{},
+		AddressGroup: "",
+		Subnet:       MakeSubnetType(),
+		Tags:         []string{},
 
 		TagIds: []int{},
+
+		VirtualNetwork: "",
+		Any:            false,
 	}
 }
 

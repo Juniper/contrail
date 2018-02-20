@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -55,7 +56,11 @@ var BaremetalPortBackRefFields = map[string][]string{}
 var BaremetalPortParents = []string{}
 
 // CreateBaremetalPort inserts BaremetalPort to DB
-func CreateBaremetalPort(tx *sql.Tx, model *models.BaremetalPort) error {
+func CreateBaremetalPort(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateBaremetalPortRequest) error {
+	model := request.BaremetalPort
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertBaremetalPortQuery)
 	if err != nil {
@@ -66,7 +71,7 @@ func CreateBaremetalPort(tx *sql.Tx, model *models.BaremetalPort) error {
 		"model": model,
 		"query": insertBaremetalPortQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		string(model.SwitchInfo),
 		string(model.SwitchID),
 		bool(model.PxeEnabled),
@@ -333,14 +338,16 @@ func scanBaremetalPort(values map[string]interface{}) (*models.BaremetalPort, er
 }
 
 // ListBaremetalPort lists BaremetalPort with list spec.
-func ListBaremetalPort(tx *sql.Tx, spec *common.ListSpec) ([]*models.BaremetalPort, error) {
+func ListBaremetalPort(ctx context.Context, tx *sql.Tx, request *models.ListBaremetalPortRequest) (response *models.ListBaremetalPortResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "baremetal_port"
-	spec.Fields = BaremetalPortFields
-	spec.RefFields = BaremetalPortRefFields
-	spec.BackRefFields = BaremetalPortBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "baremetal_port"
+	qb.Fields = BaremetalPortFields
+	qb.RefFields = BaremetalPortRefFields
+	qb.BackRefFields = BaremetalPortBackRefFields
 	result := models.MakeBaremetalPortSlice()
 
 	if spec.ParentFQName != nil {
@@ -351,14 +358,14 @@ func ListBaremetalPort(tx *sql.Tx, spec *common.ListSpec) ([]*models.BaremetalPo
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -366,6 +373,7 @@ func ListBaremetalPort(tx *sql.Tx, spec *common.ListSpec) ([]*models.BaremetalPo
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -386,272 +394,35 @@ func ListBaremetalPort(tx *sql.Tx, spec *common.ListSpec) ([]*models.BaremetalPo
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListBaremetalPortResponse{
+		BaremetalPorts: result,
+	}
+	return response, nil
 }
 
 // UpdateBaremetalPort updates a resource
-func UpdateBaremetalPort(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateBaremetalPortQuery = "update `baremetal_port` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateBaremetalPortQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".SwitchInfo", "."); ok {
-		updateBaremetalPortQuery += "`switch_info` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".SwitchID", "."); ok {
-		updateBaremetalPortQuery += "`switch_id` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PxeEnabled", "."); ok {
-		updateBaremetalPortQuery += "`pxe_enabled` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PortID", "."); ok {
-		updateBaremetalPortQuery += "`port_id` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateBaremetalPortQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateBaremetalPortQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateBaremetalPortQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateBaremetalPortQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateBaremetalPortQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateBaremetalPortQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Node", "."); ok {
-		updateBaremetalPortQuery += "`node` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".MacAddress", "."); ok {
-		updateBaremetalPortQuery += "`mac_address` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateBaremetalPortQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateBaremetalPortQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateBaremetalPortQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateBaremetalPortQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateBaremetalPortQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateBaremetalPortQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateBaremetalPortQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateBaremetalPortQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateBaremetalPortQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateBaremetalPortQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateBaremetalPortQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateBaremetalPortQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateBaremetalPortQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateBaremetalPortQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateBaremetalPortQuery += ","
-	}
-
-	updateBaremetalPortQuery =
-		updateBaremetalPortQuery[:len(updateBaremetalPortQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateBaremetalPortQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateBaremetalPortQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "baremetal_port", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateBaremetalPort(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateBaremetalPortRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteBaremetalPort deletes a resource
-func DeleteBaremetalPort(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteBaremetalPort(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteBaremetalPortRequest) error {
 	deleteQuery := deleteBaremetalPortQuery
 	selectQuery := "select count(uuid) from baremetal_port where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -659,11 +430,11 @@ func DeleteBaremetalPort(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -671,7 +442,7 @@ func DeleteBaremetalPort(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

@@ -2,6 +2,7 @@ package models
 
 // LoadbalancerMethodType
 
+//proteus:generate
 type LoadbalancerMethodType string
 
 // MakeLoadbalancerMethodType makes LoadbalancerMethodType

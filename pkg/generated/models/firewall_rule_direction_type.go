@@ -2,6 +2,7 @@ package models
 
 // FirewallRuleDirectionType
 
+//proteus:generate
 type FirewallRuleDirectionType string
 
 // MakeFirewallRuleDirectionType makes FirewallRuleDirectionType

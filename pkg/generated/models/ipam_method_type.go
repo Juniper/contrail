@@ -2,6 +2,7 @@ package models
 
 // IpamMethodType
 
+//proteus:generate
 type IpamMethodType string
 
 // MakeIpamMethodType makes IpamMethodType

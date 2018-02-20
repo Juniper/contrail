@@ -2,17 +2,10 @@ package models
 
 // UserDefinedLogStatList
 
-import "encoding/json"
-
 // UserDefinedLogStatList
+//proteus:generate
 type UserDefinedLogStatList struct {
 	Statlist []*UserDefinedLogStat `json:"statlist,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *UserDefinedLogStatList) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeUserDefinedLogStatList makes UserDefinedLogStatList

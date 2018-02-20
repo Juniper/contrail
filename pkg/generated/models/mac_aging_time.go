@@ -2,6 +2,7 @@ package models
 
 // MACAgingTime
 
+//proteus:generate
 type MACAgingTime int
 
 // MakeMACAgingTime makes MACAgingTime

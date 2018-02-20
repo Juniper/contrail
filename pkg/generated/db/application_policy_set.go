@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -70,7 +71,11 @@ const insertApplicationPolicySetFirewallPolicyQuery = "insert into `ref_applicat
 const insertApplicationPolicySetGlobalVrouterConfigQuery = "insert into `ref_application_policy_set_global_vrouter_config` (`from`, `to` ) values (?, ?);"
 
 // CreateApplicationPolicySet inserts ApplicationPolicySet to DB
-func CreateApplicationPolicySet(tx *sql.Tx, model *models.ApplicationPolicySet) error {
+func CreateApplicationPolicySet(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateApplicationPolicySetRequest) error {
+	model := request.ApplicationPolicySet
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertApplicationPolicySetQuery)
 	if err != nil {
@@ -81,7 +86,7 @@ func CreateApplicationPolicySet(tx *sql.Tx, model *models.ApplicationPolicySet) 
 		"model": model,
 		"query": insertApplicationPolicySetQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -118,7 +123,7 @@ func CreateApplicationPolicySet(tx *sql.Tx, model *models.ApplicationPolicySet) 
 			ref.Attr = models.MakeFirewallSequence()
 		}
 
-		_, err = stmtFirewallPolicyRef.Exec(model.UUID, ref.UUID, string(ref.Attr.Sequence))
+		_, err = stmtFirewallPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.Sequence))
 		if err != nil {
 			return errors.Wrap(err, "FirewallPolicyRefs create failed")
 		}
@@ -131,7 +136,7 @@ func CreateApplicationPolicySet(tx *sql.Tx, model *models.ApplicationPolicySet) 
 	defer stmtGlobalVrouterConfigRef.Close()
 	for _, ref := range model.GlobalVrouterConfigRefs {
 
-		_, err = stmtGlobalVrouterConfigRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtGlobalVrouterConfigRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "GlobalVrouterConfigRefs create failed")
 		}
@@ -376,14 +381,16 @@ func scanApplicationPolicySet(values map[string]interface{}) (*models.Applicatio
 }
 
 // ListApplicationPolicySet lists ApplicationPolicySet with list spec.
-func ListApplicationPolicySet(tx *sql.Tx, spec *common.ListSpec) ([]*models.ApplicationPolicySet, error) {
+func ListApplicationPolicySet(ctx context.Context, tx *sql.Tx, request *models.ListApplicationPolicySetRequest) (response *models.ListApplicationPolicySetResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "application_policy_set"
-	spec.Fields = ApplicationPolicySetFields
-	spec.RefFields = ApplicationPolicySetRefFields
-	spec.BackRefFields = ApplicationPolicySetBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "application_policy_set"
+	qb.Fields = ApplicationPolicySetFields
+	qb.RefFields = ApplicationPolicySetRefFields
+	qb.BackRefFields = ApplicationPolicySetBackRefFields
 	result := models.MakeApplicationPolicySetSlice()
 
 	if spec.ParentFQName != nil {
@@ -394,14 +401,14 @@ func ListApplicationPolicySet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Appl
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -409,6 +416,7 @@ func ListApplicationPolicySet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Appl
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -429,344 +437,35 @@ func ListApplicationPolicySet(tx *sql.Tx, spec *common.ListSpec) ([]*models.Appl
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListApplicationPolicySetResponse{
+		ApplicationPolicySets: result,
+	}
+	return response, nil
 }
 
 // UpdateApplicationPolicySet updates a resource
-func UpdateApplicationPolicySet(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateApplicationPolicySetQuery = "update `application_policy_set` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateApplicationPolicySetQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateApplicationPolicySetQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateApplicationPolicySetQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateApplicationPolicySetQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateApplicationPolicySetQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateApplicationPolicySetQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateApplicationPolicySetQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateApplicationPolicySetQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateApplicationPolicySetQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateApplicationPolicySetQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateApplicationPolicySetQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateApplicationPolicySetQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateApplicationPolicySetQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateApplicationPolicySetQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateApplicationPolicySetQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateApplicationPolicySetQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateApplicationPolicySetQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateApplicationPolicySetQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateApplicationPolicySetQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateApplicationPolicySetQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateApplicationPolicySetQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".AllApplications", "."); ok {
-		updateApplicationPolicySetQuery += "`all_applications` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateApplicationPolicySetQuery += ","
-	}
-
-	updateApplicationPolicySetQuery =
-		updateApplicationPolicySetQuery[:len(updateApplicationPolicySetQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateApplicationPolicySetQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateApplicationPolicySetQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "FirewallPolicyRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			attrValues, ok := common.GetValueByPath(ref.(map[string]interface{}), "Attr", ".")
-			if ok {
-
-				if value, ok := common.GetValueByPath(attrValues.(map[string]interface{}), ".Sequence", "."); ok {
-					refKeys = append(refKeys, "sequence")
-
-					refValues = append(refValues, common.InterfaceToString(value))
-
-				}
-
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_application_policy_set_firewall_policy` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_application_policy_set_firewall_policy` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref FirewallPolicyRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_application_policy_set_firewall_policy` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing FirewallPolicyRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "FirewallPolicyRefs update failed")
-			}
-		}
-	}
-
-	if value, ok := common.GetValueByPath(model, "GlobalVrouterConfigRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_application_policy_set_global_vrouter_config` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_application_policy_set_global_vrouter_config` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref GlobalVrouterConfigRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_application_policy_set_global_vrouter_config` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing GlobalVrouterConfigRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "GlobalVrouterConfigRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "application_policy_set", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateApplicationPolicySet(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateApplicationPolicySetRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteApplicationPolicySet deletes a resource
-func DeleteApplicationPolicySet(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteApplicationPolicySet(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteApplicationPolicySetRequest) error {
 	deleteQuery := deleteApplicationPolicySetQuery
 	selectQuery := "select count(uuid) from application_policy_set where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -774,11 +473,11 @@ func DeleteApplicationPolicySet(tx *sql.Tx, uuid string, auth *common.AuthContex
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -786,7 +485,7 @@ func DeleteApplicationPolicySet(tx *sql.Tx, uuid string, auth *common.AuthContex
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -385,7 +386,11 @@ var GlobalSystemConfigParents = []string{
 const insertGlobalSystemConfigBGPRouterQuery = "insert into `ref_global_system_config_bgp_router` (`from`, `to` ) values (?, ?);"
 
 // CreateGlobalSystemConfig inserts GlobalSystemConfig to DB
-func CreateGlobalSystemConfig(tx *sql.Tx, model *models.GlobalSystemConfig) error {
+func CreateGlobalSystemConfig(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateGlobalSystemConfigRequest) error {
+	model := request.GlobalSystemConfig
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertGlobalSystemConfigQuery)
 	if err != nil {
@@ -396,7 +401,7 @@ func CreateGlobalSystemConfig(tx *sql.Tx, model *models.GlobalSystemConfig) erro
 		"model": model,
 		"query": insertGlobalSystemConfigQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.UserDefinedLogStatistics.Statlist),
 		common.MustJSON(model.PluginTuning.PluginProperty),
 		common.MustJSON(model.Perms2.Share),
@@ -450,7 +455,7 @@ func CreateGlobalSystemConfig(tx *sql.Tx, model *models.GlobalSystemConfig) erro
 	defer stmtBGPRouterRef.Close()
 	for _, ref := range model.BGPRouterRefs {
 
-		_, err = stmtBGPRouterRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtBGPRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "BGPRouterRefs create failed")
 		}
@@ -3122,14 +3127,16 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 }
 
 // ListGlobalSystemConfig lists GlobalSystemConfig with list spec.
-func ListGlobalSystemConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.GlobalSystemConfig, error) {
+func ListGlobalSystemConfig(ctx context.Context, tx *sql.Tx, request *models.ListGlobalSystemConfigRequest) (response *models.ListGlobalSystemConfigResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "global_system_config"
-	spec.Fields = GlobalSystemConfigFields
-	spec.RefFields = GlobalSystemConfigRefFields
-	spec.BackRefFields = GlobalSystemConfigBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "global_system_config"
+	qb.Fields = GlobalSystemConfigFields
+	qb.RefFields = GlobalSystemConfigRefFields
+	qb.BackRefFields = GlobalSystemConfigBackRefFields
 	result := models.MakeGlobalSystemConfigSlice()
 
 	if spec.ParentFQName != nil {
@@ -3140,14 +3147,14 @@ func ListGlobalSystemConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Global
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -3155,6 +3162,7 @@ func ListGlobalSystemConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Global
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -3175,450 +3183,35 @@ func ListGlobalSystemConfig(tx *sql.Tx, spec *common.ListSpec) ([]*models.Global
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListGlobalSystemConfigResponse{
+		GlobalSystemConfigs: result,
+	}
+	return response, nil
 }
 
 // UpdateGlobalSystemConfig updates a resource
-func UpdateGlobalSystemConfig(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateGlobalSystemConfigQuery = "update `global_system_config` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateGlobalSystemConfigQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".UserDefinedLogStatistics.Statlist", "."); ok {
-		updateGlobalSystemConfigQuery += "`statlist` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".PluginTuning.PluginProperty", "."); ok {
-		updateGlobalSystemConfigQuery += "`plugin_property` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateGlobalSystemConfigQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateGlobalSystemConfigQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateGlobalSystemConfigQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateGlobalSystemConfigQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateGlobalSystemConfigQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateGlobalSystemConfigQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".MacMoveControl.MacMoveTimeWindow", "."); ok {
-		updateGlobalSystemConfigQuery += "`mac_move_time_window` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".MacMoveControl.MacMoveLimitAction", "."); ok {
-		updateGlobalSystemConfigQuery += "`mac_move_limit_action` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".MacMoveControl.MacMoveLimit", "."); ok {
-		updateGlobalSystemConfigQuery += "`mac_move_limit` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".MacLimitControl.MacLimitAction", "."); ok {
-		updateGlobalSystemConfigQuery += "`mac_limit_action` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".MacLimitControl.MacLimit", "."); ok {
-		updateGlobalSystemConfigQuery += "`mac_limit` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".MacAgingTime", "."); ok {
-		updateGlobalSystemConfigQuery += "`mac_aging_time` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IPFabricSubnets.Subnet", "."); ok {
-		updateGlobalSystemConfigQuery += "`subnet` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateGlobalSystemConfigQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateGlobalSystemConfigQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateGlobalSystemConfigQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateGlobalSystemConfigQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateGlobalSystemConfigQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateGlobalSystemConfigQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateGlobalSystemConfigQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateGlobalSystemConfigQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateGlobalSystemConfigQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateGlobalSystemConfigQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateGlobalSystemConfigQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IbgpAutoMesh", "."); ok {
-		updateGlobalSystemConfigQuery += "`ibgp_auto_mesh` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".GracefulRestartParameters.XMPPHelperEnable", "."); ok {
-		updateGlobalSystemConfigQuery += "`xmpp_helper_enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".GracefulRestartParameters.RestartTime", "."); ok {
-		updateGlobalSystemConfigQuery += "`restart_time` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".GracefulRestartParameters.LongLivedRestartTime", "."); ok {
-		updateGlobalSystemConfigQuery += "`long_lived_restart_time` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".GracefulRestartParameters.EndOfRibTimeout", "."); ok {
-		updateGlobalSystemConfigQuery += "`end_of_rib_timeout` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".GracefulRestartParameters.Enable", "."); ok {
-		updateGlobalSystemConfigQuery += "`graceful_restart_parameters_enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".GracefulRestartParameters.BGPHelperEnable", "."); ok {
-		updateGlobalSystemConfigQuery += "`bgp_helper_enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateGlobalSystemConfigQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateGlobalSystemConfigQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ConfigVersion", "."); ok {
-		updateGlobalSystemConfigQuery += "`config_version` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".BgpaasParameters.PortStart", "."); ok {
-		updateGlobalSystemConfigQuery += "`port_start` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".BgpaasParameters.PortEnd", "."); ok {
-		updateGlobalSystemConfigQuery += "`port_end` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".BGPAlwaysCompareMed", "."); ok {
-		updateGlobalSystemConfigQuery += "`bgp_always_compare_med` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".AutonomousSystem", "."); ok {
-		updateGlobalSystemConfigQuery += "`autonomous_system` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateGlobalSystemConfigQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".AlarmEnable", "."); ok {
-		updateGlobalSystemConfigQuery += "`alarm_enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateGlobalSystemConfigQuery += ","
-	}
-
-	updateGlobalSystemConfigQuery =
-		updateGlobalSystemConfigQuery[:len(updateGlobalSystemConfigQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateGlobalSystemConfigQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateGlobalSystemConfigQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "BGPRouterRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_global_system_config_bgp_router` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_global_system_config_bgp_router` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref BGPRouterRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_global_system_config_bgp_router` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing BGPRouterRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "BGPRouterRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "global_system_config", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateGlobalSystemConfig(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateGlobalSystemConfigRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteGlobalSystemConfig deletes a resource
-func DeleteGlobalSystemConfig(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteGlobalSystemConfig(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteGlobalSystemConfigRequest) error {
 	deleteQuery := deleteGlobalSystemConfigQuery
 	selectQuery := "select count(uuid) from global_system_config where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -3626,11 +3219,11 @@ func DeleteGlobalSystemConfig(tx *sql.Tx, uuid string, auth *common.AuthContext)
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -3638,7 +3231,7 @@ func DeleteGlobalSystemConfig(tx *sql.Tx, uuid string, auth *common.AuthContext)
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

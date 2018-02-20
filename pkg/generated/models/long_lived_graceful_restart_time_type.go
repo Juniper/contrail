@@ -2,6 +2,7 @@ package models
 
 // LongLivedGracefulRestartTimeType
 
+//proteus:generate
 type LongLivedGracefulRestartTimeType int
 
 // MakeLongLivedGracefulRestartTimeType makes LongLivedGracefulRestartTimeType

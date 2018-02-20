@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -54,7 +55,11 @@ var AppformixNodeRoleBackRefFields = map[string][]string{}
 var AppformixNodeRoleParents = []string{}
 
 // CreateAppformixNodeRole inserts AppformixNodeRole to DB
-func CreateAppformixNodeRole(tx *sql.Tx, model *models.AppformixNodeRole) error {
+func CreateAppformixNodeRole(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateAppformixNodeRoleRequest) error {
+	model := request.AppformixNodeRole
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertAppformixNodeRoleQuery)
 	if err != nil {
@@ -65,7 +70,7 @@ func CreateAppformixNodeRole(tx *sql.Tx, model *models.AppformixNodeRole) error 
 		"model": model,
 		"query": insertAppformixNodeRoleQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		string(model.ProvisioningState),
 		string(model.ProvisioningStartTime),
 		string(model.ProvisioningProgressStage),
@@ -323,14 +328,16 @@ func scanAppformixNodeRole(values map[string]interface{}) (*models.AppformixNode
 }
 
 // ListAppformixNodeRole lists AppformixNodeRole with list spec.
-func ListAppformixNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.AppformixNodeRole, error) {
+func ListAppformixNodeRole(ctx context.Context, tx *sql.Tx, request *models.ListAppformixNodeRoleRequest) (response *models.ListAppformixNodeRoleResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "appformix_node_role"
-	spec.Fields = AppformixNodeRoleFields
-	spec.RefFields = AppformixNodeRoleRefFields
-	spec.BackRefFields = AppformixNodeRoleBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "appformix_node_role"
+	qb.Fields = AppformixNodeRoleFields
+	qb.RefFields = AppformixNodeRoleRefFields
+	qb.BackRefFields = AppformixNodeRoleBackRefFields
 	result := models.MakeAppformixNodeRoleSlice()
 
 	if spec.ParentFQName != nil {
@@ -341,14 +348,14 @@ func ListAppformixNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.Appform
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -356,6 +363,7 @@ func ListAppformixNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.Appform
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -376,264 +384,35 @@ func ListAppformixNodeRole(tx *sql.Tx, spec *common.ListSpec) ([]*models.Appform
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListAppformixNodeRoleResponse{
+		AppformixNodeRoles: result,
+	}
+	return response, nil
 }
 
 // UpdateAppformixNodeRole updates a resource
-func UpdateAppformixNodeRole(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateAppformixNodeRoleQuery = "update `appformix_node_role` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateAppformixNodeRoleQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningState", "."); ok {
-		updateAppformixNodeRoleQuery += "`provisioning_state` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningStartTime", "."); ok {
-		updateAppformixNodeRoleQuery += "`provisioning_start_time` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningProgressStage", "."); ok {
-		updateAppformixNodeRoleQuery += "`provisioning_progress_stage` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningProgress", "."); ok {
-		updateAppformixNodeRoleQuery += "`provisioning_progress` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ProvisioningLog", "."); ok {
-		updateAppformixNodeRoleQuery += "`provisioning_log` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateAppformixNodeRoleQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateAppformixNodeRoleQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateAppformixNodeRoleQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateAppformixNodeRoleQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateAppformixNodeRoleQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateAppformixNodeRoleQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateAppformixNodeRoleQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateAppformixNodeRoleQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateAppformixNodeRoleQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateAppformixNodeRoleQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateAppformixNodeRoleQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateAppformixNodeRoleQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateAppformixNodeRoleQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateAppformixNodeRoleQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateAppformixNodeRoleQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateAppformixNodeRoleQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateAppformixNodeRoleQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateAppformixNodeRoleQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateAppformixNodeRoleQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateAppformixNodeRoleQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateAppformixNodeRoleQuery += ","
-	}
-
-	updateAppformixNodeRoleQuery =
-		updateAppformixNodeRoleQuery[:len(updateAppformixNodeRoleQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateAppformixNodeRoleQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateAppformixNodeRoleQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "appformix_node_role", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateAppformixNodeRole(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateAppformixNodeRoleRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteAppformixNodeRole deletes a resource
-func DeleteAppformixNodeRole(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteAppformixNodeRole(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteAppformixNodeRoleRequest) error {
 	deleteQuery := deleteAppformixNodeRoleQuery
 	selectQuery := "select count(uuid) from appformix_node_role where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -641,11 +420,11 @@ func DeleteAppformixNodeRole(tx *sql.Tx, uuid string, auth *common.AuthContext) 
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -653,7 +432,7 @@ func DeleteAppformixNodeRole(tx *sql.Tx, uuid string, auth *common.AuthContext) 
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

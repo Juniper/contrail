@@ -2,6 +2,7 @@ package models
 
 // DscpValueType
 
+//proteus:generate
 type DscpValueType int
 
 // MakeDscpValueType makes DscpValueType

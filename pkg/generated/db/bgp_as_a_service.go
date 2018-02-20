@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -48,12 +49,12 @@ var BGPAsAServiceFields = []string{
 // BGPAsAServiceRefFields is db reference fields for BGPAsAService
 var BGPAsAServiceRefFields = map[string][]string{
 
-	"virtual_machine_interface": {
+	"service_health_check": {
 	// <common.Schema Value>
 
 	},
 
-	"service_health_check": {
+	"virtual_machine_interface": {
 	// <common.Schema Value>
 
 	},
@@ -68,12 +69,16 @@ var BGPAsAServiceParents = []string{
 	"project",
 }
 
-const insertBGPAsAServiceServiceHealthCheckQuery = "insert into `ref_bgp_as_a_service_service_health_check` (`from`, `to` ) values (?, ?);"
-
 const insertBGPAsAServiceVirtualMachineInterfaceQuery = "insert into `ref_bgp_as_a_service_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
+const insertBGPAsAServiceServiceHealthCheckQuery = "insert into `ref_bgp_as_a_service_service_health_check` (`from`, `to` ) values (?, ?);"
+
 // CreateBGPAsAService inserts BGPAsAService to DB
-func CreateBGPAsAService(tx *sql.Tx, model *models.BGPAsAService) error {
+func CreateBGPAsAService(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateBGPAsAServiceRequest) error {
+	model := request.BGPAsAService
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertBGPAsAServiceQuery)
 	if err != nil {
@@ -84,7 +89,7 @@ func CreateBGPAsAService(tx *sql.Tx, model *models.BGPAsAService) error {
 		"model": model,
 		"query": insertBGPAsAServiceQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -122,7 +127,7 @@ func CreateBGPAsAService(tx *sql.Tx, model *models.BGPAsAService) error {
 	defer stmtVirtualMachineInterfaceRef.Close()
 	for _, ref := range model.VirtualMachineInterfaceRefs {
 
-		_, err = stmtVirtualMachineInterfaceRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
@@ -135,7 +140,7 @@ func CreateBGPAsAService(tx *sql.Tx, model *models.BGPAsAService) error {
 	defer stmtServiceHealthCheckRef.Close()
 	for _, ref := range model.ServiceHealthCheckRefs {
 
-		_, err = stmtServiceHealthCheckRef.Exec(model.UUID, ref.UUID)
+		_, err = stmtServiceHealthCheckRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceHealthCheckRefs create failed")
 		}
@@ -417,14 +422,16 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 }
 
 // ListBGPAsAService lists BGPAsAService with list spec.
-func ListBGPAsAService(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPAsAService, error) {
+func ListBGPAsAService(ctx context.Context, tx *sql.Tx, request *models.ListBGPAsAServiceRequest) (response *models.ListBGPAsAServiceResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "bgp_as_a_service"
-	spec.Fields = BGPAsAServiceFields
-	spec.RefFields = BGPAsAServiceRefFields
-	spec.BackRefFields = BGPAsAServiceBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "bgp_as_a_service"
+	qb.Fields = BGPAsAServiceFields
+	qb.RefFields = BGPAsAServiceRefFields
+	qb.BackRefFields = BGPAsAServiceBackRefFields
 	result := models.MakeBGPAsAServiceSlice()
 
 	if spec.ParentFQName != nil {
@@ -435,14 +442,14 @@ func ListBGPAsAService(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPAsAServi
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -450,6 +457,7 @@ func ListBGPAsAService(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPAsAServi
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -470,372 +478,35 @@ func ListBGPAsAService(tx *sql.Tx, spec *common.ListSpec) ([]*models.BGPAsAServi
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListBGPAsAServiceResponse{
+		BGPAsAServices: result,
+	}
+	return response, nil
 }
 
 // UpdateBGPAsAService updates a resource
-func UpdateBGPAsAService(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateBGPAsAServiceQuery = "update `bgp_as_a_service` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateBGPAsAServiceQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateBGPAsAServiceQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateBGPAsAServiceQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateBGPAsAServiceQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateBGPAsAServiceQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateBGPAsAServiceQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateBGPAsAServiceQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateBGPAsAServiceQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateBGPAsAServiceQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateBGPAsAServiceQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateBGPAsAServiceQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateBGPAsAServiceQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateBGPAsAServiceQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateBGPAsAServiceQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateBGPAsAServiceQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateBGPAsAServiceQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateBGPAsAServiceQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateBGPAsAServiceQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateBGPAsAServiceQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateBGPAsAServiceQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".BgpaasSuppressRouteAdvertisement", "."); ok {
-		updateBGPAsAServiceQuery += "`bgpaas_suppress_route_advertisement` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".BgpaasShared", "."); ok {
-		updateBGPAsAServiceQuery += "`bgpaas_shared` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".BgpaasSessionAttributes", "."); ok {
-		updateBGPAsAServiceQuery += "`bgpaas_session_attributes` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".BgpaasIpv4MappedIpv6Nexthop", "."); ok {
-		updateBGPAsAServiceQuery += "`bgpaas_ipv4_mapped_ipv6_nexthop` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".BgpaasIPAddress", "."); ok {
-		updateBGPAsAServiceQuery += "`bgpaas_ip_address` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".AutonomousSystem", "."); ok {
-		updateBGPAsAServiceQuery += "`autonomous_system` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateBGPAsAServiceQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateBGPAsAServiceQuery += ","
-	}
-
-	updateBGPAsAServiceQuery =
-		updateBGPAsAServiceQuery[:len(updateBGPAsAServiceQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateBGPAsAServiceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateBGPAsAServiceQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	if value, ok := common.GetValueByPath(model, "VirtualMachineInterfaceRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_bgp_as_a_service_virtual_machine_interface` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_bgp_as_a_service_virtual_machine_interface` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref VirtualMachineInterfaceRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_bgp_as_a_service_virtual_machine_interface` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "VirtualMachineInterfaceRefs update failed")
-			}
-		}
-	}
-
-	if value, ok := common.GetValueByPath(model, "ServiceHealthCheckRefs", "."); ok {
-		for _, ref := range value.([]interface{}) {
-			refQuery := ""
-			refValues := make([]interface{}, 0)
-			refKeys := make([]string, 0)
-			refUUID, ok := common.GetValueByPath(ref.(map[string]interface{}), "UUID", ".")
-			if !ok {
-				return errors.Wrap(err, "UUID is missing for referred resource. Failed to update Refs")
-			}
-
-			refValues = append(refValues, uuid)
-			refValues = append(refValues, refUUID)
-			operation, ok := common.GetValueByPath(ref.(map[string]interface{}), common.OPERATION, ".")
-			switch operation {
-			case common.ADD:
-				refQuery = "insert into `ref_bgp_as_a_service_service_health_check` ("
-				values := "values("
-				for _, value := range refKeys {
-					refQuery += "`" + value + "`, "
-					values += "?,"
-				}
-				refQuery += "`from`, `to`) "
-				values += "?,?);"
-				refQuery += values
-			case common.UPDATE:
-				refQuery = "update `ref_bgp_as_a_service_service_health_check` set "
-				if len(refKeys) == 0 {
-					return errors.Wrap(err, "Failed to update Refs. No Attribute to update for ref ServiceHealthCheckRefs")
-				}
-				for _, value := range refKeys {
-					refQuery += "`" + value + "` = ?,"
-				}
-				refQuery = refQuery[:len(refQuery)-1] + " where `from` = ? AND `to` = ?;"
-			case common.DELETE:
-				refQuery = "delete from `ref_bgp_as_a_service_service_health_check` where `from` = ? AND `to`= ?;"
-				refValues = refValues[len(refValues)-2:]
-			default:
-				return errors.Wrap(err, "Failed to update Refs. Ref operations can be only ADD, UPDATE, DELETE")
-			}
-			stmt, err := tx.Prepare(refQuery)
-			if err != nil {
-				return errors.Wrap(err, "preparing ServiceHealthCheckRefs update statement failed")
-			}
-			_, err = stmt.Exec(refValues...)
-			if err != nil {
-				return errors.Wrap(err, "ServiceHealthCheckRefs update failed")
-			}
-		}
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "bgp_as_a_service", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateBGPAsAService(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateBGPAsAServiceRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteBGPAsAService deletes a resource
-func DeleteBGPAsAService(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteBGPAsAService(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteBGPAsAServiceRequest) error {
 	deleteQuery := deleteBGPAsAServiceQuery
 	selectQuery := "select count(uuid) from bgp_as_a_service where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -843,11 +514,11 @@ func DeleteBGPAsAService(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -855,7 +526,7 @@ func DeleteBGPAsAService(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -53,7 +54,11 @@ var DatabaseNodeParents = []string{
 }
 
 // CreateDatabaseNode inserts DatabaseNode to DB
-func CreateDatabaseNode(tx *sql.Tx, model *models.DatabaseNode) error {
+func CreateDatabaseNode(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateDatabaseNodeRequest) error {
+	model := request.DatabaseNode
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertDatabaseNodeQuery)
 	if err != nil {
@@ -64,7 +69,7 @@ func CreateDatabaseNode(tx *sql.Tx, model *models.DatabaseNode) error {
 		"model": model,
 		"query": insertDatabaseNodeQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -286,14 +291,16 @@ func scanDatabaseNode(values map[string]interface{}) (*models.DatabaseNode, erro
 }
 
 // ListDatabaseNode lists DatabaseNode with list spec.
-func ListDatabaseNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.DatabaseNode, error) {
+func ListDatabaseNode(ctx context.Context, tx *sql.Tx, request *models.ListDatabaseNodeRequest) (response *models.ListDatabaseNodeResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "database_node"
-	spec.Fields = DatabaseNodeFields
-	spec.RefFields = DatabaseNodeRefFields
-	spec.BackRefFields = DatabaseNodeBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "database_node"
+	qb.Fields = DatabaseNodeFields
+	qb.RefFields = DatabaseNodeRefFields
+	qb.BackRefFields = DatabaseNodeBackRefFields
 	result := models.MakeDatabaseNodeSlice()
 
 	if spec.ParentFQName != nil {
@@ -304,14 +311,14 @@ func ListDatabaseNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.DatabaseNode
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -319,6 +326,7 @@ func ListDatabaseNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.DatabaseNode
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -339,232 +347,35 @@ func ListDatabaseNode(tx *sql.Tx, spec *common.ListSpec) ([]*models.DatabaseNode
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListDatabaseNodeResponse{
+		DatabaseNodes: result,
+	}
+	return response, nil
 }
 
 // UpdateDatabaseNode updates a resource
-func UpdateDatabaseNode(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateDatabaseNodeQuery = "update `database_node` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateDatabaseNodeQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateDatabaseNodeQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateDatabaseNodeQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateDatabaseNodeQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateDatabaseNodeQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateDatabaseNodeQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateDatabaseNodeQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateDatabaseNodeQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateDatabaseNodeQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateDatabaseNodeQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateDatabaseNodeQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateDatabaseNodeQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateDatabaseNodeQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateDatabaseNodeQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateDatabaseNodeQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateDatabaseNodeQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateDatabaseNodeQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateDatabaseNodeQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateDatabaseNodeQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateDatabaseNodeQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DatabaseNodeIPAddress", "."); ok {
-		updateDatabaseNodeQuery += "`database_node_ip_address` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateDatabaseNodeQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateDatabaseNodeQuery += ","
-	}
-
-	updateDatabaseNodeQuery =
-		updateDatabaseNodeQuery[:len(updateDatabaseNodeQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateDatabaseNodeQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateDatabaseNodeQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "database_node", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateDatabaseNode(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateDatabaseNodeRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteDatabaseNode deletes a resource
-func DeleteDatabaseNode(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteDatabaseNode(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteDatabaseNodeRequest) error {
 	deleteQuery := deleteDatabaseNodeQuery
 	selectQuery := "select count(uuid) from database_node where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -572,11 +383,11 @@ func DeleteDatabaseNode(tx *sql.Tx, uuid string, auth *common.AuthContext) error
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -584,7 +395,7 @@ func DeleteDatabaseNode(tx *sql.Tx, uuid string, auth *common.AuthContext) error
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

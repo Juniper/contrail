@@ -2,18 +2,11 @@ package models
 
 // ProviderDetails
 
-import "encoding/json"
-
 // ProviderDetails
+//proteus:generate
 type ProviderDetails struct {
 	SegmentationID  VlanIdType `json:"segmentation_id,omitempty"`
 	PhysicalNetwork string     `json:"physical_network,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *ProviderDetails) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeProviderDetails makes ProviderDetails

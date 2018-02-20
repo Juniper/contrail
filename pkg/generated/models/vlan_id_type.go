@@ -2,6 +2,7 @@ package models
 
 // VlanIdType
 
+//proteus:generate
 type VlanIdType int
 
 // MakeVlanIdType makes VlanIdType

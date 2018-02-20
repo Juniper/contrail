@@ -2,6 +2,7 @@ package models
 
 // IpAddressType
 
+//proteus:generate
 type IpAddressType string
 
 // MakeIpAddressType makes IpAddressType

@@ -2,6 +2,7 @@ package models
 
 // RpfModeType
 
+//proteus:generate
 type RpfModeType string
 
 // MakeRpfModeType makes RpfModeType

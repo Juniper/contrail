@@ -2,18 +2,11 @@ package models
 
 // DiscoveryServiceAssignmentType
 
-import "encoding/json"
-
 // DiscoveryServiceAssignmentType
+//proteus:generate
 type DiscoveryServiceAssignmentType struct {
 	Subscriber []*DiscoveryPubSubEndPointType `json:"subscriber,omitempty"`
 	Publisher  *DiscoveryPubSubEndPointType   `json:"publisher,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *DiscoveryServiceAssignmentType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeDiscoveryServiceAssignmentType makes DiscoveryServiceAssignmentType

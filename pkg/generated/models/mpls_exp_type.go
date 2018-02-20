@@ -2,6 +2,7 @@ package models
 
 // MplsExpType
 
+//proteus:generate
 type MplsExpType int
 
 // MakeMplsExpType makes MplsExpType

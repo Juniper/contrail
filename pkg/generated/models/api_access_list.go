@@ -2,40 +2,33 @@ package models
 
 // APIAccessList
 
-import "encoding/json"
-
 // APIAccessList
+//proteus:generate
 type APIAccessList struct {
-	APIAccessListEntries *RbacRuleEntriesType `json:"api_access_list_entries,omitempty"`
+	UUID                 string               `json:"uuid,omitempty"`
 	ParentUUID           string               `json:"parent_uuid,omitempty"`
+	ParentType           string               `json:"parent_type,omitempty"`
 	FQName               []string             `json:"fq_name,omitempty"`
 	IDPerms              *IdPermsType         `json:"id_perms,omitempty"`
 	DisplayName          string               `json:"display_name,omitempty"`
-	ParentType           string               `json:"parent_type,omitempty"`
 	Annotations          *KeyValuePairs       `json:"annotations,omitempty"`
 	Perms2               *PermType2           `json:"perms2,omitempty"`
-	UUID                 string               `json:"uuid,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *APIAccessList) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
+	APIAccessListEntries *RbacRuleEntriesType `json:"api_access_list_entries,omitempty"`
 }
 
 // MakeAPIAccessList makes APIAccessList
 func MakeAPIAccessList() *APIAccessList {
 	return &APIAccessList{
 		//TODO(nati): Apply default
+		UUID:                 "",
+		ParentUUID:           "",
+		ParentType:           "",
 		FQName:               []string{},
 		IDPerms:              MakeIdPermsType(),
 		DisplayName:          "",
-		APIAccessListEntries: MakeRbacRuleEntriesType(),
-		ParentUUID:           "",
-		Perms2:               MakePermType2(),
-		UUID:                 "",
-		ParentType:           "",
 		Annotations:          MakeKeyValuePairs(),
+		Perms2:               MakePermType2(),
+		APIAccessListEntries: MakeRbacRuleEntriesType(),
 	}
 }
 

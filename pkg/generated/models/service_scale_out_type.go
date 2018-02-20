@@ -2,18 +2,11 @@ package models
 
 // ServiceScaleOutType
 
-import "encoding/json"
-
 // ServiceScaleOutType
+//proteus:generate
 type ServiceScaleOutType struct {
-	MaxInstances int  `json:"max_instances,omitempty"`
 	AutoScale    bool `json:"auto_scale"`
-}
-
-// String returns json representation of the object
-func (model *ServiceScaleOutType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
+	MaxInstances int  `json:"max_instances,omitempty"`
 }
 
 // MakeServiceScaleOutType makes ServiceScaleOutType

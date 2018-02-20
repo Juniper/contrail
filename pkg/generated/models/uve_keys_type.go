@@ -2,17 +2,10 @@ package models
 
 // UveKeysType
 
-import "encoding/json"
-
 // UveKeysType
+//proteus:generate
 type UveKeysType struct {
 	UveKey []string `json:"uve_key,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *UveKeysType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeUveKeysType makes UveKeysType

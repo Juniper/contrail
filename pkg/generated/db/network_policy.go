@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -53,7 +54,11 @@ var NetworkPolicyParents = []string{
 }
 
 // CreateNetworkPolicy inserts NetworkPolicy to DB
-func CreateNetworkPolicy(tx *sql.Tx, model *models.NetworkPolicy) error {
+func CreateNetworkPolicy(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreateNetworkPolicyRequest) error {
+	model := request.NetworkPolicy
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertNetworkPolicyQuery)
 	if err != nil {
@@ -64,7 +69,7 @@ func CreateNetworkPolicy(tx *sql.Tx, model *models.NetworkPolicy) error {
 		"model": model,
 		"query": insertNetworkPolicyQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -284,14 +289,16 @@ func scanNetworkPolicy(values map[string]interface{}) (*models.NetworkPolicy, er
 }
 
 // ListNetworkPolicy lists NetworkPolicy with list spec.
-func ListNetworkPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.NetworkPolicy, error) {
+func ListNetworkPolicy(ctx context.Context, tx *sql.Tx, request *models.ListNetworkPolicyRequest) (response *models.ListNetworkPolicyResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "network_policy"
-	spec.Fields = NetworkPolicyFields
-	spec.RefFields = NetworkPolicyRefFields
-	spec.BackRefFields = NetworkPolicyBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "network_policy"
+	qb.Fields = NetworkPolicyFields
+	qb.RefFields = NetworkPolicyRefFields
+	qb.BackRefFields = NetworkPolicyBackRefFields
 	result := models.MakeNetworkPolicySlice()
 
 	if spec.ParentFQName != nil {
@@ -302,14 +309,14 @@ func ListNetworkPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.NetworkPoli
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -317,6 +324,7 @@ func ListNetworkPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.NetworkPoli
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -337,232 +345,35 @@ func ListNetworkPolicy(tx *sql.Tx, spec *common.ListSpec) ([]*models.NetworkPoli
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListNetworkPolicyResponse{
+		NetworkPolicys: result,
+	}
+	return response, nil
 }
 
 // UpdateNetworkPolicy updates a resource
-func UpdateNetworkPolicy(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updateNetworkPolicyQuery = "update `network_policy` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updateNetworkPolicyQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updateNetworkPolicyQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updateNetworkPolicyQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updateNetworkPolicyQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updateNetworkPolicyQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updateNetworkPolicyQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updateNetworkPolicyQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".NetworkPolicyEntries.PolicyRule", "."); ok {
-		updateNetworkPolicyQuery += "`policy_rule` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updateNetworkPolicyQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updateNetworkPolicyQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updateNetworkPolicyQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updateNetworkPolicyQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updateNetworkPolicyQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updateNetworkPolicyQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updateNetworkPolicyQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updateNetworkPolicyQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updateNetworkPolicyQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updateNetworkPolicyQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updateNetworkPolicyQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updateNetworkPolicyQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updateNetworkPolicyQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updateNetworkPolicyQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updateNetworkPolicyQuery += ","
-	}
-
-	updateNetworkPolicyQuery =
-		updateNetworkPolicyQuery[:len(updateNetworkPolicyQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updateNetworkPolicyQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updateNetworkPolicyQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "network_policy", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdateNetworkPolicy(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdateNetworkPolicyRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeleteNetworkPolicy deletes a resource
-func DeleteNetworkPolicy(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeleteNetworkPolicy(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeleteNetworkPolicyRequest) error {
 	deleteQuery := deleteNetworkPolicyQuery
 	selectQuery := "select count(uuid) from network_policy where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -570,11 +381,11 @@ func DeleteNetworkPolicy(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -582,7 +393,7 @@ func DeleteNetworkPolicy(tx *sql.Tx, uuid string, auth *common.AuthContext) erro
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

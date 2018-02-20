@@ -2,17 +2,10 @@ package models
 
 // ServiceApplianceInterfaceType
 
-import "encoding/json"
-
 // ServiceApplianceInterfaceType
+//proteus:generate
 type ServiceApplianceInterfaceType struct {
 	InterfaceType ServiceInterfaceType `json:"interface_type,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *ServiceApplianceInterfaceType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeServiceApplianceInterfaceType makes ServiceApplianceInterfaceType

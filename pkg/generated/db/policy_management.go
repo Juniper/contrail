@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 
@@ -216,7 +217,11 @@ var PolicyManagementBackRefFields = map[string][]string{
 var PolicyManagementParents = []string{}
 
 // CreatePolicyManagement inserts PolicyManagement to DB
-func CreatePolicyManagement(tx *sql.Tx, model *models.PolicyManagement) error {
+func CreatePolicyManagement(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.CreatePolicyManagementRequest) error {
+	model := request.PolicyManagement
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertPolicyManagementQuery)
 	if err != nil {
@@ -227,7 +232,7 @@ func CreatePolicyManagement(tx *sql.Tx, model *models.PolicyManagement) error {
 		"model": model,
 		"query": insertPolicyManagementQuery,
 	}).Debug("create query")
-	_, err = stmt.Exec(string(model.UUID),
+	_, err = stmt.ExecContext(ctx, string(model.UUID),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -1695,14 +1700,16 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 }
 
 // ListPolicyManagement lists PolicyManagement with list spec.
-func ListPolicyManagement(tx *sql.Tx, spec *common.ListSpec) ([]*models.PolicyManagement, error) {
+func ListPolicyManagement(ctx context.Context, tx *sql.Tx, request *models.ListPolicyManagementRequest) (response *models.ListPolicyManagementResponse, err error) {
 	var rows *sql.Rows
-	var err error
-	//TODO (check input)
-	spec.Table = "policy_management"
-	spec.Fields = PolicyManagementFields
-	spec.RefFields = PolicyManagementRefFields
-	spec.BackRefFields = PolicyManagementBackRefFields
+	qb := &common.ListQueryBuilder{}
+	qb.Auth = common.GetAuthCTX(ctx)
+	spec := request.Spec
+	qb.Spec = spec
+	qb.Table = "policy_management"
+	qb.Fields = PolicyManagementFields
+	qb.RefFields = PolicyManagementRefFields
+	qb.BackRefFields = PolicyManagementBackRefFields
 	result := models.MakePolicyManagementSlice()
 
 	if spec.ParentFQName != nil {
@@ -1713,14 +1720,14 @@ func ListPolicyManagement(tx *sql.Tx, spec *common.ListSpec) ([]*models.PolicyMa
 		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
 	}
 
-	query := spec.BuildQuery()
-	columns := spec.Columns
-	values := spec.Values
+	query := qb.BuildQuery()
+	columns := qb.Columns
+	values := qb.Values
 	log.WithFields(log.Fields{
 		"listSpec": spec,
 		"query":    query,
 	}).Debug("select query")
-	rows, err = tx.Query(query, values...)
+	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
 	}
@@ -1728,6 +1735,7 @@ func ListPolicyManagement(tx *sql.Tx, spec *common.ListSpec) ([]*models.PolicyMa
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "row error")
 	}
+
 	for rows.Next() {
 		valuesMap := map[string]interface{}{}
 		values := make([]interface{}, len(columns))
@@ -1748,224 +1756,35 @@ func ListPolicyManagement(tx *sql.Tx, spec *common.ListSpec) ([]*models.PolicyMa
 		}
 		result = append(result, m)
 	}
-	return result, nil
+	response = &models.ListPolicyManagementResponse{
+		PolicyManagements: result,
+	}
+	return response, nil
 }
 
 // UpdatePolicyManagement updates a resource
-func UpdatePolicyManagement(tx *sql.Tx, uuid string, model map[string]interface{}) error {
-	// Prepare statement for updating data
-	var updatePolicyManagementQuery = "update `policy_management` set "
-
-	updatedValues := make([]interface{}, 0)
-
-	if value, ok := common.GetValueByPath(model, ".UUID", "."); ok {
-		updatePolicyManagementQuery += "`uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Share", "."); ok {
-		updatePolicyManagementQuery += "`share` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.OwnerAccess", "."); ok {
-		updatePolicyManagementQuery += "`owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.Owner", "."); ok {
-		updatePolicyManagementQuery += "`owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Perms2.GlobalAccess", "."); ok {
-		updatePolicyManagementQuery += "`global_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentUUID", "."); ok {
-		updatePolicyManagementQuery += "`parent_uuid` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".ParentType", "."); ok {
-		updatePolicyManagementQuery += "`parent_type` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.UserVisible", "."); ok {
-		updatePolicyManagementQuery += "`user_visible` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OwnerAccess", "."); ok {
-		updatePolicyManagementQuery += "`permissions_owner_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Owner", "."); ok {
-		updatePolicyManagementQuery += "`permissions_owner` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.OtherAccess", "."); ok {
-		updatePolicyManagementQuery += "`other_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.GroupAccess", "."); ok {
-		updatePolicyManagementQuery += "`group_access` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToInt(value.(float64)))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Permissions.Group", "."); ok {
-		updatePolicyManagementQuery += "`group` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.LastModified", "."); ok {
-		updatePolicyManagementQuery += "`last_modified` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Enable", "."); ok {
-		updatePolicyManagementQuery += "`enable` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToBool(value))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Description", "."); ok {
-		updatePolicyManagementQuery += "`description` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Creator", "."); ok {
-		updatePolicyManagementQuery += "`creator` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".IDPerms.Created", "."); ok {
-		updatePolicyManagementQuery += "`created` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".FQName", "."); ok {
-		updatePolicyManagementQuery += "`fq_name` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".DisplayName", "."); ok {
-		updatePolicyManagementQuery += "`display_name` = ?"
-
-		updatedValues = append(updatedValues, common.InterfaceToString(value))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	if value, ok := common.GetValueByPath(model, ".Annotations.KeyValuePair", "."); ok {
-		updatePolicyManagementQuery += "`key_value_pair` = ?"
-
-		updatedValues = append(updatedValues, common.MustJSON(value))
-
-		updatePolicyManagementQuery += ","
-	}
-
-	updatePolicyManagementQuery =
-		updatePolicyManagementQuery[:len(updatePolicyManagementQuery)-1] + " where `uuid` = ? ;"
-	updatedValues = append(updatedValues, string(uuid))
-	stmt, err := tx.Prepare(updatePolicyManagementQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing update statement failed")
-	}
-	defer stmt.Close()
-	log.WithFields(log.Fields{
-		"model": model,
-		"query": updatePolicyManagementQuery,
-	}).Debug("update query")
-	_, err = stmt.Exec(updatedValues...)
-	if err != nil {
-		return errors.Wrap(err, "update failed")
-	}
-
-	share, ok := common.GetValueByPath(model, ".Perms2.Share", ".")
-	if ok {
-		err = common.UpdateSharing(tx, "policy_management", string(uuid), share.([]interface{}))
-		if err != nil {
-			return err
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"model": model,
-	}).Debug("updated")
-	return err
+func UpdatePolicyManagement(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.UpdatePolicyManagementRequest,
+) error {
+	//TODO
+	return nil
 }
 
 // DeletePolicyManagement deletes a resource
-func DeletePolicyManagement(tx *sql.Tx, uuid string, auth *common.AuthContext) error {
+func DeletePolicyManagement(
+	ctx context.Context,
+	tx *sql.Tx,
+	request *models.DeletePolicyManagementRequest) error {
 	deleteQuery := deletePolicyManagementQuery
 	selectQuery := "select count(uuid) from policy_management where uuid = ?"
 	var err error
 	var count int
-
+	uuid := request.ID
+	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
-		row := tx.QueryRow(selectQuery, uuid)
+		row := tx.QueryRowContext(ctx, selectQuery, uuid)
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -1973,11 +1792,11 @@ func DeletePolicyManagement(tx *sql.Tx, uuid string, auth *common.AuthContext) e
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid)
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid)
 	} else {
 		deleteQuery += " and owner = ?"
 		selectQuery += " and owner = ?"
-		row := tx.QueryRow(selectQuery, uuid, auth.ProjectID())
+		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
 		if err != nil {
 			return errors.Wrap(err, "not found")
 		}
@@ -1985,7 +1804,7 @@ func DeletePolicyManagement(tx *sql.Tx, uuid string, auth *common.AuthContext) e
 		if count == 0 {
 			return errors.New("Not found")
 		}
-		_, err = tx.Exec(deleteQuery, uuid, auth.ProjectID())
+		_, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID())
 	}
 
 	if err != nil {

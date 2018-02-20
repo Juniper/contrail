@@ -2,17 +2,10 @@ package models
 
 // DhcpOptionsListType
 
-import "encoding/json"
-
 // DhcpOptionsListType
+//proteus:generate
 type DhcpOptionsListType struct {
 	DHCPOption []*DhcpOptionType `json:"dhcp_option,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *DhcpOptionsListType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeDhcpOptionsListType makes DhcpOptionsListType

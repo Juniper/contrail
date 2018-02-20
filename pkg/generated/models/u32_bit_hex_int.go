@@ -2,6 +2,7 @@ package models
 
 // U32BitHexInt
 
+//proteus:generate
 type U32BitHexInt string
 
 // MakeU32BitHexInt makes U32BitHexInt

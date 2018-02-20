@@ -2,26 +2,19 @@ package models
 
 // SequenceType
 
-import "encoding/json"
-
 // SequenceType
+//proteus:generate
 type SequenceType struct {
 	Major int `json:"major,omitempty"`
 	Minor int `json:"minor,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *SequenceType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakeSequenceType makes SequenceType
 func MakeSequenceType() *SequenceType {
 	return &SequenceType{
 		//TODO(nati): Apply default
-		Minor: 0,
 		Major: 0,
+		Minor: 0,
 	}
 }
 

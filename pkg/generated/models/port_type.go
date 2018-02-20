@@ -2,18 +2,11 @@ package models
 
 // PortType
 
-import "encoding/json"
-
 // PortType
+//proteus:generate
 type PortType struct {
 	EndPort   L4PortType `json:"end_port,omitempty"`
 	StartPort L4PortType `json:"start_port,omitempty"`
-}
-
-// String returns json representation of the object
-func (model *PortType) String() string {
-	b, _ := json.Marshal(model)
-	return string(b)
 }
 
 // MakePortType makes PortType
