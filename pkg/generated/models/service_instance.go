@@ -16,8 +16,8 @@ type ServiceInstance struct {
 	ServiceInstanceBindings   *KeyValuePairs       `json:"service_instance_bindings,omitempty"`
 	ServiceInstanceProperties *ServiceInstanceType `json:"service_instance_properties,omitempty"`
 
-	ServiceTemplateRefs []*ServiceInstanceServiceTemplateRef `json:"service_template_refs,omitempty"`
 	InstanceIPRefs      []*ServiceInstanceInstanceIPRef      `json:"instance_ip_refs,omitempty"`
+	ServiceTemplateRefs []*ServiceInstanceServiceTemplateRef `json:"service_template_refs,omitempty"`
 
 	PortTuples []*PortTuple `json:"port_tuples,omitempty"`
 }

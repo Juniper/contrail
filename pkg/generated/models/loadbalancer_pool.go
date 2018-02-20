@@ -17,20 +17,13 @@ type LoadbalancerPool struct {
 	LoadbalancerPoolCustomAttributes *KeyValuePairs        `json:"loadbalancer_pool_custom_attributes,omitempty"`
 	LoadbalancerPoolProvider         string                `json:"loadbalancer_pool_provider,omitempty"`
 
-	LoadbalancerHealthmonitorRefs []*LoadbalancerPoolLoadbalancerHealthmonitorRef `json:"loadbalancer_healthmonitor_refs,omitempty"`
 	ServiceApplianceSetRefs       []*LoadbalancerPoolServiceApplianceSetRef       `json:"service_appliance_set_refs,omitempty"`
 	VirtualMachineInterfaceRefs   []*LoadbalancerPoolVirtualMachineInterfaceRef   `json:"virtual_machine_interface_refs,omitempty"`
 	LoadbalancerListenerRefs      []*LoadbalancerPoolLoadbalancerListenerRef      `json:"loadbalancer_listener_refs,omitempty"`
 	ServiceInstanceRefs           []*LoadbalancerPoolServiceInstanceRef           `json:"service_instance_refs,omitempty"`
+	LoadbalancerHealthmonitorRefs []*LoadbalancerPoolLoadbalancerHealthmonitorRef `json:"loadbalancer_healthmonitor_refs,omitempty"`
 
 	LoadbalancerMembers []*LoadbalancerMember `json:"loadbalancer_members,omitempty"`
-}
-
-// LoadbalancerPoolLoadbalancerHealthmonitorRef references each other
-type LoadbalancerPoolLoadbalancerHealthmonitorRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
 }
 
 // LoadbalancerPoolServiceApplianceSetRef references each other
@@ -56,6 +49,13 @@ type LoadbalancerPoolLoadbalancerListenerRef struct {
 
 // LoadbalancerPoolServiceInstanceRef references each other
 type LoadbalancerPoolServiceInstanceRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
+// LoadbalancerPoolLoadbalancerHealthmonitorRef references each other
+type LoadbalancerPoolLoadbalancerHealthmonitorRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 

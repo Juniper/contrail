@@ -53,16 +53,6 @@ var InstanceIPFields = []string{
 // InstanceIPRefFields is db reference fields for InstanceIP
 var InstanceIPRefFields = map[string][]string{
 
-	"network_ipam": {
-	// <common.Schema Value>
-
-	},
-
-	"virtual_network": {
-	// <common.Schema Value>
-
-	},
-
 	"virtual_machine_interface": {
 	// <common.Schema Value>
 
@@ -74,6 +64,16 @@ var InstanceIPRefFields = map[string][]string{
 	},
 
 	"virtual_router": {
+	// <common.Schema Value>
+
+	},
+
+	"network_ipam": {
+	// <common.Schema Value>
+
+	},
+
+	"virtual_network": {
 	// <common.Schema Value>
 
 	},
@@ -117,15 +117,15 @@ var InstanceIPBackRefFields = map[string][]string{
 // InstanceIPParentTypes is possible parents for InstanceIP
 var InstanceIPParents = []string{}
 
+const insertInstanceIPVirtualRouterQuery = "insert into `ref_instance_ip_virtual_router` (`from`, `to` ) values (?, ?);"
+
+const insertInstanceIPNetworkIpamQuery = "insert into `ref_instance_ip_network_ipam` (`from`, `to` ) values (?, ?);"
+
 const insertInstanceIPVirtualNetworkQuery = "insert into `ref_instance_ip_virtual_network` (`from`, `to` ) values (?, ?);"
 
 const insertInstanceIPVirtualMachineInterfaceQuery = "insert into `ref_instance_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 const insertInstanceIPPhysicalRouterQuery = "insert into `ref_instance_ip_physical_router` (`from`, `to` ) values (?, ?);"
-
-const insertInstanceIPVirtualRouterQuery = "insert into `ref_instance_ip_virtual_router` (`from`, `to` ) values (?, ?);"
-
-const insertInstanceIPNetworkIpamQuery = "insert into `ref_instance_ip_network_ipam` (`from`, `to` ) values (?, ?);"
 
 // CreateInstanceIP inserts InstanceIP to DB
 func CreateInstanceIP(
@@ -178,19 +178,6 @@ func CreateInstanceIP(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtVirtualRouterRef, err := tx.Prepare(insertInstanceIPVirtualRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualRouterRefs create statement failed")
-	}
-	defer stmtVirtualRouterRef.Close()
-	for _, ref := range model.VirtualRouterRefs {
-
-		_, err = stmtVirtualRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualRouterRefs create failed")
-		}
-	}
-
 	stmtNetworkIpamRef, err := tx.Prepare(insertInstanceIPNetworkIpamQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing NetworkIpamRefs create statement failed")
@@ -240,6 +227,19 @@ func CreateInstanceIP(
 		_, err = stmtPhysicalRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PhysicalRouterRefs create failed")
+		}
+	}
+
+	stmtVirtualRouterRef, err := tx.Prepare(insertInstanceIPVirtualRouterQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualRouterRefs create statement failed")
+	}
+	defer stmtVirtualRouterRef.Close()
+	for _, ref := range model.VirtualRouterRefs {
+
+		_, err = stmtVirtualRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualRouterRefs create failed")
 		}
 	}
 
@@ -507,26 +507,6 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 
 	}
 
-	if value, ok := values["ref_virtual_router"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.InstanceIPVirtualRouterRef{}
-			referenceModel.UUID = uuid
-			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_network_ipam"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -603,6 +583,26 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 			referenceModel := &models.InstanceIPPhysicalRouterRef{}
 			referenceModel.UUID = uuid
 			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_router"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.InstanceIPVirtualRouterRef{}
+			referenceModel.UUID = uuid
+			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
 
 		}
 	}

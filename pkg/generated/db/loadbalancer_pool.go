@@ -53,6 +53,11 @@ var LoadbalancerPoolFields = []string{
 // LoadbalancerPoolRefFields is db reference fields for LoadbalancerPool
 var LoadbalancerPoolRefFields = map[string][]string{
 
+	"service_appliance_set": {
+	// <common.Schema Value>
+
+	},
+
 	"virtual_machine_interface": {
 	// <common.Schema Value>
 
@@ -69,11 +74,6 @@ var LoadbalancerPoolRefFields = map[string][]string{
 	},
 
 	"loadbalancer_healthmonitor": {
-	// <common.Schema Value>
-
-	},
-
-	"service_appliance_set": {
 	// <common.Schema Value>
 
 	},
@@ -507,6 +507,26 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 
 	}
 
+	if value, ok := values["ref_service_appliance_set"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LoadbalancerPoolServiceApplianceSetRef{}
+			referenceModel.UUID = uuid
+			m.ServiceApplianceSetRefs = append(m.ServiceApplianceSetRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -583,26 +603,6 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 			referenceModel := &models.LoadbalancerPoolLoadbalancerHealthmonitorRef{}
 			referenceModel.UUID = uuid
 			m.LoadbalancerHealthmonitorRefs = append(m.LoadbalancerHealthmonitorRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_service_appliance_set"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LoadbalancerPoolServiceApplianceSetRef{}
-			referenceModel.UUID = uuid
-			m.ServiceApplianceSetRefs = append(m.ServiceApplianceSetRefs, referenceModel)
 
 		}
 	}

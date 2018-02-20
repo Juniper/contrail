@@ -400,14 +400,6 @@ func TestPhysicalRouter(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var VirtualNetworkref []interface{}
-	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"delete", "uuid":"physical_router_virtual_network_ref_uuid", "to": []string{"test", "physical_router_virtual_network_ref_uuid"}})
-	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"add", "uuid":"physical_router_virtual_network_ref_uuid1", "to": []string{"test", "physical_router_virtual_network_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
-	//
 	//    var BGPRouterref []interface{}
 	//    BGPRouterref = append(BGPRouterref, map[string]interface{}{"operation":"delete", "uuid":"physical_router_bgp_router_ref_uuid", "to": []string{"test", "physical_router_bgp_router_ref_uuid"}})
 	//    BGPRouterref = append(BGPRouterref, map[string]interface{}{"operation":"add", "uuid":"physical_router_bgp_router_ref_uuid1", "to": []string{"test", "physical_router_bgp_router_ref_uuid1"}})
@@ -423,6 +415,14 @@ func TestPhysicalRouter(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "VirtualRouterRefs", ".", VirtualRouterref)
+	//
+	//    var VirtualNetworkref []interface{}
+	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"delete", "uuid":"physical_router_virtual_network_ref_uuid", "to": []string{"test", "physical_router_virtual_network_ref_uuid"}})
+	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"add", "uuid":"physical_router_virtual_network_ref_uuid1", "to": []string{"test", "physical_router_virtual_network_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

@@ -1046,13 +1046,13 @@ var ProjectParents = []string{
 	"domain",
 }
 
-const insertProjectAliasIPPoolQuery = "insert into `ref_project_alias_ip_pool` (`from`, `to` ) values (?, ?);"
-
 const insertProjectNamespaceQuery = "insert into `ref_project_namespace` (`from`, `to` ,`ip_prefix`,`ip_prefix_len`) values (?, ?,?,?);"
 
 const insertProjectApplicationPolicySetQuery = "insert into `ref_project_application_policy_set` (`from`, `to` ) values (?, ?);"
 
 const insertProjectFloatingIPPoolQuery = "insert into `ref_project_floating_ip_pool` (`from`, `to` ) values (?, ?);"
+
+const insertProjectAliasIPPoolQuery = "insert into `ref_project_alias_ip_pool` (`from`, `to` ) values (?, ?);"
 
 // CreateProject inserts Project to DB
 func CreateProject(

@@ -14,8 +14,8 @@ type CustomerAttachment struct {
 	Annotations *KeyValuePairs `json:"annotations,omitempty"`
 	Perms2      *PermType2     `json:"perms2,omitempty"`
 
-	VirtualMachineInterfaceRefs []*CustomerAttachmentVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 	FloatingIPRefs              []*CustomerAttachmentFloatingIPRef              `json:"floating_ip_refs,omitempty"`
+	VirtualMachineInterfaceRefs []*CustomerAttachmentVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 }
 
 // CustomerAttachmentVirtualMachineInterfaceRef references each other

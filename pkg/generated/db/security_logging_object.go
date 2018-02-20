@@ -45,12 +45,12 @@ var SecurityLoggingObjectFields = []string{
 // SecurityLoggingObjectRefFields is db reference fields for SecurityLoggingObject
 var SecurityLoggingObjectRefFields = map[string][]string{
 
-	"security_group": {
+	"network_policy": {
 		// <common.Schema Value>
 		"rule",
 	},
 
-	"network_policy": {
+	"security_group": {
 		// <common.Schema Value>
 		"rule",
 	},
@@ -62,9 +62,9 @@ var SecurityLoggingObjectBackRefFields = map[string][]string{}
 // SecurityLoggingObjectParentTypes is possible parents for SecurityLoggingObject
 var SecurityLoggingObjectParents = []string{
 
-	"project",
-
 	"global_vrouter_config",
+
+	"project",
 }
 
 const insertSecurityLoggingObjectSecurityGroupQuery = "insert into `ref_security_logging_object_security_group` (`from`, `to` ,`rule`) values (?, ?,?);"

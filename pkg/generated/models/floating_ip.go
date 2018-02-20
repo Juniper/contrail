@@ -21,8 +21,8 @@ type FloatingIP struct {
 	FloatingIPFixedIPAddress     IpAddressType        `json:"floating_ip_fixed_ip_address,omitempty"`
 	FloatingIPTrafficDirection   TrafficDirectionType `json:"floating_ip_traffic_direction,omitempty"`
 
-	ProjectRefs                 []*FloatingIPProjectRef                 `json:"project_refs,omitempty"`
 	VirtualMachineInterfaceRefs []*FloatingIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
+	ProjectRefs                 []*FloatingIPProjectRef                 `json:"project_refs,omitempty"`
 }
 
 // FloatingIPProjectRef references each other

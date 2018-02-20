@@ -86,11 +86,6 @@ var FirewallRuleFields = []string{
 // FirewallRuleRefFields is db reference fields for FirewallRule
 var FirewallRuleRefFields = map[string][]string{
 
-	"service_group": {
-	// <common.Schema Value>
-
-	},
-
 	"address_group": {
 	// <common.Schema Value>
 
@@ -102,6 +97,11 @@ var FirewallRuleRefFields = map[string][]string{
 	},
 
 	"virtual_network": {
+	// <common.Schema Value>
+
+	},
+
+	"service_group": {
 	// <common.Schema Value>
 
 	},
@@ -118,13 +118,13 @@ var FirewallRuleParents = []string{
 	"policy_management",
 }
 
-const insertFirewallRuleServiceGroupQuery = "insert into `ref_firewall_rule_service_group` (`from`, `to` ) values (?, ?);"
-
 const insertFirewallRuleAddressGroupQuery = "insert into `ref_firewall_rule_address_group` (`from`, `to` ) values (?, ?);"
 
 const insertFirewallRuleSecurityLoggingObjectQuery = "insert into `ref_firewall_rule_security_logging_object` (`from`, `to` ) values (?, ?);"
 
 const insertFirewallRuleVirtualNetworkQuery = "insert into `ref_firewall_rule_virtual_network` (`from`, `to` ) values (?, ?);"
+
+const insertFirewallRuleServiceGroupQuery = "insert into `ref_firewall_rule_service_group` (`from`, `to` ) values (?, ?);"
 
 // CreateFirewallRule inserts FirewallRule to DB
 func CreateFirewallRule(
@@ -210,32 +210,6 @@ func CreateFirewallRule(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtSecurityLoggingObjectRef, err := tx.Prepare(insertFirewallRuleSecurityLoggingObjectQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing SecurityLoggingObjectRefs create statement failed")
-	}
-	defer stmtSecurityLoggingObjectRef.Close()
-	for _, ref := range model.SecurityLoggingObjectRefs {
-
-		_, err = stmtSecurityLoggingObjectRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "SecurityLoggingObjectRefs create failed")
-		}
-	}
-
-	stmtVirtualNetworkRef, err := tx.Prepare(insertFirewallRuleVirtualNetworkQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
-	}
-	defer stmtVirtualNetworkRef.Close()
-	for _, ref := range model.VirtualNetworkRefs {
-
-		_, err = stmtVirtualNetworkRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs create failed")
-		}
-	}
-
 	stmtServiceGroupRef, err := tx.Prepare(insertFirewallRuleServiceGroupQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ServiceGroupRefs create statement failed")
@@ -259,6 +233,32 @@ func CreateFirewallRule(
 		_, err = stmtAddressGroupRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "AddressGroupRefs create failed")
+		}
+	}
+
+	stmtSecurityLoggingObjectRef, err := tx.Prepare(insertFirewallRuleSecurityLoggingObjectQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing SecurityLoggingObjectRefs create statement failed")
+	}
+	defer stmtSecurityLoggingObjectRef.Close()
+	for _, ref := range model.SecurityLoggingObjectRefs {
+
+		_, err = stmtSecurityLoggingObjectRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "SecurityLoggingObjectRefs create failed")
+		}
+	}
+
+	stmtVirtualNetworkRef, err := tx.Prepare(insertFirewallRuleVirtualNetworkQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
+	}
+	defer stmtVirtualNetworkRef.Close()
+	for _, ref := range model.VirtualNetworkRefs {
+
+		_, err = stmtVirtualNetworkRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs create failed")
 		}
 	}
 
@@ -776,46 +776,6 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	}
 
-	if value, ok := values["ref_security_logging_object"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.FirewallRuleSecurityLoggingObjectRef{}
-			referenceModel.UUID = uuid
-			m.SecurityLoggingObjectRefs = append(m.SecurityLoggingObjectRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_virtual_network"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.FirewallRuleVirtualNetworkRef{}
-			referenceModel.UUID = uuid
-			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_service_group"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -852,6 +812,46 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 			referenceModel := &models.FirewallRuleAddressGroupRef{}
 			referenceModel.UUID = uuid
 			m.AddressGroupRefs = append(m.AddressGroupRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_security_logging_object"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.FirewallRuleSecurityLoggingObjectRef{}
+			referenceModel.UUID = uuid
+			m.SecurityLoggingObjectRefs = append(m.SecurityLoggingObjectRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_network"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.FirewallRuleVirtualNetworkRef{}
+			referenceModel.UUID = uuid
+			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
 
 		}
 	}

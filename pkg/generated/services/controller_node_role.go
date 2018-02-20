@@ -47,13 +47,16 @@ func (service *ContrailService) CreateControllerNodeRole(
 	if model.UUID == "" {
 		model.UUID = uuid.NewV4().String()
 	}
-	if model.FQName == nil {
-		return nil, common.ErrorBadRequest("Missing fq_name")
-	}
-
 	auth := common.GetAuthCTX(ctx)
 	if auth == nil {
 		return nil, common.ErrorUnauthenticated
+	}
+
+	if model.FQName == nil {
+		if model.DisplayName == "" {
+			return nil, common.ErrorBadRequest("Both of FQName and Display Name is empty")
+		}
+		model.FQName = []string{auth.DomainID(), auth.ProjectID(), model.DisplayName}
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()

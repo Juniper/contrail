@@ -35,13 +35,13 @@ type VirtualNetwork struct {
 	MacLimitControl                 *MACLimitControlType      `json:"mac_limit_control,omitempty"`
 	IsShared                        bool                      `json:"is_shared"`
 
+	NetworkIpamRefs           []*VirtualNetworkNetworkIpamRef           `json:"network_ipam_refs,omitempty"`
 	SecurityLoggingObjectRefs []*VirtualNetworkSecurityLoggingObjectRef `json:"security_logging_object_refs,omitempty"`
 	NetworkPolicyRefs         []*VirtualNetworkNetworkPolicyRef         `json:"network_policy_refs,omitempty"`
 	QosConfigRefs             []*VirtualNetworkQosConfigRef             `json:"qos_config_refs,omitempty"`
 	RouteTableRefs            []*VirtualNetworkRouteTableRef            `json:"route_table_refs,omitempty"`
 	VirtualNetworkRefs        []*VirtualNetworkVirtualNetworkRef        `json:"virtual_network_refs,omitempty"`
 	BGPVPNRefs                []*VirtualNetworkBGPVPNRef                `json:"bgpvpn_refs,omitempty"`
-	NetworkIpamRefs           []*VirtualNetworkNetworkIpamRef           `json:"network_ipam_refs,omitempty"`
 
 	AccessControlLists []*AccessControlList `json:"access_control_lists,omitempty"`
 
@@ -52,6 +52,28 @@ type VirtualNetwork struct {
 	FloatingIPPools []*FloatingIPPool `json:"floating_ip_pools,omitempty"`
 
 	RoutingInstances []*RoutingInstance `json:"routing_instances,omitempty"`
+}
+
+// VirtualNetworkVirtualNetworkRef references each other
+type VirtualNetworkVirtualNetworkRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
+// VirtualNetworkBGPVPNRef references each other
+type VirtualNetworkBGPVPNRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
+// VirtualNetworkNetworkIpamRef references each other
+type VirtualNetworkNetworkIpamRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+	Attr *VnSubnetsType
 }
 
 // VirtualNetworkSecurityLoggingObjectRef references each other
@@ -81,28 +103,6 @@ type VirtualNetworkRouteTableRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 
-}
-
-// VirtualNetworkVirtualNetworkRef references each other
-type VirtualNetworkVirtualNetworkRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// VirtualNetworkBGPVPNRef references each other
-type VirtualNetworkBGPVPNRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// VirtualNetworkNetworkIpamRef references each other
-type VirtualNetworkNetworkIpamRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-	Attr *VnSubnetsType
 }
 
 // MakeVirtualNetwork makes VirtualNetwork

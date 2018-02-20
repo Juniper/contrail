@@ -265,14 +265,6 @@ func TestVirtualIP(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var VirtualMachineInterfaceref []interface{}
-	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"virtual_ip_virtual_machine_interface_ref_uuid", "to": []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid"}})
-	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"virtual_ip_virtual_machine_interface_ref_uuid1", "to": []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
-	//
 	//    var LoadbalancerPoolref []interface{}
 	//    LoadbalancerPoolref = append(LoadbalancerPoolref, map[string]interface{}{"operation":"delete", "uuid":"virtual_ip_loadbalancer_pool_ref_uuid", "to": []string{"test", "virtual_ip_loadbalancer_pool_ref_uuid"}})
 	//    LoadbalancerPoolref = append(LoadbalancerPoolref, map[string]interface{}{"operation":"add", "uuid":"virtual_ip_loadbalancer_pool_ref_uuid1", "to": []string{"test", "virtual_ip_loadbalancer_pool_ref_uuid1"}})
@@ -280,6 +272,14 @@ func TestVirtualIP(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "LoadbalancerPoolRefs", ".", LoadbalancerPoolref)
+	//
+	//    var VirtualMachineInterfaceref []interface{}
+	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"virtual_ip_virtual_machine_interface_ref_uuid", "to": []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid"}})
+	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"virtual_ip_virtual_machine_interface_ref_uuid1", "to": []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
@@ -300,47 +300,6 @@ func TestVirtualIP(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_virtual_ip_virtual_machine_interface` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("virtual_ip_dummy_uuid", "virtual_ip_virtual_machine_interface_ref_uuid")
-		_, err = stmt.Exec("virtual_ip_dummy_uuid", "virtual_ip_virtual_machine_interface_ref_uuid1")
-		_, err = stmt.Exec("virtual_ip_dummy_uuid", "virtual_ip_virtual_machine_interface_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualMachineInterface(ctx, tx,
-			&models.DeleteVirtualMachineInterfaceRequest{
-				ID: "virtual_ip_virtual_machine_interface_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref virtual_ip_virtual_machine_interface_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualMachineInterface(ctx, tx,
-			&models.DeleteVirtualMachineInterfaceRequest{
-				ID: "virtual_ip_virtual_machine_interface_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref virtual_ip_virtual_machine_interface_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualMachineInterface(
-			ctx,
-			tx,
-			&models.DeleteVirtualMachineInterfaceRequest{
-				ID: "virtual_ip_virtual_machine_interface_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref virtual_ip_virtual_machine_interface_ref_uuid2 failed", err)
-	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		stmt, err := tx.Prepare("delete from `ref_virtual_ip_loadbalancer_pool` where `from` = ? AND `to` = ?;")
@@ -381,6 +340,47 @@ func TestVirtualIP(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("delete ref virtual_ip_loadbalancer_pool_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_virtual_ip_virtual_machine_interface` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
+		}
+		_, err = stmt.Exec("virtual_ip_dummy_uuid", "virtual_ip_virtual_machine_interface_ref_uuid")
+		_, err = stmt.Exec("virtual_ip_dummy_uuid", "virtual_ip_virtual_machine_interface_ref_uuid1")
+		_, err = stmt.Exec("virtual_ip_dummy_uuid", "virtual_ip_virtual_machine_interface_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteVirtualMachineInterface(ctx, tx,
+			&models.DeleteVirtualMachineInterfaceRequest{
+				ID: "virtual_ip_virtual_machine_interface_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref virtual_ip_virtual_machine_interface_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteVirtualMachineInterface(ctx, tx,
+			&models.DeleteVirtualMachineInterfaceRequest{
+				ID: "virtual_ip_virtual_machine_interface_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref virtual_ip_virtual_machine_interface_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteVirtualMachineInterface(
+			ctx,
+			tx,
+			&models.DeleteVirtualMachineInterfaceRequest{
+				ID: "virtual_ip_virtual_machine_interface_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref virtual_ip_virtual_machine_interface_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

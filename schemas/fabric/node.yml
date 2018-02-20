@@ -52,9 +52,7 @@ schema:
       enum:
       - private
       - virtual
-      - aws
       - container
-      - gcp
       nullable: false
       permission:
       - create
