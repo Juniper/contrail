@@ -11,6 +11,8 @@ log_level: debug
 server:
     read_timeout: 10
     write_timeout: 5
+    # Disable certificate check. DO NOT enbale this in production.
+    no_cert_check: true
 
 # Bind addresss
 address: ":9091"
