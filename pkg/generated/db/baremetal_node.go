@@ -12,12 +12,17 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertBaremetalNodeQuery = "insert into `baremetal_node` (`uuid`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`name`,`memory_mb`,`ipmi_username`,`ipmi_password`,`ipmi_address`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`disk_gb`,`deploy_ramdisk`,`deploy_kernel`,`cpu_count`,`cpu_arch`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const insertBaremetalNodeQuery = "insert into `baremetal_node` (`uuid`,`updated_at`,`target_provision_state`,`target_power_state`,`provision_state`,`power_state`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`name`,`maintenance_reason`,`maintenance`,`last_error`,`instance_uuid`,`vcpus`,`swap_mb`,`root_gb`,`nova_host_id`,`memory_mb`,`local_gb`,`image_source`,`display_name`,`capabilities`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`ipmi_username`,`ipmi_password`,`ipmi_address`,`deploy_ramdisk`,`deploy_kernel`,`_display_name`,`created_at`,`console_enabled`,`bm_properties_memory_mb`,`disk_gb`,`cpu_count`,`cpu_arch`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
 const deleteBaremetalNodeQuery = "delete from `baremetal_node` where uuid = ?"
 
 // BaremetalNodeFields is db columns for BaremetalNode
 var BaremetalNodeFields = []string{
 	"uuid",
+	"updated_at",
+	"target_provision_state",
+	"target_power_state",
+	"provision_state",
+	"power_state",
 	"share",
 	"owner_access",
 	"owner",
@@ -25,10 +30,19 @@ var BaremetalNodeFields = []string{
 	"parent_uuid",
 	"parent_type",
 	"name",
+	"maintenance_reason",
+	"maintenance",
+	"last_error",
+	"instance_uuid",
+	"vcpus",
+	"swap_mb",
+	"root_gb",
+	"nova_host_id",
 	"memory_mb",
-	"ipmi_username",
-	"ipmi_password",
-	"ipmi_address",
+	"local_gb",
+	"image_source",
+	"display_name",
+	"capabilities",
 	"user_visible",
 	"permissions_owner_access",
 	"permissions_owner",
@@ -41,10 +55,16 @@ var BaremetalNodeFields = []string{
 	"creator",
 	"created",
 	"fq_name",
-	"display_name",
-	"disk_gb",
+	"ipmi_username",
+	"ipmi_password",
+	"ipmi_address",
 	"deploy_ramdisk",
 	"deploy_kernel",
+	"_display_name",
+	"created_at",
+	"console_enabled",
+	"bm_properties_memory_mb",
+	"disk_gb",
 	"cpu_count",
 	"cpu_arch",
 	"key_value_pair",
@@ -76,6 +96,11 @@ func CreateBaremetalNode(
 		"query": insertBaremetalNodeQuery,
 	}).Debug("create query")
 	_, err = stmt.ExecContext(ctx, string(model.UUID),
+		string(model.UpdatedAt),
+		string(model.TargetProvisionState),
+		string(model.TargetPowerState),
+		string(model.ProvisionState),
+		string(model.PowerState),
 		common.MustJSON(model.Perms2.Share),
 		int(model.Perms2.OwnerAccess),
 		string(model.Perms2.Owner),
@@ -83,10 +108,19 @@ func CreateBaremetalNode(
 		string(model.ParentUUID),
 		string(model.ParentType),
 		string(model.Name),
-		int(model.MemoryMB),
-		string(model.IpmiUsername),
-		string(model.IpmiPassword),
-		string(model.IpmiAddress),
+		string(model.MaintenanceReason),
+		bool(model.Maintenance),
+		string(model.LastError),
+		string(model.InstanceUUID),
+		string(model.InstanceInfo.Vcpus),
+		string(model.InstanceInfo.SwapMB),
+		string(model.InstanceInfo.RootGB),
+		string(model.InstanceInfo.NovaHostID),
+		string(model.InstanceInfo.MemoryMB),
+		string(model.InstanceInfo.LocalGB),
+		string(model.InstanceInfo.ImageSource),
+		string(model.InstanceInfo.DisplayName),
+		string(model.InstanceInfo.Capabilities),
 		bool(model.IDPerms.UserVisible),
 		int(model.IDPerms.Permissions.OwnerAccess),
 		string(model.IDPerms.Permissions.Owner),
@@ -99,12 +133,18 @@ func CreateBaremetalNode(
 		string(model.IDPerms.Creator),
 		string(model.IDPerms.Created),
 		common.MustJSON(model.FQName),
+		string(model.DriverInfo.IpmiUsername),
+		string(model.DriverInfo.IpmiPassword),
+		string(model.DriverInfo.IpmiAddress),
+		string(model.DriverInfo.DeployRamdisk),
+		string(model.DriverInfo.DeployKernel),
 		string(model.DisplayName),
-		int(model.DiskGB),
-		string(model.DeployRamdisk),
-		string(model.DeployKernel),
-		int(model.CPUCount),
-		string(model.CPUArch),
+		string(model.CreatedAt),
+		bool(model.ConsoleEnabled),
+		int(model.BMProperties.MemoryMB),
+		int(model.BMProperties.DiskGB),
+		int(model.BMProperties.CPUCount),
+		string(model.BMProperties.CPUArch),
 		common.MustJSON(model.Annotations.KeyValuePair))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -137,6 +177,46 @@ func scanBaremetalNode(values map[string]interface{}) (*models.BaremetalNode, er
 		castedValue := common.InterfaceToString(value)
 
 		m.UUID = castedValue
+
+	}
+
+	if value, ok := values["updated_at"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.UpdatedAt = castedValue
+
+	}
+
+	if value, ok := values["target_provision_state"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.TargetProvisionState = castedValue
+
+	}
+
+	if value, ok := values["target_power_state"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.TargetPowerState = castedValue
+
+	}
+
+	if value, ok := values["provision_state"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.ProvisionState = castedValue
+
+	}
+
+	if value, ok := values["power_state"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.PowerState = castedValue
 
 	}
 
@@ -194,35 +274,107 @@ func scanBaremetalNode(values map[string]interface{}) (*models.BaremetalNode, er
 
 	}
 
+	if value, ok := values["maintenance_reason"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.MaintenanceReason = castedValue
+
+	}
+
+	if value, ok := values["maintenance"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.Maintenance = castedValue
+
+	}
+
+	if value, ok := values["last_error"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.LastError = castedValue
+
+	}
+
+	if value, ok := values["instance_uuid"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.InstanceUUID = castedValue
+
+	}
+
+	if value, ok := values["vcpus"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.InstanceInfo.Vcpus = castedValue
+
+	}
+
+	if value, ok := values["swap_mb"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.InstanceInfo.SwapMB = castedValue
+
+	}
+
+	if value, ok := values["root_gb"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.InstanceInfo.RootGB = castedValue
+
+	}
+
+	if value, ok := values["nova_host_id"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.InstanceInfo.NovaHostID = castedValue
+
+	}
+
 	if value, ok := values["memory_mb"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.MemoryMB = castedValue
+		m.InstanceInfo.MemoryMB = castedValue
 
 	}
 
-	if value, ok := values["ipmi_username"]; ok {
+	if value, ok := values["local_gb"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IpmiUsername = castedValue
+		m.InstanceInfo.LocalGB = castedValue
 
 	}
 
-	if value, ok := values["ipmi_password"]; ok {
+	if value, ok := values["image_source"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IpmiPassword = castedValue
+		m.InstanceInfo.ImageSource = castedValue
 
 	}
 
-	if value, ok := values["ipmi_address"]; ok {
+	if value, ok := values["display_name"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.IpmiAddress = castedValue
+		m.InstanceInfo.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["capabilities"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.InstanceInfo.Capabilities = castedValue
 
 	}
 
@@ -320,19 +472,27 @@ func scanBaremetalNode(values map[string]interface{}) (*models.BaremetalNode, er
 
 	}
 
-	if value, ok := values["display_name"]; ok {
+	if value, ok := values["ipmi_username"]; ok {
 
 		castedValue := common.InterfaceToString(value)
 
-		m.DisplayName = castedValue
+		m.DriverInfo.IpmiUsername = castedValue
 
 	}
 
-	if value, ok := values["disk_gb"]; ok {
+	if value, ok := values["ipmi_password"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
+		castedValue := common.InterfaceToString(value)
 
-		m.DiskGB = castedValue
+		m.DriverInfo.IpmiPassword = castedValue
+
+	}
+
+	if value, ok := values["ipmi_address"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DriverInfo.IpmiAddress = castedValue
 
 	}
 
@@ -340,7 +500,7 @@ func scanBaremetalNode(values map[string]interface{}) (*models.BaremetalNode, er
 
 		castedValue := common.InterfaceToString(value)
 
-		m.DeployRamdisk = castedValue
+		m.DriverInfo.DeployRamdisk = castedValue
 
 	}
 
@@ -348,7 +508,47 @@ func scanBaremetalNode(values map[string]interface{}) (*models.BaremetalNode, er
 
 		castedValue := common.InterfaceToString(value)
 
-		m.DeployKernel = castedValue
+		m.DriverInfo.DeployKernel = castedValue
+
+	}
+
+	if value, ok := values["_display_name"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.DisplayName = castedValue
+
+	}
+
+	if value, ok := values["created_at"]; ok {
+
+		castedValue := common.InterfaceToString(value)
+
+		m.CreatedAt = castedValue
+
+	}
+
+	if value, ok := values["console_enabled"]; ok {
+
+		castedValue := common.InterfaceToBool(value)
+
+		m.ConsoleEnabled = castedValue
+
+	}
+
+	if value, ok := values["bm_properties_memory_mb"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.BMProperties.MemoryMB = castedValue
+
+	}
+
+	if value, ok := values["disk_gb"]; ok {
+
+		castedValue := common.InterfaceToInt(value)
+
+		m.BMProperties.DiskGB = castedValue
 
 	}
 
@@ -356,7 +556,7 @@ func scanBaremetalNode(values map[string]interface{}) (*models.BaremetalNode, er
 
 		castedValue := common.InterfaceToInt(value)
 
-		m.CPUCount = castedValue
+		m.BMProperties.CPUCount = castedValue
 
 	}
 
@@ -364,7 +564,7 @@ func scanBaremetalNode(values map[string]interface{}) (*models.BaremetalNode, er
 
 		castedValue := common.InterfaceToString(value)
 
-		m.CPUArch = castedValue
+		m.BMProperties.CPUArch = castedValue
 
 	}
 

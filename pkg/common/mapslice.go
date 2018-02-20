@@ -1,6 +1,11 @@
 package common
 
-import yaml "gopkg.in/yaml.v2"
+import (
+	"fmt"
+
+	log "github.com/sirupsen/logrus"
+	yaml "gopkg.in/yaml.v2"
+)
 
 type mapSlice yaml.MapSlice
 
@@ -84,6 +89,9 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 	schema.OrderedProperties = []*JSONSchema{}
 	for _, property := range properties {
 		key := property.Key.(string)
+		if property.Value == nil {
+			log.Fatal(fmt.Sprintf("Property is null on key %s", key))
+		}
 		propertySchema := mapSlice(property.Value.(yaml.MapSlice)).JSONSchema()
 		propertySchema.ID = key
 		schema.Properties[key] = propertySchema

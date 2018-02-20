@@ -526,6 +526,18 @@ rpc CreateDashboard (github.com.Juniper.contrail.pkg.generated.models.CreateDash
 rpc UpdateDashboard (github.com.Juniper.contrail.pkg.generated.models.UpdateDashboardRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateDashboardResponse);
 rpc DeleteDashboard (github.com.Juniper.contrail.pkg.generated.models.DeleteDashboardRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteDashboardResponse);
 
+rpc GetFlavor (github.com.Juniper.contrail.pkg.generated.models.GetFlavorRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetFlavorResponse);
+rpc ListFlavor (github.com.Juniper.contrail.pkg.generated.models.ListFlavorRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListFlavorResponse);
+rpc CreateFlavor (github.com.Juniper.contrail.pkg.generated.models.CreateFlavorRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateFlavorResponse);
+rpc UpdateFlavor (github.com.Juniper.contrail.pkg.generated.models.UpdateFlavorRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateFlavorResponse);
+rpc DeleteFlavor (github.com.Juniper.contrail.pkg.generated.models.DeleteFlavorRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteFlavorResponse);
+
+rpc GetOsImage (github.com.Juniper.contrail.pkg.generated.models.GetOsImageRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetOsImageResponse);
+rpc ListOsImage (github.com.Juniper.contrail.pkg.generated.models.ListOsImageRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListOsImageResponse);
+rpc CreateOsImage (github.com.Juniper.contrail.pkg.generated.models.CreateOsImageRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateOsImageResponse);
+rpc UpdateOsImage (github.com.Juniper.contrail.pkg.generated.models.UpdateOsImageRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateOsImageResponse);
+rpc DeleteOsImage (github.com.Juniper.contrail.pkg.generated.models.DeleteOsImageRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteOsImageResponse);
+
 rpc GetKeypair (github.com.Juniper.contrail.pkg.generated.models.GetKeypairRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetKeypairResponse);
 rpc ListKeypair (github.com.Juniper.contrail.pkg.generated.models.ListKeypairRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListKeypairResponse);
 rpc CreateKeypair (github.com.Juniper.contrail.pkg.generated.models.CreateKeypairRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateKeypairResponse);
@@ -573,6 +585,12 @@ rpc ListOpenstackStorageNodeRole (github.com.Juniper.contrail.pkg.generated.mode
 rpc CreateOpenstackStorageNodeRole (github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackStorageNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackStorageNodeRoleResponse);
 rpc UpdateOpenstackStorageNodeRole (github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackStorageNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackStorageNodeRoleResponse);
 rpc DeleteOpenstackStorageNodeRole (github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackStorageNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackStorageNodeRoleResponse);
+
+rpc GetServer (github.com.Juniper.contrail.pkg.generated.models.GetServerRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetServerResponse);
+rpc ListServer (github.com.Juniper.contrail.pkg.generated.models.ListServerRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListServerResponse);
+rpc CreateServer (github.com.Juniper.contrail.pkg.generated.models.CreateServerRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateServerResponse);
+rpc UpdateServer (github.com.Juniper.contrail.pkg.generated.models.UpdateServerRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateServerResponse);
+rpc DeleteServer (github.com.Juniper.contrail.pkg.generated.models.DeleteServerRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteServerResponse);
 
 rpc GetVPNGroup (github.com.Juniper.contrail.pkg.generated.models.GetVPNGroupRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetVPNGroupResponse);
 rpc ListVPNGroup (github.com.Juniper.contrail.pkg.generated.models.ListVPNGroupRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListVPNGroupResponse);

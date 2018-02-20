@@ -59,19 +59,11 @@ func TestBaremetalPort(t *testing.T) {
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".SwitchInfo", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".SwitchID", ".", "test")
+	//    common.SetValueByPath(updateMap, ".UpdatedAt", ".", "test")
 	//
 	//
 	//
 	//    common.SetValueByPath(updateMap, ".PxeEnabled", ".", true)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".PortID", ".", "test")
 	//
 	//
 	//
@@ -110,6 +102,18 @@ func TestBaremetalPort(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, ".MacAddress", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".LocalLinkConnection.SwitchInfo", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".LocalLinkConnection.SwitchID", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".LocalLinkConnection.PortID", ".", "test")
 	//
 	//
 	//
@@ -168,6 +172,10 @@ func TestBaremetalPort(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, ".DisplayName", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".CreatedAt", ".", "test")
 	//
 	//
 	//

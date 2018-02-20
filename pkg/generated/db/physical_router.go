@@ -76,17 +76,17 @@ var PhysicalRouterFields = []string{
 // PhysicalRouterRefFields is db reference fields for PhysicalRouter
 var PhysicalRouterRefFields = map[string][]string{
 
+	"virtual_network": {
+	// <common.Schema Value>
+
+	},
+
 	"bgp_router": {
 	// <common.Schema Value>
 
 	},
 
 	"virtual_router": {
-	// <common.Schema Value>
-
-	},
-
-	"virtual_network": {
 	// <common.Schema Value>
 
 	},
@@ -155,11 +155,11 @@ var PhysicalRouterParents = []string{
 	"location",
 }
 
-const insertPhysicalRouterVirtualRouterQuery = "insert into `ref_physical_router_virtual_router` (`from`, `to` ) values (?, ?);"
-
 const insertPhysicalRouterVirtualNetworkQuery = "insert into `ref_physical_router_virtual_network` (`from`, `to` ) values (?, ?);"
 
 const insertPhysicalRouterBGPRouterQuery = "insert into `ref_physical_router_bgp_router` (`from`, `to` ) values (?, ?);"
+
+const insertPhysicalRouterVirtualRouterQuery = "insert into `ref_physical_router_virtual_router` (`from`, `to` ) values (?, ?);"
 
 // CreatePhysicalRouter inserts PhysicalRouter to DB
 func CreatePhysicalRouter(

@@ -28,13 +28,20 @@ type PhysicalRouter struct {
 	PhysicalRouterDataplaneIP       string              `json:"physical_router_dataplane_ip,omitempty"`
 	PhysicalRouterJunosServicePorts *JunosServicePorts  `json:"physical_router_junos_service_ports,omitempty"`
 
+	VirtualNetworkRefs []*PhysicalRouterVirtualNetworkRef `json:"virtual_network_refs,omitempty"`
 	BGPRouterRefs      []*PhysicalRouterBGPRouterRef      `json:"bgp_router_refs,omitempty"`
 	VirtualRouterRefs  []*PhysicalRouterVirtualRouterRef  `json:"virtual_router_refs,omitempty"`
-	VirtualNetworkRefs []*PhysicalRouterVirtualNetworkRef `json:"virtual_network_refs,omitempty"`
 
 	LogicalInterfaces []*LogicalInterface `json:"logical_interfaces,omitempty"`
 
 	PhysicalInterfaces []*PhysicalInterface `json:"physical_interfaces,omitempty"`
+}
+
+// PhysicalRouterVirtualRouterRef references each other
+type PhysicalRouterVirtualRouterRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
 }
 
 // PhysicalRouterVirtualNetworkRef references each other
@@ -46,13 +53,6 @@ type PhysicalRouterVirtualNetworkRef struct {
 
 // PhysicalRouterBGPRouterRef references each other
 type PhysicalRouterBGPRouterRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// PhysicalRouterVirtualRouterRef references each other
-type PhysicalRouterVirtualRouterRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 

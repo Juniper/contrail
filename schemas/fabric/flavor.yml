@@ -10,46 +10,41 @@ schema:
       description: The display name of a flavor
       type: string
       nullable: false
-      permissions:
-      - create
-      - update
     disk:
       description: The size of the root disk that will be created in GiB
-      type: string
-      nullable: false
-      permissions:
-      - create
-      - update
+      type: integer
     vcpus:
-      description:The number of virtual CPUs that will be allocated to the server
-      type: string
-      nullable: false
-      permissions:
-      - create
-      - update
+      description: The number of virtual CPUs that will be allocated to the server
+      type: integer
     ram:
       description: The amount of RAM a flavor has, in MiB
-      type: string
-      nullable: false
-      permissions:
-      - create
-      - update
+      type: integer
     id:
       description: The ID of the flavor, if not provided UUID will be auto-generated
       type: string
-      nullable: false
-      permissions:
-      - create
-      - update
     property:
       description: Extra specs needed to boot the image
       type: string
-      nullable: false
-      permissions:
-      - create
-      - update
+    rxtx_factor:
+      description: The receive / transmit factor (as a float) that will be set on ports if the network backend supports the QOS extension. Otherwise it will be ignored. It defaults to 1.0.
+      type: integer
+    swap:
+      description: The size of a dedicated swap disk that will be allocated, in MiB. If 0 (the default), no dedicated swap disk will be created.
+      type: integer
+    is_public :
+      description: Whether the flavor is public
+      default: True
+      type: boolean
+    ephemeral:
+      description: The size of the ephemeral disk that will be created, in GiB
+      default: 0
+      type: integer
+    links:
+      description: links for the image for server instance
+      presence: "optional"
+      $ref: "openstack_types.json#/definitions/OpenStackLink"
   required: []
   type: object
 singular: flavor
 title: Flavors for the Baremetal or Virtual Machine
-type: "" 
+type: "object" 

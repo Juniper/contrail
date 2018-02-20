@@ -202,11 +202,11 @@ func TestRoutingPolicy(t *testing.T) {
 	//
 	//
 	//
-	//    common.SetValueByPath(ServiceInstanceAttr, ".RightSequence", ".", "test")
-	//
-	//
-	//
 	//    common.SetValueByPath(ServiceInstanceAttr, ".LeftSequence", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(ServiceInstanceAttr, ".RightSequence", ".", "test")
 	//
 	//
 	//

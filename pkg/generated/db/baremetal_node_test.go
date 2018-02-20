@@ -59,6 +59,26 @@ func TestBaremetalNode(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(updateMap, ".UpdatedAt", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".TargetProvisionState", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".TargetPowerState", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".ProvisionState", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".PowerState", ".", "test")
+	//
+	//
+	//
 	//    if ".Perms2.Share" == ".Perms2.Share" {
 	//        var share []interface{}
 	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
@@ -93,19 +113,55 @@ func TestBaremetalNode(t *testing.T) {
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".MemoryMB", ".", 1.0)
+	//    common.SetValueByPath(updateMap, ".MaintenanceReason", ".", "test")
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".IpmiUsername", ".", "test")
+	//    common.SetValueByPath(updateMap, ".Maintenance", ".", true)
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".IpmiPassword", ".", "test")
+	//    common.SetValueByPath(updateMap, ".LastError", ".", "test")
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".IpmiAddress", ".", "test")
+	//    common.SetValueByPath(updateMap, ".InstanceUUID", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".InstanceInfo.Vcpus", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".InstanceInfo.SwapMB", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".InstanceInfo.RootGB", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".InstanceInfo.NovaHostID", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".InstanceInfo.MemoryMB", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".InstanceInfo.LocalGB", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".InstanceInfo.ImageSource", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".InstanceInfo.DisplayName", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".InstanceInfo.Capabilities", ".", "test")
 	//
 	//
 	//
@@ -163,27 +219,51 @@ func TestBaremetalNode(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(updateMap, ".DriverInfo.IpmiUsername", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".DriverInfo.IpmiPassword", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".DriverInfo.IpmiAddress", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".DriverInfo.DeployRamdisk", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".DriverInfo.DeployKernel", ".", "test")
+	//
+	//
+	//
 	//    common.SetValueByPath(updateMap, ".DisplayName", ".", "test")
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".DiskGB", ".", 1.0)
+	//    common.SetValueByPath(updateMap, ".CreatedAt", ".", "test")
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".DeployRamdisk", ".", "test")
+	//    common.SetValueByPath(updateMap, ".ConsoleEnabled", ".", true)
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".DeployKernel", ".", "test")
+	//    common.SetValueByPath(updateMap, ".BMProperties.MemoryMB", ".", 1.0)
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".CPUCount", ".", 1.0)
+	//    common.SetValueByPath(updateMap, ".BMProperties.DiskGB", ".", 1.0)
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".CPUArch", ".", "test")
+	//    common.SetValueByPath(updateMap, ".BMProperties.CPUCount", ".", 1.0)
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".BMProperties.CPUArch", ".", "test")
 	//
 	//
 	//
