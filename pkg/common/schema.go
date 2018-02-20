@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -316,6 +317,9 @@ func (s *JSONSchema) resolveGoName(name string) error {
 		return nil
 	}
 	s.GoName = SnakeToCamel(name)
+	if s.GoName == "Size" {
+		s.GoName = "Size_"
+	}
 	goType := s.getRefType()
 	protoType := ""
 	protoCastType := ""
@@ -427,6 +431,10 @@ func (api *API) loadType(schemaFile, typeName string) (*JSONSchema, error) {
 	}
 	definitions := api.definitionByFileName(schemaFile)
 	if definitions == nil {
+		log.Info("hoge!!!")
+		for _, d := range api.Definitions {
+			log.Info(d.FileName)
+		}
 		return nil, fmt.Errorf("Can't find file for %s", schemaFile)
 	}
 	definition, ok := definitions.Definitions[typeName]
@@ -615,12 +623,13 @@ func MakeAPI(dir string) (*API, error) {
 		var schema Schema
 		err = LoadFile(path, &schema)
 		if err != nil {
+			log.Warn(fmt.Sprintf("[%s] %s", path, err))
 			return nil
 		}
-		schema.FileName = strings.Replace(filepath.Base(path), ".yml", ".json", 1)
 		if &schema == nil {
 			return nil
 		}
+		schema.FileName = strings.Replace(filepath.Base(path), ".yml", ".json", 1)
 		schema.JSONSchema = mapSlice(schema.JSONSchemaSlice).JSONSchema()
 		schema.Definitions = map[string]*JSONSchema{}
 		for key, definitionSlice := range schema.DefinitionsSlice {
@@ -631,7 +640,9 @@ func MakeAPI(dir string) (*API, error) {
 		if schema.ID != "" {
 			api.Schemas = append(api.Schemas, &schema)
 		}
-		api.Definitions = append(api.Definitions, &schema)
+		if len(schema.Definitions) > 0 {
+			api.Definitions = append(api.Definitions, &schema)
+		}
 		return nil
 	})
 

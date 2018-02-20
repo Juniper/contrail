@@ -16,27 +16,13 @@ type LogicalRouter struct {
 	VxlanNetworkIdentifier    string           `json:"vxlan_network_identifier,omitempty"`
 	ConfiguredRouteTargetList *RouteTargetList `json:"configured_route_target_list,omitempty"`
 
-	VirtualNetworkRefs          []*LogicalRouterVirtualNetworkRef          `json:"virtual_network_refs,omitempty"`
-	PhysicalRouterRefs          []*LogicalRouterPhysicalRouterRef          `json:"physical_router_refs,omitempty"`
-	BGPVPNRefs                  []*LogicalRouterBGPVPNRef                  `json:"bgpvpn_refs,omitempty"`
 	RouteTargetRefs             []*LogicalRouterRouteTargetRef             `json:"route_target_refs,omitempty"`
 	VirtualMachineInterfaceRefs []*LogicalRouterVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 	ServiceInstanceRefs         []*LogicalRouterServiceInstanceRef         `json:"service_instance_refs,omitempty"`
 	RouteTableRefs              []*LogicalRouterRouteTableRef              `json:"route_table_refs,omitempty"`
-}
-
-// LogicalRouterBGPVPNRef references each other
-type LogicalRouterBGPVPNRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// LogicalRouterRouteTargetRef references each other
-type LogicalRouterRouteTargetRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
+	VirtualNetworkRefs          []*LogicalRouterVirtualNetworkRef          `json:"virtual_network_refs,omitempty"`
+	PhysicalRouterRefs          []*LogicalRouterPhysicalRouterRef          `json:"physical_router_refs,omitempty"`
+	BGPVPNRefs                  []*LogicalRouterBGPVPNRef                  `json:"bgpvpn_refs,omitempty"`
 }
 
 // LogicalRouterVirtualMachineInterfaceRef references each other
@@ -69,6 +55,20 @@ type LogicalRouterVirtualNetworkRef struct {
 
 // LogicalRouterPhysicalRouterRef references each other
 type LogicalRouterPhysicalRouterRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
+// LogicalRouterBGPVPNRef references each other
+type LogicalRouterBGPVPNRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
+// LogicalRouterRouteTargetRef references each other
+type LogicalRouterRouteTargetRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 

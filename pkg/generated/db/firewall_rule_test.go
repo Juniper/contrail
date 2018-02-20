@@ -554,47 +554,6 @@ func TestFirewallRule(t *testing.T) {
 	//Delete ref entries, referred objects
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_firewall_rule_address_group` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing AddressGroupRefs delete statement failed")
-		}
-		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_address_group_ref_uuid")
-		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_address_group_ref_uuid1")
-		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_address_group_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "AddressGroupRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteAddressGroup(ctx, tx,
-			&models.DeleteAddressGroupRequest{
-				ID: "firewall_rule_address_group_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref firewall_rule_address_group_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteAddressGroup(ctx, tx,
-			&models.DeleteAddressGroupRequest{
-				ID: "firewall_rule_address_group_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref firewall_rule_address_group_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteAddressGroup(
-			ctx,
-			tx,
-			&models.DeleteAddressGroupRequest{
-				ID: "firewall_rule_address_group_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref firewall_rule_address_group_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		stmt, err := tx.Prepare("delete from `ref_firewall_rule_security_logging_object` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing SecurityLoggingObjectRefs delete statement failed")
@@ -715,6 +674,47 @@ func TestFirewallRule(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("delete ref firewall_rule_service_group_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_firewall_rule_address_group` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing AddressGroupRefs delete statement failed")
+		}
+		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_address_group_ref_uuid")
+		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_address_group_ref_uuid1")
+		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_address_group_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "AddressGroupRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteAddressGroup(ctx, tx,
+			&models.DeleteAddressGroupRequest{
+				ID: "firewall_rule_address_group_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref firewall_rule_address_group_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteAddressGroup(ctx, tx,
+			&models.DeleteAddressGroupRequest{
+				ID: "firewall_rule_address_group_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref firewall_rule_address_group_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteAddressGroup(
+			ctx,
+			tx,
+			&models.DeleteAddressGroupRequest{
+				ID: "firewall_rule_address_group_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref firewall_rule_address_group_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

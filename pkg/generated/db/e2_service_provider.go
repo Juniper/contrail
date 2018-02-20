@@ -107,19 +107,6 @@ func CreateE2ServiceProvider(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtPeeringPolicyRef, err := tx.Prepare(insertE2ServiceProviderPeeringPolicyQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing PeeringPolicyRefs create statement failed")
-	}
-	defer stmtPeeringPolicyRef.Close()
-	for _, ref := range model.PeeringPolicyRefs {
-
-		_, err = stmtPeeringPolicyRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "PeeringPolicyRefs create failed")
-		}
-	}
-
 	stmtPhysicalRouterRef, err := tx.Prepare(insertE2ServiceProviderPhysicalRouterQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing PhysicalRouterRefs create statement failed")
@@ -130,6 +117,19 @@ func CreateE2ServiceProvider(
 		_, err = stmtPhysicalRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PhysicalRouterRefs create failed")
+		}
+	}
+
+	stmtPeeringPolicyRef, err := tx.Prepare(insertE2ServiceProviderPeeringPolicyQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing PeeringPolicyRefs create statement failed")
+	}
+	defer stmtPeeringPolicyRef.Close()
+	for _, ref := range model.PeeringPolicyRefs {
+
+		_, err = stmtPeeringPolicyRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "PeeringPolicyRefs create failed")
 		}
 	}
 

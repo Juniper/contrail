@@ -54,6 +54,20 @@ type VirtualNetwork struct {
 	RoutingInstances []*RoutingInstance `json:"routing_instances,omitempty"`
 }
 
+// VirtualNetworkQosConfigRef references each other
+type VirtualNetworkQosConfigRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
+// VirtualNetworkRouteTableRef references each other
+type VirtualNetworkRouteTableRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
 // VirtualNetworkVirtualNetworkRef references each other
 type VirtualNetworkVirtualNetworkRef struct {
 	UUID string   `json:"uuid"`
@@ -89,20 +103,6 @@ type VirtualNetworkNetworkPolicyRef struct {
 	To   []string `json:"to"` //FQDN
 
 	Attr *VirtualNetworkPolicyType
-}
-
-// VirtualNetworkQosConfigRef references each other
-type VirtualNetworkQosConfigRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// VirtualNetworkRouteTableRef references each other
-type VirtualNetworkRouteTableRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
 }
 
 // MakeVirtualNetwork makes VirtualNetwork

@@ -20,15 +20,15 @@ type AliasIP struct {
 	VirtualMachineInterfaceRefs []*AliasIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 }
 
-// AliasIPProjectRef references each other
-type AliasIPProjectRef struct {
+// AliasIPVirtualMachineInterfaceRef references each other
+type AliasIPVirtualMachineInterfaceRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 
 }
 
-// AliasIPVirtualMachineInterfaceRef references each other
-type AliasIPVirtualMachineInterfaceRef struct {
+// AliasIPProjectRef references each other
+type AliasIPProjectRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 

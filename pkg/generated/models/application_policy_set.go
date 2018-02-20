@@ -19,19 +19,19 @@ type ApplicationPolicySet struct {
 	GlobalVrouterConfigRefs []*ApplicationPolicySetGlobalVrouterConfigRef `json:"global_vrouter_config_refs,omitempty"`
 }
 
+// ApplicationPolicySetGlobalVrouterConfigRef references each other
+type ApplicationPolicySetGlobalVrouterConfigRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
 // ApplicationPolicySetFirewallPolicyRef references each other
 type ApplicationPolicySetFirewallPolicyRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 
 	Attr *FirewallSequence
-}
-
-// ApplicationPolicySetGlobalVrouterConfigRef references each other
-type ApplicationPolicySetGlobalVrouterConfigRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
 }
 
 // MakeApplicationPolicySet makes ApplicationPolicySet
