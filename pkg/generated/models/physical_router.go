@@ -28,9 +28,9 @@ type PhysicalRouter struct {
 	PhysicalRouterDataplaneIP       string              `json:"physical_router_dataplane_ip,omitempty"`
 	PhysicalRouterJunosServicePorts *JunosServicePorts  `json:"physical_router_junos_service_ports,omitempty"`
 
-	VirtualNetworkRefs []*PhysicalRouterVirtualNetworkRef `json:"virtual_network_refs,omitempty"`
 	BGPRouterRefs      []*PhysicalRouterBGPRouterRef      `json:"bgp_router_refs,omitempty"`
 	VirtualRouterRefs  []*PhysicalRouterVirtualRouterRef  `json:"virtual_router_refs,omitempty"`
+	VirtualNetworkRefs []*PhysicalRouterVirtualNetworkRef `json:"virtual_network_refs,omitempty"`
 
 	LogicalInterfaces []*LogicalInterface `json:"logical_interfaces,omitempty"`
 

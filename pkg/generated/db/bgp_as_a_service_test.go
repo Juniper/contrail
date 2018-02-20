@@ -35,37 +35,6 @@ func TestBGPAsAService(t *testing.T) {
 
 	// Create referred objects
 
-	var VirtualMachineInterfacecreateref []*models.BGPAsAServiceVirtualMachineInterfaceRef
-	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
-	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
-	VirtualMachineInterfacerefModel.UUID = "bgp_as_a_service_virtual_machine_interface_ref_uuid"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualMachineInterface(ctx, tx, &models.CreateVirtualMachineInterfaceRequest{
-			VirtualMachineInterface: VirtualMachineInterfacerefModel,
-		})
-	})
-	VirtualMachineInterfacerefModel.UUID = "bgp_as_a_service_virtual_machine_interface_ref_uuid1"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualMachineInterface(ctx, tx, &models.CreateVirtualMachineInterfaceRequest{
-			VirtualMachineInterface: VirtualMachineInterfacerefModel,
-		})
-	})
-	VirtualMachineInterfacerefModel.UUID = "bgp_as_a_service_virtual_machine_interface_ref_uuid2"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualMachineInterface(ctx, tx, &models.CreateVirtualMachineInterfaceRequest{
-			VirtualMachineInterface: VirtualMachineInterfacerefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.BGPAsAServiceVirtualMachineInterfaceRef{UUID: "bgp_as_a_service_virtual_machine_interface_ref_uuid", To: []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid"}})
-	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.BGPAsAServiceVirtualMachineInterfaceRef{UUID: "bgp_as_a_service_virtual_machine_interface_ref_uuid2", To: []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid2"}})
-	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
-
 	var ServiceHealthCheckcreateref []*models.BGPAsAServiceServiceHealthCheckRef
 	var ServiceHealthCheckrefModel *models.ServiceHealthCheck
 	ServiceHealthCheckrefModel = models.MakeServiceHealthCheck()
@@ -96,6 +65,37 @@ func TestBGPAsAService(t *testing.T) {
 	ServiceHealthCheckcreateref = append(ServiceHealthCheckcreateref, &models.BGPAsAServiceServiceHealthCheckRef{UUID: "bgp_as_a_service_service_health_check_ref_uuid", To: []string{"test", "bgp_as_a_service_service_health_check_ref_uuid"}})
 	ServiceHealthCheckcreateref = append(ServiceHealthCheckcreateref, &models.BGPAsAServiceServiceHealthCheckRef{UUID: "bgp_as_a_service_service_health_check_ref_uuid2", To: []string{"test", "bgp_as_a_service_service_health_check_ref_uuid2"}})
 	model.ServiceHealthCheckRefs = ServiceHealthCheckcreateref
+
+	var VirtualMachineInterfacecreateref []*models.BGPAsAServiceVirtualMachineInterfaceRef
+	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
+	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
+	VirtualMachineInterfacerefModel.UUID = "bgp_as_a_service_virtual_machine_interface_ref_uuid"
+	VirtualMachineInterfacerefModel.FQName = []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateVirtualMachineInterface(ctx, tx, &models.CreateVirtualMachineInterfaceRequest{
+			VirtualMachineInterface: VirtualMachineInterfacerefModel,
+		})
+	})
+	VirtualMachineInterfacerefModel.UUID = "bgp_as_a_service_virtual_machine_interface_ref_uuid1"
+	VirtualMachineInterfacerefModel.FQName = []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid1"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateVirtualMachineInterface(ctx, tx, &models.CreateVirtualMachineInterfaceRequest{
+			VirtualMachineInterface: VirtualMachineInterfacerefModel,
+		})
+	})
+	VirtualMachineInterfacerefModel.UUID = "bgp_as_a_service_virtual_machine_interface_ref_uuid2"
+	VirtualMachineInterfacerefModel.FQName = []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid2"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateVirtualMachineInterface(ctx, tx, &models.CreateVirtualMachineInterfaceRequest{
+			VirtualMachineInterface: VirtualMachineInterfacerefModel,
+		})
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.BGPAsAServiceVirtualMachineInterfaceRef{UUID: "bgp_as_a_service_virtual_machine_interface_ref_uuid", To: []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid"}})
+	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.BGPAsAServiceVirtualMachineInterfaceRef{UUID: "bgp_as_a_service_virtual_machine_interface_ref_uuid2", To: []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid2"}})
+	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -286,47 +286,6 @@ func TestBGPAsAService(t *testing.T) {
 	//Delete ref entries, referred objects
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_bgp_as_a_service_virtual_machine_interface` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_virtual_machine_interface_ref_uuid")
-		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_virtual_machine_interface_ref_uuid1")
-		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_virtual_machine_interface_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualMachineInterface(ctx, tx,
-			&models.DeleteVirtualMachineInterfaceRequest{
-				ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref bgp_as_a_service_virtual_machine_interface_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualMachineInterface(ctx, tx,
-			&models.DeleteVirtualMachineInterfaceRequest{
-				ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref bgp_as_a_service_virtual_machine_interface_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualMachineInterface(
-			ctx,
-			tx,
-			&models.DeleteVirtualMachineInterfaceRequest{
-				ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref bgp_as_a_service_virtual_machine_interface_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		stmt, err := tx.Prepare("delete from `ref_bgp_as_a_service_service_health_check` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing ServiceHealthCheckRefs delete statement failed")
@@ -365,6 +324,47 @@ func TestBGPAsAService(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("delete ref bgp_as_a_service_service_health_check_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_bgp_as_a_service_virtual_machine_interface` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
+		}
+		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_virtual_machine_interface_ref_uuid")
+		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_virtual_machine_interface_ref_uuid1")
+		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_virtual_machine_interface_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteVirtualMachineInterface(ctx, tx,
+			&models.DeleteVirtualMachineInterfaceRequest{
+				ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref bgp_as_a_service_virtual_machine_interface_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteVirtualMachineInterface(ctx, tx,
+			&models.DeleteVirtualMachineInterfaceRequest{
+				ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref bgp_as_a_service_virtual_machine_interface_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteVirtualMachineInterface(
+			ctx,
+			tx,
+			&models.DeleteVirtualMachineInterfaceRequest{
+				ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref bgp_as_a_service_virtual_machine_interface_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

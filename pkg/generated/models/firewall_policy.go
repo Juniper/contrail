@@ -18,19 +18,19 @@ type FirewallPolicy struct {
 	SecurityLoggingObjectRefs []*FirewallPolicySecurityLoggingObjectRef `json:"security_logging_object_refs,omitempty"`
 }
 
-// FirewallPolicySecurityLoggingObjectRef references each other
-type FirewallPolicySecurityLoggingObjectRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
 // FirewallPolicyFirewallRuleRef references each other
 type FirewallPolicyFirewallRuleRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 
 	Attr *FirewallSequence
+}
+
+// FirewallPolicySecurityLoggingObjectRef references each other
+type FirewallPolicySecurityLoggingObjectRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
 }
 
 // MakeFirewallPolicy makes FirewallPolicy

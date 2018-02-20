@@ -49,12 +49,12 @@ var BGPAsAServiceFields = []string{
 // BGPAsAServiceRefFields is db reference fields for BGPAsAService
 var BGPAsAServiceRefFields = map[string][]string{
 
-	"service_health_check": {
+	"virtual_machine_interface": {
 	// <common.Schema Value>
 
 	},
 
-	"virtual_machine_interface": {
+	"service_health_check": {
 	// <common.Schema Value>
 
 	},

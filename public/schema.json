@@ -28078,9 +28078,7 @@
                         "enum": [
                             "private",
                             "virtual",
-                            "aws",
-                            "container",
-                            "gcp"
+                            "container"
                         ],
                         "minimum": 0,
                         "maximum": 0

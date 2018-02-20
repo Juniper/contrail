@@ -52,9 +52,9 @@ var AlarmBackRefFields = map[string][]string{}
 // AlarmParentTypes is possible parents for Alarm
 var AlarmParents = []string{
 
-	"project",
-
 	"global_system_config",
+
+	"project",
 }
 
 // CreateAlarm inserts Alarm to DB

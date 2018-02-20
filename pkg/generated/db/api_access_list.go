@@ -50,11 +50,11 @@ var APIAccessListBackRefFields = map[string][]string{}
 // APIAccessListParentTypes is possible parents for APIAccessList
 var APIAccessListParents = []string{
 
-	"domain",
-
 	"project",
 
 	"global_system_config",
+
+	"domain",
 }
 
 // CreateAPIAccessList inserts APIAccessList to DB

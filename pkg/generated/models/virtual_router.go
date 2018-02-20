@@ -23,19 +23,19 @@ type VirtualRouter struct {
 	VirtualMachineInterfaces []*VirtualMachineInterface `json:"virtual_machine_interfaces,omitempty"`
 }
 
+// VirtualRouterVirtualMachineRef references each other
+type VirtualRouterVirtualMachineRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
+}
+
 // VirtualRouterNetworkIpamRef references each other
 type VirtualRouterNetworkIpamRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 
 	Attr *VirtualRouterNetworkIpamType
-}
-
-// VirtualRouterVirtualMachineRef references each other
-type VirtualRouterVirtualMachineRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
 }
 
 // MakeVirtualRouter makes VirtualRouter

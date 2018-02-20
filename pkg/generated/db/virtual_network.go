@@ -78,6 +78,11 @@ var VirtualNetworkFields = []string{
 // VirtualNetworkRefFields is db reference fields for VirtualNetwork
 var VirtualNetworkRefFields = map[string][]string{
 
+	"qos_config": {
+	// <common.Schema Value>
+
+	},
+
 	"route_table": {
 	// <common.Schema Value>
 
@@ -106,17 +111,12 @@ var VirtualNetworkRefFields = map[string][]string{
 
 	"network_policy": {
 		// <common.Schema Value>
-		"start_time",
 		"off_interval",
 		"on_interval",
 		"end_time",
+		"start_time",
 		"major",
 		"minor",
-	},
-
-	"qos_config": {
-	// <common.Schema Value>
-
 	},
 }
 
@@ -272,7 +272,7 @@ const insertVirtualNetworkNetworkIpamQuery = "insert into `ref_virtual_network_n
 
 const insertVirtualNetworkSecurityLoggingObjectQuery = "insert into `ref_virtual_network_security_logging_object` (`from`, `to` ) values (?, ?);"
 
-const insertVirtualNetworkNetworkPolicyQuery = "insert into `ref_virtual_network_network_policy` (`from`, `to` ,`start_time`,`off_interval`,`on_interval`,`end_time`,`major`,`minor`) values (?, ?,?,?,?,?,?,?);"
+const insertVirtualNetworkNetworkPolicyQuery = "insert into `ref_virtual_network_network_policy` (`from`, `to` ,`off_interval`,`on_interval`,`end_time`,`start_time`,`major`,`minor`) values (?, ?,?,?,?,?,?,?);"
 
 const insertVirtualNetworkQosConfigQuery = "insert into `ref_virtual_network_qos_config` (`from`, `to` ) values (?, ?);"
 
@@ -352,6 +352,32 @@ func CreateVirtualNetwork(
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtRouteTableRef, err := tx.Prepare(insertVirtualNetworkRouteTableQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing RouteTableRefs create statement failed")
+	}
+	defer stmtRouteTableRef.Close()
+	for _, ref := range model.RouteTableRefs {
+
+		_, err = stmtRouteTableRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "RouteTableRefs create failed")
+		}
+	}
+
+	stmtVirtualNetworkRef, err := tx.Prepare(insertVirtualNetworkVirtualNetworkQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
+	}
+	defer stmtVirtualNetworkRef.Close()
+	for _, ref := range model.VirtualNetworkRefs {
+
+		_, err = stmtVirtualNetworkRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs create failed")
+		}
+	}
+
 	stmtBGPVPNRef, err := tx.Prepare(insertVirtualNetworkBGPVPNQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing BGPVPNRefs create statement failed")
@@ -407,10 +433,10 @@ func CreateVirtualNetwork(
 			ref.Attr = models.MakeVirtualNetworkPolicyType()
 		}
 
-		_, err = stmtNetworkPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.Timer.StartTime),
-			string(ref.Attr.Timer.OffInterval),
+		_, err = stmtNetworkPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.Timer.OffInterval),
 			string(ref.Attr.Timer.OnInterval),
 			string(ref.Attr.Timer.EndTime),
+			string(ref.Attr.Timer.StartTime),
 			int(ref.Attr.Sequence.Major),
 			int(ref.Attr.Sequence.Minor))
 		if err != nil {
@@ -428,32 +454,6 @@ func CreateVirtualNetwork(
 		_, err = stmtQosConfigRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "QosConfigRefs create failed")
-		}
-	}
-
-	stmtRouteTableRef, err := tx.Prepare(insertVirtualNetworkRouteTableQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing RouteTableRefs create statement failed")
-	}
-	defer stmtRouteTableRef.Close()
-	for _, ref := range model.RouteTableRefs {
-
-		_, err = stmtRouteTableRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "RouteTableRefs create failed")
-		}
-	}
-
-	stmtVirtualNetworkRef, err := tx.Prepare(insertVirtualNetworkVirtualNetworkQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
-	}
-	defer stmtVirtualNetworkRef.Close()
-	for _, ref := range model.VirtualNetworkRefs {
-
-		_, err = stmtVirtualNetworkRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs create failed")
 		}
 	}
 
@@ -915,6 +915,46 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 	}
 
+	if value, ok := values["ref_virtual_network"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkVirtualNetworkRef{}
+			referenceModel.UUID = uuid
+			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_bgpvpn"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkBGPVPNRef{}
+			referenceModel.UUID = uuid
+			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_network_ipam"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -1017,46 +1057,6 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 			referenceModel := &models.VirtualNetworkRouteTableRef{}
 			referenceModel.UUID = uuid
 			m.RouteTableRefs = append(m.RouteTableRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_virtual_network"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkVirtualNetworkRef{}
-			referenceModel.UUID = uuid
-			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_bgpvpn"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkBGPVPNRef{}
-			referenceModel.UUID = uuid
-			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
 
 		}
 	}

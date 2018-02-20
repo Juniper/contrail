@@ -23,13 +23,20 @@ type InstanceIP struct {
 	InstanceIPLocalIP     bool                `json:"instance_ip_local_ip"`
 	InstanceIPSecondary   bool                `json:"instance_ip_secondary"`
 
+	NetworkIpamRefs             []*InstanceIPNetworkIpamRef             `json:"network_ipam_refs,omitempty"`
 	VirtualNetworkRefs          []*InstanceIPVirtualNetworkRef          `json:"virtual_network_refs,omitempty"`
 	VirtualMachineInterfaceRefs []*InstanceIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
 	PhysicalRouterRefs          []*InstanceIPPhysicalRouterRef          `json:"physical_router_refs,omitempty"`
 	VirtualRouterRefs           []*InstanceIPVirtualRouterRef           `json:"virtual_router_refs,omitempty"`
-	NetworkIpamRefs             []*InstanceIPNetworkIpamRef             `json:"network_ipam_refs,omitempty"`
 
 	FloatingIPs []*FloatingIP `json:"floating_ips,omitempty"`
+}
+
+// InstanceIPNetworkIpamRef references each other
+type InstanceIPNetworkIpamRef struct {
+	UUID string   `json:"uuid"`
+	To   []string `json:"to"` //FQDN
+
 }
 
 // InstanceIPVirtualNetworkRef references each other
@@ -55,13 +62,6 @@ type InstanceIPPhysicalRouterRef struct {
 
 // InstanceIPVirtualRouterRef references each other
 type InstanceIPVirtualRouterRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// InstanceIPNetworkIpamRef references each other
-type InstanceIPNetworkIpamRef struct {
 	UUID string   `json:"uuid"`
 	To   []string `json:"to"` //FQDN
 

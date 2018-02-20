@@ -17,10 +17,10 @@ type Project struct {
 	AlarmEnable  bool           `json:"alarm_enable"`
 	Quota        *QuotaType     `json:"quota,omitempty"`
 
-	ApplicationPolicySetRefs []*ProjectApplicationPolicySetRef `json:"application_policy_set_refs,omitempty"`
-	FloatingIPPoolRefs       []*ProjectFloatingIPPoolRef       `json:"floating_ip_pool_refs,omitempty"`
 	AliasIPPoolRefs          []*ProjectAliasIPPoolRef          `json:"alias_ip_pool_refs,omitempty"`
 	NamespaceRefs            []*ProjectNamespaceRef            `json:"namespace_refs,omitempty"`
+	ApplicationPolicySetRefs []*ProjectApplicationPolicySetRef `json:"application_policy_set_refs,omitempty"`
+	FloatingIPPoolRefs       []*ProjectFloatingIPPoolRef       `json:"floating_ip_pool_refs,omitempty"`
 
 	AddressGroups []*AddressGroup `json:"address_groups,omitempty"`
 
