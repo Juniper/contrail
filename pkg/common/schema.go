@@ -3,6 +3,7 @@ package common
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"sort"
@@ -417,7 +418,9 @@ func (api *API) resolveAllRef() error {
 		if s.Type == "abstract" {
 			continue
 		}
+		log.Printf("Type %v - %v: parents = %v", s.ID, s.JSONSchema.GoName, len(s.Parents))
 		for parent := range s.Parents {
+			log.Printf(" - %v", parent)
 			parentSchema := api.schemaByID(parent)
 			if parentSchema == nil {
 				return fmt.Errorf("Parent schema %s not found", parent)

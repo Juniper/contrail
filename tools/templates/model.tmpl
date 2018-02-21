@@ -1,9 +1,20 @@
+{% autoescape off %}
 package models
 // {{ name }}
 
 {% if type.Type == "object" %}
 
-import "encoding/json"
+import (
+    "encoding/json"
+    "strings"
+    "math/big"
+    "github.com/pkg/errors"
+    "github.com/Juniper/contrail/pkg/controller"
+)
+
+const (
+{% for propertyName, property in type.Properties %}    prop{{ name }}_{{ propertyName }} int = iota
+{% endfor %})
 
 // {{ name }} {{ type.description }}
 type {{ name }} struct {
@@ -13,6 +24,9 @@ type {{ name }} struct {
     {{ reference.GoName }}Refs []*{{ type.GoName }}{{ reference.GoName }}Ref `json:"{{linkTo}}_refs,omitempty"`{% endfor %}
 {% for child in children %}
     {{ child.JSONSchema.GoName }}s []*{{ child.JSONSchema.GoName }} `json:"{{ child.ID }}s,omitempty"`{% endfor %}
+
+    client controller.ObjectInterface
+    modified* big.Int
 }
 
 {% for linkTo, reference in references %}
@@ -33,8 +47,8 @@ func (model *{{ name }}) String() string {
 }
 
 // Make{{ name }} makes {{ name }}
-func Make{{ name }}() *{{name}}{
-    return &{{name}}{
+func Make{{ name }}() *{{ name }}{
+    return &{{ name }}{
     //TODO(nati): Apply default
     {% for name, property in type.Properties %}{% if property.GoType == "string" %}{{ property.GoName }}: "",
         {% elif property.GoType == "[]string" %}{{ property.GoName }}: []string{},
@@ -55,21 +69,125 @@ func Make{{ name }}() *{{name}}{
             {% endif %}
         {% else %}{{ property.GoName }}: Make{{ property.GoType }}(),
         {% endif %}{% endfor %}
+        modified: big.NewInt(0),
     }
 }
 
 {% else %}
+import (
+    "encoding/json"
+    "strings"
+    //"math/big"
+    //"github.com/pkg/errors"
+    "github.com/Juniper/contrail/pkg/controller"
+)
 type {{ name }} {{ type.GoType }}
 
 // Make{{ name }} makes {{ name }}
 func Make{{ name }}() {{ name }} {
-    var data {{name}}
+    var data {{ name }}
     return data
 }
 
 {% endif %}
 
-// Make{{ name }}Slice() makes a slice of {{ name }}
+// Make{{ name }}Slice makes a slice of {{ name }}
 func Make{{ name }}Slice() []{% if type.Type == "object" and type.Properties %}*{% endif %}{{ name }} {
     return []{% if type.Type == "object" and type.Properties %}*{% endif %}{{ name }}{}
 }
+
+// Implementation of IObject interface for contrail controller resources management
+
+func (model *{{ name }}) GetDefaultParent() []string {
+    // PArents: {{ parents|stringformat:"+v" }}
+    fqn := []string{}
+    {% if parents %}
+    fqn = {% if parents|length == 1 %}{% for pname, parent in parents %}{{ parent.GoName }}{}.GetDefaultParent()
+    fqn = append(fqn, model.GetDefaultParentName())
+    {% endfor %}{% else %}nil{% endif %}
+    {% endif %}
+    return fqn
+}
+
+func (model *{{ name }}) GetDefaultParentName() string {
+    // This might be wrong for some resources
+    return strings.Replace("{% if parents and parents|length == 1 %}{% for pname, parent in parents %}default-{{ pname }}{% endfor %}{% endif %}", "_", "-", -1)
+}
+
+func (model *{{ name }}) GetDefaultName() string {
+    return strings.Replace("default-{{ schema.ID }}", "_", "-", -1)
+}
+
+func (model *{{ name }}) GetType() string {
+    return strings.Replace("{{ schema.ID }}", "_", "-", -1)
+}
+
+func (model *{{ name }}) GetFQName() []string {
+    return model.FQName
+}
+
+func (model *{{ name }}) GetName() string {
+    n := len(model.FQName)
+    if (n == 0) {
+        return ""
+    }
+    return model.FQName[n-1]
+}
+
+func (model *{{ name }}) GetParentType() string {
+    return model.ParentType
+}
+
+func (model *{{ name }}) GetUuid() string {
+    return model.UUID
+}
+
+func (model *{{ name }}) GetHref() string {
+    return model.client.GetServerUrl() + model.GetType() + "/" + model.UUID
+}
+
+func (model *{{ name }}) SetName(name string) {
+    if len(model.FQName) == 0 {
+        fqname := model.GetDefaultParent()
+        fqname = append(fqname, name)
+        model.SetFQName(model.GetParentType(), fqname)
+    } else {
+        n := len(model.FQName) -1
+        model.FQName[n] = name
+    }
+}
+
+func (model *{{ name }}) SetFQName(parent string, fqname []string) {
+    model.ParentType = parent
+    n := len(fqname) 
+    model.FQName = make([]string, 0, n)
+    model.FQName = append(model.FQName, fqname...)
+}
+
+func (model *{{ name }}) SetClient(cli controller.ObjectInterface) {
+    model.client = cli
+}
+
+func (model *{{ name }}) UpdateObject() ([]byte, error) {
+    msg := map[string]*json.RawMessage{}
+{% for propertyName, property in type.Properties %}
+    if model.modified.Bit(prop{{ name }}_{{ propertyName }}) != 0 {
+        var val json.RawMessage
+        if val, err := json.Marshal(&model.{{ property.GoName }}); err != nil {
+            return nil, errors.Wrap(err, "Marshal of: {{ property.GoName }} as {{ propertyName }}")
+        }
+        msg["{{ propertyName }}"] = &val
+    }
+    {% endfor %}
+    return json.Marshal(msg)
+}
+
+func (model *{{ name }}) UpdateDone() {
+    model.modified.SetInt64(0)
+}
+
+func (model *{{ name }}) UpdateReferences() error {
+    return nil
+}
+
+{% endautoescape %}
