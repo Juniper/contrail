@@ -21,9 +21,7 @@ type RESTBGPRouterUpdateRequest struct {
 
 //RESTCreateBGPRouter handle a Create REST service.
 func (service *ContrailService) RESTCreateBGPRouter(c echo.Context) error {
-	requestData := &models.CreateBGPRouterRequest{
-		BGPRouter: models.MakeBGPRouter(),
-	}
+	requestData := &models.CreateBGPRouterRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetBGPRouter(c echo.Context) error {
 func (service *ContrailService) GetBGPRouter(ctx context.Context, request *models.GetBGPRouterRequest) (response *models.GetBGPRouterResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListBGPRouterRequest{

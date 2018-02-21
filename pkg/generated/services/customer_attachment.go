@@ -21,9 +21,7 @@ type RESTCustomerAttachmentUpdateRequest struct {
 
 //RESTCreateCustomerAttachment handle a Create REST service.
 func (service *ContrailService) RESTCreateCustomerAttachment(c echo.Context) error {
-	requestData := &models.CreateCustomerAttachmentRequest{
-		CustomerAttachment: models.MakeCustomerAttachment(),
-	}
+	requestData := &models.CreateCustomerAttachmentRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetCustomerAttachment(c echo.Context) error 
 func (service *ContrailService) GetCustomerAttachment(ctx context.Context, request *models.GetCustomerAttachmentRequest) (response *models.GetCustomerAttachmentResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListCustomerAttachmentRequest{

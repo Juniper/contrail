@@ -21,9 +21,7 @@ type RESTContrailAnalyticsDatabaseNodeRoleUpdateRequest struct {
 
 //RESTCreateContrailAnalyticsDatabaseNodeRole handle a Create REST service.
 func (service *ContrailService) RESTCreateContrailAnalyticsDatabaseNodeRole(c echo.Context) error {
-	requestData := &models.CreateContrailAnalyticsDatabaseNodeRoleRequest{
-		ContrailAnalyticsDatabaseNodeRole: models.MakeContrailAnalyticsDatabaseNodeRole(),
-	}
+	requestData := &models.CreateContrailAnalyticsDatabaseNodeRoleRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetContrailAnalyticsDatabaseNodeRole(c echo.
 func (service *ContrailService) GetContrailAnalyticsDatabaseNodeRole(ctx context.Context, request *models.GetContrailAnalyticsDatabaseNodeRoleRequest) (response *models.GetContrailAnalyticsDatabaseNodeRoleResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListContrailAnalyticsDatabaseNodeRoleRequest{

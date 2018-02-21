@@ -21,9 +21,7 @@ type RESTOsImageUpdateRequest struct {
 
 //RESTCreateOsImage handle a Create REST service.
 func (service *ContrailService) RESTCreateOsImage(c echo.Context) error {
-	requestData := &models.CreateOsImageRequest{
-		OsImage: models.MakeOsImage(),
-	}
+	requestData := &models.CreateOsImageRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetOsImage(c echo.Context) error {
 func (service *ContrailService) GetOsImage(ctx context.Context, request *models.GetOsImageRequest) (response *models.GetOsImageResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListOsImageRequest{

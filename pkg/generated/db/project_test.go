@@ -399,6 +399,14 @@ func TestProject(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
+	//    var AliasIPPoolref []interface{}
+	//    AliasIPPoolref = append(AliasIPPoolref, map[string]interface{}{"operation":"delete", "uuid":"project_alias_ip_pool_ref_uuid", "to": []string{"test", "project_alias_ip_pool_ref_uuid"}})
+	//    AliasIPPoolref = append(AliasIPPoolref, map[string]interface{}{"operation":"add", "uuid":"project_alias_ip_pool_ref_uuid1", "to": []string{"test", "project_alias_ip_pool_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "AliasIPPoolRefs", ".", AliasIPPoolref)
+	//
 	//    var Namespaceref []interface{}
 	//    Namespaceref = append(Namespaceref, map[string]interface{}{"operation":"delete", "uuid":"project_namespace_ref_uuid", "to": []string{"test", "project_namespace_ref_uuid"}})
 	//    Namespaceref = append(Namespaceref, map[string]interface{}{"operation":"add", "uuid":"project_namespace_ref_uuid1", "to": []string{"test", "project_namespace_ref_uuid1"}})
@@ -407,11 +415,11 @@ func TestProject(t *testing.T) {
 	//
 	//
 	//
-	//    common.SetValueByPath(NamespaceAttr, ".IPPrefixLen", ".", 1.0)
-	//
-	//
-	//
 	//    common.SetValueByPath(NamespaceAttr, ".IPPrefix", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(NamespaceAttr, ".IPPrefixLen", ".", 1.0)
 	//
 	//
 	//
@@ -434,14 +442,6 @@ func TestProject(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "FloatingIPPoolRefs", ".", FloatingIPPoolref)
-	//
-	//    var AliasIPPoolref []interface{}
-	//    AliasIPPoolref = append(AliasIPPoolref, map[string]interface{}{"operation":"delete", "uuid":"project_alias_ip_pool_ref_uuid", "to": []string{"test", "project_alias_ip_pool_ref_uuid"}})
-	//    AliasIPPoolref = append(AliasIPPoolref, map[string]interface{}{"operation":"add", "uuid":"project_alias_ip_pool_ref_uuid1", "to": []string{"test", "project_alias_ip_pool_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "AliasIPPoolRefs", ".", AliasIPPoolref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

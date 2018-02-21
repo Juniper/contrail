@@ -21,9 +21,7 @@ type RESTBGPVPNUpdateRequest struct {
 
 //RESTCreateBGPVPN handle a Create REST service.
 func (service *ContrailService) RESTCreateBGPVPN(c echo.Context) error {
-	requestData := &models.CreateBGPVPNRequest{
-		BGPVPN: models.MakeBGPVPN(),
-	}
+	requestData := &models.CreateBGPVPNRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetBGPVPN(c echo.Context) error {
 func (service *ContrailService) GetBGPVPN(ctx context.Context, request *models.GetBGPVPNRequest) (response *models.GetBGPVPNResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListBGPVPNRequest{

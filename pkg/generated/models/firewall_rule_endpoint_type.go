@@ -1,34 +1,26 @@
 package models
 
-// FirewallRuleEndpointType
-
-// FirewallRuleEndpointType
-//proteus:generate
-type FirewallRuleEndpointType struct {
-	AddressGroup   string      `json:"address_group,omitempty"`
-	Subnet         *SubnetType `json:"subnet,omitempty"`
-	Tags           []string    `json:"tags,omitempty"`
-	TagIds         []int       `json:"tag_ids,omitempty"`
-	VirtualNetwork string      `json:"virtual_network,omitempty"`
-	Any            bool        `json:"any"`
-}
 
 // MakeFirewallRuleEndpointType makes FirewallRuleEndpointType
-func MakeFirewallRuleEndpointType() *FirewallRuleEndpointType {
-	return &FirewallRuleEndpointType{
-		//TODO(nati): Apply default
-		AddressGroup: "",
-		Subnet:       MakeSubnetType(),
-		Tags:         []string{},
-
-		TagIds: []int{},
-
-		VirtualNetwork: "",
-		Any:            false,
-	}
+func MakeFirewallRuleEndpointType() *FirewallRuleEndpointType{
+    return &FirewallRuleEndpointType{
+    //TODO(nati): Apply default
+    AddressGroup: "",
+        Subnet: MakeSubnetType(),
+        Tags: []string{},
+        
+            
+                TagIds: []int64{},
+            
+        VirtualNetwork: "",
+        Any: false,
+        
+    }
 }
 
 // MakeFirewallRuleEndpointTypeSlice() makes a slice of FirewallRuleEndpointType
 func MakeFirewallRuleEndpointTypeSlice() []*FirewallRuleEndpointType {
-	return []*FirewallRuleEndpointType{}
+    return []*FirewallRuleEndpointType{}
 }
+
+

@@ -1,24 +1,19 @@
 package models
 
-// QosIdForwardingClassPair
-
-// QosIdForwardingClassPair
-//proteus:generate
-type QosIdForwardingClassPair struct {
-	Key               int               `json:"key,omitempty"`
-	ForwardingClassID ForwardingClassId `json:"forwarding_class_id,omitempty"`
-}
 
 // MakeQosIdForwardingClassPair makes QosIdForwardingClassPair
-func MakeQosIdForwardingClassPair() *QosIdForwardingClassPair {
-	return &QosIdForwardingClassPair{
-		//TODO(nati): Apply default
-		Key:               0,
-		ForwardingClassID: MakeForwardingClassId(),
-	}
+func MakeQosIdForwardingClassPair() *QosIdForwardingClassPair{
+    return &QosIdForwardingClassPair{
+    //TODO(nati): Apply default
+    Key: 0,
+        ForwardingClassID: 0,
+        
+    }
 }
 
 // MakeQosIdForwardingClassPairSlice() makes a slice of QosIdForwardingClassPair
 func MakeQosIdForwardingClassPairSlice() []*QosIdForwardingClassPair {
-	return []*QosIdForwardingClassPair{}
+    return []*QosIdForwardingClassPair{}
 }
+
+

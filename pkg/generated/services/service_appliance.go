@@ -21,9 +21,7 @@ type RESTServiceApplianceUpdateRequest struct {
 
 //RESTCreateServiceAppliance handle a Create REST service.
 func (service *ContrailService) RESTCreateServiceAppliance(c echo.Context) error {
-	requestData := &models.CreateServiceApplianceRequest{
-		ServiceAppliance: models.MakeServiceAppliance(),
-	}
+	requestData := &models.CreateServiceApplianceRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetServiceAppliance(c echo.Context) error {
 func (service *ContrailService) GetServiceAppliance(ctx context.Context, request *models.GetServiceApplianceRequest) (response *models.GetServiceApplianceResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListServiceApplianceRequest{

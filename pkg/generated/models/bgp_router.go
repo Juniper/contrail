@@ -1,36 +1,25 @@
 package models
 
-// BGPRouter
-
-// BGPRouter
-//proteus:generate
-type BGPRouter struct {
-	UUID        string         `json:"uuid,omitempty"`
-	ParentUUID  string         `json:"parent_uuid,omitempty"`
-	ParentType  string         `json:"parent_type,omitempty"`
-	FQName      []string       `json:"fq_name,omitempty"`
-	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName string         `json:"display_name,omitempty"`
-	Annotations *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2      *PermType2     `json:"perms2,omitempty"`
-}
 
 // MakeBGPRouter makes BGPRouter
-func MakeBGPRouter() *BGPRouter {
-	return &BGPRouter{
-		//TODO(nati): Apply default
-		UUID:        "",
-		ParentUUID:  "",
-		ParentType:  "",
-		FQName:      []string{},
-		IDPerms:     MakeIdPermsType(),
-		DisplayName: "",
-		Annotations: MakeKeyValuePairs(),
-		Perms2:      MakePermType2(),
-	}
+func MakeBGPRouter() *BGPRouter{
+    return &BGPRouter{
+    //TODO(nati): Apply default
+    UUID: "",
+        ParentUUID: "",
+        ParentType: "",
+        FQName: []string{},
+        IDPerms: MakeIdPermsType(),
+        DisplayName: "",
+        Annotations: MakeKeyValuePairs(),
+        Perms2: MakePermType2(),
+        
+    }
 }
 
 // MakeBGPRouterSlice() makes a slice of BGPRouter
 func MakeBGPRouterSlice() []*BGPRouter {
-	return []*BGPRouter{}
+    return []*BGPRouter{}
 }
+
+

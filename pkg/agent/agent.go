@@ -10,8 +10,8 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
-	"github.com/Juniper/contrail/pkg/common"
 	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -44,9 +44,9 @@ type Agent struct {
 	config    *Config
 	backend   backend
 	APIServer *apisrv.Client
-	serverAPI *common.API
+	serverAPI *schema.API
 	// schemas map schema IDs to API Server schemas.
-	schemas map[string]*common.Schema
+	schemas map[string]*schema.Schema
 	log     *logrus.Entry
 }
 
@@ -100,8 +100,8 @@ func NewAgent(c *Config) (*Agent, error) {
 	}, nil
 }
 
-func fetchServerAPI(server *apisrv.Client) (*common.API, error) {
-	var api common.API
+func fetchServerAPI(server *apisrv.Client) (*schema.API, error) {
+	var api schema.API
 	_, err := server.Read(serverSchemaPath, &api)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to fetch API Server schemas")
@@ -109,8 +109,8 @@ func fetchServerAPI(server *apisrv.Client) (*common.API, error) {
 	return &api, nil
 }
 
-func buildSchemaMapping(schemas []*common.Schema) map[string]*common.Schema {
-	s := make(map[string]*common.Schema)
+func buildSchemaMapping(schemas []*schema.Schema) map[string]*schema.Schema {
+	s := make(map[string]*schema.Schema)
 	for _, schema := range schemas {
 		// Compensate for empty Path and PluralPath fields in schema
 		// TODO(daniel): remove this after following issue is fixed: https://github.com/Juniper/contrail/issues/72

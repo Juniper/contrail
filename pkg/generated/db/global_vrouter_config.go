@@ -59,7 +59,7 @@ var GlobalVrouterConfigRefFields = map[string][]string{}
 // GlobalVrouterConfigBackRefFields is db back reference fields for GlobalVrouterConfig
 var GlobalVrouterConfigBackRefFields = map[string][]string{
 
-	"security_logging_object": {
+	"security_logging_object": []string{
 		"uuid",
 		"rule",
 		"security_logging_object_rate",
@@ -108,40 +108,40 @@ func CreateGlobalVrouterConfig(
 		"model": model,
 		"query": insertGlobalVrouterConfigQuery,
 	}).Debug("create query")
-	_, err = stmt.ExecContext(ctx, string(model.VxlanNetworkIdentifierMode),
-		string(model.UUID),
-		common.MustJSON(model.Perms2.Share),
-		int(model.Perms2.OwnerAccess),
-		string(model.Perms2.Owner),
-		int(model.Perms2.GlobalAccess),
-		string(model.ParentUUID),
-		string(model.ParentType),
-		common.MustJSON(model.LinklocalServices.LinklocalServiceEntry),
-		bool(model.IDPerms.UserVisible),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OtherAccess),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Group),
-		string(model.IDPerms.LastModified),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Creator),
-		string(model.IDPerms.Created),
-		common.MustJSON(model.FQName),
-		string(model.ForwardingMode),
-		int(model.FlowExportRate),
-		common.MustJSON(model.FlowAgingTimeoutList.FlowAgingTimeout),
-		common.MustJSON(model.EncapsulationPriorities.Encapsulation),
-		bool(model.EnableSecurityLogging),
-		bool(model.EcmpHashingIncludeFields.SourcePort),
-		bool(model.EcmpHashingIncludeFields.SourceIP),
-		bool(model.EcmpHashingIncludeFields.IPProtocol),
-		bool(model.EcmpHashingIncludeFields.HashingConfigured),
-		bool(model.EcmpHashingIncludeFields.DestinationPort),
-		bool(model.EcmpHashingIncludeFields.DestinationIP),
-		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair))
+	_, err = stmt.ExecContext(ctx, string(model.GetVxlanNetworkIdentifierMode()),
+		string(model.GetUUID()),
+		common.MustJSON(model.GetPerms2().GetShare()),
+		int(model.GetPerms2().GetOwnerAccess()),
+		string(model.GetPerms2().GetOwner()),
+		int(model.GetPerms2().GetGlobalAccess()),
+		string(model.GetParentUUID()),
+		string(model.GetParentType()),
+		common.MustJSON(model.GetLinklocalServices().GetLinklocalServiceEntry()),
+		bool(model.GetIDPerms().GetUserVisible()),
+		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
+		string(model.GetIDPerms().GetPermissions().GetOwner()),
+		int(model.GetIDPerms().GetPermissions().GetOtherAccess()),
+		int(model.GetIDPerms().GetPermissions().GetGroupAccess()),
+		string(model.GetIDPerms().GetPermissions().GetGroup()),
+		string(model.GetIDPerms().GetLastModified()),
+		bool(model.GetIDPerms().GetEnable()),
+		string(model.GetIDPerms().GetDescription()),
+		string(model.GetIDPerms().GetCreator()),
+		string(model.GetIDPerms().GetCreated()),
+		common.MustJSON(model.GetFQName()),
+		string(model.GetForwardingMode()),
+		int(model.GetFlowExportRate()),
+		common.MustJSON(model.GetFlowAgingTimeoutList().GetFlowAgingTimeout()),
+		common.MustJSON(model.GetEncapsulationPriorities().GetEncapsulation()),
+		bool(model.GetEnableSecurityLogging()),
+		bool(model.GetEcmpHashingIncludeFields().GetSourcePort()),
+		bool(model.GetEcmpHashingIncludeFields().GetSourceIP()),
+		bool(model.GetEcmpHashingIncludeFields().GetIPProtocol()),
+		bool(model.GetEcmpHashingIncludeFields().GetHashingConfigured()),
+		bool(model.GetEcmpHashingIncludeFields().GetDestinationPort()),
+		bool(model.GetEcmpHashingIncludeFields().GetDestinationIP()),
+		string(model.GetDisplayName()),
+		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -155,7 +155,7 @@ func CreateGlobalVrouterConfig(
 	if err != nil {
 		return err
 	}
-	err = common.CreateSharing(tx, "global_vrouter_config", model.UUID, model.Perms2.Share)
+	err = common.CreateSharing(tx, "global_vrouter_config", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -170,17 +170,13 @@ func scanGlobalVrouterConfig(values map[string]interface{}) (*models.GlobalVrout
 
 	if value, ok := values["vxlan_network_identifier_mode"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.VxlanNetworkIdentifierMode = models.VxlanNetworkIdentifierModeType(castedValue)
+		m.VxlanNetworkIdentifierMode = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
+		m.UUID = common.InterfaceToString(value)
 
 	}
 
@@ -192,41 +188,31 @@ func scanGlobalVrouterConfig(values map[string]interface{}) (*models.GlobalVrout
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.Perms2.OwnerAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
+		m.Perms2.Owner = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.Perms2.GlobalAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentUUID = castedValue
+		m.ParentUUID = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentType = castedValue
+		m.ParentType = common.InterfaceToString(value)
 
 	}
 
@@ -238,89 +224,67 @@ func scanGlobalVrouterConfig(values map[string]interface{}) (*models.GlobalVrout
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.UserVisible = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Owner = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
+		m.IDPerms.Permissions.Group = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.LastModified = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
+		m.IDPerms.Enable = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
+		m.IDPerms.Description = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.IDPerms.Creator = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
+		m.IDPerms.Created = common.InterfaceToString(value)
 
 	}
 
@@ -332,17 +296,13 @@ func scanGlobalVrouterConfig(values map[string]interface{}) (*models.GlobalVrout
 
 	if value, ok := values["forwarding_mode"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ForwardingMode = models.ForwardingModeType(castedValue)
+		m.ForwardingMode = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["flow_export_rate"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.FlowExportRate = castedValue
+		m.FlowExportRate = common.InterfaceToInt64(value)
 
 	}
 
@@ -360,65 +320,49 @@ func scanGlobalVrouterConfig(values map[string]interface{}) (*models.GlobalVrout
 
 	if value, ok := values["enable_security_logging"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.EnableSecurityLogging = castedValue
+		m.EnableSecurityLogging = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["source_port"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.EcmpHashingIncludeFields.SourcePort = castedValue
+		m.EcmpHashingIncludeFields.SourcePort = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["source_ip"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.EcmpHashingIncludeFields.SourceIP = castedValue
+		m.EcmpHashingIncludeFields.SourceIP = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["ip_protocol"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.EcmpHashingIncludeFields.IPProtocol = castedValue
+		m.EcmpHashingIncludeFields.IPProtocol = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["hashing_configured"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.EcmpHashingIncludeFields.HashingConfigured = castedValue
+		m.EcmpHashingIncludeFields.HashingConfigured = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["destination_port"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.EcmpHashingIncludeFields.DestinationPort = castedValue
+		m.EcmpHashingIncludeFields.DestinationPort = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["destination_ip"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.EcmpHashingIncludeFields.DestinationIP = castedValue
+		m.EcmpHashingIncludeFields.DestinationIP = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		m.DisplayName = common.InterfaceToString(value)
 
 	}
 
@@ -446,9 +390,7 @@ func scanGlobalVrouterConfig(values map[string]interface{}) (*models.GlobalVrout
 
 			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.UUID = castedValue
+				childModel.UUID = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -460,9 +402,7 @@ func scanGlobalVrouterConfig(values map[string]interface{}) (*models.GlobalVrout
 
 			if propertyValue, ok := childResourceMap["security_logging_object_rate"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.SecurityLoggingObjectRate = castedValue
+				childModel.SecurityLoggingObjectRate = common.InterfaceToInt64(propertyValue)
 
 			}
 
@@ -474,129 +414,97 @@ func scanGlobalVrouterConfig(values map[string]interface{}) (*models.GlobalVrout
 
 			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.OwnerAccess = models.AccessType(castedValue)
+				childModel.Perms2.OwnerAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.Perms2.Owner = castedValue
+				childModel.Perms2.Owner = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.GlobalAccess = models.AccessType(castedValue)
+				childModel.Perms2.GlobalAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentUUID = castedValue
+				childModel.ParentUUID = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentType = castedValue
+				childModel.ParentType = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.UserVisible = castedValue
+				childModel.IDPerms.UserVisible = common.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Owner = castedValue
+				childModel.IDPerms.Permissions.Owner = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Group = castedValue
+				childModel.IDPerms.Permissions.Group = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.LastModified = castedValue
+				childModel.IDPerms.LastModified = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.Enable = castedValue
+				childModel.IDPerms.Enable = common.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Description = castedValue
+				childModel.IDPerms.Description = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Creator = castedValue
+				childModel.IDPerms.Creator = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Created = castedValue
+				childModel.IDPerms.Created = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -608,9 +516,7 @@ func scanGlobalVrouterConfig(values map[string]interface{}) (*models.GlobalVrout
 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.DisplayName = castedValue
+				childModel.DisplayName = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -637,14 +543,14 @@ func ListGlobalVrouterConfig(ctx context.Context, tx *sql.Tx, request *models.Li
 	qb.Fields = GlobalVrouterConfigFields
 	qb.RefFields = GlobalVrouterConfigRefFields
 	qb.BackRefFields = GlobalVrouterConfigBackRefFields
-	result := models.MakeGlobalVrouterConfigSlice()
+	result := []*models.GlobalVrouterConfig{}
 
 	if spec.ParentFQName != nil {
 		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
-		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+		spec.Filters = common.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 
 	query := qb.BuildQuery()

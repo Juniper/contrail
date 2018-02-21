@@ -78,44 +78,44 @@ var VirtualNetworkFields = []string{
 // VirtualNetworkRefFields is db reference fields for VirtualNetwork
 var VirtualNetworkRefFields = map[string][]string{
 
-	"route_table": {
-	// <common.Schema Value>
-
-	},
-
-	"virtual_network": {
-	// <common.Schema Value>
-
-	},
-
-	"bgpvpn": {
-	// <common.Schema Value>
-
-	},
-
-	"network_ipam": {
-		// <common.Schema Value>
-		"route",
+	"network_ipam": []string{
+		// <schema.Schema Value>
 		"ipam_subnets",
+		"route",
 	},
 
-	"security_logging_object": {
-	// <common.Schema Value>
+	"security_logging_object": []string{
+		// <schema.Schema Value>
 
 	},
 
-	"network_policy": {
-		// <common.Schema Value>
+	"network_policy": []string{
+		// <schema.Schema Value>
+		"start_time",
 		"off_interval",
 		"on_interval",
 		"end_time",
-		"start_time",
 		"minor",
 		"major",
 	},
 
-	"qos_config": {
-	// <common.Schema Value>
+	"qos_config": []string{
+		// <schema.Schema Value>
+
+	},
+
+	"route_table": []string{
+		// <schema.Schema Value>
+
+	},
+
+	"virtual_network": []string{
+		// <schema.Schema Value>
+
+	},
+
+	"bgpvpn": []string{
+		// <schema.Schema Value>
 
 	},
 }
@@ -123,7 +123,7 @@ var VirtualNetworkRefFields = map[string][]string{
 // VirtualNetworkBackRefFields is db back reference fields for VirtualNetwork
 var VirtualNetworkBackRefFields = map[string][]string{
 
-	"access_control_list": {
+	"access_control_list": []string{
 		"uuid",
 		"share",
 		"owner_access",
@@ -150,7 +150,7 @@ var VirtualNetworkBackRefFields = map[string][]string{
 		"acl_rule",
 	},
 
-	"alias_ip_pool": {
+	"alias_ip_pool": []string{
 		"uuid",
 		"share",
 		"owner_access",
@@ -174,7 +174,7 @@ var VirtualNetworkBackRefFields = map[string][]string{
 		"key_value_pair",
 	},
 
-	"bridge_domain": {
+	"bridge_domain": []string{
 		"uuid",
 		"share",
 		"owner_access",
@@ -206,7 +206,7 @@ var VirtualNetworkBackRefFields = map[string][]string{
 		"key_value_pair",
 	},
 
-	"floating_ip_pool": {
+	"floating_ip_pool": []string{
 		"uuid",
 		"share",
 		"owner_access",
@@ -231,7 +231,7 @@ var VirtualNetworkBackRefFields = map[string][]string{
 		"key_value_pair",
 	},
 
-	"routing_instance": {
+	"routing_instance": []string{
 		"uuid",
 		"share",
 		"owner_access",
@@ -266,11 +266,11 @@ const insertVirtualNetworkVirtualNetworkQuery = "insert into `ref_virtual_networ
 
 const insertVirtualNetworkBGPVPNQuery = "insert into `ref_virtual_network_bgpvpn` (`from`, `to` ) values (?, ?);"
 
-const insertVirtualNetworkNetworkIpamQuery = "insert into `ref_virtual_network_network_ipam` (`from`, `to` ,`route`,`ipam_subnets`) values (?, ?,?,?);"
+const insertVirtualNetworkNetworkIpamQuery = "insert into `ref_virtual_network_network_ipam` (`from`, `to` ,`ipam_subnets`,`route`) values (?, ?,?,?);"
 
 const insertVirtualNetworkSecurityLoggingObjectQuery = "insert into `ref_virtual_network_security_logging_object` (`from`, `to` ) values (?, ?);"
 
-const insertVirtualNetworkNetworkPolicyQuery = "insert into `ref_virtual_network_network_policy` (`from`, `to` ,`off_interval`,`on_interval`,`end_time`,`start_time`,`minor`,`major`) values (?, ?,?,?,?,?,?,?);"
+const insertVirtualNetworkNetworkPolicyQuery = "insert into `ref_virtual_network_network_policy` (`from`, `to` ,`start_time`,`off_interval`,`on_interval`,`end_time`,`minor`,`major`) values (?, ?,?,?,?,?,?,?);"
 
 const insertVirtualNetworkQosConfigQuery = "insert into `ref_virtual_network_qos_config` (`from`, `to` ) values (?, ?);"
 
@@ -292,143 +292,64 @@ func CreateVirtualNetwork(
 		"model": model,
 		"query": insertVirtualNetworkQuery,
 	}).Debug("create query")
-	_, err = stmt.ExecContext(ctx, int(model.VirtualNetworkProperties.VxlanNetworkIdentifier),
-		string(model.VirtualNetworkProperties.RPF),
-		int(model.VirtualNetworkProperties.NetworkID),
-		bool(model.VirtualNetworkProperties.MirrorDestination),
-		string(model.VirtualNetworkProperties.ForwardingMode),
-		bool(model.VirtualNetworkProperties.AllowTransit),
-		int(model.VirtualNetworkNetworkID),
-		string(model.UUID),
-		bool(model.RouterExternal),
-		common.MustJSON(model.RouteTargetList.RouteTarget),
-		int(model.ProviderProperties.SegmentationID),
-		string(model.ProviderProperties.PhysicalNetwork),
-		bool(model.PortSecurityEnabled),
-		common.MustJSON(model.Perms2.Share),
-		int(model.Perms2.OwnerAccess),
-		string(model.Perms2.Owner),
-		int(model.Perms2.GlobalAccess),
-		bool(model.PBBEvpnEnable),
-		bool(model.PBBEtreeEnable),
-		string(model.ParentUUID),
-		string(model.ParentType),
-		bool(model.MultiPolicyServiceChainsEnabled),
-		int(model.MacMoveControl.MacMoveTimeWindow),
-		string(model.MacMoveControl.MacMoveLimitAction),
-		int(model.MacMoveControl.MacMoveLimit),
-		string(model.MacLimitControl.MacLimitAction),
-		int(model.MacLimitControl.MacLimit),
-		bool(model.MacLearningEnabled),
-		int(model.MacAgingTime),
-		bool(model.Layer2ControlWord),
-		bool(model.IsShared),
-		common.MustJSON(model.ImportRouteTargetList.RouteTarget),
-		bool(model.IDPerms.UserVisible),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OtherAccess),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Group),
-		string(model.IDPerms.LastModified),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Creator),
-		string(model.IDPerms.Created),
-		common.MustJSON(model.FQName),
-		bool(model.FloodUnknownUnicast),
-		bool(model.ExternalIpam),
-		common.MustJSON(model.ExportRouteTargetList.RouteTarget),
-		bool(model.EcmpHashingIncludeFields.SourcePort),
-		bool(model.EcmpHashingIncludeFields.SourceIP),
-		bool(model.EcmpHashingIncludeFields.IPProtocol),
-		bool(model.EcmpHashingIncludeFields.HashingConfigured),
-		bool(model.EcmpHashingIncludeFields.DestinationPort),
-		bool(model.EcmpHashingIncludeFields.DestinationIP),
-		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		string(model.AddressAllocationMode))
+	_, err = stmt.ExecContext(ctx, int(model.GetVirtualNetworkProperties().GetVxlanNetworkIdentifier()),
+		string(model.GetVirtualNetworkProperties().GetRPF()),
+		int(model.GetVirtualNetworkProperties().GetNetworkID()),
+		bool(model.GetVirtualNetworkProperties().GetMirrorDestination()),
+		string(model.GetVirtualNetworkProperties().GetForwardingMode()),
+		bool(model.GetVirtualNetworkProperties().GetAllowTransit()),
+		int(model.GetVirtualNetworkNetworkID()),
+		string(model.GetUUID()),
+		bool(model.GetRouterExternal()),
+		common.MustJSON(model.GetRouteTargetList().GetRouteTarget()),
+		int(model.GetProviderProperties().GetSegmentationID()),
+		string(model.GetProviderProperties().GetPhysicalNetwork()),
+		bool(model.GetPortSecurityEnabled()),
+		common.MustJSON(model.GetPerms2().GetShare()),
+		int(model.GetPerms2().GetOwnerAccess()),
+		string(model.GetPerms2().GetOwner()),
+		int(model.GetPerms2().GetGlobalAccess()),
+		bool(model.GetPBBEvpnEnable()),
+		bool(model.GetPBBEtreeEnable()),
+		string(model.GetParentUUID()),
+		string(model.GetParentType()),
+		bool(model.GetMultiPolicyServiceChainsEnabled()),
+		int(model.GetMacMoveControl().GetMacMoveTimeWindow()),
+		string(model.GetMacMoveControl().GetMacMoveLimitAction()),
+		int(model.GetMacMoveControl().GetMacMoveLimit()),
+		string(model.GetMacLimitControl().GetMacLimitAction()),
+		int(model.GetMacLimitControl().GetMacLimit()),
+		bool(model.GetMacLearningEnabled()),
+		int(model.GetMacAgingTime()),
+		bool(model.GetLayer2ControlWord()),
+		bool(model.GetIsShared()),
+		common.MustJSON(model.GetImportRouteTargetList().GetRouteTarget()),
+		bool(model.GetIDPerms().GetUserVisible()),
+		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
+		string(model.GetIDPerms().GetPermissions().GetOwner()),
+		int(model.GetIDPerms().GetPermissions().GetOtherAccess()),
+		int(model.GetIDPerms().GetPermissions().GetGroupAccess()),
+		string(model.GetIDPerms().GetPermissions().GetGroup()),
+		string(model.GetIDPerms().GetLastModified()),
+		bool(model.GetIDPerms().GetEnable()),
+		string(model.GetIDPerms().GetDescription()),
+		string(model.GetIDPerms().GetCreator()),
+		string(model.GetIDPerms().GetCreated()),
+		common.MustJSON(model.GetFQName()),
+		bool(model.GetFloodUnknownUnicast()),
+		bool(model.GetExternalIpam()),
+		common.MustJSON(model.GetExportRouteTargetList().GetRouteTarget()),
+		bool(model.GetEcmpHashingIncludeFields().GetSourcePort()),
+		bool(model.GetEcmpHashingIncludeFields().GetSourceIP()),
+		bool(model.GetEcmpHashingIncludeFields().GetIPProtocol()),
+		bool(model.GetEcmpHashingIncludeFields().GetHashingConfigured()),
+		bool(model.GetEcmpHashingIncludeFields().GetDestinationPort()),
+		bool(model.GetEcmpHashingIncludeFields().GetDestinationIP()),
+		string(model.GetDisplayName()),
+		common.MustJSON(model.GetAnnotations().GetKeyValuePair()),
+		string(model.GetAddressAllocationMode()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
-	}
-
-	stmtBGPVPNRef, err := tx.Prepare(insertVirtualNetworkBGPVPNQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing BGPVPNRefs create statement failed")
-	}
-	defer stmtBGPVPNRef.Close()
-	for _, ref := range model.BGPVPNRefs {
-
-		_, err = stmtBGPVPNRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "BGPVPNRefs create failed")
-		}
-	}
-
-	stmtNetworkIpamRef, err := tx.Prepare(insertVirtualNetworkNetworkIpamQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing NetworkIpamRefs create statement failed")
-	}
-	defer stmtNetworkIpamRef.Close()
-	for _, ref := range model.NetworkIpamRefs {
-
-		if ref.Attr == nil {
-			ref.Attr = models.MakeVnSubnetsType()
-		}
-
-		_, err = stmtNetworkIpamRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.HostRoutes.Route),
-			common.MustJSON(ref.Attr.IpamSubnets))
-		if err != nil {
-			return errors.Wrap(err, "NetworkIpamRefs create failed")
-		}
-	}
-
-	stmtSecurityLoggingObjectRef, err := tx.Prepare(insertVirtualNetworkSecurityLoggingObjectQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing SecurityLoggingObjectRefs create statement failed")
-	}
-	defer stmtSecurityLoggingObjectRef.Close()
-	for _, ref := range model.SecurityLoggingObjectRefs {
-
-		_, err = stmtSecurityLoggingObjectRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "SecurityLoggingObjectRefs create failed")
-		}
-	}
-
-	stmtNetworkPolicyRef, err := tx.Prepare(insertVirtualNetworkNetworkPolicyQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing NetworkPolicyRefs create statement failed")
-	}
-	defer stmtNetworkPolicyRef.Close()
-	for _, ref := range model.NetworkPolicyRefs {
-
-		if ref.Attr == nil {
-			ref.Attr = models.MakeVirtualNetworkPolicyType()
-		}
-
-		_, err = stmtNetworkPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.Timer.OffInterval),
-			string(ref.Attr.Timer.OnInterval),
-			string(ref.Attr.Timer.EndTime),
-			string(ref.Attr.Timer.StartTime),
-			int(ref.Attr.Sequence.Minor),
-			int(ref.Attr.Sequence.Major))
-		if err != nil {
-			return errors.Wrap(err, "NetworkPolicyRefs create failed")
-		}
-	}
-
-	stmtQosConfigRef, err := tx.Prepare(insertVirtualNetworkQosConfigQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing QosConfigRefs create statement failed")
-	}
-	defer stmtQosConfigRef.Close()
-	for _, ref := range model.QosConfigRefs {
-
-		_, err = stmtQosConfigRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "QosConfigRefs create failed")
-		}
 	}
 
 	stmtRouteTableRef, err := tx.Prepare(insertVirtualNetworkRouteTableQuery)
@@ -457,6 +378,85 @@ func CreateVirtualNetwork(
 		}
 	}
 
+	stmtBGPVPNRef, err := tx.Prepare(insertVirtualNetworkBGPVPNQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing BGPVPNRefs create statement failed")
+	}
+	defer stmtBGPVPNRef.Close()
+	for _, ref := range model.BGPVPNRefs {
+
+		_, err = stmtBGPVPNRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "BGPVPNRefs create failed")
+		}
+	}
+
+	stmtNetworkIpamRef, err := tx.Prepare(insertVirtualNetworkNetworkIpamQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing NetworkIpamRefs create statement failed")
+	}
+	defer stmtNetworkIpamRef.Close()
+	for _, ref := range model.NetworkIpamRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = &models.VnSubnetsType{}
+		}
+
+		_, err = stmtNetworkIpamRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetIpamSubnets()),
+			common.MustJSON(ref.Attr.GetHostRoutes().GetRoute()))
+		if err != nil {
+			return errors.Wrap(err, "NetworkIpamRefs create failed")
+		}
+	}
+
+	stmtSecurityLoggingObjectRef, err := tx.Prepare(insertVirtualNetworkSecurityLoggingObjectQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing SecurityLoggingObjectRefs create statement failed")
+	}
+	defer stmtSecurityLoggingObjectRef.Close()
+	for _, ref := range model.SecurityLoggingObjectRefs {
+
+		_, err = stmtSecurityLoggingObjectRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "SecurityLoggingObjectRefs create failed")
+		}
+	}
+
+	stmtNetworkPolicyRef, err := tx.Prepare(insertVirtualNetworkNetworkPolicyQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing NetworkPolicyRefs create statement failed")
+	}
+	defer stmtNetworkPolicyRef.Close()
+	for _, ref := range model.NetworkPolicyRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = &models.VirtualNetworkPolicyType{}
+		}
+
+		_, err = stmtNetworkPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.GetTimer().GetStartTime()),
+			string(ref.Attr.GetTimer().GetOffInterval()),
+			string(ref.Attr.GetTimer().GetOnInterval()),
+			string(ref.Attr.GetTimer().GetEndTime()),
+			int(ref.Attr.GetSequence().GetMinor()),
+			int(ref.Attr.GetSequence().GetMajor()))
+		if err != nil {
+			return errors.Wrap(err, "NetworkPolicyRefs create failed")
+		}
+	}
+
+	stmtQosConfigRef, err := tx.Prepare(insertVirtualNetworkQosConfigQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing QosConfigRefs create statement failed")
+	}
+	defer stmtQosConfigRef.Close()
+	for _, ref := range model.QosConfigRefs {
+
+		_, err = stmtQosConfigRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "QosConfigRefs create failed")
+		}
+	}
+
 	metaData := &common.MetaData{
 		UUID:   model.UUID,
 		Type:   "virtual_network",
@@ -466,7 +466,7 @@ func CreateVirtualNetwork(
 	if err != nil {
 		return err
 	}
-	err = common.CreateSharing(tx, "virtual_network", model.UUID, model.Perms2.Share)
+	err = common.CreateSharing(tx, "virtual_network", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -481,73 +481,55 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 	if value, ok := values["vxlan_network_identifier"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.VirtualNetworkProperties.VxlanNetworkIdentifier = models.VxlanNetworkIdentifierType(castedValue)
+		m.VirtualNetworkProperties.VxlanNetworkIdentifier = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["rpf"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.VirtualNetworkProperties.RPF = models.RpfModeType(castedValue)
+		m.VirtualNetworkProperties.RPF = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["network_id"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.VirtualNetworkProperties.NetworkID = castedValue
+		m.VirtualNetworkProperties.NetworkID = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["mirror_destination"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.VirtualNetworkProperties.MirrorDestination = castedValue
+		m.VirtualNetworkProperties.MirrorDestination = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["forwarding_mode"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.VirtualNetworkProperties.ForwardingMode = models.ForwardingModeType(castedValue)
+		m.VirtualNetworkProperties.ForwardingMode = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["allow_transit"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.VirtualNetworkProperties.AllowTransit = castedValue
+		m.VirtualNetworkProperties.AllowTransit = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["virtual_network_network_id"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.VirtualNetworkNetworkID = models.VirtualNetworkIdType(castedValue)
+		m.VirtualNetworkNetworkID = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
+		m.UUID = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["router_external"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.RouterExternal = castedValue
+		m.RouterExternal = common.InterfaceToBool(value)
 
 	}
 
@@ -559,25 +541,19 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 	if value, ok := values["segmentation_id"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.ProviderProperties.SegmentationID = models.VlanIdType(castedValue)
+		m.ProviderProperties.SegmentationID = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["physical_network"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ProviderProperties.PhysicalNetwork = castedValue
+		m.ProviderProperties.PhysicalNetwork = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["port_security_enabled"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.PortSecurityEnabled = castedValue
+		m.PortSecurityEnabled = common.InterfaceToBool(value)
 
 	}
 
@@ -589,137 +565,103 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.Perms2.OwnerAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
+		m.Perms2.Owner = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.Perms2.GlobalAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["pbb_evpn_enable"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.PBBEvpnEnable = castedValue
+		m.PBBEvpnEnable = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["pbb_etree_enable"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.PBBEtreeEnable = castedValue
+		m.PBBEtreeEnable = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentUUID = castedValue
+		m.ParentUUID = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentType = castedValue
+		m.ParentType = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["multi_policy_service_chains_enabled"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.MultiPolicyServiceChainsEnabled = castedValue
+		m.MultiPolicyServiceChainsEnabled = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["mac_move_time_window"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.MacMoveControl.MacMoveTimeWindow = models.MACMoveTimeWindow(castedValue)
+		m.MacMoveControl.MacMoveTimeWindow = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["mac_move_limit_action"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.MacMoveControl.MacMoveLimitAction = models.MACLimitExceedActionType(castedValue)
+		m.MacMoveControl.MacMoveLimitAction = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["mac_move_limit"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.MacMoveControl.MacMoveLimit = castedValue
+		m.MacMoveControl.MacMoveLimit = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["mac_limit_action"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.MacLimitControl.MacLimitAction = models.MACLimitExceedActionType(castedValue)
+		m.MacLimitControl.MacLimitAction = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["mac_limit"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.MacLimitControl.MacLimit = castedValue
+		m.MacLimitControl.MacLimit = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["mac_learning_enabled"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.MacLearningEnabled = castedValue
+		m.MacLearningEnabled = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["mac_aging_time"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.MacAgingTime = models.MACAgingTime(castedValue)
+		m.MacAgingTime = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["layer2_control_word"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.Layer2ControlWord = castedValue
+		m.Layer2ControlWord = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["is_shared"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IsShared = castedValue
+		m.IsShared = common.InterfaceToBool(value)
 
 	}
 
@@ -731,89 +673,67 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.UserVisible = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Owner = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
+		m.IDPerms.Permissions.Group = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.LastModified = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
+		m.IDPerms.Enable = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
+		m.IDPerms.Description = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.IDPerms.Creator = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
+		m.IDPerms.Created = common.InterfaceToString(value)
 
 	}
 
@@ -825,17 +745,13 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 	if value, ok := values["flood_unknown_unicast"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.FloodUnknownUnicast = castedValue
+		m.FloodUnknownUnicast = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["external_ipam"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.ExternalIpam = castedValue
+		m.ExternalIpam = common.InterfaceToBool(value)
 
 	}
 
@@ -847,57 +763,43 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 	if value, ok := values["source_port"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.EcmpHashingIncludeFields.SourcePort = castedValue
+		m.EcmpHashingIncludeFields.SourcePort = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["source_ip"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.EcmpHashingIncludeFields.SourceIP = castedValue
+		m.EcmpHashingIncludeFields.SourceIP = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["ip_protocol"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.EcmpHashingIncludeFields.IPProtocol = castedValue
+		m.EcmpHashingIncludeFields.IPProtocol = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["hashing_configured"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.EcmpHashingIncludeFields.HashingConfigured = castedValue
+		m.EcmpHashingIncludeFields.HashingConfigured = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["destination_port"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.EcmpHashingIncludeFields.DestinationPort = castedValue
+		m.EcmpHashingIncludeFields.DestinationPort = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["destination_ip"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.EcmpHashingIncludeFields.DestinationIP = castedValue
+		m.EcmpHashingIncludeFields.DestinationIP = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		m.DisplayName = common.InterfaceToString(value)
 
 	}
 
@@ -909,10 +811,48 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 	if value, ok := values["address_allocation_mode"]; ok {
 
-		castedValue := common.InterfaceToString(value)
+		m.AddressAllocationMode = common.InterfaceToString(value)
 
-		m.AddressAllocationMode = models.AddressAllocationModeType(castedValue)
+	}
 
+	if value, ok := values["ref_virtual_network"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkVirtualNetworkRef{}
+			referenceModel.UUID = uuid
+			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_bgpvpn"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkBGPVPNRef{}
+			referenceModel.UUID = uuid
+			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
+
+		}
 	}
 
 	if value, ok := values["ref_network_ipam"]; ok {
@@ -1021,46 +961,6 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 		}
 	}
 
-	if value, ok := values["ref_virtual_network"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkVirtualNetworkRef{}
-			referenceModel.UUID = uuid
-			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_bgpvpn"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkBGPVPNRef{}
-			referenceModel.UUID = uuid
-			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["backref_access_control_list"]; ok {
 		var childResources []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -1079,9 +979,7 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.UUID = castedValue
+				childModel.UUID = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -1093,129 +991,97 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.OwnerAccess = models.AccessType(castedValue)
+				childModel.Perms2.OwnerAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.Perms2.Owner = castedValue
+				childModel.Perms2.Owner = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.GlobalAccess = models.AccessType(castedValue)
+				childModel.Perms2.GlobalAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentUUID = castedValue
+				childModel.ParentUUID = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentType = castedValue
+				childModel.ParentType = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.UserVisible = castedValue
+				childModel.IDPerms.UserVisible = common.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Owner = castedValue
+				childModel.IDPerms.Permissions.Owner = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Group = castedValue
+				childModel.IDPerms.Permissions.Group = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.LastModified = castedValue
+				childModel.IDPerms.LastModified = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.Enable = castedValue
+				childModel.IDPerms.Enable = common.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Description = castedValue
+				childModel.IDPerms.Description = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Creator = castedValue
+				childModel.IDPerms.Creator = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Created = castedValue
+				childModel.IDPerms.Created = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -1227,9 +1093,7 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.DisplayName = castedValue
+				childModel.DisplayName = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -1241,17 +1105,13 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			if propertyValue, ok := childResourceMap["access_control_list_hash"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.AccessControlListHash = castedValue
+				childModel.AccessControlListHash = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["dynamic"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.AccessControlListEntries.Dynamic = castedValue
+				childModel.AccessControlListEntries.Dynamic = common.InterfaceToBool(propertyValue)
 
 			}
 
@@ -1282,9 +1142,7 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.UUID = castedValue
+				childModel.UUID = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -1296,129 +1154,97 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.OwnerAccess = models.AccessType(castedValue)
+				childModel.Perms2.OwnerAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.Perms2.Owner = castedValue
+				childModel.Perms2.Owner = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.GlobalAccess = models.AccessType(castedValue)
+				childModel.Perms2.GlobalAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentUUID = castedValue
+				childModel.ParentUUID = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentType = castedValue
+				childModel.ParentType = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.UserVisible = castedValue
+				childModel.IDPerms.UserVisible = common.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Owner = castedValue
+				childModel.IDPerms.Permissions.Owner = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Group = castedValue
+				childModel.IDPerms.Permissions.Group = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.LastModified = castedValue
+				childModel.IDPerms.LastModified = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.Enable = castedValue
+				childModel.IDPerms.Enable = common.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Description = castedValue
+				childModel.IDPerms.Description = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Creator = castedValue
+				childModel.IDPerms.Creator = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Created = castedValue
+				childModel.IDPerms.Created = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -1430,9 +1256,7 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.DisplayName = castedValue
+				childModel.DisplayName = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -1463,9 +1287,7 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.UUID = castedValue
+				childModel.UUID = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -1477,193 +1299,145 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.OwnerAccess = models.AccessType(castedValue)
+				childModel.Perms2.OwnerAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.Perms2.Owner = castedValue
+				childModel.Perms2.Owner = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.GlobalAccess = models.AccessType(castedValue)
+				childModel.Perms2.GlobalAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentUUID = castedValue
+				childModel.ParentUUID = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentType = castedValue
+				childModel.ParentType = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["mac_move_time_window"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.MacMoveControl.MacMoveTimeWindow = models.MACMoveTimeWindow(castedValue)
+				childModel.MacMoveControl.MacMoveTimeWindow = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["mac_move_limit_action"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.MacMoveControl.MacMoveLimitAction = models.MACLimitExceedActionType(castedValue)
+				childModel.MacMoveControl.MacMoveLimitAction = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["mac_move_limit"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.MacMoveControl.MacMoveLimit = castedValue
+				childModel.MacMoveControl.MacMoveLimit = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["mac_limit_action"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.MacLimitControl.MacLimitAction = models.MACLimitExceedActionType(castedValue)
+				childModel.MacLimitControl.MacLimitAction = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["mac_limit"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.MacLimitControl.MacLimit = castedValue
+				childModel.MacLimitControl.MacLimit = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["mac_learning_enabled"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.MacLearningEnabled = castedValue
+				childModel.MacLearningEnabled = common.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["mac_aging_time"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.MacAgingTime = models.MACAgingTime(castedValue)
+				childModel.MacAgingTime = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["isid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Isid = models.IsidType(castedValue)
+				childModel.Isid = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.UserVisible = castedValue
+				childModel.IDPerms.UserVisible = common.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Owner = castedValue
+				childModel.IDPerms.Permissions.Owner = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Group = castedValue
+				childModel.IDPerms.Permissions.Group = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.LastModified = castedValue
+				childModel.IDPerms.LastModified = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.Enable = castedValue
+				childModel.IDPerms.Enable = common.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Description = castedValue
+				childModel.IDPerms.Description = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Creator = castedValue
+				childModel.IDPerms.Creator = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Created = castedValue
+				childModel.IDPerms.Created = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -1675,9 +1449,7 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.DisplayName = castedValue
+				childModel.DisplayName = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -1708,9 +1480,7 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.UUID = castedValue
+				childModel.UUID = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -1722,129 +1492,97 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.OwnerAccess = models.AccessType(castedValue)
+				childModel.Perms2.OwnerAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.Perms2.Owner = castedValue
+				childModel.Perms2.Owner = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.GlobalAccess = models.AccessType(castedValue)
+				childModel.Perms2.GlobalAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentUUID = castedValue
+				childModel.ParentUUID = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentType = castedValue
+				childModel.ParentType = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.UserVisible = castedValue
+				childModel.IDPerms.UserVisible = common.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Owner = castedValue
+				childModel.IDPerms.Permissions.Owner = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Group = castedValue
+				childModel.IDPerms.Permissions.Group = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.LastModified = castedValue
+				childModel.IDPerms.LastModified = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.Enable = castedValue
+				childModel.IDPerms.Enable = common.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Description = castedValue
+				childModel.IDPerms.Description = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Creator = castedValue
+				childModel.IDPerms.Creator = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Created = castedValue
+				childModel.IDPerms.Created = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -1862,9 +1600,7 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.DisplayName = castedValue
+				childModel.DisplayName = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -1895,9 +1631,7 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.UUID = castedValue
+				childModel.UUID = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -1909,129 +1643,97 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.OwnerAccess = models.AccessType(castedValue)
+				childModel.Perms2.OwnerAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.Perms2.Owner = castedValue
+				childModel.Perms2.Owner = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.GlobalAccess = models.AccessType(castedValue)
+				childModel.Perms2.GlobalAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentUUID = castedValue
+				childModel.ParentUUID = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentType = castedValue
+				childModel.ParentType = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.UserVisible = castedValue
+				childModel.IDPerms.UserVisible = common.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Owner = castedValue
+				childModel.IDPerms.Permissions.Owner = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Group = castedValue
+				childModel.IDPerms.Permissions.Group = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.LastModified = castedValue
+				childModel.IDPerms.LastModified = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.Enable = castedValue
+				childModel.IDPerms.Enable = common.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Description = castedValue
+				childModel.IDPerms.Description = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Creator = castedValue
+				childModel.IDPerms.Creator = common.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Created = castedValue
+				childModel.IDPerms.Created = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -2043,9 +1745,7 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.DisplayName = castedValue
+				childModel.DisplayName = common.InterfaceToString(propertyValue)
 
 			}
 
@@ -2072,14 +1772,14 @@ func ListVirtualNetwork(ctx context.Context, tx *sql.Tx, request *models.ListVir
 	qb.Fields = VirtualNetworkFields
 	qb.RefFields = VirtualNetworkRefFields
 	qb.BackRefFields = VirtualNetworkBackRefFields
-	result := models.MakeVirtualNetworkSlice()
+	result := []*models.VirtualNetwork{}
 
 	if spec.ParentFQName != nil {
 		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
-		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+		spec.Filters = common.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 
 	query := qb.BuildQuery()

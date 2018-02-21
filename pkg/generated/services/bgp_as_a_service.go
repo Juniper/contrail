@@ -21,9 +21,7 @@ type RESTBGPAsAServiceUpdateRequest struct {
 
 //RESTCreateBGPAsAService handle a Create REST service.
 func (service *ContrailService) RESTCreateBGPAsAService(c echo.Context) error {
-	requestData := &models.CreateBGPAsAServiceRequest{
-		BGPAsAService: models.MakeBGPAsAService(),
-	}
+	requestData := &models.CreateBGPAsAServiceRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetBGPAsAService(c echo.Context) error {
 func (service *ContrailService) GetBGPAsAService(ctx context.Context, request *models.GetBGPAsAServiceRequest) (response *models.GetBGPAsAServiceResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListBGPAsAServiceRequest{

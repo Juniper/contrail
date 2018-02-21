@@ -21,9 +21,7 @@ type RESTContrailClusterUpdateRequest struct {
 
 //RESTCreateContrailCluster handle a Create REST service.
 func (service *ContrailService) RESTCreateContrailCluster(c echo.Context) error {
-	requestData := &models.CreateContrailClusterRequest{
-		ContrailCluster: models.MakeContrailCluster(),
-	}
+	requestData := &models.CreateContrailClusterRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetContrailCluster(c echo.Context) error {
 func (service *ContrailService) GetContrailCluster(ctx context.Context, request *models.GetContrailClusterRequest) (response *models.GetContrailClusterResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListContrailClusterRequest{

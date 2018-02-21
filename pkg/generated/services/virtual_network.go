@@ -21,9 +21,7 @@ type RESTVirtualNetworkUpdateRequest struct {
 
 //RESTCreateVirtualNetwork handle a Create REST service.
 func (service *ContrailService) RESTCreateVirtualNetwork(c echo.Context) error {
-	requestData := &models.CreateVirtualNetworkRequest{
-		VirtualNetwork: models.MakeVirtualNetwork(),
-	}
+	requestData := &models.CreateVirtualNetworkRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetVirtualNetwork(c echo.Context) error {
 func (service *ContrailService) GetVirtualNetwork(ctx context.Context, request *models.GetVirtualNetworkRequest) (response *models.GetVirtualNetworkResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListVirtualNetworkRequest{

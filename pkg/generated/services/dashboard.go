@@ -21,9 +21,7 @@ type RESTDashboardUpdateRequest struct {
 
 //RESTCreateDashboard handle a Create REST service.
 func (service *ContrailService) RESTCreateDashboard(c echo.Context) error {
-	requestData := &models.CreateDashboardRequest{
-		Dashboard: models.MakeDashboard(),
-	}
+	requestData := &models.CreateDashboardRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetDashboard(c echo.Context) error {
 func (service *ContrailService) GetDashboard(ctx context.Context, request *models.GetDashboardRequest) (response *models.GetDashboardResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListDashboardRequest{

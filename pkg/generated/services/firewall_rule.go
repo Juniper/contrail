@@ -21,9 +21,7 @@ type RESTFirewallRuleUpdateRequest struct {
 
 //RESTCreateFirewallRule handle a Create REST service.
 func (service *ContrailService) RESTCreateFirewallRule(c echo.Context) error {
-	requestData := &models.CreateFirewallRuleRequest{
-		FirewallRule: models.MakeFirewallRule(),
-	}
+	requestData := &models.CreateFirewallRuleRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetFirewallRule(c echo.Context) error {
 func (service *ContrailService) GetFirewallRule(ctx context.Context, request *models.GetFirewallRuleRequest) (response *models.GetFirewallRuleResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListFirewallRuleRequest{

@@ -84,46 +84,46 @@ func CreateOpenstackCluster(
 		"model": model,
 		"query": insertOpenstackClusterQuery,
 	}).Debug("create query")
-	_, err = stmt.ExecContext(ctx, string(model.UUID),
-		string(model.PublicIP),
-		string(model.PublicGateway),
-		string(model.ProvisioningState),
-		string(model.ProvisioningStartTime),
-		string(model.ProvisioningProgressStage),
-		int(model.ProvisioningProgress),
-		string(model.ProvisioningLog),
-		common.MustJSON(model.Perms2.Share),
-		int(model.Perms2.OwnerAccess),
-		string(model.Perms2.Owner),
-		int(model.Perms2.GlobalAccess),
-		string(model.ParentUUID),
-		string(model.ParentType),
-		string(model.OpenstackWebui),
-		bool(model.IDPerms.UserVisible),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OtherAccess),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Group),
-		string(model.IDPerms.LastModified),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Creator),
-		string(model.IDPerms.Created),
-		common.MustJSON(model.FQName),
-		string(model.ExternalNetCidr),
-		string(model.ExternalAllocationPoolStart),
-		string(model.ExternalAllocationPoolEnd),
-		string(model.DisplayName),
-		string(model.DefaultStorageBackendBondInterfaceMembers),
-		string(model.DefaultStorageAccessBondInterfaceMembers),
-		string(model.DefaultPerformanceDrives),
-		string(model.DefaultOsdDrives),
-		string(model.DefaultJournalDrives),
-		string(model.DefaultCapacityDrives),
-		string(model.ContrailClusterID),
-		common.MustJSON(model.Annotations.KeyValuePair),
-		string(model.AdminPassword))
+	_, err = stmt.ExecContext(ctx, string(model.GetUUID()),
+		string(model.GetPublicIP()),
+		string(model.GetPublicGateway()),
+		string(model.GetProvisioningState()),
+		string(model.GetProvisioningStartTime()),
+		string(model.GetProvisioningProgressStage()),
+		int(model.GetProvisioningProgress()),
+		string(model.GetProvisioningLog()),
+		common.MustJSON(model.GetPerms2().GetShare()),
+		int(model.GetPerms2().GetOwnerAccess()),
+		string(model.GetPerms2().GetOwner()),
+		int(model.GetPerms2().GetGlobalAccess()),
+		string(model.GetParentUUID()),
+		string(model.GetParentType()),
+		string(model.GetOpenstackWebui()),
+		bool(model.GetIDPerms().GetUserVisible()),
+		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
+		string(model.GetIDPerms().GetPermissions().GetOwner()),
+		int(model.GetIDPerms().GetPermissions().GetOtherAccess()),
+		int(model.GetIDPerms().GetPermissions().GetGroupAccess()),
+		string(model.GetIDPerms().GetPermissions().GetGroup()),
+		string(model.GetIDPerms().GetLastModified()),
+		bool(model.GetIDPerms().GetEnable()),
+		string(model.GetIDPerms().GetDescription()),
+		string(model.GetIDPerms().GetCreator()),
+		string(model.GetIDPerms().GetCreated()),
+		common.MustJSON(model.GetFQName()),
+		string(model.GetExternalNetCidr()),
+		string(model.GetExternalAllocationPoolStart()),
+		string(model.GetExternalAllocationPoolEnd()),
+		string(model.GetDisplayName()),
+		string(model.GetDefaultStorageBackendBondInterfaceMembers()),
+		string(model.GetDefaultStorageAccessBondInterfaceMembers()),
+		string(model.GetDefaultPerformanceDrives()),
+		string(model.GetDefaultOsdDrives()),
+		string(model.GetDefaultJournalDrives()),
+		string(model.GetDefaultCapacityDrives()),
+		string(model.GetContrailClusterID()),
+		common.MustJSON(model.GetAnnotations().GetKeyValuePair()),
+		string(model.GetAdminPassword()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -137,7 +137,7 @@ func CreateOpenstackCluster(
 	if err != nil {
 		return err
 	}
-	err = common.CreateSharing(tx, "openstack_cluster", model.UUID, model.Perms2.Share)
+	err = common.CreateSharing(tx, "openstack_cluster", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -152,65 +152,49 @@ func scanOpenstackCluster(values map[string]interface{}) (*models.OpenstackClust
 
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
+		m.UUID = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["public_ip"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PublicIP = castedValue
+		m.PublicIP = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["public_gateway"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PublicGateway = castedValue
+		m.PublicGateway = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["provisioning_state"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ProvisioningState = castedValue
+		m.ProvisioningState = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["provisioning_start_time"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ProvisioningStartTime = castedValue
+		m.ProvisioningStartTime = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["provisioning_progress_stage"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ProvisioningProgressStage = castedValue
+		m.ProvisioningProgressStage = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["provisioning_progress"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.ProvisioningProgress = castedValue
+		m.ProvisioningProgress = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["provisioning_log"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ProvisioningLog = castedValue
+		m.ProvisioningLog = common.InterfaceToString(value)
 
 	}
 
@@ -222,137 +206,103 @@ func scanOpenstackCluster(values map[string]interface{}) (*models.OpenstackClust
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.Perms2.OwnerAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
+		m.Perms2.Owner = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.Perms2.GlobalAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentUUID = castedValue
+		m.ParentUUID = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentType = castedValue
+		m.ParentType = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["openstack_webui"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.OpenstackWebui = castedValue
+		m.OpenstackWebui = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.UserVisible = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Owner = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
+		m.IDPerms.Permissions.Group = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.LastModified = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
+		m.IDPerms.Enable = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
+		m.IDPerms.Description = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.IDPerms.Creator = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
+		m.IDPerms.Created = common.InterfaceToString(value)
 
 	}
 
@@ -364,89 +314,67 @@ func scanOpenstackCluster(values map[string]interface{}) (*models.OpenstackClust
 
 	if value, ok := values["external_net_cidr"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ExternalNetCidr = castedValue
+		m.ExternalNetCidr = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["external_allocation_pool_start"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ExternalAllocationPoolStart = castedValue
+		m.ExternalAllocationPoolStart = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["external_allocation_pool_end"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ExternalAllocationPoolEnd = castedValue
+		m.ExternalAllocationPoolEnd = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		m.DisplayName = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["default_storage_backend_bond_interface_members"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DefaultStorageBackendBondInterfaceMembers = castedValue
+		m.DefaultStorageBackendBondInterfaceMembers = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["default_storage_access_bond_interface_members"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DefaultStorageAccessBondInterfaceMembers = castedValue
+		m.DefaultStorageAccessBondInterfaceMembers = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["default_performance_drives"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DefaultPerformanceDrives = castedValue
+		m.DefaultPerformanceDrives = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["default_osd_drives"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DefaultOsdDrives = castedValue
+		m.DefaultOsdDrives = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["default_journal_drives"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DefaultJournalDrives = castedValue
+		m.DefaultJournalDrives = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["default_capacity_drives"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DefaultCapacityDrives = castedValue
+		m.DefaultCapacityDrives = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["contrail_cluster_id"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ContrailClusterID = castedValue
+		m.ContrailClusterID = common.InterfaceToString(value)
 
 	}
 
@@ -458,9 +386,7 @@ func scanOpenstackCluster(values map[string]interface{}) (*models.OpenstackClust
 
 	if value, ok := values["admin_password"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.AdminPassword = castedValue
+		m.AdminPassword = common.InterfaceToString(value)
 
 	}
 
@@ -478,14 +404,14 @@ func ListOpenstackCluster(ctx context.Context, tx *sql.Tx, request *models.ListO
 	qb.Fields = OpenstackClusterFields
 	qb.RefFields = OpenstackClusterRefFields
 	qb.BackRefFields = OpenstackClusterBackRefFields
-	result := models.MakeOpenstackClusterSlice()
+	result := []*models.OpenstackCluster{}
 
 	if spec.ParentFQName != nil {
 		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
-		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+		spec.Filters = common.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 
 	query := qb.BuildQuery()

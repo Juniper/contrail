@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	"github.com/labstack/echo"
@@ -27,7 +27,7 @@ func Init(e *echo.Echo) error {
 	if assignmentType == "static" {
 		filepath := viper.GetString("keystone.assignment.file")
 		var staticAssignment StaticAssignment
-		err := common.LoadFile(filepath, &staticAssignment)
+		err := schema.LoadFile(filepath, &staticAssignment)
 		if err != nil {
 			return errors.Wrap(err, "Failed to load static assignment")
 		}

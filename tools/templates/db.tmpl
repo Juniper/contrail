@@ -69,7 +69,7 @@ func Create{{ schema.JSONSchema.GoName }}(
         "model": model,
         "query": insert{{ schema.JSONSchema.GoName }}Query,
     }).Debug("create query")
-    _, err = stmt.ExecContext(ctx, {% for column in schema.Columns %}{% if column.Bind == "json" %}common.MustJSON(model{{ column.Path }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.Path }}){% else %}model{{ column.Path }}{% endif %}{% if not forloop.Last %},
+    _, err = stmt.ExecContext(ctx, {% for column in schema.Columns %}{% if column.Bind == "json" %}common.MustJSON(model{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.GetPath }}){% else %}model{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
     {% endif %}{% endfor %})
 	if err != nil {
         return errors.Wrap(err, "create failed")
@@ -83,10 +83,10 @@ func Create{{ schema.JSONSchema.GoName }}(
     for _, ref := range model.{{ reference.GoName }}Refs {
        {% if reference.RefType  %}
        if ref.Attr == nil {
-           ref.Attr = models.Make{{ reference.RefType }}()
+           ref.Attr = &models.{{ reference.RefType }}{}
        }
        {% endif %}
-        _, err = stmt{{ reference.GoName }}Ref.ExecContext(ctx, model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.Path }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.Path }}){% else %}ref.Attr{{ column.Path }}{% endif %}{% if not forloop.Last %},
+        _, err = stmt{{ reference.GoName }}Ref.ExecContext(ctx, model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
     {% endif %}{% endfor %})
 	    if err != nil {
             return errors.Wrap(err,"{{ reference.GoName }}Refs create failed")
@@ -102,7 +102,7 @@ func Create{{ schema.JSONSchema.GoName }}(
     if err != nil {
         return err
     }
-    err = common.CreateSharing(tx, "{{ schema.ID }}", model.UUID, model.Perms2.Share)
+    err = common.CreateSharing(tx, "{{ schema.ID }}", model.UUID, model.GetPerms2().GetShare())
     if err != nil {
         return err
     }
@@ -120,20 +120,12 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
             json.Unmarshal(value.([]byte), &m{{ column.Path }})
         {% else %}
             {% if column.Bind == "int" %}
-                castedValue := common.InterfaceToInt(value)
+               m{{ column.Path }} = common.InterfaceToInt64(value)
             {% elif column.Bind == "bool" %}
-                castedValue := common.InterfaceToBool(value)
+               m{{ column.Path }} = common.InterfaceToBool(value)
             {% elif column.Bind == "string" %}
-                castedValue := common.InterfaceToString(value)
-            {% else %}
-                castedValue, _ := value.({{ column.Bind }})
+               m{{ column.Path }} = common.InterfaceToString(value)
             {% endif %}
-            {% if column.GoPremitive %}
-                m{{ column.Path }} = castedValue
-            {% else %}
-                m{{ column.Path }} = models.{{ column.GoType }}(castedValue)
-            {% endif %}
-
         {% endif %}
     }
     {% endfor %}
@@ -163,18 +155,11 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
                     json.Unmarshal(common.InterfaceToBytes(refAttrValue), &attr{{ column.Path }})
                 {% else %}
                     {% if column.Bind == "int" %}
-                        castedValue := common.InterfaceToInt(refAttrValue)
+                        attr{{ column.Path }} = common.InterfaceToInt64(refAttrValue)
                     {% elif column.Bind == "bool" %}
-                        castedValue := common.InterfaceToBool(refAttrValue)
+                        attr{{ column.Path }} = common.InterfaceToBool(refAttrValue)
                     {% elif column.Bind == "string" %}
-                        castedValue := common.InterfaceToString(refAttrValue)
-                    {% else %}
-                        castedValue, _ := refAttrValue.({{ column.Bind }})
-                    {% endif %}
-                    {% if column.GoPremitive %}
-                        attr{{ column.Path }} = castedValue
-                    {% else %}
-                        attr{{ column.Path }} = models.{{ column.GoType }}(castedValue)
+                        attr{{ column.Path }} = common.InterfaceToString(refAttrValue)
                     {% endif %}
                 {% endif %}
                 }
@@ -207,18 +192,11 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
                     json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel{{ column.Path }})
                 {% else %}
                     {% if column.Bind == "int" %}
-                        castedValue := common.InterfaceToInt(propertyValue)
+                        childModel{{ column.Path }} = common.InterfaceToInt64(propertyValue)
                     {% elif column.Bind == "bool" %}
-                        castedValue := common.InterfaceToBool(propertyValue)
+                        childModel{{ column.Path }} = common.InterfaceToBool(propertyValue)
                     {% elif column.Bind == "string" %}
-                        castedValue := common.InterfaceToString(propertyValue)
-                    {% else %}
-                        castedValue, _ := propertyValue.({{ column.Bind }})
-                    {% endif %}
-                    {% if column.GoPremitive %}
-                        childModel{{ column.Path }} = castedValue
-                    {% else %}
-                        childModel{{ column.Path }} = models.{{ column.GoType }}(castedValue)
+                        childModel{{ column.Path }} = common.InterfaceToString(propertyValue)
                     {% endif %}
                 {% endif %}
                 }
@@ -240,14 +218,14 @@ func List{{ schema.JSONSchema.GoName }}(ctx context.Context, tx *sql.Tx, request
     qb.Fields = {{ schema.JSONSchema.GoName }}Fields
     qb.RefFields = {{ schema.JSONSchema.GoName }}RefFields
     qb.BackRefFields = {{ schema.JSONSchema.GoName }}BackRefFields
-    result := models.Make{{ schema.JSONSchema.GoName }}Slice()
+    result := []*models.{{ schema.JSONSchema.GoName }}{}
 
     if spec.ParentFQName != nil {
-        parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
-        if err != nil {
-            return nil, errors.Wrap(err, "can't find parents")
-        }
-        spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+       parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+       if err != nil {
+           return nil, errors.Wrap(err, "can't find parents")
+       }
+       spec.Filters = common.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
     }
 
     query := qb.BuildQuery()

@@ -21,9 +21,7 @@ type RESTServerUpdateRequest struct {
 
 //RESTCreateServer handle a Create REST service.
 func (service *ContrailService) RESTCreateServer(c echo.Context) error {
-	requestData := &models.CreateServerRequest{
-		Server: models.MakeServer(),
-	}
+	requestData := &models.CreateServerRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetServer(c echo.Context) error {
 func (service *ContrailService) GetServer(ctx context.Context, request *models.GetServerRequest) (response *models.GetServerResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListServerRequest{

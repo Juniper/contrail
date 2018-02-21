@@ -18,6 +18,24 @@ func InterfaceToInt(i interface{}) int {
 	return 0
 }
 
+//InterfaceToInt64 makes an int64 from interface
+func InterfaceToInt64(i interface{}) int64 {
+	if i == nil {
+		return 0
+	}
+	switch t := i.(type) {
+	case []byte:
+		return int64(t[0])
+	case int:
+		return int64(t)
+	case int64:
+		return t
+	case float64:
+		return int64(t)
+	}
+	return 0
+}
+
 //InterfaceToBool makes a bool from interface
 func InterfaceToBool(i interface{}) bool {
 	switch t := i.(type) {

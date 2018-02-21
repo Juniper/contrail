@@ -21,9 +21,7 @@ type RESTRouteAggregateUpdateRequest struct {
 
 //RESTCreateRouteAggregate handle a Create REST service.
 func (service *ContrailService) RESTCreateRouteAggregate(c echo.Context) error {
-	requestData := &models.CreateRouteAggregateRequest{
-		RouteAggregate: models.MakeRouteAggregate(),
-	}
+	requestData := &models.CreateRouteAggregateRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetRouteAggregate(c echo.Context) error {
 func (service *ContrailService) GetRouteAggregate(ctx context.Context, request *models.GetRouteAggregateRequest) (response *models.GetRouteAggregateResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListRouteAggregateRequest{

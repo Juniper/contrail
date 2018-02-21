@@ -21,9 +21,7 @@ type RESTTagUpdateRequest struct {
 
 //RESTCreateTag handle a Create REST service.
 func (service *ContrailService) RESTCreateTag(c echo.Context) error {
-	requestData := &models.CreateTagRequest{
-		Tag: models.MakeTag(),
-	}
+	requestData := &models.CreateTagRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetTag(c echo.Context) error {
 func (service *ContrailService) GetTag(ctx context.Context, request *models.GetTagRequest) (response *models.GetTagResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListTagRequest{

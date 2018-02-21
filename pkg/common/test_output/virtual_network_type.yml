@@ -1,9 +1,0 @@
-<<<<<<< HEAD
-- "uuid"
-- "display_name"
-- "virtual_network_network_id"
-=======
-- "virtual_network_network_id"
-- "uuid"
-- "display_name"
->>>>>>> f778b662... Schema improvement for OpenStack

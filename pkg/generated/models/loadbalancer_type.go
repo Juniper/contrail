@@ -1,32 +1,23 @@
 package models
 
-// LoadbalancerType
-
-// LoadbalancerType
-//proteus:generate
-type LoadbalancerType struct {
-	Status             string         `json:"status,omitempty"`
-	ProvisioningStatus string         `json:"provisioning_status,omitempty"`
-	AdminState         bool           `json:"admin_state"`
-	VipAddress         IpAddressType  `json:"vip_address,omitempty"`
-	VipSubnetID        UuidStringType `json:"vip_subnet_id,omitempty"`
-	OperatingStatus    string         `json:"operating_status,omitempty"`
-}
 
 // MakeLoadbalancerType makes LoadbalancerType
-func MakeLoadbalancerType() *LoadbalancerType {
-	return &LoadbalancerType{
-		//TODO(nati): Apply default
-		Status:             "",
-		ProvisioningStatus: "",
-		AdminState:         false,
-		VipAddress:         MakeIpAddressType(),
-		VipSubnetID:        MakeUuidStringType(),
-		OperatingStatus:    "",
-	}
+func MakeLoadbalancerType() *LoadbalancerType{
+    return &LoadbalancerType{
+    //TODO(nati): Apply default
+    Status: "",
+        ProvisioningStatus: "",
+        AdminState: false,
+        VipAddress: "",
+        VipSubnetID: "",
+        OperatingStatus: "",
+        
+    }
 }
 
 // MakeLoadbalancerTypeSlice() makes a slice of LoadbalancerType
 func MakeLoadbalancerTypeSlice() []*LoadbalancerType {
-	return []*LoadbalancerType{}
+    return []*LoadbalancerType{}
 }
+
+
