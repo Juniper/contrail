@@ -21,9 +21,7 @@ type RESTLogicalRouterUpdateRequest struct {
 
 //RESTCreateLogicalRouter handle a Create REST service.
 func (service *ContrailService) RESTCreateLogicalRouter(c echo.Context) error {
-	requestData := &models.CreateLogicalRouterRequest{
-		LogicalRouter: models.MakeLogicalRouter(),
-	}
+	requestData := &models.CreateLogicalRouterRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetLogicalRouter(c echo.Context) error {
 func (service *ContrailService) GetLogicalRouter(ctx context.Context, request *models.GetLogicalRouterRequest) (response *models.GetLogicalRouterResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListLogicalRouterRequest{

@@ -21,9 +21,7 @@ type RESTPolicyManagementUpdateRequest struct {
 
 //RESTCreatePolicyManagement handle a Create REST service.
 func (service *ContrailService) RESTCreatePolicyManagement(c echo.Context) error {
-	requestData := &models.CreatePolicyManagementRequest{
-		PolicyManagement: models.MakePolicyManagement(),
-	}
+	requestData := &models.CreatePolicyManagementRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetPolicyManagement(c echo.Context) error {
 func (service *ContrailService) GetPolicyManagement(ctx context.Context, request *models.GetPolicyManagementRequest) (response *models.GetPolicyManagementResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListPolicyManagementRequest{

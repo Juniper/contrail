@@ -21,9 +21,7 @@ type RESTSecurityGroupUpdateRequest struct {
 
 //RESTCreateSecurityGroup handle a Create REST service.
 func (service *ContrailService) RESTCreateSecurityGroup(c echo.Context) error {
-	requestData := &models.CreateSecurityGroupRequest{
-		SecurityGroup: models.MakeSecurityGroup(),
-	}
+	requestData := &models.CreateSecurityGroupRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetSecurityGroup(c echo.Context) error {
 func (service *ContrailService) GetSecurityGroup(ctx context.Context, request *models.GetSecurityGroupRequest) (response *models.GetSecurityGroupResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListSecurityGroupRequest{

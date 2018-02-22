@@ -95,57 +95,57 @@ func CreateBaremetalNode(
 		"model": model,
 		"query": insertBaremetalNodeQuery,
 	}).Debug("create query")
-	_, err = stmt.ExecContext(ctx, string(model.UUID),
-		string(model.UpdatedAt),
-		string(model.TargetProvisionState),
-		string(model.TargetPowerState),
-		string(model.ProvisionState),
-		string(model.PowerState),
-		common.MustJSON(model.Perms2.Share),
-		int(model.Perms2.OwnerAccess),
-		string(model.Perms2.Owner),
-		int(model.Perms2.GlobalAccess),
-		string(model.ParentUUID),
-		string(model.ParentType),
-		string(model.Name),
-		string(model.MaintenanceReason),
-		bool(model.Maintenance),
-		string(model.LastError),
-		string(model.InstanceUUID),
-		string(model.InstanceInfo.Vcpus),
-		string(model.InstanceInfo.SwapMB),
-		string(model.InstanceInfo.RootGB),
-		string(model.InstanceInfo.NovaHostID),
-		string(model.InstanceInfo.MemoryMB),
-		string(model.InstanceInfo.LocalGB),
-		string(model.InstanceInfo.ImageSource),
-		string(model.InstanceInfo.DisplayName),
-		string(model.InstanceInfo.Capabilities),
-		bool(model.IDPerms.UserVisible),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OtherAccess),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Group),
-		string(model.IDPerms.LastModified),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Creator),
-		string(model.IDPerms.Created),
-		common.MustJSON(model.FQName),
-		string(model.DriverInfo.IpmiUsername),
-		string(model.DriverInfo.IpmiPassword),
-		string(model.DriverInfo.IpmiAddress),
-		string(model.DriverInfo.DeployRamdisk),
-		string(model.DriverInfo.DeployKernel),
-		string(model.DisplayName),
-		string(model.CreatedAt),
-		bool(model.ConsoleEnabled),
-		int(model.BMProperties.MemoryMB),
-		int(model.BMProperties.DiskGB),
-		int(model.BMProperties.CPUCount),
-		string(model.BMProperties.CPUArch),
-		common.MustJSON(model.Annotations.KeyValuePair))
+	_, err = stmt.ExecContext(ctx, string(model.GetUUID()),
+		string(model.GetUpdatedAt()),
+		string(model.GetTargetProvisionState()),
+		string(model.GetTargetPowerState()),
+		string(model.GetProvisionState()),
+		string(model.GetPowerState()),
+		common.MustJSON(model.GetPerms2().GetShare()),
+		int(model.GetPerms2().GetOwnerAccess()),
+		string(model.GetPerms2().GetOwner()),
+		int(model.GetPerms2().GetGlobalAccess()),
+		string(model.GetParentUUID()),
+		string(model.GetParentType()),
+		string(model.GetName()),
+		string(model.GetMaintenanceReason()),
+		bool(model.GetMaintenance()),
+		string(model.GetLastError()),
+		string(model.GetInstanceUUID()),
+		string(model.GetInstanceInfo().GetVcpus()),
+		string(model.GetInstanceInfo().GetSwapMB()),
+		string(model.GetInstanceInfo().GetRootGB()),
+		string(model.GetInstanceInfo().GetNovaHostID()),
+		string(model.GetInstanceInfo().GetMemoryMB()),
+		string(model.GetInstanceInfo().GetLocalGB()),
+		string(model.GetInstanceInfo().GetImageSource()),
+		string(model.GetInstanceInfo().GetDisplayName()),
+		string(model.GetInstanceInfo().GetCapabilities()),
+		bool(model.GetIDPerms().GetUserVisible()),
+		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
+		string(model.GetIDPerms().GetPermissions().GetOwner()),
+		int(model.GetIDPerms().GetPermissions().GetOtherAccess()),
+		int(model.GetIDPerms().GetPermissions().GetGroupAccess()),
+		string(model.GetIDPerms().GetPermissions().GetGroup()),
+		string(model.GetIDPerms().GetLastModified()),
+		bool(model.GetIDPerms().GetEnable()),
+		string(model.GetIDPerms().GetDescription()),
+		string(model.GetIDPerms().GetCreator()),
+		string(model.GetIDPerms().GetCreated()),
+		common.MustJSON(model.GetFQName()),
+		string(model.GetDriverInfo().GetIpmiUsername()),
+		string(model.GetDriverInfo().GetIpmiPassword()),
+		string(model.GetDriverInfo().GetIpmiAddress()),
+		string(model.GetDriverInfo().GetDeployRamdisk()),
+		string(model.GetDriverInfo().GetDeployKernel()),
+		string(model.GetDisplayName()),
+		string(model.GetCreatedAt()),
+		bool(model.GetConsoleEnabled()),
+		int(model.GetBMProperties().GetMemoryMB()),
+		int(model.GetBMProperties().GetDiskGB()),
+		int(model.GetBMProperties().GetCPUCount()),
+		string(model.GetBMProperties().GetCPUArch()),
+		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -159,7 +159,7 @@ func CreateBaremetalNode(
 	if err != nil {
 		return err
 	}
-	err = common.CreateSharing(tx, "baremetal_node", model.UUID, model.Perms2.Share)
+	err = common.CreateSharing(tx, "baremetal_node", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -174,49 +174,37 @@ func scanBaremetalNode(values map[string]interface{}) (*models.BaremetalNode, er
 
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
+		m.UUID = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["updated_at"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.UpdatedAt = castedValue
+		m.UpdatedAt = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["target_provision_state"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.TargetProvisionState = castedValue
+		m.TargetProvisionState = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["target_power_state"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.TargetPowerState = castedValue
+		m.TargetPowerState = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["provision_state"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ProvisionState = castedValue
+		m.ProvisionState = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["power_state"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PowerState = castedValue
+		m.PowerState = common.InterfaceToString(value)
 
 	}
 
@@ -228,241 +216,181 @@ func scanBaremetalNode(values map[string]interface{}) (*models.BaremetalNode, er
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.Perms2.OwnerAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
+		m.Perms2.Owner = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.Perms2.GlobalAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentUUID = castedValue
+		m.ParentUUID = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentType = castedValue
+		m.ParentType = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Name = castedValue
+		m.Name = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["maintenance_reason"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.MaintenanceReason = castedValue
+		m.MaintenanceReason = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["maintenance"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.Maintenance = castedValue
+		m.Maintenance = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["last_error"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.LastError = castedValue
+		m.LastError = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["instance_uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.InstanceUUID = castedValue
+		m.InstanceUUID = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["vcpus"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.InstanceInfo.Vcpus = castedValue
+		m.InstanceInfo.Vcpus = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["swap_mb"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.InstanceInfo.SwapMB = castedValue
+		m.InstanceInfo.SwapMB = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["root_gb"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.InstanceInfo.RootGB = castedValue
+		m.InstanceInfo.RootGB = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["nova_host_id"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.InstanceInfo.NovaHostID = castedValue
+		m.InstanceInfo.NovaHostID = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["memory_mb"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.InstanceInfo.MemoryMB = castedValue
+		m.InstanceInfo.MemoryMB = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["local_gb"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.InstanceInfo.LocalGB = castedValue
+		m.InstanceInfo.LocalGB = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["image_source"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.InstanceInfo.ImageSource = castedValue
+		m.InstanceInfo.ImageSource = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.InstanceInfo.DisplayName = castedValue
+		m.InstanceInfo.DisplayName = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["capabilities"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.InstanceInfo.Capabilities = castedValue
+		m.InstanceInfo.Capabilities = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.UserVisible = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Owner = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
+		m.IDPerms.Permissions.Group = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.LastModified = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
+		m.IDPerms.Enable = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
+		m.IDPerms.Description = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.IDPerms.Creator = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
+		m.IDPerms.Created = common.InterfaceToString(value)
 
 	}
 
@@ -474,97 +402,73 @@ func scanBaremetalNode(values map[string]interface{}) (*models.BaremetalNode, er
 
 	if value, ok := values["ipmi_username"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DriverInfo.IpmiUsername = castedValue
+		m.DriverInfo.IpmiUsername = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["ipmi_password"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DriverInfo.IpmiPassword = castedValue
+		m.DriverInfo.IpmiPassword = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["ipmi_address"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DriverInfo.IpmiAddress = castedValue
+		m.DriverInfo.IpmiAddress = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["deploy_ramdisk"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DriverInfo.DeployRamdisk = castedValue
+		m.DriverInfo.DeployRamdisk = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["deploy_kernel"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DriverInfo.DeployKernel = castedValue
+		m.DriverInfo.DeployKernel = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["_display_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		m.DisplayName = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created_at"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.CreatedAt = castedValue
+		m.CreatedAt = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["console_enabled"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.ConsoleEnabled = castedValue
+		m.ConsoleEnabled = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["bm_properties_memory_mb"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.BMProperties.MemoryMB = castedValue
+		m.BMProperties.MemoryMB = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["disk_gb"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.BMProperties.DiskGB = castedValue
+		m.BMProperties.DiskGB = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["cpu_count"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.BMProperties.CPUCount = castedValue
+		m.BMProperties.CPUCount = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["cpu_arch"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.BMProperties.CPUArch = castedValue
+		m.BMProperties.CPUArch = common.InterfaceToString(value)
 
 	}
 
@@ -588,14 +492,14 @@ func ListBaremetalNode(ctx context.Context, tx *sql.Tx, request *models.ListBare
 	qb.Fields = BaremetalNodeFields
 	qb.RefFields = BaremetalNodeRefFields
 	qb.BackRefFields = BaremetalNodeBackRefFields
-	result := models.MakeBaremetalNodeSlice()
+	result := []*models.BaremetalNode{}
 
 	if spec.ParentFQName != nil {
 		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
-		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+		spec.Filters = common.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 
 	query := qb.BuildQuery()

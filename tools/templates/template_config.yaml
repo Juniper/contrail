@@ -1,18 +1,12 @@
 - type: type
   template_path: model.tmpl
   output_path: pkg/generated/models/__resource__.go
-- type: resource
-  template_path: model_api.tmpl
-  output_path: pkg/generated/models/__resource___api.go
-- type: type
-  template_path: model_test.tmpl
-  output_path: pkg/generated/models/__resource___test.go
-- type: all
-  template_path: model_common.tmpl
-  output_path: pkg/generated/models/common.go
-- type: all 
-  template_path: proto.tmpl
-  output_path: proto/contrail.proto
+# - type: resource
+#   template_path: model_api.tmpl
+#   output_path: pkg/generated/models/__resource___api.go
+# - type: type
+#   template_path: model_test.tmpl
+#   output_path: pkg/generated/models/__resource___test.go
 - type: all
   template_path: sql.tmpl
   output_path: tools/init.sql

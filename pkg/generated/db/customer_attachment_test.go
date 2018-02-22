@@ -225,14 +225,6 @@ func TestCustomerAttachment(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var VirtualMachineInterfaceref []interface{}
-	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"customer_attachment_virtual_machine_interface_ref_uuid", "to": []string{"test", "customer_attachment_virtual_machine_interface_ref_uuid"}})
-	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"customer_attachment_virtual_machine_interface_ref_uuid1", "to": []string{"test", "customer_attachment_virtual_machine_interface_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
-	//
 	//    var FloatingIPref []interface{}
 	//    FloatingIPref = append(FloatingIPref, map[string]interface{}{"operation":"delete", "uuid":"customer_attachment_floating_ip_ref_uuid", "to": []string{"test", "customer_attachment_floating_ip_ref_uuid"}})
 	//    FloatingIPref = append(FloatingIPref, map[string]interface{}{"operation":"add", "uuid":"customer_attachment_floating_ip_ref_uuid1", "to": []string{"test", "customer_attachment_floating_ip_ref_uuid1"}})
@@ -240,6 +232,14 @@ func TestCustomerAttachment(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "FloatingIPRefs", ".", FloatingIPref)
+	//
+	//    var VirtualMachineInterfaceref []interface{}
+	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"customer_attachment_virtual_machine_interface_ref_uuid", "to": []string{"test", "customer_attachment_virtual_machine_interface_ref_uuid"}})
+	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"customer_attachment_virtual_machine_interface_ref_uuid1", "to": []string{"test", "customer_attachment_virtual_machine_interface_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

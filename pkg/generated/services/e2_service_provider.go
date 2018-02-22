@@ -21,9 +21,7 @@ type RESTE2ServiceProviderUpdateRequest struct {
 
 //RESTCreateE2ServiceProvider handle a Create REST service.
 func (service *ContrailService) RESTCreateE2ServiceProvider(c echo.Context) error {
-	requestData := &models.CreateE2ServiceProviderRequest{
-		E2ServiceProvider: models.MakeE2ServiceProvider(),
-	}
+	requestData := &models.CreateE2ServiceProviderRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetE2ServiceProvider(c echo.Context) error {
 func (service *ContrailService) GetE2ServiceProvider(ctx context.Context, request *models.GetE2ServiceProviderRequest) (response *models.GetE2ServiceProviderResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListE2ServiceProviderRequest{

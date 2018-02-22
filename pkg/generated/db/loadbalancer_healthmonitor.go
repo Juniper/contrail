@@ -76,35 +76,35 @@ func CreateLoadbalancerHealthmonitor(
 		"model": model,
 		"query": insertLoadbalancerHealthmonitorQuery,
 	}).Debug("create query")
-	_, err = stmt.ExecContext(ctx, string(model.UUID),
-		common.MustJSON(model.Perms2.Share),
-		int(model.Perms2.OwnerAccess),
-		string(model.Perms2.Owner),
-		int(model.Perms2.GlobalAccess),
-		string(model.ParentUUID),
-		string(model.ParentType),
-		string(model.LoadbalancerHealthmonitorProperties.URLPath),
-		int(model.LoadbalancerHealthmonitorProperties.Timeout),
-		string(model.LoadbalancerHealthmonitorProperties.MonitorType),
-		int(model.LoadbalancerHealthmonitorProperties.MaxRetries),
-		string(model.LoadbalancerHealthmonitorProperties.HTTPMethod),
-		string(model.LoadbalancerHealthmonitorProperties.ExpectedCodes),
-		int(model.LoadbalancerHealthmonitorProperties.Delay),
-		bool(model.LoadbalancerHealthmonitorProperties.AdminState),
-		bool(model.IDPerms.UserVisible),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OtherAccess),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Group),
-		string(model.IDPerms.LastModified),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Creator),
-		string(model.IDPerms.Created),
-		common.MustJSON(model.FQName),
-		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair))
+	_, err = stmt.ExecContext(ctx, string(model.GetUUID()),
+		common.MustJSON(model.GetPerms2().GetShare()),
+		int(model.GetPerms2().GetOwnerAccess()),
+		string(model.GetPerms2().GetOwner()),
+		int(model.GetPerms2().GetGlobalAccess()),
+		string(model.GetParentUUID()),
+		string(model.GetParentType()),
+		string(model.GetLoadbalancerHealthmonitorProperties().GetURLPath()),
+		int(model.GetLoadbalancerHealthmonitorProperties().GetTimeout()),
+		string(model.GetLoadbalancerHealthmonitorProperties().GetMonitorType()),
+		int(model.GetLoadbalancerHealthmonitorProperties().GetMaxRetries()),
+		string(model.GetLoadbalancerHealthmonitorProperties().GetHTTPMethod()),
+		string(model.GetLoadbalancerHealthmonitorProperties().GetExpectedCodes()),
+		int(model.GetLoadbalancerHealthmonitorProperties().GetDelay()),
+		bool(model.GetLoadbalancerHealthmonitorProperties().GetAdminState()),
+		bool(model.GetIDPerms().GetUserVisible()),
+		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
+		string(model.GetIDPerms().GetPermissions().GetOwner()),
+		int(model.GetIDPerms().GetPermissions().GetOtherAccess()),
+		int(model.GetIDPerms().GetPermissions().GetGroupAccess()),
+		string(model.GetIDPerms().GetPermissions().GetGroup()),
+		string(model.GetIDPerms().GetLastModified()),
+		bool(model.GetIDPerms().GetEnable()),
+		string(model.GetIDPerms().GetDescription()),
+		string(model.GetIDPerms().GetCreator()),
+		string(model.GetIDPerms().GetCreated()),
+		common.MustJSON(model.GetFQName()),
+		string(model.GetDisplayName()),
+		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -118,7 +118,7 @@ func CreateLoadbalancerHealthmonitor(
 	if err != nil {
 		return err
 	}
-	err = common.CreateSharing(tx, "loadbalancer_healthmonitor", model.UUID, model.Perms2.Share)
+	err = common.CreateSharing(tx, "loadbalancer_healthmonitor", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -133,9 +133,7 @@ func scanLoadbalancerHealthmonitor(values map[string]interface{}) (*models.Loadb
 
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
+		m.UUID = common.InterfaceToString(value)
 
 	}
 
@@ -147,193 +145,145 @@ func scanLoadbalancerHealthmonitor(values map[string]interface{}) (*models.Loadb
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.Perms2.OwnerAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
+		m.Perms2.Owner = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.Perms2.GlobalAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentUUID = castedValue
+		m.ParentUUID = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentType = castedValue
+		m.ParentType = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["url_path"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.LoadbalancerHealthmonitorProperties.URLPath = castedValue
+		m.LoadbalancerHealthmonitorProperties.URLPath = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["timeout"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.LoadbalancerHealthmonitorProperties.Timeout = castedValue
+		m.LoadbalancerHealthmonitorProperties.Timeout = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["monitor_type"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.LoadbalancerHealthmonitorProperties.MonitorType = models.HealthmonitorType(castedValue)
+		m.LoadbalancerHealthmonitorProperties.MonitorType = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["max_retries"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.LoadbalancerHealthmonitorProperties.MaxRetries = castedValue
+		m.LoadbalancerHealthmonitorProperties.MaxRetries = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["http_method"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.LoadbalancerHealthmonitorProperties.HTTPMethod = castedValue
+		m.LoadbalancerHealthmonitorProperties.HTTPMethod = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["expected_codes"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.LoadbalancerHealthmonitorProperties.ExpectedCodes = castedValue
+		m.LoadbalancerHealthmonitorProperties.ExpectedCodes = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["delay"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.LoadbalancerHealthmonitorProperties.Delay = castedValue
+		m.LoadbalancerHealthmonitorProperties.Delay = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["admin_state"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.LoadbalancerHealthmonitorProperties.AdminState = castedValue
+		m.LoadbalancerHealthmonitorProperties.AdminState = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.UserVisible = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Owner = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
+		m.IDPerms.Permissions.Group = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.LastModified = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
+		m.IDPerms.Enable = common.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
+		m.IDPerms.Description = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.IDPerms.Creator = common.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
+		m.IDPerms.Created = common.InterfaceToString(value)
 
 	}
 
@@ -345,9 +295,7 @@ func scanLoadbalancerHealthmonitor(values map[string]interface{}) (*models.Loadb
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		m.DisplayName = common.InterfaceToString(value)
 
 	}
 
@@ -371,14 +319,14 @@ func ListLoadbalancerHealthmonitor(ctx context.Context, tx *sql.Tx, request *mod
 	qb.Fields = LoadbalancerHealthmonitorFields
 	qb.RefFields = LoadbalancerHealthmonitorRefFields
 	qb.BackRefFields = LoadbalancerHealthmonitorBackRefFields
-	result := models.MakeLoadbalancerHealthmonitorSlice()
+	result := []*models.LoadbalancerHealthmonitor{}
 
 	if spec.ParentFQName != nil {
 		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
-		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+		spec.Filters = common.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 
 	query := qb.BuildQuery()

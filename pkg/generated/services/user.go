@@ -21,9 +21,7 @@ type RESTUserUpdateRequest struct {
 
 //RESTCreateUser handle a Create REST service.
 func (service *ContrailService) RESTCreateUser(c echo.Context) error {
-	requestData := &models.CreateUserRequest{
-		User: models.MakeUser(),
-	}
+	requestData := &models.CreateUserRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetUser(c echo.Context) error {
 func (service *ContrailService) GetUser(ctx context.Context, request *models.GetUserRequest) (response *models.GetUserResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListUserRequest{

@@ -21,9 +21,7 @@ type RESTVirtualRouterUpdateRequest struct {
 
 //RESTCreateVirtualRouter handle a Create REST service.
 func (service *ContrailService) RESTCreateVirtualRouter(c echo.Context) error {
-	requestData := &models.CreateVirtualRouterRequest{
-		VirtualRouter: models.MakeVirtualRouter(),
-	}
+	requestData := &models.CreateVirtualRouterRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetVirtualRouter(c echo.Context) error {
 func (service *ContrailService) GetVirtualRouter(ctx context.Context, request *models.GetVirtualRouterRequest) (response *models.GetVirtualRouterResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListVirtualRouterRequest{

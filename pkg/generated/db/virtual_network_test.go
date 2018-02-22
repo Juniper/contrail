@@ -546,11 +546,11 @@ func TestVirtualNetwork(t *testing.T) {
 	//
 	//
 	//
-	//    common.SetValueByPath(NetworkIpamAttr, ".HostRoutes.Route", ".", map[string]string{"test": "test"})
-	//
-	//
-	//
 	//    common.SetValueByPath(NetworkIpamAttr, ".IpamSubnets", ".", map[string]string{"test": "test"})
+	//
+	//
+	//
+	//    common.SetValueByPath(NetworkIpamAttr, ".HostRoutes.Route", ".", map[string]string{"test": "test"})
 	//
 	//
 	//
@@ -574,6 +574,10 @@ func TestVirtualNetwork(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(NetworkPolicyAttr, ".Timer.StartTime", ".", "test")
+	//
+	//
+	//
 	//    common.SetValueByPath(NetworkPolicyAttr, ".Timer.OffInterval", ".", "test")
 	//
 	//
@@ -583,10 +587,6 @@ func TestVirtualNetwork(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(NetworkPolicyAttr, ".Timer.EndTime", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(NetworkPolicyAttr, ".Timer.StartTime", ".", "test")
 	//
 	//
 	//
@@ -653,6 +653,47 @@ func TestVirtualNetwork(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_virtual_network_bgpvpn` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing BGPVPNRefs delete statement failed")
+		}
+		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_bgpvpn_ref_uuid")
+		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_bgpvpn_ref_uuid1")
+		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_bgpvpn_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "BGPVPNRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteBGPVPN(ctx, tx,
+			&models.DeleteBGPVPNRequest{
+				ID: "virtual_network_bgpvpn_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref virtual_network_bgpvpn_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteBGPVPN(ctx, tx,
+			&models.DeleteBGPVPNRequest{
+				ID: "virtual_network_bgpvpn_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref virtual_network_bgpvpn_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteBGPVPN(
+			ctx,
+			tx,
+			&models.DeleteBGPVPNRequest{
+				ID: "virtual_network_bgpvpn_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref virtual_network_bgpvpn_ref_uuid2 failed", err)
+	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		stmt, err := tx.Prepare("delete from `ref_virtual_network_network_ipam` where `from` = ? AND `to` = ?;")
@@ -898,47 +939,6 @@ func TestVirtualNetwork(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("delete ref virtual_network_virtual_network_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_virtual_network_bgpvpn` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing BGPVPNRefs delete statement failed")
-		}
-		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_bgpvpn_ref_uuid")
-		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_bgpvpn_ref_uuid1")
-		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_bgpvpn_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "BGPVPNRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteBGPVPN(ctx, tx,
-			&models.DeleteBGPVPNRequest{
-				ID: "virtual_network_bgpvpn_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref virtual_network_bgpvpn_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteBGPVPN(ctx, tx,
-			&models.DeleteBGPVPNRequest{
-				ID: "virtual_network_bgpvpn_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref virtual_network_bgpvpn_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteBGPVPN(
-			ctx,
-			tx,
-			&models.DeleteBGPVPNRequest{
-				ID: "virtual_network_bgpvpn_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref virtual_network_bgpvpn_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

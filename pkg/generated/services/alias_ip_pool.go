@@ -21,9 +21,7 @@ type RESTAliasIPPoolUpdateRequest struct {
 
 //RESTCreateAliasIPPool handle a Create REST service.
 func (service *ContrailService) RESTCreateAliasIPPool(c echo.Context) error {
-	requestData := &models.CreateAliasIPPoolRequest{
-		AliasIPPool: models.MakeAliasIPPool(),
-	}
+	requestData := &models.CreateAliasIPPoolRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetAliasIPPool(c echo.Context) error {
 func (service *ContrailService) GetAliasIPPool(ctx context.Context, request *models.GetAliasIPPoolRequest) (response *models.GetAliasIPPoolResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListAliasIPPoolRequest{

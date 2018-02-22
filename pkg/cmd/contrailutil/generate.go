@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/schema"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -22,20 +22,20 @@ func init() {
 
 func generateCode() {
 	log.Info("Generating source code from schema")
-	api, err := common.MakeAPI(schemasDir)
+	api, err := schema.MakeAPI(schemasDir)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	templateConf, err := common.LoadTemplates(templateConfPath)
+	templateConf, err := schema.LoadTemplates(templateConfPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = common.ApplyTemplates(api, filepath.Dir(templateConfPath), templateConf); err != nil {
+	if err = schema.ApplyTemplates(api, filepath.Dir(templateConfPath), templateConf); err != nil {
 		log.Fatal(err)
 	}
 
-	if err = common.SaveFile(schemaOutputPath, api); err != nil {
+	if err = schema.SaveFile(schemaOutputPath, api); err != nil {
 		log.Fatal(err)
 	}
 }

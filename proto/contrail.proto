@@ -6,6 +6,17 @@ option go_package = "services";
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 import "github.com/Juniper/contrail/pkg/generated/models/generated.proto";
 
+
+option (gogoproto.equal_all) = true;
+option (gogoproto.verbose_equal_all) = false;
+option (gogoproto.goproto_stringer_all) = false;
+option (gogoproto.stringer_all) = true;
+option (gogoproto.populate_all) = true;
+option (gogoproto.benchgen_all) = false;
+option (gogoproto.marshaler_all) = false;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.testgen_all) = true;
+option (gogoproto.unmarshaler_all) = false;
 option (gogoproto.protosizer_all) = true;
 option (gogoproto.sizer_all) = false;
 

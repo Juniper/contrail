@@ -1,26 +1,20 @@
 package models
 
-// ControlTrafficDscpType
-
-// ControlTrafficDscpType
-//proteus:generate
-type ControlTrafficDscpType struct {
-	Control   DscpValueType `json:"control,omitempty"`
-	Analytics DscpValueType `json:"analytics,omitempty"`
-	DNS       DscpValueType `json:"dns,omitempty"`
-}
 
 // MakeControlTrafficDscpType makes ControlTrafficDscpType
-func MakeControlTrafficDscpType() *ControlTrafficDscpType {
-	return &ControlTrafficDscpType{
-		//TODO(nati): Apply default
-		Control:   MakeDscpValueType(),
-		Analytics: MakeDscpValueType(),
-		DNS:       MakeDscpValueType(),
-	}
+func MakeControlTrafficDscpType() *ControlTrafficDscpType{
+    return &ControlTrafficDscpType{
+    //TODO(nati): Apply default
+    Control: 0,
+        Analytics: 0,
+        DNS: 0,
+        
+    }
 }
 
 // MakeControlTrafficDscpTypeSlice() makes a slice of ControlTrafficDscpType
 func MakeControlTrafficDscpTypeSlice() []*ControlTrafficDscpType {
-	return []*ControlTrafficDscpType{}
+    return []*ControlTrafficDscpType{}
 }
+
+

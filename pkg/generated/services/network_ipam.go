@@ -21,9 +21,7 @@ type RESTNetworkIpamUpdateRequest struct {
 
 //RESTCreateNetworkIpam handle a Create REST service.
 func (service *ContrailService) RESTCreateNetworkIpam(c echo.Context) error {
-	requestData := &models.CreateNetworkIpamRequest{
-		NetworkIpam: models.MakeNetworkIpam(),
-	}
+	requestData := &models.CreateNetworkIpamRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetNetworkIpam(c echo.Context) error {
 func (service *ContrailService) GetNetworkIpam(ctx context.Context, request *models.GetNetworkIpamRequest) (response *models.GetNetworkIpamResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListNetworkIpamRequest{

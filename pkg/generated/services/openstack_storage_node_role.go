@@ -21,9 +21,7 @@ type RESTOpenstackStorageNodeRoleUpdateRequest struct {
 
 //RESTCreateOpenstackStorageNodeRole handle a Create REST service.
 func (service *ContrailService) RESTCreateOpenstackStorageNodeRole(c echo.Context) error {
-	requestData := &models.CreateOpenstackStorageNodeRoleRequest{
-		OpenstackStorageNodeRole: models.MakeOpenstackStorageNodeRole(),
-	}
+	requestData := &models.CreateOpenstackStorageNodeRoleRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetOpenstackStorageNodeRole(c echo.Context) 
 func (service *ContrailService) GetOpenstackStorageNodeRole(ctx context.Context, request *models.GetOpenstackStorageNodeRoleRequest) (response *models.GetOpenstackStorageNodeRoleResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListOpenstackStorageNodeRoleRequest{

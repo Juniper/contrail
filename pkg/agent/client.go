@@ -6,7 +6,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 )
 
@@ -86,7 +86,7 @@ func extractServerOutput(output interface{}, schemaID string) (interface{}, erro
 	return o[dashedCase(schemaID)], nil
 }
 
-func (a *Agent) buildRequestData(data interface{}, schema *common.Schema) (map[string]map[string]interface{}, error) {
+func (a *Agent) buildRequestData(data interface{}, schema *schema.Schema) (map[string]map[string]interface{}, error) {
 	properties, ok := data.(map[interface{}]interface{})
 	if !ok {
 		return nil, fmt.Errorf("invalid data format: no properties mapping")

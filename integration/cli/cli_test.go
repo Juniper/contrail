@@ -227,11 +227,13 @@ func checkDataEqual(t *testing.T, expectedYAMLFile, actualYAML string) {
 	require.NoError(t, err, "cannot read expected data file")
 
 	var expected interface{}
+	fmt.Println("expected ")
 	fmt.Println(string(expectedBytes))
 	err = yaml.Unmarshal(expectedBytes, &expected)
 	require.NoError(t, err, "cannot parse expected data file")
 
 	var actual interface{}
+	fmt.Println("actual ")
 	fmt.Println(string(actualYAML))
 	err = yaml.Unmarshal([]byte(actualYAML), &actual)
 	require.NoError(t, err, "cannot parse actual data")

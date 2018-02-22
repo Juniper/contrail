@@ -21,9 +21,7 @@ type RESTBaremetalPortUpdateRequest struct {
 
 //RESTCreateBaremetalPort handle a Create REST service.
 func (service *ContrailService) RESTCreateBaremetalPort(c echo.Context) error {
-	requestData := &models.CreateBaremetalPortRequest{
-		BaremetalPort: models.MakeBaremetalPort(),
-	}
+	requestData := &models.CreateBaremetalPortRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetBaremetalPort(c echo.Context) error {
 func (service *ContrailService) GetBaremetalPort(ctx context.Context, request *models.GetBaremetalPortRequest) (response *models.GetBaremetalPortResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListBaremetalPortRequest{

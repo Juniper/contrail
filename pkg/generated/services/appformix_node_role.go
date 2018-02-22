@@ -21,9 +21,7 @@ type RESTAppformixNodeRoleUpdateRequest struct {
 
 //RESTCreateAppformixNodeRole handle a Create REST service.
 func (service *ContrailService) RESTCreateAppformixNodeRole(c echo.Context) error {
-	requestData := &models.CreateAppformixNodeRoleRequest{
-		AppformixNodeRole: models.MakeAppformixNodeRole(),
-	}
+	requestData := &models.CreateAppformixNodeRoleRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetAppformixNodeRole(c echo.Context) error {
 func (service *ContrailService) GetAppformixNodeRole(ctx context.Context, request *models.GetAppformixNodeRoleRequest) (response *models.GetAppformixNodeRoleResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListAppformixNodeRoleRequest{

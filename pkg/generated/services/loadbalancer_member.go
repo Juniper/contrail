@@ -21,9 +21,7 @@ type RESTLoadbalancerMemberUpdateRequest struct {
 
 //RESTCreateLoadbalancerMember handle a Create REST service.
 func (service *ContrailService) RESTCreateLoadbalancerMember(c echo.Context) error {
-	requestData := &models.CreateLoadbalancerMemberRequest{
-		LoadbalancerMember: models.MakeLoadbalancerMember(),
-	}
+	requestData := &models.CreateLoadbalancerMemberRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetLoadbalancerMember(c echo.Context) error 
 func (service *ContrailService) GetLoadbalancerMember(ctx context.Context, request *models.GetLoadbalancerMemberRequest) (response *models.GetLoadbalancerMemberResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListLoadbalancerMemberRequest{

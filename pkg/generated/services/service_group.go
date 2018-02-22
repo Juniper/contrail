@@ -21,9 +21,7 @@ type RESTServiceGroupUpdateRequest struct {
 
 //RESTCreateServiceGroup handle a Create REST service.
 func (service *ContrailService) RESTCreateServiceGroup(c echo.Context) error {
-	requestData := &models.CreateServiceGroupRequest{
-		ServiceGroup: models.MakeServiceGroup(),
-	}
+	requestData := &models.CreateServiceGroupRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetServiceGroup(c echo.Context) error {
 func (service *ContrailService) GetServiceGroup(ctx context.Context, request *models.GetServiceGroupRequest) (response *models.GetServiceGroupResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListServiceGroupRequest{

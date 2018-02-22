@@ -21,9 +21,7 @@ type RESTPhysicalInterfaceUpdateRequest struct {
 
 //RESTCreatePhysicalInterface handle a Create REST service.
 func (service *ContrailService) RESTCreatePhysicalInterface(c echo.Context) error {
-	requestData := &models.CreatePhysicalInterfaceRequest{
-		PhysicalInterface: models.MakePhysicalInterface(),
-	}
+	requestData := &models.CreatePhysicalInterfaceRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetPhysicalInterface(c echo.Context) error {
 func (service *ContrailService) GetPhysicalInterface(ctx context.Context, request *models.GetPhysicalInterfaceRequest) (response *models.GetPhysicalInterfaceResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListPhysicalInterfaceRequest{

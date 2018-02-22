@@ -49,7 +49,7 @@ func parseStringList(query string) []string {
 
 //GetListSpec makes ListSpec from Query Parameters
 func GetListSpec(c echo.Context) *models.ListSpec {
-	filter := ParseFilter(c.QueryParam(FiltersKey))
+	filters := ParseFilter(c.QueryParam(FiltersKey))
 	pageMarker := parsePositiveNumber(c.QueryParam(PageMarkerKey), 0)
 	pageLimit := parsePositiveNumber(c.QueryParam(PageLimitKey), 100)
 	detail := parseBool(c.QueryParam(DetailKey))
@@ -63,7 +63,7 @@ func GetListSpec(c echo.Context) *models.ListSpec {
 	objectUUIDs := parseStringList(c.QueryParam(ObjectUUIDsKey))
 	fields := parseStringList(c.QueryParam(FieldsKey))
 	return &models.ListSpec{
-		Filter:       filter,
+		Filters:      filters,
 		Fields:       fields,
 		ParentType:   parentType,
 		ParentFQName: parentFQName,
@@ -79,12 +79,32 @@ func GetListSpec(c echo.Context) *models.ListSpec {
 	}
 }
 
+//AppendFilter return a filter for specific key.
+func AppendFilter(filters []*models.Filter, key string, values ...string) []*models.Filter {
+	var filter *models.Filter
+	for _, f := range filters {
+		if f.Key == key {
+			filter = f
+			break
+		}
+	}
+	if filter == nil {
+		filter = &models.Filter{
+			Key:    key,
+			Values: []string{},
+		}
+		filters = append(filters, filter)
+	}
+	filter.Values = append(filter.Values, values...)
+	return filters
+}
+
 //ParseFilter makes Filter from comma separated string.
 //Eg. check==a,check==b,name==Bob
-func ParseFilter(filterString string) models.Filter {
-	filter := models.Filter{}
+func ParseFilter(filterString string) []*models.Filter {
+	filters := []*models.Filter{}
 	if filterString == "" {
-		return filter
+		return filters
 	}
 	parts := strings.Split(filterString, ",")
 	for _, part := range parts {
@@ -94,12 +114,7 @@ func ParseFilter(filterString string) models.Filter {
 		}
 		key := keyValue[0]
 		value := keyValue[1]
-		filterForKey, ok := filter[key]
-		if !ok {
-			filterForKey = []string{}
-		}
-		filterForKey = append(filterForKey, value)
-		filter[key] = filterForKey
+		filters = AppendFilter(filters, key, value)
 	}
-	return filter
+	return filters
 }

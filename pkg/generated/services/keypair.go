@@ -21,9 +21,7 @@ type RESTKeypairUpdateRequest struct {
 
 //RESTCreateKeypair handle a Create REST service.
 func (service *ContrailService) RESTCreateKeypair(c echo.Context) error {
-	requestData := &models.CreateKeypairRequest{
-		Keypair: models.MakeKeypair(),
-	}
+	requestData := &models.CreateKeypairRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetKeypair(c echo.Context) error {
 func (service *ContrailService) GetKeypair(ctx context.Context, request *models.GetKeypairRequest) (response *models.GetKeypairResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListKeypairRequest{

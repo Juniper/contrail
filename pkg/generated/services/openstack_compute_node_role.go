@@ -21,9 +21,7 @@ type RESTOpenstackComputeNodeRoleUpdateRequest struct {
 
 //RESTCreateOpenstackComputeNodeRole handle a Create REST service.
 func (service *ContrailService) RESTCreateOpenstackComputeNodeRole(c echo.Context) error {
-	requestData := &models.CreateOpenstackComputeNodeRoleRequest{
-		OpenstackComputeNodeRole: models.MakeOpenstackComputeNodeRole(),
-	}
+	requestData := &models.CreateOpenstackComputeNodeRoleRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetOpenstackComputeNodeRole(c echo.Context) 
 func (service *ContrailService) GetOpenstackComputeNodeRole(ctx context.Context, request *models.GetOpenstackComputeNodeRoleRequest) (response *models.GetOpenstackComputeNodeRoleResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListOpenstackComputeNodeRoleRequest{

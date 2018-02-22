@@ -21,9 +21,7 @@ type RESTOpenstackClusterUpdateRequest struct {
 
 //RESTCreateOpenstackCluster handle a Create REST service.
 func (service *ContrailService) RESTCreateOpenstackCluster(c echo.Context) error {
-	requestData := &models.CreateOpenstackClusterRequest{
-		OpenstackCluster: models.MakeOpenstackCluster(),
-	}
+	requestData := &models.CreateOpenstackClusterRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +164,11 @@ func (service *ContrailService) RESTGetOpenstackCluster(c echo.Context) error {
 func (service *ContrailService) GetOpenstackCluster(ctx context.Context, request *models.GetOpenstackClusterRequest) (response *models.GetOpenstackClusterResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListOpenstackClusterRequest{
