@@ -13,15 +13,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//REST{{ schema.JSONSchema.GoName }}UpdateRequest for update request for REST.
-type REST{{ schema.JSONSchema.GoName }}UpdateRequest struct {
-    Data map[string]interface{} `json:"{{ schema.Path }}"`
-}
-
 //RESTCreate{{ schema.JSONSchema.GoName }} handle a Create REST service.
 func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
     requestData := &models.Create{{ schema.JSONSchema.GoName }}Request{
-}
+    }
     if err := c.Bind(requestData); err != nil {
         log.WithFields(log.Fields{
             "err": err,

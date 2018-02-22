@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -130,13 +131,13 @@ func scanContrailCluster(values map[string]interface{}) (*models.ContrailCluster
 
 	if value, ok := values["uuid"]; ok {
 
-		m.UUID = common.InterfaceToString(value)
+		m.UUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["statistics_ttl"]; ok {
 
-		m.StatisticsTTL = common.InterfaceToString(value)
+		m.StatisticsTTL = schema.InterfaceToString(value)
 
 	}
 
@@ -148,97 +149,97 @@ func scanContrailCluster(values map[string]interface{}) (*models.ContrailCluster
 
 	if value, ok := values["owner_access"]; ok {
 
-		m.Perms2.OwnerAccess = common.InterfaceToInt64(value)
+		m.Perms2.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		m.Perms2.Owner = common.InterfaceToString(value)
+		m.Perms2.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		m.Perms2.GlobalAccess = common.InterfaceToInt64(value)
+		m.Perms2.GlobalAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		m.ParentUUID = common.InterfaceToString(value)
+		m.ParentUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		m.ParentType = common.InterfaceToString(value)
+		m.ParentType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		m.IDPerms.UserVisible = common.InterfaceToBool(value)
+		m.IDPerms.UserVisible = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		m.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		m.IDPerms.Permissions.Owner = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		m.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		m.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		m.IDPerms.Permissions.Group = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Group = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		m.IDPerms.LastModified = common.InterfaceToString(value)
+		m.IDPerms.LastModified = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		m.IDPerms.Enable = common.InterfaceToBool(value)
+		m.IDPerms.Enable = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		m.IDPerms.Description = common.InterfaceToString(value)
+		m.IDPerms.Description = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		m.IDPerms.Creator = common.InterfaceToString(value)
+		m.IDPerms.Creator = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		m.IDPerms.Created = common.InterfaceToString(value)
+		m.IDPerms.Created = schema.InterfaceToString(value)
 
 	}
 
@@ -250,49 +251,49 @@ func scanContrailCluster(values map[string]interface{}) (*models.ContrailCluster
 
 	if value, ok := values["flow_ttl"]; ok {
 
-		m.FlowTTL = common.InterfaceToString(value)
+		m.FlowTTL = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["display_name"]; ok {
 
-		m.DisplayName = common.InterfaceToString(value)
+		m.DisplayName = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["default_vrouter_bond_interface_members"]; ok {
 
-		m.DefaultVrouterBondInterfaceMembers = common.InterfaceToString(value)
+		m.DefaultVrouterBondInterfaceMembers = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["default_vrouter_bond_interface"]; ok {
 
-		m.DefaultVrouterBondInterface = common.InterfaceToString(value)
+		m.DefaultVrouterBondInterface = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["default_gateway"]; ok {
 
-		m.DefaultGateway = common.InterfaceToString(value)
+		m.DefaultGateway = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["data_ttl"]; ok {
 
-		m.DataTTL = common.InterfaceToString(value)
+		m.DataTTL = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["contrail_webui"]; ok {
 
-		m.ContrailWebui = common.InterfaceToString(value)
+		m.ContrailWebui = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["config_audit_ttl"]; ok {
 
-		m.ConfigAuditTTL = common.InterfaceToString(value)
+		m.ConfigAuditTTL = schema.InterfaceToString(value)
 
 	}
 

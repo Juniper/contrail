@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTAppformixNodeRoleUpdateRequest for update request for REST.
-type RESTAppformixNodeRoleUpdateRequest struct {
-	Data map[string]interface{} `json:"appformix-node-role"`
-}
-
 //RESTCreateAppformixNodeRole handle a Create REST service.
 func (service *ContrailService) RESTCreateAppformixNodeRole(c echo.Context) error {
 	requestData := &models.CreateAppformixNodeRoleRequest{}

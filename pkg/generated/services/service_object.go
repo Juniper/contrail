@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTServiceObjectUpdateRequest for update request for REST.
-type RESTServiceObjectUpdateRequest struct {
-	Data map[string]interface{} `json:"service-object"`
-}
-
 //RESTCreateServiceObject handle a Create REST service.
 func (service *ContrailService) RESTCreateServiceObject(c echo.Context) error {
 	requestData := &models.CreateServiceObjectRequest{}

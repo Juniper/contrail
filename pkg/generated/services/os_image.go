@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTOsImageUpdateRequest for update request for REST.
-type RESTOsImageUpdateRequest struct {
-	Data map[string]interface{} `json:"os-image"`
-}
-
 //RESTCreateOsImage handle a Create REST service.
 func (service *ContrailService) RESTCreateOsImage(c echo.Context) error {
 	requestData := &models.CreateOsImageRequest{}

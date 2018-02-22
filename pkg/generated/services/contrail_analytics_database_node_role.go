@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTContrailAnalyticsDatabaseNodeRoleUpdateRequest for update request for REST.
-type RESTContrailAnalyticsDatabaseNodeRoleUpdateRequest struct {
-	Data map[string]interface{} `json:"contrail-analytics-database-node-role"`
-}
-
 //RESTCreateContrailAnalyticsDatabaseNodeRole handle a Create REST service.
 func (service *ContrailService) RESTCreateContrailAnalyticsDatabaseNodeRole(c echo.Context) error {
 	requestData := &models.CreateContrailAnalyticsDatabaseNodeRoleRequest{}

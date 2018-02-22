@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTBGPRouterUpdateRequest for update request for REST.
-type RESTBGPRouterUpdateRequest struct {
-	Data map[string]interface{} `json:"bgp-router"`
-}
-
 //RESTCreateBGPRouter handle a Create REST service.
 func (service *ContrailService) RESTCreateBGPRouter(c echo.Context) error {
 	requestData := &models.CreateBGPRouterRequest{}

@@ -23,11 +23,18 @@ func TestServer(t *testing.T) {
 	}
 }
 
+func TestSync(t *testing.T) {
+	err := RunTest("./test_data/test_sync.yml")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestGRPC(t *testing.T) {
-	common.UseTable(server.DB, "metadata")
-	defer common.ClearTable(server.DB, "metadata")
-	common.UseTable(server.DB, "project")
-	defer common.ClearTable(server.DB, "project")
+	mutexMetadata := common.UseTable(server.DB, "metadata")
+	defer mutexMetadata.Unlock()
+	mutexTable := common.UseTable(server.DB, "project")
+	defer mutexTable.Unlock()
 
 	restClient := NewClient(
 		testServer.URL,

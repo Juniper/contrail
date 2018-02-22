@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTVirtualNetworkUpdateRequest for update request for REST.
-type RESTVirtualNetworkUpdateRequest struct {
-	Data map[string]interface{} `json:"virtual-network"`
-}
-
 //RESTCreateVirtualNetwork handle a Create REST service.
 func (service *ContrailService) RESTCreateVirtualNetwork(c echo.Context) error {
 	requestData := &models.CreateVirtualNetworkRequest{}

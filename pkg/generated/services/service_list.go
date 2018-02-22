@@ -2,8 +2,13 @@ package services
 
 import (
 	"database/sql"
+	"net/http"
 
+	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type ContrailService struct {
@@ -13,6 +18,1322 @@ type ContrailService struct {
 //SetDB sets db object
 func (service *ContrailService) SetDB(db *sql.DB) {
 	service.DB = db
+}
+
+type RESTResource struct {
+	Kind string      `json:"kind"`
+	Data interface{} `json:"data"`
+}
+
+type RESTSyncRequest struct {
+	Resources []*RESTResource `json:"resources"`
+}
+
+//RESTSync handle a bluk Create REST service.
+func (service *ContrailService) RESTSync(c echo.Context) error {
+	requestData := &RESTSyncRequest{}
+	if err := c.Bind(requestData); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "",
+		}).Debug("bind failed on create")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	ctx := c.Request().Context()
+	responses := []interface{}{}
+	for _, resource := range requestData.Resources {
+		switch resource.Kind {
+
+		case "access_control_list":
+			request := &models.CreateAccessControlListRequest{
+				AccessControlList: models.InterfaceToAccessControlList(resource.Data),
+			}
+			response, err := service.CreateAccessControlList(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.AccessControlList,
+			})
+
+		case "address_group":
+			request := &models.CreateAddressGroupRequest{
+				AddressGroup: models.InterfaceToAddressGroup(resource.Data),
+			}
+			response, err := service.CreateAddressGroup(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.AddressGroup,
+			})
+
+		case "alarm":
+			request := &models.CreateAlarmRequest{
+				Alarm: models.InterfaceToAlarm(resource.Data),
+			}
+			response, err := service.CreateAlarm(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.Alarm,
+			})
+
+		case "alias_ip_pool":
+			request := &models.CreateAliasIPPoolRequest{
+				AliasIPPool: models.InterfaceToAliasIPPool(resource.Data),
+			}
+			response, err := service.CreateAliasIPPool(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.AliasIPPool,
+			})
+
+		case "alias_ip":
+			request := &models.CreateAliasIPRequest{
+				AliasIP: models.InterfaceToAliasIP(resource.Data),
+			}
+			response, err := service.CreateAliasIP(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.AliasIP,
+			})
+
+		case "analytics_node":
+			request := &models.CreateAnalyticsNodeRequest{
+				AnalyticsNode: models.InterfaceToAnalyticsNode(resource.Data),
+			}
+			response, err := service.CreateAnalyticsNode(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.AnalyticsNode,
+			})
+
+		case "api_access_list":
+			request := &models.CreateAPIAccessListRequest{
+				APIAccessList: models.InterfaceToAPIAccessList(resource.Data),
+			}
+			response, err := service.CreateAPIAccessList(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.APIAccessList,
+			})
+
+		case "application_policy_set":
+			request := &models.CreateApplicationPolicySetRequest{
+				ApplicationPolicySet: models.InterfaceToApplicationPolicySet(resource.Data),
+			}
+			response, err := service.CreateApplicationPolicySet(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ApplicationPolicySet,
+			})
+
+		case "bgp_as_a_service":
+			request := &models.CreateBGPAsAServiceRequest{
+				BGPAsAService: models.InterfaceToBGPAsAService(resource.Data),
+			}
+			response, err := service.CreateBGPAsAService(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.BGPAsAService,
+			})
+
+		case "bgp_router":
+			request := &models.CreateBGPRouterRequest{
+				BGPRouter: models.InterfaceToBGPRouter(resource.Data),
+			}
+			response, err := service.CreateBGPRouter(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.BGPRouter,
+			})
+
+		case "bgpvpn":
+			request := &models.CreateBGPVPNRequest{
+				BGPVPN: models.InterfaceToBGPVPN(resource.Data),
+			}
+			response, err := service.CreateBGPVPN(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.BGPVPN,
+			})
+
+		case "bridge_domain":
+			request := &models.CreateBridgeDomainRequest{
+				BridgeDomain: models.InterfaceToBridgeDomain(resource.Data),
+			}
+			response, err := service.CreateBridgeDomain(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.BridgeDomain,
+			})
+
+		case "config_node":
+			request := &models.CreateConfigNodeRequest{
+				ConfigNode: models.InterfaceToConfigNode(resource.Data),
+			}
+			response, err := service.CreateConfigNode(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ConfigNode,
+			})
+
+		case "config_root":
+			request := &models.CreateConfigRootRequest{
+				ConfigRoot: models.InterfaceToConfigRoot(resource.Data),
+			}
+			response, err := service.CreateConfigRoot(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ConfigRoot,
+			})
+
+		case "customer_attachment":
+			request := &models.CreateCustomerAttachmentRequest{
+				CustomerAttachment: models.InterfaceToCustomerAttachment(resource.Data),
+			}
+			response, err := service.CreateCustomerAttachment(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.CustomerAttachment,
+			})
+
+		case "database_node":
+			request := &models.CreateDatabaseNodeRequest{
+				DatabaseNode: models.InterfaceToDatabaseNode(resource.Data),
+			}
+			response, err := service.CreateDatabaseNode(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.DatabaseNode,
+			})
+
+		case "discovery_service_assignment":
+			request := &models.CreateDiscoveryServiceAssignmentRequest{
+				DiscoveryServiceAssignment: models.InterfaceToDiscoveryServiceAssignment(resource.Data),
+			}
+			response, err := service.CreateDiscoveryServiceAssignment(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.DiscoveryServiceAssignment,
+			})
+
+		case "domain":
+			request := &models.CreateDomainRequest{
+				Domain: models.InterfaceToDomain(resource.Data),
+			}
+			response, err := service.CreateDomain(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.Domain,
+			})
+
+		case "dsa_rule":
+			request := &models.CreateDsaRuleRequest{
+				DsaRule: models.InterfaceToDsaRule(resource.Data),
+			}
+			response, err := service.CreateDsaRule(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.DsaRule,
+			})
+
+		case "e2_service_provider":
+			request := &models.CreateE2ServiceProviderRequest{
+				E2ServiceProvider: models.InterfaceToE2ServiceProvider(resource.Data),
+			}
+			response, err := service.CreateE2ServiceProvider(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.E2ServiceProvider,
+			})
+
+		case "firewall_policy":
+			request := &models.CreateFirewallPolicyRequest{
+				FirewallPolicy: models.InterfaceToFirewallPolicy(resource.Data),
+			}
+			response, err := service.CreateFirewallPolicy(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.FirewallPolicy,
+			})
+
+		case "firewall_rule":
+			request := &models.CreateFirewallRuleRequest{
+				FirewallRule: models.InterfaceToFirewallRule(resource.Data),
+			}
+			response, err := service.CreateFirewallRule(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.FirewallRule,
+			})
+
+		case "floating_ip_pool":
+			request := &models.CreateFloatingIPPoolRequest{
+				FloatingIPPool: models.InterfaceToFloatingIPPool(resource.Data),
+			}
+			response, err := service.CreateFloatingIPPool(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.FloatingIPPool,
+			})
+
+		case "floating_ip":
+			request := &models.CreateFloatingIPRequest{
+				FloatingIP: models.InterfaceToFloatingIP(resource.Data),
+			}
+			response, err := service.CreateFloatingIP(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.FloatingIP,
+			})
+
+		case "forwarding_class":
+			request := &models.CreateForwardingClassRequest{
+				ForwardingClass: models.InterfaceToForwardingClass(resource.Data),
+			}
+			response, err := service.CreateForwardingClass(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ForwardingClass,
+			})
+
+		case "global_qos_config":
+			request := &models.CreateGlobalQosConfigRequest{
+				GlobalQosConfig: models.InterfaceToGlobalQosConfig(resource.Data),
+			}
+			response, err := service.CreateGlobalQosConfig(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.GlobalQosConfig,
+			})
+
+		case "global_system_config":
+			request := &models.CreateGlobalSystemConfigRequest{
+				GlobalSystemConfig: models.InterfaceToGlobalSystemConfig(resource.Data),
+			}
+			response, err := service.CreateGlobalSystemConfig(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.GlobalSystemConfig,
+			})
+
+		case "global_vrouter_config":
+			request := &models.CreateGlobalVrouterConfigRequest{
+				GlobalVrouterConfig: models.InterfaceToGlobalVrouterConfig(resource.Data),
+			}
+			response, err := service.CreateGlobalVrouterConfig(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.GlobalVrouterConfig,
+			})
+
+		case "instance_ip":
+			request := &models.CreateInstanceIPRequest{
+				InstanceIP: models.InterfaceToInstanceIP(resource.Data),
+			}
+			response, err := service.CreateInstanceIP(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.InstanceIP,
+			})
+
+		case "interface_route_table":
+			request := &models.CreateInterfaceRouteTableRequest{
+				InterfaceRouteTable: models.InterfaceToInterfaceRouteTable(resource.Data),
+			}
+			response, err := service.CreateInterfaceRouteTable(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.InterfaceRouteTable,
+			})
+
+		case "loadbalancer_healthmonitor":
+			request := &models.CreateLoadbalancerHealthmonitorRequest{
+				LoadbalancerHealthmonitor: models.InterfaceToLoadbalancerHealthmonitor(resource.Data),
+			}
+			response, err := service.CreateLoadbalancerHealthmonitor(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.LoadbalancerHealthmonitor,
+			})
+
+		case "loadbalancer_listener":
+			request := &models.CreateLoadbalancerListenerRequest{
+				LoadbalancerListener: models.InterfaceToLoadbalancerListener(resource.Data),
+			}
+			response, err := service.CreateLoadbalancerListener(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.LoadbalancerListener,
+			})
+
+		case "loadbalancer_member":
+			request := &models.CreateLoadbalancerMemberRequest{
+				LoadbalancerMember: models.InterfaceToLoadbalancerMember(resource.Data),
+			}
+			response, err := service.CreateLoadbalancerMember(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.LoadbalancerMember,
+			})
+
+		case "loadbalancer_pool":
+			request := &models.CreateLoadbalancerPoolRequest{
+				LoadbalancerPool: models.InterfaceToLoadbalancerPool(resource.Data),
+			}
+			response, err := service.CreateLoadbalancerPool(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.LoadbalancerPool,
+			})
+
+		case "loadbalancer":
+			request := &models.CreateLoadbalancerRequest{
+				Loadbalancer: models.InterfaceToLoadbalancer(resource.Data),
+			}
+			response, err := service.CreateLoadbalancer(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.Loadbalancer,
+			})
+
+		case "logical_interface":
+			request := &models.CreateLogicalInterfaceRequest{
+				LogicalInterface: models.InterfaceToLogicalInterface(resource.Data),
+			}
+			response, err := service.CreateLogicalInterface(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.LogicalInterface,
+			})
+
+		case "logical_router":
+			request := &models.CreateLogicalRouterRequest{
+				LogicalRouter: models.InterfaceToLogicalRouter(resource.Data),
+			}
+			response, err := service.CreateLogicalRouter(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.LogicalRouter,
+			})
+
+		case "namespace":
+			request := &models.CreateNamespaceRequest{
+				Namespace: models.InterfaceToNamespace(resource.Data),
+			}
+			response, err := service.CreateNamespace(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.Namespace,
+			})
+
+		case "network_device_config":
+			request := &models.CreateNetworkDeviceConfigRequest{
+				NetworkDeviceConfig: models.InterfaceToNetworkDeviceConfig(resource.Data),
+			}
+			response, err := service.CreateNetworkDeviceConfig(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.NetworkDeviceConfig,
+			})
+
+		case "network_ipam":
+			request := &models.CreateNetworkIpamRequest{
+				NetworkIpam: models.InterfaceToNetworkIpam(resource.Data),
+			}
+			response, err := service.CreateNetworkIpam(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.NetworkIpam,
+			})
+
+		case "network_policy":
+			request := &models.CreateNetworkPolicyRequest{
+				NetworkPolicy: models.InterfaceToNetworkPolicy(resource.Data),
+			}
+			response, err := service.CreateNetworkPolicy(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.NetworkPolicy,
+			})
+
+		case "peering_policy":
+			request := &models.CreatePeeringPolicyRequest{
+				PeeringPolicy: models.InterfaceToPeeringPolicy(resource.Data),
+			}
+			response, err := service.CreatePeeringPolicy(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.PeeringPolicy,
+			})
+
+		case "physical_interface":
+			request := &models.CreatePhysicalInterfaceRequest{
+				PhysicalInterface: models.InterfaceToPhysicalInterface(resource.Data),
+			}
+			response, err := service.CreatePhysicalInterface(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.PhysicalInterface,
+			})
+
+		case "physical_router":
+			request := &models.CreatePhysicalRouterRequest{
+				PhysicalRouter: models.InterfaceToPhysicalRouter(resource.Data),
+			}
+			response, err := service.CreatePhysicalRouter(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.PhysicalRouter,
+			})
+
+		case "policy_management":
+			request := &models.CreatePolicyManagementRequest{
+				PolicyManagement: models.InterfaceToPolicyManagement(resource.Data),
+			}
+			response, err := service.CreatePolicyManagement(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.PolicyManagement,
+			})
+
+		case "port_tuple":
+			request := &models.CreatePortTupleRequest{
+				PortTuple: models.InterfaceToPortTuple(resource.Data),
+			}
+			response, err := service.CreatePortTuple(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.PortTuple,
+			})
+
+		case "project":
+			request := &models.CreateProjectRequest{
+				Project: models.InterfaceToProject(resource.Data),
+			}
+			response, err := service.CreateProject(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.Project,
+			})
+
+		case "provider_attachment":
+			request := &models.CreateProviderAttachmentRequest{
+				ProviderAttachment: models.InterfaceToProviderAttachment(resource.Data),
+			}
+			response, err := service.CreateProviderAttachment(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ProviderAttachment,
+			})
+
+		case "qos_config":
+			request := &models.CreateQosConfigRequest{
+				QosConfig: models.InterfaceToQosConfig(resource.Data),
+			}
+			response, err := service.CreateQosConfig(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.QosConfig,
+			})
+
+		case "qos_queue":
+			request := &models.CreateQosQueueRequest{
+				QosQueue: models.InterfaceToQosQueue(resource.Data),
+			}
+			response, err := service.CreateQosQueue(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.QosQueue,
+			})
+
+		case "route_aggregate":
+			request := &models.CreateRouteAggregateRequest{
+				RouteAggregate: models.InterfaceToRouteAggregate(resource.Data),
+			}
+			response, err := service.CreateRouteAggregate(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.RouteAggregate,
+			})
+
+		case "route_table":
+			request := &models.CreateRouteTableRequest{
+				RouteTable: models.InterfaceToRouteTable(resource.Data),
+			}
+			response, err := service.CreateRouteTable(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.RouteTable,
+			})
+
+		case "route_target":
+			request := &models.CreateRouteTargetRequest{
+				RouteTarget: models.InterfaceToRouteTarget(resource.Data),
+			}
+			response, err := service.CreateRouteTarget(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.RouteTarget,
+			})
+
+		case "routing_instance":
+			request := &models.CreateRoutingInstanceRequest{
+				RoutingInstance: models.InterfaceToRoutingInstance(resource.Data),
+			}
+			response, err := service.CreateRoutingInstance(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.RoutingInstance,
+			})
+
+		case "routing_policy":
+			request := &models.CreateRoutingPolicyRequest{
+				RoutingPolicy: models.InterfaceToRoutingPolicy(resource.Data),
+			}
+			response, err := service.CreateRoutingPolicy(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.RoutingPolicy,
+			})
+
+		case "security_group":
+			request := &models.CreateSecurityGroupRequest{
+				SecurityGroup: models.InterfaceToSecurityGroup(resource.Data),
+			}
+			response, err := service.CreateSecurityGroup(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.SecurityGroup,
+			})
+
+		case "security_logging_object":
+			request := &models.CreateSecurityLoggingObjectRequest{
+				SecurityLoggingObject: models.InterfaceToSecurityLoggingObject(resource.Data),
+			}
+			response, err := service.CreateSecurityLoggingObject(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.SecurityLoggingObject,
+			})
+
+		case "service_appliance":
+			request := &models.CreateServiceApplianceRequest{
+				ServiceAppliance: models.InterfaceToServiceAppliance(resource.Data),
+			}
+			response, err := service.CreateServiceAppliance(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ServiceAppliance,
+			})
+
+		case "service_appliance_set":
+			request := &models.CreateServiceApplianceSetRequest{
+				ServiceApplianceSet: models.InterfaceToServiceApplianceSet(resource.Data),
+			}
+			response, err := service.CreateServiceApplianceSet(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ServiceApplianceSet,
+			})
+
+		case "service_connection_module":
+			request := &models.CreateServiceConnectionModuleRequest{
+				ServiceConnectionModule: models.InterfaceToServiceConnectionModule(resource.Data),
+			}
+			response, err := service.CreateServiceConnectionModule(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ServiceConnectionModule,
+			})
+
+		case "service_endpoint":
+			request := &models.CreateServiceEndpointRequest{
+				ServiceEndpoint: models.InterfaceToServiceEndpoint(resource.Data),
+			}
+			response, err := service.CreateServiceEndpoint(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ServiceEndpoint,
+			})
+
+		case "service_group":
+			request := &models.CreateServiceGroupRequest{
+				ServiceGroup: models.InterfaceToServiceGroup(resource.Data),
+			}
+			response, err := service.CreateServiceGroup(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ServiceGroup,
+			})
+
+		case "service_health_check":
+			request := &models.CreateServiceHealthCheckRequest{
+				ServiceHealthCheck: models.InterfaceToServiceHealthCheck(resource.Data),
+			}
+			response, err := service.CreateServiceHealthCheck(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ServiceHealthCheck,
+			})
+
+		case "service_instance":
+			request := &models.CreateServiceInstanceRequest{
+				ServiceInstance: models.InterfaceToServiceInstance(resource.Data),
+			}
+			response, err := service.CreateServiceInstance(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ServiceInstance,
+			})
+
+		case "service_object":
+			request := &models.CreateServiceObjectRequest{
+				ServiceObject: models.InterfaceToServiceObject(resource.Data),
+			}
+			response, err := service.CreateServiceObject(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ServiceObject,
+			})
+
+		case "service_template":
+			request := &models.CreateServiceTemplateRequest{
+				ServiceTemplate: models.InterfaceToServiceTemplate(resource.Data),
+			}
+			response, err := service.CreateServiceTemplate(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ServiceTemplate,
+			})
+
+		case "subnet":
+			request := &models.CreateSubnetRequest{
+				Subnet: models.InterfaceToSubnet(resource.Data),
+			}
+			response, err := service.CreateSubnet(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.Subnet,
+			})
+
+		case "tag":
+			request := &models.CreateTagRequest{
+				Tag: models.InterfaceToTag(resource.Data),
+			}
+			response, err := service.CreateTag(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.Tag,
+			})
+
+		case "tag_type":
+			request := &models.CreateTagTypeRequest{
+				TagType: models.InterfaceToTagType(resource.Data),
+			}
+			response, err := service.CreateTagType(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.TagType,
+			})
+
+		case "user":
+			request := &models.CreateUserRequest{
+				User: models.InterfaceToUser(resource.Data),
+			}
+			response, err := service.CreateUser(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.User,
+			})
+
+		case "virtual_DNS_record":
+			request := &models.CreateVirtualDNSRecordRequest{
+				VirtualDNSRecord: models.InterfaceToVirtualDNSRecord(resource.Data),
+			}
+			response, err := service.CreateVirtualDNSRecord(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.VirtualDNSRecord,
+			})
+
+		case "virtual_DNS":
+			request := &models.CreateVirtualDNSRequest{
+				VirtualDNS: models.InterfaceToVirtualDNS(resource.Data),
+			}
+			response, err := service.CreateVirtualDNS(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.VirtualDNS,
+			})
+
+		case "virtual_ip":
+			request := &models.CreateVirtualIPRequest{
+				VirtualIP: models.InterfaceToVirtualIP(resource.Data),
+			}
+			response, err := service.CreateVirtualIP(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.VirtualIP,
+			})
+
+		case "virtual_machine_interface":
+			request := &models.CreateVirtualMachineInterfaceRequest{
+				VirtualMachineInterface: models.InterfaceToVirtualMachineInterface(resource.Data),
+			}
+			response, err := service.CreateVirtualMachineInterface(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.VirtualMachineInterface,
+			})
+
+		case "virtual_machine":
+			request := &models.CreateVirtualMachineRequest{
+				VirtualMachine: models.InterfaceToVirtualMachine(resource.Data),
+			}
+			response, err := service.CreateVirtualMachine(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.VirtualMachine,
+			})
+
+		case "virtual_network":
+			request := &models.CreateVirtualNetworkRequest{
+				VirtualNetwork: models.InterfaceToVirtualNetwork(resource.Data),
+			}
+			response, err := service.CreateVirtualNetwork(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.VirtualNetwork,
+			})
+
+		case "virtual_router":
+			request := &models.CreateVirtualRouterRequest{
+				VirtualRouter: models.InterfaceToVirtualRouter(resource.Data),
+			}
+			response, err := service.CreateVirtualRouter(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.VirtualRouter,
+			})
+
+		case "appformix_node_role":
+			request := &models.CreateAppformixNodeRoleRequest{
+				AppformixNodeRole: models.InterfaceToAppformixNodeRole(resource.Data),
+			}
+			response, err := service.CreateAppformixNodeRole(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.AppformixNodeRole,
+			})
+
+		case "baremetal_node":
+			request := &models.CreateBaremetalNodeRequest{
+				BaremetalNode: models.InterfaceToBaremetalNode(resource.Data),
+			}
+			response, err := service.CreateBaremetalNode(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.BaremetalNode,
+			})
+
+		case "baremetal_port":
+			request := &models.CreateBaremetalPortRequest{
+				BaremetalPort: models.InterfaceToBaremetalPort(resource.Data),
+			}
+			response, err := service.CreateBaremetalPort(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.BaremetalPort,
+			})
+
+		case "contrail_analytics_database_node_role":
+			request := &models.CreateContrailAnalyticsDatabaseNodeRoleRequest{
+				ContrailAnalyticsDatabaseNodeRole: models.InterfaceToContrailAnalyticsDatabaseNodeRole(resource.Data),
+			}
+			response, err := service.CreateContrailAnalyticsDatabaseNodeRole(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ContrailAnalyticsDatabaseNodeRole,
+			})
+
+		case "contrail_analytics_node":
+			request := &models.CreateContrailAnalyticsNodeRequest{
+				ContrailAnalyticsNode: models.InterfaceToContrailAnalyticsNode(resource.Data),
+			}
+			response, err := service.CreateContrailAnalyticsNode(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ContrailAnalyticsNode,
+			})
+
+		case "contrail_cluster":
+			request := &models.CreateContrailClusterRequest{
+				ContrailCluster: models.InterfaceToContrailCluster(resource.Data),
+			}
+			response, err := service.CreateContrailCluster(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ContrailCluster,
+			})
+
+		case "contrail_controller_node_role":
+			request := &models.CreateContrailControllerNodeRoleRequest{
+				ContrailControllerNodeRole: models.InterfaceToContrailControllerNodeRole(resource.Data),
+			}
+			response, err := service.CreateContrailControllerNodeRole(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ContrailControllerNodeRole,
+			})
+
+		case "controller_node_role":
+			request := &models.CreateControllerNodeRoleRequest{
+				ControllerNodeRole: models.InterfaceToControllerNodeRole(resource.Data),
+			}
+			response, err := service.CreateControllerNodeRole(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ControllerNodeRole,
+			})
+
+		case "dashboard":
+			request := &models.CreateDashboardRequest{
+				Dashboard: models.InterfaceToDashboard(resource.Data),
+			}
+			response, err := service.CreateDashboard(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.Dashboard,
+			})
+
+		case "flavor":
+			request := &models.CreateFlavorRequest{
+				Flavor: models.InterfaceToFlavor(resource.Data),
+			}
+			response, err := service.CreateFlavor(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.Flavor,
+			})
+
+		case "os_image":
+			request := &models.CreateOsImageRequest{
+				OsImage: models.InterfaceToOsImage(resource.Data),
+			}
+			response, err := service.CreateOsImage(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.OsImage,
+			})
+
+		case "keypair":
+			request := &models.CreateKeypairRequest{
+				Keypair: models.InterfaceToKeypair(resource.Data),
+			}
+			response, err := service.CreateKeypair(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.Keypair,
+			})
+
+		case "kubernetes_cluster":
+			request := &models.CreateKubernetesClusterRequest{
+				KubernetesCluster: models.InterfaceToKubernetesCluster(resource.Data),
+			}
+			response, err := service.CreateKubernetesCluster(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.KubernetesCluster,
+			})
+
+		case "kubernetes_node":
+			request := &models.CreateKubernetesNodeRequest{
+				KubernetesNode: models.InterfaceToKubernetesNode(resource.Data),
+			}
+			response, err := service.CreateKubernetesNode(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.KubernetesNode,
+			})
+
+		case "location":
+			request := &models.CreateLocationRequest{
+				Location: models.InterfaceToLocation(resource.Data),
+			}
+			response, err := service.CreateLocation(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.Location,
+			})
+
+		case "node":
+			request := &models.CreateNodeRequest{
+				Node: models.InterfaceToNode(resource.Data),
+			}
+			response, err := service.CreateNode(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.Node,
+			})
+
+		case "openstack_cluster":
+			request := &models.CreateOpenstackClusterRequest{
+				OpenstackCluster: models.InterfaceToOpenstackCluster(resource.Data),
+			}
+			response, err := service.CreateOpenstackCluster(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.OpenstackCluster,
+			})
+
+		case "openstack_compute_node_role":
+			request := &models.CreateOpenstackComputeNodeRoleRequest{
+				OpenstackComputeNodeRole: models.InterfaceToOpenstackComputeNodeRole(resource.Data),
+			}
+			response, err := service.CreateOpenstackComputeNodeRole(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.OpenstackComputeNodeRole,
+			})
+
+		case "openstack_storage_node_role":
+			request := &models.CreateOpenstackStorageNodeRoleRequest{
+				OpenstackStorageNodeRole: models.InterfaceToOpenstackStorageNodeRole(resource.Data),
+			}
+			response, err := service.CreateOpenstackStorageNodeRole(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.OpenstackStorageNodeRole,
+			})
+
+		case "server":
+			request := &models.CreateServerRequest{
+				Server: models.InterfaceToServer(resource.Data),
+			}
+			response, err := service.CreateServer(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.Server,
+			})
+
+		case "vpn_group":
+			request := &models.CreateVPNGroupRequest{
+				VPNGroup: models.InterfaceToVPNGroup(resource.Data),
+			}
+			response, err := service.CreateVPNGroup(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.VPNGroup,
+			})
+
+		case "widget":
+			request := &models.CreateWidgetRequest{
+				Widget: models.InterfaceToWidget(resource.Data),
+			}
+			response, err := service.CreateWidget(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.Widget,
+			})
+
+		}
+	}
+	return c.JSON(http.StatusCreated, responses)
 }
 
 //RegisterRESTAPI register REST API service for path.
@@ -612,4 +1933,5 @@ func (service *ContrailService) RegisterRESTAPI(e *echo.Echo) {
 	e.GET("/widget/:id", service.RESTGetWidget)
 	e.DELETE("/widget/:id", service.RESTDeleteWidget)
 
+	e.POST("sync", service.RESTSync)
 }

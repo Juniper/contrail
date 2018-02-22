@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -140,37 +141,37 @@ func scanFlavor(values map[string]interface{}) (*models.Flavor, error) {
 
 	if value, ok := values["vcpus"]; ok {
 
-		m.Vcpus = common.InterfaceToInt64(value)
+		m.Vcpus = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["uuid"]; ok {
 
-		m.UUID = common.InterfaceToString(value)
+		m.UUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["swap"]; ok {
 
-		m.Swap = common.InterfaceToInt64(value)
+		m.Swap = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["rxtx_factor"]; ok {
 
-		m.RXTXFactor = common.InterfaceToInt64(value)
+		m.RXTXFactor = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["ram"]; ok {
 
-		m.RAM = common.InterfaceToInt64(value)
+		m.RAM = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["property"]; ok {
 
-		m.Property = common.InterfaceToString(value)
+		m.Property = schema.InterfaceToString(value)
 
 	}
 
@@ -182,133 +183,133 @@ func scanFlavor(values map[string]interface{}) (*models.Flavor, error) {
 
 	if value, ok := values["owner_access"]; ok {
 
-		m.Perms2.OwnerAccess = common.InterfaceToInt64(value)
+		m.Perms2.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		m.Perms2.Owner = common.InterfaceToString(value)
+		m.Perms2.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		m.Perms2.GlobalAccess = common.InterfaceToInt64(value)
+		m.Perms2.GlobalAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		m.ParentUUID = common.InterfaceToString(value)
+		m.ParentUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		m.ParentType = common.InterfaceToString(value)
+		m.ParentType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["name"]; ok {
 
-		m.Name = common.InterfaceToString(value)
+		m.Name = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["type"]; ok {
 
-		m.Links.Type = common.InterfaceToString(value)
+		m.Links.Type = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["rel"]; ok {
 
-		m.Links.Rel = common.InterfaceToString(value)
+		m.Links.Rel = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["href"]; ok {
 
-		m.Links.Href = common.InterfaceToString(value)
+		m.Links.Href = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["is_public"]; ok {
 
-		m.IsPublic = common.InterfaceToBool(value)
+		m.IsPublic = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		m.IDPerms.UserVisible = common.InterfaceToBool(value)
+		m.IDPerms.UserVisible = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		m.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		m.IDPerms.Permissions.Owner = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		m.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		m.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		m.IDPerms.Permissions.Group = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Group = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		m.IDPerms.LastModified = common.InterfaceToString(value)
+		m.IDPerms.LastModified = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		m.IDPerms.Enable = common.InterfaceToBool(value)
+		m.IDPerms.Enable = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		m.IDPerms.Description = common.InterfaceToString(value)
+		m.IDPerms.Description = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		m.IDPerms.Creator = common.InterfaceToString(value)
+		m.IDPerms.Creator = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		m.IDPerms.Created = common.InterfaceToString(value)
+		m.IDPerms.Created = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["id"]; ok {
 
-		m.ID = common.InterfaceToString(value)
+		m.ID = schema.InterfaceToString(value)
 
 	}
 
@@ -320,19 +321,19 @@ func scanFlavor(values map[string]interface{}) (*models.Flavor, error) {
 
 	if value, ok := values["ephemeral"]; ok {
 
-		m.Ephemeral = common.InterfaceToInt64(value)
+		m.Ephemeral = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["display_name"]; ok {
 
-		m.DisplayName = common.InterfaceToString(value)
+		m.DisplayName = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["disk"]; ok {
 
-		m.Disk = common.InterfaceToInt64(value)
+		m.Disk = schema.InterfaceToInt64(value)
 
 	}
 

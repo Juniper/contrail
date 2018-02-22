@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -65,11 +66,11 @@ var ServiceEndpointBackRefFields = map[string][]string{}
 // ServiceEndpointParentTypes is possible parents for ServiceEndpoint
 var ServiceEndpointParents = []string{}
 
-const insertServiceEndpointServiceObjectQuery = "insert into `ref_service_endpoint_service_object` (`from`, `to` ) values (?, ?);"
-
 const insertServiceEndpointServiceConnectionModuleQuery = "insert into `ref_service_endpoint_service_connection_module` (`from`, `to` ) values (?, ?);"
 
 const insertServiceEndpointPhysicalRouterQuery = "insert into `ref_service_endpoint_physical_router` (`from`, `to` ) values (?, ?);"
+
+const insertServiceEndpointServiceObjectQuery = "insert into `ref_service_endpoint_service_object` (`from`, `to` ) values (?, ?);"
 
 // CreateServiceEndpoint inserts ServiceEndpoint to DB
 func CreateServiceEndpoint(
@@ -112,19 +113,6 @@ func CreateServiceEndpoint(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtPhysicalRouterRef, err := tx.Prepare(insertServiceEndpointPhysicalRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing PhysicalRouterRefs create statement failed")
-	}
-	defer stmtPhysicalRouterRef.Close()
-	for _, ref := range model.PhysicalRouterRefs {
-
-		_, err = stmtPhysicalRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "PhysicalRouterRefs create failed")
-		}
-	}
-
 	stmtServiceObjectRef, err := tx.Prepare(insertServiceEndpointServiceObjectQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ServiceObjectRefs create statement failed")
@@ -148,6 +136,19 @@ func CreateServiceEndpoint(
 		_, err = stmtServiceConnectionModuleRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceConnectionModuleRefs create failed")
+		}
+	}
+
+	stmtPhysicalRouterRef, err := tx.Prepare(insertServiceEndpointPhysicalRouterQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing PhysicalRouterRefs create statement failed")
+	}
+	defer stmtPhysicalRouterRef.Close()
+	for _, ref := range model.PhysicalRouterRefs {
+
+		_, err = stmtPhysicalRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "PhysicalRouterRefs create failed")
 		}
 	}
 
@@ -175,7 +176,7 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	if value, ok := values["uuid"]; ok {
 
-		m.UUID = common.InterfaceToString(value)
+		m.UUID = schema.InterfaceToString(value)
 
 	}
 
@@ -187,97 +188,97 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	if value, ok := values["owner_access"]; ok {
 
-		m.Perms2.OwnerAccess = common.InterfaceToInt64(value)
+		m.Perms2.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		m.Perms2.Owner = common.InterfaceToString(value)
+		m.Perms2.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		m.Perms2.GlobalAccess = common.InterfaceToInt64(value)
+		m.Perms2.GlobalAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		m.ParentUUID = common.InterfaceToString(value)
+		m.ParentUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		m.ParentType = common.InterfaceToString(value)
+		m.ParentType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		m.IDPerms.UserVisible = common.InterfaceToBool(value)
+		m.IDPerms.UserVisible = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		m.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		m.IDPerms.Permissions.Owner = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		m.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		m.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		m.IDPerms.Permissions.Group = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Group = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		m.IDPerms.LastModified = common.InterfaceToString(value)
+		m.IDPerms.LastModified = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		m.IDPerms.Enable = common.InterfaceToBool(value)
+		m.IDPerms.Enable = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		m.IDPerms.Description = common.InterfaceToString(value)
+		m.IDPerms.Description = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		m.IDPerms.Creator = common.InterfaceToString(value)
+		m.IDPerms.Creator = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		m.IDPerms.Created = common.InterfaceToString(value)
+		m.IDPerms.Created = schema.InterfaceToString(value)
 
 	}
 
@@ -289,7 +290,7 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	if value, ok := values["display_name"]; ok {
 
-		m.DisplayName = common.InterfaceToString(value)
+		m.DisplayName = schema.InterfaceToString(value)
 
 	}
 
@@ -301,14 +302,14 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	if value, ok := values["ref_service_connection_module"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
@@ -321,14 +322,14 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	if value, ok := values["ref_physical_router"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
@@ -341,14 +342,14 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	if value, ok := values["ref_service_object"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}

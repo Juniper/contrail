@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTForwardingClassUpdateRequest for update request for REST.
-type RESTForwardingClassUpdateRequest struct {
-	Data map[string]interface{} `json:"forwarding-class"`
-}
-
 //RESTCreateForwardingClass handle a Create REST service.
 func (service *ContrailService) RESTCreateForwardingClass(c echo.Context) error {
 	requestData := &models.CreateForwardingClassRequest{}

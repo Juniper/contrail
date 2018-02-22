@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTVirtualDNSRecordUpdateRequest for update request for REST.
-type RESTVirtualDNSRecordUpdateRequest struct {
-	Data map[string]interface{} `json:"virtual-DNS-record"`
-}
-
 //RESTCreateVirtualDNSRecord handle a Create REST service.
 func (service *ContrailService) RESTCreateVirtualDNSRecord(c echo.Context) error {
 	requestData := &models.CreateVirtualDNSRecordRequest{}

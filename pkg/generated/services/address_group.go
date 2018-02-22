@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTAddressGroupUpdateRequest for update request for REST.
-type RESTAddressGroupUpdateRequest struct {
-	Data map[string]interface{} `json:"address-group"`
-}
-
 //RESTCreateAddressGroup handle a Create REST service.
 func (service *ContrailService) RESTCreateAddressGroup(c echo.Context) error {
 	requestData := &models.CreateAddressGroupRequest{}

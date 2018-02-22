@@ -12,17 +12,20 @@ import (
 	"github.com/pkg/errors"
 )
 
+//For skip import error.
+var _ = errors.New("")
+
 func TestVirtualIP(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 	db := testDB
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	common.UseTable(db, "metadata")
-	common.UseTable(db, "virtual_ip")
+	mutexMetadata := common.UseTable(db, "metadata")
+	mutexTable := common.UseTable(db, "virtual_ip")
 	defer func() {
-		common.ClearTable(db, "virtual_ip")
-		common.ClearTable(db, "metadata")
+		mutexTable.Unlock()
+		mutexMetadata.Unlock()
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -302,47 +305,6 @@ func TestVirtualIP(t *testing.T) {
 	//Delete ref entries, referred objects
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_virtual_ip_loadbalancer_pool` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing LoadbalancerPoolRefs delete statement failed")
-		}
-		_, err = stmt.Exec("virtual_ip_dummy_uuid", "virtual_ip_loadbalancer_pool_ref_uuid")
-		_, err = stmt.Exec("virtual_ip_dummy_uuid", "virtual_ip_loadbalancer_pool_ref_uuid1")
-		_, err = stmt.Exec("virtual_ip_dummy_uuid", "virtual_ip_loadbalancer_pool_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "LoadbalancerPoolRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteLoadbalancerPool(ctx, tx,
-			&models.DeleteLoadbalancerPoolRequest{
-				ID: "virtual_ip_loadbalancer_pool_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref virtual_ip_loadbalancer_pool_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteLoadbalancerPool(ctx, tx,
-			&models.DeleteLoadbalancerPoolRequest{
-				ID: "virtual_ip_loadbalancer_pool_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref virtual_ip_loadbalancer_pool_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteLoadbalancerPool(
-			ctx,
-			tx,
-			&models.DeleteLoadbalancerPoolRequest{
-				ID: "virtual_ip_loadbalancer_pool_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref virtual_ip_loadbalancer_pool_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		stmt, err := tx.Prepare("delete from `ref_virtual_ip_virtual_machine_interface` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
@@ -381,6 +343,47 @@ func TestVirtualIP(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("delete ref virtual_ip_virtual_machine_interface_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_virtual_ip_loadbalancer_pool` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing LoadbalancerPoolRefs delete statement failed")
+		}
+		_, err = stmt.Exec("virtual_ip_dummy_uuid", "virtual_ip_loadbalancer_pool_ref_uuid")
+		_, err = stmt.Exec("virtual_ip_dummy_uuid", "virtual_ip_loadbalancer_pool_ref_uuid1")
+		_, err = stmt.Exec("virtual_ip_dummy_uuid", "virtual_ip_loadbalancer_pool_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "LoadbalancerPoolRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteLoadbalancerPool(ctx, tx,
+			&models.DeleteLoadbalancerPoolRequest{
+				ID: "virtual_ip_loadbalancer_pool_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref virtual_ip_loadbalancer_pool_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteLoadbalancerPool(ctx, tx,
+			&models.DeleteLoadbalancerPoolRequest{
+				ID: "virtual_ip_loadbalancer_pool_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref virtual_ip_loadbalancer_pool_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteLoadbalancerPool(
+			ctx,
+			tx,
+			&models.DeleteLoadbalancerPoolRequest{
+				ID: "virtual_ip_loadbalancer_pool_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref virtual_ip_loadbalancer_pool_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

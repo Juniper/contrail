@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -120,19 +121,6 @@ func CreateBGPAsAService(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertBGPAsAServiceVirtualMachineInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
-	}
-	defer stmtVirtualMachineInterfaceRef.Close()
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
 	stmtServiceHealthCheckRef, err := tx.Prepare(insertBGPAsAServiceServiceHealthCheckQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ServiceHealthCheckRefs create statement failed")
@@ -143,6 +131,19 @@ func CreateBGPAsAService(
 		_, err = stmtServiceHealthCheckRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceHealthCheckRefs create failed")
+		}
+	}
+
+	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertBGPAsAServiceVirtualMachineInterfaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
+	}
+	defer stmtVirtualMachineInterfaceRef.Close()
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
 	}
 
@@ -170,7 +171,7 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 
 	if value, ok := values["uuid"]; ok {
 
-		m.UUID = common.InterfaceToString(value)
+		m.UUID = schema.InterfaceToString(value)
 
 	}
 
@@ -182,97 +183,97 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 
 	if value, ok := values["owner_access"]; ok {
 
-		m.Perms2.OwnerAccess = common.InterfaceToInt64(value)
+		m.Perms2.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		m.Perms2.Owner = common.InterfaceToString(value)
+		m.Perms2.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		m.Perms2.GlobalAccess = common.InterfaceToInt64(value)
+		m.Perms2.GlobalAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		m.ParentUUID = common.InterfaceToString(value)
+		m.ParentUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		m.ParentType = common.InterfaceToString(value)
+		m.ParentType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		m.IDPerms.UserVisible = common.InterfaceToBool(value)
+		m.IDPerms.UserVisible = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		m.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		m.IDPerms.Permissions.Owner = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		m.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		m.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		m.IDPerms.Permissions.Group = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Group = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		m.IDPerms.LastModified = common.InterfaceToString(value)
+		m.IDPerms.LastModified = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		m.IDPerms.Enable = common.InterfaceToBool(value)
+		m.IDPerms.Enable = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		m.IDPerms.Description = common.InterfaceToString(value)
+		m.IDPerms.Description = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		m.IDPerms.Creator = common.InterfaceToString(value)
+		m.IDPerms.Creator = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		m.IDPerms.Created = common.InterfaceToString(value)
+		m.IDPerms.Created = schema.InterfaceToString(value)
 
 	}
 
@@ -284,43 +285,43 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 
 	if value, ok := values["display_name"]; ok {
 
-		m.DisplayName = common.InterfaceToString(value)
+		m.DisplayName = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["bgpaas_suppress_route_advertisement"]; ok {
 
-		m.BgpaasSuppressRouteAdvertisement = common.InterfaceToBool(value)
+		m.BgpaasSuppressRouteAdvertisement = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["bgpaas_shared"]; ok {
 
-		m.BgpaasShared = common.InterfaceToBool(value)
+		m.BgpaasShared = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["bgpaas_session_attributes"]; ok {
 
-		m.BgpaasSessionAttributes = common.InterfaceToString(value)
+		m.BgpaasSessionAttributes = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["bgpaas_ipv4_mapped_ipv6_nexthop"]; ok {
 
-		m.BgpaasIpv4MappedIpv6Nexthop = common.InterfaceToBool(value)
+		m.BgpaasIpv4MappedIpv6Nexthop = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["bgpaas_ip_address"]; ok {
 
-		m.BgpaasIPAddress = common.InterfaceToString(value)
+		m.BgpaasIPAddress = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["autonomous_system"]; ok {
 
-		m.AutonomousSystem = common.InterfaceToInt64(value)
+		m.AutonomousSystem = schema.InterfaceToInt64(value)
 
 	}
 
@@ -332,14 +333,14 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
@@ -352,14 +353,14 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 
 	if value, ok := values["ref_service_health_check"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -295,7 +296,7 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["uuid"]; ok {
 
-		m.UUID = common.InterfaceToString(value)
+		m.UUID = schema.InterfaceToString(value)
 
 	}
 
@@ -307,97 +308,97 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["owner_access"]; ok {
 
-		m.Perms2.OwnerAccess = common.InterfaceToInt64(value)
+		m.Perms2.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		m.Perms2.Owner = common.InterfaceToString(value)
+		m.Perms2.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		m.Perms2.GlobalAccess = common.InterfaceToInt64(value)
+		m.Perms2.GlobalAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		m.ParentUUID = common.InterfaceToString(value)
+		m.ParentUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		m.ParentType = common.InterfaceToString(value)
+		m.ParentType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		m.IDPerms.UserVisible = common.InterfaceToBool(value)
+		m.IDPerms.UserVisible = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		m.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		m.IDPerms.Permissions.Owner = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		m.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		m.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		m.IDPerms.Permissions.Group = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Group = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		m.IDPerms.LastModified = common.InterfaceToString(value)
+		m.IDPerms.LastModified = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		m.IDPerms.Enable = common.InterfaceToBool(value)
+		m.IDPerms.Enable = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		m.IDPerms.Description = common.InterfaceToString(value)
+		m.IDPerms.Description = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		m.IDPerms.Creator = common.InterfaceToString(value)
+		m.IDPerms.Creator = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		m.IDPerms.Created = common.InterfaceToString(value)
+		m.IDPerms.Created = schema.InterfaceToString(value)
 
 	}
 
@@ -409,25 +410,25 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["virtual_network_limit"]; ok {
 
-		m.DomainLimits.VirtualNetworkLimit = common.InterfaceToInt64(value)
+		m.DomainLimits.VirtualNetworkLimit = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["security_group_limit"]; ok {
 
-		m.DomainLimits.SecurityGroupLimit = common.InterfaceToInt64(value)
+		m.DomainLimits.SecurityGroupLimit = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["project_limit"]; ok {
 
-		m.DomainLimits.ProjectLimit = common.InterfaceToInt64(value)
+		m.DomainLimits.ProjectLimit = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["display_name"]; ok {
 
-		m.DisplayName = common.InterfaceToString(value)
+		m.DisplayName = schema.InterfaceToString(value)
 
 	}
 
@@ -439,14 +440,14 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["backref_api_access_list"]; ok {
 		var childResources []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
 		for _, childResource := range childResources {
 			childResourceMap, ok := childResource.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
 			if uuid == "" {
 				continue
 			}
@@ -455,133 +456,133 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-				childModel.UUID = common.InterfaceToString(propertyValue)
+				childModel.UUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
 
-				childModel.Perms2.OwnerAccess = common.InterfaceToInt64(propertyValue)
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
 
-				childModel.Perms2.Owner = common.InterfaceToString(propertyValue)
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
 
-				childModel.Perms2.GlobalAccess = common.InterfaceToInt64(propertyValue)
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
 
-				childModel.ParentUUID = common.InterfaceToString(propertyValue)
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
 
-				childModel.ParentType = common.InterfaceToString(propertyValue)
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.UserVisible = common.InterfaceToBool(propertyValue)
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(propertyValue)
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.Owner = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(propertyValue)
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(propertyValue)
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.Group = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.LastModified = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Enable = common.InterfaceToBool(propertyValue)
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Description = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Creator = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Created = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.FQName)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
 
 			}
 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
-				childModel.DisplayName = common.InterfaceToString(propertyValue)
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["rbac_rule"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.APIAccessListEntries.RbacRule)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.APIAccessListEntries.RbacRule)
 
 			}
 
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
 
 			}
 
@@ -590,14 +591,14 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["backref_namespace"]; ok {
 		var childResources []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
 		for _, childResource := range childResources {
 			childResourceMap, ok := childResource.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
 			if uuid == "" {
 				continue
 			}
@@ -606,139 +607,139 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-				childModel.UUID = common.InterfaceToString(propertyValue)
+				childModel.UUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
 
-				childModel.Perms2.OwnerAccess = common.InterfaceToInt64(propertyValue)
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
 
-				childModel.Perms2.Owner = common.InterfaceToString(propertyValue)
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
 
-				childModel.Perms2.GlobalAccess = common.InterfaceToInt64(propertyValue)
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
 
-				childModel.ParentUUID = common.InterfaceToString(propertyValue)
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
 
-				childModel.ParentType = common.InterfaceToString(propertyValue)
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["ip_prefix_len"]; ok && propertyValue != nil {
 
-				childModel.NamespaceCidr.IPPrefixLen = common.InterfaceToInt64(propertyValue)
+				childModel.NamespaceCidr.IPPrefixLen = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["ip_prefix"]; ok && propertyValue != nil {
 
-				childModel.NamespaceCidr.IPPrefix = common.InterfaceToString(propertyValue)
+				childModel.NamespaceCidr.IPPrefix = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.UserVisible = common.InterfaceToBool(propertyValue)
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(propertyValue)
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.Owner = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(propertyValue)
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(propertyValue)
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.Group = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.LastModified = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Enable = common.InterfaceToBool(propertyValue)
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Description = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Creator = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Created = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.FQName)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
 
 			}
 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
-				childModel.DisplayName = common.InterfaceToString(propertyValue)
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
 
 			}
 
@@ -747,14 +748,14 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["backref_project"]; ok {
 		var childResources []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
 		for _, childResource := range childResources {
 			childResourceMap, ok := childResource.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
 			if uuid == "" {
 				continue
 			}
@@ -763,295 +764,295 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 			if propertyValue, ok := childResourceMap["vxlan_routing"]; ok && propertyValue != nil {
 
-				childModel.VxlanRouting = common.InterfaceToBool(propertyValue)
+				childModel.VxlanRouting = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-				childModel.UUID = common.InterfaceToString(propertyValue)
+				childModel.UUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["virtual_router"]; ok && propertyValue != nil {
 
-				childModel.Quota.VirtualRouter = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.VirtualRouter = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["virtual_network"]; ok && propertyValue != nil {
 
-				childModel.Quota.VirtualNetwork = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.VirtualNetwork = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["virtual_machine_interface"]; ok && propertyValue != nil {
 
-				childModel.Quota.VirtualMachineInterface = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.VirtualMachineInterface = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["virtual_ip"]; ok && propertyValue != nil {
 
-				childModel.Quota.VirtualIP = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.VirtualIP = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["virtual_DNS_record"]; ok && propertyValue != nil {
 
-				childModel.Quota.VirtualDNSRecord = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.VirtualDNSRecord = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["virtual_DNS"]; ok && propertyValue != nil {
 
-				childModel.Quota.VirtualDNS = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.VirtualDNS = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["subnet"]; ok && propertyValue != nil {
 
-				childModel.Quota.Subnet = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.Subnet = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["service_template"]; ok && propertyValue != nil {
 
-				childModel.Quota.ServiceTemplate = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.ServiceTemplate = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["service_instance"]; ok && propertyValue != nil {
 
-				childModel.Quota.ServiceInstance = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.ServiceInstance = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["security_logging_object"]; ok && propertyValue != nil {
 
-				childModel.Quota.SecurityLoggingObject = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.SecurityLoggingObject = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["security_group_rule"]; ok && propertyValue != nil {
 
-				childModel.Quota.SecurityGroupRule = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.SecurityGroupRule = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["security_group"]; ok && propertyValue != nil {
 
-				childModel.Quota.SecurityGroup = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.SecurityGroup = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["route_table"]; ok && propertyValue != nil {
 
-				childModel.Quota.RouteTable = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.RouteTable = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["network_policy"]; ok && propertyValue != nil {
 
-				childModel.Quota.NetworkPolicy = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.NetworkPolicy = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["network_ipam"]; ok && propertyValue != nil {
 
-				childModel.Quota.NetworkIpam = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.NetworkIpam = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["logical_router"]; ok && propertyValue != nil {
 
-				childModel.Quota.LogicalRouter = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.LogicalRouter = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["loadbalancer_pool"]; ok && propertyValue != nil {
 
-				childModel.Quota.LoadbalancerPool = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.LoadbalancerPool = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["loadbalancer_member"]; ok && propertyValue != nil {
 
-				childModel.Quota.LoadbalancerMember = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.LoadbalancerMember = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["loadbalancer_healthmonitor"]; ok && propertyValue != nil {
 
-				childModel.Quota.LoadbalancerHealthmonitor = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.LoadbalancerHealthmonitor = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["instance_ip"]; ok && propertyValue != nil {
 
-				childModel.Quota.InstanceIP = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.InstanceIP = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["global_vrouter_config"]; ok && propertyValue != nil {
 
-				childModel.Quota.GlobalVrouterConfig = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.GlobalVrouterConfig = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["floating_ip_pool"]; ok && propertyValue != nil {
 
-				childModel.Quota.FloatingIPPool = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.FloatingIPPool = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["floating_ip"]; ok && propertyValue != nil {
 
-				childModel.Quota.FloatingIP = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.FloatingIP = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["defaults"]; ok && propertyValue != nil {
 
-				childModel.Quota.Defaults = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.Defaults = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["bgp_router"]; ok && propertyValue != nil {
 
-				childModel.Quota.BGPRouter = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.BGPRouter = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["access_control_list"]; ok && propertyValue != nil {
 
-				childModel.Quota.AccessControlList = common.InterfaceToInt64(propertyValue)
+				childModel.Quota.AccessControlList = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
 
-				childModel.Perms2.OwnerAccess = common.InterfaceToInt64(propertyValue)
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
 
-				childModel.Perms2.Owner = common.InterfaceToString(propertyValue)
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
 
-				childModel.Perms2.GlobalAccess = common.InterfaceToInt64(propertyValue)
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
 
-				childModel.ParentUUID = common.InterfaceToString(propertyValue)
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
 
-				childModel.ParentType = common.InterfaceToString(propertyValue)
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.UserVisible = common.InterfaceToBool(propertyValue)
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(propertyValue)
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.Owner = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(propertyValue)
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(propertyValue)
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.Group = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.LastModified = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Enable = common.InterfaceToBool(propertyValue)
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Description = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Creator = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Created = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.FQName)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
 
 			}
 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
-				childModel.DisplayName = common.InterfaceToString(propertyValue)
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
 
 			}
 
 			if propertyValue, ok := childResourceMap["alarm_enable"]; ok && propertyValue != nil {
 
-				childModel.AlarmEnable = common.InterfaceToBool(propertyValue)
+				childModel.AlarmEnable = schema.InterfaceToBool(propertyValue)
 
 			}
 
@@ -1060,14 +1061,14 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["backref_service_template"]; ok {
 		var childResources []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
 		for _, childResource := range childResources {
 			childResourceMap, ok := childResource.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
 			if uuid == "" {
 				continue
 			}
@@ -1076,199 +1077,199 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-				childModel.UUID = common.InterfaceToString(propertyValue)
+				childModel.UUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["vrouter_instance_type"]; ok && propertyValue != nil {
 
-				childModel.ServiceTemplateProperties.VrouterInstanceType = common.InterfaceToString(propertyValue)
+				childModel.ServiceTemplateProperties.VrouterInstanceType = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["version"]; ok && propertyValue != nil {
 
-				childModel.ServiceTemplateProperties.Version = common.InterfaceToInt64(propertyValue)
+				childModel.ServiceTemplateProperties.Version = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["service_virtualization_type"]; ok && propertyValue != nil {
 
-				childModel.ServiceTemplateProperties.ServiceVirtualizationType = common.InterfaceToString(propertyValue)
+				childModel.ServiceTemplateProperties.ServiceVirtualizationType = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["service_type"]; ok && propertyValue != nil {
 
-				childModel.ServiceTemplateProperties.ServiceType = common.InterfaceToString(propertyValue)
+				childModel.ServiceTemplateProperties.ServiceType = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["service_scaling"]; ok && propertyValue != nil {
 
-				childModel.ServiceTemplateProperties.ServiceScaling = common.InterfaceToBool(propertyValue)
+				childModel.ServiceTemplateProperties.ServiceScaling = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["service_mode"]; ok && propertyValue != nil {
 
-				childModel.ServiceTemplateProperties.ServiceMode = common.InterfaceToString(propertyValue)
+				childModel.ServiceTemplateProperties.ServiceMode = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["ordered_interfaces"]; ok && propertyValue != nil {
 
-				childModel.ServiceTemplateProperties.OrderedInterfaces = common.InterfaceToBool(propertyValue)
+				childModel.ServiceTemplateProperties.OrderedInterfaces = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["interface_type"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.ServiceTemplateProperties.InterfaceType)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.ServiceTemplateProperties.InterfaceType)
 
 			}
 
 			if propertyValue, ok := childResourceMap["instance_data"]; ok && propertyValue != nil {
 
-				childModel.ServiceTemplateProperties.InstanceData = common.InterfaceToString(propertyValue)
+				childModel.ServiceTemplateProperties.InstanceData = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["image_name"]; ok && propertyValue != nil {
 
-				childModel.ServiceTemplateProperties.ImageName = common.InterfaceToString(propertyValue)
+				childModel.ServiceTemplateProperties.ImageName = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["flavor"]; ok && propertyValue != nil {
 
-				childModel.ServiceTemplateProperties.Flavor = common.InterfaceToString(propertyValue)
+				childModel.ServiceTemplateProperties.Flavor = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["availability_zone_enable"]; ok && propertyValue != nil {
 
-				childModel.ServiceTemplateProperties.AvailabilityZoneEnable = common.InterfaceToBool(propertyValue)
+				childModel.ServiceTemplateProperties.AvailabilityZoneEnable = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
 
-				childModel.Perms2.OwnerAccess = common.InterfaceToInt64(propertyValue)
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
 
-				childModel.Perms2.Owner = common.InterfaceToString(propertyValue)
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
 
-				childModel.Perms2.GlobalAccess = common.InterfaceToInt64(propertyValue)
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
 
-				childModel.ParentUUID = common.InterfaceToString(propertyValue)
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
 
-				childModel.ParentType = common.InterfaceToString(propertyValue)
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.UserVisible = common.InterfaceToBool(propertyValue)
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(propertyValue)
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.Owner = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(propertyValue)
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(propertyValue)
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.Group = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.LastModified = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Enable = common.InterfaceToBool(propertyValue)
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Description = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Creator = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Created = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.FQName)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
 
 			}
 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
-				childModel.DisplayName = common.InterfaceToString(propertyValue)
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
 
 			}
 
@@ -1277,14 +1278,14 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	if value, ok := values["backref_virtual_DNS"]; ok {
 		var childResources []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
 		for _, childResource := range childResources {
 			childResourceMap, ok := childResource.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
 			if uuid == "" {
 				continue
 			}
@@ -1293,175 +1294,175 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 			if propertyValue, ok := childResourceMap["reverse_resolution"]; ok && propertyValue != nil {
 
-				childModel.VirtualDNSData.ReverseResolution = common.InterfaceToBool(propertyValue)
+				childModel.VirtualDNSData.ReverseResolution = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["record_order"]; ok && propertyValue != nil {
 
-				childModel.VirtualDNSData.RecordOrder = common.InterfaceToString(propertyValue)
+				childModel.VirtualDNSData.RecordOrder = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["next_virtual_DNS"]; ok && propertyValue != nil {
 
-				childModel.VirtualDNSData.NextVirtualDNS = common.InterfaceToString(propertyValue)
+				childModel.VirtualDNSData.NextVirtualDNS = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["floating_ip_record"]; ok && propertyValue != nil {
 
-				childModel.VirtualDNSData.FloatingIPRecord = common.InterfaceToString(propertyValue)
+				childModel.VirtualDNSData.FloatingIPRecord = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["external_visible"]; ok && propertyValue != nil {
 
-				childModel.VirtualDNSData.ExternalVisible = common.InterfaceToBool(propertyValue)
+				childModel.VirtualDNSData.ExternalVisible = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["dynamic_records_from_client"]; ok && propertyValue != nil {
 
-				childModel.VirtualDNSData.DynamicRecordsFromClient = common.InterfaceToBool(propertyValue)
+				childModel.VirtualDNSData.DynamicRecordsFromClient = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["domain_name"]; ok && propertyValue != nil {
 
-				childModel.VirtualDNSData.DomainName = common.InterfaceToString(propertyValue)
+				childModel.VirtualDNSData.DomainName = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["default_ttl_seconds"]; ok && propertyValue != nil {
 
-				childModel.VirtualDNSData.DefaultTTLSeconds = common.InterfaceToInt64(propertyValue)
+				childModel.VirtualDNSData.DefaultTTLSeconds = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-				childModel.UUID = common.InterfaceToString(propertyValue)
+				childModel.UUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
 
-				childModel.Perms2.OwnerAccess = common.InterfaceToInt64(propertyValue)
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
 
-				childModel.Perms2.Owner = common.InterfaceToString(propertyValue)
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
 
-				childModel.Perms2.GlobalAccess = common.InterfaceToInt64(propertyValue)
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
 
-				childModel.ParentUUID = common.InterfaceToString(propertyValue)
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
 
-				childModel.ParentType = common.InterfaceToString(propertyValue)
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.UserVisible = common.InterfaceToBool(propertyValue)
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(propertyValue)
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.Owner = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(propertyValue)
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(propertyValue)
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Permissions.Group = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.LastModified = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Enable = common.InterfaceToBool(propertyValue)
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Description = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Creator = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
 
-				childModel.IDPerms.Created = common.InterfaceToString(propertyValue)
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.FQName)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
 
 			}
 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
-				childModel.DisplayName = common.InterfaceToString(propertyValue)
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
 
 			}
 

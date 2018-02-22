@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTVirtualMachineInterfaceUpdateRequest for update request for REST.
-type RESTVirtualMachineInterfaceUpdateRequest struct {
-	Data map[string]interface{} `json:"virtual-machine-interface"`
-}
-
 //RESTCreateVirtualMachineInterface handle a Create REST service.
 func (service *ContrailService) RESTCreateVirtualMachineInterface(c echo.Context) error {
 	requestData := &models.CreateVirtualMachineInterfaceRequest{}

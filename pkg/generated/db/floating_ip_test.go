@@ -12,17 +12,20 @@ import (
 	"github.com/pkg/errors"
 )
 
+//For skip import error.
+var _ = errors.New("")
+
 func TestFloatingIP(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 	db := testDB
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	common.UseTable(db, "metadata")
-	common.UseTable(db, "floating_ip")
+	mutexMetadata := common.UseTable(db, "metadata")
+	mutexTable := common.UseTable(db, "floating_ip")
 	defer func() {
-		common.ClearTable(db, "floating_ip")
-		common.ClearTable(db, "metadata")
+		mutexTable.Unlock()
+		mutexMetadata.Unlock()
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -259,14 +262,6 @@ func TestFloatingIP(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var VirtualMachineInterfaceref []interface{}
-	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"floating_ip_virtual_machine_interface_ref_uuid", "to": []string{"test", "floating_ip_virtual_machine_interface_ref_uuid"}})
-	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"floating_ip_virtual_machine_interface_ref_uuid1", "to": []string{"test", "floating_ip_virtual_machine_interface_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
-	//
 	//    var Projectref []interface{}
 	//    Projectref = append(Projectref, map[string]interface{}{"operation":"delete", "uuid":"floating_ip_project_ref_uuid", "to": []string{"test", "floating_ip_project_ref_uuid"}})
 	//    Projectref = append(Projectref, map[string]interface{}{"operation":"add", "uuid":"floating_ip_project_ref_uuid1", "to": []string{"test", "floating_ip_project_ref_uuid1"}})
@@ -274,6 +269,14 @@ func TestFloatingIP(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "ProjectRefs", ".", Projectref)
+	//
+	//    var VirtualMachineInterfaceref []interface{}
+	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"floating_ip_virtual_machine_interface_ref_uuid", "to": []string{"test", "floating_ip_virtual_machine_interface_ref_uuid"}})
+	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"floating_ip_virtual_machine_interface_ref_uuid1", "to": []string{"test", "floating_ip_virtual_machine_interface_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

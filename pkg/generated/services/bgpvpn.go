@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTBGPVPNUpdateRequest for update request for REST.
-type RESTBGPVPNUpdateRequest struct {
-	Data map[string]interface{} `json:"bgpvpn"`
-}
-
 //RESTCreateBGPVPN handle a Create REST service.
 func (service *ContrailService) RESTCreateBGPVPN(c echo.Context) error {
 	requestData := &models.CreateBGPVPNRequest{}

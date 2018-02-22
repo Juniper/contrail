@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTGlobalVrouterConfigUpdateRequest for update request for REST.
-type RESTGlobalVrouterConfigUpdateRequest struct {
-	Data map[string]interface{} `json:"global-vrouter-config"`
-}
-
 //RESTCreateGlobalVrouterConfig handle a Create REST service.
 func (service *ContrailService) RESTCreateGlobalVrouterConfig(c echo.Context) error {
 	requestData := &models.CreateGlobalVrouterConfigRequest{}

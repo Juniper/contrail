@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTCustomerAttachmentUpdateRequest for update request for REST.
-type RESTCustomerAttachmentUpdateRequest struct {
-	Data map[string]interface{} `json:"customer-attachment"`
-}
-
 //RESTCreateCustomerAttachment handle a Create REST service.
 func (service *ContrailService) RESTCreateCustomerAttachment(c echo.Context) error {
 	requestData := &models.CreateCustomerAttachmentRequest{}

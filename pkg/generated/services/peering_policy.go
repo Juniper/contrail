@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTPeeringPolicyUpdateRequest for update request for REST.
-type RESTPeeringPolicyUpdateRequest struct {
-	Data map[string]interface{} `json:"peering-policy"`
-}
-
 //RESTCreatePeeringPolicy handle a Create REST service.
 func (service *ContrailService) RESTCreatePeeringPolicy(c echo.Context) error {
 	requestData := &models.CreatePeeringPolicyRequest{}

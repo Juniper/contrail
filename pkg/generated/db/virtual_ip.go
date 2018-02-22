@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -53,12 +54,12 @@ var VirtualIPFields = []string{
 // VirtualIPRefFields is db reference fields for VirtualIP
 var VirtualIPRefFields = map[string][]string{
 
-	"loadbalancer_pool": []string{
+	"virtual_machine_interface": []string{
 		// <schema.Schema Value>
 
 	},
 
-	"virtual_machine_interface": []string{
+	"loadbalancer_pool": []string{
 		// <schema.Schema Value>
 
 	},
@@ -178,67 +179,67 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 
 	if value, ok := values["subnet_id"]; ok {
 
-		m.VirtualIPProperties.SubnetID = common.InterfaceToString(value)
+		m.VirtualIPProperties.SubnetID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["status_description"]; ok {
 
-		m.VirtualIPProperties.StatusDescription = common.InterfaceToString(value)
+		m.VirtualIPProperties.StatusDescription = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["status"]; ok {
 
-		m.VirtualIPProperties.Status = common.InterfaceToString(value)
+		m.VirtualIPProperties.Status = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["protocol_port"]; ok {
 
-		m.VirtualIPProperties.ProtocolPort = common.InterfaceToInt64(value)
+		m.VirtualIPProperties.ProtocolPort = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["protocol"]; ok {
 
-		m.VirtualIPProperties.Protocol = common.InterfaceToString(value)
+		m.VirtualIPProperties.Protocol = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["persistence_type"]; ok {
 
-		m.VirtualIPProperties.PersistenceType = common.InterfaceToString(value)
+		m.VirtualIPProperties.PersistenceType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["persistence_cookie_name"]; ok {
 
-		m.VirtualIPProperties.PersistenceCookieName = common.InterfaceToString(value)
+		m.VirtualIPProperties.PersistenceCookieName = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["connection_limit"]; ok {
 
-		m.VirtualIPProperties.ConnectionLimit = common.InterfaceToInt64(value)
+		m.VirtualIPProperties.ConnectionLimit = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["admin_state"]; ok {
 
-		m.VirtualIPProperties.AdminState = common.InterfaceToBool(value)
+		m.VirtualIPProperties.AdminState = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["address"]; ok {
 
-		m.VirtualIPProperties.Address = common.InterfaceToString(value)
+		m.VirtualIPProperties.Address = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["uuid"]; ok {
 
-		m.UUID = common.InterfaceToString(value)
+		m.UUID = schema.InterfaceToString(value)
 
 	}
 
@@ -250,97 +251,97 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 
 	if value, ok := values["owner_access"]; ok {
 
-		m.Perms2.OwnerAccess = common.InterfaceToInt64(value)
+		m.Perms2.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		m.Perms2.Owner = common.InterfaceToString(value)
+		m.Perms2.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		m.Perms2.GlobalAccess = common.InterfaceToInt64(value)
+		m.Perms2.GlobalAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		m.ParentUUID = common.InterfaceToString(value)
+		m.ParentUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		m.ParentType = common.InterfaceToString(value)
+		m.ParentType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		m.IDPerms.UserVisible = common.InterfaceToBool(value)
+		m.IDPerms.UserVisible = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		m.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		m.IDPerms.Permissions.Owner = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		m.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		m.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		m.IDPerms.Permissions.Group = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Group = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		m.IDPerms.LastModified = common.InterfaceToString(value)
+		m.IDPerms.LastModified = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		m.IDPerms.Enable = common.InterfaceToBool(value)
+		m.IDPerms.Enable = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		m.IDPerms.Description = common.InterfaceToString(value)
+		m.IDPerms.Description = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		m.IDPerms.Creator = common.InterfaceToString(value)
+		m.IDPerms.Creator = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		m.IDPerms.Created = common.InterfaceToString(value)
+		m.IDPerms.Created = schema.InterfaceToString(value)
 
 	}
 
@@ -352,7 +353,7 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 
 	if value, ok := values["display_name"]; ok {
 
-		m.DisplayName = common.InterfaceToString(value)
+		m.DisplayName = schema.InterfaceToString(value)
 
 	}
 
@@ -362,42 +363,42 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 
 	}
 
-	if value, ok := values["ref_loadbalancer_pool"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualIPLoadbalancerPoolRef{}
-			referenceModel.UUID = uuid
-			m.LoadbalancerPoolRefs = append(m.LoadbalancerPoolRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.VirtualIPVirtualMachineInterfaceRef{}
 			referenceModel.UUID = uuid
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_loadbalancer_pool"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualIPLoadbalancerPoolRef{}
+			referenceModel.UUID = uuid
+			m.LoadbalancerPoolRefs = append(m.LoadbalancerPoolRefs, referenceModel)
 
 		}
 	}

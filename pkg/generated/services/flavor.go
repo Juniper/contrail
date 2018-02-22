@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTFlavorUpdateRequest for update request for REST.
-type RESTFlavorUpdateRequest struct {
-	Data map[string]interface{} `json:"flavor"`
-}
-
 //RESTCreateFlavor handle a Create REST service.
 func (service *ContrailService) RESTCreateFlavor(c echo.Context) error {
 	requestData := &models.CreateFlavorRequest{}

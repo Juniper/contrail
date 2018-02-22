@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTDsaRuleUpdateRequest for update request for REST.
-type RESTDsaRuleUpdateRequest struct {
-	Data map[string]interface{} `json:"dsa-rule"`
-}
-
 //RESTCreateDsaRule handle a Create REST service.
 func (service *ContrailService) RESTCreateDsaRule(c echo.Context) error {
 	requestData := &models.CreateDsaRuleRequest{}

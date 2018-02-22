@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTWidgetUpdateRequest for update request for REST.
-type RESTWidgetUpdateRequest struct {
-	Data map[string]interface{} `json:"widget"`
-}
-
 //RESTCreateWidget handle a Create REST service.
 func (service *ContrailService) RESTCreateWidget(c echo.Context) error {
 	requestData := &models.CreateWidgetRequest{}

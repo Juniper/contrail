@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTFloatingIPPoolUpdateRequest for update request for REST.
-type RESTFloatingIPPoolUpdateRequest struct {
-	Data map[string]interface{} `json:"floating-ip-pool"`
-}
-
 //RESTCreateFloatingIPPool handle a Create REST service.
 func (service *ContrailService) RESTCreateFloatingIPPool(c echo.Context) error {
 	requestData := &models.CreateFloatingIPPoolRequest{}

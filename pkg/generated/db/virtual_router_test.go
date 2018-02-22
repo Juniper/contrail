@@ -12,17 +12,20 @@ import (
 	"github.com/pkg/errors"
 )
 
+//For skip import error.
+var _ = errors.New("")
+
 func TestVirtualRouter(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 	db := testDB
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	common.UseTable(db, "metadata")
-	common.UseTable(db, "virtual_router")
+	mutexMetadata := common.UseTable(db, "metadata")
+	mutexTable := common.UseTable(db, "virtual_router")
 	defer func() {
-		common.ClearTable(db, "virtual_router")
-		common.ClearTable(db, "metadata")
+		mutexTable.Unlock()
+		mutexMetadata.Unlock()
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -237,6 +240,14 @@ func TestVirtualRouter(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
+	//    var VirtualMachineref []interface{}
+	//    VirtualMachineref = append(VirtualMachineref, map[string]interface{}{"operation":"delete", "uuid":"virtual_router_virtual_machine_ref_uuid", "to": []string{"test", "virtual_router_virtual_machine_ref_uuid"}})
+	//    VirtualMachineref = append(VirtualMachineref, map[string]interface{}{"operation":"add", "uuid":"virtual_router_virtual_machine_ref_uuid1", "to": []string{"test", "virtual_router_virtual_machine_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "VirtualMachineRefs", ".", VirtualMachineref)
+	//
 	//    var NetworkIpamref []interface{}
 	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"delete", "uuid":"virtual_router_network_ipam_ref_uuid", "to": []string{"test", "virtual_router_network_ipam_ref_uuid"}})
 	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"add", "uuid":"virtual_router_network_ipam_ref_uuid1", "to": []string{"test", "virtual_router_network_ipam_ref_uuid1"}})
@@ -256,14 +267,6 @@ func TestVirtualRouter(t *testing.T) {
 	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"update", "uuid":"virtual_router_network_ipam_ref_uuid2", "to": []string{"test", "virtual_router_network_ipam_ref_uuid2"}, "attr": NetworkIpamAttr})
 	//
 	//    common.SetValueByPath(updateMap, "NetworkIpamRefs", ".", NetworkIpamref)
-	//
-	//    var VirtualMachineref []interface{}
-	//    VirtualMachineref = append(VirtualMachineref, map[string]interface{}{"operation":"delete", "uuid":"virtual_router_virtual_machine_ref_uuid", "to": []string{"test", "virtual_router_virtual_machine_ref_uuid"}})
-	//    VirtualMachineref = append(VirtualMachineref, map[string]interface{}{"operation":"add", "uuid":"virtual_router_virtual_machine_ref_uuid1", "to": []string{"test", "virtual_router_virtual_machine_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualMachineRefs", ".", VirtualMachineref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

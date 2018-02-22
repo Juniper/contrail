@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTLocationUpdateRequest for update request for REST.
-type RESTLocationUpdateRequest struct {
-	Data map[string]interface{} `json:"location"`
-}
-
 //RESTCreateLocation handle a Create REST service.
 func (service *ContrailService) RESTCreateLocation(c echo.Context) error {
 	requestData := &models.CreateLocationRequest{}

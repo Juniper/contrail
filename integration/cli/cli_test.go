@@ -74,8 +74,12 @@ func TestCLIHelpMessagesWhenGivenEmptySchemaID(t *testing.T) {
 func TestCLICreateListAndShowVirtualNetworks(t *testing.T) {
 	s := integration.NewServer(t)
 	defer s.Close(t)
-	integration.LockAndClearTables(s.Database(), metadataSchemaID, vnSchemaID)
-	defer integration.ClearAndUnlockTables(s.Database(), metadataSchemaID, vnSchemaID)
+	mutexMetaData := common.UseTable(s.Database(), metadataSchemaID)
+	defer mutexMetaData.Unlock()
+
+	mutexTable := common.UseTable(s.Database(), vnSchemaID)
+	defer mutexTable.Unlock()
+
 	a := givenLoggedInAgent(t, s.URL())
 
 	o, err := a.CreateCLI(virtualNetworks)
@@ -146,8 +150,11 @@ func TestCLISyncVirtualNetworks(t *testing.T) {
 
 	s := integration.NewServer(t)
 	defer s.Close(t)
-	integration.LockAndClearTables(s.Database(), metadataSchemaID, vnSchemaID)
-	defer integration.ClearAndUnlockTables(s.Database(), metadataSchemaID, vnSchemaID)
+	mutexMetaData := common.UseTable(s.Database(), metadataSchemaID)
+	defer mutexMetaData.Unlock()
+
+	mutexTable := common.UseTable(s.Database(), vnSchemaID)
+	defer mutexTable.Unlock()
 	a := givenLoggedInAgent(t, s.URL())
 
 	o, err := a.SyncCLI(virtualNetwork)
@@ -170,8 +177,11 @@ func TestCLISyncVirtualNetworks(t *testing.T) {
 func TestCLIRemoveVirtualNetworks(t *testing.T) {
 	s := integration.NewServer(t)
 	defer s.Close(t)
-	integration.LockAndClearTables(s.Database(), metadataSchemaID, vnSchemaID)
-	defer integration.ClearAndUnlockTables(s.Database(), metadataSchemaID, vnSchemaID)
+	mutexMetaData := common.UseTable(s.Database(), metadataSchemaID)
+	defer mutexMetaData.Unlock()
+
+	mutexTable := common.UseTable(s.Database(), vnSchemaID)
+	defer mutexTable.Unlock()
 	a := givenLoggedInAgent(t, s.URL())
 
 	o, err := a.CreateCLI(virtualNetworks)
@@ -190,8 +200,11 @@ func TestCLIRemoveVirtualNetworks(t *testing.T) {
 func TestCLIDeleteVirtualNetworks(t *testing.T) {
 	s := integration.NewServer(t)
 	defer s.Close(t)
-	integration.LockAndClearTables(s.Database(), metadataSchemaID, vnSchemaID)
-	defer integration.ClearAndUnlockTables(s.Database(), metadataSchemaID, vnSchemaID)
+	mutexMetaData := common.UseTable(s.Database(), metadataSchemaID)
+	defer mutexMetaData.Unlock()
+
+	mutexTable := common.UseTable(s.Database(), vnSchemaID)
+	defer mutexTable.Unlock()
 	a := givenLoggedInAgent(t, s.URL())
 
 	o, err := a.CreateCLI(virtualNetworks)
