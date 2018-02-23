@@ -36,7 +36,6 @@ test_data:
     display_name: blue
     parent_type: project
     parent_uuid: admin_project_uuid
-    is_shared: false
     route_target_list:
        route_target: ["100:200"]
     virtual_network_network_id: 50
@@ -108,49 +107,49 @@ workflow:
       project: *demo_project
   expect:
     project: *demo_project
-# - name: create network policy
-#   request:
-#     path: /network-policys
-#     method: POST
-#     expected:
-#     - 201
-#     data:
-#       network-policy: *network_policy1
-#   expect:
-#     network-policy:
-#       uuid: network_policy_uuid
-#       fq_name: ["default", "admin", "policy1"]
-#       parent_type: project
-#       parent_uuid: admin_project_uuid
-#       perms2:
-#         owner: admin
-# - name: create network policy
-#   client: bob
-#   request:
-#     path: /network-policys
-#     method: POST
-#     expected:
-#     - 201
-#     data:
-#       network-policy: *network_policy2
-#   expect:
-#     network-policy:
-#       uuid: network_policy_uuid2
-#       fq_name: ["default", "demo", "policy2"]
-#       parent_type: project
-#       parent_uuid: demo_project_uuid
-#       perms2:
-#         owner: demo
-# - name: create virtual network blue
-#   request:
-#     path: /virtual-networks
-#     method: POST
-#     expected:
-#     - 201
-#     data:
-#       virtual-network: *vn_blue
-#   expect:
-#     virtual-network: *vn_blue
+- name: create network policy
+  request:
+    path: /network-policys
+    method: POST
+    expected:
+    - 201
+    data:
+      network-policy: *network_policy1
+  expect:
+    network-policy:
+      uuid: network_policy_uuid
+      fq_name: ["default", "admin", "policy1"]
+      parent_type: project
+      parent_uuid: admin_project_uuid
+      perms2:
+        owner: admin
+- name: create network policy
+  client: bob
+  request:
+    path: /network-policys
+    method: POST
+    expected:
+    - 201
+    data:
+      network-policy: *network_policy2
+  expect:
+    network-policy:
+      uuid: network_policy_uuid2
+      fq_name: ["default", "demo", "policy2"]
+      parent_type: project
+      parent_uuid: demo_project_uuid
+      perms2:
+        owner: demo
+- name: create virtual network blue
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 201
+    data:
+      virtual-network: *vn_blue
+  expect:
+    virtual-network: *vn_blue
 # - name: create network ipam1
 #   request:
 #     path: /network-ipams
@@ -229,39 +228,39 @@ workflow:
 #       display_name: vn_test_ref
 #       parent_type: project
 #       parent_uuid: admin_project_uuid      
-# # - name: update virtual network ref
-# #   request:
-# #     path: /virtual-network/vn_test_ref
-# #     method: PUT
-# #     expected:
-# #     - 200
-# #     data:
-# #       virtual-network:
-# #         fq_name: ["default", "admin", "vn_test_ref"]
-# #         uuid: "vn_test_ref"
-# #         display_name: "vn_test_ref"
-# #         parent_type: "project"
-# #         parent_uuid: "admin_project_uuid"
-# #         perms2:
-# #           share:
-# #             - tenant: "default:demo"
-# #               tenant_access: 7
-# #         network_ipam_refs:
-# #           - uuid: "test_ipam1"
-# #             operation: "delete"
-# #             to: ["domain","admin","test_ipam1"]
-# #           - uuid: "test_ipam2"
-# #             operation: "add"
-# #             to: ["domain","admin","test_ipam2"]
-# #             attr:
-# #               host_routes:
-# #                 route:
-# #                   - prefix: "test_prefix"
-# #                     next_hop: "1.2.3.5"          
-# #   expect:
-# #     virtual-network:
-# #       uri: /virtual-network/vn_test_ref
-# #       uuid: vn_test_ref    
+# - name: update virtual network ref
+#   request:
+#     path: /virtual-network/vn_test_ref
+#     method: PUT
+#     expected:
+#     - 200
+#     data:
+#       virtual-network:
+#         fq_name: ["default", "admin", "vn_test_ref"]
+#         uuid: "vn_test_ref"
+#         display_name: "vn_test_ref"
+#         parent_type: "project"
+#         parent_uuid: "admin_project_uuid"
+#         perms2:
+#           share:
+#             - tenant: "default:demo"
+#               tenant_access: 7
+#         network_ipam_refs:
+#           - uuid: "test_ipam1"
+#             operation: "delete"
+#             to: ["domain","admin","test_ipam1"]
+#           - uuid: "test_ipam2"
+#             operation: "add"
+#             to: ["domain","admin","test_ipam2"]
+#             attr:
+#               host_routes:
+#                 route:
+#                   - prefix: "test_prefix"
+#                     next_hop: "1.2.3.5"          
+#   expect:
+#     virtual-network:
+#       uri: /virtual-network/vn_test_ref
+#       uuid: vn_test_ref    
 # - name: delete virtual network
 #   request:
 #     path: /virtual-network/vn_test_ref
@@ -283,133 +282,133 @@ workflow:
 #     expected:
 #     - 204
 #   expect: null            
-# - name: create virtual network red
-#   request:
-#     path: /virtual-networks
-#     method: POST
-#     expected:
-#     - 201
-#     data:
-#       virtual-network: *vn_red
-#   expect:
-#     virtual-network: *vn_red
-# - name: create routing instance
-#   request:
-#     path: /routing-instances
-#     method: POST
-#     expected:
-#     - 201
-#     data:
-#       routing-instance:
-#         uuid: ri_uuid
-#         fq_name: ["default", "admin", "ri1"]
-#         parent_type: virtual-network
-#         parent_uuid: vn_blue
-#   expect:
-#     routing-instance:
-#       uuid: ri_uuid
-#       fq_name: ["default", "admin", "ri1"]
-#       parent_type: virtual-network
-#       parent_uuid: vn_blue
-# - name: list virtual networks with detail
-#   request:
-#     path: /virtual-networks?detail=true
-#     method: GET
-#     expected:
-#     - 200
-#   expect:
-#     virtual-networks:
-#     - *vn_blue_with_detail
-#     - *vn_red
-# - name: list virtual networks with share
-#   request:
-#     path: /virtual-networks?shared=true
-#     method: GET
-#     expected:
-#     - 200
-#   expect:
-#     virtual-networks:
-#     - *vn_blue_simple
-#     - *vn_red_simple
-# - name: list virtual networks with filters
-#   request:
-#     path: "/virtual-networks?filters=display_name==blue"
-#     method: GET
-#     expected:
-#     - 200
-#   expect:
-#     virtual-networks:
-#     - *vn_blue_simple
-# - name: list virtual networks with back_ref_id
-#   request:
-#     path: "/virtual-networks?back_ref_id=ri_uuid"
-#     method: GET
-#     expected:
-#     - 200
-#   expect:
-#     virtual-networks:
-#     - *vn_blue_simple
-# - name: list virtual networks with parent_id
-#   request:
-#     path: "/virtual-networks?parent_id=admin_project_uuid"
-#     method: GET
-#     expected:
-#     - 200
-#   expect:
-#     virtual-networks:
-#     - *vn_blue_simple
-#     - *vn_red_simple
-# - name: list virtual networks with parent_fq_name_str
-#   request:
-#     path: "/virtual-networks?parent_fq_name_str=default:admin"
-#     method: GET
-#     expected:
-#     - 200
-#   expect:
-#     virtual-networks:
-#     - *vn_blue_simple
-#     - *vn_red_simple
-# - name: list virtual networks with page limit
-#   request:
-#     path: "/virtual-networks?pageLimit=1&detail=true"
-#     method: GET
-#     expected:
-#     - 200
-#   expect:
-#     virtual-networks:
-#     - *vn_blue_with_detail
-# - name: list virtual networks with obj_uuids
-#   request:
-#     path: "/virtual-networks?obj_uuids=vn_blue&detail=true"
-#     method: GET
-#     expected:
-#     - 200
-#   expect:
-#     virtual-networks:
-#     - *vn_blue_with_detail
-# - name: list network policy
-#   request:
-#     path: /network-policys
-#     method: GET
-#     expected:
-#     - 200
-#   expect:
-#     network-policys:
-#     - uuid: network_policy_uuid
-#       perms2:
-#         owner: admin
-# - name: list network policy
-#   client: bob
-#   request:
-#     path: /network-policys
-#     method: GET
-#     expected:
-#     - 200
-#   expect:
-#     network-policys:
-#     - uuid: network_policy_uuid2
-#       perms2:
-#         owner: demo
+- name: create virtual network red
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 201
+    data:
+      virtual-network: *vn_red
+  expect:
+    virtual-network: *vn_red
+- name: create routing instance
+  request:
+    path: /routing-instances
+    method: POST
+    expected:
+    - 201
+    data:
+      routing-instance:
+        uuid: ri_uuid
+        fq_name: ["default", "admin", "ri1"]
+        parent_type: virtual-network
+        parent_uuid: vn_blue
+  expect:
+    routing-instance:
+      uuid: ri_uuid
+      fq_name: ["default", "admin", "ri1"]
+      parent_type: virtual-network
+      parent_uuid: vn_blue
+- name: list virtual networks with detail
+  request:
+    path: /virtual-networks?detail=true
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - *vn_blue_with_detail
+    - *vn_red
+- name: list virtual networks with share
+  request:
+    path: /virtual-networks?shared=true
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - *vn_blue_simple
+    - *vn_red_simple
+- name: list virtual networks with filters
+  request:
+    path: "/virtual-networks?filters=display_name==blue"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - *vn_blue_simple
+- name: list virtual networks with back_ref_id
+  request:
+    path: "/virtual-networks?back_ref_id=ri_uuid"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - *vn_blue_simple
+- name: list virtual networks with parent_id
+  request:
+    path: "/virtual-networks?parent_id=admin_project_uuid"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - *vn_blue_simple
+    - *vn_red_simple
+- name: list virtual networks with parent_fq_name_str
+  request:
+    path: "/virtual-networks?parent_fq_name_str=default:admin"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - *vn_blue_simple
+    - *vn_red_simple
+- name: list virtual networks with page limit
+  request:
+    path: "/virtual-networks?pageLimit=1&detail=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - *vn_blue_with_detail
+- name: list virtual networks with obj_uuids
+  request:
+    path: "/virtual-networks?obj_uuids=vn_blue&detail=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - *vn_blue_with_detail
+- name: list network policy
+  request:
+    path: /network-policys
+    method: GET
+    expected:
+    - 200
+  expect:
+    network-policys:
+    - uuid: network_policy_uuid
+      perms2:
+        owner: admin
+- name: list network policy
+  client: bob
+  request:
+    path: /network-policys
+    method: GET
+    expected:
+    - 200
+  expect:
+    network-policys:
+    - uuid: network_policy_uuid2
+      perms2:
+        owner: demo
 # # - name: update virtual network blue
 # #   request:
 # #     path: /virtual-network/vn_blue
@@ -490,24 +489,24 @@ workflow:
 # #         parent_uuid: admin_project_uuid
 # #         perms2:
 # #           owner: admin
-# - name: delete virtual network
-#   request:
-#     path: /virtual-network/vn_blue
-#     method: DELETE
-#     expected:
-#     - 204
-#   expect: null
-# - name: delete virtual network
-#   request:
-#     path: /virtual-network/vn_red
-#     method: DELETE
-#     expected:
-#     - 204
-#   expect: null
-# - name: delete network policy
-#   request:
-#     path: /network-policy/network_policy_uuid
-#     method: DELETE
-#     expected:
-#     - 204
-#   expect: null
+- name: delete virtual network
+  request:
+    path: /virtual-network/vn_blue
+    method: DELETE
+    expected:
+    - 204
+  expect: null
+- name: delete virtual network
+  request:
+    path: /virtual-network/vn_red
+    method: DELETE
+    expected:
+    - 204
+  expect: null
+- name: delete network policy
+  request:
+    path: /network-policy/network_policy_uuid
+    method: DELETE
+    expected:
+    - 204
+  expect: null

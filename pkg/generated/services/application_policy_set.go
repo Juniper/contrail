@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTApplicationPolicySetUpdateRequest for update request for REST.
-type RESTApplicationPolicySetUpdateRequest struct {
-	Data map[string]interface{} `json:"application-policy-set"`
-}
-
 //RESTCreateApplicationPolicySet handle a Create REST service.
 func (service *ContrailService) RESTCreateApplicationPolicySet(c echo.Context) error {
 	requestData := &models.CreateApplicationPolicySetRequest{}

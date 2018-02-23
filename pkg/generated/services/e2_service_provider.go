@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTE2ServiceProviderUpdateRequest for update request for REST.
-type RESTE2ServiceProviderUpdateRequest struct {
-	Data map[string]interface{} `json:"e2-service-provider"`
-}
-
 //RESTCreateE2ServiceProvider handle a Create REST service.
 func (service *ContrailService) RESTCreateE2ServiceProvider(c echo.Context) error {
 	requestData := &models.CreateE2ServiceProviderRequest{}

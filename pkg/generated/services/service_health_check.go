@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTServiceHealthCheckUpdateRequest for update request for REST.
-type RESTServiceHealthCheckUpdateRequest struct {
-	Data map[string]interface{} `json:"service-health-check"`
-}
-
 //RESTCreateServiceHealthCheck handle a Create REST service.
 func (service *ContrailService) RESTCreateServiceHealthCheck(c echo.Context) error {
 	requestData := &models.CreateServiceHealthCheckRequest{}

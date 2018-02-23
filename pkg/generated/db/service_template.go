@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -162,49 +163,49 @@ func scanServiceTemplate(values map[string]interface{}) (*models.ServiceTemplate
 
 	if value, ok := values["uuid"]; ok {
 
-		m.UUID = common.InterfaceToString(value)
+		m.UUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["vrouter_instance_type"]; ok {
 
-		m.ServiceTemplateProperties.VrouterInstanceType = common.InterfaceToString(value)
+		m.ServiceTemplateProperties.VrouterInstanceType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["version"]; ok {
 
-		m.ServiceTemplateProperties.Version = common.InterfaceToInt64(value)
+		m.ServiceTemplateProperties.Version = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["service_virtualization_type"]; ok {
 
-		m.ServiceTemplateProperties.ServiceVirtualizationType = common.InterfaceToString(value)
+		m.ServiceTemplateProperties.ServiceVirtualizationType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["service_type"]; ok {
 
-		m.ServiceTemplateProperties.ServiceType = common.InterfaceToString(value)
+		m.ServiceTemplateProperties.ServiceType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["service_scaling"]; ok {
 
-		m.ServiceTemplateProperties.ServiceScaling = common.InterfaceToBool(value)
+		m.ServiceTemplateProperties.ServiceScaling = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["service_mode"]; ok {
 
-		m.ServiceTemplateProperties.ServiceMode = common.InterfaceToString(value)
+		m.ServiceTemplateProperties.ServiceMode = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["ordered_interfaces"]; ok {
 
-		m.ServiceTemplateProperties.OrderedInterfaces = common.InterfaceToBool(value)
+		m.ServiceTemplateProperties.OrderedInterfaces = schema.InterfaceToBool(value)
 
 	}
 
@@ -216,25 +217,25 @@ func scanServiceTemplate(values map[string]interface{}) (*models.ServiceTemplate
 
 	if value, ok := values["instance_data"]; ok {
 
-		m.ServiceTemplateProperties.InstanceData = common.InterfaceToString(value)
+		m.ServiceTemplateProperties.InstanceData = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["image_name"]; ok {
 
-		m.ServiceTemplateProperties.ImageName = common.InterfaceToString(value)
+		m.ServiceTemplateProperties.ImageName = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["flavor"]; ok {
 
-		m.ServiceTemplateProperties.Flavor = common.InterfaceToString(value)
+		m.ServiceTemplateProperties.Flavor = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["availability_zone_enable"]; ok {
 
-		m.ServiceTemplateProperties.AvailabilityZoneEnable = common.InterfaceToBool(value)
+		m.ServiceTemplateProperties.AvailabilityZoneEnable = schema.InterfaceToBool(value)
 
 	}
 
@@ -246,97 +247,97 @@ func scanServiceTemplate(values map[string]interface{}) (*models.ServiceTemplate
 
 	if value, ok := values["owner_access"]; ok {
 
-		m.Perms2.OwnerAccess = common.InterfaceToInt64(value)
+		m.Perms2.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		m.Perms2.Owner = common.InterfaceToString(value)
+		m.Perms2.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		m.Perms2.GlobalAccess = common.InterfaceToInt64(value)
+		m.Perms2.GlobalAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		m.ParentUUID = common.InterfaceToString(value)
+		m.ParentUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		m.ParentType = common.InterfaceToString(value)
+		m.ParentType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		m.IDPerms.UserVisible = common.InterfaceToBool(value)
+		m.IDPerms.UserVisible = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		m.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		m.IDPerms.Permissions.Owner = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		m.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		m.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		m.IDPerms.Permissions.Group = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Group = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		m.IDPerms.LastModified = common.InterfaceToString(value)
+		m.IDPerms.LastModified = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		m.IDPerms.Enable = common.InterfaceToBool(value)
+		m.IDPerms.Enable = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		m.IDPerms.Description = common.InterfaceToString(value)
+		m.IDPerms.Description = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		m.IDPerms.Creator = common.InterfaceToString(value)
+		m.IDPerms.Creator = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		m.IDPerms.Created = common.InterfaceToString(value)
+		m.IDPerms.Created = schema.InterfaceToString(value)
 
 	}
 
@@ -348,7 +349,7 @@ func scanServiceTemplate(values map[string]interface{}) (*models.ServiceTemplate
 
 	if value, ok := values["display_name"]; ok {
 
-		m.DisplayName = common.InterfaceToString(value)
+		m.DisplayName = schema.InterfaceToString(value)
 
 	}
 
@@ -360,14 +361,14 @@ func scanServiceTemplate(values map[string]interface{}) (*models.ServiceTemplate
 
 	if value, ok := values["ref_service_appliance_set"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}

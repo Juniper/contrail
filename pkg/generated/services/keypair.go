@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTKeypairUpdateRequest for update request for REST.
-type RESTKeypairUpdateRequest struct {
-	Data map[string]interface{} `json:"keypair"`
-}
-
 //RESTCreateKeypair handle a Create REST service.
 func (service *ContrailService) RESTCreateKeypair(c echo.Context) error {
 	requestData := &models.CreateKeypairRequest{}

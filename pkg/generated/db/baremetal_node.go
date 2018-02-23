@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -174,37 +175,37 @@ func scanBaremetalNode(values map[string]interface{}) (*models.BaremetalNode, er
 
 	if value, ok := values["uuid"]; ok {
 
-		m.UUID = common.InterfaceToString(value)
+		m.UUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["updated_at"]; ok {
 
-		m.UpdatedAt = common.InterfaceToString(value)
+		m.UpdatedAt = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["target_provision_state"]; ok {
 
-		m.TargetProvisionState = common.InterfaceToString(value)
+		m.TargetProvisionState = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["target_power_state"]; ok {
 
-		m.TargetPowerState = common.InterfaceToString(value)
+		m.TargetPowerState = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["provision_state"]; ok {
 
-		m.ProvisionState = common.InterfaceToString(value)
+		m.ProvisionState = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["power_state"]; ok {
 
-		m.PowerState = common.InterfaceToString(value)
+		m.PowerState = schema.InterfaceToString(value)
 
 	}
 
@@ -216,181 +217,181 @@ func scanBaremetalNode(values map[string]interface{}) (*models.BaremetalNode, er
 
 	if value, ok := values["owner_access"]; ok {
 
-		m.Perms2.OwnerAccess = common.InterfaceToInt64(value)
+		m.Perms2.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		m.Perms2.Owner = common.InterfaceToString(value)
+		m.Perms2.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		m.Perms2.GlobalAccess = common.InterfaceToInt64(value)
+		m.Perms2.GlobalAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		m.ParentUUID = common.InterfaceToString(value)
+		m.ParentUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		m.ParentType = common.InterfaceToString(value)
+		m.ParentType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["name"]; ok {
 
-		m.Name = common.InterfaceToString(value)
+		m.Name = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["maintenance_reason"]; ok {
 
-		m.MaintenanceReason = common.InterfaceToString(value)
+		m.MaintenanceReason = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["maintenance"]; ok {
 
-		m.Maintenance = common.InterfaceToBool(value)
+		m.Maintenance = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["last_error"]; ok {
 
-		m.LastError = common.InterfaceToString(value)
+		m.LastError = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["instance_uuid"]; ok {
 
-		m.InstanceUUID = common.InterfaceToString(value)
+		m.InstanceUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["vcpus"]; ok {
 
-		m.InstanceInfo.Vcpus = common.InterfaceToString(value)
+		m.InstanceInfo.Vcpus = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["swap_mb"]; ok {
 
-		m.InstanceInfo.SwapMB = common.InterfaceToString(value)
+		m.InstanceInfo.SwapMB = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["root_gb"]; ok {
 
-		m.InstanceInfo.RootGB = common.InterfaceToString(value)
+		m.InstanceInfo.RootGB = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["nova_host_id"]; ok {
 
-		m.InstanceInfo.NovaHostID = common.InterfaceToString(value)
+		m.InstanceInfo.NovaHostID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["memory_mb"]; ok {
 
-		m.InstanceInfo.MemoryMB = common.InterfaceToString(value)
+		m.InstanceInfo.MemoryMB = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["local_gb"]; ok {
 
-		m.InstanceInfo.LocalGB = common.InterfaceToString(value)
+		m.InstanceInfo.LocalGB = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["image_source"]; ok {
 
-		m.InstanceInfo.ImageSource = common.InterfaceToString(value)
+		m.InstanceInfo.ImageSource = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["display_name"]; ok {
 
-		m.InstanceInfo.DisplayName = common.InterfaceToString(value)
+		m.InstanceInfo.DisplayName = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["capabilities"]; ok {
 
-		m.InstanceInfo.Capabilities = common.InterfaceToString(value)
+		m.InstanceInfo.Capabilities = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		m.IDPerms.UserVisible = common.InterfaceToBool(value)
+		m.IDPerms.UserVisible = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		m.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		m.IDPerms.Permissions.Owner = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		m.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		m.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		m.IDPerms.Permissions.Group = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Group = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		m.IDPerms.LastModified = common.InterfaceToString(value)
+		m.IDPerms.LastModified = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		m.IDPerms.Enable = common.InterfaceToBool(value)
+		m.IDPerms.Enable = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		m.IDPerms.Description = common.InterfaceToString(value)
+		m.IDPerms.Description = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		m.IDPerms.Creator = common.InterfaceToString(value)
+		m.IDPerms.Creator = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		m.IDPerms.Created = common.InterfaceToString(value)
+		m.IDPerms.Created = schema.InterfaceToString(value)
 
 	}
 
@@ -402,73 +403,73 @@ func scanBaremetalNode(values map[string]interface{}) (*models.BaremetalNode, er
 
 	if value, ok := values["ipmi_username"]; ok {
 
-		m.DriverInfo.IpmiUsername = common.InterfaceToString(value)
+		m.DriverInfo.IpmiUsername = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["ipmi_password"]; ok {
 
-		m.DriverInfo.IpmiPassword = common.InterfaceToString(value)
+		m.DriverInfo.IpmiPassword = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["ipmi_address"]; ok {
 
-		m.DriverInfo.IpmiAddress = common.InterfaceToString(value)
+		m.DriverInfo.IpmiAddress = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["deploy_ramdisk"]; ok {
 
-		m.DriverInfo.DeployRamdisk = common.InterfaceToString(value)
+		m.DriverInfo.DeployRamdisk = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["deploy_kernel"]; ok {
 
-		m.DriverInfo.DeployKernel = common.InterfaceToString(value)
+		m.DriverInfo.DeployKernel = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["_display_name"]; ok {
 
-		m.DisplayName = common.InterfaceToString(value)
+		m.DisplayName = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created_at"]; ok {
 
-		m.CreatedAt = common.InterfaceToString(value)
+		m.CreatedAt = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["console_enabled"]; ok {
 
-		m.ConsoleEnabled = common.InterfaceToBool(value)
+		m.ConsoleEnabled = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["bm_properties_memory_mb"]; ok {
 
-		m.BMProperties.MemoryMB = common.InterfaceToInt64(value)
+		m.BMProperties.MemoryMB = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["disk_gb"]; ok {
 
-		m.BMProperties.DiskGB = common.InterfaceToInt64(value)
+		m.BMProperties.DiskGB = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["cpu_count"]; ok {
 
-		m.BMProperties.CPUCount = common.InterfaceToInt64(value)
+		m.BMProperties.CPUCount = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["cpu_arch"]; ok {
 
-		m.BMProperties.CPUArch = common.InterfaceToString(value)
+		m.BMProperties.CPUArch = schema.InterfaceToString(value)
 
 	}
 

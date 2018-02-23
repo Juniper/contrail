@@ -15,7 +15,7 @@ ls $dir/*.go && result=1 || result=0
 
 if [ $result -eq 1 ]; then
     cd $dir
-    go test -race -covermode=atomic -coverprofile=profile.tmp .
+    go test -parallel 1 -covermode=atomic -coverprofile=profile.tmp .
     result=$?
     if [ $result -ne 0 ]; then
         echo "failed"

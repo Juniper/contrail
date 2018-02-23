@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTNodeUpdateRequest for update request for REST.
-type RESTNodeUpdateRequest struct {
-	Data map[string]interface{} `json:"node"`
-}
-
 //RESTCreateNode handle a Create REST service.
 func (service *ContrailService) RESTCreateNode(c echo.Context) error {
 	requestData := &models.CreateNodeRequest{}

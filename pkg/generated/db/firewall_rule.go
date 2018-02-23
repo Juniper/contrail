@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -86,11 +87,6 @@ var FirewallRuleFields = []string{
 // FirewallRuleRefFields is db reference fields for FirewallRule
 var FirewallRuleRefFields = map[string][]string{
 
-	"service_group": []string{
-		// <schema.Schema Value>
-
-	},
-
 	"address_group": []string{
 		// <schema.Schema Value>
 
@@ -105,6 +101,11 @@ var FirewallRuleRefFields = map[string][]string{
 		// <schema.Schema Value>
 
 	},
+
+	"service_group": []string{
+		// <schema.Schema Value>
+
+	},
 }
 
 // FirewallRuleBackRefFields is db back reference fields for FirewallRule
@@ -113,18 +114,18 @@ var FirewallRuleBackRefFields = map[string][]string{}
 // FirewallRuleParentTypes is possible parents for FirewallRule
 var FirewallRuleParents = []string{
 
-	"project",
-
 	"policy_management",
+
+	"project",
 }
+
+const insertFirewallRuleServiceGroupQuery = "insert into `ref_firewall_rule_service_group` (`from`, `to` ) values (?, ?);"
 
 const insertFirewallRuleAddressGroupQuery = "insert into `ref_firewall_rule_address_group` (`from`, `to` ) values (?, ?);"
 
 const insertFirewallRuleSecurityLoggingObjectQuery = "insert into `ref_firewall_rule_security_logging_object` (`from`, `to` ) values (?, ?);"
 
 const insertFirewallRuleVirtualNetworkQuery = "insert into `ref_firewall_rule_virtual_network` (`from`, `to` ) values (?, ?);"
-
-const insertFirewallRuleServiceGroupQuery = "insert into `ref_firewall_rule_service_group` (`from`, `to` ) values (?, ?);"
 
 // CreateFirewallRule inserts FirewallRule to DB
 func CreateFirewallRule(
@@ -286,43 +287,43 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	if value, ok := values["uuid"]; ok {
 
-		m.UUID = common.InterfaceToString(value)
+		m.UUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["start_port"]; ok {
 
-		m.Service.SRCPorts.StartPort = common.InterfaceToInt64(value)
+		m.Service.SRCPorts.StartPort = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["end_port"]; ok {
 
-		m.Service.SRCPorts.EndPort = common.InterfaceToInt64(value)
+		m.Service.SRCPorts.EndPort = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["protocol_id"]; ok {
 
-		m.Service.ProtocolID = common.InterfaceToInt64(value)
+		m.Service.ProtocolID = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["protocol"]; ok {
 
-		m.Service.Protocol = common.InterfaceToString(value)
+		m.Service.Protocol = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["dst_ports_start_port"]; ok {
 
-		m.Service.DSTPorts.StartPort = common.InterfaceToInt64(value)
+		m.Service.DSTPorts.StartPort = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["dst_ports_end_port"]; ok {
 
-		m.Service.DSTPorts.EndPort = common.InterfaceToInt64(value)
+		m.Service.DSTPorts.EndPort = schema.InterfaceToInt64(value)
 
 	}
 
@@ -334,31 +335,31 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	if value, ok := values["owner_access"]; ok {
 
-		m.Perms2.OwnerAccess = common.InterfaceToInt64(value)
+		m.Perms2.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		m.Perms2.Owner = common.InterfaceToString(value)
+		m.Perms2.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		m.Perms2.GlobalAccess = common.InterfaceToInt64(value)
+		m.Perms2.GlobalAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		m.ParentUUID = common.InterfaceToString(value)
+		m.ParentUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		m.ParentType = common.InterfaceToString(value)
+		m.ParentType = schema.InterfaceToString(value)
 
 	}
 
@@ -376,67 +377,67 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	if value, ok := values["user_visible"]; ok {
 
-		m.IDPerms.UserVisible = common.InterfaceToBool(value)
+		m.IDPerms.UserVisible = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		m.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		m.IDPerms.Permissions.Owner = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		m.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		m.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(value)
+		m.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		m.IDPerms.Permissions.Group = common.InterfaceToString(value)
+		m.IDPerms.Permissions.Group = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		m.IDPerms.LastModified = common.InterfaceToString(value)
+		m.IDPerms.LastModified = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		m.IDPerms.Enable = common.InterfaceToBool(value)
+		m.IDPerms.Enable = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		m.IDPerms.Description = common.InterfaceToString(value)
+		m.IDPerms.Description = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		m.IDPerms.Creator = common.InterfaceToString(value)
+		m.IDPerms.Creator = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		m.IDPerms.Created = common.InterfaceToString(value)
+		m.IDPerms.Created = schema.InterfaceToString(value)
 
 	}
 
@@ -448,7 +449,7 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	if value, ok := values["virtual_network"]; ok {
 
-		m.Endpoint2.VirtualNetwork = common.InterfaceToString(value)
+		m.Endpoint2.VirtualNetwork = schema.InterfaceToString(value)
 
 	}
 
@@ -466,31 +467,31 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	if value, ok := values["ip_prefix_len"]; ok {
 
-		m.Endpoint2.Subnet.IPPrefixLen = common.InterfaceToInt64(value)
+		m.Endpoint2.Subnet.IPPrefixLen = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["ip_prefix"]; ok {
 
-		m.Endpoint2.Subnet.IPPrefix = common.InterfaceToString(value)
+		m.Endpoint2.Subnet.IPPrefix = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["any"]; ok {
 
-		m.Endpoint2.Any = common.InterfaceToBool(value)
+		m.Endpoint2.Any = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["address_group"]; ok {
 
-		m.Endpoint2.AddressGroup = common.InterfaceToString(value)
+		m.Endpoint2.AddressGroup = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["endpoint_1_virtual_network"]; ok {
 
-		m.Endpoint1.VirtualNetwork = common.InterfaceToString(value)
+		m.Endpoint1.VirtualNetwork = schema.InterfaceToString(value)
 
 	}
 
@@ -508,37 +509,37 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	if value, ok := values["subnet_ip_prefix_len"]; ok {
 
-		m.Endpoint1.Subnet.IPPrefixLen = common.InterfaceToInt64(value)
+		m.Endpoint1.Subnet.IPPrefixLen = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["subnet_ip_prefix"]; ok {
 
-		m.Endpoint1.Subnet.IPPrefix = common.InterfaceToString(value)
+		m.Endpoint1.Subnet.IPPrefix = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["endpoint_1_any"]; ok {
 
-		m.Endpoint1.Any = common.InterfaceToBool(value)
+		m.Endpoint1.Any = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["endpoint_1_address_group"]; ok {
 
-		m.Endpoint1.AddressGroup = common.InterfaceToString(value)
+		m.Endpoint1.AddressGroup = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["display_name"]; ok {
 
-		m.DisplayName = common.InterfaceToString(value)
+		m.DisplayName = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["direction"]; ok {
 
-		m.Direction = common.InterfaceToString(value)
+		m.Direction = schema.InterfaceToString(value)
 
 	}
 
@@ -550,109 +551,109 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	if value, ok := values["simple_action"]; ok {
 
-		m.ActionList.SimpleAction = common.InterfaceToString(value)
+		m.ActionList.SimpleAction = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["qos_action"]; ok {
 
-		m.ActionList.QosAction = common.InterfaceToString(value)
+		m.ActionList.QosAction = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["udp_port"]; ok {
 
-		m.ActionList.MirrorTo.UDPPort = common.InterfaceToInt64(value)
+		m.ActionList.MirrorTo.UDPPort = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["vtep_dst_mac_address"]; ok {
 
-		m.ActionList.MirrorTo.StaticNHHeader.VtepDSTMacAddress = common.InterfaceToString(value)
+		m.ActionList.MirrorTo.StaticNHHeader.VtepDSTMacAddress = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["vtep_dst_ip_address"]; ok {
 
-		m.ActionList.MirrorTo.StaticNHHeader.VtepDSTIPAddress = common.InterfaceToString(value)
+		m.ActionList.MirrorTo.StaticNHHeader.VtepDSTIPAddress = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["vni"]; ok {
 
-		m.ActionList.MirrorTo.StaticNHHeader.Vni = common.InterfaceToInt64(value)
+		m.ActionList.MirrorTo.StaticNHHeader.Vni = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["routing_instance"]; ok {
 
-		m.ActionList.MirrorTo.RoutingInstance = common.InterfaceToString(value)
+		m.ActionList.MirrorTo.RoutingInstance = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["nic_assisted_mirroring_vlan"]; ok {
 
-		m.ActionList.MirrorTo.NicAssistedMirroringVlan = common.InterfaceToInt64(value)
+		m.ActionList.MirrorTo.NicAssistedMirroringVlan = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["nic_assisted_mirroring"]; ok {
 
-		m.ActionList.MirrorTo.NicAssistedMirroring = common.InterfaceToBool(value)
+		m.ActionList.MirrorTo.NicAssistedMirroring = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["nh_mode"]; ok {
 
-		m.ActionList.MirrorTo.NHMode = common.InterfaceToString(value)
+		m.ActionList.MirrorTo.NHMode = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["juniper_header"]; ok {
 
-		m.ActionList.MirrorTo.JuniperHeader = common.InterfaceToBool(value)
+		m.ActionList.MirrorTo.JuniperHeader = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["encapsulation"]; ok {
 
-		m.ActionList.MirrorTo.Encapsulation = common.InterfaceToString(value)
+		m.ActionList.MirrorTo.Encapsulation = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["analyzer_name"]; ok {
 
-		m.ActionList.MirrorTo.AnalyzerName = common.InterfaceToString(value)
+		m.ActionList.MirrorTo.AnalyzerName = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["analyzer_mac_address"]; ok {
 
-		m.ActionList.MirrorTo.AnalyzerMacAddress = common.InterfaceToString(value)
+		m.ActionList.MirrorTo.AnalyzerMacAddress = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["analyzer_ip_address"]; ok {
 
-		m.ActionList.MirrorTo.AnalyzerIPAddress = common.InterfaceToString(value)
+		m.ActionList.MirrorTo.AnalyzerIPAddress = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["log"]; ok {
 
-		m.ActionList.Log = common.InterfaceToBool(value)
+		m.ActionList.Log = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["gateway_name"]; ok {
 
-		m.ActionList.GatewayName = common.InterfaceToString(value)
+		m.ActionList.GatewayName = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["assign_routing_instance"]; ok {
 
-		m.ActionList.AssignRoutingInstance = common.InterfaceToString(value)
+		m.ActionList.AssignRoutingInstance = schema.InterfaceToString(value)
 
 	}
 
@@ -664,40 +665,20 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	if value, ok := values["alert"]; ok {
 
-		m.ActionList.Alert = common.InterfaceToBool(value)
+		m.ActionList.Alert = schema.InterfaceToBool(value)
 
-	}
-
-	if value, ok := values["ref_service_group"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.FirewallRuleServiceGroupRef{}
-			referenceModel.UUID = uuid
-			m.ServiceGroupRefs = append(m.ServiceGroupRefs, referenceModel)
-
-		}
 	}
 
 	if value, ok := values["ref_address_group"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
@@ -710,14 +691,14 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	if value, ok := values["ref_security_logging_object"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
@@ -730,20 +711,40 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	if value, ok := values["ref_virtual_network"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
 			referenceModel := &models.FirewallRuleVirtualNetworkRef{}
 			referenceModel.UUID = uuid
 			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_service_group"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.FirewallRuleServiceGroupRef{}
+			referenceModel.UUID = uuid
+			m.ServiceGroupRefs = append(m.ServiceGroupRefs, referenceModel)
 
 		}
 	}

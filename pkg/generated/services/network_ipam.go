@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTNetworkIpamUpdateRequest for update request for REST.
-type RESTNetworkIpamUpdateRequest struct {
-	Data map[string]interface{} `json:"network-ipam"`
-}
-
 //RESTCreateNetworkIpam handle a Create REST service.
 func (service *ContrailService) RESTCreateNetworkIpam(c echo.Context) error {
 	requestData := &models.CreateNetworkIpamRequest{}

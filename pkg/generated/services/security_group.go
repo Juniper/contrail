@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTSecurityGroupUpdateRequest for update request for REST.
-type RESTSecurityGroupUpdateRequest struct {
-	Data map[string]interface{} `json:"security-group"`
-}
-
 //RESTCreateSecurityGroup handle a Create REST service.
 func (service *ContrailService) RESTCreateSecurityGroup(c echo.Context) error {
 	requestData := &models.CreateSecurityGroupRequest{}

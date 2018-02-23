@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTVPNGroupUpdateRequest for update request for REST.
-type RESTVPNGroupUpdateRequest struct {
-	Data map[string]interface{} `json:"vpn-group"`
-}
-
 //RESTCreateVPNGroup handle a Create REST service.
 func (service *ContrailService) RESTCreateVPNGroup(c echo.Context) error {
 	requestData := &models.CreateVPNGroupRequest{}

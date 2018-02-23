@@ -82,6 +82,9 @@ func GetListSpec(c echo.Context) *models.ListSpec {
 //AppendFilter return a filter for specific key.
 func AppendFilter(filters []*models.Filter, key string, values ...string) []*models.Filter {
 	var filter *models.Filter
+	if len(values) == 0 {
+		return filters
+	}
 	for _, f := range filters {
 		if f.Key == key {
 			filter = f

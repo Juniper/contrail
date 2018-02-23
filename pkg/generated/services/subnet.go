@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTSubnetUpdateRequest for update request for REST.
-type RESTSubnetUpdateRequest struct {
-	Data map[string]interface{} `json:"subnet"`
-}
-
 //RESTCreateSubnet handle a Create REST service.
 func (service *ContrailService) RESTCreateSubnet(c echo.Context) error {
 	requestData := &models.CreateSubnetRequest{}

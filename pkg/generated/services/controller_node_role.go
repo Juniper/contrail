@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTControllerNodeRoleUpdateRequest for update request for REST.
-type RESTControllerNodeRoleUpdateRequest struct {
-	Data map[string]interface{} `json:"controller-node-role"`
-}
-
 //RESTCreateControllerNodeRole handle a Create REST service.
 func (service *ContrailService) RESTCreateControllerNodeRole(c echo.Context) error {
 	requestData := &models.CreateControllerNodeRoleRequest{}

@@ -12,17 +12,20 @@ import (
 	"github.com/pkg/errors"
 )
 
+//For skip import error.
+var _ = errors.New("")
+
 func TestLoadbalancerPool(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 	db := testDB
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	common.UseTable(db, "metadata")
-	common.UseTable(db, "loadbalancer_pool")
+	mutexMetadata := common.UseTable(db, "metadata")
+	mutexTable := common.UseTable(db, "loadbalancer_pool")
 	defer func() {
-		common.ClearTable(db, "loadbalancer_pool")
-		common.ClearTable(db, "metadata")
+		mutexTable.Unlock()
+		mutexMetadata.Unlock()
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -425,6 +428,47 @@ func TestLoadbalancerPool(t *testing.T) {
 	//Delete ref entries, referred objects
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_loadbalancer_pool_service_appliance_set` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing ServiceApplianceSetRefs delete statement failed")
+		}
+		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_appliance_set_ref_uuid")
+		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_appliance_set_ref_uuid1")
+		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_appliance_set_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "ServiceApplianceSetRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteServiceApplianceSet(ctx, tx,
+			&models.DeleteServiceApplianceSetRequest{
+				ID: "loadbalancer_pool_service_appliance_set_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref loadbalancer_pool_service_appliance_set_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteServiceApplianceSet(ctx, tx,
+			&models.DeleteServiceApplianceSetRequest{
+				ID: "loadbalancer_pool_service_appliance_set_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref loadbalancer_pool_service_appliance_set_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteServiceApplianceSet(
+			ctx,
+			tx,
+			&models.DeleteServiceApplianceSetRequest{
+				ID: "loadbalancer_pool_service_appliance_set_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref loadbalancer_pool_service_appliance_set_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		stmt, err := tx.Prepare("delete from `ref_loadbalancer_pool_virtual_machine_interface` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
@@ -586,47 +630,6 @@ func TestLoadbalancerPool(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("delete ref loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_loadbalancer_pool_service_appliance_set` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing ServiceApplianceSetRefs delete statement failed")
-		}
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_appliance_set_ref_uuid")
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_appliance_set_ref_uuid1")
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_appliance_set_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "ServiceApplianceSetRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceApplianceSet(ctx, tx,
-			&models.DeleteServiceApplianceSetRequest{
-				ID: "loadbalancer_pool_service_appliance_set_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_service_appliance_set_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceApplianceSet(ctx, tx,
-			&models.DeleteServiceApplianceSetRequest{
-				ID: "loadbalancer_pool_service_appliance_set_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_service_appliance_set_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceApplianceSet(
-			ctx,
-			tx,
-			&models.DeleteServiceApplianceSetRequest{
-				ID: "loadbalancer_pool_service_appliance_set_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_service_appliance_set_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

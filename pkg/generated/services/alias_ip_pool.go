@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTAliasIPPoolUpdateRequest for update request for REST.
-type RESTAliasIPPoolUpdateRequest struct {
-	Data map[string]interface{} `json:"alias-ip-pool"`
-}
-
 //RESTCreateAliasIPPool handle a Create REST service.
 func (service *ContrailService) RESTCreateAliasIPPool(c echo.Context) error {
 	requestData := &models.CreateAliasIPPoolRequest{}

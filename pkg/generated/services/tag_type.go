@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTTagTypeUpdateRequest for update request for REST.
-type RESTTagTypeUpdateRequest struct {
-	Data map[string]interface{} `json:"tag-type"`
-}
-
 //RESTCreateTagType handle a Create REST service.
 func (service *ContrailService) RESTCreateTagType(c echo.Context) error {
 	requestData := &models.CreateTagTypeRequest{}

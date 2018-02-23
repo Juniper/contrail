@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTLoadbalancerUpdateRequest for update request for REST.
-type RESTLoadbalancerUpdateRequest struct {
-	Data map[string]interface{} `json:"loadbalancer"`
-}
-
 //RESTCreateLoadbalancer handle a Create REST service.
 func (service *ContrailService) RESTCreateLoadbalancer(c echo.Context) error {
 	requestData := &models.CreateLoadbalancerRequest{}

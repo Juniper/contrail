@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTConfigRootUpdateRequest for update request for REST.
-type RESTConfigRootUpdateRequest struct {
-	Data map[string]interface{} `json:"config-root"`
-}
-
 //RESTCreateConfigRoot handle a Create REST service.
 func (service *ContrailService) RESTCreateConfigRoot(c echo.Context) error {
 	requestData := &models.CreateConfigRootRequest{}

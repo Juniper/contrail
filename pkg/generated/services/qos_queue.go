@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTQosQueueUpdateRequest for update request for REST.
-type RESTQosQueueUpdateRequest struct {
-	Data map[string]interface{} `json:"qos-queue"`
-}
-
 //RESTCreateQosQueue handle a Create REST service.
 func (service *ContrailService) RESTCreateQosQueue(c echo.Context) error {
 	requestData := &models.CreateQosQueueRequest{}

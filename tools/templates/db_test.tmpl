@@ -3,6 +3,7 @@ package db
 import (
         "context" 
         "fmt"
+        "time"
         "testing"
         "database/sql"
 
@@ -11,17 +12,21 @@ import (
         "github.com/pkg/errors"
         )
 
+//For skip import error.
+var _ = errors.New("")
+
 func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
-    t.Parallel()
+    // t.Parallel()
     db := testDB
     ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
     defer cancel()
-
-    common.UseTable(db, "metadata")
-    common.UseTable(db, "{{ schema.ID }}")
+    
+    mutexMetadata := common.UseTable(db, "metadata")
+    mutexTable := common.UseTable(db, "{{ schema.ID }}")
+    mutexProject := common.UseTable(db, "{{ schema.ID }}")
     defer func(){
-        common.ClearTable(db, "{{ schema.ID }}")
-        common.ClearTable(db, "metadata")
+        mutexTable.Unlock()
+        mutexMetadata.Unlock()
         if p := recover(); p != nil {
 			panic(p)
 		}
@@ -33,39 +38,39 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
     var err error
 
     // Create referred objects
-    {% for linkTo, reference in schema.References %}
-    var {{ reference.GoName }}createref []*models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
-    var {{ reference.GoName }}refModel *models.{{ reference.GoName }}
-    {{ reference.GoName }}refModel = models.Make{{ reference.GoName }}()
-	{{ reference.GoName }}refModel.UUID = "{{ schema.ID }}_{{ linkTo }}_ref_uuid"
-    {{ reference.GoName }}refModel.FQName = []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid"}
-    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return Create{{ reference.GoName }}(ctx, tx, &models.Create{{ reference.GoName }}Request{
-            {{ reference.GoName }}: {{ reference.GoName }}refModel,
-        })
-	})
-    {{ reference.GoName }}refModel.UUID = "{{ schema.ID }}_{{ linkTo }}_ref_uuid1"
-    {{ reference.GoName }}refModel.FQName = []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid1"}
-    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return Create{{ reference.GoName }}(ctx, tx, &models.Create{{ reference.GoName }}Request{
-            {{ reference.GoName }}: {{ reference.GoName }}refModel,
-        })
-	})
-    {{ reference.GoName }}refModel.UUID = "{{ schema.ID }}_{{ linkTo }}_ref_uuid2"
-    {{ reference.GoName }}refModel.FQName = []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid2"}
-    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return Create{{ reference.GoName }}(ctx, tx, &models.Create{{ reference.GoName }}Request{
-            {{ reference.GoName }}: {{ reference.GoName }}refModel,
-        })
-	})
-    if err != nil {
-        t.Fatal("ref create failed", err)
-    }
-    {{ reference.GoName }}createref = append({{ reference.GoName }}createref, &models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{UUID:"{{ schema.ID }}_{{ linkTo }}_ref_uuid", To: []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid"}})
-    {{ reference.GoName }}createref = append({{ reference.GoName }}createref, &models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{UUID:"{{ schema.ID }}_{{ linkTo }}_ref_uuid2", To: []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid2"}})
-    model.{{ reference.GoName }}Refs = {{ reference.GoName }}createref
-    {% endfor %}
-
+//    {% for linkTo, reference in schema.References %}
+//    var {{ reference.GoName }}createref []*models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
+//    var {{ reference.GoName }}refModel *models.{{ reference.GoName }}
+//    {{ reference.GoName }}refModel = models.Make{{ reference.GoName }}()
+//	{{ reference.GoName }}refModel.UUID = "{{ schema.ID }}_{{ linkTo }}_ref_uuid"
+//    {{ reference.GoName }}refModel.FQName = []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid"}
+//    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+//		return Create{{ reference.GoName }}(ctx, tx, &models.Create{{ reference.GoName }}Request{
+//            {{ reference.GoName }}: {{ reference.GoName }}refModel,
+//        })
+//	})
+//    {{ reference.GoName }}refModel.UUID = "{{ schema.ID }}_{{ linkTo }}_ref_uuid1"
+//    {{ reference.GoName }}refModel.FQName = []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid1"}
+//    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+//		return Create{{ reference.GoName }}(ctx, tx, &models.Create{{ reference.GoName }}Request{
+//            {{ reference.GoName }}: {{ reference.GoName }}refModel,
+//        })
+//	})
+//    {{ reference.GoName }}refModel.UUID = "{{ schema.ID }}_{{ linkTo }}_ref_uuid2"
+//    {{ reference.GoName }}refModel.FQName = []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid2"}
+//    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+//		return Create{{ reference.GoName }}(ctx, tx, &models.Create{{ reference.GoName }}Request{
+//            {{ reference.GoName }}: {{ reference.GoName }}refModel,
+//        })
+//	})
+//    if err != nil {
+//        t.Fatal("ref create failed", err)
+//    }
+//    {{ reference.GoName }}createref = append({{ reference.GoName }}createref, &models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{UUID:"{{ schema.ID }}_{{ linkTo }}_ref_uuid", To: []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid"}})
+//    {{ reference.GoName }}createref = append({{ reference.GoName }}createref, &models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{UUID:"{{ schema.ID }}_{{ linkTo }}_ref_uuid2", To: []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid2"}})
+//    model.{{ reference.GoName }}Refs = {{ reference.GoName }}createref
+//    {% endfor %}
+//
     //create project to which resource is shared
     projectModel := models.MakeProject()
 	projectModel.UUID = "{{ schema.ID }}_admin_project_uuid"
@@ -152,49 +157,49 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
 //        t.Fatal("update failed", err)
 //    }
 
-    //Delete ref entries, referred objects
-    {% for linkTo, reference in schema.References %}
-    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-        stmt, err := tx.Prepare("delete from `ref_{{ schema.ID }}_{{ linkTo }}` where `from` = ? AND `to` = ?;")
-        if err != nil {
-            return errors.Wrap(err, "preparing {{ reference.GoName }}Refs delete statement failed")
-        }
-        _, err = stmt.Exec( "{{ schema.ID }}_dummy_uuid", "{{ schema.ID }}_{{ linkTo }}_ref_uuid" )
-        _, err = stmt.Exec( "{{ schema.ID }}_dummy_uuid", "{{ schema.ID }}_{{ linkTo }}_ref_uuid1" )
-        _, err = stmt.Exec( "{{ schema.ID }}_dummy_uuid", "{{ schema.ID }}_{{ linkTo }}_ref_uuid2" )
-        if err != nil {
-            return errors.Wrap(err, "{{ reference.GoName }}Refs delete failed")
-        }
-        return nil
-	})
-    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-    	return Delete{{ reference.GoName }}(ctx, tx, 
-            &models.Delete{{ reference.GoName }}Request{
-                ID: "{{ schema.ID }}_{{ linkTo }}_ref_uuid"})
-    })
-	if err != nil {
-		t.Fatal("delete ref {{ schema.ID }}_{{ linkTo }}_ref_uuid  failed", err)
-	}
-    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-    	return Delete{{ reference.GoName }}(ctx, tx, 
-            &models.Delete{{ reference.GoName }}Request{
-                ID: "{{ schema.ID }}_{{ linkTo }}_ref_uuid1"})
-    })
-	if err != nil {
-		t.Fatal("delete ref {{ schema.ID }}_{{ linkTo }}_ref_uuid1  failed", err)
-	}
-    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-    	return Delete{{ reference.GoName }}(
-            ctx, 
-            tx, 
-            &models.Delete{{ reference.GoName }}Request{
-                ID: "{{ schema.ID }}_{{ linkTo }}_ref_uuid2",
-            })
-    })
-	if err != nil {
-		t.Fatal("delete ref {{ schema.ID }}_{{ linkTo }}_ref_uuid2 failed", err)
-	}
-    {% endfor %}
+//    //Delete ref entries, referred objects
+//    {% for linkTo, reference in schema.References %}
+//    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+//        stmt, err := tx.Prepare("delete from `ref_{{ schema.ID }}_{{ linkTo }}` where `from` = ? AND `to` = ?;")
+//        if err != nil {
+//            return errors.Wrap(err, "preparing {{ reference.GoName }}Refs delete statement failed")
+//        }
+//        _, err = stmt.Exec( "{{ schema.ID }}_dummy_uuid", "{{ schema.ID }}_{{ linkTo }}_ref_uuid" )
+//        _, err = stmt.Exec( "{{ schema.ID }}_dummy_uuid", "{{ schema.ID }}_{{ linkTo }}_ref_uuid1" )
+//        _, err = stmt.Exec( "{{ schema.ID }}_dummy_uuid", "{{ schema.ID }}_{{ linkTo }}_ref_uuid2" )
+//        if err != nil {
+//            return errors.Wrap(err, "{{ reference.GoName }}Refs delete failed")
+//        }
+//        return nil
+//	})
+//    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+//    	return Delete{{ reference.GoName }}(ctx, tx, 
+//            &models.Delete{{ reference.GoName }}Request{
+//                ID: "{{ schema.ID }}_{{ linkTo }}_ref_uuid"})
+//    })
+//	if err != nil {
+//		t.Fatal("delete ref {{ schema.ID }}_{{ linkTo }}_ref_uuid  failed", err)
+//	}
+//    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+//    	return Delete{{ reference.GoName }}(ctx, tx, 
+//            &models.Delete{{ reference.GoName }}Request{
+//                ID: "{{ schema.ID }}_{{ linkTo }}_ref_uuid1"})
+//    })
+//	if err != nil {
+//		t.Fatal("delete ref {{ schema.ID }}_{{ linkTo }}_ref_uuid1  failed", err)
+//	}
+//    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+//    	return Delete{{ reference.GoName }}(
+//            ctx, 
+//            tx, 
+//            &models.Delete{{ reference.GoName }}Request{
+//                ID: "{{ schema.ID }}_{{ linkTo }}_ref_uuid2",
+//            })
+//    })
+//	if err != nil {
+//		t.Fatal("delete ref {{ schema.ID }}_{{ linkTo }}_ref_uuid2 failed", err)
+//	}
+//    {% endfor %}
 
     //Delete the project created for sharing
     err = common.DoInTransaction(db, func(tx *sql.Tx) error {

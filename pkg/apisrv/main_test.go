@@ -53,8 +53,8 @@ func RunTest(file string) error {
 		return errors.Wrap(err, "failed to load test data")
 	}
 	for _, table := range testData.Tables {
-		common.UseTable(server.DB, table)
-		defer common.ClearTable(server.DB, table)
+		mutex := common.UseTable(server.DB, table)
+		defer mutex.Unlock()
 	}
 	clients := map[string]*Client{}
 	for key, client := range testData.Clients {

@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTNetworkPolicyUpdateRequest for update request for REST.
-type RESTNetworkPolicyUpdateRequest struct {
-	Data map[string]interface{} `json:"network-policy"`
-}
-
 //RESTCreateNetworkPolicy handle a Create REST service.
 func (service *ContrailService) RESTCreateNetworkPolicy(c echo.Context) error {
 	requestData := &models.CreateNetworkPolicyRequest{}

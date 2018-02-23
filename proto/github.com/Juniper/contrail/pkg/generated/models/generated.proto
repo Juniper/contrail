@@ -298,19 +298,19 @@ message AliasIP {
     string alias_ip_address = 9 [(gogoproto.customname) = "AliasIPAddress"];
     string alias_ip_address_family = 10 [(gogoproto.customname) = "AliasIPAddressFamily"]; 
 
-    repeated AliasIPProjectRef project_refs = 1011 [(gogoproto.customname) = "ProjectRefs"];
     repeated AliasIPVirtualMachineInterfaceRef virtual_machine_interface_refs = 1012 [(gogoproto.customname) = "VirtualMachineInterfaceRefs"];
+    repeated AliasIPProjectRef project_refs = 1011 [(gogoproto.customname) = "ProjectRefs"];
 
 }
 
 
-message AliasIPVirtualMachineInterfaceRef {
+message AliasIPProjectRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
 }
 
-message AliasIPProjectRef {
+message AliasIPVirtualMachineInterfaceRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
@@ -1289,8 +1289,8 @@ message E2ServiceProvider {
     PermType2 perms2 = 8 [(gogoproto.customname) = "Perms2"];
     bool e2_service_provider_promiscuous = 9 [(gogoproto.customname) = "E2ServiceProviderPromiscuous"]; 
 
-    repeated E2ServiceProviderPeeringPolicyRef peering_policy_refs = 1011 [(gogoproto.customname) = "PeeringPolicyRefs"];
     repeated E2ServiceProviderPhysicalRouterRef physical_router_refs = 1010 [(gogoproto.customname) = "PhysicalRouterRefs"];
+    repeated E2ServiceProviderPeeringPolicyRef peering_policy_refs = 1011 [(gogoproto.customname) = "PeeringPolicyRefs"];
 
 }
 
@@ -1368,17 +1368,17 @@ message FirewallPolicy {
 }
 
 
-message FirewallPolicySecurityLoggingObjectRef {
-    string uuid = 1 [(gogoproto.customname) = "UUID"];
-    repeated string to = 2 [(gogoproto.customname) = "To"];
-    
-}
-
 message FirewallPolicyFirewallRuleRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
     FirewallSequence attr = 3 [(gogoproto.customname) = "Attr"];
+    
+}
+
+message FirewallPolicySecurityLoggingObjectRef {
+    string uuid = 1 [(gogoproto.customname) = "UUID"];
+    repeated string to = 2 [(gogoproto.customname) = "To"];
     
 }
 
@@ -1444,25 +1444,13 @@ message FirewallRule {
     FirewallRuleMatchTagsTypeIdList match_tag_types = 14 [(gogoproto.customname) = "MatchTagTypes"];
     FirewallRuleMatchTagsType match_tags = 15 [(gogoproto.customname) = "MatchTags"]; 
 
-    repeated FirewallRuleSecurityLoggingObjectRef security_logging_object_refs = 1018 [(gogoproto.customname) = "SecurityLoggingObjectRefs"];
     repeated FirewallRuleVirtualNetworkRef virtual_network_refs = 1019 [(gogoproto.customname) = "VirtualNetworkRefs"];
     repeated FirewallRuleServiceGroupRef service_group_refs = 1016 [(gogoproto.customname) = "ServiceGroupRefs"];
     repeated FirewallRuleAddressGroupRef address_group_refs = 1017 [(gogoproto.customname) = "AddressGroupRefs"];
+    repeated FirewallRuleSecurityLoggingObjectRef security_logging_object_refs = 1018 [(gogoproto.customname) = "SecurityLoggingObjectRefs"];
 
 }
 
-
-message FirewallRuleServiceGroupRef {
-    string uuid = 1 [(gogoproto.customname) = "UUID"];
-    repeated string to = 2 [(gogoproto.customname) = "To"];
-    
-}
-
-message FirewallRuleAddressGroupRef {
-    string uuid = 1 [(gogoproto.customname) = "UUID"];
-    repeated string to = 2 [(gogoproto.customname) = "To"];
-    
-}
 
 message FirewallRuleSecurityLoggingObjectRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
@@ -1471,6 +1459,18 @@ message FirewallRuleSecurityLoggingObjectRef {
 }
 
 message FirewallRuleVirtualNetworkRef {
+    string uuid = 1 [(gogoproto.customname) = "UUID"];
+    repeated string to = 2 [(gogoproto.customname) = "To"];
+    
+}
+
+message FirewallRuleServiceGroupRef {
+    string uuid = 1 [(gogoproto.customname) = "UUID"];
+    repeated string to = 2 [(gogoproto.customname) = "To"];
+    
+}
+
+message FirewallRuleAddressGroupRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
@@ -1606,13 +1606,13 @@ message FloatingIP {
 }
 
 
-message FloatingIPVirtualMachineInterfaceRef {
+message FloatingIPProjectRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
 }
 
-message FloatingIPProjectRef {
+message FloatingIPVirtualMachineInterfaceRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
@@ -2341,28 +2341,16 @@ message LoadbalancerPool {
     KeyValuePairs loadbalancer_pool_custom_attributes = 10 [(gogoproto.customname) = "LoadbalancerPoolCustomAttributes"];
     string loadbalancer_pool_provider = 11 [(gogoproto.customname) = "LoadbalancerPoolProvider"]; 
 
-    repeated LoadbalancerPoolLoadbalancerListenerRef loadbalancer_listener_refs = 1014 [(gogoproto.customname) = "LoadbalancerListenerRefs"];
     repeated LoadbalancerPoolServiceInstanceRef service_instance_refs = 1015 [(gogoproto.customname) = "ServiceInstanceRefs"];
     repeated LoadbalancerPoolLoadbalancerHealthmonitorRef loadbalancer_healthmonitor_refs = 1016 [(gogoproto.customname) = "LoadbalancerHealthmonitorRefs"];
     repeated LoadbalancerPoolServiceApplianceSetRef service_appliance_set_refs = 1012 [(gogoproto.customname) = "ServiceApplianceSetRefs"];
     repeated LoadbalancerPoolVirtualMachineInterfaceRef virtual_machine_interface_refs = 1013 [(gogoproto.customname) = "VirtualMachineInterfaceRefs"];
+    repeated LoadbalancerPoolLoadbalancerListenerRef loadbalancer_listener_refs = 1014 [(gogoproto.customname) = "LoadbalancerListenerRefs"];
 
     
     repeated LoadbalancerMember loadbalancer_members = 3017 [(gogoproto.customname) = "LoadbalancerMembers"];
 }
 
-
-message LoadbalancerPoolServiceApplianceSetRef {
-    string uuid = 1 [(gogoproto.customname) = "UUID"];
-    repeated string to = 2 [(gogoproto.customname) = "To"];
-    
-}
-
-message LoadbalancerPoolVirtualMachineInterfaceRef {
-    string uuid = 1 [(gogoproto.customname) = "UUID"];
-    repeated string to = 2 [(gogoproto.customname) = "To"];
-    
-}
 
 message LoadbalancerPoolLoadbalancerListenerRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
@@ -2377,6 +2365,18 @@ message LoadbalancerPoolServiceInstanceRef {
 }
 
 message LoadbalancerPoolLoadbalancerHealthmonitorRef {
+    string uuid = 1 [(gogoproto.customname) = "UUID"];
+    repeated string to = 2 [(gogoproto.customname) = "To"];
+    
+}
+
+message LoadbalancerPoolServiceApplianceSetRef {
+    string uuid = 1 [(gogoproto.customname) = "UUID"];
+    repeated string to = 2 [(gogoproto.customname) = "To"];
+    
+}
+
+message LoadbalancerPoolVirtualMachineInterfaceRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
@@ -2439,9 +2439,9 @@ message Loadbalancer {
     LoadbalancerType loadbalancer_properties = 9 [(gogoproto.customname) = "LoadbalancerProperties"];
     string loadbalancer_provider = 10 [(gogoproto.customname) = "LoadbalancerProvider"]; 
 
-    repeated LoadbalancerServiceInstanceRef service_instance_refs = 1013 [(gogoproto.customname) = "ServiceInstanceRefs"];
     repeated LoadbalancerServiceApplianceSetRef service_appliance_set_refs = 1011 [(gogoproto.customname) = "ServiceApplianceSetRefs"];
     repeated LoadbalancerVirtualMachineInterfaceRef virtual_machine_interface_refs = 1012 [(gogoproto.customname) = "VirtualMachineInterfaceRefs"];
+    repeated LoadbalancerServiceInstanceRef service_instance_refs = 1013 [(gogoproto.customname) = "ServiceInstanceRefs"];
 
 }
 
@@ -2589,28 +2589,16 @@ message LogicalRouter {
     string vxlan_network_identifier = 9 [(gogoproto.customname) = "VxlanNetworkIdentifier"];
     RouteTargetList configured_route_target_list = 10 [(gogoproto.customname) = "ConfiguredRouteTargetList"]; 
 
+    repeated LogicalRouterBGPVPNRef bgpvpn_refs = 1017 [(gogoproto.customname) = "BGPVPNRefs"];
+    repeated LogicalRouterRouteTargetRef route_target_refs = 1011 [(gogoproto.customname) = "RouteTargetRefs"];
     repeated LogicalRouterVirtualMachineInterfaceRef virtual_machine_interface_refs = 1012 [(gogoproto.customname) = "VirtualMachineInterfaceRefs"];
     repeated LogicalRouterServiceInstanceRef service_instance_refs = 1013 [(gogoproto.customname) = "ServiceInstanceRefs"];
     repeated LogicalRouterRouteTableRef route_table_refs = 1014 [(gogoproto.customname) = "RouteTableRefs"];
     repeated LogicalRouterVirtualNetworkRef virtual_network_refs = 1015 [(gogoproto.customname) = "VirtualNetworkRefs"];
     repeated LogicalRouterPhysicalRouterRef physical_router_refs = 1016 [(gogoproto.customname) = "PhysicalRouterRefs"];
-    repeated LogicalRouterBGPVPNRef bgpvpn_refs = 1017 [(gogoproto.customname) = "BGPVPNRefs"];
-    repeated LogicalRouterRouteTargetRef route_target_refs = 1011 [(gogoproto.customname) = "RouteTargetRefs"];
 
 }
 
-
-message LogicalRouterRouteTableRef {
-    string uuid = 1 [(gogoproto.customname) = "UUID"];
-    repeated string to = 2 [(gogoproto.customname) = "To"];
-    
-}
-
-message LogicalRouterVirtualNetworkRef {
-    string uuid = 1 [(gogoproto.customname) = "UUID"];
-    repeated string to = 2 [(gogoproto.customname) = "To"];
-    
-}
 
 message LogicalRouterPhysicalRouterRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
@@ -2637,6 +2625,18 @@ message LogicalRouterVirtualMachineInterfaceRef {
 }
 
 message LogicalRouterServiceInstanceRef {
+    string uuid = 1 [(gogoproto.customname) = "UUID"];
+    repeated string to = 2 [(gogoproto.customname) = "To"];
+    
+}
+
+message LogicalRouterRouteTableRef {
+    string uuid = 1 [(gogoproto.customname) = "UUID"];
+    repeated string to = 2 [(gogoproto.customname) = "To"];
+    
+}
+
+message LogicalRouterVirtualNetworkRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
@@ -3378,12 +3378,6 @@ message Project {
 }
 
 
-message ProjectAliasIPPoolRef {
-    string uuid = 1 [(gogoproto.customname) = "UUID"];
-    repeated string to = 2 [(gogoproto.customname) = "To"];
-    
-}
-
 message ProjectNamespaceRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
@@ -3399,6 +3393,12 @@ message ProjectApplicationPolicySetRef {
 }
 
 message ProjectFloatingIPPoolRef {
+    string uuid = 1 [(gogoproto.customname) = "UUID"];
+    repeated string to = 2 [(gogoproto.customname) = "To"];
+    
+}
+
+message ProjectAliasIPPoolRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
@@ -4044,7 +4044,7 @@ message SecurityLoggingObject {
 }
 
 
-message SecurityLoggingObjectNetworkPolicyRef {
+message SecurityLoggingObjectSecurityGroupRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
@@ -4052,7 +4052,7 @@ message SecurityLoggingObjectNetworkPolicyRef {
     
 }
 
-message SecurityLoggingObjectSecurityGroupRef {
+message SecurityLoggingObjectNetworkPolicyRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
@@ -4318,12 +4318,18 @@ message ServiceEndpoint {
     KeyValuePairs annotations = 7 [(gogoproto.customname) = "Annotations"];
     PermType2 perms2 = 8 [(gogoproto.customname) = "Perms2"]; 
 
-    repeated ServiceEndpointServiceConnectionModuleRef service_connection_module_refs = 1009 [(gogoproto.customname) = "ServiceConnectionModuleRefs"];
     repeated ServiceEndpointPhysicalRouterRef physical_router_refs = 1010 [(gogoproto.customname) = "PhysicalRouterRefs"];
     repeated ServiceEndpointServiceObjectRef service_object_refs = 1011 [(gogoproto.customname) = "ServiceObjectRefs"];
+    repeated ServiceEndpointServiceConnectionModuleRef service_connection_module_refs = 1009 [(gogoproto.customname) = "ServiceConnectionModuleRefs"];
 
 }
 
+
+message ServiceEndpointPhysicalRouterRef {
+    string uuid = 1 [(gogoproto.customname) = "UUID"];
+    repeated string to = 2 [(gogoproto.customname) = "To"];
+    
+}
 
 message ServiceEndpointServiceObjectRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
@@ -4332,12 +4338,6 @@ message ServiceEndpointServiceObjectRef {
 }
 
 message ServiceEndpointServiceConnectionModuleRef {
-    string uuid = 1 [(gogoproto.customname) = "UUID"];
-    repeated string to = 2 [(gogoproto.customname) = "To"];
-    
-}
-
-message ServiceEndpointPhysicalRouterRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
@@ -5197,23 +5197,37 @@ message VirtualMachineInterface {
     bool port_security_enabled = 20 [(gogoproto.customname) = "PortSecurityEnabled"];
     VirtualMachineInterfacePropertiesType virtual_machine_interface_properties = 21 [(gogoproto.customname) = "VirtualMachineInterfaceProperties"]; 
 
-    repeated VirtualMachineInterfaceQosConfigRef qos_config_refs = 1028 [(gogoproto.customname) = "QosConfigRefs"];
-    repeated VirtualMachineInterfacePortTupleRef port_tuple_refs = 1029 [(gogoproto.customname) = "PortTupleRefs"];
+    repeated VirtualMachineInterfaceSecurityLoggingObjectRef security_logging_object_refs = 1025 [(gogoproto.customname) = "SecurityLoggingObjectRefs"];
+    repeated VirtualMachineInterfaceInterfaceRouteTableRef interface_route_table_refs = 1026 [(gogoproto.customname) = "InterfaceRouteTableRefs"];
+    repeated VirtualMachineInterfaceSecurityGroupRef security_group_refs = 1032 [(gogoproto.customname) = "SecurityGroupRefs"];
+    repeated VirtualMachineInterfaceBridgeDomainRef bridge_domain_refs = 1034 [(gogoproto.customname) = "BridgeDomainRefs"];
     repeated VirtualMachineInterfaceVirtualMachineInterfaceRef virtual_machine_interface_refs = 1022 [(gogoproto.customname) = "VirtualMachineInterfaceRefs"];
-    repeated VirtualMachineInterfaceServiceHealthCheckRef service_health_check_refs = 1031 [(gogoproto.customname) = "ServiceHealthCheckRefs"];
+    repeated VirtualMachineInterfaceBGPRouterRef bgp_router_refs = 1024 [(gogoproto.customname) = "BGPRouterRefs"];
+    repeated VirtualMachineInterfacePortTupleRef port_tuple_refs = 1029 [(gogoproto.customname) = "PortTupleRefs"];
     repeated VirtualMachineInterfaceVirtualNetworkRef virtual_network_refs = 1033 [(gogoproto.customname) = "VirtualNetworkRefs"];
     repeated VirtualMachineInterfaceServiceEndpointRef service_endpoint_refs = 1035 [(gogoproto.customname) = "ServiceEndpointRefs"];
     repeated VirtualMachineInterfaceVirtualMachineRef virtual_machine_refs = 1023 [(gogoproto.customname) = "VirtualMachineRefs"];
-    repeated VirtualMachineInterfaceBGPRouterRef bgp_router_refs = 1024 [(gogoproto.customname) = "BGPRouterRefs"];
     repeated VirtualMachineInterfaceRoutingInstanceRef routing_instance_refs = 1027 [(gogoproto.customname) = "RoutingInstanceRefs"];
-    repeated VirtualMachineInterfaceSecurityGroupRef security_group_refs = 1032 [(gogoproto.customname) = "SecurityGroupRefs"];
-    repeated VirtualMachineInterfaceBridgeDomainRef bridge_domain_refs = 1034 [(gogoproto.customname) = "BridgeDomainRefs"];
-    repeated VirtualMachineInterfaceSecurityLoggingObjectRef security_logging_object_refs = 1025 [(gogoproto.customname) = "SecurityLoggingObjectRefs"];
-    repeated VirtualMachineInterfaceInterfaceRouteTableRef interface_route_table_refs = 1026 [(gogoproto.customname) = "InterfaceRouteTableRefs"];
+    repeated VirtualMachineInterfaceQosConfigRef qos_config_refs = 1028 [(gogoproto.customname) = "QosConfigRefs"];
     repeated VirtualMachineInterfacePhysicalInterfaceRef physical_interface_refs = 1030 [(gogoproto.customname) = "PhysicalInterfaceRefs"];
+    repeated VirtualMachineInterfaceServiceHealthCheckRef service_health_check_refs = 1031 [(gogoproto.customname) = "ServiceHealthCheckRefs"];
 
 }
 
+
+message VirtualMachineInterfaceVirtualMachineRef {
+    string uuid = 1 [(gogoproto.customname) = "UUID"];
+    repeated string to = 2 [(gogoproto.customname) = "To"];
+    
+}
+
+message VirtualMachineInterfaceRoutingInstanceRef {
+    string uuid = 1 [(gogoproto.customname) = "UUID"];
+    repeated string to = 2 [(gogoproto.customname) = "To"];
+    
+    PolicyBasedForwardingRuleType attr = 3 [(gogoproto.customname) = "Attr"];
+    
+}
 
 message VirtualMachineInterfaceQosConfigRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
@@ -5221,13 +5235,7 @@ message VirtualMachineInterfaceQosConfigRef {
     
 }
 
-message VirtualMachineInterfacePortTupleRef {
-    string uuid = 1 [(gogoproto.customname) = "UUID"];
-    repeated string to = 2 [(gogoproto.customname) = "To"];
-    
-}
-
-message VirtualMachineInterfaceVirtualMachineInterfaceRef {
+message VirtualMachineInterfacePhysicalInterfaceRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
@@ -5239,7 +5247,13 @@ message VirtualMachineInterfaceServiceHealthCheckRef {
     
 }
 
-message VirtualMachineInterfaceVirtualNetworkRef {
+message VirtualMachineInterfaceSecurityLoggingObjectRef {
+    string uuid = 1 [(gogoproto.customname) = "UUID"];
+    repeated string to = 2 [(gogoproto.customname) = "To"];
+    
+}
+
+message VirtualMachineInterfaceInterfaceRouteTableRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
@@ -5259,13 +5273,7 @@ message VirtualMachineInterfaceBridgeDomainRef {
     
 }
 
-message VirtualMachineInterfaceServiceEndpointRef {
-    string uuid = 1 [(gogoproto.customname) = "UUID"];
-    repeated string to = 2 [(gogoproto.customname) = "To"];
-    
-}
-
-message VirtualMachineInterfaceVirtualMachineRef {
+message VirtualMachineInterfaceVirtualMachineInterfaceRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
@@ -5277,27 +5285,19 @@ message VirtualMachineInterfaceBGPRouterRef {
     
 }
 
-message VirtualMachineInterfaceRoutingInstanceRef {
-    string uuid = 1 [(gogoproto.customname) = "UUID"];
-    repeated string to = 2 [(gogoproto.customname) = "To"];
-    
-    PolicyBasedForwardingRuleType attr = 3 [(gogoproto.customname) = "Attr"];
-    
-}
-
-message VirtualMachineInterfaceSecurityLoggingObjectRef {
+message VirtualMachineInterfacePortTupleRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
 }
 
-message VirtualMachineInterfaceInterfaceRouteTableRef {
+message VirtualMachineInterfaceVirtualNetworkRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
 }
 
-message VirtualMachineInterfacePhysicalInterfaceRef {
+message VirtualMachineInterfaceServiceEndpointRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
@@ -5447,13 +5447,13 @@ message VirtualNetwork {
     MACLimitControlType mac_limit_control = 28 [(gogoproto.customname) = "MacLimitControl"];
     bool is_shared = 29 [(gogoproto.customname) = "IsShared"]; 
 
-    repeated VirtualNetworkVirtualNetworkRef virtual_network_refs = 1035 [(gogoproto.customname) = "VirtualNetworkRefs"];
-    repeated VirtualNetworkBGPVPNRef bgpvpn_refs = 1036 [(gogoproto.customname) = "BGPVPNRefs"];
-    repeated VirtualNetworkNetworkIpamRef network_ipam_refs = 1030 [(gogoproto.customname) = "NetworkIpamRefs"];
     repeated VirtualNetworkSecurityLoggingObjectRef security_logging_object_refs = 1031 [(gogoproto.customname) = "SecurityLoggingObjectRefs"];
     repeated VirtualNetworkNetworkPolicyRef network_policy_refs = 1032 [(gogoproto.customname) = "NetworkPolicyRefs"];
     repeated VirtualNetworkQosConfigRef qos_config_refs = 1033 [(gogoproto.customname) = "QosConfigRefs"];
     repeated VirtualNetworkRouteTableRef route_table_refs = 1034 [(gogoproto.customname) = "RouteTableRefs"];
+    repeated VirtualNetworkVirtualNetworkRef virtual_network_refs = 1035 [(gogoproto.customname) = "VirtualNetworkRefs"];
+    repeated VirtualNetworkBGPVPNRef bgpvpn_refs = 1036 [(gogoproto.customname) = "BGPVPNRefs"];
+    repeated VirtualNetworkNetworkIpamRef network_ipam_refs = 1030 [(gogoproto.customname) = "NetworkIpamRefs"];
 
     
     repeated AccessControlList access_control_lists = 3037 [(gogoproto.customname) = "AccessControlLists"];
@@ -5467,18 +5467,6 @@ message VirtualNetwork {
     repeated RoutingInstance routing_instances = 3041 [(gogoproto.customname) = "RoutingInstances"];
 }
 
-
-message VirtualNetworkVirtualNetworkRef {
-    string uuid = 1 [(gogoproto.customname) = "UUID"];
-    repeated string to = 2 [(gogoproto.customname) = "To"];
-    
-}
-
-message VirtualNetworkBGPVPNRef {
-    string uuid = 1 [(gogoproto.customname) = "UUID"];
-    repeated string to = 2 [(gogoproto.customname) = "To"];
-    
-}
 
 message VirtualNetworkNetworkIpamRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
@@ -5509,6 +5497,18 @@ message VirtualNetworkQosConfigRef {
 }
 
 message VirtualNetworkRouteTableRef {
+    string uuid = 1 [(gogoproto.customname) = "UUID"];
+    repeated string to = 2 [(gogoproto.customname) = "To"];
+    
+}
+
+message VirtualNetworkVirtualNetworkRef {
+    string uuid = 1 [(gogoproto.customname) = "UUID"];
+    repeated string to = 2 [(gogoproto.customname) = "To"];
+    
+}
+
+message VirtualNetworkBGPVPNRef {
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     
@@ -7150,6 +7150,121 @@ message GetWidgetResponse {
 
 
 
+
+
+message EncapsulationPrioritiesType {
+
+    repeated string encapsulation = 1 [(gogoproto.customname) = "Encapsulation"]; 
+}
+
+
+
+message AllowedAddressPair {
+
+    SubnetType ip = 1 [(gogoproto.customname) = "IP"];
+    string mac = 2 [(gogoproto.customname) = "Mac"];
+    string address_mode = 3 [(gogoproto.customname) = "AddressMode"]; 
+}
+
+
+
+message FirewallRuleEndpointType {
+
+    string address_group = 1 [(gogoproto.customname) = "AddressGroup"];
+    SubnetType subnet = 2 [(gogoproto.customname) = "Subnet"];
+    repeated string tags = 3 [(gogoproto.customname) = "Tags"];
+    repeated int64 tag_ids = 4 [(gogoproto.customname) = "TagIds"];
+    string virtual_network = 5 [(gogoproto.customname) = "VirtualNetwork"];
+    bool any = 6 [(gogoproto.customname) = "Any"]; 
+}
+
+
+
+
+
+
+
+
+
+message AllocationPoolType {
+
+    bool vrouter_specific_pool = 1 [(gogoproto.customname) = "VrouterSpecificPool"];
+    string start = 2 [(gogoproto.customname) = "Start"];
+    string end = 3 [(gogoproto.customname) = "End"]; 
+}
+
+
+
+
+
+
+
+message DiscoveryPubSubEndPointType {
+
+    string ep_version = 1 [(gogoproto.customname) = "EpVersion"];
+    string ep_id = 2 [(gogoproto.customname) = "EpID"];
+    string ep_type = 3 [(gogoproto.customname) = "EpType"];
+    SubnetType ep_prefix = 4 [(gogoproto.customname) = "EpPrefix"]; 
+}
+
+
+
+message DiscoveryServiceAssignmentType {
+
+    repeated DiscoveryPubSubEndPointType subscriber = 1 [(gogoproto.customname) = "Subscriber"];
+    DiscoveryPubSubEndPointType publisher = 2 [(gogoproto.customname) = "Publisher"]; 
+}
+
+
+
+
+
+message LoadbalancerListenerType {
+
+    string default_tls_container = 1 [(gogoproto.customname) = "DefaultTLSContainer"];
+    string protocol = 2 [(gogoproto.customname) = "Protocol"];
+    int64 connection_limit = 3 [(gogoproto.customname) = "ConnectionLimit"];
+    bool admin_state = 4 [(gogoproto.customname) = "AdminState"];
+    repeated string sni_containers = 5 [(gogoproto.customname) = "SniContainers"];
+    int64 protocol_port = 6 [(gogoproto.customname) = "ProtocolPort"]; 
+}
+
+
+
+message ProtocolType {
+
+    string protocol = 1 [(gogoproto.customname) = "Protocol"];
+    int64 port = 2 [(gogoproto.customname) = "Port"]; 
+}
+
+
+
+message VirtualRouterNetworkIpamType {
+
+    repeated SubnetType subnet = 1 [(gogoproto.customname) = "Subnet"];
+    repeated AllocationPoolType allocation_pools = 2 [(gogoproto.customname) = "AllocationPools"]; 
+}
+
+
+
+message ShareType {
+
+    int64 tenant_access = 1 [(gogoproto.customname) = "TenantAccess"];
+    string tenant = 2 [(gogoproto.customname) = "Tenant"]; 
+}
+
+
+
+message PortType {
+
+    int64 end_port = 1 [(gogoproto.customname) = "EndPort"];
+    int64 start_port = 2 [(gogoproto.customname) = "StartPort"]; 
+}
+
+
+
+
+
 message SNMPCredentials {
 
     string v3_privacy_protocol = 1 [(gogoproto.customname) = "V3PrivacyProtocol"];
@@ -7173,70 +7288,172 @@ message SNMPCredentials {
 
 
 
-message AlarmAndList {
+message AllowedAddressPairs {
 
-    repeated AlarmExpression and_list = 1 [(gogoproto.customname) = "AndList"]; 
+    repeated AllowedAddressPair allowed_address_pair = 1 [(gogoproto.customname) = "AllowedAddressPair"]; 
+}
+
+
+
+message FatFlowProtocols {
+
+    repeated ProtocolType fat_flow_protocol = 1 [(gogoproto.customname) = "FatFlowProtocol"]; 
+}
+
+
+
+message PolicyBasedForwardingRuleType {
+
+    string dst_mac = 1 [(gogoproto.customname) = "DSTMac"];
+    string protocol = 2 [(gogoproto.customname) = "Protocol"];
+    string ipv6_service_chain_address = 3 [(gogoproto.customname) = "Ipv6ServiceChainAddress"];
+    string direction = 4 [(gogoproto.customname) = "Direction"];
+    int64 mpls_label = 5 [(gogoproto.customname) = "MPLSLabel"];
+    int64 vlan_tag = 6 [(gogoproto.customname) = "VlanTag"];
+    string src_mac = 7 [(gogoproto.customname) = "SRCMac"];
+    string service_chain_address = 8 [(gogoproto.customname) = "ServiceChainAddress"]; 
+}
+
+
+
+message MatchConditionType {
+
+    PortType src_port = 1 [(gogoproto.customname) = "SRCPort"];
+    AddressType src_address = 2 [(gogoproto.customname) = "SRCAddress"];
+    string ethertype = 3 [(gogoproto.customname) = "Ethertype"];
+    AddressType dst_address = 4 [(gogoproto.customname) = "DSTAddress"];
+    PortType dst_port = 5 [(gogoproto.customname) = "DSTPort"];
+    string protocol = 6 [(gogoproto.customname) = "Protocol"]; 
 }
 
 
 
 
 
-message RouteType {
 
-    string prefix = 1 [(gogoproto.customname) = "Prefix"];
-    string next_hop = 2 [(gogoproto.customname) = "NextHop"];
-    CommunityAttributes community_attributes = 3 [(gogoproto.customname) = "CommunityAttributes"];
-    string next_hop_type = 4 [(gogoproto.customname) = "NextHopType"]; 
+
+
+
+
+
+message InterfaceMirrorType {
+
+    string traffic_direction = 1 [(gogoproto.customname) = "TrafficDirection"];
+    MirrorActionType mirror_to = 2 [(gogoproto.customname) = "MirrorTo"]; 
 }
 
 
 
-message PolicyEntriesType {
+message DriverInfo {
 
-    repeated PolicyRuleType policy_rule = 1 [(gogoproto.customname) = "PolicyRule"]; 
+    string ipmi_address = 1 [(gogoproto.customname) = "IpmiAddress"];
+    string ipmi_username = 2 [(gogoproto.customname) = "IpmiUsername"];
+    string ipmi_password = 3 [(gogoproto.customname) = "IpmiPassword"];
+    string deploy_kernel = 4 [(gogoproto.customname) = "DeployKernel"];
+    string deploy_ramdisk = 5 [(gogoproto.customname) = "DeployRamdisk"]; 
+}
+
+
+
+message RoutingPolicyServiceInstanceType {
+
+    string right_sequence = 1 [(gogoproto.customname) = "RightSequence"];
+    string left_sequence = 2 [(gogoproto.customname) = "LeftSequence"]; 
+}
+
+
+
+message UserDefinedLogStatList {
+
+    repeated UserDefinedLogStat statlist = 1 [(gogoproto.customname) = "Statlist"]; 
+}
+
+
+
+message FlowAgingTimeout {
+
+    int64 timeout_in_seconds = 1 [(gogoproto.customname) = "TimeoutInSeconds"];
+    string protocol = 2 [(gogoproto.customname) = "Protocol"];
+    int64 port = 3 [(gogoproto.customname) = "Port"]; 
+}
+
+
+
+message LinklocalServicesTypes {
+
+    repeated LinklocalServiceEntryType linklocal_service_entry = 1 [(gogoproto.customname) = "LinklocalServiceEntry"]; 
+}
+
+
+
+message IpamSubnets {
+
+    repeated IpamSubnetType subnets = 1 [(gogoproto.customname) = "Subnets"]; 
+}
+
+
+
+message FirewallServiceGroupType {
+
+    repeated FirewallServiceType firewall_service = 1 [(gogoproto.customname) = "FirewallService"]; 
+}
+
+
+
+message MacAddressesType {
+
+    repeated string mac_address = 1 [(gogoproto.customname) = "MacAddress"]; 
+}
+
+
+
+message ServiceInterfaceTag {
+
+    string interface_type = 1 [(gogoproto.customname) = "InterfaceType"]; 
 }
 
 
 
 
 
-message ServiceInstanceInterfaceType {
 
-    string virtual_network = 1 [(gogoproto.customname) = "VirtualNetwork"];
-    string ip_address = 2 [(gogoproto.customname) = "IPAddress"];
-    AllowedAddressPairs allowed_address_pairs = 3 [(gogoproto.customname) = "AllowedAddressPairs"];
-    RouteTableType static_routes = 4 [(gogoproto.customname) = "StaticRoutes"]; 
+
+message EcmpHashingIncludeFields {
+
+    bool destination_ip = 1 [(gogoproto.customname) = "DestinationIP"];
+    bool ip_protocol = 2 [(gogoproto.customname) = "IPProtocol"];
+    bool source_ip = 3 [(gogoproto.customname) = "SourceIP"];
+    bool hashing_configured = 4 [(gogoproto.customname) = "HashingConfigured"];
+    bool source_port = 5 [(gogoproto.customname) = "SourcePort"];
+    bool destination_port = 6 [(gogoproto.customname) = "DestinationPort"]; 
 }
 
 
 
+message IpAddressesType {
 
-
-message FirewallSequence {
-
-    string sequence = 1 [(gogoproto.customname) = "Sequence"]; 
+    string ip_address = 1 [(gogoproto.customname) = "IPAddress"]; 
 }
 
 
 
-message StaticMirrorNhType {
+message IpamSubnetType {
 
-    string vtep_dst_ip_address = 1 [(gogoproto.customname) = "VtepDSTIPAddress"];
-    string vtep_dst_mac_address = 2 [(gogoproto.customname) = "VtepDSTMacAddress"];
-    int64 vni = 3 [(gogoproto.customname) = "Vni"]; 
+    SubnetType subnet = 1 [(gogoproto.customname) = "Subnet"];
+    bool addr_from_start = 2 [(gogoproto.customname) = "AddrFromStart"];
+    bool enable_dhcp = 3 [(gogoproto.customname) = "EnableDHCP"];
+    string default_gateway = 4 [(gogoproto.customname) = "DefaultGateway"];
+    int64 alloc_unit = 5 [(gogoproto.customname) = "AllocUnit"];
+    string created = 6 [(gogoproto.customname) = "Created"];
+    repeated string dns_nameservers = 7 [(gogoproto.customname) = "DNSNameservers"];
+    DhcpOptionsListType dhcp_option_list = 8 [(gogoproto.customname) = "DHCPOptionList"];
+    string subnet_uuid = 9 [(gogoproto.customname) = "SubnetUUID"];
+    repeated AllocationPoolType allocation_pools = 10 [(gogoproto.customname) = "AllocationPools"];
+    string last_modified = 11 [(gogoproto.customname) = "LastModified"];
+    RouteTableType host_routes = 12 [(gogoproto.customname) = "HostRoutes"];
+    string dns_server_address = 13 [(gogoproto.customname) = "DNSServerAddress"];
+    string subnet_name = 14 [(gogoproto.customname) = "SubnetName"]; 
 }
-
-
-
-message DomainLimitsType {
-
-    int64 project_limit = 1 [(gogoproto.customname) = "ProjectLimit"];
-    int64 virtual_network_limit = 2 [(gogoproto.customname) = "VirtualNetworkLimit"];
-    int64 security_group_limit = 3 [(gogoproto.customname) = "SecurityGroupLimit"]; 
-}
-
-
 
 
 
@@ -7272,6 +7489,69 @@ message QuotaType {
 
 
 
+
+
+
+
+
+
+message KeyValuePairs {
+
+    repeated KeyValuePair key_value_pair = 1 [(gogoproto.customname) = "KeyValuePair"]; 
+}
+
+
+
+message StaticMirrorNhType {
+
+    string vtep_dst_ip_address = 1 [(gogoproto.customname) = "VtepDSTIPAddress"];
+    string vtep_dst_mac_address = 2 [(gogoproto.customname) = "VtepDSTMacAddress"];
+    int64 vni = 3 [(gogoproto.customname) = "Vni"]; 
+}
+
+
+
+message FlowAgingTimeoutList {
+
+    repeated FlowAgingTimeout flow_aging_timeout = 1 [(gogoproto.customname) = "FlowAgingTimeout"]; 
+}
+
+
+
+message VirtualDnsRecordType {
+
+    string record_name = 1 [(gogoproto.customname) = "RecordName"];
+    string record_class = 2 [(gogoproto.customname) = "RecordClass"];
+    string record_data = 3 [(gogoproto.customname) = "RecordData"];
+    string record_type = 4 [(gogoproto.customname) = "RecordType"];
+    int64 record_ttl_seconds = 5 [(gogoproto.customname) = "RecordTTLSeconds"];
+    int64 record_mx_preference = 6 [(gogoproto.customname) = "RecordMXPreference"]; 
+}
+
+
+
+message FloatingIpPoolSubnetType {
+
+    repeated string subnet_uuid = 1 [(gogoproto.customname) = "SubnetUUID"]; 
+}
+
+
+
+
+
+
+
+
+
+message PortMappings {
+
+    repeated PortMap port_mappings = 1 [(gogoproto.customname) = "PortMappings"]; 
+}
+
+
+
+
+
 message BridgeDomainMembershipType {
 
     int64 vlan_tag = 1 [(gogoproto.customname) = "VlanTag"]; 
@@ -7281,114 +7561,51 @@ message BridgeDomainMembershipType {
 
 
 
+message FirewallRuleMatchTagsType {
 
-
-
-
-message OpenStackImageProperty {
-
-    string id = 1 [(gogoproto.customname) = "ID"];
-    OpenStackLink links = 2 [(gogoproto.customname) = "Links"]; 
+    repeated string tag_list = 1 [(gogoproto.customname) = "TagList"]; 
 }
 
 
 
 
 
-message DhcpOptionsListType {
+message VirtualDnsType {
 
-    repeated DhcpOptionType dhcp_option = 1 [(gogoproto.customname) = "DHCPOption"]; 
+    string floating_ip_record = 1 [(gogoproto.customname) = "FloatingIPRecord"];
+    string domain_name = 2 [(gogoproto.customname) = "DomainName"];
+    bool external_visible = 3 [(gogoproto.customname) = "ExternalVisible"];
+    string next_virtual_DNS = 4 [(gogoproto.customname) = "NextVirtualDNS"];
+    bool dynamic_records_from_client = 5 [(gogoproto.customname) = "DynamicRecordsFromClient"];
+    bool reverse_resolution = 6 [(gogoproto.customname) = "ReverseResolution"];
+    int64 default_ttl_seconds = 7 [(gogoproto.customname) = "DefaultTTLSeconds"];
+    string record_order = 8 [(gogoproto.customname) = "RecordOrder"]; 
+}
+
+
+
+message VrfAssignTableType {
+
+    repeated VrfAssignRuleType vrf_assign_rule = 1 [(gogoproto.customname) = "VRFAssignRule"]; 
 }
 
 
 
 
 
-message UserCredentials {
+message VirtualNetworkType {
 
-    string username = 1 [(gogoproto.customname) = "Username"];
-    string password = 2 [(gogoproto.customname) = "Password"]; 
-}
-
-
-
-message MatchConditionType {
-
-    PortType src_port = 1 [(gogoproto.customname) = "SRCPort"];
-    AddressType src_address = 2 [(gogoproto.customname) = "SRCAddress"];
-    string ethertype = 3 [(gogoproto.customname) = "Ethertype"];
-    AddressType dst_address = 4 [(gogoproto.customname) = "DSTAddress"];
-    PortType dst_port = 5 [(gogoproto.customname) = "DSTPort"];
-    string protocol = 6 [(gogoproto.customname) = "Protocol"]; 
+    string forwarding_mode = 1 [(gogoproto.customname) = "ForwardingMode"];
+    bool allow_transit = 2 [(gogoproto.customname) = "AllowTransit"];
+    int64 network_id = 3 [(gogoproto.customname) = "NetworkID"];
+    bool mirror_destination = 4 [(gogoproto.customname) = "MirrorDestination"];
+    int64 vxlan_network_identifier = 5 [(gogoproto.customname) = "VxlanNetworkIdentifier"];
+    string rpf = 6 [(gogoproto.customname) = "RPF"]; 
 }
 
 
 
 
-
-
-
-message DiscoveryServiceAssignmentType {
-
-    repeated DiscoveryPubSubEndPointType subscriber = 1 [(gogoproto.customname) = "Subscriber"];
-    DiscoveryPubSubEndPointType publisher = 2 [(gogoproto.customname) = "Publisher"]; 
-}
-
-
-
-message DriverInfo {
-
-    string ipmi_address = 1 [(gogoproto.customname) = "IpmiAddress"];
-    string ipmi_username = 2 [(gogoproto.customname) = "IpmiUsername"];
-    string ipmi_password = 3 [(gogoproto.customname) = "IpmiPassword"];
-    string deploy_kernel = 4 [(gogoproto.customname) = "DeployKernel"];
-    string deploy_ramdisk = 5 [(gogoproto.customname) = "DeployRamdisk"]; 
-}
-
-
-
-message BGPaaServiceParametersType {
-
-    int64 port_start = 1 [(gogoproto.customname) = "PortStart"];
-    int64 port_end = 2 [(gogoproto.customname) = "PortEnd"]; 
-}
-
-
-
-message LoadbalancerListenerType {
-
-    string default_tls_container = 1 [(gogoproto.customname) = "DefaultTLSContainer"];
-    string protocol = 2 [(gogoproto.customname) = "Protocol"];
-    int64 connection_limit = 3 [(gogoproto.customname) = "ConnectionLimit"];
-    bool admin_state = 4 [(gogoproto.customname) = "AdminState"];
-    repeated string sni_containers = 5 [(gogoproto.customname) = "SniContainers"];
-    int64 protocol_port = 6 [(gogoproto.customname) = "ProtocolPort"]; 
-}
-
-
-
-message IpamType {
-
-    string ipam_method = 1 [(gogoproto.customname) = "IpamMethod"];
-    string ipam_dns_method = 2 [(gogoproto.customname) = "IpamDNSMethod"];
-    IpamDnsAddressType ipam_dns_server = 3 [(gogoproto.customname) = "IpamDNSServer"];
-    DhcpOptionsListType dhcp_option_list = 4 [(gogoproto.customname) = "DHCPOptionList"];
-    RouteTableType host_routes = 5 [(gogoproto.customname) = "HostRoutes"];
-    SubnetType cidr_block = 6 [(gogoproto.customname) = "CidrBlock"]; 
-}
-
-
-
-message IdPermsType {
-
-    bool enable = 1 [(gogoproto.customname) = "Enable"];
-    string description = 2 [(gogoproto.customname) = "Description"];
-    string created = 3 [(gogoproto.customname) = "Created"];
-    string creator = 4 [(gogoproto.customname) = "Creator"];
-    bool user_visible = 5 [(gogoproto.customname) = "UserVisible"];
-    string last_modified = 6 [(gogoproto.customname) = "LastModified"];
-    PermType permissions = 7 [(gogoproto.customname) = "Permissions"]; 
-}
 
 
 
@@ -7403,6 +7620,14 @@ message AddressType {
 
 
 
+message AclRuleType {
+
+    string rule_uuid = 1 [(gogoproto.customname) = "RuleUUID"];
+    MatchConditionType match_condition = 2 [(gogoproto.customname) = "MatchCondition"];
+    string direction = 3 [(gogoproto.customname) = "Direction"];
+    ActionListType action_list = 4 [(gogoproto.customname) = "ActionList"]; 
+}
+
 
 
 message ControlTrafficDscpType {
@@ -7414,74 +7639,37 @@ message ControlTrafficDscpType {
 
 
 
-message QosIdForwardingClassPairs {
+message PluginProperty {
 
-    repeated QosIdForwardingClassPair qos_id_forwarding_class_pair = 1 [(gogoproto.customname) = "QosIDForwardingClassPair"]; 
+    string property = 1 [(gogoproto.customname) = "Property"];
+    string value = 2 [(gogoproto.customname) = "Value"]; 
 }
 
 
 
-message PortMappings {
+message VirtualMachineInterfacePropertiesType {
 
-    repeated PortMap port_mappings = 1 [(gogoproto.customname) = "PortMappings"]; 
+    int64 sub_interface_vlan_tag = 1 [(gogoproto.customname) = "SubInterfaceVlanTag"];
+    int64 local_preference = 2 [(gogoproto.customname) = "LocalPreference"];
+    InterfaceMirrorType interface_mirror = 3 [(gogoproto.customname) = "InterfaceMirror"];
+    string service_interface_type = 4 [(gogoproto.customname) = "ServiceInterfaceType"]; 
 }
 
 
 
-message UserDefinedLogStat {
+message MirrorActionType {
 
-    string pattern = 1 [(gogoproto.customname) = "Pattern"];
-    string name = 2 [(gogoproto.customname) = "Name"]; 
-}
-
-
-
-message LinklocalServiceEntryType {
-
-    repeated string ip_fabric_service_ip = 1 [(gogoproto.customname) = "IPFabricServiceIP"];
-    string linklocal_service_name = 2 [(gogoproto.customname) = "LinklocalServiceName"];
-    string linklocal_service_ip = 3 [(gogoproto.customname) = "LinklocalServiceIP"];
-    int64 ip_fabric_service_port = 4 [(gogoproto.customname) = "IPFabricServicePort"];
-    string ip_fabric_DNS_service_name = 5 [(gogoproto.customname) = "IPFabricDNSServiceName"];
-    int64 linklocal_service_port = 6 [(gogoproto.customname) = "LinklocalServicePort"]; 
-}
-
-
-
-message EcmpHashingIncludeFields {
-
-    bool destination_ip = 1 [(gogoproto.customname) = "DestinationIP"];
-    bool ip_protocol = 2 [(gogoproto.customname) = "IPProtocol"];
-    bool source_ip = 3 [(gogoproto.customname) = "SourceIP"];
-    bool hashing_configured = 4 [(gogoproto.customname) = "HashingConfigured"];
-    bool source_port = 5 [(gogoproto.customname) = "SourcePort"];
-    bool destination_port = 6 [(gogoproto.customname) = "DestinationPort"]; 
-}
-
-
-
-message IpamSubnets {
-
-    repeated IpamSubnetType subnets = 1 [(gogoproto.customname) = "Subnets"]; 
-}
-
-
-
-
-
-message ServiceHealthCheckType {
-
-    int64 delayUsecs = 1 [(gogoproto.customname) = "DelayUsecs"];
-    int64 timeoutUsecs = 2 [(gogoproto.customname) = "TimeoutUsecs"];
-    bool enabled = 3 [(gogoproto.customname) = "Enabled"];
-    int64 delay = 4 [(gogoproto.customname) = "Delay"];
-    string expected_codes = 5 [(gogoproto.customname) = "ExpectedCodes"];
-    int64 max_retries = 6 [(gogoproto.customname) = "MaxRetries"];
-    string health_check_type = 7 [(gogoproto.customname) = "HealthCheckType"];
-    string http_method = 8 [(gogoproto.customname) = "HTTPMethod"];
-    int64 timeout = 9 [(gogoproto.customname) = "Timeout"];
-    string url_path = 10 [(gogoproto.customname) = "URLPath"];
-    string monitor_type = 11 [(gogoproto.customname) = "MonitorType"]; 
+    int64 nic_assisted_mirroring_vlan = 1 [(gogoproto.customname) = "NicAssistedMirroringVlan"];
+    string analyzer_name = 2 [(gogoproto.customname) = "AnalyzerName"];
+    string nh_mode = 3 [(gogoproto.customname) = "NHMode"];
+    bool juniper_header = 4 [(gogoproto.customname) = "JuniperHeader"];
+    int64 udp_port = 5 [(gogoproto.customname) = "UDPPort"];
+    string routing_instance = 6 [(gogoproto.customname) = "RoutingInstance"];
+    StaticMirrorNhType static_nh_header = 7 [(gogoproto.customname) = "StaticNHHeader"];
+    string analyzer_ip_address = 8 [(gogoproto.customname) = "AnalyzerIPAddress"];
+    string encapsulation = 9 [(gogoproto.customname) = "Encapsulation"];
+    string analyzer_mac_address = 10 [(gogoproto.customname) = "AnalyzerMacAddress"];
+    bool nic_assisted_mirroring = 11 [(gogoproto.customname) = "NicAssistedMirroring"]; 
 }
 
 
@@ -7496,6 +7684,83 @@ message KeyValuePair {
 
 
 
+
+
+message MACMoveLimitControlType {
+
+    int64 mac_move_time_window = 1 [(gogoproto.customname) = "MacMoveTimeWindow"];
+    int64 mac_move_limit = 2 [(gogoproto.customname) = "MacMoveLimit"];
+    string mac_move_limit_action = 3 [(gogoproto.customname) = "MacMoveLimitAction"]; 
+}
+
+
+
+message PortMap {
+
+    int64 src_port = 1 [(gogoproto.customname) = "SRCPort"];
+    string protocol = 2 [(gogoproto.customname) = "Protocol"];
+    int64 dst_port = 3 [(gogoproto.customname) = "DSTPort"]; 
+}
+
+
+
+message LoadbalancerType {
+
+    string status = 1 [(gogoproto.customname) = "Status"];
+    string provisioning_status = 2 [(gogoproto.customname) = "ProvisioningStatus"];
+    bool admin_state = 3 [(gogoproto.customname) = "AdminState"];
+    string vip_address = 4 [(gogoproto.customname) = "VipAddress"];
+    string vip_subnet_id = 5 [(gogoproto.customname) = "VipSubnetID"];
+    string operating_status = 6 [(gogoproto.customname) = "OperatingStatus"]; 
+}
+
+
+
+message PolicyRuleType {
+
+    string direction = 1 [(gogoproto.customname) = "Direction"];
+    string protocol = 2 [(gogoproto.customname) = "Protocol"];
+    repeated AddressType dst_addresses = 3 [(gogoproto.customname) = "DSTAddresses"];
+    ActionListType action_list = 4 [(gogoproto.customname) = "ActionList"];
+    string created = 5 [(gogoproto.customname) = "Created"];
+    string rule_uuid = 6 [(gogoproto.customname) = "RuleUUID"];
+    repeated PortType dst_ports = 7 [(gogoproto.customname) = "DSTPorts"];
+    repeated string application = 8 [(gogoproto.customname) = "Application"];
+    string last_modified = 9 [(gogoproto.customname) = "LastModified"];
+    string ethertype = 10 [(gogoproto.customname) = "Ethertype"];
+    repeated AddressType src_addresses = 11 [(gogoproto.customname) = "SRCAddresses"];
+    SequenceType rule_sequence = 12 [(gogoproto.customname) = "RuleSequence"];
+    repeated PortType src_ports = 13 [(gogoproto.customname) = "SRCPorts"]; 
+}
+
+
+
+message RouteTableType {
+
+    repeated RouteType route = 1 [(gogoproto.customname) = "Route"]; 
+}
+
+
+
+
+
+
+
+message AlarmOperand2 {
+
+    string uve_attribute = 1 [(gogoproto.customname) = "UveAttribute"];
+    string json_value = 2 [(gogoproto.customname) = "JSONValue"]; 
+}
+
+
+
+message AlarmOrList {
+
+    repeated AlarmAndList or_list = 1 [(gogoproto.customname) = "OrList"]; 
+}
+
+
+
 message RbacPermType {
 
     string role_crud = 1 [(gogoproto.customname) = "RoleCrud"];
@@ -7504,25 +7769,139 @@ message RbacPermType {
 
 
 
-message RouteTargetList {
+message DomainLimitsType {
 
-    repeated string route_target = 1 [(gogoproto.customname) = "RouteTarget"]; 
+    int64 project_limit = 1 [(gogoproto.customname) = "ProjectLimit"];
+    int64 virtual_network_limit = 2 [(gogoproto.customname) = "VirtualNetworkLimit"];
+    int64 security_group_limit = 3 [(gogoproto.customname) = "SecurityGroupLimit"]; 
 }
 
 
 
-message DhcpOptionType {
 
-    string dhcp_option_value = 1 [(gogoproto.customname) = "DHCPOptionValue"];
-    string dhcp_option_value_bytes = 2 [(gogoproto.customname) = "DHCPOptionValueBytes"];
-    string dhcp_option_name = 3 [(gogoproto.customname) = "DHCPOptionName"]; 
+
+message LoadbalancerHealthmonitorType {
+
+    int64 delay = 1 [(gogoproto.customname) = "Delay"];
+    string expected_codes = 2 [(gogoproto.customname) = "ExpectedCodes"];
+    int64 max_retries = 3 [(gogoproto.customname) = "MaxRetries"];
+    string http_method = 4 [(gogoproto.customname) = "HTTPMethod"];
+    bool admin_state = 5 [(gogoproto.customname) = "AdminState"];
+    int64 timeout = 6 [(gogoproto.customname) = "Timeout"];
+    string url_path = 7 [(gogoproto.customname) = "URLPath"];
+    string monitor_type = 8 [(gogoproto.customname) = "MonitorType"]; 
 }
 
 
 
-message VrfAssignTableType {
 
-    repeated VrfAssignRuleType vrf_assign_rule = 1 [(gogoproto.customname) = "VRFAssignRule"]; 
+
+message SequenceType {
+
+    int64 major = 1 [(gogoproto.customname) = "Major"];
+    int64 minor = 2 [(gogoproto.customname) = "Minor"]; 
+}
+
+
+
+
+
+message BaremetalProperties {
+
+    int64 cpu_count = 1 [(gogoproto.customname) = "CPUCount"];
+    string cpu_arch = 2 [(gogoproto.customname) = "CPUArch"];
+    int64 disk_gb = 3 [(gogoproto.customname) = "DiskGB"];
+    int64 memory_mb = 4 [(gogoproto.customname) = "MemoryMB"]; 
+}
+
+
+
+message OpenStackImageProperty {
+
+    string id = 1 [(gogoproto.customname) = "ID"];
+    OpenStackLink links = 2 [(gogoproto.customname) = "Links"]; 
+}
+
+
+
+message VnSubnetsType {
+
+    repeated IpamSubnetType ipam_subnets = 1 [(gogoproto.customname) = "IpamSubnets"];
+    RouteTableType host_routes = 2 [(gogoproto.customname) = "HostRoutes"]; 
+}
+
+
+
+message SubnetType {
+
+    string ip_prefix = 1 [(gogoproto.customname) = "IPPrefix"];
+    int64 ip_prefix_len = 2 [(gogoproto.customname) = "IPPrefixLen"]; 
+}
+
+
+
+message MACLimitControlType {
+
+    int64 mac_limit = 1 [(gogoproto.customname) = "MacLimit"];
+    string mac_limit_action = 2 [(gogoproto.customname) = "MacLimitAction"]; 
+}
+
+
+
+message GracefulRestartParametersType {
+
+    bool enable = 1 [(gogoproto.customname) = "Enable"];
+    int64 end_of_rib_timeout = 2 [(gogoproto.customname) = "EndOfRibTimeout"];
+    bool bgp_helper_enable = 3 [(gogoproto.customname) = "BGPHelperEnable"];
+    bool xmpp_helper_enable = 4 [(gogoproto.customname) = "XMPPHelperEnable"];
+    int64 restart_time = 5 [(gogoproto.customname) = "RestartTime"];
+    int64 long_lived_restart_time = 6 [(gogoproto.customname) = "LongLivedRestartTime"]; 
+}
+
+
+
+
+
+
+
+
+
+message LoadbalancerPoolType {
+
+    string status = 1 [(gogoproto.customname) = "Status"];
+    string protocol = 2 [(gogoproto.customname) = "Protocol"];
+    string subnet_id = 3 [(gogoproto.customname) = "SubnetID"];
+    string session_persistence = 4 [(gogoproto.customname) = "SessionPersistence"];
+    bool admin_state = 5 [(gogoproto.customname) = "AdminState"];
+    string persistence_cookie_name = 6 [(gogoproto.customname) = "PersistenceCookieName"];
+    string status_description = 7 [(gogoproto.customname) = "StatusDescription"];
+    string loadbalancer_method = 8 [(gogoproto.customname) = "LoadbalancerMethod"]; 
+}
+
+
+
+
+
+message TelemetryStateInfo {
+
+    repeated TelemetryResourceInfo resource = 1 [(gogoproto.customname) = "Resource"];
+    int64 server_port = 2 [(gogoproto.customname) = "ServerPort"];
+    string server_ip = 3 [(gogoproto.customname) = "ServerIP"]; 
+}
+
+
+
+message SecurityLoggingObjectRuleEntryType {
+
+    string rule_uuid = 1 [(gogoproto.customname) = "RuleUUID"];
+    int64 rate = 2 [(gogoproto.customname) = "Rate"]; 
+}
+
+
+
+message SecurityLoggingObjectRuleListType {
+
+    repeated SecurityLoggingObjectRuleEntryType rule = 1 [(gogoproto.customname) = "Rule"]; 
 }
 
 
@@ -7546,6 +7925,16 @@ message InstanceInfo {
 
 
 
+message PermType2 {
+
+    string owner = 1 [(gogoproto.customname) = "Owner"];
+    int64 owner_access = 2 [(gogoproto.customname) = "OwnerAccess"];
+    int64 global_access = 3 [(gogoproto.customname) = "GlobalAccess"];
+    repeated ShareType share = 4 [(gogoproto.customname) = "Share"]; 
+}
+
+
+
 message SubnetListType {
 
     repeated SubnetType subnet = 1 [(gogoproto.customname) = "Subnet"]; 
@@ -7553,309 +7942,14 @@ message SubnetListType {
 
 
 
+message UveKeysType {
 
-
-message EncapsulationPrioritiesType {
-
-    repeated string encapsulation = 1 [(gogoproto.customname) = "Encapsulation"]; 
+    repeated string uve_key = 1 [(gogoproto.customname) = "UveKey"]; 
 }
 
 
 
 
-
-message ProtocolType {
-
-    string protocol = 1 [(gogoproto.customname) = "Protocol"];
-    int64 port = 2 [(gogoproto.customname) = "Port"]; 
-}
-
-
-
-message FlowAgingTimeoutList {
-
-    repeated FlowAgingTimeout flow_aging_timeout = 1 [(gogoproto.customname) = "FlowAgingTimeout"]; 
-}
-
-
-
-message RouteTableType {
-
-    repeated RouteType route = 1 [(gogoproto.customname) = "Route"]; 
-}
-
-
-
-message ServiceInterfaceTag {
-
-    string interface_type = 1 [(gogoproto.customname) = "InterfaceType"]; 
-}
-
-
-
-
-
-
-
-message LoadbalancerType {
-
-    string status = 1 [(gogoproto.customname) = "Status"];
-    string provisioning_status = 2 [(gogoproto.customname) = "ProvisioningStatus"];
-    bool admin_state = 3 [(gogoproto.customname) = "AdminState"];
-    string vip_address = 4 [(gogoproto.customname) = "VipAddress"];
-    string vip_subnet_id = 5 [(gogoproto.customname) = "VipSubnetID"];
-    string operating_status = 6 [(gogoproto.customname) = "OperatingStatus"]; 
-}
-
-
-
-message SecurityLoggingObjectRuleEntryType {
-
-    string rule_uuid = 1 [(gogoproto.customname) = "RuleUUID"];
-    int64 rate = 2 [(gogoproto.customname) = "Rate"]; 
-}
-
-
-
-message LocalLinkConnection {
-
-    string switch_id = 1 [(gogoproto.customname) = "SwitchID"];
-    string port_id = 2 [(gogoproto.customname) = "PortID"];
-    string switch_info = 3 [(gogoproto.customname) = "SwitchInfo"]; 
-}
-
-
-
-message MemberType {
-
-    string role = 1 [(gogoproto.customname) = "Role"]; 
-}
-
-
-
-message VnSubnetsType {
-
-    repeated IpamSubnetType ipam_subnets = 1 [(gogoproto.customname) = "IpamSubnets"];
-    RouteTableType host_routes = 2 [(gogoproto.customname) = "HostRoutes"]; 
-}
-
-
-
-message FirewallRuleEndpointType {
-
-    string address_group = 1 [(gogoproto.customname) = "AddressGroup"];
-    SubnetType subnet = 2 [(gogoproto.customname) = "Subnet"];
-    repeated string tags = 3 [(gogoproto.customname) = "Tags"];
-    repeated int64 tag_ids = 4 [(gogoproto.customname) = "TagIds"];
-    string virtual_network = 5 [(gogoproto.customname) = "VirtualNetwork"];
-    bool any = 6 [(gogoproto.customname) = "Any"]; 
-}
-
-
-
-message FirewallServiceType {
-
-    string protocol = 1 [(gogoproto.customname) = "Protocol"];
-    PortType dst_ports = 2 [(gogoproto.customname) = "DSTPorts"];
-    PortType src_ports = 3 [(gogoproto.customname) = "SRCPorts"];
-    int64 protocol_id = 4 [(gogoproto.customname) = "ProtocolID"]; 
-}
-
-
-
-
-
-message JunosServicePorts {
-
-    repeated string service_port = 1 [(gogoproto.customname) = "ServicePort"]; 
-}
-
-
-
-message DiscoveryPubSubEndPointType {
-
-    string ep_version = 1 [(gogoproto.customname) = "EpVersion"];
-    string ep_id = 2 [(gogoproto.customname) = "EpID"];
-    string ep_type = 3 [(gogoproto.customname) = "EpType"];
-    SubnetType ep_prefix = 4 [(gogoproto.customname) = "EpPrefix"]; 
-}
-
-
-
-
-
-
-
-message AllowedAddressPair {
-
-    SubnetType ip = 1 [(gogoproto.customname) = "IP"];
-    string mac = 2 [(gogoproto.customname) = "Mac"];
-    string address_mode = 3 [(gogoproto.customname) = "AddressMode"]; 
-}
-
-
-
-message PortType {
-
-    int64 end_port = 1 [(gogoproto.customname) = "EndPort"];
-    int64 start_port = 2 [(gogoproto.customname) = "StartPort"]; 
-}
-
-
-
-message AclRuleType {
-
-    string rule_uuid = 1 [(gogoproto.customname) = "RuleUUID"];
-    MatchConditionType match_condition = 2 [(gogoproto.customname) = "MatchCondition"];
-    string direction = 3 [(gogoproto.customname) = "Direction"];
-    ActionListType action_list = 4 [(gogoproto.customname) = "ActionList"]; 
-}
-
-
-
-message AlarmExpression {
-
-    string operations = 1 [(gogoproto.customname) = "Operations"];
-    string operand1 = 2 [(gogoproto.customname) = "Operand1"];
-    repeated string variables = 3 [(gogoproto.customname) = "Variables"];
-    AlarmOperand2 operand2 = 4 [(gogoproto.customname) = "Operand2"]; 
-}
-
-
-
-
-
-
-
-message ProviderDetails {
-
-    int64 segmentation_id = 1 [(gogoproto.customname) = "SegmentationID"];
-    string physical_network = 2 [(gogoproto.customname) = "PhysicalNetwork"]; 
-}
-
-
-
-
-
-message IpamSubnetType {
-
-    SubnetType subnet = 1 [(gogoproto.customname) = "Subnet"];
-    bool addr_from_start = 2 [(gogoproto.customname) = "AddrFromStart"];
-    bool enable_dhcp = 3 [(gogoproto.customname) = "EnableDHCP"];
-    string default_gateway = 4 [(gogoproto.customname) = "DefaultGateway"];
-    int64 alloc_unit = 5 [(gogoproto.customname) = "AllocUnit"];
-    string created = 6 [(gogoproto.customname) = "Created"];
-    repeated string dns_nameservers = 7 [(gogoproto.customname) = "DNSNameservers"];
-    DhcpOptionsListType dhcp_option_list = 8 [(gogoproto.customname) = "DHCPOptionList"];
-    string subnet_uuid = 9 [(gogoproto.customname) = "SubnetUUID"];
-    repeated AllocationPoolType allocation_pools = 10 [(gogoproto.customname) = "AllocationPools"];
-    string last_modified = 11 [(gogoproto.customname) = "LastModified"];
-    RouteTableType host_routes = 12 [(gogoproto.customname) = "HostRoutes"];
-    string dns_server_address = 13 [(gogoproto.customname) = "DNSServerAddress"];
-    string subnet_name = 14 [(gogoproto.customname) = "SubnetName"]; 
-}
-
-
-
-
-
-message FirewallRuleMatchTagsType {
-
-    repeated string tag_list = 1 [(gogoproto.customname) = "TagList"]; 
-}
-
-
-
-
-
-message LoadbalancerMemberType {
-
-    string status = 1 [(gogoproto.customname) = "Status"];
-    string status_description = 2 [(gogoproto.customname) = "StatusDescription"];
-    int64 weight = 3 [(gogoproto.customname) = "Weight"];
-    bool admin_state = 4 [(gogoproto.customname) = "AdminState"];
-    string address = 5 [(gogoproto.customname) = "Address"];
-    int64 protocol_port = 6 [(gogoproto.customname) = "ProtocolPort"]; 
-}
-
-
-
-
-
-message ServiceApplianceInterfaceType {
-
-    string interface_type = 1 [(gogoproto.customname) = "InterfaceType"]; 
-}
-
-
-
-message TimerType {
-
-    string start_time = 1 [(gogoproto.customname) = "StartTime"];
-    string off_interval = 2 [(gogoproto.customname) = "OffInterval"];
-    string on_interval = 3 [(gogoproto.customname) = "OnInterval"];
-    string end_time = 4 [(gogoproto.customname) = "EndTime"]; 
-}
-
-
-
-message FlowAgingTimeout {
-
-    int64 timeout_in_seconds = 1 [(gogoproto.customname) = "TimeoutInSeconds"];
-    string protocol = 2 [(gogoproto.customname) = "Protocol"];
-    int64 port = 3 [(gogoproto.customname) = "Port"]; 
-}
-
-
-
-message AllocationPoolType {
-
-    bool vrouter_specific_pool = 1 [(gogoproto.customname) = "VrouterSpecificPool"];
-    string start = 2 [(gogoproto.customname) = "Start"];
-    string end = 3 [(gogoproto.customname) = "End"]; 
-}
-
-
-
-message TelemetryResourceInfo {
-
-    string path = 1 [(gogoproto.customname) = "Path"];
-    string rate = 2 [(gogoproto.customname) = "Rate"];
-    string name = 3 [(gogoproto.customname) = "Name"]; 
-}
-
-
-
-
-
-message PluginProperties {
-
-    repeated PluginProperty plugin_property = 1 [(gogoproto.customname) = "PluginProperty"]; 
-}
-
-
-
-message AllowedAddressPairs {
-
-    repeated AllowedAddressPair allowed_address_pair = 1 [(gogoproto.customname) = "AllowedAddressPair"]; 
-}
-
-
-
-
-
-message OpenStackFlavorProperty {
-
-    string id = 1 [(gogoproto.customname) = "ID"];
-    OpenStackLink links = 2 [(gogoproto.customname) = "Links"]; 
-}
-
-
-
-message OpenStackAddress {
-
-    string addr = 1 [(gogoproto.customname) = "Addr"]; 
-}
 
 
 
@@ -7864,68 +7958,6 @@ message IpamDnsAddressType {
     IpAddressesType tenant_dns_server_address = 1 [(gogoproto.customname) = "TenantDNSServerAddress"];
     string virtual_dns_server_name = 2 [(gogoproto.customname) = "VirtualDNSServerName"]; 
 }
-
-
-
-message ServiceTemplateInterfaceType {
-
-    bool static_route_enable = 1 [(gogoproto.customname) = "StaticRouteEnable"];
-    bool shared_ip = 2 [(gogoproto.customname) = "SharedIP"];
-    string service_interface_type = 3 [(gogoproto.customname) = "ServiceInterfaceType"]; 
-}
-
-
-
-
-
-message InterfaceMirrorType {
-
-    string traffic_direction = 1 [(gogoproto.customname) = "TrafficDirection"];
-    MirrorActionType mirror_to = 2 [(gogoproto.customname) = "MirrorTo"]; 
-}
-
-
-
-
-
-
-
-
-
-
-
-message PluginProperty {
-
-    string property = 1 [(gogoproto.customname) = "Property"];
-    string value = 2 [(gogoproto.customname) = "Value"]; 
-}
-
-
-
-
-
-message VirtualDnsRecordType {
-
-    string record_name = 1 [(gogoproto.customname) = "RecordName"];
-    string record_class = 2 [(gogoproto.customname) = "RecordClass"];
-    string record_data = 3 [(gogoproto.customname) = "RecordData"];
-    string record_type = 4 [(gogoproto.customname) = "RecordType"];
-    int64 record_ttl_seconds = 5 [(gogoproto.customname) = "RecordTTLSeconds"];
-    int64 record_mx_preference = 6 [(gogoproto.customname) = "RecordMXPreference"]; 
-}
-
-
-
-
-
-
-
-message SecurityLoggingObjectRuleListType {
-
-    repeated SecurityLoggingObjectRuleEntryType rule = 1 [(gogoproto.customname) = "Rule"]; 
-}
-
-
 
 
 
@@ -7947,114 +7979,108 @@ message ServiceTemplateType {
 
 
 
-message FirewallRuleMatchTagsTypeIdList {
+message ServiceApplianceInterfaceType {
 
-    repeated int64 tag_type = 1 [(gogoproto.customname) = "TagType"]; 
+    string interface_type = 1 [(gogoproto.customname) = "InterfaceType"]; 
 }
 
 
 
 
 
-message CommunityAttributes {
+message PluginProperties {
 
-    repeated string community_attribute = 1 [(gogoproto.customname) = "CommunityAttribute"]; 
+    repeated PluginProperty plugin_property = 1 [(gogoproto.customname) = "PluginProperty"]; 
 }
 
 
 
-message LoadbalancerPoolType {
+message QosIdForwardingClassPair {
 
-    string status = 1 [(gogoproto.customname) = "Status"];
-    string protocol = 2 [(gogoproto.customname) = "Protocol"];
-    string subnet_id = 3 [(gogoproto.customname) = "SubnetID"];
-    string session_persistence = 4 [(gogoproto.customname) = "SessionPersistence"];
-    bool admin_state = 5 [(gogoproto.customname) = "AdminState"];
-    string persistence_cookie_name = 6 [(gogoproto.customname) = "PersistenceCookieName"];
-    string status_description = 7 [(gogoproto.customname) = "StatusDescription"];
-    string loadbalancer_method = 8 [(gogoproto.customname) = "LoadbalancerMethod"]; 
+    int64 key = 1 [(gogoproto.customname) = "Key"];
+    int64 forwarding_class_id = 2 [(gogoproto.customname) = "ForwardingClassID"]; 
+}
+
+
+
+message ServiceTemplateInterfaceType {
+
+    bool static_route_enable = 1 [(gogoproto.customname) = "StaticRouteEnable"];
+    bool shared_ip = 2 [(gogoproto.customname) = "SharedIP"];
+    string service_interface_type = 3 [(gogoproto.customname) = "ServiceInterfaceType"]; 
 }
 
 
 
 
 
-message VirtualIpType {
+message TimerType {
+
+    string start_time = 1 [(gogoproto.customname) = "StartTime"];
+    string off_interval = 2 [(gogoproto.customname) = "OffInterval"];
+    string on_interval = 3 [(gogoproto.customname) = "OnInterval"];
+    string end_time = 4 [(gogoproto.customname) = "EndTime"]; 
+}
+
+
+
+
+
+message AlarmAndList {
+
+    repeated AlarmExpression and_list = 1 [(gogoproto.customname) = "AndList"]; 
+}
+
+
+
+
+
+
+
+
+
+
+
+message LoadbalancerMemberType {
 
     string status = 1 [(gogoproto.customname) = "Status"];
     string status_description = 2 [(gogoproto.customname) = "StatusDescription"];
-    string protocol = 3 [(gogoproto.customname) = "Protocol"];
-    string subnet_id = 4 [(gogoproto.customname) = "SubnetID"];
-    string persistence_cookie_name = 5 [(gogoproto.customname) = "PersistenceCookieName"];
-    int64 connection_limit = 6 [(gogoproto.customname) = "ConnectionLimit"];
-    string persistence_type = 7 [(gogoproto.customname) = "PersistenceType"];
-    bool admin_state = 8 [(gogoproto.customname) = "AdminState"];
-    string address = 9 [(gogoproto.customname) = "Address"];
-    int64 protocol_port = 10 [(gogoproto.customname) = "ProtocolPort"]; 
+    int64 weight = 3 [(gogoproto.customname) = "Weight"];
+    bool admin_state = 4 [(gogoproto.customname) = "AdminState"];
+    string address = 5 [(gogoproto.customname) = "Address"];
+    int64 protocol_port = 6 [(gogoproto.customname) = "ProtocolPort"]; 
 }
 
 
 
-message OpenStackLink {
+message DhcpOptionType {
 
-    string href = 1 [(gogoproto.customname) = "Href"];
-    string rel = 2 [(gogoproto.customname) = "Rel"];
-    string type = 3 [(gogoproto.customname) = "Type"]; 
+    string dhcp_option_value = 1 [(gogoproto.customname) = "DHCPOptionValue"];
+    string dhcp_option_value_bytes = 2 [(gogoproto.customname) = "DHCPOptionValueBytes"];
+    string dhcp_option_name = 3 [(gogoproto.customname) = "DHCPOptionName"]; 
 }
 
 
 
-message TelemetryStateInfo {
+message DhcpOptionsListType {
 
-    repeated TelemetryResourceInfo resource = 1 [(gogoproto.customname) = "Resource"];
-    int64 server_port = 2 [(gogoproto.customname) = "ServerPort"];
-    string server_ip = 3 [(gogoproto.customname) = "ServerIP"]; 
+    repeated DhcpOptionType dhcp_option = 1 [(gogoproto.customname) = "DHCPOption"]; 
 }
 
 
 
-message ServiceScaleOutType {
+message UserCredentials {
 
-    bool auto_scale = 1 [(gogoproto.customname) = "AutoScale"];
-    int64 max_instances = 2 [(gogoproto.customname) = "MaxInstances"]; 
+    string username = 1 [(gogoproto.customname) = "Username"];
+    string password = 2 [(gogoproto.customname) = "Password"]; 
 }
 
 
 
-message VirtualMachineInterfacePropertiesType {
+message JunosServicePorts {
 
-    int64 sub_interface_vlan_tag = 1 [(gogoproto.customname) = "SubInterfaceVlanTag"];
-    int64 local_preference = 2 [(gogoproto.customname) = "LocalPreference"];
-    InterfaceMirrorType interface_mirror = 3 [(gogoproto.customname) = "InterfaceMirror"];
-    string service_interface_type = 4 [(gogoproto.customname) = "ServiceInterfaceType"]; 
+    repeated string service_port = 1 [(gogoproto.customname) = "ServicePort"]; 
 }
-
-
-
-message PortMap {
-
-    int64 src_port = 1 [(gogoproto.customname) = "SRCPort"];
-    string protocol = 2 [(gogoproto.customname) = "Protocol"];
-    int64 dst_port = 3 [(gogoproto.customname) = "DSTPort"]; 
-}
-
-
-
-
-
-message UserDefinedLogStatList {
-
-    repeated UserDefinedLogStat statlist = 1 [(gogoproto.customname) = "Statlist"]; 
-}
-
-
-
-message IpAddressesType {
-
-    string ip_address = 1 [(gogoproto.customname) = "IPAddress"]; 
-}
-
-
 
 
 
@@ -8068,24 +8094,75 @@ message VrfAssignRuleType {
 
 
 
-message PolicyBasedForwardingRuleType {
 
-    string dst_mac = 1 [(gogoproto.customname) = "DSTMac"];
-    string protocol = 2 [(gogoproto.customname) = "Protocol"];
-    string ipv6_service_chain_address = 3 [(gogoproto.customname) = "Ipv6ServiceChainAddress"];
-    string direction = 4 [(gogoproto.customname) = "Direction"];
-    int64 mpls_label = 5 [(gogoproto.customname) = "MPLSLabel"];
-    int64 vlan_tag = 6 [(gogoproto.customname) = "VlanTag"];
-    string src_mac = 7 [(gogoproto.customname) = "SRCMac"];
-    string service_chain_address = 8 [(gogoproto.customname) = "ServiceChainAddress"]; 
+
+
+
+
+
+
+
+message LocalLinkConnection {
+
+    string switch_id = 1 [(gogoproto.customname) = "SwitchID"];
+    string port_id = 2 [(gogoproto.customname) = "PortID"];
+    string switch_info = 3 [(gogoproto.customname) = "SwitchInfo"]; 
 }
 
 
 
-message VirtualRouterNetworkIpamType {
 
-    repeated SubnetType subnet = 1 [(gogoproto.customname) = "Subnet"];
-    repeated AllocationPoolType allocation_pools = 2 [(gogoproto.customname) = "AllocationPools"]; 
+
+message OpenStackFlavorProperty {
+
+    string id = 1 [(gogoproto.customname) = "ID"];
+    OpenStackLink links = 2 [(gogoproto.customname) = "Links"]; 
+}
+
+
+
+message RouteTargetList {
+
+    repeated string route_target = 1 [(gogoproto.customname) = "RouteTarget"]; 
+}
+
+
+
+
+
+
+
+
+
+message PolicyEntriesType {
+
+    repeated PolicyRuleType policy_rule = 1 [(gogoproto.customname) = "PolicyRule"]; 
+}
+
+
+
+
+
+message ServiceHealthCheckType {
+
+    int64 delayUsecs = 1 [(gogoproto.customname) = "DelayUsecs"];
+    int64 timeoutUsecs = 2 [(gogoproto.customname) = "TimeoutUsecs"];
+    bool enabled = 3 [(gogoproto.customname) = "Enabled"];
+    int64 delay = 4 [(gogoproto.customname) = "Delay"];
+    string expected_codes = 5 [(gogoproto.customname) = "ExpectedCodes"];
+    int64 max_retries = 6 [(gogoproto.customname) = "MaxRetries"];
+    string health_check_type = 7 [(gogoproto.customname) = "HealthCheckType"];
+    string http_method = 8 [(gogoproto.customname) = "HTTPMethod"];
+    int64 timeout = 9 [(gogoproto.customname) = "Timeout"];
+    string url_path = 10 [(gogoproto.customname) = "URLPath"];
+    string monitor_type = 11 [(gogoproto.customname) = "MonitorType"]; 
+}
+
+
+
+message FirewallSequence {
+
+    string sequence = 1 [(gogoproto.customname) = "Sequence"]; 
 }
 
 
@@ -8101,81 +8178,68 @@ message PermType {
 
 
 
-message MirrorActionType {
-
-    int64 nic_assisted_mirroring_vlan = 1 [(gogoproto.customname) = "NicAssistedMirroringVlan"];
-    string analyzer_name = 2 [(gogoproto.customname) = "AnalyzerName"];
-    string nh_mode = 3 [(gogoproto.customname) = "NHMode"];
-    bool juniper_header = 4 [(gogoproto.customname) = "JuniperHeader"];
-    int64 udp_port = 5 [(gogoproto.customname) = "UDPPort"];
-    string routing_instance = 6 [(gogoproto.customname) = "RoutingInstance"];
-    StaticMirrorNhType static_nh_header = 7 [(gogoproto.customname) = "StaticNHHeader"];
-    string analyzer_ip_address = 8 [(gogoproto.customname) = "AnalyzerIPAddress"];
-    string encapsulation = 9 [(gogoproto.customname) = "Encapsulation"];
-    string analyzer_mac_address = 10 [(gogoproto.customname) = "AnalyzerMacAddress"];
-    bool nic_assisted_mirroring = 11 [(gogoproto.customname) = "NicAssistedMirroring"]; 
-}
-
-
-
-message RbacRuleEntriesType {
-
-    repeated RbacRuleType rbac_rule = 1 [(gogoproto.customname) = "RbacRule"]; 
-}
-
-
-
-
-
-
-
-message AlarmOperand2 {
-
-    string uve_attribute = 1 [(gogoproto.customname) = "UveAttribute"];
-    string json_value = 2 [(gogoproto.customname) = "JSONValue"]; 
-}
-
-
-
-
-
-
-
-message GracefulRestartParametersType {
+message IdPermsType {
 
     bool enable = 1 [(gogoproto.customname) = "Enable"];
-    int64 end_of_rib_timeout = 2 [(gogoproto.customname) = "EndOfRibTimeout"];
-    bool bgp_helper_enable = 3 [(gogoproto.customname) = "BGPHelperEnable"];
-    bool xmpp_helper_enable = 4 [(gogoproto.customname) = "XMPPHelperEnable"];
-    int64 restart_time = 5 [(gogoproto.customname) = "RestartTime"];
-    int64 long_lived_restart_time = 6 [(gogoproto.customname) = "LongLivedRestartTime"]; 
+    string description = 2 [(gogoproto.customname) = "Description"];
+    string created = 3 [(gogoproto.customname) = "Created"];
+    string creator = 4 [(gogoproto.customname) = "Creator"];
+    bool user_visible = 5 [(gogoproto.customname) = "UserVisible"];
+    string last_modified = 6 [(gogoproto.customname) = "LastModified"];
+    PermType permissions = 7 [(gogoproto.customname) = "Permissions"]; 
 }
 
 
 
-message LinklocalServicesTypes {
+message AclEntriesType {
 
-    repeated LinklocalServiceEntryType linklocal_service_entry = 1 [(gogoproto.customname) = "LinklocalServiceEntry"]; 
-}
-
-
-
-
-
-message QosIdForwardingClassPair {
-
-    int64 key = 1 [(gogoproto.customname) = "Key"];
-    int64 forwarding_class_id = 2 [(gogoproto.customname) = "ForwardingClassID"]; 
+    bool dynamic = 1 [(gogoproto.customname) = "Dynamic"];
+    repeated AclRuleType acl_rule = 2 [(gogoproto.customname) = "ACLRule"]; 
 }
 
 
 
 
 
-message RoutingPolicyServiceInstanceType {
+message TelemetryResourceInfo {
 
-    string right_sequence = 1 [(gogoproto.customname) = "RightSequence"];
-    string left_sequence = 2 [(gogoproto.customname) = "LeftSequence"]; 
+    string path = 1 [(gogoproto.customname) = "Path"];
+    string rate = 2 [(gogoproto.customname) = "Rate"];
+    string name = 3 [(gogoproto.customname) = "Name"]; 
+}
+
+
+
+
+
+message OpenStackLink {
+
+    string href = 1 [(gogoproto.customname) = "Href"];
+    string rel = 2 [(gogoproto.customname) = "Rel"];
+    string type = 3 [(gogoproto.customname) = "Type"]; 
+}
+
+
+
+message ActionListType {
+
+    string gateway_name = 1 [(gogoproto.customname) = "GatewayName"];
+    bool log = 2 [(gogoproto.customname) = "Log"];
+    bool alert = 3 [(gogoproto.customname) = "Alert"];
+    string qos_action = 4 [(gogoproto.customname) = "QosAction"];
+    string assign_routing_instance = 5 [(gogoproto.customname) = "AssignRoutingInstance"];
+    MirrorActionType mirror_to = 6 [(gogoproto.customname) = "MirrorTo"];
+    string simple_action = 7 [(gogoproto.customname) = "SimpleAction"];
+    repeated string apply_service = 8 [(gogoproto.customname) = "ApplyService"]; 
+}
+
+
+
+message RbacRuleType {
+
+    string rule_object = 1 [(gogoproto.customname) = "RuleObject"];
+    repeated RbacPermType rule_perms = 2 [(gogoproto.customname) = "RulePerms"];
+    string rule_field = 3 [(gogoproto.customname) = "RuleField"]; 
 }
 
 
@@ -8184,19 +8248,63 @@ message RoutingPolicyServiceInstanceType {
 
 
 
+message RouteType {
 
-
-message SequenceType {
-
-    int64 major = 1 [(gogoproto.customname) = "Major"];
-    int64 minor = 2 [(gogoproto.customname) = "Minor"]; 
+    string prefix = 1 [(gogoproto.customname) = "Prefix"];
+    string next_hop = 2 [(gogoproto.customname) = "NextHop"];
+    CommunityAttributes community_attributes = 3 [(gogoproto.customname) = "CommunityAttributes"];
+    string next_hop_type = 4 [(gogoproto.customname) = "NextHopType"]; 
 }
 
 
 
-message FirewallServiceGroupType {
+message ServiceInstanceInterfaceType {
 
-    repeated FirewallServiceType firewall_service = 1 [(gogoproto.customname) = "FirewallService"]; 
+    string virtual_network = 1 [(gogoproto.customname) = "VirtualNetwork"];
+    string ip_address = 2 [(gogoproto.customname) = "IPAddress"];
+    AllowedAddressPairs allowed_address_pairs = 3 [(gogoproto.customname) = "AllowedAddressPairs"];
+    RouteTableType static_routes = 4 [(gogoproto.customname) = "StaticRoutes"]; 
+}
+
+
+
+
+
+message CommunityAttributes {
+
+    repeated string community_attribute = 1 [(gogoproto.customname) = "CommunityAttribute"]; 
+}
+
+
+
+
+
+message ProviderDetails {
+
+    int64 segmentation_id = 1 [(gogoproto.customname) = "SegmentationID"];
+    string physical_network = 2 [(gogoproto.customname) = "PhysicalNetwork"]; 
+}
+
+
+
+
+
+message UserDefinedLogStat {
+
+    string pattern = 1 [(gogoproto.customname) = "Pattern"];
+    string name = 2 [(gogoproto.customname) = "Name"]; 
+}
+
+
+
+message LinklocalServiceEntryType {
+
+    repeated string ip_fabric_service_ip = 1 [(gogoproto.customname) = "IPFabricServiceIP"];
+    string linklocal_service_name = 2 [(gogoproto.customname) = "LinklocalServiceName"];
+    string linklocal_service_ip = 3 [(gogoproto.customname) = "LinklocalServiceIP"];
+    int64 ip_fabric_service_port = 4 [(gogoproto.customname) = "IPFabricServicePort"];
+    string ip_fabric_DNS_service_name = 5 [(gogoproto.customname) = "IPFabricDNSServiceName"];
+    int64 linklocal_service_port = 6 [(gogoproto.customname) = "LinklocalServicePort"]; 
 }
 
 
@@ -8218,13 +8326,57 @@ message ServiceInstanceType {
 
 
 
-message BaremetalProperties {
+message FirewallServiceType {
 
-    int64 cpu_count = 1 [(gogoproto.customname) = "CPUCount"];
-    string cpu_arch = 2 [(gogoproto.customname) = "CPUArch"];
-    int64 disk_gb = 3 [(gogoproto.customname) = "DiskGB"];
-    int64 memory_mb = 4 [(gogoproto.customname) = "MemoryMB"]; 
+    string protocol = 1 [(gogoproto.customname) = "Protocol"];
+    PortType dst_ports = 2 [(gogoproto.customname) = "DSTPorts"];
+    PortType src_ports = 3 [(gogoproto.customname) = "SRCPorts"];
+    int64 protocol_id = 4 [(gogoproto.customname) = "ProtocolID"]; 
 }
+
+
+
+message FirewallRuleMatchTagsTypeIdList {
+
+    repeated int64 tag_type = 1 [(gogoproto.customname) = "TagType"]; 
+}
+
+
+
+
+
+message QosIdForwardingClassPairs {
+
+    repeated QosIdForwardingClassPair qos_id_forwarding_class_pair = 1 [(gogoproto.customname) = "QosIDForwardingClassPair"]; 
+}
+
+
+
+message OpenStackAddress {
+
+    string addr = 1 [(gogoproto.customname) = "Addr"]; 
+}
+
+
+
+message MemberType {
+
+    string role = 1 [(gogoproto.customname) = "Role"]; 
+}
+
+
+
+message IpamType {
+
+    string ipam_method = 1 [(gogoproto.customname) = "IpamMethod"];
+    string ipam_dns_method = 2 [(gogoproto.customname) = "IpamDNSMethod"];
+    IpamDnsAddressType ipam_dns_server = 3 [(gogoproto.customname) = "IpamDNSServer"];
+    DhcpOptionsListType dhcp_option_list = 4 [(gogoproto.customname) = "DHCPOptionList"];
+    RouteTableType host_routes = 5 [(gogoproto.customname) = "HostRoutes"];
+    SubnetType cidr_block = 6 [(gogoproto.customname) = "CidrBlock"]; 
+}
+
+
 
 
 
@@ -8236,204 +8388,52 @@ message VirtualNetworkPolicyType {
 
 
 
-message KeyValuePairs {
+message AlarmExpression {
 
-    repeated KeyValuePair key_value_pair = 1 [(gogoproto.customname) = "KeyValuePair"]; 
+    string operations = 1 [(gogoproto.customname) = "Operations"];
+    string operand1 = 2 [(gogoproto.customname) = "Operand1"];
+    repeated string variables = 3 [(gogoproto.customname) = "Variables"];
+    AlarmOperand2 operand2 = 4 [(gogoproto.customname) = "Operand2"]; 
+}
+
+
+
+message RbacRuleEntriesType {
+
+    repeated RbacRuleType rbac_rule = 1 [(gogoproto.customname) = "RbacRule"]; 
+}
+
+
+
+message BGPaaServiceParametersType {
+
+    int64 port_start = 1 [(gogoproto.customname) = "PortStart"];
+    int64 port_end = 2 [(gogoproto.customname) = "PortEnd"]; 
+}
+
+
+
+message ServiceScaleOutType {
+
+    bool auto_scale = 1 [(gogoproto.customname) = "AutoScale"];
+    int64 max_instances = 2 [(gogoproto.customname) = "MaxInstances"]; 
 }
 
 
 
 
 
-message AlarmOrList {
+message VirtualIpType {
 
-    repeated AlarmAndList or_list = 1 [(gogoproto.customname) = "OrList"]; 
+    string status = 1 [(gogoproto.customname) = "Status"];
+    string status_description = 2 [(gogoproto.customname) = "StatusDescription"];
+    string protocol = 3 [(gogoproto.customname) = "Protocol"];
+    string subnet_id = 4 [(gogoproto.customname) = "SubnetID"];
+    string persistence_cookie_name = 5 [(gogoproto.customname) = "PersistenceCookieName"];
+    int64 connection_limit = 6 [(gogoproto.customname) = "ConnectionLimit"];
+    string persistence_type = 7 [(gogoproto.customname) = "PersistenceType"];
+    bool admin_state = 8 [(gogoproto.customname) = "AdminState"];
+    string address = 9 [(gogoproto.customname) = "Address"];
+    int64 protocol_port = 10 [(gogoproto.customname) = "ProtocolPort"]; 
 }
-
-
-
-message MACLimitControlType {
-
-    int64 mac_limit = 1 [(gogoproto.customname) = "MacLimit"];
-    string mac_limit_action = 2 [(gogoproto.customname) = "MacLimitAction"]; 
-}
-
-
-
-message FloatingIpPoolSubnetType {
-
-    repeated string subnet_uuid = 1 [(gogoproto.customname) = "SubnetUUID"]; 
-}
-
-
-
-message FatFlowProtocols {
-
-    repeated ProtocolType fat_flow_protocol = 1 [(gogoproto.customname) = "FatFlowProtocol"]; 
-}
-
-
-
-message SubnetType {
-
-    string ip_prefix = 1 [(gogoproto.customname) = "IPPrefix"];
-    int64 ip_prefix_len = 2 [(gogoproto.customname) = "IPPrefixLen"]; 
-}
-
-
-
-message AclEntriesType {
-
-    bool dynamic = 1 [(gogoproto.customname) = "Dynamic"];
-    repeated AclRuleType acl_rule = 2 [(gogoproto.customname) = "ACLRule"]; 
-}
-
-
-
-message RbacRuleType {
-
-    string rule_object = 1 [(gogoproto.customname) = "RuleObject"];
-    repeated RbacPermType rule_perms = 2 [(gogoproto.customname) = "RulePerms"];
-    string rule_field = 3 [(gogoproto.customname) = "RuleField"]; 
-}
-
-
-
-
-
-
-
-
-
-message PermType2 {
-
-    string owner = 1 [(gogoproto.customname) = "Owner"];
-    int64 owner_access = 2 [(gogoproto.customname) = "OwnerAccess"];
-    int64 global_access = 3 [(gogoproto.customname) = "GlobalAccess"];
-    repeated ShareType share = 4 [(gogoproto.customname) = "Share"]; 
-}
-
-
-
-message UveKeysType {
-
-    repeated string uve_key = 1 [(gogoproto.customname) = "UveKey"]; 
-}
-
-
-
-
-
-message PolicyRuleType {
-
-    string direction = 1 [(gogoproto.customname) = "Direction"];
-    string protocol = 2 [(gogoproto.customname) = "Protocol"];
-    repeated AddressType dst_addresses = 3 [(gogoproto.customname) = "DSTAddresses"];
-    ActionListType action_list = 4 [(gogoproto.customname) = "ActionList"];
-    string created = 5 [(gogoproto.customname) = "Created"];
-    string rule_uuid = 6 [(gogoproto.customname) = "RuleUUID"];
-    repeated PortType dst_ports = 7 [(gogoproto.customname) = "DSTPorts"];
-    repeated string application = 8 [(gogoproto.customname) = "Application"];
-    string last_modified = 9 [(gogoproto.customname) = "LastModified"];
-    string ethertype = 10 [(gogoproto.customname) = "Ethertype"];
-    repeated AddressType src_addresses = 11 [(gogoproto.customname) = "SRCAddresses"];
-    SequenceType rule_sequence = 12 [(gogoproto.customname) = "RuleSequence"];
-    repeated PortType src_ports = 13 [(gogoproto.customname) = "SRCPorts"]; 
-}
-
-
-
-
-
-message LoadbalancerHealthmonitorType {
-
-    int64 delay = 1 [(gogoproto.customname) = "Delay"];
-    string expected_codes = 2 [(gogoproto.customname) = "ExpectedCodes"];
-    int64 max_retries = 3 [(gogoproto.customname) = "MaxRetries"];
-    string http_method = 4 [(gogoproto.customname) = "HTTPMethod"];
-    bool admin_state = 5 [(gogoproto.customname) = "AdminState"];
-    int64 timeout = 6 [(gogoproto.customname) = "Timeout"];
-    string url_path = 7 [(gogoproto.customname) = "URLPath"];
-    string monitor_type = 8 [(gogoproto.customname) = "MonitorType"]; 
-}
-
-
-
-
-
-
-
-
-
-message ShareType {
-
-    int64 tenant_access = 1 [(gogoproto.customname) = "TenantAccess"];
-    string tenant = 2 [(gogoproto.customname) = "Tenant"]; 
-}
-
-
-
-
-
-message ActionListType {
-
-    string gateway_name = 1 [(gogoproto.customname) = "GatewayName"];
-    bool log = 2 [(gogoproto.customname) = "Log"];
-    bool alert = 3 [(gogoproto.customname) = "Alert"];
-    string qos_action = 4 [(gogoproto.customname) = "QosAction"];
-    string assign_routing_instance = 5 [(gogoproto.customname) = "AssignRoutingInstance"];
-    MirrorActionType mirror_to = 6 [(gogoproto.customname) = "MirrorTo"];
-    string simple_action = 7 [(gogoproto.customname) = "SimpleAction"];
-    repeated string apply_service = 8 [(gogoproto.customname) = "ApplyService"]; 
-}
-
-
-
-message VirtualDnsType {
-
-    string floating_ip_record = 1 [(gogoproto.customname) = "FloatingIPRecord"];
-    string domain_name = 2 [(gogoproto.customname) = "DomainName"];
-    bool external_visible = 3 [(gogoproto.customname) = "ExternalVisible"];
-    string next_virtual_DNS = 4 [(gogoproto.customname) = "NextVirtualDNS"];
-    bool dynamic_records_from_client = 5 [(gogoproto.customname) = "DynamicRecordsFromClient"];
-    bool reverse_resolution = 6 [(gogoproto.customname) = "ReverseResolution"];
-    int64 default_ttl_seconds = 7 [(gogoproto.customname) = "DefaultTTLSeconds"];
-    string record_order = 8 [(gogoproto.customname) = "RecordOrder"]; 
-}
-
-
-
-
-
-message MacAddressesType {
-
-    repeated string mac_address = 1 [(gogoproto.customname) = "MacAddress"]; 
-}
-
-
-
-message VirtualNetworkType {
-
-    string forwarding_mode = 1 [(gogoproto.customname) = "ForwardingMode"];
-    bool allow_transit = 2 [(gogoproto.customname) = "AllowTransit"];
-    int64 network_id = 3 [(gogoproto.customname) = "NetworkID"];
-    bool mirror_destination = 4 [(gogoproto.customname) = "MirrorDestination"];
-    int64 vxlan_network_identifier = 5 [(gogoproto.customname) = "VxlanNetworkIdentifier"];
-    string rpf = 6 [(gogoproto.customname) = "RPF"]; 
-}
-
-
-
-message MACMoveLimitControlType {
-
-    int64 mac_move_time_window = 1 [(gogoproto.customname) = "MacMoveTimeWindow"];
-    int64 mac_move_limit = 2 [(gogoproto.customname) = "MacMoveLimit"];
-    string mac_move_limit_action = 3 [(gogoproto.customname) = "MacMoveLimitAction"]; 
-}
-
-
-
-
-
-
 

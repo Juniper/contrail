@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTRouteTableUpdateRequest for update request for REST.
-type RESTRouteTableUpdateRequest struct {
-	Data map[string]interface{} `json:"route-table"`
-}
-
 //RESTCreateRouteTable handle a Create REST service.
 func (service *ContrailService) RESTCreateRouteTable(c echo.Context) error {
 	requestData := &models.CreateRouteTableRequest{}

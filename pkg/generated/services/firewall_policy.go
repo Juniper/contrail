@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTFirewallPolicyUpdateRequest for update request for REST.
-type RESTFirewallPolicyUpdateRequest struct {
-	Data map[string]interface{} `json:"firewall-policy"`
-}
-
 //RESTCreateFirewallPolicy handle a Create REST service.
 func (service *ContrailService) RESTCreateFirewallPolicy(c echo.Context) error {
 	requestData := &models.CreateFirewallPolicyRequest{}

@@ -12,6 +12,9 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+//Version is version for schema format.
+var Version = "1.0"
+
 var sqlTypeMap = map[string]string{
 	"object":  "json",
 	"integer": "int",

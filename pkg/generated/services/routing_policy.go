@@ -14,11 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTRoutingPolicyUpdateRequest for update request for REST.
-type RESTRoutingPolicyUpdateRequest struct {
-	Data map[string]interface{} `json:"routing-policy"`
-}
-
 //RESTCreateRoutingPolicy handle a Create REST service.
 func (service *ContrailService) RESTCreateRoutingPolicy(c echo.Context) error {
 	requestData := &models.CreateRoutingPolicyRequest{}
