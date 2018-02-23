@@ -24026,10 +24026,10 @@
             ]
         },
         {
-            "id": "appformix_node_role",
-            "plural": "appformix_node_roles",
-            "title": "Appformix Node Role",
-            "description": "Appformix Node Role",
+            "id": "appformix_node",
+            "plural": "appformix_nodes",
+            "title": "Appformix Node",
+            "description": "Appformix Node",
             "prefix": "/",
             "schema": {
                 "type": "object",
@@ -24997,10 +24997,18 @@
             ]
         },
         {
-            "id": "contrail_analytics_database_node_role",
-            "plural": "contrail_analytics_database_node_roles",
-            "title": "Contrail Analytics Database Node Role",
-            "description": "Contrail Analytics Database Node Role",
+            "id": "contrail_analytics_database_node",
+            "plural": "contrail_analytics_database_nodes",
+            "title": "Contrail Analytics Database Node",
+            "description": "Contrail Analytics Database Node",
+            "references": {
+                "node": {
+                    "description": "Reference to node object for this analyticsdb node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
             "prefix": "/",
             "schema": {
                 "type": "object",
@@ -25262,7 +25270,6 @@
             },
             "extends": [
                 "base",
-                "has_node",
                 "has_status"
             ]
         },
@@ -25271,6 +25278,14 @@
             "plural": "contrail_analytics_nodes",
             "title": "Contrail Analytics Node",
             "description": "Contrail Analytics Node",
+            "references": {
+                "node": {
+                    "description": "Reference to node object for this analytics node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
             "prefix": "/",
             "schema": {
                 "type": "object",
@@ -25532,7 +25547,6 @@
             },
             "extends": [
                 "base",
-                "has_node",
                 "has_status"
             ]
         },
@@ -25577,6 +25591,72 @@
                     "config_audit_ttl": {
                         "title": "Configuration Audit Retention Time",
                         "default": "2160",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "contrail_analytics": {
+                        "title": "Contrail Analytics",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "contrail_analyticsdb": {
+                        "title": "Contrail Analytics Database",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "contrail_config": {
+                        "title": "Contrail Config",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "contrail_configdb": {
+                        "title": "Contrail Config Database",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "contrail_control": {
+                        "title": "Contrail Control",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "contrail_vrouter": {
+                        "title": "Contrail Vrouter",
+                        "default": "",
                         "type": "string",
                         "permission": [
                             "create",
@@ -25735,6 +25815,54 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "kubernetes": {
+                        "title": "Kubernetes",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "kubernetes_master": {
+                        "title": "Kubernetes Master",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "openstack": {
+                        "title": "Openstack",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "orchestrator": {
+                        "title": "Orchestrator",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "enum": [
+                            "openstack",
+                            "kubernetes"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "parent_type": {
                         "type": "string",
                         "minimum": 0,
@@ -25789,6 +25917,85 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "provisioner_type": {
+                        "title": "Provisioning Tool",
+                        "default": "ansible",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "enum": [
+                            "ansible",
+                            "helm"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_log": {
+                        "title": "Provisioning Log",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress": {
+                        "title": "Provisioning Progress",
+                        "default": 0,
+                        "type": "integer",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress_stage": {
+                        "title": "Provisioning Progress Stage",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_start_time": {
+                        "title": "Time provisioning started",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_state": {
+                        "title": "Provisioning Status",
+                        "default": "CREATED",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "enum": [
+                            "CREATED",
+                            "IN_CREATE_PROGRESS",
+                            "UPDATED",
+                            "IN_UPDATE_PROGRESS",
+                            "DELETED",
+                            "IN_DELETE_PROGRESS",
+                            "ERROR"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "statistics_ttl": {
                         "title": "Statistics Data Retention Time",
                         "default": "2160",
@@ -25807,6 +26014,11 @@
                     }
                 },
                 "propertiesOrder": [
+                    "provisioning_log",
+                    "provisioning_progress",
+                    "provisioning_progress_stage",
+                    "provisioning_start_time",
+                    "provisioning_state",
                     "uuid",
                     "parent_uuid",
                     "parent_type",
@@ -25815,8 +26027,19 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "provisioner_type",
+                    "orchestrator",
+                    "kubernetes",
+                    "kubernetes_master",
+                    "openstack",
                     "config_audit_ttl",
+                    "contrail_config",
+                    "contrail_configdb",
+                    "contrail_control",
                     "contrail_webui",
+                    "contrail_analytics",
+                    "contrail_analyticsdb",
+                    "contrail_vrouter",
                     "data_ttl",
                     "default_gateway",
                     "default_vrouter_bond_interface",
@@ -25829,14 +26052,23 @@
             },
             "extends": [
                 "base",
-                "ownable"
+                "ownable",
+                "has_status"
             ]
         },
         {
-            "id": "contrail_controller_node_role",
-            "plural": "contrail_controller_node_roles",
-            "title": "Contrail Controller Node Role",
-            "description": "Contrail Controller Node Role",
+            "id": "contrail_config_database_node",
+            "plural": "contrail_config_database_nodes",
+            "title": "Contrail Config Database Node",
+            "description": "Contrail Config Database Node",
+            "references": {
+                "node": {
+                    "description": "Reference to node object for this configdb node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
             "prefix": "/",
             "schema": {
                 "type": "object",
@@ -26098,15 +26330,22 @@
             },
             "extends": [
                 "base",
-                "has_node",
                 "has_status"
             ]
         },
         {
-            "id": "controller_node_role",
-            "plural": "controller_node_roles",
-            "title": "Controller Node Role",
-            "description": "Controller Node Role",
+            "id": "contrail_config_node",
+            "plural": "contrail_config_nodes",
+            "title": "Contrail Config Node",
+            "description": "Contrail Config Node",
+            "references": {
+                "node": {
+                    "description": "Reference to node object for this config node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
             "prefix": "/",
             "schema": {
                 "type": "object",
@@ -26137,17 +26376,6 @@
                                 }
                             }
                         },
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "capacity_drives": {
-                        "title": "Capacity Drives",
-                        "default": "sdc,sdd,sde",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -26235,17 +26463,6 @@
                         "minimum": 0,
                         "maximum": 0
                     },
-                    "internalapi_bond_interface_members": {
-                        "title": "Internal API Bond Interface Members",
-                        "default": "ens7f0,ens7f1",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
                     "parent_type": {
                         "type": "string",
                         "minimum": 0,
@@ -26253,17 +26470,6 @@
                     },
                     "parent_uuid": {
                         "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "performance_drives": {
-                        "title": "Performance Drive",
-                        "default": "sdf",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -26375,9 +26581,596 @@
                         "minimum": 0,
                         "maximum": 0
                     },
-                    "storage_management_bond_interface_members": {
-                        "title": "Storage Management  Bond Interface Members",
+                    "uuid": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    }
+                },
+                "propertiesOrder": [
+                    "provisioning_log",
+                    "provisioning_progress",
+                    "provisioning_progress_stage",
+                    "provisioning_start_time",
+                    "provisioning_state",
+                    "uuid",
+                    "parent_uuid",
+                    "parent_type",
+                    "fq_name",
+                    "id_perms",
+                    "display_name",
+                    "annotations",
+                    "perms2"
+                ],
+                "minimum": 0,
+                "maximum": 0
+            },
+            "extends": [
+                "base",
+                "has_status"
+            ]
+        },
+        {
+            "id": "contrail_control_node",
+            "plural": "contrail_control_nodes",
+            "title": "Contrail Control Node",
+            "description": "Contrail Control Node",
+            "references": {
+                "node": {
+                    "description": "Reference to node object for this control node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
+            "prefix": "/",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "annotations": {
+                        "type": "object",
+                        "properties": {
+                            "key_value_pair": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "display_name": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "fq_name": {
+                        "type": "array",
+                        "minimum": 0,
+                        "maximum": 0,
+                        "items": {
+                            "type": "string",
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    },
+                    "id_perms": {
+                        "type": "object",
+                        "properties": {
+                            "created": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "creator": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "description": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "enable": {
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "last_modified": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "permissions": {
+                                "type": "object",
+                                "properties": {
+                                    "group": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "group_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "other_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    }
+                                },
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "user_visible": {
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_type": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_uuid": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "perms2": {
+                        "type": "object",
+                        "properties": {
+                            "global_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "share": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tenant": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "tenant_access": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_log": {
+                        "title": "Provisioning Log",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress": {
+                        "title": "Provisioning Progress",
+                        "default": 0,
+                        "type": "integer",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress_stage": {
+                        "title": "Provisioning Progress Stage",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_start_time": {
+                        "title": "Time provisioning started",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_state": {
+                        "title": "Provisioning Status",
+                        "default": "CREATED",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "enum": [
+                            "CREATED",
+                            "IN_CREATE_PROGRESS",
+                            "UPDATED",
+                            "IN_UPDATE_PROGRESS",
+                            "DELETED",
+                            "IN_DELETE_PROGRESS",
+                            "ERROR"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "uuid": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    }
+                },
+                "propertiesOrder": [
+                    "provisioning_log",
+                    "provisioning_progress",
+                    "provisioning_progress_stage",
+                    "provisioning_start_time",
+                    "provisioning_state",
+                    "uuid",
+                    "parent_uuid",
+                    "parent_type",
+                    "fq_name",
+                    "id_perms",
+                    "display_name",
+                    "annotations",
+                    "perms2"
+                ],
+                "minimum": 0,
+                "maximum": 0
+            },
+            "extends": [
+                "base",
+                "has_status"
+            ]
+        },
+        {
+            "id": "contrail_storage_node",
+            "plural": "contrail_storage_nodes",
+            "title": "Contrail Storage Node",
+            "description": "Contrail Storage Node",
+            "references": {
+                "node": {
+                    "description": "Reference to node object for this storage node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
+            "prefix": "/",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "annotations": {
+                        "type": "object",
+                        "properties": {
+                            "key_value_pair": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "display_name": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "fq_name": {
+                        "type": "array",
+                        "minimum": 0,
+                        "maximum": 0,
+                        "items": {
+                            "type": "string",
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    },
+                    "id_perms": {
+                        "type": "object",
+                        "properties": {
+                            "created": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "creator": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "description": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "enable": {
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "last_modified": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "permissions": {
+                                "type": "object",
+                                "properties": {
+                                    "group": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "group_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "other_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    }
+                                },
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "user_visible": {
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "journal_drives": {
+                        "title": "Journal Drives",
+                        "default": "sdf",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "osd_drives": {
+                        "title": "Stoage Drives",
+                        "default": "sdc,sdd,sde",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_type": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_uuid": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "perms2": {
+                        "type": "object",
+                        "properties": {
+                            "global_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "share": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tenant": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "tenant_access": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_log": {
+                        "title": "Provisioning Log",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress": {
+                        "title": "Provisioning Progress",
+                        "default": 0,
+                        "type": "integer",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress_stage": {
+                        "title": "Provisioning Progress Stage",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_start_time": {
+                        "title": "Time provisioning started",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_state": {
+                        "title": "Provisioning Status",
+                        "default": "CREATED",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "enum": [
+                            "CREATED",
+                            "IN_CREATE_PROGRESS",
+                            "UPDATED",
+                            "IN_UPDATE_PROGRESS",
+                            "DELETED",
+                            "IN_DELETE_PROGRESS",
+                            "ERROR"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "storage_access_bond_interface_members": {
+                        "title": "Storage Access  Bond Interface Members",
                         "default": "ens8f0,ens8f1",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "storage_backend_bond_interface_members": {
+                        "title": "Storage Backend Bond Interface Members",
+                        "default": "ens9f0,ens9f1",
                         "type": "string",
                         "permission": [
                             "create",
@@ -26406,17 +27199,623 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "capacity_drives",
-                    "internalapi_bond_interface_members",
-                    "performance_drives",
-                    "storage_management_bond_interface_members"
+                    "journal_drives",
+                    "osd_drives",
+                    "storage_access_bond_interface_members",
+                    "storage_backend_bond_interface_members"
                 ],
                 "minimum": 0,
                 "maximum": 0
             },
             "extends": [
                 "base",
-                "has_node",
+                "has_status"
+            ]
+        },
+        {
+            "id": "contrail_vrouter_node",
+            "plural": "contrail_vrouter_nodes",
+            "title": "Contrail Vrouter Node",
+            "description": "Contrail Vrouter Node",
+            "references": {
+                "node": {
+                    "description": "Reference to node object for this vrouter node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
+            "prefix": "/contrail",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "annotations": {
+                        "type": "object",
+                        "properties": {
+                            "key_value_pair": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "default_gateway": {
+                        "title": "Default Gateway",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "display_name": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "fq_name": {
+                        "type": "array",
+                        "minimum": 0,
+                        "maximum": 0,
+                        "items": {
+                            "type": "string",
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    },
+                    "id_perms": {
+                        "type": "object",
+                        "properties": {
+                            "created": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "creator": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "description": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "enable": {
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "last_modified": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "permissions": {
+                                "type": "object",
+                                "properties": {
+                                    "group": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "group_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "other_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    }
+                                },
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "user_visible": {
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_type": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_uuid": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "perms2": {
+                        "type": "object",
+                        "properties": {
+                            "global_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "share": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tenant": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "tenant_access": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_log": {
+                        "title": "Provisioning Log",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress": {
+                        "title": "Provisioning Progress",
+                        "default": 0,
+                        "type": "integer",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress_stage": {
+                        "title": "Provisioning Progress Stage",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_start_time": {
+                        "title": "Time provisioning started",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_state": {
+                        "title": "Provisioning Status",
+                        "default": "CREATED",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "enum": [
+                            "CREATED",
+                            "IN_CREATE_PROGRESS",
+                            "UPDATED",
+                            "IN_UPDATE_PROGRESS",
+                            "DELETED",
+                            "IN_DELETE_PROGRESS",
+                            "ERROR"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "uuid": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "vrouter_bond_interface": {
+                        "title": "vRouter Bond Interface",
+                        "default": "bond0",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "vrouter_bond_interface_members": {
+                        "title": "vRouter Bond Interface Members",
+                        "default": "ens7f0,ens7f1",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "vrouter_type": {
+                        "title": "vRouter Type",
+                        "default": "kernel",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "enum": [
+                            "kernel",
+                            "dpdk",
+                            "smartNiC"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    }
+                },
+                "propertiesOrder": [
+                    "provisioning_log",
+                    "provisioning_progress",
+                    "provisioning_progress_stage",
+                    "provisioning_start_time",
+                    "provisioning_state",
+                    "uuid",
+                    "parent_uuid",
+                    "parent_type",
+                    "fq_name",
+                    "id_perms",
+                    "display_name",
+                    "annotations",
+                    "perms2",
+                    "default_gateway",
+                    "vrouter_bond_interface",
+                    "vrouter_bond_interface_members",
+                    "vrouter_type"
+                ],
+                "minimum": 0,
+                "maximum": 0
+            },
+            "extends": [
+                "base",
+                "has_status"
+            ]
+        },
+        {
+            "id": "contrail_controller_node",
+            "plural": "contrail_controller_nodes",
+            "title": "Contrail Controller Node",
+            "description": "Contrail Controller Node",
+            "references": {
+                "node": {
+                    "description": "Reference to node object for this webui node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
+            "prefix": "/",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "annotations": {
+                        "type": "object",
+                        "properties": {
+                            "key_value_pair": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "display_name": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "fq_name": {
+                        "type": "array",
+                        "minimum": 0,
+                        "maximum": 0,
+                        "items": {
+                            "type": "string",
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    },
+                    "id_perms": {
+                        "type": "object",
+                        "properties": {
+                            "created": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "creator": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "description": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "enable": {
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "last_modified": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "permissions": {
+                                "type": "object",
+                                "properties": {
+                                    "group": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "group_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "other_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    }
+                                },
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "user_visible": {
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_type": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_uuid": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "perms2": {
+                        "type": "object",
+                        "properties": {
+                            "global_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "share": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tenant": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "tenant_access": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_log": {
+                        "title": "Provisioning Log",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress": {
+                        "title": "Provisioning Progress",
+                        "default": 0,
+                        "type": "integer",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress_stage": {
+                        "title": "Provisioning Progress Stage",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_start_time": {
+                        "title": "Time provisioning started",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_state": {
+                        "title": "Provisioning Status",
+                        "default": "CREATED",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "enum": [
+                            "CREATED",
+                            "IN_CREATE_PROGRESS",
+                            "UPDATED",
+                            "IN_UPDATE_PROGRESS",
+                            "DELETED",
+                            "IN_DELETE_PROGRESS",
+                            "ERROR"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "uuid": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    }
+                },
+                "propertiesOrder": [
+                    "provisioning_log",
+                    "provisioning_progress",
+                    "provisioning_progress_stage",
+                    "provisioning_start_time",
+                    "provisioning_state",
+                    "uuid",
+                    "parent_uuid",
+                    "parent_type",
+                    "fq_name",
+                    "id_perms",
+                    "display_name",
+                    "annotations",
+                    "perms2"
+                ],
+                "minimum": 0,
+                "maximum": 0
+            },
+            "extends": [
+                "base",
                 "has_status"
             ]
         },
@@ -27479,233 +28878,18 @@
             ]
         },
         {
-            "id": "kubernetes_cluster",
-            "plural": "kubernetes_clusters",
-            "title": "kubernetes Cluster",
-            "description": "Kubernetes Cluster",
-            "prefix": "/",
-            "schema": {
-                "type": "object",
-                "properties": {
-                    "annotations": {
-                        "type": "object",
-                        "properties": {
-                            "key_value_pair": {
-                                "type": "array",
-                                "minimum": 0,
-                                "maximum": 0,
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "key": {
-                                            "type": "string",
-                                            "minimum": 0,
-                                            "maximum": 0
-                                        },
-                                        "value": {
-                                            "type": "string",
-                                            "minimum": 0,
-                                            "maximum": 0
-                                        }
-                                    },
-                                    "minimum": 0,
-                                    "maximum": 0
-                                }
-                            }
-                        },
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "contrail_cluster_id": {
-                        "title": "Contrail Cluster ID",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "display_name": {
-                        "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "fq_name": {
-                        "type": "array",
-                        "minimum": 0,
-                        "maximum": 0,
-                        "items": {
-                            "type": "string",
-                            "minimum": 0,
-                            "maximum": 0
-                        }
-                    },
-                    "id_perms": {
-                        "type": "object",
-                        "properties": {
-                            "created": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "creator": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "description": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "enable": {
-                                "type": "boolean",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "last_modified": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "permissions": {
-                                "type": "object",
-                                "properties": {
-                                    "group": {
-                                        "type": "string",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    },
-                                    "group_access": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    },
-                                    "other_access": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    },
-                                    "owner": {
-                                        "type": "string",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    },
-                                    "owner_access": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    }
-                                },
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "user_visible": {
-                                "type": "boolean",
-                                "minimum": 0,
-                                "maximum": 0
-                            }
-                        },
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "kuberunetes_dashboard": {
-                        "title": "kubernetes Dashboard",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "parent_type": {
-                        "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "parent_uuid": {
-                        "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "perms2": {
-                        "type": "object",
-                        "properties": {
-                            "global_access": {
-                                "type": "integer",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "owner": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "owner_access": {
-                                "type": "integer",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "share": {
-                                "type": "array",
-                                "minimum": 0,
-                                "maximum": 0,
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "tenant": {
-                                            "type": "string",
-                                            "minimum": 0,
-                                            "maximum": 0
-                                        },
-                                        "tenant_access": {
-                                            "type": "integer",
-                                            "minimum": 0,
-                                            "maximum": 0
-                                        }
-                                    },
-                                    "minimum": 0,
-                                    "maximum": 0
-                                }
-                            }
-                        },
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "uuid": {
-                        "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    }
-                },
-                "propertiesOrder": [
-                    "uuid",
-                    "parent_uuid",
-                    "parent_type",
-                    "fq_name",
-                    "id_perms",
-                    "display_name",
-                    "annotations",
-                    "perms2",
-                    "contrail_cluster_id",
-                    "kuberunetes_dashboard"
-                ],
-                "minimum": 0,
-                "maximum": 0
+            "id": "kubernetes_master_node",
+            "plural": "kubernetes_master_nodes",
+            "title": "kubernetes Master Node",
+            "description": "kubernetes Master Node",
+            "references": {
+                "node": {
+                    "description": "Reference to node object for this kubernetes master node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
             },
-            "extends": [
-                "base"
-            ]
-        },
-        {
-            "id": "kubernetes_node",
-            "plural": "kubernetes_nodes",
-            "title": "kubernetes Node",
-            "description": "kubernetes Node",
             "prefix": "/",
             "schema": {
                 "type": "object",
@@ -27967,7 +29151,283 @@
             },
             "extends": [
                 "base",
-                "has_node",
+                "has_status"
+            ]
+        },
+        {
+            "id": "kubernetes_node",
+            "plural": "kubernetes_nodes",
+            "title": "kubernetes Node",
+            "description": "Kubernetes Node",
+            "references": {
+                "node": {
+                    "description": "Reference to node object for this kubernetes node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
+            "prefix": "/",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "annotations": {
+                        "type": "object",
+                        "properties": {
+                            "key_value_pair": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "display_name": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "fq_name": {
+                        "type": "array",
+                        "minimum": 0,
+                        "maximum": 0,
+                        "items": {
+                            "type": "string",
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    },
+                    "id_perms": {
+                        "type": "object",
+                        "properties": {
+                            "created": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "creator": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "description": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "enable": {
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "last_modified": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "permissions": {
+                                "type": "object",
+                                "properties": {
+                                    "group": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "group_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "other_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    }
+                                },
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "user_visible": {
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_type": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_uuid": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "perms2": {
+                        "type": "object",
+                        "properties": {
+                            "global_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner": {
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner_access": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "share": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tenant": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "tenant_access": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_log": {
+                        "title": "Provisioning Log",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress": {
+                        "title": "Provisioning Progress",
+                        "default": 0,
+                        "type": "integer",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress_stage": {
+                        "title": "Provisioning Progress Stage",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_start_time": {
+                        "title": "Time provisioning started",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_state": {
+                        "title": "Provisioning Status",
+                        "default": "CREATED",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "enum": [
+                            "CREATED",
+                            "IN_CREATE_PROGRESS",
+                            "UPDATED",
+                            "IN_UPDATE_PROGRESS",
+                            "DELETED",
+                            "IN_DELETE_PROGRESS",
+                            "ERROR"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "uuid": {
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    }
+                },
+                "propertiesOrder": [
+                    "provisioning_log",
+                    "provisioning_progress",
+                    "provisioning_progress_stage",
+                    "provisioning_start_time",
+                    "provisioning_state",
+                    "uuid",
+                    "parent_uuid",
+                    "parent_type",
+                    "fq_name",
+                    "id_perms",
+                    "display_name",
+                    "annotations",
+                    "perms2"
+                ],
+                "minimum": 0,
+                "maximum": 0
+            },
+            "extends": [
+                "base",
                 "has_status"
             ]
         },
@@ -28906,1083 +30366,6 @@
             },
             "extends": [
                 "base"
-            ]
-        },
-        {
-            "id": "openstack_cluster",
-            "plural": "openstack_clusters",
-            "title": "Openstack Cluster",
-            "description": "Openstack Cluster",
-            "prefix": "/",
-            "schema": {
-                "type": "object",
-                "properties": {
-                    "admin_password": {
-                        "title": "Admin Password",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "annotations": {
-                        "type": "object",
-                        "properties": {
-                            "key_value_pair": {
-                                "type": "array",
-                                "minimum": 0,
-                                "maximum": 0,
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "key": {
-                                            "type": "string",
-                                            "minimum": 0,
-                                            "maximum": 0
-                                        },
-                                        "value": {
-                                            "type": "string",
-                                            "minimum": 0,
-                                            "maximum": 0
-                                        }
-                                    },
-                                    "minimum": 0,
-                                    "maximum": 0
-                                }
-                            }
-                        },
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "contrail_cluster_id": {
-                        "title": "Contrail Cluster ID",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "default_capacity_drives": {
-                        "title": "Default Capacity Drives  for Controller Node Role",
-                        "default": "sdc,sdd,sde",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "default_journal_drives": {
-                        "title": "Journal Drives  for Storage Node Role",
-                        "default": "sdf",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "default_osd_drives": {
-                        "title": "Stoage Drives for Storage Node Role",
-                        "default": "sdc,sdd,sde",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "default_performance_drives": {
-                        "title": "Default Performance Drive  for Controller Node Role",
-                        "default": "sdf",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "default_storage_access_bond_interface_members": {
-                        "title": "Default Storage Access  Bond Interface Members",
-                        "default": "ens8f0,ens8f1",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "default_storage_backend_bond_interface_members": {
-                        "title": "Default Storage Backend Bond Interface Members",
-                        "default": "ens9f0,ens9f1",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "display_name": {
-                        "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "external_allocation_pool_end": {
-                        "title": "External Allocation pool end",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "external_allocation_pool_start": {
-                        "title": "External Allocation pool start",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "external_net_cidr": {
-                        "title": "External Network CIDR",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "fq_name": {
-                        "type": "array",
-                        "minimum": 0,
-                        "maximum": 0,
-                        "items": {
-                            "type": "string",
-                            "minimum": 0,
-                            "maximum": 0
-                        }
-                    },
-                    "id_perms": {
-                        "type": "object",
-                        "properties": {
-                            "created": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "creator": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "description": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "enable": {
-                                "type": "boolean",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "last_modified": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "permissions": {
-                                "type": "object",
-                                "properties": {
-                                    "group": {
-                                        "type": "string",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    },
-                                    "group_access": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    },
-                                    "other_access": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    },
-                                    "owner": {
-                                        "type": "string",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    },
-                                    "owner_access": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    }
-                                },
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "user_visible": {
-                                "type": "boolean",
-                                "minimum": 0,
-                                "maximum": 0
-                            }
-                        },
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "openstack_webui": {
-                        "title": "OpenStack WebUI",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "parent_type": {
-                        "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "parent_uuid": {
-                        "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "perms2": {
-                        "type": "object",
-                        "properties": {
-                            "global_access": {
-                                "type": "integer",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "owner": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "owner_access": {
-                                "type": "integer",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "share": {
-                                "type": "array",
-                                "minimum": 0,
-                                "maximum": 0,
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "tenant": {
-                                            "type": "string",
-                                            "minimum": 0,
-                                            "maximum": 0
-                                        },
-                                        "tenant_access": {
-                                            "type": "integer",
-                                            "minimum": 0,
-                                            "maximum": 0
-                                        }
-                                    },
-                                    "minimum": 0,
-                                    "maximum": 0
-                                }
-                            }
-                        },
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "provisioning_log": {
-                        "title": "Provisioning Log",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "provisioning_progress": {
-                        "title": "Provisioning Progress",
-                        "default": 0,
-                        "type": "integer",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "provisioning_progress_stage": {
-                        "title": "Provisioning Progress Stage",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "provisioning_start_time": {
-                        "title": "Time provisioning started",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "provisioning_state": {
-                        "title": "Provisioning Status",
-                        "default": "CREATED",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "enum": [
-                            "CREATED",
-                            "IN_CREATE_PROGRESS",
-                            "UPDATED",
-                            "IN_UPDATE_PROGRESS",
-                            "DELETED",
-                            "IN_DELETE_PROGRESS",
-                            "ERROR"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "public_gateway": {
-                        "title": "Public Gateway",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "public_ip": {
-                        "title": "Public IP",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "uuid": {
-                        "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    }
-                },
-                "propertiesOrder": [
-                    "provisioning_log",
-                    "provisioning_progress",
-                    "provisioning_progress_stage",
-                    "provisioning_start_time",
-                    "provisioning_state",
-                    "uuid",
-                    "parent_uuid",
-                    "parent_type",
-                    "fq_name",
-                    "id_perms",
-                    "display_name",
-                    "annotations",
-                    "perms2",
-                    "admin_password",
-                    "contrail_cluster_id",
-                    "default_capacity_drives",
-                    "default_journal_drives",
-                    "default_osd_drives",
-                    "default_performance_drives",
-                    "default_storage_access_bond_interface_members",
-                    "default_storage_backend_bond_interface_members",
-                    "external_allocation_pool_end",
-                    "external_allocation_pool_start",
-                    "external_net_cidr",
-                    "openstack_webui",
-                    "public_gateway",
-                    "public_ip"
-                ],
-                "minimum": 0,
-                "maximum": 0
-            },
-            "extends": [
-                "base",
-                "has_status"
-            ]
-        },
-        {
-            "id": "openstack_compute_node_role",
-            "plural": "openstack_compute_node_roles",
-            "title": "Openstack Compute Node Role",
-            "description": "Openstack Compute Node Role",
-            "prefix": "/contrail",
-            "schema": {
-                "type": "object",
-                "properties": {
-                    "annotations": {
-                        "type": "object",
-                        "properties": {
-                            "key_value_pair": {
-                                "type": "array",
-                                "minimum": 0,
-                                "maximum": 0,
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "key": {
-                                            "type": "string",
-                                            "minimum": 0,
-                                            "maximum": 0
-                                        },
-                                        "value": {
-                                            "type": "string",
-                                            "minimum": 0,
-                                            "maximum": 0
-                                        }
-                                    },
-                                    "minimum": 0,
-                                    "maximum": 0
-                                }
-                            }
-                        },
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "default_gateway": {
-                        "title": "Default Gateway",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "display_name": {
-                        "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "fq_name": {
-                        "type": "array",
-                        "minimum": 0,
-                        "maximum": 0,
-                        "items": {
-                            "type": "string",
-                            "minimum": 0,
-                            "maximum": 0
-                        }
-                    },
-                    "id_perms": {
-                        "type": "object",
-                        "properties": {
-                            "created": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "creator": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "description": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "enable": {
-                                "type": "boolean",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "last_modified": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "permissions": {
-                                "type": "object",
-                                "properties": {
-                                    "group": {
-                                        "type": "string",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    },
-                                    "group_access": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    },
-                                    "other_access": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    },
-                                    "owner": {
-                                        "type": "string",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    },
-                                    "owner_access": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    }
-                                },
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "user_visible": {
-                                "type": "boolean",
-                                "minimum": 0,
-                                "maximum": 0
-                            }
-                        },
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "parent_type": {
-                        "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "parent_uuid": {
-                        "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "perms2": {
-                        "type": "object",
-                        "properties": {
-                            "global_access": {
-                                "type": "integer",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "owner": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "owner_access": {
-                                "type": "integer",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "share": {
-                                "type": "array",
-                                "minimum": 0,
-                                "maximum": 0,
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "tenant": {
-                                            "type": "string",
-                                            "minimum": 0,
-                                            "maximum": 0
-                                        },
-                                        "tenant_access": {
-                                            "type": "integer",
-                                            "minimum": 0,
-                                            "maximum": 0
-                                        }
-                                    },
-                                    "minimum": 0,
-                                    "maximum": 0
-                                }
-                            }
-                        },
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "provisioning_log": {
-                        "title": "Provisioning Log",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "provisioning_progress": {
-                        "title": "Provisioning Progress",
-                        "default": 0,
-                        "type": "integer",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "provisioning_progress_stage": {
-                        "title": "Provisioning Progress Stage",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "provisioning_start_time": {
-                        "title": "Time provisioning started",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "provisioning_state": {
-                        "title": "Provisioning Status",
-                        "default": "CREATED",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "enum": [
-                            "CREATED",
-                            "IN_CREATE_PROGRESS",
-                            "UPDATED",
-                            "IN_UPDATE_PROGRESS",
-                            "DELETED",
-                            "IN_DELETE_PROGRESS",
-                            "ERROR"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "uuid": {
-                        "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "vrouter_bond_interface": {
-                        "title": "vRouter Bond Interface",
-                        "default": "bond0",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "vrouter_bond_interface_members": {
-                        "title": "vRouter Bond Interface Members",
-                        "default": "ens7f0,ens7f1",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "vrouter_type": {
-                        "title": "vRouter Type",
-                        "default": "kernel",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "enum": [
-                            "kernel",
-                            "dpdk",
-                            "smartNiC"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    }
-                },
-                "propertiesOrder": [
-                    "provisioning_log",
-                    "provisioning_progress",
-                    "provisioning_progress_stage",
-                    "provisioning_start_time",
-                    "provisioning_state",
-                    "uuid",
-                    "parent_uuid",
-                    "parent_type",
-                    "fq_name",
-                    "id_perms",
-                    "display_name",
-                    "annotations",
-                    "perms2",
-                    "default_gateway",
-                    "vrouter_bond_interface",
-                    "vrouter_bond_interface_members",
-                    "vrouter_type"
-                ],
-                "minimum": 0,
-                "maximum": 0
-            },
-            "extends": [
-                "base",
-                "has_node",
-                "has_status"
-            ]
-        },
-        {
-            "id": "openstack_storage_node_role",
-            "plural": "openstack_storage_node_roles",
-            "title": "Openstack Storage Node Role",
-            "description": "Openstack Storage Node Role",
-            "prefix": "/",
-            "schema": {
-                "type": "object",
-                "properties": {
-                    "annotations": {
-                        "type": "object",
-                        "properties": {
-                            "key_value_pair": {
-                                "type": "array",
-                                "minimum": 0,
-                                "maximum": 0,
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "key": {
-                                            "type": "string",
-                                            "minimum": 0,
-                                            "maximum": 0
-                                        },
-                                        "value": {
-                                            "type": "string",
-                                            "minimum": 0,
-                                            "maximum": 0
-                                        }
-                                    },
-                                    "minimum": 0,
-                                    "maximum": 0
-                                }
-                            }
-                        },
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "display_name": {
-                        "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "fq_name": {
-                        "type": "array",
-                        "minimum": 0,
-                        "maximum": 0,
-                        "items": {
-                            "type": "string",
-                            "minimum": 0,
-                            "maximum": 0
-                        }
-                    },
-                    "id_perms": {
-                        "type": "object",
-                        "properties": {
-                            "created": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "creator": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "description": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "enable": {
-                                "type": "boolean",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "last_modified": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "permissions": {
-                                "type": "object",
-                                "properties": {
-                                    "group": {
-                                        "type": "string",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    },
-                                    "group_access": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    },
-                                    "other_access": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    },
-                                    "owner": {
-                                        "type": "string",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    },
-                                    "owner_access": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "maximum": 0
-                                    }
-                                },
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "user_visible": {
-                                "type": "boolean",
-                                "minimum": 0,
-                                "maximum": 0
-                            }
-                        },
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "journal_drives": {
-                        "title": "Journal Drives",
-                        "default": "sdf",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "osd_drives": {
-                        "title": "Stoage Drives",
-                        "default": "sdc,sdd,sde",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "parent_type": {
-                        "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "parent_uuid": {
-                        "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "perms2": {
-                        "type": "object",
-                        "properties": {
-                            "global_access": {
-                                "type": "integer",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "owner": {
-                                "type": "string",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "owner_access": {
-                                "type": "integer",
-                                "minimum": 0,
-                                "maximum": 0
-                            },
-                            "share": {
-                                "type": "array",
-                                "minimum": 0,
-                                "maximum": 0,
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "tenant": {
-                                            "type": "string",
-                                            "minimum": 0,
-                                            "maximum": 0
-                                        },
-                                        "tenant_access": {
-                                            "type": "integer",
-                                            "minimum": 0,
-                                            "maximum": 0
-                                        }
-                                    },
-                                    "minimum": 0,
-                                    "maximum": 0
-                                }
-                            }
-                        },
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "provisioning_log": {
-                        "title": "Provisioning Log",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "provisioning_progress": {
-                        "title": "Provisioning Progress",
-                        "default": 0,
-                        "type": "integer",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "provisioning_progress_stage": {
-                        "title": "Provisioning Progress Stage",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "provisioning_start_time": {
-                        "title": "Time provisioning started",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "provisioning_state": {
-                        "title": "Provisioning Status",
-                        "default": "CREATED",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "enum": [
-                            "CREATED",
-                            "IN_CREATE_PROGRESS",
-                            "UPDATED",
-                            "IN_UPDATE_PROGRESS",
-                            "DELETED",
-                            "IN_DELETE_PROGRESS",
-                            "ERROR"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "storage_access_bond_interface_members": {
-                        "title": "Storage Access  Bond Interface Members",
-                        "default": "ens8f0,ens8f1",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "storage_backend_bond_interface_members": {
-                        "title": "Storage Backend Bond Interface Members",
-                        "default": "ens9f0,ens9f1",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "uuid": {
-                        "type": "string",
-                        "minimum": 0,
-                        "maximum": 0
-                    }
-                },
-                "propertiesOrder": [
-                    "provisioning_log",
-                    "provisioning_progress",
-                    "provisioning_progress_stage",
-                    "provisioning_start_time",
-                    "provisioning_state",
-                    "uuid",
-                    "parent_uuid",
-                    "parent_type",
-                    "fq_name",
-                    "id_perms",
-                    "display_name",
-                    "annotations",
-                    "perms2",
-                    "journal_drives",
-                    "osd_drives",
-                    "storage_access_bond_interface_members",
-                    "storage_backend_bond_interface_members"
-                ],
-                "minimum": 0,
-                "maximum": 0
-            },
-            "extends": [
-                "base",
-                "has_node",
-                "has_status"
             ]
         },
         {

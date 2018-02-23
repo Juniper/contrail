@@ -1,0 +1,19 @@
+description: Appformix Node
+extends:
+- base
+- has_node
+- has_status
+id: appformix_node
+metadata:
+  category: cluster
+parent: openstack_cluster
+plural: appformix_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: appformix_node
+title: Appformix Node
+type: ""
