@@ -1,22 +1,11 @@
 package models
 
-// VirtualDNS
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// VirtualDNS
-//proteus:generate
-type VirtualDNS struct {
-	UUID           string          `json:"uuid,omitempty"`
-	ParentUUID     string          `json:"parent_uuid,omitempty"`
-	ParentType     string          `json:"parent_type,omitempty"`
-	FQName         []string        `json:"fq_name,omitempty"`
-	IDPerms        *IdPermsType    `json:"id_perms,omitempty"`
-	DisplayName    string          `json:"display_name,omitempty"`
-	Annotations    *KeyValuePairs  `json:"annotations,omitempty"`
-	Perms2         *PermType2      `json:"perms2,omitempty"`
-	VirtualDNSData *VirtualDnsType `json:"virtual_DNS_data,omitempty"`
-
-	VirtualDNSRecords []*VirtualDNSRecord `json:"virtual_DNS_records,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeVirtualDNS makes VirtualDNS
 func MakeVirtualDNS() *VirtualDNS {
@@ -34,7 +23,41 @@ func MakeVirtualDNS() *VirtualDNS {
 	}
 }
 
+// MakeVirtualDNS makes VirtualDNS
+func InterfaceToVirtualDNS(i interface{}) *VirtualDNS {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &VirtualDNS{
+		//TODO(nati): Apply default
+		UUID:           schema.InterfaceToString(m["uuid"]),
+		ParentUUID:     schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:     schema.InterfaceToString(m["parent_type"]),
+		FQName:         schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:        InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:    schema.InterfaceToString(m["display_name"]),
+		Annotations:    InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:         InterfaceToPermType2(m["perms2"]),
+		VirtualDNSData: InterfaceToVirtualDnsType(m["virtual_DNS_data"]),
+	}
+}
+
 // MakeVirtualDNSSlice() makes a slice of VirtualDNS
 func MakeVirtualDNSSlice() []*VirtualDNS {
 	return []*VirtualDNS{}
+}
+
+// InterfaceToVirtualDNSSlice() makes a slice of VirtualDNS
+func InterfaceToVirtualDNSSlice(i interface{}) []*VirtualDNS {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*VirtualDNS{}
+	for _, item := range list {
+		result = append(result, InterfaceToVirtualDNS(item))
+	}
+	return result
 }

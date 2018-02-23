@@ -1,17 +1,8 @@
 package models
 
-// SimpleActionType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type SimpleActionType string
-
-// MakeSimpleActionType makes SimpleActionType
-func MakeSimpleActionType() SimpleActionType {
-	var data SimpleActionType
-	return data
-}
-
-// MakeSimpleActionTypeSlice() makes a slice of SimpleActionType
-func MakeSimpleActionTypeSlice() []SimpleActionType {
-	return []SimpleActionType{}
-}
+//To skip import error.
+var _ = schema.Version

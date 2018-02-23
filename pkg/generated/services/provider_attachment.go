@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTProviderAttachmentUpdateRequest for update request for REST.
-type RESTProviderAttachmentUpdateRequest struct {
-	Data map[string]interface{} `json:"provider-attachment"`
-}
-
 //RESTCreateProviderAttachment handle a Create REST service.
 func (service *ContrailService) RESTCreateProviderAttachment(c echo.Context) error {
-	requestData := &models.CreateProviderAttachmentRequest{
-		ProviderAttachment: models.MakeProviderAttachment(),
-	}
+	requestData := &models.CreateProviderAttachmentRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetProviderAttachment(c echo.Context) error 
 func (service *ContrailService) GetProviderAttachment(ctx context.Context, request *models.GetProviderAttachmentRequest) (response *models.GetProviderAttachmentResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListProviderAttachmentRequest{

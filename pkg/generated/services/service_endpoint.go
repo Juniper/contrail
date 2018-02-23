@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTServiceEndpointUpdateRequest for update request for REST.
-type RESTServiceEndpointUpdateRequest struct {
-	Data map[string]interface{} `json:"service-endpoint"`
-}
-
 //RESTCreateServiceEndpoint handle a Create REST service.
 func (service *ContrailService) RESTCreateServiceEndpoint(c echo.Context) error {
-	requestData := &models.CreateServiceEndpointRequest{
-		ServiceEndpoint: models.MakeServiceEndpoint(),
-	}
+	requestData := &models.CreateServiceEndpointRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetServiceEndpoint(c echo.Context) error {
 func (service *ContrailService) GetServiceEndpoint(ctx context.Context, request *models.GetServiceEndpointRequest) (response *models.GetServiceEndpointResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListServiceEndpointRequest{

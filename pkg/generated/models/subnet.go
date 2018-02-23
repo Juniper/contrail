@@ -1,29 +1,11 @@
 package models
 
-// Subnet
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// Subnet
-//proteus:generate
-type Subnet struct {
-	UUID           string         `json:"uuid,omitempty"`
-	ParentUUID     string         `json:"parent_uuid,omitempty"`
-	ParentType     string         `json:"parent_type,omitempty"`
-	FQName         []string       `json:"fq_name,omitempty"`
-	IDPerms        *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName    string         `json:"display_name,omitempty"`
-	Annotations    *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2         *PermType2     `json:"perms2,omitempty"`
-	SubnetIPPrefix *SubnetType    `json:"subnet_ip_prefix,omitempty"`
-
-	VirtualMachineInterfaceRefs []*SubnetVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
-}
-
-// SubnetVirtualMachineInterfaceRef references each other
-type SubnetVirtualMachineInterfaceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeSubnet makes Subnet
 func MakeSubnet() *Subnet {
@@ -41,7 +23,41 @@ func MakeSubnet() *Subnet {
 	}
 }
 
+// MakeSubnet makes Subnet
+func InterfaceToSubnet(i interface{}) *Subnet {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &Subnet{
+		//TODO(nati): Apply default
+		UUID:           schema.InterfaceToString(m["uuid"]),
+		ParentUUID:     schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:     schema.InterfaceToString(m["parent_type"]),
+		FQName:         schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:        InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:    schema.InterfaceToString(m["display_name"]),
+		Annotations:    InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:         InterfaceToPermType2(m["perms2"]),
+		SubnetIPPrefix: InterfaceToSubnetType(m["subnet_ip_prefix"]),
+	}
+}
+
 // MakeSubnetSlice() makes a slice of Subnet
 func MakeSubnetSlice() []*Subnet {
 	return []*Subnet{}
+}
+
+// InterfaceToSubnetSlice() makes a slice of Subnet
+func InterfaceToSubnetSlice(i interface{}) []*Subnet {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*Subnet{}
+	for _, item := range list {
+		result = append(result, InterfaceToSubnet(item))
+	}
+	return result
 }

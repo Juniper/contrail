@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTServiceConnectionModuleUpdateRequest for update request for REST.
-type RESTServiceConnectionModuleUpdateRequest struct {
-	Data map[string]interface{} `json:"service-connection-module"`
-}
-
 //RESTCreateServiceConnectionModule handle a Create REST service.
 func (service *ContrailService) RESTCreateServiceConnectionModule(c echo.Context) error {
-	requestData := &models.CreateServiceConnectionModuleRequest{
-		ServiceConnectionModule: models.MakeServiceConnectionModule(),
-	}
+	requestData := &models.CreateServiceConnectionModuleRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetServiceConnectionModule(c echo.Context) e
 func (service *ContrailService) GetServiceConnectionModule(ctx context.Context, request *models.GetServiceConnectionModuleRequest) (response *models.GetServiceConnectionModuleResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListServiceConnectionModuleRequest{

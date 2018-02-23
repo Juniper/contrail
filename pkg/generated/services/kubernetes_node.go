@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTKubernetesNodeUpdateRequest for update request for REST.
-type RESTKubernetesNodeUpdateRequest struct {
-	Data map[string]interface{} `json:"kubernetes-node"`
-}
-
 //RESTCreateKubernetesNode handle a Create REST service.
 func (service *ContrailService) RESTCreateKubernetesNode(c echo.Context) error {
-	requestData := &models.CreateKubernetesNodeRequest{
-		KubernetesNode: models.MakeKubernetesNode(),
-	}
+	requestData := &models.CreateKubernetesNodeRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetKubernetesNode(c echo.Context) error {
 func (service *ContrailService) GetKubernetesNode(ctx context.Context, request *models.GetKubernetesNodeRequest) (response *models.GetKubernetesNodeResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListKubernetesNodeRequest{

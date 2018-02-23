@@ -1,17 +1,8 @@
 package models
 
-// IsidType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type IsidType int
-
-// MakeIsidType makes IsidType
-func MakeIsidType() IsidType {
-	var data IsidType
-	return data
-}
-
-// MakeIsidTypeSlice() makes a slice of IsidType
-func MakeIsidTypeSlice() []IsidType {
-	return []IsidType{}
-}
+//To skip import error.
+var _ = schema.Version

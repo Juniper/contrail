@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -81,43 +82,43 @@ func CreateNode(
 		"model": model,
 		"query": insertNodeQuery,
 	}).Debug("create query")
-	_, err = stmt.ExecContext(ctx, string(model.UUID),
-		string(model.Username),
-		string(model.Type),
-		string(model.SSHKey),
-		string(model.PrivatePowerManagementUsername),
-		string(model.PrivatePowerManagementPassword),
-		string(model.PrivatePowerManagementIP),
-		string(model.PrivateMachineState),
-		string(model.PrivateMachineProperties),
-		common.MustJSON(model.Perms2.Share),
-		int(model.Perms2.OwnerAccess),
-		string(model.Perms2.Owner),
-		int(model.Perms2.GlobalAccess),
-		string(model.Password),
-		string(model.ParentUUID),
-		string(model.ParentType),
-		string(model.MacAddress),
-		string(model.IPAddress),
-		bool(model.IDPerms.UserVisible),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OtherAccess),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Group),
-		string(model.IDPerms.LastModified),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Creator),
-		string(model.IDPerms.Created),
-		string(model.Hostname),
-		string(model.GCPMachineType),
-		string(model.GCPImage),
-		common.MustJSON(model.FQName),
-		string(model.DisplayName),
-		string(model.AwsInstanceType),
-		string(model.AwsAmi),
-		common.MustJSON(model.Annotations.KeyValuePair))
+	_, err = stmt.ExecContext(ctx, string(model.GetUUID()),
+		string(model.GetUsername()),
+		string(model.GetType()),
+		string(model.GetSSHKey()),
+		string(model.GetPrivatePowerManagementUsername()),
+		string(model.GetPrivatePowerManagementPassword()),
+		string(model.GetPrivatePowerManagementIP()),
+		string(model.GetPrivateMachineState()),
+		string(model.GetPrivateMachineProperties()),
+		common.MustJSON(model.GetPerms2().GetShare()),
+		int(model.GetPerms2().GetOwnerAccess()),
+		string(model.GetPerms2().GetOwner()),
+		int(model.GetPerms2().GetGlobalAccess()),
+		string(model.GetPassword()),
+		string(model.GetParentUUID()),
+		string(model.GetParentType()),
+		string(model.GetMacAddress()),
+		string(model.GetIPAddress()),
+		bool(model.GetIDPerms().GetUserVisible()),
+		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
+		string(model.GetIDPerms().GetPermissions().GetOwner()),
+		int(model.GetIDPerms().GetPermissions().GetOtherAccess()),
+		int(model.GetIDPerms().GetPermissions().GetGroupAccess()),
+		string(model.GetIDPerms().GetPermissions().GetGroup()),
+		string(model.GetIDPerms().GetLastModified()),
+		bool(model.GetIDPerms().GetEnable()),
+		string(model.GetIDPerms().GetDescription()),
+		string(model.GetIDPerms().GetCreator()),
+		string(model.GetIDPerms().GetCreated()),
+		string(model.GetHostname()),
+		string(model.GetGCPMachineType()),
+		string(model.GetGCPImage()),
+		common.MustJSON(model.GetFQName()),
+		string(model.GetDisplayName()),
+		string(model.GetAwsInstanceType()),
+		string(model.GetAwsAmi()),
+		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -131,7 +132,7 @@ func CreateNode(
 	if err != nil {
 		return err
 	}
-	err = common.CreateSharing(tx, "node", model.UUID, model.Perms2.Share)
+	err = common.CreateSharing(tx, "node", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -146,73 +147,55 @@ func scanNode(values map[string]interface{}) (*models.Node, error) {
 
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
+		m.UUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["username"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Username = castedValue
+		m.Username = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["type"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Type = castedValue
+		m.Type = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["ssh_key"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.SSHKey = castedValue
+		m.SSHKey = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["private_power_management_username"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PrivatePowerManagementUsername = castedValue
+		m.PrivatePowerManagementUsername = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["private_power_management_password"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PrivatePowerManagementPassword = castedValue
+		m.PrivatePowerManagementPassword = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["private_power_management_ip"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PrivatePowerManagementIP = castedValue
+		m.PrivatePowerManagementIP = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["private_machine_state"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PrivateMachineState = castedValue
+		m.PrivateMachineState = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["private_machine_properties"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PrivateMachineProperties = castedValue
+		m.PrivateMachineProperties = schema.InterfaceToString(value)
 
 	}
 
@@ -224,177 +207,133 @@ func scanNode(values map[string]interface{}) (*models.Node, error) {
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.Perms2.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
+		m.Perms2.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.Perms2.GlobalAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["password"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Password = castedValue
+		m.Password = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentUUID = castedValue
+		m.ParentUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentType = castedValue
+		m.ParentType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["mac_address"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.MacAddress = castedValue
+		m.MacAddress = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["ip_address"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IPAddress = castedValue
+		m.IPAddress = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.UserVisible = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
+		m.IDPerms.Permissions.Group = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.LastModified = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
+		m.IDPerms.Enable = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
+		m.IDPerms.Description = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.IDPerms.Creator = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
+		m.IDPerms.Created = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["hostname"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Hostname = castedValue
+		m.Hostname = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["gcp_machine_type"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.GCPMachineType = castedValue
+		m.GCPMachineType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["gcp_image"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.GCPImage = castedValue
+		m.GCPImage = schema.InterfaceToString(value)
 
 	}
 
@@ -406,25 +345,19 @@ func scanNode(values map[string]interface{}) (*models.Node, error) {
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		m.DisplayName = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["aws_instance_type"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.AwsInstanceType = castedValue
+		m.AwsInstanceType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["aws_ami"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.AwsAmi = castedValue
+		m.AwsAmi = schema.InterfaceToString(value)
 
 	}
 
@@ -448,14 +381,14 @@ func ListNode(ctx context.Context, tx *sql.Tx, request *models.ListNodeRequest) 
 	qb.Fields = NodeFields
 	qb.RefFields = NodeRefFields
 	qb.BackRefFields = NodeBackRefFields
-	result := models.MakeNodeSlice()
+	result := []*models.Node{}
 
 	if spec.ParentFQName != nil {
 		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
-		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+		spec.Filters = common.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 
 	query := qb.BuildQuery()

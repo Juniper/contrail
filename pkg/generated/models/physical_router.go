@@ -1,62 +1,11 @@
 package models
 
-// PhysicalRouter
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// PhysicalRouter
-//proteus:generate
-type PhysicalRouter struct {
-	UUID                            string              `json:"uuid,omitempty"`
-	ParentUUID                      string              `json:"parent_uuid,omitempty"`
-	ParentType                      string              `json:"parent_type,omitempty"`
-	FQName                          []string            `json:"fq_name,omitempty"`
-	IDPerms                         *IdPermsType        `json:"id_perms,omitempty"`
-	DisplayName                     string              `json:"display_name,omitempty"`
-	Annotations                     *KeyValuePairs      `json:"annotations,omitempty"`
-	Perms2                          *PermType2          `json:"perms2,omitempty"`
-	PhysicalRouterManagementIP      string              `json:"physical_router_management_ip,omitempty"`
-	PhysicalRouterSNMPCredentials   *SNMPCredentials    `json:"physical_router_snmp_credentials,omitempty"`
-	PhysicalRouterRole              PhysicalRouterRole  `json:"physical_router_role,omitempty"`
-	PhysicalRouterUserCredentials   *UserCredentials    `json:"physical_router_user_credentials,omitempty"`
-	PhysicalRouterVendorName        string              `json:"physical_router_vendor_name,omitempty"`
-	PhysicalRouterVNCManaged        bool                `json:"physical_router_vnc_managed"`
-	PhysicalRouterProductName       string              `json:"physical_router_product_name,omitempty"`
-	PhysicalRouterLLDP              bool                `json:"physical_router_lldp"`
-	PhysicalRouterLoopbackIP        string              `json:"physical_router_loopback_ip,omitempty"`
-	PhysicalRouterImageURI          string              `json:"physical_router_image_uri,omitempty"`
-	TelemetryInfo                   *TelemetryStateInfo `json:"telemetry_info,omitempty"`
-	PhysicalRouterSNMP              bool                `json:"physical_router_snmp"`
-	PhysicalRouterDataplaneIP       string              `json:"physical_router_dataplane_ip,omitempty"`
-	PhysicalRouterJunosServicePorts *JunosServicePorts  `json:"physical_router_junos_service_ports,omitempty"`
-
-	VirtualNetworkRefs []*PhysicalRouterVirtualNetworkRef `json:"virtual_network_refs,omitempty"`
-	BGPRouterRefs      []*PhysicalRouterBGPRouterRef      `json:"bgp_router_refs,omitempty"`
-	VirtualRouterRefs  []*PhysicalRouterVirtualRouterRef  `json:"virtual_router_refs,omitempty"`
-
-	LogicalInterfaces []*LogicalInterface `json:"logical_interfaces,omitempty"`
-
-	PhysicalInterfaces []*PhysicalInterface `json:"physical_interfaces,omitempty"`
-}
-
-// PhysicalRouterVirtualRouterRef references each other
-type PhysicalRouterVirtualRouterRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// PhysicalRouterVirtualNetworkRef references each other
-type PhysicalRouterVirtualNetworkRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// PhysicalRouterBGPRouterRef references each other
-type PhysicalRouterBGPRouterRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakePhysicalRouter makes PhysicalRouter
 func MakePhysicalRouter() *PhysicalRouter {
@@ -72,7 +21,7 @@ func MakePhysicalRouter() *PhysicalRouter {
 		Perms2:      MakePermType2(),
 		PhysicalRouterManagementIP:      "",
 		PhysicalRouterSNMPCredentials:   MakeSNMPCredentials(),
-		PhysicalRouterRole:              MakePhysicalRouterRole(),
+		PhysicalRouterRole:              "",
 		PhysicalRouterUserCredentials:   MakeUserCredentials(),
 		PhysicalRouterVendorName:        "",
 		PhysicalRouterVNCManaged:        false,
@@ -87,7 +36,54 @@ func MakePhysicalRouter() *PhysicalRouter {
 	}
 }
 
+// MakePhysicalRouter makes PhysicalRouter
+func InterfaceToPhysicalRouter(i interface{}) *PhysicalRouter {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &PhysicalRouter{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		PhysicalRouterManagementIP:      schema.InterfaceToString(m["physical_router_management_ip"]),
+		PhysicalRouterSNMPCredentials:   InterfaceToSNMPCredentials(m["physical_router_snmp_credentials"]),
+		PhysicalRouterRole:              schema.InterfaceToString(m["physical_router_role"]),
+		PhysicalRouterUserCredentials:   InterfaceToUserCredentials(m["physical_router_user_credentials"]),
+		PhysicalRouterVendorName:        schema.InterfaceToString(m["physical_router_vendor_name"]),
+		PhysicalRouterVNCManaged:        schema.InterfaceToBool(m["physical_router_vnc_managed"]),
+		PhysicalRouterProductName:       schema.InterfaceToString(m["physical_router_product_name"]),
+		PhysicalRouterLLDP:              schema.InterfaceToBool(m["physical_router_lldp"]),
+		PhysicalRouterLoopbackIP:        schema.InterfaceToString(m["physical_router_loopback_ip"]),
+		PhysicalRouterImageURI:          schema.InterfaceToString(m["physical_router_image_uri"]),
+		TelemetryInfo:                   InterfaceToTelemetryStateInfo(m["telemetry_info"]),
+		PhysicalRouterSNMP:              schema.InterfaceToBool(m["physical_router_snmp"]),
+		PhysicalRouterDataplaneIP:       schema.InterfaceToString(m["physical_router_dataplane_ip"]),
+		PhysicalRouterJunosServicePorts: InterfaceToJunosServicePorts(m["physical_router_junos_service_ports"]),
+	}
+}
+
 // MakePhysicalRouterSlice() makes a slice of PhysicalRouter
 func MakePhysicalRouterSlice() []*PhysicalRouter {
 	return []*PhysicalRouter{}
+}
+
+// InterfaceToPhysicalRouterSlice() makes a slice of PhysicalRouter
+func InterfaceToPhysicalRouterSlice(i interface{}) []*PhysicalRouter {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*PhysicalRouter{}
+	for _, item := range list {
+		result = append(result, InterfaceToPhysicalRouter(item))
+	}
+	return result
 }

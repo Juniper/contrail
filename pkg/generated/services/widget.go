@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTWidgetUpdateRequest for update request for REST.
-type RESTWidgetUpdateRequest struct {
-	Data map[string]interface{} `json:"widget"`
-}
-
 //RESTCreateWidget handle a Create REST service.
 func (service *ContrailService) RESTCreateWidget(c echo.Context) error {
-	requestData := &models.CreateWidgetRequest{
-		Widget: models.MakeWidget(),
-	}
+	requestData := &models.CreateWidgetRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetWidget(c echo.Context) error {
 func (service *ContrailService) GetWidget(ctx context.Context, request *models.GetWidgetRequest) (response *models.GetWidgetResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListWidgetRequest{

@@ -1,27 +1,11 @@
 package models
 
-// ContrailCluster
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// ContrailCluster
-//proteus:generate
-type ContrailCluster struct {
-	UUID                               string         `json:"uuid,omitempty"`
-	ParentUUID                         string         `json:"parent_uuid,omitempty"`
-	ParentType                         string         `json:"parent_type,omitempty"`
-	FQName                             []string       `json:"fq_name,omitempty"`
-	IDPerms                            *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName                        string         `json:"display_name,omitempty"`
-	Annotations                        *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2                             *PermType2     `json:"perms2,omitempty"`
-	ConfigAuditTTL                     string         `json:"config_audit_ttl,omitempty"`
-	ContrailWebui                      string         `json:"contrail_webui,omitempty"`
-	DataTTL                            string         `json:"data_ttl,omitempty"`
-	DefaultGateway                     string         `json:"default_gateway,omitempty"`
-	DefaultVrouterBondInterface        string         `json:"default_vrouter_bond_interface,omitempty"`
-	DefaultVrouterBondInterfaceMembers string         `json:"default_vrouter_bond_interface_members,omitempty"`
-	FlowTTL                            string         `json:"flow_ttl,omitempty"`
-	StatisticsTTL                      string         `json:"statistics_ttl,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeContrailCluster makes ContrailCluster
 func MakeContrailCluster() *ContrailCluster {
@@ -46,7 +30,48 @@ func MakeContrailCluster() *ContrailCluster {
 	}
 }
 
+// MakeContrailCluster makes ContrailCluster
+func InterfaceToContrailCluster(i interface{}) *ContrailCluster {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &ContrailCluster{
+		//TODO(nati): Apply default
+		UUID:                               schema.InterfaceToString(m["uuid"]),
+		ParentUUID:                         schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:                         schema.InterfaceToString(m["parent_type"]),
+		FQName:                             schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:                            InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:                        schema.InterfaceToString(m["display_name"]),
+		Annotations:                        InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:                             InterfaceToPermType2(m["perms2"]),
+		ConfigAuditTTL:                     schema.InterfaceToString(m["config_audit_ttl"]),
+		ContrailWebui:                      schema.InterfaceToString(m["contrail_webui"]),
+		DataTTL:                            schema.InterfaceToString(m["data_ttl"]),
+		DefaultGateway:                     schema.InterfaceToString(m["default_gateway"]),
+		DefaultVrouterBondInterface:        schema.InterfaceToString(m["default_vrouter_bond_interface"]),
+		DefaultVrouterBondInterfaceMembers: schema.InterfaceToString(m["default_vrouter_bond_interface_members"]),
+		FlowTTL:       schema.InterfaceToString(m["flow_ttl"]),
+		StatisticsTTL: schema.InterfaceToString(m["statistics_ttl"]),
+	}
+}
+
 // MakeContrailClusterSlice() makes a slice of ContrailCluster
 func MakeContrailClusterSlice() []*ContrailCluster {
 	return []*ContrailCluster{}
+}
+
+// InterfaceToContrailClusterSlice() makes a slice of ContrailCluster
+func InterfaceToContrailClusterSlice(i interface{}) []*ContrailCluster {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*ContrailCluster{}
+	for _, item := range list {
+		result = append(result, InterfaceToContrailCluster(item))
+	}
+	return result
 }

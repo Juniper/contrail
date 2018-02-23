@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTLoadbalancerPoolUpdateRequest for update request for REST.
-type RESTLoadbalancerPoolUpdateRequest struct {
-	Data map[string]interface{} `json:"loadbalancer-pool"`
-}
-
 //RESTCreateLoadbalancerPool handle a Create REST service.
 func (service *ContrailService) RESTCreateLoadbalancerPool(c echo.Context) error {
-	requestData := &models.CreateLoadbalancerPoolRequest{
-		LoadbalancerPool: models.MakeLoadbalancerPool(),
-	}
+	requestData := &models.CreateLoadbalancerPoolRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetLoadbalancerPool(c echo.Context) error {
 func (service *ContrailService) GetLoadbalancerPool(ctx context.Context, request *models.GetLoadbalancerPoolRequest) (response *models.GetLoadbalancerPoolResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListLoadbalancerPoolRequest{

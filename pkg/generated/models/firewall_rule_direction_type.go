@@ -1,17 +1,8 @@
 package models
 
-// FirewallRuleDirectionType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type FirewallRuleDirectionType string
-
-// MakeFirewallRuleDirectionType makes FirewallRuleDirectionType
-func MakeFirewallRuleDirectionType() FirewallRuleDirectionType {
-	var data FirewallRuleDirectionType
-	return data
-}
-
-// MakeFirewallRuleDirectionTypeSlice() makes a slice of FirewallRuleDirectionType
-func MakeFirewallRuleDirectionTypeSlice() []FirewallRuleDirectionType {
-	return []FirewallRuleDirectionType{}
-}
+//To skip import error.
+var _ = schema.Version

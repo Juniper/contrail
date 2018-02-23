@@ -1,38 +1,11 @@
 package models
 
-// ApplicationPolicySet
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// ApplicationPolicySet
-//proteus:generate
-type ApplicationPolicySet struct {
-	UUID            string         `json:"uuid,omitempty"`
-	ParentUUID      string         `json:"parent_uuid,omitempty"`
-	ParentType      string         `json:"parent_type,omitempty"`
-	FQName          []string       `json:"fq_name,omitempty"`
-	IDPerms         *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName     string         `json:"display_name,omitempty"`
-	Annotations     *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2          *PermType2     `json:"perms2,omitempty"`
-	AllApplications bool           `json:"all_applications"`
-
-	FirewallPolicyRefs      []*ApplicationPolicySetFirewallPolicyRef      `json:"firewall_policy_refs,omitempty"`
-	GlobalVrouterConfigRefs []*ApplicationPolicySetGlobalVrouterConfigRef `json:"global_vrouter_config_refs,omitempty"`
-}
-
-// ApplicationPolicySetGlobalVrouterConfigRef references each other
-type ApplicationPolicySetGlobalVrouterConfigRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// ApplicationPolicySetFirewallPolicyRef references each other
-type ApplicationPolicySetFirewallPolicyRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-	Attr *FirewallSequence
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeApplicationPolicySet makes ApplicationPolicySet
 func MakeApplicationPolicySet() *ApplicationPolicySet {
@@ -50,7 +23,41 @@ func MakeApplicationPolicySet() *ApplicationPolicySet {
 	}
 }
 
+// MakeApplicationPolicySet makes ApplicationPolicySet
+func InterfaceToApplicationPolicySet(i interface{}) *ApplicationPolicySet {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &ApplicationPolicySet{
+		//TODO(nati): Apply default
+		UUID:            schema.InterfaceToString(m["uuid"]),
+		ParentUUID:      schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:      schema.InterfaceToString(m["parent_type"]),
+		FQName:          schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:         InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:     schema.InterfaceToString(m["display_name"]),
+		Annotations:     InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:          InterfaceToPermType2(m["perms2"]),
+		AllApplications: schema.InterfaceToBool(m["all_applications"]),
+	}
+}
+
 // MakeApplicationPolicySetSlice() makes a slice of ApplicationPolicySet
 func MakeApplicationPolicySetSlice() []*ApplicationPolicySet {
 	return []*ApplicationPolicySet{}
+}
+
+// InterfaceToApplicationPolicySetSlice() makes a slice of ApplicationPolicySet
+func InterfaceToApplicationPolicySetSlice(i interface{}) []*ApplicationPolicySet {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*ApplicationPolicySet{}
+	for _, item := range list {
+		result = append(result, InterfaceToApplicationPolicySet(item))
+	}
+	return result
 }

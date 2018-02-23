@@ -1,17 +1,8 @@
 package models
 
-// IpamDnsMethodType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type IpamDnsMethodType string
-
-// MakeIpamDnsMethodType makes IpamDnsMethodType
-func MakeIpamDnsMethodType() IpamDnsMethodType {
-	var data IpamDnsMethodType
-	return data
-}
-
-// MakeIpamDnsMethodTypeSlice() makes a slice of IpamDnsMethodType
-func MakeIpamDnsMethodTypeSlice() []IpamDnsMethodType {
-	return []IpamDnsMethodType{}
-}
+//To skip import error.
+var _ = schema.Version

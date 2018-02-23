@@ -1,16 +1,11 @@
 package models
 
-// AddressType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// AddressType
-//proteus:generate
-type AddressType struct {
-	SecurityGroup  string        `json:"security_group,omitempty"`
-	Subnet         *SubnetType   `json:"subnet,omitempty"`
-	NetworkPolicy  string        `json:"network_policy,omitempty"`
-	SubnetList     []*SubnetType `json:"subnet_list,omitempty"`
-	VirtualNetwork string        `json:"virtual_network,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeAddressType makes AddressType
 func MakeAddressType() *AddressType {
@@ -26,7 +21,39 @@ func MakeAddressType() *AddressType {
 	}
 }
 
+// MakeAddressType makes AddressType
+func InterfaceToAddressType(i interface{}) *AddressType {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &AddressType{
+		//TODO(nati): Apply default
+		SecurityGroup: schema.InterfaceToString(m["security_group"]),
+		Subnet:        InterfaceToSubnetType(m["subnet"]),
+		NetworkPolicy: schema.InterfaceToString(m["network_policy"]),
+
+		SubnetList: InterfaceToSubnetTypeSlice(m["subnet_list"]),
+
+		VirtualNetwork: schema.InterfaceToString(m["virtual_network"]),
+	}
+}
+
 // MakeAddressTypeSlice() makes a slice of AddressType
 func MakeAddressTypeSlice() []*AddressType {
 	return []*AddressType{}
+}
+
+// InterfaceToAddressTypeSlice() makes a slice of AddressType
+func InterfaceToAddressTypeSlice(i interface{}) []*AddressType {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*AddressType{}
+	for _, item := range list {
+		result = append(result, InterfaceToAddressType(item))
+	}
+	return result
 }

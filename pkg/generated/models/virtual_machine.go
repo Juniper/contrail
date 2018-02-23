@@ -1,30 +1,11 @@
 package models
 
-// VirtualMachine
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// VirtualMachine
-//proteus:generate
-type VirtualMachine struct {
-	UUID        string         `json:"uuid,omitempty"`
-	ParentUUID  string         `json:"parent_uuid,omitempty"`
-	ParentType  string         `json:"parent_type,omitempty"`
-	FQName      []string       `json:"fq_name,omitempty"`
-	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName string         `json:"display_name,omitempty"`
-	Annotations *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2      *PermType2     `json:"perms2,omitempty"`
-
-	ServiceInstanceRefs []*VirtualMachineServiceInstanceRef `json:"service_instance_refs,omitempty"`
-
-	VirtualMachineInterfaces []*VirtualMachineInterface `json:"virtual_machine_interfaces,omitempty"`
-}
-
-// VirtualMachineServiceInstanceRef references each other
-type VirtualMachineServiceInstanceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeVirtualMachine makes VirtualMachine
 func MakeVirtualMachine() *VirtualMachine {
@@ -41,7 +22,40 @@ func MakeVirtualMachine() *VirtualMachine {
 	}
 }
 
+// MakeVirtualMachine makes VirtualMachine
+func InterfaceToVirtualMachine(i interface{}) *VirtualMachine {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &VirtualMachine{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+	}
+}
+
 // MakeVirtualMachineSlice() makes a slice of VirtualMachine
 func MakeVirtualMachineSlice() []*VirtualMachine {
 	return []*VirtualMachine{}
+}
+
+// InterfaceToVirtualMachineSlice() makes a slice of VirtualMachine
+func InterfaceToVirtualMachineSlice(i interface{}) []*VirtualMachine {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*VirtualMachine{}
+	for _, item := range list {
+		result = append(result, InterfaceToVirtualMachine(item))
+	}
+	return result
 }

@@ -1,28 +1,11 @@
 package models
 
-// NetworkDeviceConfig
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// NetworkDeviceConfig
-//proteus:generate
-type NetworkDeviceConfig struct {
-	UUID        string         `json:"uuid,omitempty"`
-	ParentUUID  string         `json:"parent_uuid,omitempty"`
-	ParentType  string         `json:"parent_type,omitempty"`
-	FQName      []string       `json:"fq_name,omitempty"`
-	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName string         `json:"display_name,omitempty"`
-	Annotations *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2      *PermType2     `json:"perms2,omitempty"`
-
-	PhysicalRouterRefs []*NetworkDeviceConfigPhysicalRouterRef `json:"physical_router_refs,omitempty"`
-}
-
-// NetworkDeviceConfigPhysicalRouterRef references each other
-type NetworkDeviceConfigPhysicalRouterRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeNetworkDeviceConfig makes NetworkDeviceConfig
 func MakeNetworkDeviceConfig() *NetworkDeviceConfig {
@@ -39,7 +22,40 @@ func MakeNetworkDeviceConfig() *NetworkDeviceConfig {
 	}
 }
 
+// MakeNetworkDeviceConfig makes NetworkDeviceConfig
+func InterfaceToNetworkDeviceConfig(i interface{}) *NetworkDeviceConfig {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &NetworkDeviceConfig{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+	}
+}
+
 // MakeNetworkDeviceConfigSlice() makes a slice of NetworkDeviceConfig
 func MakeNetworkDeviceConfigSlice() []*NetworkDeviceConfig {
 	return []*NetworkDeviceConfig{}
+}
+
+// InterfaceToNetworkDeviceConfigSlice() makes a slice of NetworkDeviceConfig
+func InterfaceToNetworkDeviceConfigSlice(i interface{}) []*NetworkDeviceConfig {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*NetworkDeviceConfig{}
+	for _, item := range list {
+		result = append(result, InterfaceToNetworkDeviceConfig(item))
+	}
+	return result
 }

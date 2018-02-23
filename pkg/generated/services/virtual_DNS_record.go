@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTVirtualDNSRecordUpdateRequest for update request for REST.
-type RESTVirtualDNSRecordUpdateRequest struct {
-	Data map[string]interface{} `json:"virtual-DNS-record"`
-}
-
 //RESTCreateVirtualDNSRecord handle a Create REST service.
 func (service *ContrailService) RESTCreateVirtualDNSRecord(c echo.Context) error {
-	requestData := &models.CreateVirtualDNSRecordRequest{
-		VirtualDNSRecord: models.MakeVirtualDNSRecord(),
-	}
+	requestData := &models.CreateVirtualDNSRecordRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetVirtualDNSRecord(c echo.Context) error {
 func (service *ContrailService) GetVirtualDNSRecord(ctx context.Context, request *models.GetVirtualDNSRecordRequest) (response *models.GetVirtualDNSRecordResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListVirtualDNSRecordRequest{

@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTLocationUpdateRequest for update request for REST.
-type RESTLocationUpdateRequest struct {
-	Data map[string]interface{} `json:"location"`
-}
-
 //RESTCreateLocation handle a Create REST service.
 func (service *ContrailService) RESTCreateLocation(c echo.Context) error {
-	requestData := &models.CreateLocationRequest{
-		Location: models.MakeLocation(),
-	}
+	requestData := &models.CreateLocationRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetLocation(c echo.Context) error {
 func (service *ContrailService) GetLocation(ctx context.Context, request *models.GetLocationRequest) (response *models.GetLocationResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListLocationRequest{

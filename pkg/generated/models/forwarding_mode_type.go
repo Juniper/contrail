@@ -1,17 +1,8 @@
 package models
 
-// ForwardingModeType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type ForwardingModeType string
-
-// MakeForwardingModeType makes ForwardingModeType
-func MakeForwardingModeType() ForwardingModeType {
-	var data ForwardingModeType
-	return data
-}
-
-// MakeForwardingModeTypeSlice() makes a slice of ForwardingModeType
-func MakeForwardingModeTypeSlice() []ForwardingModeType {
-	return []ForwardingModeType{}
-}
+//To skip import error.
+var _ = schema.Version

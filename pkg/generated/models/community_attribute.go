@@ -1,17 +1,8 @@
 package models
 
-// CommunityAttribute
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type CommunityAttribute []string
-
-// MakeCommunityAttribute makes CommunityAttribute
-func MakeCommunityAttribute() CommunityAttribute {
-	var data CommunityAttribute
-	return data
-}
-
-// MakeCommunityAttributeSlice() makes a slice of CommunityAttribute
-func MakeCommunityAttributeSlice() []CommunityAttribute {
-	return []CommunityAttribute{}
-}
+//To skip import error.
+var _ = schema.Version

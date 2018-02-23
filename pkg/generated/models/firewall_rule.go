@@ -1,59 +1,11 @@
 package models
 
-// FirewallRule
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// FirewallRule
-//proteus:generate
-type FirewallRule struct {
-	UUID          string                           `json:"uuid,omitempty"`
-	ParentUUID    string                           `json:"parent_uuid,omitempty"`
-	ParentType    string                           `json:"parent_type,omitempty"`
-	FQName        []string                         `json:"fq_name,omitempty"`
-	IDPerms       *IdPermsType                     `json:"id_perms,omitempty"`
-	DisplayName   string                           `json:"display_name,omitempty"`
-	Annotations   *KeyValuePairs                   `json:"annotations,omitempty"`
-	Perms2        *PermType2                       `json:"perms2,omitempty"`
-	Endpoint1     *FirewallRuleEndpointType        `json:"endpoint_1,omitempty"`
-	Endpoint2     *FirewallRuleEndpointType        `json:"endpoint_2,omitempty"`
-	ActionList    *ActionListType                  `json:"action_list,omitempty"`
-	Service       *FirewallServiceType             `json:"service,omitempty"`
-	Direction     FirewallRuleDirectionType        `json:"direction,omitempty"`
-	MatchTagTypes *FirewallRuleMatchTagsTypeIdList `json:"match_tag_types,omitempty"`
-	MatchTags     *FirewallRuleMatchTagsType       `json:"match_tags,omitempty"`
-
-	AddressGroupRefs          []*FirewallRuleAddressGroupRef          `json:"address_group_refs,omitempty"`
-	SecurityLoggingObjectRefs []*FirewallRuleSecurityLoggingObjectRef `json:"security_logging_object_refs,omitempty"`
-	VirtualNetworkRefs        []*FirewallRuleVirtualNetworkRef        `json:"virtual_network_refs,omitempty"`
-	ServiceGroupRefs          []*FirewallRuleServiceGroupRef          `json:"service_group_refs,omitempty"`
-}
-
-// FirewallRuleServiceGroupRef references each other
-type FirewallRuleServiceGroupRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// FirewallRuleAddressGroupRef references each other
-type FirewallRuleAddressGroupRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// FirewallRuleSecurityLoggingObjectRef references each other
-type FirewallRuleSecurityLoggingObjectRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// FirewallRuleVirtualNetworkRef references each other
-type FirewallRuleVirtualNetworkRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeFirewallRule makes FirewallRule
 func MakeFirewallRule() *FirewallRule {
@@ -71,13 +23,53 @@ func MakeFirewallRule() *FirewallRule {
 		Endpoint2:     MakeFirewallRuleEndpointType(),
 		ActionList:    MakeActionListType(),
 		Service:       MakeFirewallServiceType(),
-		Direction:     MakeFirewallRuleDirectionType(),
+		Direction:     "",
 		MatchTagTypes: MakeFirewallRuleMatchTagsTypeIdList(),
 		MatchTags:     MakeFirewallRuleMatchTagsType(),
+	}
+}
+
+// MakeFirewallRule makes FirewallRule
+func InterfaceToFirewallRule(i interface{}) *FirewallRule {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &FirewallRule{
+		//TODO(nati): Apply default
+		UUID:          schema.InterfaceToString(m["uuid"]),
+		ParentUUID:    schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:    schema.InterfaceToString(m["parent_type"]),
+		FQName:        schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:       InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:   schema.InterfaceToString(m["display_name"]),
+		Annotations:   InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:        InterfaceToPermType2(m["perms2"]),
+		Endpoint1:     InterfaceToFirewallRuleEndpointType(m["endpoint_1"]),
+		Endpoint2:     InterfaceToFirewallRuleEndpointType(m["endpoint_2"]),
+		ActionList:    InterfaceToActionListType(m["action_list"]),
+		Service:       InterfaceToFirewallServiceType(m["service"]),
+		Direction:     schema.InterfaceToString(m["direction"]),
+		MatchTagTypes: InterfaceToFirewallRuleMatchTagsTypeIdList(m["match_tag_types"]),
+		MatchTags:     InterfaceToFirewallRuleMatchTagsType(m["match_tags"]),
 	}
 }
 
 // MakeFirewallRuleSlice() makes a slice of FirewallRule
 func MakeFirewallRuleSlice() []*FirewallRule {
 	return []*FirewallRule{}
+}
+
+// InterfaceToFirewallRuleSlice() makes a slice of FirewallRule
+func InterfaceToFirewallRuleSlice(i interface{}) []*FirewallRule {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*FirewallRule{}
+	for _, item := range list {
+		result = append(result, InterfaceToFirewallRule(item))
+	}
+	return result
 }

@@ -1,21 +1,11 @@
 package models
 
-// Keypair
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// Keypair
-//proteus:generate
-type Keypair struct {
-	UUID        string         `json:"uuid,omitempty"`
-	ParentUUID  string         `json:"parent_uuid,omitempty"`
-	ParentType  string         `json:"parent_type,omitempty"`
-	FQName      []string       `json:"fq_name,omitempty"`
-	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName string         `json:"display_name,omitempty"`
-	Annotations *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2      *PermType2     `json:"perms2,omitempty"`
-	Name        string         `json:"name,omitempty"`
-	PublicKey   string         `json:"public_key,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeKeypair makes Keypair
 func MakeKeypair() *Keypair {
@@ -34,7 +24,42 @@ func MakeKeypair() *Keypair {
 	}
 }
 
+// MakeKeypair makes Keypair
+func InterfaceToKeypair(i interface{}) *Keypair {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &Keypair{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		Name:        schema.InterfaceToString(m["name"]),
+		PublicKey:   schema.InterfaceToString(m["public_key"]),
+	}
+}
+
 // MakeKeypairSlice() makes a slice of Keypair
 func MakeKeypairSlice() []*Keypair {
 	return []*Keypair{}
+}
+
+// InterfaceToKeypairSlice() makes a slice of Keypair
+func InterfaceToKeypairSlice(i interface{}) []*Keypair {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*Keypair{}
+	for _, item := range list {
+		result = append(result, InterfaceToKeypair(item))
+	}
+	return result
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -83,45 +84,45 @@ func CreateOsImage(
 		"model": model,
 		"query": insertOsImageQuery,
 	}).Debug("create query")
-	_, err = stmt.ExecContext(ctx, string(model.Visibility),
-		string(model.UUID),
-		string(model.UpdatedAt),
-		string(model.Tags),
-		string(model.Status),
-		int(model.Size_),
-		bool(model.Protected),
-		string(model.Property),
-		common.MustJSON(model.Perms2.Share),
-		int(model.Perms2.OwnerAccess),
-		string(model.Perms2.Owner),
-		int(model.Perms2.GlobalAccess),
-		string(model.ParentUUID),
-		string(model.ParentType),
-		string(model.Owner),
-		string(model.Name),
-		int(model.MinRAM),
-		int(model.MinDisk),
-		string(model.Location),
-		bool(model.IDPerms.UserVisible),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OtherAccess),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Group),
-		string(model.IDPerms.LastModified),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Creator),
-		string(model.IDPerms.Created),
-		string(model.ID),
-		common.MustJSON(model.FQName),
-		string(model.File),
-		string(model.DisplayName),
-		string(model.DiskFormat),
-		string(model.CreatedAt),
-		string(model.ContainerFormat),
-		string(model.Checksum),
-		common.MustJSON(model.Annotations.KeyValuePair))
+	_, err = stmt.ExecContext(ctx, string(model.GetVisibility()),
+		string(model.GetUUID()),
+		string(model.GetUpdatedAt()),
+		string(model.GetTags()),
+		string(model.GetStatus()),
+		int(model.GetSize_()),
+		bool(model.GetProtected()),
+		string(model.GetProperty()),
+		common.MustJSON(model.GetPerms2().GetShare()),
+		int(model.GetPerms2().GetOwnerAccess()),
+		string(model.GetPerms2().GetOwner()),
+		int(model.GetPerms2().GetGlobalAccess()),
+		string(model.GetParentUUID()),
+		string(model.GetParentType()),
+		string(model.GetOwner()),
+		string(model.GetName()),
+		int(model.GetMinRAM()),
+		int(model.GetMinDisk()),
+		string(model.GetLocation()),
+		bool(model.GetIDPerms().GetUserVisible()),
+		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
+		string(model.GetIDPerms().GetPermissions().GetOwner()),
+		int(model.GetIDPerms().GetPermissions().GetOtherAccess()),
+		int(model.GetIDPerms().GetPermissions().GetGroupAccess()),
+		string(model.GetIDPerms().GetPermissions().GetGroup()),
+		string(model.GetIDPerms().GetLastModified()),
+		bool(model.GetIDPerms().GetEnable()),
+		string(model.GetIDPerms().GetDescription()),
+		string(model.GetIDPerms().GetCreator()),
+		string(model.GetIDPerms().GetCreated()),
+		string(model.GetID()),
+		common.MustJSON(model.GetFQName()),
+		string(model.GetFile()),
+		string(model.GetDisplayName()),
+		string(model.GetDiskFormat()),
+		string(model.GetCreatedAt()),
+		string(model.GetContainerFormat()),
+		string(model.GetChecksum()),
+		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -135,7 +136,7 @@ func CreateOsImage(
 	if err != nil {
 		return err
 	}
-	err = common.CreateSharing(tx, "os_image", model.UUID, model.Perms2.Share)
+	err = common.CreateSharing(tx, "os_image", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -150,65 +151,49 @@ func scanOsImage(values map[string]interface{}) (*models.OsImage, error) {
 
 	if value, ok := values["visibility"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Visibility = castedValue
+		m.Visibility = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
+		m.UUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["updated_at"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.UpdatedAt = castedValue
+		m.UpdatedAt = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["tags"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Tags = castedValue
+		m.Tags = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["status"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Status = castedValue
+		m.Status = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["size"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Size_ = castedValue
+		m.Size_ = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["protected"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.Protected = castedValue
+		m.Protected = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["property"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Property = castedValue
+		m.Property = schema.InterfaceToString(value)
 
 	}
 
@@ -220,177 +205,133 @@ func scanOsImage(values map[string]interface{}) (*models.OsImage, error) {
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.Perms2.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
+		m.Perms2.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.Perms2.GlobalAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentUUID = castedValue
+		m.ParentUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentType = castedValue
+		m.ParentType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["_owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Owner = castedValue
+		m.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Name = castedValue
+		m.Name = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["min_ram"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.MinRAM = castedValue
+		m.MinRAM = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["min_disk"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.MinDisk = castedValue
+		m.MinDisk = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["location"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Location = castedValue
+		m.Location = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.UserVisible = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
+		m.IDPerms.Permissions.Group = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.LastModified = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
+		m.IDPerms.Enable = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
+		m.IDPerms.Description = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.IDPerms.Creator = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
+		m.IDPerms.Created = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["id"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ID = castedValue
+		m.ID = schema.InterfaceToString(value)
 
 	}
 
@@ -402,49 +343,37 @@ func scanOsImage(values map[string]interface{}) (*models.OsImage, error) {
 
 	if value, ok := values["file"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.File = castedValue
+		m.File = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		m.DisplayName = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["disk_format"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DiskFormat = castedValue
+		m.DiskFormat = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created_at"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.CreatedAt = castedValue
+		m.CreatedAt = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["container_format"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ContainerFormat = castedValue
+		m.ContainerFormat = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["checksum"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Checksum = castedValue
+		m.Checksum = schema.InterfaceToString(value)
 
 	}
 
@@ -468,14 +397,14 @@ func ListOsImage(ctx context.Context, tx *sql.Tx, request *models.ListOsImageReq
 	qb.Fields = OsImageFields
 	qb.RefFields = OsImageRefFields
 	qb.BackRefFields = OsImageBackRefFields
-	result := models.MakeOsImageSlice()
+	result := []*models.OsImage{}
 
 	if spec.ParentFQName != nil {
 		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
-		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+		spec.Filters = common.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 
 	query := qb.BuildQuery()

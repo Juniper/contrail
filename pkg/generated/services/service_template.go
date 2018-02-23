@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTServiceTemplateUpdateRequest for update request for REST.
-type RESTServiceTemplateUpdateRequest struct {
-	Data map[string]interface{} `json:"service-template"`
-}
-
 //RESTCreateServiceTemplate handle a Create REST service.
 func (service *ContrailService) RESTCreateServiceTemplate(c echo.Context) error {
-	requestData := &models.CreateServiceTemplateRequest{
-		ServiceTemplate: models.MakeServiceTemplate(),
-	}
+	requestData := &models.CreateServiceTemplateRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetServiceTemplate(c echo.Context) error {
 func (service *ContrailService) GetServiceTemplate(ctx context.Context, request *models.GetServiceTemplateRequest) (response *models.GetServiceTemplateResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListServiceTemplateRequest{

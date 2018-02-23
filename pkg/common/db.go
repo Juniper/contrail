@@ -95,18 +95,18 @@ func (qb *ListQueryBuilder) buildFilterParts(column string, filterValues []strin
 
 func (qb *ListQueryBuilder) buildFilterQuery() {
 	spec := qb.Spec
-	filter := spec.Filter
-	filter.AppendValues("uuid", spec.ObjectUUIDs)
-	filter.AppendValues("parent_uuid", spec.ParentUUIDs)
+	filters := spec.Filters
+	filters = AppendFilter(filters, "uuid", spec.ObjectUUIDs...)
+	filters = AppendFilter(filters, "parent_uuid", spec.ParentUUIDs...)
 	if spec.ParentType != "" {
-		filter.AppendValues("parent_type", []string{spec.ParentType})
+		filters = AppendFilter(filters, "parent_type", spec.ParentType)
 	}
-	for key, filterValues := range filter {
-		if !qb.isValidField(key) {
+	for _, filter := range filters {
+		if !qb.isValidField(filter.Key) {
 			continue
 		}
-		column := fmt.Sprintf("`%s`.`%s`", qb.Table, key)
-		where := qb.buildFilterParts(column, filterValues)
+		column := fmt.Sprintf("`%s`.`%s`", qb.Table, filter.Key)
+		where := qb.buildFilterParts(column, filter.Values)
 		qb.where = append(qb.where, where)
 	}
 	if len(spec.BackRefUUIDs) > 0 {

@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTDiscoveryServiceAssignmentUpdateRequest for update request for REST.
-type RESTDiscoveryServiceAssignmentUpdateRequest struct {
-	Data map[string]interface{} `json:"discovery-service-assignment"`
-}
-
 //RESTCreateDiscoveryServiceAssignment handle a Create REST service.
 func (service *ContrailService) RESTCreateDiscoveryServiceAssignment(c echo.Context) error {
-	requestData := &models.CreateDiscoveryServiceAssignmentRequest{
-		DiscoveryServiceAssignment: models.MakeDiscoveryServiceAssignment(),
-	}
+	requestData := &models.CreateDiscoveryServiceAssignmentRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetDiscoveryServiceAssignment(c echo.Context
 func (service *ContrailService) GetDiscoveryServiceAssignment(ctx context.Context, request *models.GetDiscoveryServiceAssignmentRequest) (response *models.GetDiscoveryServiceAssignmentResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListDiscoveryServiceAssignmentRequest{

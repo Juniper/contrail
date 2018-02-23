@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTFlavorUpdateRequest for update request for REST.
-type RESTFlavorUpdateRequest struct {
-	Data map[string]interface{} `json:"flavor"`
-}
-
 //RESTCreateFlavor handle a Create REST service.
 func (service *ContrailService) RESTCreateFlavor(c echo.Context) error {
-	requestData := &models.CreateFlavorRequest{
-		Flavor: models.MakeFlavor(),
-	}
+	requestData := &models.CreateFlavorRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetFlavor(c echo.Context) error {
 func (service *ContrailService) GetFlavor(ctx context.Context, request *models.GetFlavorRequest) (response *models.GetFlavorResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListFlavorRequest{

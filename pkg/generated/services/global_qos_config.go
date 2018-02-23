@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTGlobalQosConfigUpdateRequest for update request for REST.
-type RESTGlobalQosConfigUpdateRequest struct {
-	Data map[string]interface{} `json:"global-qos-config"`
-}
-
 //RESTCreateGlobalQosConfig handle a Create REST service.
 func (service *ContrailService) RESTCreateGlobalQosConfig(c echo.Context) error {
-	requestData := &models.CreateGlobalQosConfigRequest{
-		GlobalQosConfig: models.MakeGlobalQosConfig(),
-	}
+	requestData := &models.CreateGlobalQosConfigRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetGlobalQosConfig(c echo.Context) error {
 func (service *ContrailService) GetGlobalQosConfig(ctx context.Context, request *models.GetGlobalQosConfigRequest) (response *models.GetGlobalQosConfigResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListGlobalQosConfigRequest{

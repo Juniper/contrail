@@ -1,32 +1,57 @@
 package models
 
-// GracefulRestartParametersType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// GracefulRestartParametersType
-//proteus:generate
-type GracefulRestartParametersType struct {
-	Enable               bool                             `json:"enable"`
-	EndOfRibTimeout      EndOfRibTimeType                 `json:"end_of_rib_timeout,omitempty"`
-	BGPHelperEnable      bool                             `json:"bgp_helper_enable"`
-	XMPPHelperEnable     bool                             `json:"xmpp_helper_enable"`
-	RestartTime          GracefulRestartTimeType          `json:"restart_time,omitempty"`
-	LongLivedRestartTime LongLivedGracefulRestartTimeType `json:"long_lived_restart_time,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeGracefulRestartParametersType makes GracefulRestartParametersType
 func MakeGracefulRestartParametersType() *GracefulRestartParametersType {
 	return &GracefulRestartParametersType{
 		//TODO(nati): Apply default
 		Enable:               false,
-		EndOfRibTimeout:      MakeEndOfRibTimeType(),
+		EndOfRibTimeout:      0,
 		BGPHelperEnable:      false,
 		XMPPHelperEnable:     false,
-		RestartTime:          MakeGracefulRestartTimeType(),
-		LongLivedRestartTime: MakeLongLivedGracefulRestartTimeType(),
+		RestartTime:          0,
+		LongLivedRestartTime: 0,
+	}
+}
+
+// MakeGracefulRestartParametersType makes GracefulRestartParametersType
+func InterfaceToGracefulRestartParametersType(i interface{}) *GracefulRestartParametersType {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &GracefulRestartParametersType{
+		//TODO(nati): Apply default
+		Enable:               schema.InterfaceToBool(m["enable"]),
+		EndOfRibTimeout:      schema.InterfaceToInt64(m["end_of_rib_timeout"]),
+		BGPHelperEnable:      schema.InterfaceToBool(m["bgp_helper_enable"]),
+		XMPPHelperEnable:     schema.InterfaceToBool(m["xmpp_helper_enable"]),
+		RestartTime:          schema.InterfaceToInt64(m["restart_time"]),
+		LongLivedRestartTime: schema.InterfaceToInt64(m["long_lived_restart_time"]),
 	}
 }
 
 // MakeGracefulRestartParametersTypeSlice() makes a slice of GracefulRestartParametersType
 func MakeGracefulRestartParametersTypeSlice() []*GracefulRestartParametersType {
 	return []*GracefulRestartParametersType{}
+}
+
+// InterfaceToGracefulRestartParametersTypeSlice() makes a slice of GracefulRestartParametersType
+func InterfaceToGracefulRestartParametersTypeSlice(i interface{}) []*GracefulRestartParametersType {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*GracefulRestartParametersType{}
+	for _, item := range list {
+		result = append(result, InterfaceToGracefulRestartParametersType(item))
+	}
+	return result
 }

@@ -1,30 +1,11 @@
 package models
 
-// Domain
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// Domain
-//proteus:generate
-type Domain struct {
-	UUID         string            `json:"uuid,omitempty"`
-	ParentUUID   string            `json:"parent_uuid,omitempty"`
-	ParentType   string            `json:"parent_type,omitempty"`
-	FQName       []string          `json:"fq_name,omitempty"`
-	IDPerms      *IdPermsType      `json:"id_perms,omitempty"`
-	DisplayName  string            `json:"display_name,omitempty"`
-	Annotations  *KeyValuePairs    `json:"annotations,omitempty"`
-	Perms2       *PermType2        `json:"perms2,omitempty"`
-	DomainLimits *DomainLimitsType `json:"domain_limits,omitempty"`
-
-	APIAccessLists []*APIAccessList `json:"api_access_lists,omitempty"`
-
-	Namespaces []*Namespace `json:"namespaces,omitempty"`
-
-	Projects []*Project `json:"projects,omitempty"`
-
-	ServiceTemplates []*ServiceTemplate `json:"service_templates,omitempty"`
-
-	VirtualDNSs []*VirtualDNS `json:"virtual_DNSs,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeDomain makes Domain
 func MakeDomain() *Domain {
@@ -42,7 +23,41 @@ func MakeDomain() *Domain {
 	}
 }
 
+// MakeDomain makes Domain
+func InterfaceToDomain(i interface{}) *Domain {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &Domain{
+		//TODO(nati): Apply default
+		UUID:         schema.InterfaceToString(m["uuid"]),
+		ParentUUID:   schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:   schema.InterfaceToString(m["parent_type"]),
+		FQName:       schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:      InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:  schema.InterfaceToString(m["display_name"]),
+		Annotations:  InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:       InterfaceToPermType2(m["perms2"]),
+		DomainLimits: InterfaceToDomainLimitsType(m["domain_limits"]),
+	}
+}
+
 // MakeDomainSlice() makes a slice of Domain
 func MakeDomainSlice() []*Domain {
 	return []*Domain{}
+}
+
+// InterfaceToDomainSlice() makes a slice of Domain
+func InterfaceToDomainSlice(i interface{}) []*Domain {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*Domain{}
+	for _, item := range list {
+		result = append(result, InterfaceToDomain(item))
+	}
+	return result
 }

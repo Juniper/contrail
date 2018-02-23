@@ -1,40 +1,11 @@
 package models
 
-// SecurityLoggingObject
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// SecurityLoggingObject
-//proteus:generate
-type SecurityLoggingObject struct {
-	UUID                       string                             `json:"uuid,omitempty"`
-	ParentUUID                 string                             `json:"parent_uuid,omitempty"`
-	ParentType                 string                             `json:"parent_type,omitempty"`
-	FQName                     []string                           `json:"fq_name,omitempty"`
-	IDPerms                    *IdPermsType                       `json:"id_perms,omitempty"`
-	DisplayName                string                             `json:"display_name,omitempty"`
-	Annotations                *KeyValuePairs                     `json:"annotations,omitempty"`
-	Perms2                     *PermType2                         `json:"perms2,omitempty"`
-	SecurityLoggingObjectRules *SecurityLoggingObjectRuleListType `json:"security_logging_object_rules,omitempty"`
-	SecurityLoggingObjectRate  int                                `json:"security_logging_object_rate,omitempty"`
-
-	SecurityGroupRefs []*SecurityLoggingObjectSecurityGroupRef `json:"security_group_refs,omitempty"`
-	NetworkPolicyRefs []*SecurityLoggingObjectNetworkPolicyRef `json:"network_policy_refs,omitempty"`
-}
-
-// SecurityLoggingObjectSecurityGroupRef references each other
-type SecurityLoggingObjectSecurityGroupRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-	Attr *SecurityLoggingObjectRuleListType
-}
-
-// SecurityLoggingObjectNetworkPolicyRef references each other
-type SecurityLoggingObjectNetworkPolicyRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-	Attr *SecurityLoggingObjectRuleListType
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeSecurityLoggingObject makes SecurityLoggingObject
 func MakeSecurityLoggingObject() *SecurityLoggingObject {
@@ -53,7 +24,42 @@ func MakeSecurityLoggingObject() *SecurityLoggingObject {
 	}
 }
 
+// MakeSecurityLoggingObject makes SecurityLoggingObject
+func InterfaceToSecurityLoggingObject(i interface{}) *SecurityLoggingObject {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &SecurityLoggingObject{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		SecurityLoggingObjectRules: InterfaceToSecurityLoggingObjectRuleListType(m["security_logging_object_rules"]),
+		SecurityLoggingObjectRate:  schema.InterfaceToInt64(m["security_logging_object_rate"]),
+	}
+}
+
 // MakeSecurityLoggingObjectSlice() makes a slice of SecurityLoggingObject
 func MakeSecurityLoggingObjectSlice() []*SecurityLoggingObject {
 	return []*SecurityLoggingObject{}
+}
+
+// InterfaceToSecurityLoggingObjectSlice() makes a slice of SecurityLoggingObject
+func InterfaceToSecurityLoggingObjectSlice(i interface{}) []*SecurityLoggingObject {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*SecurityLoggingObject{}
+	for _, item := range list {
+		result = append(result, InterfaceToSecurityLoggingObject(item))
+	}
+	return result
 }

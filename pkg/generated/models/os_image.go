@@ -1,37 +1,11 @@
 package models
 
-// OsImage
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// OsImage
-//proteus:generate
-type OsImage struct {
-	UUID            string         `json:"uuid,omitempty"`
-	ParentUUID      string         `json:"parent_uuid,omitempty"`
-	ParentType      string         `json:"parent_type,omitempty"`
-	FQName          []string       `json:"fq_name,omitempty"`
-	IDPerms         *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName     string         `json:"display_name,omitempty"`
-	Annotations     *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2          *PermType2     `json:"perms2,omitempty"`
-	Name            string         `json:"name,omitempty"`
-	Owner           string         `json:"owner,omitempty"`
-	ID              string         `json:"id,omitempty"`
-	Size_           int            `json:"size,omitempty"`
-	Status          string         `json:"status,omitempty"`
-	Location        string         `json:"location,omitempty"`
-	File            string         `json:"file,omitempty"`
-	Checksum        string         `json:"checksum,omitempty"`
-	CreatedAt       string         `json:"created_at,omitempty"`
-	UpdatedAt       string         `json:"updated_at,omitempty"`
-	ContainerFormat string         `json:"container_format,omitempty"`
-	DiskFormat      string         `json:"disk_format,omitempty"`
-	Protected       bool           `json:"protected"`
-	Visibility      string         `json:"visibility,omitempty"`
-	Property        string         `json:"property,omitempty"`
-	MinDisk         int            `json:"min_disk,omitempty"`
-	MinRAM          int            `json:"min_ram,omitempty"`
-	Tags            string         `json:"tags,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeOsImage makes OsImage
 func MakeOsImage() *OsImage {
@@ -66,7 +40,58 @@ func MakeOsImage() *OsImage {
 	}
 }
 
+// MakeOsImage makes OsImage
+func InterfaceToOsImage(i interface{}) *OsImage {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &OsImage{
+		//TODO(nati): Apply default
+		UUID:            schema.InterfaceToString(m["uuid"]),
+		ParentUUID:      schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:      schema.InterfaceToString(m["parent_type"]),
+		FQName:          schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:         InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:     schema.InterfaceToString(m["display_name"]),
+		Annotations:     InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:          InterfaceToPermType2(m["perms2"]),
+		Name:            schema.InterfaceToString(m["name"]),
+		Owner:           schema.InterfaceToString(m["owner"]),
+		ID:              schema.InterfaceToString(m["id"]),
+		Size_:           schema.InterfaceToInt64(m["size"]),
+		Status:          schema.InterfaceToString(m["status"]),
+		Location:        schema.InterfaceToString(m["location"]),
+		File:            schema.InterfaceToString(m["file"]),
+		Checksum:        schema.InterfaceToString(m["checksum"]),
+		CreatedAt:       schema.InterfaceToString(m["created_at"]),
+		UpdatedAt:       schema.InterfaceToString(m["updated_at"]),
+		ContainerFormat: schema.InterfaceToString(m["container_format"]),
+		DiskFormat:      schema.InterfaceToString(m["disk_format"]),
+		Protected:       schema.InterfaceToBool(m["protected"]),
+		Visibility:      schema.InterfaceToString(m["visibility"]),
+		Property:        schema.InterfaceToString(m["property"]),
+		MinDisk:         schema.InterfaceToInt64(m["min_disk"]),
+		MinRAM:          schema.InterfaceToInt64(m["min_ram"]),
+		Tags:            schema.InterfaceToString(m["tags"]),
+	}
+}
+
 // MakeOsImageSlice() makes a slice of OsImage
 func MakeOsImageSlice() []*OsImage {
 	return []*OsImage{}
+}
+
+// InterfaceToOsImageSlice() makes a slice of OsImage
+func InterfaceToOsImageSlice(i interface{}) []*OsImage {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*OsImage{}
+	for _, item := range list {
+		result = append(result, InterfaceToOsImage(item))
+	}
+	return result
 }

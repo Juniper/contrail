@@ -1,13 +1,11 @@
 package models
 
-// ProtocolType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// ProtocolType
-//proteus:generate
-type ProtocolType struct {
-	Protocol string `json:"protocol,omitempty"`
-	Port     int    `json:"port,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeProtocolType makes ProtocolType
 func MakeProtocolType() *ProtocolType {
@@ -18,7 +16,34 @@ func MakeProtocolType() *ProtocolType {
 	}
 }
 
+// MakeProtocolType makes ProtocolType
+func InterfaceToProtocolType(i interface{}) *ProtocolType {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &ProtocolType{
+		//TODO(nati): Apply default
+		Protocol: schema.InterfaceToString(m["protocol"]),
+		Port:     schema.InterfaceToInt64(m["port"]),
+	}
+}
+
 // MakeProtocolTypeSlice() makes a slice of ProtocolType
 func MakeProtocolTypeSlice() []*ProtocolType {
 	return []*ProtocolType{}
+}
+
+// InterfaceToProtocolTypeSlice() makes a slice of ProtocolType
+func InterfaceToProtocolTypeSlice(i interface{}) []*ProtocolType {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*ProtocolType{}
+	for _, item := range list {
+		result = append(result, InterfaceToProtocolType(item))
+	}
+	return result
 }

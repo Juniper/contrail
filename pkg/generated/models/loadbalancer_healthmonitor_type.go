@@ -1,19 +1,11 @@
 package models
 
-// LoadbalancerHealthmonitorType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// LoadbalancerHealthmonitorType
-//proteus:generate
-type LoadbalancerHealthmonitorType struct {
-	Delay         int               `json:"delay,omitempty"`
-	ExpectedCodes string            `json:"expected_codes,omitempty"`
-	MaxRetries    int               `json:"max_retries,omitempty"`
-	HTTPMethod    string            `json:"http_method,omitempty"`
-	AdminState    bool              `json:"admin_state"`
-	Timeout       int               `json:"timeout,omitempty"`
-	URLPath       string            `json:"url_path,omitempty"`
-	MonitorType   HealthmonitorType `json:"monitor_type,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeLoadbalancerHealthmonitorType makes LoadbalancerHealthmonitorType
 func MakeLoadbalancerHealthmonitorType() *LoadbalancerHealthmonitorType {
@@ -26,11 +18,44 @@ func MakeLoadbalancerHealthmonitorType() *LoadbalancerHealthmonitorType {
 		AdminState:    false,
 		Timeout:       0,
 		URLPath:       "",
-		MonitorType:   MakeHealthmonitorType(),
+		MonitorType:   "",
+	}
+}
+
+// MakeLoadbalancerHealthmonitorType makes LoadbalancerHealthmonitorType
+func InterfaceToLoadbalancerHealthmonitorType(i interface{}) *LoadbalancerHealthmonitorType {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &LoadbalancerHealthmonitorType{
+		//TODO(nati): Apply default
+		Delay:         schema.InterfaceToInt64(m["delay"]),
+		ExpectedCodes: schema.InterfaceToString(m["expected_codes"]),
+		MaxRetries:    schema.InterfaceToInt64(m["max_retries"]),
+		HTTPMethod:    schema.InterfaceToString(m["http_method"]),
+		AdminState:    schema.InterfaceToBool(m["admin_state"]),
+		Timeout:       schema.InterfaceToInt64(m["timeout"]),
+		URLPath:       schema.InterfaceToString(m["url_path"]),
+		MonitorType:   schema.InterfaceToString(m["monitor_type"]),
 	}
 }
 
 // MakeLoadbalancerHealthmonitorTypeSlice() makes a slice of LoadbalancerHealthmonitorType
 func MakeLoadbalancerHealthmonitorTypeSlice() []*LoadbalancerHealthmonitorType {
 	return []*LoadbalancerHealthmonitorType{}
+}
+
+// InterfaceToLoadbalancerHealthmonitorTypeSlice() makes a slice of LoadbalancerHealthmonitorType
+func InterfaceToLoadbalancerHealthmonitorTypeSlice(i interface{}) []*LoadbalancerHealthmonitorType {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*LoadbalancerHealthmonitorType{}
+	for _, item := range list {
+		result = append(result, InterfaceToLoadbalancerHealthmonitorType(item))
+	}
+	return result
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -43,18 +44,18 @@ var ServiceEndpointFields = []string{
 // ServiceEndpointRefFields is db reference fields for ServiceEndpoint
 var ServiceEndpointRefFields = map[string][]string{
 
-	"service_connection_module": {
-	// <common.Schema Value>
+	"service_connection_module": []string{
+		// <schema.Schema Value>
 
 	},
 
-	"physical_router": {
-	// <common.Schema Value>
+	"physical_router": []string{
+		// <schema.Schema Value>
 
 	},
 
-	"service_object": {
-	// <common.Schema Value>
+	"service_object": []string{
+		// <schema.Schema Value>
 
 	},
 }
@@ -65,11 +66,11 @@ var ServiceEndpointBackRefFields = map[string][]string{}
 // ServiceEndpointParentTypes is possible parents for ServiceEndpoint
 var ServiceEndpointParents = []string{}
 
-const insertServiceEndpointServiceObjectQuery = "insert into `ref_service_endpoint_service_object` (`from`, `to` ) values (?, ?);"
-
 const insertServiceEndpointServiceConnectionModuleQuery = "insert into `ref_service_endpoint_service_connection_module` (`from`, `to` ) values (?, ?);"
 
 const insertServiceEndpointPhysicalRouterQuery = "insert into `ref_service_endpoint_physical_router` (`from`, `to` ) values (?, ?);"
+
+const insertServiceEndpointServiceObjectQuery = "insert into `ref_service_endpoint_service_object` (`from`, `to` ) values (?, ?);"
 
 // CreateServiceEndpoint inserts ServiceEndpoint to DB
 func CreateServiceEndpoint(
@@ -87,29 +88,42 @@ func CreateServiceEndpoint(
 		"model": model,
 		"query": insertServiceEndpointQuery,
 	}).Debug("create query")
-	_, err = stmt.ExecContext(ctx, string(model.UUID),
-		common.MustJSON(model.Perms2.Share),
-		int(model.Perms2.OwnerAccess),
-		string(model.Perms2.Owner),
-		int(model.Perms2.GlobalAccess),
-		string(model.ParentUUID),
-		string(model.ParentType),
-		bool(model.IDPerms.UserVisible),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OtherAccess),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Group),
-		string(model.IDPerms.LastModified),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Creator),
-		string(model.IDPerms.Created),
-		common.MustJSON(model.FQName),
-		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair))
+	_, err = stmt.ExecContext(ctx, string(model.GetUUID()),
+		common.MustJSON(model.GetPerms2().GetShare()),
+		int(model.GetPerms2().GetOwnerAccess()),
+		string(model.GetPerms2().GetOwner()),
+		int(model.GetPerms2().GetGlobalAccess()),
+		string(model.GetParentUUID()),
+		string(model.GetParentType()),
+		bool(model.GetIDPerms().GetUserVisible()),
+		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
+		string(model.GetIDPerms().GetPermissions().GetOwner()),
+		int(model.GetIDPerms().GetPermissions().GetOtherAccess()),
+		int(model.GetIDPerms().GetPermissions().GetGroupAccess()),
+		string(model.GetIDPerms().GetPermissions().GetGroup()),
+		string(model.GetIDPerms().GetLastModified()),
+		bool(model.GetIDPerms().GetEnable()),
+		string(model.GetIDPerms().GetDescription()),
+		string(model.GetIDPerms().GetCreator()),
+		string(model.GetIDPerms().GetCreated()),
+		common.MustJSON(model.GetFQName()),
+		string(model.GetDisplayName()),
+		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
+	}
+
+	stmtServiceObjectRef, err := tx.Prepare(insertServiceEndpointServiceObjectQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceObjectRefs create statement failed")
+	}
+	defer stmtServiceObjectRef.Close()
+	for _, ref := range model.ServiceObjectRefs {
+
+		_, err = stmtServiceObjectRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceObjectRefs create failed")
+		}
 	}
 
 	stmtServiceConnectionModuleRef, err := tx.Prepare(insertServiceEndpointServiceConnectionModuleQuery)
@@ -138,19 +152,6 @@ func CreateServiceEndpoint(
 		}
 	}
 
-	stmtServiceObjectRef, err := tx.Prepare(insertServiceEndpointServiceObjectQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceObjectRefs create statement failed")
-	}
-	defer stmtServiceObjectRef.Close()
-	for _, ref := range model.ServiceObjectRefs {
-
-		_, err = stmtServiceObjectRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceObjectRefs create failed")
-		}
-	}
-
 	metaData := &common.MetaData{
 		UUID:   model.UUID,
 		Type:   "service_endpoint",
@@ -160,7 +161,7 @@ func CreateServiceEndpoint(
 	if err != nil {
 		return err
 	}
-	err = common.CreateSharing(tx, "service_endpoint", model.UUID, model.Perms2.Share)
+	err = common.CreateSharing(tx, "service_endpoint", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -175,9 +176,7 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
+		m.UUID = schema.InterfaceToString(value)
 
 	}
 
@@ -189,129 +188,97 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.Perms2.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
+		m.Perms2.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.Perms2.GlobalAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentUUID = castedValue
+		m.ParentUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentType = castedValue
+		m.ParentType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.UserVisible = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
+		m.IDPerms.Permissions.Group = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.LastModified = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
+		m.IDPerms.Enable = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
+		m.IDPerms.Description = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.IDPerms.Creator = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
+		m.IDPerms.Created = schema.InterfaceToString(value)
 
 	}
 
@@ -323,9 +290,7 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		m.DisplayName = schema.InterfaceToString(value)
 
 	}
 
@@ -337,14 +302,14 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	if value, ok := values["ref_service_connection_module"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
@@ -357,14 +322,14 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	if value, ok := values["ref_physical_router"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
@@ -377,14 +342,14 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	if value, ok := values["ref_service_object"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
@@ -409,14 +374,14 @@ func ListServiceEndpoint(ctx context.Context, tx *sql.Tx, request *models.ListSe
 	qb.Fields = ServiceEndpointFields
 	qb.RefFields = ServiceEndpointRefFields
 	qb.BackRefFields = ServiceEndpointBackRefFields
-	result := models.MakeServiceEndpointSlice()
+	result := []*models.ServiceEndpoint{}
 
 	if spec.ParentFQName != nil {
 		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
-		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+		spec.Filters = common.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 
 	query := qb.BuildQuery()

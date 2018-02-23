@@ -1,17 +1,8 @@
 package models
 
-// SubnetMethodType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type SubnetMethodType string
-
-// MakeSubnetMethodType makes SubnetMethodType
-func MakeSubnetMethodType() SubnetMethodType {
-	var data SubnetMethodType
-	return data
-}
-
-// MakeSubnetMethodTypeSlice() makes a slice of SubnetMethodType
-func MakeSubnetMethodTypeSlice() []SubnetMethodType {
-	return []SubnetMethodType{}
-}
+//To skip import error.
+var _ = schema.Version

@@ -1,17 +1,8 @@
 package models
 
-// LoadbalancerMethodType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type LoadbalancerMethodType string
-
-// MakeLoadbalancerMethodType makes LoadbalancerMethodType
-func MakeLoadbalancerMethodType() LoadbalancerMethodType {
-	var data LoadbalancerMethodType
-	return data
-}
-
-// MakeLoadbalancerMethodTypeSlice() makes a slice of LoadbalancerMethodType
-func MakeLoadbalancerMethodTypeSlice() []LoadbalancerMethodType {
-	return []LoadbalancerMethodType{}
-}
+//To skip import error.
+var _ = schema.Version

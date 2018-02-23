@@ -1,22 +1,11 @@
 package models
 
-// Alarm
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// Alarm
-//proteus:generate
-type Alarm struct {
-	UUID          string         `json:"uuid,omitempty"`
-	ParentUUID    string         `json:"parent_uuid,omitempty"`
-	ParentType    string         `json:"parent_type,omitempty"`
-	FQName        []string       `json:"fq_name,omitempty"`
-	IDPerms       *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName   string         `json:"display_name,omitempty"`
-	Annotations   *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2        *PermType2     `json:"perms2,omitempty"`
-	AlarmRules    *AlarmOrList   `json:"alarm_rules,omitempty"`
-	UveKeys       *UveKeysType   `json:"uve_keys,omitempty"`
-	AlarmSeverity AlarmSeverity  `json:"alarm_severity,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeAlarm makes Alarm
 func MakeAlarm() *Alarm {
@@ -32,11 +21,47 @@ func MakeAlarm() *Alarm {
 		Perms2:        MakePermType2(),
 		AlarmRules:    MakeAlarmOrList(),
 		UveKeys:       MakeUveKeysType(),
-		AlarmSeverity: MakeAlarmSeverity(),
+		AlarmSeverity: 0,
+	}
+}
+
+// MakeAlarm makes Alarm
+func InterfaceToAlarm(i interface{}) *Alarm {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &Alarm{
+		//TODO(nati): Apply default
+		UUID:          schema.InterfaceToString(m["uuid"]),
+		ParentUUID:    schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:    schema.InterfaceToString(m["parent_type"]),
+		FQName:        schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:       InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:   schema.InterfaceToString(m["display_name"]),
+		Annotations:   InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:        InterfaceToPermType2(m["perms2"]),
+		AlarmRules:    InterfaceToAlarmOrList(m["alarm_rules"]),
+		UveKeys:       InterfaceToUveKeysType(m["uve_keys"]),
+		AlarmSeverity: schema.InterfaceToInt64(m["alarm_severity"]),
 	}
 }
 
 // MakeAlarmSlice() makes a slice of Alarm
 func MakeAlarmSlice() []*Alarm {
 	return []*Alarm{}
+}
+
+// InterfaceToAlarmSlice() makes a slice of Alarm
+func InterfaceToAlarmSlice(i interface{}) []*Alarm {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*Alarm{}
+	for _, item := range list {
+		result = append(result, InterfaceToAlarm(item))
+	}
+	return result
 }

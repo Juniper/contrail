@@ -1,17 +1,8 @@
 package models
 
-// DirectionType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type DirectionType string
-
-// MakeDirectionType makes DirectionType
-func MakeDirectionType() DirectionType {
-	var data DirectionType
-	return data
-}
-
-// MakeDirectionTypeSlice() makes a slice of DirectionType
-func MakeDirectionTypeSlice() []DirectionType {
-	return []DirectionType{}
-}
+//To skip import error.
+var _ = schema.Version

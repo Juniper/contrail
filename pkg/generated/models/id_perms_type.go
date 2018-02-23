@@ -1,18 +1,11 @@
 package models
 
-// IdPermsType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// IdPermsType
-//proteus:generate
-type IdPermsType struct {
-	Enable       bool      `json:"enable"`
-	Description  string    `json:"description,omitempty"`
-	Created      string    `json:"created,omitempty"`
-	Creator      string    `json:"creator,omitempty"`
-	UserVisible  bool      `json:"user_visible"`
-	LastModified string    `json:"last_modified,omitempty"`
-	Permissions  *PermType `json:"permissions,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeIdPermsType makes IdPermsType
 func MakeIdPermsType() *IdPermsType {
@@ -28,7 +21,39 @@ func MakeIdPermsType() *IdPermsType {
 	}
 }
 
+// MakeIdPermsType makes IdPermsType
+func InterfaceToIdPermsType(i interface{}) *IdPermsType {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &IdPermsType{
+		//TODO(nati): Apply default
+		Enable:       schema.InterfaceToBool(m["enable"]),
+		Description:  schema.InterfaceToString(m["description"]),
+		Created:      schema.InterfaceToString(m["created"]),
+		Creator:      schema.InterfaceToString(m["creator"]),
+		UserVisible:  schema.InterfaceToBool(m["user_visible"]),
+		LastModified: schema.InterfaceToString(m["last_modified"]),
+		Permissions:  InterfaceToPermType(m["permissions"]),
+	}
+}
+
 // MakeIdPermsTypeSlice() makes a slice of IdPermsType
 func MakeIdPermsTypeSlice() []*IdPermsType {
 	return []*IdPermsType{}
+}
+
+// InterfaceToIdPermsTypeSlice() makes a slice of IdPermsType
+func InterfaceToIdPermsTypeSlice(i interface{}) []*IdPermsType {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*IdPermsType{}
+	for _, item := range list {
+		result = append(result, InterfaceToIdPermsType(item))
+	}
+	return result
 }

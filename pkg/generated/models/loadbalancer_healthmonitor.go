@@ -1,20 +1,11 @@
 package models
 
-// LoadbalancerHealthmonitor
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// LoadbalancerHealthmonitor
-//proteus:generate
-type LoadbalancerHealthmonitor struct {
-	UUID                                string                         `json:"uuid,omitempty"`
-	ParentUUID                          string                         `json:"parent_uuid,omitempty"`
-	ParentType                          string                         `json:"parent_type,omitempty"`
-	FQName                              []string                       `json:"fq_name,omitempty"`
-	IDPerms                             *IdPermsType                   `json:"id_perms,omitempty"`
-	DisplayName                         string                         `json:"display_name,omitempty"`
-	Annotations                         *KeyValuePairs                 `json:"annotations,omitempty"`
-	Perms2                              *PermType2                     `json:"perms2,omitempty"`
-	LoadbalancerHealthmonitorProperties *LoadbalancerHealthmonitorType `json:"loadbalancer_healthmonitor_properties,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeLoadbalancerHealthmonitor makes LoadbalancerHealthmonitor
 func MakeLoadbalancerHealthmonitor() *LoadbalancerHealthmonitor {
@@ -32,7 +23,41 @@ func MakeLoadbalancerHealthmonitor() *LoadbalancerHealthmonitor {
 	}
 }
 
+// MakeLoadbalancerHealthmonitor makes LoadbalancerHealthmonitor
+func InterfaceToLoadbalancerHealthmonitor(i interface{}) *LoadbalancerHealthmonitor {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &LoadbalancerHealthmonitor{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		LoadbalancerHealthmonitorProperties: InterfaceToLoadbalancerHealthmonitorType(m["loadbalancer_healthmonitor_properties"]),
+	}
+}
+
 // MakeLoadbalancerHealthmonitorSlice() makes a slice of LoadbalancerHealthmonitor
 func MakeLoadbalancerHealthmonitorSlice() []*LoadbalancerHealthmonitor {
 	return []*LoadbalancerHealthmonitor{}
+}
+
+// InterfaceToLoadbalancerHealthmonitorSlice() makes a slice of LoadbalancerHealthmonitor
+func InterfaceToLoadbalancerHealthmonitorSlice(i interface{}) []*LoadbalancerHealthmonitor {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*LoadbalancerHealthmonitor{}
+	for _, item := range list {
+		result = append(result, InterfaceToLoadbalancerHealthmonitor(item))
+	}
+	return result
 }

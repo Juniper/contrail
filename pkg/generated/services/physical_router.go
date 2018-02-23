@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTPhysicalRouterUpdateRequest for update request for REST.
-type RESTPhysicalRouterUpdateRequest struct {
-	Data map[string]interface{} `json:"physical-router"`
-}
-
 //RESTCreatePhysicalRouter handle a Create REST service.
 func (service *ContrailService) RESTCreatePhysicalRouter(c echo.Context) error {
-	requestData := &models.CreatePhysicalRouterRequest{
-		PhysicalRouter: models.MakePhysicalRouter(),
-	}
+	requestData := &models.CreatePhysicalRouterRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetPhysicalRouter(c echo.Context) error {
 func (service *ContrailService) GetPhysicalRouter(ctx context.Context, request *models.GetPhysicalRouterRequest) (response *models.GetPhysicalRouterResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListPhysicalRouterRequest{

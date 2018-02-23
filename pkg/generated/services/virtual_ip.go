@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTVirtualIPUpdateRequest for update request for REST.
-type RESTVirtualIPUpdateRequest struct {
-	Data map[string]interface{} `json:"virtual-ip"`
-}
-
 //RESTCreateVirtualIP handle a Create REST service.
 func (service *ContrailService) RESTCreateVirtualIP(c echo.Context) error {
-	requestData := &models.CreateVirtualIPRequest{
-		VirtualIP: models.MakeVirtualIP(),
-	}
+	requestData := &models.CreateVirtualIPRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetVirtualIP(c echo.Context) error {
 func (service *ContrailService) GetVirtualIP(ctx context.Context, request *models.GetVirtualIPRequest) (response *models.GetVirtualIPResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListVirtualIPRequest{

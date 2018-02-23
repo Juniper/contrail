@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTServiceApplianceSetUpdateRequest for update request for REST.
-type RESTServiceApplianceSetUpdateRequest struct {
-	Data map[string]interface{} `json:"service-appliance-set"`
-}
-
 //RESTCreateServiceApplianceSet handle a Create REST service.
 func (service *ContrailService) RESTCreateServiceApplianceSet(c echo.Context) error {
-	requestData := &models.CreateServiceApplianceSetRequest{
-		ServiceApplianceSet: models.MakeServiceApplianceSet(),
-	}
+	requestData := &models.CreateServiceApplianceSetRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetServiceApplianceSet(c echo.Context) error
 func (service *ContrailService) GetServiceApplianceSet(ctx context.Context, request *models.GetServiceApplianceSetRequest) (response *models.GetServiceApplianceSetResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListServiceApplianceSetRequest{

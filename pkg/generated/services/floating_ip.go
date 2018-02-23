@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTFloatingIPUpdateRequest for update request for REST.
-type RESTFloatingIPUpdateRequest struct {
-	Data map[string]interface{} `json:"floating-ip"`
-}
-
 //RESTCreateFloatingIP handle a Create REST service.
 func (service *ContrailService) RESTCreateFloatingIP(c echo.Context) error {
-	requestData := &models.CreateFloatingIPRequest{
-		FloatingIP: models.MakeFloatingIP(),
-	}
+	requestData := &models.CreateFloatingIPRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetFloatingIP(c echo.Context) error {
 func (service *ContrailService) GetFloatingIP(ctx context.Context, request *models.GetFloatingIPRequest) (response *models.GetFloatingIPResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListFloatingIPRequest{

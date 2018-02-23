@@ -1,12 +1,11 @@
 package models
 
-// QosIdForwardingClassPairs
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// QosIdForwardingClassPairs
-//proteus:generate
-type QosIdForwardingClassPairs struct {
-	QosIDForwardingClassPair []*QosIdForwardingClassPair `json:"qos_id_forwarding_class_pair,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeQosIdForwardingClassPairs makes QosIdForwardingClassPairs
 func MakeQosIdForwardingClassPairs() *QosIdForwardingClassPairs {
@@ -17,7 +16,34 @@ func MakeQosIdForwardingClassPairs() *QosIdForwardingClassPairs {
 	}
 }
 
+// MakeQosIdForwardingClassPairs makes QosIdForwardingClassPairs
+func InterfaceToQosIdForwardingClassPairs(i interface{}) *QosIdForwardingClassPairs {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &QosIdForwardingClassPairs{
+		//TODO(nati): Apply default
+
+		QosIDForwardingClassPair: InterfaceToQosIdForwardingClassPairSlice(m["qos_id_forwarding_class_pair"]),
+	}
+}
+
 // MakeQosIdForwardingClassPairsSlice() makes a slice of QosIdForwardingClassPairs
 func MakeQosIdForwardingClassPairsSlice() []*QosIdForwardingClassPairs {
 	return []*QosIdForwardingClassPairs{}
+}
+
+// InterfaceToQosIdForwardingClassPairsSlice() makes a slice of QosIdForwardingClassPairs
+func InterfaceToQosIdForwardingClassPairsSlice(i interface{}) []*QosIdForwardingClassPairs {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*QosIdForwardingClassPairs{}
+	for _, item := range list {
+		result = append(result, InterfaceToQosIdForwardingClassPairs(item))
+	}
+	return result
 }

@@ -1,37 +1,11 @@
 package models
 
-// E2ServiceProvider
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// E2ServiceProvider
-//proteus:generate
-type E2ServiceProvider struct {
-	UUID                         string         `json:"uuid,omitempty"`
-	ParentUUID                   string         `json:"parent_uuid,omitempty"`
-	ParentType                   string         `json:"parent_type,omitempty"`
-	FQName                       []string       `json:"fq_name,omitempty"`
-	IDPerms                      *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName                  string         `json:"display_name,omitempty"`
-	Annotations                  *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2                       *PermType2     `json:"perms2,omitempty"`
-	E2ServiceProviderPromiscuous bool           `json:"e2_service_provider_promiscuous"`
-
-	PhysicalRouterRefs []*E2ServiceProviderPhysicalRouterRef `json:"physical_router_refs,omitempty"`
-	PeeringPolicyRefs  []*E2ServiceProviderPeeringPolicyRef  `json:"peering_policy_refs,omitempty"`
-}
-
-// E2ServiceProviderPhysicalRouterRef references each other
-type E2ServiceProviderPhysicalRouterRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// E2ServiceProviderPeeringPolicyRef references each other
-type E2ServiceProviderPeeringPolicyRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeE2ServiceProvider makes E2ServiceProvider
 func MakeE2ServiceProvider() *E2ServiceProvider {
@@ -49,7 +23,41 @@ func MakeE2ServiceProvider() *E2ServiceProvider {
 	}
 }
 
+// MakeE2ServiceProvider makes E2ServiceProvider
+func InterfaceToE2ServiceProvider(i interface{}) *E2ServiceProvider {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &E2ServiceProvider{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		E2ServiceProviderPromiscuous: schema.InterfaceToBool(m["e2_service_provider_promiscuous"]),
+	}
+}
+
 // MakeE2ServiceProviderSlice() makes a slice of E2ServiceProvider
 func MakeE2ServiceProviderSlice() []*E2ServiceProvider {
 	return []*E2ServiceProvider{}
+}
+
+// InterfaceToE2ServiceProviderSlice() makes a slice of E2ServiceProvider
+func InterfaceToE2ServiceProviderSlice(i interface{}) []*E2ServiceProvider {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*E2ServiceProvider{}
+	for _, item := range list {
+		result = append(result, InterfaceToE2ServiceProvider(item))
+	}
+	return result
 }

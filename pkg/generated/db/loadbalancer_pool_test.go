@@ -12,17 +12,20 @@ import (
 	"github.com/pkg/errors"
 )
 
+//For skip import error.
+var _ = errors.New("")
+
 func TestLoadbalancerPool(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 	db := testDB
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	common.UseTable(db, "metadata")
-	common.UseTable(db, "loadbalancer_pool")
+	mutexMetadata := common.UseTable(db, "metadata")
+	mutexTable := common.UseTable(db, "loadbalancer_pool")
 	defer func() {
-		common.ClearTable(db, "loadbalancer_pool")
-		common.ClearTable(db, "metadata")
+		mutexTable.Unlock()
+		mutexMetadata.Unlock()
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -34,37 +37,6 @@ func TestLoadbalancerPool(t *testing.T) {
 	var err error
 
 	// Create referred objects
-
-	var ServiceApplianceSetcreateref []*models.LoadbalancerPoolServiceApplianceSetRef
-	var ServiceApplianceSetrefModel *models.ServiceApplianceSet
-	ServiceApplianceSetrefModel = models.MakeServiceApplianceSet()
-	ServiceApplianceSetrefModel.UUID = "loadbalancer_pool_service_appliance_set_ref_uuid"
-	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceApplianceSet(ctx, tx, &models.CreateServiceApplianceSetRequest{
-			ServiceApplianceSet: ServiceApplianceSetrefModel,
-		})
-	})
-	ServiceApplianceSetrefModel.UUID = "loadbalancer_pool_service_appliance_set_ref_uuid1"
-	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceApplianceSet(ctx, tx, &models.CreateServiceApplianceSetRequest{
-			ServiceApplianceSet: ServiceApplianceSetrefModel,
-		})
-	})
-	ServiceApplianceSetrefModel.UUID = "loadbalancer_pool_service_appliance_set_ref_uuid2"
-	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceApplianceSet(ctx, tx, &models.CreateServiceApplianceSetRequest{
-			ServiceApplianceSet: ServiceApplianceSetrefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	ServiceApplianceSetcreateref = append(ServiceApplianceSetcreateref, &models.LoadbalancerPoolServiceApplianceSetRef{UUID: "loadbalancer_pool_service_appliance_set_ref_uuid", To: []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid"}})
-	ServiceApplianceSetcreateref = append(ServiceApplianceSetcreateref, &models.LoadbalancerPoolServiceApplianceSetRef{UUID: "loadbalancer_pool_service_appliance_set_ref_uuid2", To: []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid2"}})
-	model.ServiceApplianceSetRefs = ServiceApplianceSetcreateref
 
 	var VirtualMachineInterfacecreateref []*models.LoadbalancerPoolVirtualMachineInterfaceRef
 	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
@@ -189,6 +161,37 @@ func TestLoadbalancerPool(t *testing.T) {
 	LoadbalancerHealthmonitorcreateref = append(LoadbalancerHealthmonitorcreateref, &models.LoadbalancerPoolLoadbalancerHealthmonitorRef{UUID: "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid", To: []string{"test", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid"}})
 	LoadbalancerHealthmonitorcreateref = append(LoadbalancerHealthmonitorcreateref, &models.LoadbalancerPoolLoadbalancerHealthmonitorRef{UUID: "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid2", To: []string{"test", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid2"}})
 	model.LoadbalancerHealthmonitorRefs = LoadbalancerHealthmonitorcreateref
+
+	var ServiceApplianceSetcreateref []*models.LoadbalancerPoolServiceApplianceSetRef
+	var ServiceApplianceSetrefModel *models.ServiceApplianceSet
+	ServiceApplianceSetrefModel = models.MakeServiceApplianceSet()
+	ServiceApplianceSetrefModel.UUID = "loadbalancer_pool_service_appliance_set_ref_uuid"
+	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateServiceApplianceSet(ctx, tx, &models.CreateServiceApplianceSetRequest{
+			ServiceApplianceSet: ServiceApplianceSetrefModel,
+		})
+	})
+	ServiceApplianceSetrefModel.UUID = "loadbalancer_pool_service_appliance_set_ref_uuid1"
+	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid1"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateServiceApplianceSet(ctx, tx, &models.CreateServiceApplianceSetRequest{
+			ServiceApplianceSet: ServiceApplianceSetrefModel,
+		})
+	})
+	ServiceApplianceSetrefModel.UUID = "loadbalancer_pool_service_appliance_set_ref_uuid2"
+	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid2"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateServiceApplianceSet(ctx, tx, &models.CreateServiceApplianceSetRequest{
+			ServiceApplianceSet: ServiceApplianceSetrefModel,
+		})
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	ServiceApplianceSetcreateref = append(ServiceApplianceSetcreateref, &models.LoadbalancerPoolServiceApplianceSetRef{UUID: "loadbalancer_pool_service_appliance_set_ref_uuid", To: []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid"}})
+	ServiceApplianceSetcreateref = append(ServiceApplianceSetcreateref, &models.LoadbalancerPoolServiceApplianceSetRef{UUID: "loadbalancer_pool_service_appliance_set_ref_uuid2", To: []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid2"}})
+	model.ServiceApplianceSetRefs = ServiceApplianceSetcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()

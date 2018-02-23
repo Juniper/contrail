@@ -1,42 +1,11 @@
 package models
 
-// VirtualRouter
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// VirtualRouter
-//proteus:generate
-type VirtualRouter struct {
-	UUID                     string            `json:"uuid,omitempty"`
-	ParentUUID               string            `json:"parent_uuid,omitempty"`
-	ParentType               string            `json:"parent_type,omitempty"`
-	FQName                   []string          `json:"fq_name,omitempty"`
-	IDPerms                  *IdPermsType      `json:"id_perms,omitempty"`
-	DisplayName              string            `json:"display_name,omitempty"`
-	Annotations              *KeyValuePairs    `json:"annotations,omitempty"`
-	Perms2                   *PermType2        `json:"perms2,omitempty"`
-	VirtualRouterDPDKEnabled bool              `json:"virtual_router_dpdk_enabled"`
-	VirtualRouterType        VirtualRouterType `json:"virtual_router_type,omitempty"`
-	VirtualRouterIPAddress   IpAddressType     `json:"virtual_router_ip_address,omitempty"`
-
-	NetworkIpamRefs    []*VirtualRouterNetworkIpamRef    `json:"network_ipam_refs,omitempty"`
-	VirtualMachineRefs []*VirtualRouterVirtualMachineRef `json:"virtual_machine_refs,omitempty"`
-
-	VirtualMachineInterfaces []*VirtualMachineInterface `json:"virtual_machine_interfaces,omitempty"`
-}
-
-// VirtualRouterVirtualMachineRef references each other
-type VirtualRouterVirtualMachineRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// VirtualRouterNetworkIpamRef references each other
-type VirtualRouterNetworkIpamRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-	Attr *VirtualRouterNetworkIpamType
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeVirtualRouter makes VirtualRouter
 func MakeVirtualRouter() *VirtualRouter {
@@ -51,12 +20,48 @@ func MakeVirtualRouter() *VirtualRouter {
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		VirtualRouterDPDKEnabled: false,
-		VirtualRouterType:        MakeVirtualRouterType(),
-		VirtualRouterIPAddress:   MakeIpAddressType(),
+		VirtualRouterType:        "",
+		VirtualRouterIPAddress:   "",
+	}
+}
+
+// MakeVirtualRouter makes VirtualRouter
+func InterfaceToVirtualRouter(i interface{}) *VirtualRouter {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &VirtualRouter{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		VirtualRouterDPDKEnabled: schema.InterfaceToBool(m["virtual_router_dpdk_enabled"]),
+		VirtualRouterType:        schema.InterfaceToString(m["virtual_router_type"]),
+		VirtualRouterIPAddress:   schema.InterfaceToString(m["virtual_router_ip_address"]),
 	}
 }
 
 // MakeVirtualRouterSlice() makes a slice of VirtualRouter
 func MakeVirtualRouterSlice() []*VirtualRouter {
 	return []*VirtualRouter{}
+}
+
+// InterfaceToVirtualRouterSlice() makes a slice of VirtualRouter
+func InterfaceToVirtualRouterSlice(i interface{}) []*VirtualRouter {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*VirtualRouter{}
+	for _, item := range list {
+		result = append(result, InterfaceToVirtualRouter(item))
+	}
+	return result
 }

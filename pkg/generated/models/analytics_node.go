@@ -1,20 +1,11 @@
 package models
 
-// AnalyticsNode
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// AnalyticsNode
-//proteus:generate
-type AnalyticsNode struct {
-	UUID                   string         `json:"uuid,omitempty"`
-	ParentUUID             string         `json:"parent_uuid,omitempty"`
-	ParentType             string         `json:"parent_type,omitempty"`
-	FQName                 []string       `json:"fq_name,omitempty"`
-	IDPerms                *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName            string         `json:"display_name,omitempty"`
-	Annotations            *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2                 *PermType2     `json:"perms2,omitempty"`
-	AnalyticsNodeIPAddress IpAddressType  `json:"analytics_node_ip_address,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeAnalyticsNode makes AnalyticsNode
 func MakeAnalyticsNode() *AnalyticsNode {
@@ -28,11 +19,45 @@ func MakeAnalyticsNode() *AnalyticsNode {
 		DisplayName:            "",
 		Annotations:            MakeKeyValuePairs(),
 		Perms2:                 MakePermType2(),
-		AnalyticsNodeIPAddress: MakeIpAddressType(),
+		AnalyticsNodeIPAddress: "",
+	}
+}
+
+// MakeAnalyticsNode makes AnalyticsNode
+func InterfaceToAnalyticsNode(i interface{}) *AnalyticsNode {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &AnalyticsNode{
+		//TODO(nati): Apply default
+		UUID:                   schema.InterfaceToString(m["uuid"]),
+		ParentUUID:             schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:             schema.InterfaceToString(m["parent_type"]),
+		FQName:                 schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:                InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:            schema.InterfaceToString(m["display_name"]),
+		Annotations:            InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:                 InterfaceToPermType2(m["perms2"]),
+		AnalyticsNodeIPAddress: schema.InterfaceToString(m["analytics_node_ip_address"]),
 	}
 }
 
 // MakeAnalyticsNodeSlice() makes a slice of AnalyticsNode
 func MakeAnalyticsNodeSlice() []*AnalyticsNode {
 	return []*AnalyticsNode{}
+}
+
+// InterfaceToAnalyticsNodeSlice() makes a slice of AnalyticsNode
+func InterfaceToAnalyticsNodeSlice(i interface{}) []*AnalyticsNode {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*AnalyticsNode{}
+	for _, item := range list {
+		result = append(result, InterfaceToAnalyticsNode(item))
+	}
+	return result
 }

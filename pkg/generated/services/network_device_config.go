@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTNetworkDeviceConfigUpdateRequest for update request for REST.
-type RESTNetworkDeviceConfigUpdateRequest struct {
-	Data map[string]interface{} `json:"network-device-config"`
-}
-
 //RESTCreateNetworkDeviceConfig handle a Create REST service.
 func (service *ContrailService) RESTCreateNetworkDeviceConfig(c echo.Context) error {
-	requestData := &models.CreateNetworkDeviceConfigRequest{
-		NetworkDeviceConfig: models.MakeNetworkDeviceConfig(),
-	}
+	requestData := &models.CreateNetworkDeviceConfigRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetNetworkDeviceConfig(c echo.Context) error
 func (service *ContrailService) GetNetworkDeviceConfig(ctx context.Context, request *models.GetNetworkDeviceConfigRequest) (response *models.GetNetworkDeviceConfigResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListNetworkDeviceConfigRequest{

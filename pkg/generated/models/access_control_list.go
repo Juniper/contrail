@@ -1,21 +1,11 @@
 package models
 
-// AccessControlList
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// AccessControlList
-//proteus:generate
-type AccessControlList struct {
-	UUID                     string          `json:"uuid,omitempty"`
-	ParentUUID               string          `json:"parent_uuid,omitempty"`
-	ParentType               string          `json:"parent_type,omitempty"`
-	FQName                   []string        `json:"fq_name,omitempty"`
-	IDPerms                  *IdPermsType    `json:"id_perms,omitempty"`
-	DisplayName              string          `json:"display_name,omitempty"`
-	Annotations              *KeyValuePairs  `json:"annotations,omitempty"`
-	Perms2                   *PermType2      `json:"perms2,omitempty"`
-	AccessControlListHash    int             `json:"access_control_list_hash,omitempty"`
-	AccessControlListEntries *AclEntriesType `json:"access_control_list_entries,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeAccessControlList makes AccessControlList
 func MakeAccessControlList() *AccessControlList {
@@ -34,7 +24,42 @@ func MakeAccessControlList() *AccessControlList {
 	}
 }
 
+// MakeAccessControlList makes AccessControlList
+func InterfaceToAccessControlList(i interface{}) *AccessControlList {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &AccessControlList{
+		//TODO(nati): Apply default
+		UUID:                     schema.InterfaceToString(m["uuid"]),
+		ParentUUID:               schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:               schema.InterfaceToString(m["parent_type"]),
+		FQName:                   schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:                  InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:              schema.InterfaceToString(m["display_name"]),
+		Annotations:              InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:                   InterfaceToPermType2(m["perms2"]),
+		AccessControlListHash:    schema.InterfaceToInt64(m["access_control_list_hash"]),
+		AccessControlListEntries: InterfaceToAclEntriesType(m["access_control_list_entries"]),
+	}
+}
+
 // MakeAccessControlListSlice() makes a slice of AccessControlList
 func MakeAccessControlListSlice() []*AccessControlList {
 	return []*AccessControlList{}
+}
+
+// InterfaceToAccessControlListSlice() makes a slice of AccessControlList
+func InterfaceToAccessControlListSlice(i interface{}) []*AccessControlList {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*AccessControlList{}
+	for _, item := range list {
+		result = append(result, InterfaceToAccessControlList(item))
+	}
+	return result
 }

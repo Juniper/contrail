@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTVirtualMachineInterfaceUpdateRequest for update request for REST.
-type RESTVirtualMachineInterfaceUpdateRequest struct {
-	Data map[string]interface{} `json:"virtual-machine-interface"`
-}
-
 //RESTCreateVirtualMachineInterface handle a Create REST service.
 func (service *ContrailService) RESTCreateVirtualMachineInterface(c echo.Context) error {
-	requestData := &models.CreateVirtualMachineInterfaceRequest{
-		VirtualMachineInterface: models.MakeVirtualMachineInterface(),
-	}
+	requestData := &models.CreateVirtualMachineInterfaceRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetVirtualMachineInterface(c echo.Context) e
 func (service *ContrailService) GetVirtualMachineInterface(ctx context.Context, request *models.GetVirtualMachineInterfaceRequest) (response *models.GetVirtualMachineInterfaceResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListVirtualMachineInterfaceRequest{

@@ -1,17 +1,8 @@
 package models
 
-// DnsRecordClassType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type DnsRecordClassType string
-
-// MakeDnsRecordClassType makes DnsRecordClassType
-func MakeDnsRecordClassType() DnsRecordClassType {
-	var data DnsRecordClassType
-	return data
-}
-
-// MakeDnsRecordClassTypeSlice() makes a slice of DnsRecordClassType
-func MakeDnsRecordClassTypeSlice() []DnsRecordClassType {
-	return []DnsRecordClassType{}
-}
+//To skip import error.
+var _ = schema.Version

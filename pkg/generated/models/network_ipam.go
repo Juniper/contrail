@@ -1,31 +1,11 @@
 package models
 
-// NetworkIpam
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// NetworkIpam
-//proteus:generate
-type NetworkIpam struct {
-	UUID             string           `json:"uuid,omitempty"`
-	ParentUUID       string           `json:"parent_uuid,omitempty"`
-	ParentType       string           `json:"parent_type,omitempty"`
-	FQName           []string         `json:"fq_name,omitempty"`
-	IDPerms          *IdPermsType     `json:"id_perms,omitempty"`
-	DisplayName      string           `json:"display_name,omitempty"`
-	Annotations      *KeyValuePairs   `json:"annotations,omitempty"`
-	Perms2           *PermType2       `json:"perms2,omitempty"`
-	NetworkIpamMGMT  *IpamType        `json:"network_ipam_mgmt,omitempty"`
-	IpamSubnets      *IpamSubnets     `json:"ipam_subnets,omitempty"`
-	IpamSubnetMethod SubnetMethodType `json:"ipam_subnet_method,omitempty"`
-
-	VirtualDNSRefs []*NetworkIpamVirtualDNSRef `json:"virtual_DNS_refs,omitempty"`
-}
-
-// NetworkIpamVirtualDNSRef references each other
-type NetworkIpamVirtualDNSRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeNetworkIpam makes NetworkIpam
 func MakeNetworkIpam() *NetworkIpam {
@@ -41,11 +21,47 @@ func MakeNetworkIpam() *NetworkIpam {
 		Perms2:           MakePermType2(),
 		NetworkIpamMGMT:  MakeIpamType(),
 		IpamSubnets:      MakeIpamSubnets(),
-		IpamSubnetMethod: MakeSubnetMethodType(),
+		IpamSubnetMethod: "",
+	}
+}
+
+// MakeNetworkIpam makes NetworkIpam
+func InterfaceToNetworkIpam(i interface{}) *NetworkIpam {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &NetworkIpam{
+		//TODO(nati): Apply default
+		UUID:             schema.InterfaceToString(m["uuid"]),
+		ParentUUID:       schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:       schema.InterfaceToString(m["parent_type"]),
+		FQName:           schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:          InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:      schema.InterfaceToString(m["display_name"]),
+		Annotations:      InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:           InterfaceToPermType2(m["perms2"]),
+		NetworkIpamMGMT:  InterfaceToIpamType(m["network_ipam_mgmt"]),
+		IpamSubnets:      InterfaceToIpamSubnets(m["ipam_subnets"]),
+		IpamSubnetMethod: schema.InterfaceToString(m["ipam_subnet_method"]),
 	}
 }
 
 // MakeNetworkIpamSlice() makes a slice of NetworkIpam
 func MakeNetworkIpamSlice() []*NetworkIpam {
 	return []*NetworkIpam{}
+}
+
+// InterfaceToNetworkIpamSlice() makes a slice of NetworkIpam
+func InterfaceToNetworkIpamSlice(i interface{}) []*NetworkIpam {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*NetworkIpam{}
+	for _, item := range list {
+		result = append(result, InterfaceToNetworkIpam(item))
+	}
+	return result
 }

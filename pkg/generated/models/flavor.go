@@ -1,30 +1,11 @@
 package models
 
-// Flavor
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// Flavor
-//proteus:generate
-type Flavor struct {
-	UUID        string         `json:"uuid,omitempty"`
-	ParentUUID  string         `json:"parent_uuid,omitempty"`
-	ParentType  string         `json:"parent_type,omitempty"`
-	FQName      []string       `json:"fq_name,omitempty"`
-	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName string         `json:"display_name,omitempty"`
-	Annotations *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2      *PermType2     `json:"perms2,omitempty"`
-	Name        string         `json:"name,omitempty"`
-	Disk        int            `json:"disk,omitempty"`
-	Vcpus       int            `json:"vcpus,omitempty"`
-	RAM         int            `json:"ram,omitempty"`
-	ID          string         `json:"id,omitempty"`
-	Property    string         `json:"property,omitempty"`
-	RXTXFactor  int            `json:"rxtx_factor,omitempty"`
-	Swap        int            `json:"swap,omitempty"`
-	IsPublic    bool           `json:"is_public"`
-	Ephemeral   int            `json:"ephemeral,omitempty"`
-	Links       *OpenStackLink `json:"links,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeFlavor makes Flavor
 func MakeFlavor() *Flavor {
@@ -52,7 +33,51 @@ func MakeFlavor() *Flavor {
 	}
 }
 
+// MakeFlavor makes Flavor
+func InterfaceToFlavor(i interface{}) *Flavor {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &Flavor{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		Name:        schema.InterfaceToString(m["name"]),
+		Disk:        schema.InterfaceToInt64(m["disk"]),
+		Vcpus:       schema.InterfaceToInt64(m["vcpus"]),
+		RAM:         schema.InterfaceToInt64(m["ram"]),
+		ID:          schema.InterfaceToString(m["id"]),
+		Property:    schema.InterfaceToString(m["property"]),
+		RXTXFactor:  schema.InterfaceToInt64(m["rxtx_factor"]),
+		Swap:        schema.InterfaceToInt64(m["swap"]),
+		IsPublic:    schema.InterfaceToBool(m["is_public"]),
+		Ephemeral:   schema.InterfaceToInt64(m["ephemeral"]),
+		Links:       InterfaceToOpenStackLink(m["links"]),
+	}
+}
+
 // MakeFlavorSlice() makes a slice of Flavor
 func MakeFlavorSlice() []*Flavor {
 	return []*Flavor{}
+}
+
+// InterfaceToFlavorSlice() makes a slice of Flavor
+func InterfaceToFlavorSlice(i interface{}) []*Flavor {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*Flavor{}
+	for _, item := range list {
+		result = append(result, InterfaceToFlavor(item))
+	}
+	return result
 }

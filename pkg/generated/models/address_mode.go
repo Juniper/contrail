@@ -1,17 +1,8 @@
 package models
 
-// AddressMode
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type AddressMode string
-
-// MakeAddressMode makes AddressMode
-func MakeAddressMode() AddressMode {
-	var data AddressMode
-	return data
-}
-
-// MakeAddressModeSlice() makes a slice of AddressMode
-func MakeAddressModeSlice() []AddressMode {
-	return []AddressMode{}
-}
+//To skip import error.
+var _ = schema.Version

@@ -1,48 +1,11 @@
 package models
 
-// Location
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// Location
-//proteus:generate
-type Location struct {
-	ProvisioningLog                  string         `json:"provisioning_log,omitempty"`
-	ProvisioningProgress             int            `json:"provisioning_progress,omitempty"`
-	ProvisioningProgressStage        string         `json:"provisioning_progress_stage,omitempty"`
-	ProvisioningStartTime            string         `json:"provisioning_start_time,omitempty"`
-	ProvisioningState                string         `json:"provisioning_state,omitempty"`
-	UUID                             string         `json:"uuid,omitempty"`
-	ParentUUID                       string         `json:"parent_uuid,omitempty"`
-	ParentType                       string         `json:"parent_type,omitempty"`
-	FQName                           []string       `json:"fq_name,omitempty"`
-	IDPerms                          *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName                      string         `json:"display_name,omitempty"`
-	Annotations                      *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2                           *PermType2     `json:"perms2,omitempty"`
-	Type                             string         `json:"type,omitempty"`
-	PrivateDNSServers                string         `json:"private_dns_servers,omitempty"`
-	PrivateNTPHosts                  string         `json:"private_ntp_hosts,omitempty"`
-	PrivateOspdPackageURL            string         `json:"private_ospd_package_url,omitempty"`
-	PrivateOspdUserName              string         `json:"private_ospd_user_name,omitempty"`
-	PrivateOspdUserPassword          string         `json:"private_ospd_user_password,omitempty"`
-	PrivateOspdVMDiskGB              string         `json:"private_ospd_vm_disk_gb,omitempty"`
-	PrivateOspdVMName                string         `json:"private_ospd_vm_name,omitempty"`
-	PrivateOspdVMRAMMB               string         `json:"private_ospd_vm_ram_mb,omitempty"`
-	PrivateOspdVMVcpus               string         `json:"private_ospd_vm_vcpus,omitempty"`
-	PrivateRedhatPoolID              string         `json:"private_redhat_pool_id,omitempty"`
-	PrivateRedhatSubscriptionKey     string         `json:"private_redhat_subscription_key,omitempty"`
-	PrivateRedhatSubscriptionPasword string         `json:"private_redhat_subscription_pasword,omitempty"`
-	PrivateRedhatSubscriptionUser    string         `json:"private_redhat_subscription_user,omitempty"`
-	GCPAccountInfo                   string         `json:"gcp_account_info,omitempty"`
-	GCPAsn                           int            `json:"gcp_asn,omitempty"`
-	GCPRegion                        string         `json:"gcp_region,omitempty"`
-	GCPSubnet                        string         `json:"gcp_subnet,omitempty"`
-	AwsAccessKey                     string         `json:"aws_access_key,omitempty"`
-	AwsRegion                        string         `json:"aws_region,omitempty"`
-	AwsSecretKey                     string         `json:"aws_secret_key,omitempty"`
-	AwsSubnet                        string         `json:"aws_subnet,omitempty"`
-
-	PhysicalRouters []*PhysicalRouter `json:"physical_routers,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeLocation makes Location
 func MakeLocation() *Location {
@@ -86,7 +49,67 @@ func MakeLocation() *Location {
 	}
 }
 
+// MakeLocation makes Location
+func InterfaceToLocation(i interface{}) *Location {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &Location{
+		//TODO(nati): Apply default
+		ProvisioningLog:                  schema.InterfaceToString(m["provisioning_log"]),
+		ProvisioningProgress:             schema.InterfaceToInt64(m["provisioning_progress"]),
+		ProvisioningProgressStage:        schema.InterfaceToString(m["provisioning_progress_stage"]),
+		ProvisioningStartTime:            schema.InterfaceToString(m["provisioning_start_time"]),
+		ProvisioningState:                schema.InterfaceToString(m["provisioning_state"]),
+		UUID:                             schema.InterfaceToString(m["uuid"]),
+		ParentUUID:                       schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:                       schema.InterfaceToString(m["parent_type"]),
+		FQName:                           schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:                          InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:                      schema.InterfaceToString(m["display_name"]),
+		Annotations:                      InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:                           InterfaceToPermType2(m["perms2"]),
+		Type:                             schema.InterfaceToString(m["type"]),
+		PrivateDNSServers:                schema.InterfaceToString(m["private_dns_servers"]),
+		PrivateNTPHosts:                  schema.InterfaceToString(m["private_ntp_hosts"]),
+		PrivateOspdPackageURL:            schema.InterfaceToString(m["private_ospd_package_url"]),
+		PrivateOspdUserName:              schema.InterfaceToString(m["private_ospd_user_name"]),
+		PrivateOspdUserPassword:          schema.InterfaceToString(m["private_ospd_user_password"]),
+		PrivateOspdVMDiskGB:              schema.InterfaceToString(m["private_ospd_vm_disk_gb"]),
+		PrivateOspdVMName:                schema.InterfaceToString(m["private_ospd_vm_name"]),
+		PrivateOspdVMRAMMB:               schema.InterfaceToString(m["private_ospd_vm_ram_mb"]),
+		PrivateOspdVMVcpus:               schema.InterfaceToString(m["private_ospd_vm_vcpus"]),
+		PrivateRedhatPoolID:              schema.InterfaceToString(m["private_redhat_pool_id"]),
+		PrivateRedhatSubscriptionKey:     schema.InterfaceToString(m["private_redhat_subscription_key"]),
+		PrivateRedhatSubscriptionPasword: schema.InterfaceToString(m["private_redhat_subscription_pasword"]),
+		PrivateRedhatSubscriptionUser:    schema.InterfaceToString(m["private_redhat_subscription_user"]),
+		GCPAccountInfo:                   schema.InterfaceToString(m["gcp_account_info"]),
+		GCPAsn:                           schema.InterfaceToInt64(m["gcp_asn"]),
+		GCPRegion:                        schema.InterfaceToString(m["gcp_region"]),
+		GCPSubnet:                        schema.InterfaceToString(m["gcp_subnet"]),
+		AwsAccessKey:                     schema.InterfaceToString(m["aws_access_key"]),
+		AwsRegion:                        schema.InterfaceToString(m["aws_region"]),
+		AwsSecretKey:                     schema.InterfaceToString(m["aws_secret_key"]),
+		AwsSubnet:                        schema.InterfaceToString(m["aws_subnet"]),
+	}
+}
+
 // MakeLocationSlice() makes a slice of Location
 func MakeLocationSlice() []*Location {
 	return []*Location{}
+}
+
+// InterfaceToLocationSlice() makes a slice of Location
+func InterfaceToLocationSlice(i interface{}) []*Location {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*Location{}
+	for _, item := range list {
+		result = append(result, InterfaceToLocation(item))
+	}
+	return result
 }

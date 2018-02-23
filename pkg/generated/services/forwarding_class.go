@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTForwardingClassUpdateRequest for update request for REST.
-type RESTForwardingClassUpdateRequest struct {
-	Data map[string]interface{} `json:"forwarding-class"`
-}
-
 //RESTCreateForwardingClass handle a Create REST service.
 func (service *ContrailService) RESTCreateForwardingClass(c echo.Context) error {
-	requestData := &models.CreateForwardingClassRequest{
-		ForwardingClass: models.MakeForwardingClass(),
-	}
+	requestData := &models.CreateForwardingClassRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetForwardingClass(c echo.Context) error {
 func (service *ContrailService) GetForwardingClass(ctx context.Context, request *models.GetForwardingClassRequest) (response *models.GetForwardingClassResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListForwardingClassRequest{

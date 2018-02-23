@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -53,28 +54,28 @@ var LoadbalancerPoolFields = []string{
 // LoadbalancerPoolRefFields is db reference fields for LoadbalancerPool
 var LoadbalancerPoolRefFields = map[string][]string{
 
-	"loadbalancer_listener": {
-	// <common.Schema Value>
+	"service_appliance_set": []string{
+		// <schema.Schema Value>
 
 	},
 
-	"service_instance": {
-	// <common.Schema Value>
+	"virtual_machine_interface": []string{
+		// <schema.Schema Value>
 
 	},
 
-	"loadbalancer_healthmonitor": {
-	// <common.Schema Value>
+	"loadbalancer_listener": []string{
+		// <schema.Schema Value>
 
 	},
 
-	"service_appliance_set": {
-	// <common.Schema Value>
+	"service_instance": []string{
+		// <schema.Schema Value>
 
 	},
 
-	"virtual_machine_interface": {
-	// <common.Schema Value>
+	"loadbalancer_healthmonitor": []string{
+		// <schema.Schema Value>
 
 	},
 }
@@ -82,7 +83,7 @@ var LoadbalancerPoolRefFields = map[string][]string{
 // LoadbalancerPoolBackRefFields is db back reference fields for LoadbalancerPool
 var LoadbalancerPoolBackRefFields = map[string][]string{
 
-	"loadbalancer_member": {
+	"loadbalancer_member": []string{
 		"uuid",
 		"share",
 		"owner_access",
@@ -119,15 +120,15 @@ var LoadbalancerPoolParents = []string{
 	"project",
 }
 
+const insertLoadbalancerPoolServiceApplianceSetQuery = "insert into `ref_loadbalancer_pool_service_appliance_set` (`from`, `to` ) values (?, ?);"
+
+const insertLoadbalancerPoolVirtualMachineInterfaceQuery = "insert into `ref_loadbalancer_pool_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
+
 const insertLoadbalancerPoolLoadbalancerListenerQuery = "insert into `ref_loadbalancer_pool_loadbalancer_listener` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerPoolServiceInstanceQuery = "insert into `ref_loadbalancer_pool_service_instance` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerPoolLoadbalancerHealthmonitorQuery = "insert into `ref_loadbalancer_pool_loadbalancer_healthmonitor` (`from`, `to` ) values (?, ?);"
-
-const insertLoadbalancerPoolServiceApplianceSetQuery = "insert into `ref_loadbalancer_pool_service_appliance_set` (`from`, `to` ) values (?, ?);"
-
-const insertLoadbalancerPoolVirtualMachineInterfaceQuery = "insert into `ref_loadbalancer_pool_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateLoadbalancerPool inserts LoadbalancerPool to DB
 func CreateLoadbalancerPool(
@@ -145,52 +146,39 @@ func CreateLoadbalancerPool(
 		"model": model,
 		"query": insertLoadbalancerPoolQuery,
 	}).Debug("create query")
-	_, err = stmt.ExecContext(ctx, string(model.UUID),
-		common.MustJSON(model.Perms2.Share),
-		int(model.Perms2.OwnerAccess),
-		string(model.Perms2.Owner),
-		int(model.Perms2.GlobalAccess),
-		string(model.ParentUUID),
-		string(model.ParentType),
-		string(model.LoadbalancerPoolProvider),
-		string(model.LoadbalancerPoolProperties.SubnetID),
-		string(model.LoadbalancerPoolProperties.StatusDescription),
-		string(model.LoadbalancerPoolProperties.Status),
-		string(model.LoadbalancerPoolProperties.SessionPersistence),
-		string(model.LoadbalancerPoolProperties.Protocol),
-		string(model.LoadbalancerPoolProperties.PersistenceCookieName),
-		string(model.LoadbalancerPoolProperties.LoadbalancerMethod),
-		bool(model.LoadbalancerPoolProperties.AdminState),
-		common.MustJSON(model.LoadbalancerPoolCustomAttributes.KeyValuePair),
-		bool(model.IDPerms.UserVisible),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OtherAccess),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Group),
-		string(model.IDPerms.LastModified),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Creator),
-		string(model.IDPerms.Created),
-		common.MustJSON(model.FQName),
-		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair))
+	_, err = stmt.ExecContext(ctx, string(model.GetUUID()),
+		common.MustJSON(model.GetPerms2().GetShare()),
+		int(model.GetPerms2().GetOwnerAccess()),
+		string(model.GetPerms2().GetOwner()),
+		int(model.GetPerms2().GetGlobalAccess()),
+		string(model.GetParentUUID()),
+		string(model.GetParentType()),
+		string(model.GetLoadbalancerPoolProvider()),
+		string(model.GetLoadbalancerPoolProperties().GetSubnetID()),
+		string(model.GetLoadbalancerPoolProperties().GetStatusDescription()),
+		string(model.GetLoadbalancerPoolProperties().GetStatus()),
+		string(model.GetLoadbalancerPoolProperties().GetSessionPersistence()),
+		string(model.GetLoadbalancerPoolProperties().GetProtocol()),
+		string(model.GetLoadbalancerPoolProperties().GetPersistenceCookieName()),
+		string(model.GetLoadbalancerPoolProperties().GetLoadbalancerMethod()),
+		bool(model.GetLoadbalancerPoolProperties().GetAdminState()),
+		common.MustJSON(model.GetLoadbalancerPoolCustomAttributes().GetKeyValuePair()),
+		bool(model.GetIDPerms().GetUserVisible()),
+		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
+		string(model.GetIDPerms().GetPermissions().GetOwner()),
+		int(model.GetIDPerms().GetPermissions().GetOtherAccess()),
+		int(model.GetIDPerms().GetPermissions().GetGroupAccess()),
+		string(model.GetIDPerms().GetPermissions().GetGroup()),
+		string(model.GetIDPerms().GetLastModified()),
+		bool(model.GetIDPerms().GetEnable()),
+		string(model.GetIDPerms().GetDescription()),
+		string(model.GetIDPerms().GetCreator()),
+		string(model.GetIDPerms().GetCreated()),
+		common.MustJSON(model.GetFQName()),
+		string(model.GetDisplayName()),
+		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
-	}
-
-	stmtServiceInstanceRef, err := tx.Prepare(insertLoadbalancerPoolServiceInstanceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceInstanceRefs create statement failed")
-	}
-	defer stmtServiceInstanceRef.Close()
-	for _, ref := range model.ServiceInstanceRefs {
-
-		_, err = stmtServiceInstanceRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceInstanceRefs create failed")
-		}
 	}
 
 	stmtLoadbalancerHealthmonitorRef, err := tx.Prepare(insertLoadbalancerPoolLoadbalancerHealthmonitorQuery)
@@ -245,6 +233,19 @@ func CreateLoadbalancerPool(
 		}
 	}
 
+	stmtServiceInstanceRef, err := tx.Prepare(insertLoadbalancerPoolServiceInstanceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceInstanceRefs create statement failed")
+	}
+	defer stmtServiceInstanceRef.Close()
+	for _, ref := range model.ServiceInstanceRefs {
+
+		_, err = stmtServiceInstanceRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceInstanceRefs create failed")
+		}
+	}
+
 	metaData := &common.MetaData{
 		UUID:   model.UUID,
 		Type:   "loadbalancer_pool",
@@ -254,7 +255,7 @@ func CreateLoadbalancerPool(
 	if err != nil {
 		return err
 	}
-	err = common.CreateSharing(tx, "loadbalancer_pool", model.UUID, model.Perms2.Share)
+	err = common.CreateSharing(tx, "loadbalancer_pool", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -269,9 +270,7 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
+		m.UUID = schema.InterfaceToString(value)
 
 	}
 
@@ -283,113 +282,85 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.Perms2.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
+		m.Perms2.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.Perms2.GlobalAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentUUID = castedValue
+		m.ParentUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentType = castedValue
+		m.ParentType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["loadbalancer_pool_provider"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.LoadbalancerPoolProvider = castedValue
+		m.LoadbalancerPoolProvider = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["subnet_id"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.LoadbalancerPoolProperties.SubnetID = models.UuidStringType(castedValue)
+		m.LoadbalancerPoolProperties.SubnetID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["status_description"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.LoadbalancerPoolProperties.StatusDescription = castedValue
+		m.LoadbalancerPoolProperties.StatusDescription = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["status"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.LoadbalancerPoolProperties.Status = castedValue
+		m.LoadbalancerPoolProperties.Status = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["session_persistence"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.LoadbalancerPoolProperties.SessionPersistence = models.SessionPersistenceType(castedValue)
+		m.LoadbalancerPoolProperties.SessionPersistence = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["protocol"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.LoadbalancerPoolProperties.Protocol = models.LoadbalancerProtocolType(castedValue)
+		m.LoadbalancerPoolProperties.Protocol = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["persistence_cookie_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.LoadbalancerPoolProperties.PersistenceCookieName = castedValue
+		m.LoadbalancerPoolProperties.PersistenceCookieName = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["loadbalancer_method"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.LoadbalancerPoolProperties.LoadbalancerMethod = models.LoadbalancerMethodType(castedValue)
+		m.LoadbalancerPoolProperties.LoadbalancerMethod = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["admin_state"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.LoadbalancerPoolProperties.AdminState = castedValue
+		m.LoadbalancerPoolProperties.AdminState = schema.InterfaceToBool(value)
 
 	}
 
@@ -401,89 +372,67 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.UserVisible = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
+		m.IDPerms.Permissions.Group = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.LastModified = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
+		m.IDPerms.Enable = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
+		m.IDPerms.Description = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.IDPerms.Creator = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
+		m.IDPerms.Created = schema.InterfaceToString(value)
 
 	}
 
@@ -495,9 +444,7 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		m.DisplayName = schema.InterfaceToString(value)
 
 	}
 
@@ -507,36 +454,16 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 
 	}
 
-	if value, ok := values["ref_loadbalancer_healthmonitor"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LoadbalancerPoolLoadbalancerHealthmonitorRef{}
-			referenceModel.UUID = uuid
-			m.LoadbalancerHealthmonitorRefs = append(m.LoadbalancerHealthmonitorRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_service_appliance_set"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
@@ -549,14 +476,14 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
@@ -569,14 +496,14 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 
 	if value, ok := values["ref_loadbalancer_listener"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
@@ -589,14 +516,14 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 
 	if value, ok := values["ref_service_instance"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
@@ -607,16 +534,36 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 		}
 	}
 
+	if value, ok := values["ref_loadbalancer_healthmonitor"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LoadbalancerPoolLoadbalancerHealthmonitorRef{}
+			referenceModel.UUID = uuid
+			m.LoadbalancerHealthmonitorRefs = append(m.LoadbalancerHealthmonitorRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["backref_loadbalancer_member"]; ok {
 		var childResources []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
 		for _, childResource := range childResources {
 			childResourceMap, ok := childResource.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
 			if uuid == "" {
 				continue
 			}
@@ -625,211 +572,163 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 
 			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.UUID = castedValue
+				childModel.UUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.OwnerAccess = models.AccessType(castedValue)
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.Perms2.Owner = castedValue
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.GlobalAccess = models.AccessType(castedValue)
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentUUID = castedValue
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentType = castedValue
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["weight"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.LoadbalancerMemberProperties.Weight = castedValue
+				childModel.LoadbalancerMemberProperties.Weight = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["status_description"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.LoadbalancerMemberProperties.StatusDescription = castedValue
+				childModel.LoadbalancerMemberProperties.StatusDescription = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["status"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.LoadbalancerMemberProperties.Status = castedValue
+				childModel.LoadbalancerMemberProperties.Status = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["protocol_port"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.LoadbalancerMemberProperties.ProtocolPort = castedValue
+				childModel.LoadbalancerMemberProperties.ProtocolPort = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["admin_state"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.LoadbalancerMemberProperties.AdminState = castedValue
+				childModel.LoadbalancerMemberProperties.AdminState = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["address"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.LoadbalancerMemberProperties.Address = models.IpAddressType(castedValue)
+				childModel.LoadbalancerMemberProperties.Address = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.UserVisible = castedValue
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Owner = castedValue
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Group = castedValue
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.LastModified = castedValue
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.Enable = castedValue
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Description = castedValue
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Creator = castedValue
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Created = castedValue
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.FQName)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
 
 			}
 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.DisplayName = castedValue
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
 
 			}
 
@@ -850,14 +749,14 @@ func ListLoadbalancerPool(ctx context.Context, tx *sql.Tx, request *models.ListL
 	qb.Fields = LoadbalancerPoolFields
 	qb.RefFields = LoadbalancerPoolRefFields
 	qb.BackRefFields = LoadbalancerPoolBackRefFields
-	result := models.MakeLoadbalancerPoolSlice()
+	result := []*models.LoadbalancerPool{}
 
 	if spec.ParentFQName != nil {
 		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
-		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+		spec.Filters = common.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 
 	query := qb.BuildQuery()

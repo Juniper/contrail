@@ -1,32 +1,11 @@
 package models
 
-// ForwardingClass
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// ForwardingClass
-//proteus:generate
-type ForwardingClass struct {
-	UUID                        string            `json:"uuid,omitempty"`
-	ParentUUID                  string            `json:"parent_uuid,omitempty"`
-	ParentType                  string            `json:"parent_type,omitempty"`
-	FQName                      []string          `json:"fq_name,omitempty"`
-	IDPerms                     *IdPermsType      `json:"id_perms,omitempty"`
-	DisplayName                 string            `json:"display_name,omitempty"`
-	Annotations                 *KeyValuePairs    `json:"annotations,omitempty"`
-	Perms2                      *PermType2        `json:"perms2,omitempty"`
-	ForwardingClassDSCP         DscpValueType     `json:"forwarding_class_dscp,omitempty"`
-	ForwardingClassVlanPriority VlanPriorityType  `json:"forwarding_class_vlan_priority,omitempty"`
-	ForwardingClassMPLSExp      MplsExpType       `json:"forwarding_class_mpls_exp,omitempty"`
-	ForwardingClassID           ForwardingClassId `json:"forwarding_class_id,omitempty"`
-
-	QosQueueRefs []*ForwardingClassQosQueueRef `json:"qos_queue_refs,omitempty"`
-}
-
-// ForwardingClassQosQueueRef references each other
-type ForwardingClassQosQueueRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeForwardingClass makes ForwardingClass
 func MakeForwardingClass() *ForwardingClass {
@@ -40,14 +19,51 @@ func MakeForwardingClass() *ForwardingClass {
 		DisplayName:                 "",
 		Annotations:                 MakeKeyValuePairs(),
 		Perms2:                      MakePermType2(),
-		ForwardingClassDSCP:         MakeDscpValueType(),
-		ForwardingClassVlanPriority: MakeVlanPriorityType(),
-		ForwardingClassMPLSExp:      MakeMplsExpType(),
-		ForwardingClassID:           MakeForwardingClassId(),
+		ForwardingClassDSCP:         0,
+		ForwardingClassVlanPriority: 0,
+		ForwardingClassMPLSExp:      0,
+		ForwardingClassID:           0,
+	}
+}
+
+// MakeForwardingClass makes ForwardingClass
+func InterfaceToForwardingClass(i interface{}) *ForwardingClass {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &ForwardingClass{
+		//TODO(nati): Apply default
+		UUID:                        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:                  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:                  schema.InterfaceToString(m["parent_type"]),
+		FQName:                      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:                     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:                 schema.InterfaceToString(m["display_name"]),
+		Annotations:                 InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:                      InterfaceToPermType2(m["perms2"]),
+		ForwardingClassDSCP:         schema.InterfaceToInt64(m["forwarding_class_dscp"]),
+		ForwardingClassVlanPriority: schema.InterfaceToInt64(m["forwarding_class_vlan_priority"]),
+		ForwardingClassMPLSExp:      schema.InterfaceToInt64(m["forwarding_class_mpls_exp"]),
+		ForwardingClassID:           schema.InterfaceToInt64(m["forwarding_class_id"]),
 	}
 }
 
 // MakeForwardingClassSlice() makes a slice of ForwardingClass
 func MakeForwardingClassSlice() []*ForwardingClass {
 	return []*ForwardingClass{}
+}
+
+// InterfaceToForwardingClassSlice() makes a slice of ForwardingClass
+func InterfaceToForwardingClassSlice(i interface{}) []*ForwardingClass {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*ForwardingClass{}
+	for _, item := range list {
+		result = append(result, InterfaceToForwardingClass(item))
+	}
+	return result
 }

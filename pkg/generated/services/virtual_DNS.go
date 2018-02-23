@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTVirtualDNSUpdateRequest for update request for REST.
-type RESTVirtualDNSUpdateRequest struct {
-	Data map[string]interface{} `json:"virtual-DNS"`
-}
-
 //RESTCreateVirtualDNS handle a Create REST service.
 func (service *ContrailService) RESTCreateVirtualDNS(c echo.Context) error {
-	requestData := &models.CreateVirtualDNSRequest{
-		VirtualDNS: models.MakeVirtualDNS(),
-	}
+	requestData := &models.CreateVirtualDNSRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetVirtualDNS(c echo.Context) error {
 func (service *ContrailService) GetVirtualDNS(ctx context.Context, request *models.GetVirtualDNSRequest) (response *models.GetVirtualDNSResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListVirtualDNSRequest{

@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTQosQueueUpdateRequest for update request for REST.
-type RESTQosQueueUpdateRequest struct {
-	Data map[string]interface{} `json:"qos-queue"`
-}
-
 //RESTCreateQosQueue handle a Create REST service.
 func (service *ContrailService) RESTCreateQosQueue(c echo.Context) error {
-	requestData := &models.CreateQosQueueRequest{
-		QosQueue: models.MakeQosQueue(),
-	}
+	requestData := &models.CreateQosQueueRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetQosQueue(c echo.Context) error {
 func (service *ContrailService) GetQosQueue(ctx context.Context, request *models.GetQosQueueRequest) (response *models.GetQosQueueResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListQosQueueRequest{

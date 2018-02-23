@@ -1,17 +1,8 @@
 package models
 
-// MplsExpType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type MplsExpType int
-
-// MakeMplsExpType makes MplsExpType
-func MakeMplsExpType() MplsExpType {
-	var data MplsExpType
-	return data
-}
-
-// MakeMplsExpTypeSlice() makes a slice of MplsExpType
-func MakeMplsExpTypeSlice() []MplsExpType {
-	return []MplsExpType{}
-}
+//To skip import error.
+var _ = schema.Version

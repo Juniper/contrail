@@ -1,17 +1,8 @@
 package models
 
-// EndOfRibTimeType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type EndOfRibTimeType int
-
-// MakeEndOfRibTimeType makes EndOfRibTimeType
-func MakeEndOfRibTimeType() EndOfRibTimeType {
-	var data EndOfRibTimeType
-	return data
-}
-
-// MakeEndOfRibTimeTypeSlice() makes a slice of EndOfRibTimeType
-func MakeEndOfRibTimeTypeSlice() []EndOfRibTimeType {
-	return []EndOfRibTimeType{}
-}
+//To skip import error.
+var _ = schema.Version

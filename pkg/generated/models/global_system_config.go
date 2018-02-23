@@ -1,61 +1,11 @@
 package models
 
-// GlobalSystemConfig
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// GlobalSystemConfig
-//proteus:generate
-type GlobalSystemConfig struct {
-	UUID                      string                         `json:"uuid,omitempty"`
-	ParentUUID                string                         `json:"parent_uuid,omitempty"`
-	ParentType                string                         `json:"parent_type,omitempty"`
-	FQName                    []string                       `json:"fq_name,omitempty"`
-	IDPerms                   *IdPermsType                   `json:"id_perms,omitempty"`
-	DisplayName               string                         `json:"display_name,omitempty"`
-	Annotations               *KeyValuePairs                 `json:"annotations,omitempty"`
-	Perms2                    *PermType2                     `json:"perms2,omitempty"`
-	ConfigVersion             string                         `json:"config_version,omitempty"`
-	BgpaasParameters          *BGPaaServiceParametersType    `json:"bgpaas_parameters,omitempty"`
-	AlarmEnable               bool                           `json:"alarm_enable"`
-	MacMoveControl            *MACMoveLimitControlType       `json:"mac_move_control,omitempty"`
-	PluginTuning              *PluginProperties              `json:"plugin_tuning,omitempty"`
-	IbgpAutoMesh              bool                           `json:"ibgp_auto_mesh"`
-	MacAgingTime              MACAgingTime                   `json:"mac_aging_time,omitempty"`
-	BGPAlwaysCompareMed       bool                           `json:"bgp_always_compare_med"`
-	UserDefinedLogStatistics  *UserDefinedLogStatList        `json:"user_defined_log_statistics,omitempty"`
-	GracefulRestartParameters *GracefulRestartParametersType `json:"graceful_restart_parameters,omitempty"`
-	IPFabricSubnets           *SubnetListType                `json:"ip_fabric_subnets,omitempty"`
-	AutonomousSystem          AutonomousSystemType           `json:"autonomous_system,omitempty"`
-	MacLimitControl           *MACLimitControlType           `json:"mac_limit_control,omitempty"`
-
-	BGPRouterRefs []*GlobalSystemConfigBGPRouterRef `json:"bgp_router_refs,omitempty"`
-
-	Alarms []*Alarm `json:"alarms,omitempty"`
-
-	AnalyticsNodes []*AnalyticsNode `json:"analytics_nodes,omitempty"`
-
-	APIAccessLists []*APIAccessList `json:"api_access_lists,omitempty"`
-
-	ConfigNodes []*ConfigNode `json:"config_nodes,omitempty"`
-
-	DatabaseNodes []*DatabaseNode `json:"database_nodes,omitempty"`
-
-	GlobalQosConfigs []*GlobalQosConfig `json:"global_qos_configs,omitempty"`
-
-	GlobalVrouterConfigs []*GlobalVrouterConfig `json:"global_vrouter_configs,omitempty"`
-
-	PhysicalRouters []*PhysicalRouter `json:"physical_routers,omitempty"`
-
-	ServiceApplianceSets []*ServiceApplianceSet `json:"service_appliance_sets,omitempty"`
-
-	VirtualRouters []*VirtualRouter `json:"virtual_routers,omitempty"`
-}
-
-// GlobalSystemConfigBGPRouterRef references each other
-type GlobalSystemConfigBGPRouterRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeGlobalSystemConfig makes GlobalSystemConfig
 func MakeGlobalSystemConfig() *GlobalSystemConfig {
@@ -75,17 +25,63 @@ func MakeGlobalSystemConfig() *GlobalSystemConfig {
 		MacMoveControl:            MakeMACMoveLimitControlType(),
 		PluginTuning:              MakePluginProperties(),
 		IbgpAutoMesh:              false,
-		MacAgingTime:              MakeMACAgingTime(),
+		MacAgingTime:              0,
 		BGPAlwaysCompareMed:       false,
 		UserDefinedLogStatistics:  MakeUserDefinedLogStatList(),
 		GracefulRestartParameters: MakeGracefulRestartParametersType(),
 		IPFabricSubnets:           MakeSubnetListType(),
-		AutonomousSystem:          MakeAutonomousSystemType(),
+		AutonomousSystem:          0,
 		MacLimitControl:           MakeMACLimitControlType(),
+	}
+}
+
+// MakeGlobalSystemConfig makes GlobalSystemConfig
+func InterfaceToGlobalSystemConfig(i interface{}) *GlobalSystemConfig {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &GlobalSystemConfig{
+		//TODO(nati): Apply default
+		UUID:                      schema.InterfaceToString(m["uuid"]),
+		ParentUUID:                schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:                schema.InterfaceToString(m["parent_type"]),
+		FQName:                    schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:                   InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:               schema.InterfaceToString(m["display_name"]),
+		Annotations:               InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:                    InterfaceToPermType2(m["perms2"]),
+		ConfigVersion:             schema.InterfaceToString(m["config_version"]),
+		BgpaasParameters:          InterfaceToBGPaaServiceParametersType(m["bgpaas_parameters"]),
+		AlarmEnable:               schema.InterfaceToBool(m["alarm_enable"]),
+		MacMoveControl:            InterfaceToMACMoveLimitControlType(m["mac_move_control"]),
+		PluginTuning:              InterfaceToPluginProperties(m["plugin_tuning"]),
+		IbgpAutoMesh:              schema.InterfaceToBool(m["ibgp_auto_mesh"]),
+		MacAgingTime:              schema.InterfaceToInt64(m["mac_aging_time"]),
+		BGPAlwaysCompareMed:       schema.InterfaceToBool(m["bgp_always_compare_med"]),
+		UserDefinedLogStatistics:  InterfaceToUserDefinedLogStatList(m["user_defined_log_statistics"]),
+		GracefulRestartParameters: InterfaceToGracefulRestartParametersType(m["graceful_restart_parameters"]),
+		IPFabricSubnets:           InterfaceToSubnetListType(m["ip_fabric_subnets"]),
+		AutonomousSystem:          schema.InterfaceToInt64(m["autonomous_system"]),
+		MacLimitControl:           InterfaceToMACLimitControlType(m["mac_limit_control"]),
 	}
 }
 
 // MakeGlobalSystemConfigSlice() makes a slice of GlobalSystemConfig
 func MakeGlobalSystemConfigSlice() []*GlobalSystemConfig {
 	return []*GlobalSystemConfig{}
+}
+
+// InterfaceToGlobalSystemConfigSlice() makes a slice of GlobalSystemConfig
+func InterfaceToGlobalSystemConfigSlice(i interface{}) []*GlobalSystemConfig {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*GlobalSystemConfig{}
+	for _, item := range list {
+		result = append(result, InterfaceToGlobalSystemConfig(item))
+	}
+	return result
 }

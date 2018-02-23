@@ -1,29 +1,11 @@
 package models
 
-// GlobalVrouterConfig
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// GlobalVrouterConfig
-//proteus:generate
-type GlobalVrouterConfig struct {
-	UUID                       string                         `json:"uuid,omitempty"`
-	ParentUUID                 string                         `json:"parent_uuid,omitempty"`
-	ParentType                 string                         `json:"parent_type,omitempty"`
-	FQName                     []string                       `json:"fq_name,omitempty"`
-	IDPerms                    *IdPermsType                   `json:"id_perms,omitempty"`
-	DisplayName                string                         `json:"display_name,omitempty"`
-	Annotations                *KeyValuePairs                 `json:"annotations,omitempty"`
-	Perms2                     *PermType2                     `json:"perms2,omitempty"`
-	EcmpHashingIncludeFields   *EcmpHashingIncludeFields      `json:"ecmp_hashing_include_fields,omitempty"`
-	FlowAgingTimeoutList       *FlowAgingTimeoutList          `json:"flow_aging_timeout_list,omitempty"`
-	ForwardingMode             ForwardingModeType             `json:"forwarding_mode,omitempty"`
-	FlowExportRate             int                            `json:"flow_export_rate,omitempty"`
-	LinklocalServices          *LinklocalServicesTypes        `json:"linklocal_services,omitempty"`
-	EncapsulationPriorities    *EncapsulationPrioritiesType   `json:"encapsulation_priorities,omitempty"`
-	VxlanNetworkIdentifierMode VxlanNetworkIdentifierModeType `json:"vxlan_network_identifier_mode,omitempty"`
-	EnableSecurityLogging      bool                           `json:"enable_security_logging"`
-
-	SecurityLoggingObjects []*SecurityLoggingObject `json:"security_logging_objects,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeGlobalVrouterConfig makes GlobalVrouterConfig
 func MakeGlobalVrouterConfig() *GlobalVrouterConfig {
@@ -39,16 +21,57 @@ func MakeGlobalVrouterConfig() *GlobalVrouterConfig {
 		Perms2:      MakePermType2(),
 		EcmpHashingIncludeFields:   MakeEcmpHashingIncludeFields(),
 		FlowAgingTimeoutList:       MakeFlowAgingTimeoutList(),
-		ForwardingMode:             MakeForwardingModeType(),
+		ForwardingMode:             "",
 		FlowExportRate:             0,
 		LinklocalServices:          MakeLinklocalServicesTypes(),
 		EncapsulationPriorities:    MakeEncapsulationPrioritiesType(),
-		VxlanNetworkIdentifierMode: MakeVxlanNetworkIdentifierModeType(),
+		VxlanNetworkIdentifierMode: "",
 		EnableSecurityLogging:      false,
+	}
+}
+
+// MakeGlobalVrouterConfig makes GlobalVrouterConfig
+func InterfaceToGlobalVrouterConfig(i interface{}) *GlobalVrouterConfig {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &GlobalVrouterConfig{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		EcmpHashingIncludeFields:   InterfaceToEcmpHashingIncludeFields(m["ecmp_hashing_include_fields"]),
+		FlowAgingTimeoutList:       InterfaceToFlowAgingTimeoutList(m["flow_aging_timeout_list"]),
+		ForwardingMode:             schema.InterfaceToString(m["forwarding_mode"]),
+		FlowExportRate:             schema.InterfaceToInt64(m["flow_export_rate"]),
+		LinklocalServices:          InterfaceToLinklocalServicesTypes(m["linklocal_services"]),
+		EncapsulationPriorities:    InterfaceToEncapsulationPrioritiesType(m["encapsulation_priorities"]),
+		VxlanNetworkIdentifierMode: schema.InterfaceToString(m["vxlan_network_identifier_mode"]),
+		EnableSecurityLogging:      schema.InterfaceToBool(m["enable_security_logging"]),
 	}
 }
 
 // MakeGlobalVrouterConfigSlice() makes a slice of GlobalVrouterConfig
 func MakeGlobalVrouterConfigSlice() []*GlobalVrouterConfig {
 	return []*GlobalVrouterConfig{}
+}
+
+// InterfaceToGlobalVrouterConfigSlice() makes a slice of GlobalVrouterConfig
+func InterfaceToGlobalVrouterConfigSlice(i interface{}) []*GlobalVrouterConfig {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*GlobalVrouterConfig{}
+	for _, item := range list {
+		result = append(result, InterfaceToGlobalVrouterConfig(item))
+	}
+	return result
 }

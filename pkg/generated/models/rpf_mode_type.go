@@ -1,17 +1,8 @@
 package models
 
-// RpfModeType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type RpfModeType string
-
-// MakeRpfModeType makes RpfModeType
-func MakeRpfModeType() RpfModeType {
-	var data RpfModeType
-	return data
-}
-
-// MakeRpfModeTypeSlice() makes a slice of RpfModeType
-func MakeRpfModeTypeSlice() []RpfModeType {
-	return []RpfModeType{}
-}
+//To skip import error.
+var _ = schema.Version

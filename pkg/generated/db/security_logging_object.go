@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -45,13 +46,13 @@ var SecurityLoggingObjectFields = []string{
 // SecurityLoggingObjectRefFields is db reference fields for SecurityLoggingObject
 var SecurityLoggingObjectRefFields = map[string][]string{
 
-	"security_group": {
-		// <common.Schema Value>
+	"security_group": []string{
+		// <schema.Schema Value>
 		"rule",
 	},
 
-	"network_policy": {
-		// <common.Schema Value>
+	"network_policy": []string{
+		// <schema.Schema Value>
 		"rule",
 	},
 }
@@ -87,29 +88,29 @@ func CreateSecurityLoggingObject(
 		"model": model,
 		"query": insertSecurityLoggingObjectQuery,
 	}).Debug("create query")
-	_, err = stmt.ExecContext(ctx, string(model.UUID),
-		common.MustJSON(model.SecurityLoggingObjectRules.Rule),
-		int(model.SecurityLoggingObjectRate),
-		common.MustJSON(model.Perms2.Share),
-		int(model.Perms2.OwnerAccess),
-		string(model.Perms2.Owner),
-		int(model.Perms2.GlobalAccess),
-		string(model.ParentUUID),
-		string(model.ParentType),
-		bool(model.IDPerms.UserVisible),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OtherAccess),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Group),
-		string(model.IDPerms.LastModified),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Creator),
-		string(model.IDPerms.Created),
-		common.MustJSON(model.FQName),
-		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair))
+	_, err = stmt.ExecContext(ctx, string(model.GetUUID()),
+		common.MustJSON(model.GetSecurityLoggingObjectRules().GetRule()),
+		int(model.GetSecurityLoggingObjectRate()),
+		common.MustJSON(model.GetPerms2().GetShare()),
+		int(model.GetPerms2().GetOwnerAccess()),
+		string(model.GetPerms2().GetOwner()),
+		int(model.GetPerms2().GetGlobalAccess()),
+		string(model.GetParentUUID()),
+		string(model.GetParentType()),
+		bool(model.GetIDPerms().GetUserVisible()),
+		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
+		string(model.GetIDPerms().GetPermissions().GetOwner()),
+		int(model.GetIDPerms().GetPermissions().GetOtherAccess()),
+		int(model.GetIDPerms().GetPermissions().GetGroupAccess()),
+		string(model.GetIDPerms().GetPermissions().GetGroup()),
+		string(model.GetIDPerms().GetLastModified()),
+		bool(model.GetIDPerms().GetEnable()),
+		string(model.GetIDPerms().GetDescription()),
+		string(model.GetIDPerms().GetCreator()),
+		string(model.GetIDPerms().GetCreated()),
+		common.MustJSON(model.GetFQName()),
+		string(model.GetDisplayName()),
+		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -122,10 +123,10 @@ func CreateSecurityLoggingObject(
 	for _, ref := range model.SecurityGroupRefs {
 
 		if ref.Attr == nil {
-			ref.Attr = models.MakeSecurityLoggingObjectRuleListType()
+			ref.Attr = &models.SecurityLoggingObjectRuleListType{}
 		}
 
-		_, err = stmtSecurityGroupRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.Rule))
+		_, err = stmtSecurityGroupRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetRule()))
 		if err != nil {
 			return errors.Wrap(err, "SecurityGroupRefs create failed")
 		}
@@ -139,10 +140,10 @@ func CreateSecurityLoggingObject(
 	for _, ref := range model.NetworkPolicyRefs {
 
 		if ref.Attr == nil {
-			ref.Attr = models.MakeSecurityLoggingObjectRuleListType()
+			ref.Attr = &models.SecurityLoggingObjectRuleListType{}
 		}
 
-		_, err = stmtNetworkPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.Rule))
+		_, err = stmtNetworkPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetRule()))
 		if err != nil {
 			return errors.Wrap(err, "NetworkPolicyRefs create failed")
 		}
@@ -157,7 +158,7 @@ func CreateSecurityLoggingObject(
 	if err != nil {
 		return err
 	}
-	err = common.CreateSharing(tx, "security_logging_object", model.UUID, model.Perms2.Share)
+	err = common.CreateSharing(tx, "security_logging_object", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -172,9 +173,7 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
+		m.UUID = schema.InterfaceToString(value)
 
 	}
 
@@ -186,9 +185,7 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 
 	if value, ok := values["security_logging_object_rate"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.SecurityLoggingObjectRate = castedValue
+		m.SecurityLoggingObjectRate = schema.InterfaceToInt64(value)
 
 	}
 
@@ -200,129 +197,97 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.Perms2.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
+		m.Perms2.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.Perms2.GlobalAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentUUID = castedValue
+		m.ParentUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentType = castedValue
+		m.ParentType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.UserVisible = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
+		m.IDPerms.Permissions.Group = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.LastModified = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
+		m.IDPerms.Enable = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
+		m.IDPerms.Description = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.IDPerms.Creator = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
+		m.IDPerms.Created = schema.InterfaceToString(value)
 
 	}
 
@@ -334,9 +299,7 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		m.DisplayName = schema.InterfaceToString(value)
 
 	}
 
@@ -346,22 +309,22 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 
 	}
 
-	if value, ok := values["ref_security_group"]; ok {
+	if value, ok := values["ref_network_policy"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
-			referenceModel := &models.SecurityLoggingObjectSecurityGroupRef{}
+			referenceModel := &models.SecurityLoggingObjectNetworkPolicyRef{}
 			referenceModel.UUID = uuid
-			m.SecurityGroupRefs = append(m.SecurityGroupRefs, referenceModel)
+			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
 
 			attr := models.MakeSecurityLoggingObjectRuleListType()
 			referenceModel.Attr = attr
@@ -369,22 +332,22 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 		}
 	}
 
-	if value, ok := values["ref_network_policy"]; ok {
+	if value, ok := values["ref_security_group"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
-			referenceModel := &models.SecurityLoggingObjectNetworkPolicyRef{}
+			referenceModel := &models.SecurityLoggingObjectSecurityGroupRef{}
 			referenceModel.UUID = uuid
-			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
+			m.SecurityGroupRefs = append(m.SecurityGroupRefs, referenceModel)
 
 			attr := models.MakeSecurityLoggingObjectRuleListType()
 			referenceModel.Attr = attr
@@ -406,14 +369,14 @@ func ListSecurityLoggingObject(ctx context.Context, tx *sql.Tx, request *models.
 	qb.Fields = SecurityLoggingObjectFields
 	qb.RefFields = SecurityLoggingObjectRefFields
 	qb.BackRefFields = SecurityLoggingObjectBackRefFields
-	result := models.MakeSecurityLoggingObjectSlice()
+	result := []*models.SecurityLoggingObject{}
 
 	if spec.ParentFQName != nil {
 		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
-		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+		spec.Filters = common.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 
 	query := qb.BuildQuery()

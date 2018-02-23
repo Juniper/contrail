@@ -1,34 +1,11 @@
 package models
 
-// VPNGroup
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// VPNGroup
-//proteus:generate
-type VPNGroup struct {
-	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
-	ProvisioningProgress      int            `json:"provisioning_progress,omitempty"`
-	ProvisioningProgressStage string         `json:"provisioning_progress_stage,omitempty"`
-	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
-	ProvisioningState         string         `json:"provisioning_state,omitempty"`
-	UUID                      string         `json:"uuid,omitempty"`
-	ParentUUID                string         `json:"parent_uuid,omitempty"`
-	ParentType                string         `json:"parent_type,omitempty"`
-	FQName                    []string       `json:"fq_name,omitempty"`
-	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName               string         `json:"display_name,omitempty"`
-	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2                    *PermType2     `json:"perms2,omitempty"`
-	Type                      string         `json:"type,omitempty"`
-
-	LocationRefs []*VPNGroupLocationRef `json:"location_refs,omitempty"`
-}
-
-// VPNGroupLocationRef references each other
-type VPNGroupLocationRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeVPNGroup makes VPNGroup
 func MakeVPNGroup() *VPNGroup {
@@ -51,7 +28,46 @@ func MakeVPNGroup() *VPNGroup {
 	}
 }
 
+// MakeVPNGroup makes VPNGroup
+func InterfaceToVPNGroup(i interface{}) *VPNGroup {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &VPNGroup{
+		//TODO(nati): Apply default
+		ProvisioningLog:           schema.InterfaceToString(m["provisioning_log"]),
+		ProvisioningProgress:      schema.InterfaceToInt64(m["provisioning_progress"]),
+		ProvisioningProgressStage: schema.InterfaceToString(m["provisioning_progress_stage"]),
+		ProvisioningStartTime:     schema.InterfaceToString(m["provisioning_start_time"]),
+		ProvisioningState:         schema.InterfaceToString(m["provisioning_state"]),
+		UUID:                      schema.InterfaceToString(m["uuid"]),
+		ParentUUID:                schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:                schema.InterfaceToString(m["parent_type"]),
+		FQName:                    schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:                   InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:               schema.InterfaceToString(m["display_name"]),
+		Annotations:               InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:                    InterfaceToPermType2(m["perms2"]),
+		Type:                      schema.InterfaceToString(m["type"]),
+	}
+}
+
 // MakeVPNGroupSlice() makes a slice of VPNGroup
 func MakeVPNGroupSlice() []*VPNGroup {
 	return []*VPNGroup{}
+}
+
+// InterfaceToVPNGroupSlice() makes a slice of VPNGroup
+func InterfaceToVPNGroupSlice(i interface{}) []*VPNGroup {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*VPNGroup{}
+	for _, item := range list {
+		result = append(result, InterfaceToVPNGroup(item))
+	}
+	return result
 }

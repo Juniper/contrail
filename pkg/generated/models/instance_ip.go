@@ -1,71 +1,11 @@
 package models
 
-// InstanceIP
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// InstanceIP
-//proteus:generate
-type InstanceIP struct {
-	UUID                  string              `json:"uuid,omitempty"`
-	ParentUUID            string              `json:"parent_uuid,omitempty"`
-	ParentType            string              `json:"parent_type,omitempty"`
-	FQName                []string            `json:"fq_name,omitempty"`
-	IDPerms               *IdPermsType        `json:"id_perms,omitempty"`
-	DisplayName           string              `json:"display_name,omitempty"`
-	Annotations           *KeyValuePairs      `json:"annotations,omitempty"`
-	Perms2                *PermType2          `json:"perms2,omitempty"`
-	ServiceHealthCheckIP  bool                `json:"service_health_check_ip"`
-	SecondaryIPTrackingIP *SubnetType         `json:"secondary_ip_tracking_ip,omitempty"`
-	InstanceIPAddress     IpAddressType       `json:"instance_ip_address,omitempty"`
-	InstanceIPMode        AddressMode         `json:"instance_ip_mode,omitempty"`
-	SubnetUUID            string              `json:"subnet_uuid,omitempty"`
-	InstanceIPFamily      IpAddressFamilyType `json:"instance_ip_family,omitempty"`
-	ServiceInstanceIP     bool                `json:"service_instance_ip"`
-	InstanceIPLocalIP     bool                `json:"instance_ip_local_ip"`
-	InstanceIPSecondary   bool                `json:"instance_ip_secondary"`
-
-	NetworkIpamRefs             []*InstanceIPNetworkIpamRef             `json:"network_ipam_refs,omitempty"`
-	VirtualNetworkRefs          []*InstanceIPVirtualNetworkRef          `json:"virtual_network_refs,omitempty"`
-	VirtualMachineInterfaceRefs []*InstanceIPVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
-	PhysicalRouterRefs          []*InstanceIPPhysicalRouterRef          `json:"physical_router_refs,omitempty"`
-	VirtualRouterRefs           []*InstanceIPVirtualRouterRef           `json:"virtual_router_refs,omitempty"`
-
-	FloatingIPs []*FloatingIP `json:"floating_ips,omitempty"`
-}
-
-// InstanceIPVirtualMachineInterfaceRef references each other
-type InstanceIPVirtualMachineInterfaceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// InstanceIPPhysicalRouterRef references each other
-type InstanceIPPhysicalRouterRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// InstanceIPVirtualRouterRef references each other
-type InstanceIPVirtualRouterRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// InstanceIPNetworkIpamRef references each other
-type InstanceIPNetworkIpamRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// InstanceIPVirtualNetworkRef references each other
-type InstanceIPVirtualNetworkRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeInstanceIP makes InstanceIP
 func MakeInstanceIP() *InstanceIP {
@@ -81,17 +21,59 @@ func MakeInstanceIP() *InstanceIP {
 		Perms2:                MakePermType2(),
 		ServiceHealthCheckIP:  false,
 		SecondaryIPTrackingIP: MakeSubnetType(),
-		InstanceIPAddress:     MakeIpAddressType(),
-		InstanceIPMode:        MakeAddressMode(),
+		InstanceIPAddress:     "",
+		InstanceIPMode:        "",
 		SubnetUUID:            "",
-		InstanceIPFamily:      MakeIpAddressFamilyType(),
+		InstanceIPFamily:      "",
 		ServiceInstanceIP:     false,
 		InstanceIPLocalIP:     false,
 		InstanceIPSecondary:   false,
 	}
 }
 
+// MakeInstanceIP makes InstanceIP
+func InterfaceToInstanceIP(i interface{}) *InstanceIP {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &InstanceIP{
+		//TODO(nati): Apply default
+		UUID:                  schema.InterfaceToString(m["uuid"]),
+		ParentUUID:            schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:            schema.InterfaceToString(m["parent_type"]),
+		FQName:                schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:               InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:           schema.InterfaceToString(m["display_name"]),
+		Annotations:           InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:                InterfaceToPermType2(m["perms2"]),
+		ServiceHealthCheckIP:  schema.InterfaceToBool(m["service_health_check_ip"]),
+		SecondaryIPTrackingIP: InterfaceToSubnetType(m["secondary_ip_tracking_ip"]),
+		InstanceIPAddress:     schema.InterfaceToString(m["instance_ip_address"]),
+		InstanceIPMode:        schema.InterfaceToString(m["instance_ip_mode"]),
+		SubnetUUID:            schema.InterfaceToString(m["subnet_uuid"]),
+		InstanceIPFamily:      schema.InterfaceToString(m["instance_ip_family"]),
+		ServiceInstanceIP:     schema.InterfaceToBool(m["service_instance_ip"]),
+		InstanceIPLocalIP:     schema.InterfaceToBool(m["instance_ip_local_ip"]),
+		InstanceIPSecondary:   schema.InterfaceToBool(m["instance_ip_secondary"]),
+	}
+}
+
 // MakeInstanceIPSlice() makes a slice of InstanceIP
 func MakeInstanceIPSlice() []*InstanceIP {
 	return []*InstanceIP{}
+}
+
+// InterfaceToInstanceIPSlice() makes a slice of InstanceIP
+func InterfaceToInstanceIPSlice(i interface{}) []*InstanceIP {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*InstanceIP{}
+	for _, item := range list {
+		result = append(result, InterfaceToInstanceIP(item))
+	}
+	return result
 }

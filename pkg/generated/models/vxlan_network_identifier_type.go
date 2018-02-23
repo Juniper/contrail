@@ -1,17 +1,8 @@
 package models
 
-// VxlanNetworkIdentifierType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type VxlanNetworkIdentifierType int
-
-// MakeVxlanNetworkIdentifierType makes VxlanNetworkIdentifierType
-func MakeVxlanNetworkIdentifierType() VxlanNetworkIdentifierType {
-	var data VxlanNetworkIdentifierType
-	return data
-}
-
-// MakeVxlanNetworkIdentifierTypeSlice() makes a slice of VxlanNetworkIdentifierType
-func MakeVxlanNetworkIdentifierTypeSlice() []VxlanNetworkIdentifierType {
-	return []VxlanNetworkIdentifierType{}
-}
+//To skip import error.
+var _ = schema.Version

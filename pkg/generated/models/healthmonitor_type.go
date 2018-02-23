@@ -1,17 +1,8 @@
 package models
 
-// HealthmonitorType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type HealthmonitorType string
-
-// MakeHealthmonitorType makes HealthmonitorType
-func MakeHealthmonitorType() HealthmonitorType {
-	var data HealthmonitorType
-	return data
-}
-
-// MakeHealthmonitorTypeSlice() makes a slice of HealthmonitorType
-func MakeHealthmonitorTypeSlice() []HealthmonitorType {
-	return []HealthmonitorType{}
-}
+//To skip import error.
+var _ = schema.Version

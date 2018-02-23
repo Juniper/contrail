@@ -12,17 +12,20 @@ import (
 	"github.com/pkg/errors"
 )
 
+//For skip import error.
+var _ = errors.New("")
+
 func TestFirewallPolicy(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 	db := testDB
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	common.UseTable(db, "metadata")
-	common.UseTable(db, "firewall_policy")
+	mutexMetadata := common.UseTable(db, "metadata")
+	mutexTable := common.UseTable(db, "firewall_policy")
 	defer func() {
-		common.ClearTable(db, "firewall_policy")
-		common.ClearTable(db, "metadata")
+		mutexTable.Unlock()
+		mutexMetadata.Unlock()
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -225,6 +228,14 @@ func TestFirewallPolicy(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
+	//    var SecurityLoggingObjectref []interface{}
+	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"firewall_policy_security_logging_object_ref_uuid", "to": []string{"test", "firewall_policy_security_logging_object_ref_uuid"}})
+	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"firewall_policy_security_logging_object_ref_uuid1", "to": []string{"test", "firewall_policy_security_logging_object_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "SecurityLoggingObjectRefs", ".", SecurityLoggingObjectref)
+	//
 	//    var FirewallRuleref []interface{}
 	//    FirewallRuleref = append(FirewallRuleref, map[string]interface{}{"operation":"delete", "uuid":"firewall_policy_firewall_rule_ref_uuid", "to": []string{"test", "firewall_policy_firewall_rule_ref_uuid"}})
 	//    FirewallRuleref = append(FirewallRuleref, map[string]interface{}{"operation":"add", "uuid":"firewall_policy_firewall_rule_ref_uuid1", "to": []string{"test", "firewall_policy_firewall_rule_ref_uuid1"}})
@@ -240,14 +251,6 @@ func TestFirewallPolicy(t *testing.T) {
 	//    FirewallRuleref = append(FirewallRuleref, map[string]interface{}{"operation":"update", "uuid":"firewall_policy_firewall_rule_ref_uuid2", "to": []string{"test", "firewall_policy_firewall_rule_ref_uuid2"}, "attr": FirewallRuleAttr})
 	//
 	//    common.SetValueByPath(updateMap, "FirewallRuleRefs", ".", FirewallRuleref)
-	//
-	//    var SecurityLoggingObjectref []interface{}
-	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"firewall_policy_security_logging_object_ref_uuid", "to": []string{"test", "firewall_policy_security_logging_object_ref_uuid"}})
-	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"firewall_policy_security_logging_object_ref_uuid1", "to": []string{"test", "firewall_policy_security_logging_object_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "SecurityLoggingObjectRefs", ".", SecurityLoggingObjectref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

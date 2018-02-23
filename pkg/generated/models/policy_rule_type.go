@@ -1,30 +1,17 @@
 package models
 
-// PolicyRuleType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// PolicyRuleType
-//proteus:generate
-type PolicyRuleType struct {
-	Direction    DirectionType   `json:"direction,omitempty"`
-	Protocol     string          `json:"protocol,omitempty"`
-	DSTAddresses []*AddressType  `json:"dst_addresses,omitempty"`
-	ActionList   *ActionListType `json:"action_list,omitempty"`
-	Created      string          `json:"created,omitempty"`
-	RuleUUID     string          `json:"rule_uuid,omitempty"`
-	DSTPorts     []*PortType     `json:"dst_ports,omitempty"`
-	Application  []string        `json:"application,omitempty"`
-	LastModified string          `json:"last_modified,omitempty"`
-	Ethertype    EtherType       `json:"ethertype,omitempty"`
-	SRCAddresses []*AddressType  `json:"src_addresses,omitempty"`
-	RuleSequence *SequenceType   `json:"rule_sequence,omitempty"`
-	SRCPorts     []*PortType     `json:"src_ports,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakePolicyRuleType makes PolicyRuleType
 func MakePolicyRuleType() *PolicyRuleType {
 	return &PolicyRuleType{
 		//TODO(nati): Apply default
-		Direction: MakeDirectionType(),
+		Direction: "",
 		Protocol:  "",
 
 		DSTAddresses: MakeAddressTypeSlice(),
@@ -37,7 +24,7 @@ func MakePolicyRuleType() *PolicyRuleType {
 
 		Application:  []string{},
 		LastModified: "",
-		Ethertype:    MakeEtherType(),
+		Ethertype:    "",
 
 		SRCAddresses: MakeAddressTypeSlice(),
 
@@ -47,7 +34,52 @@ func MakePolicyRuleType() *PolicyRuleType {
 	}
 }
 
+// MakePolicyRuleType makes PolicyRuleType
+func InterfaceToPolicyRuleType(i interface{}) *PolicyRuleType {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &PolicyRuleType{
+		//TODO(nati): Apply default
+		Direction: schema.InterfaceToString(m["direction"]),
+		Protocol:  schema.InterfaceToString(m["protocol"]),
+
+		DSTAddresses: InterfaceToAddressTypeSlice(m["dst_addresses"]),
+
+		ActionList: InterfaceToActionListType(m["action_list"]),
+		Created:    schema.InterfaceToString(m["created"]),
+		RuleUUID:   schema.InterfaceToString(m["rule_uuid"]),
+
+		DSTPorts: InterfaceToPortTypeSlice(m["dst_ports"]),
+
+		Application:  schema.InterfaceToStringList(m["application"]),
+		LastModified: schema.InterfaceToString(m["last_modified"]),
+		Ethertype:    schema.InterfaceToString(m["ethertype"]),
+
+		SRCAddresses: InterfaceToAddressTypeSlice(m["src_addresses"]),
+
+		RuleSequence: InterfaceToSequenceType(m["rule_sequence"]),
+
+		SRCPorts: InterfaceToPortTypeSlice(m["src_ports"]),
+	}
+}
+
 // MakePolicyRuleTypeSlice() makes a slice of PolicyRuleType
 func MakePolicyRuleTypeSlice() []*PolicyRuleType {
 	return []*PolicyRuleType{}
+}
+
+// InterfaceToPolicyRuleTypeSlice() makes a slice of PolicyRuleType
+func InterfaceToPolicyRuleTypeSlice(i interface{}) []*PolicyRuleType {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*PolicyRuleType{}
+	for _, item := range list {
+		result = append(result, InterfaceToPolicyRuleType(item))
+	}
+	return result
 }

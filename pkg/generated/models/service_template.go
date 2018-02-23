@@ -1,29 +1,11 @@
 package models
 
-// ServiceTemplate
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// ServiceTemplate
-//proteus:generate
-type ServiceTemplate struct {
-	UUID                      string               `json:"uuid,omitempty"`
-	ParentUUID                string               `json:"parent_uuid,omitempty"`
-	ParentType                string               `json:"parent_type,omitempty"`
-	FQName                    []string             `json:"fq_name,omitempty"`
-	IDPerms                   *IdPermsType         `json:"id_perms,omitempty"`
-	DisplayName               string               `json:"display_name,omitempty"`
-	Annotations               *KeyValuePairs       `json:"annotations,omitempty"`
-	Perms2                    *PermType2           `json:"perms2,omitempty"`
-	ServiceTemplateProperties *ServiceTemplateType `json:"service_template_properties,omitempty"`
-
-	ServiceApplianceSetRefs []*ServiceTemplateServiceApplianceSetRef `json:"service_appliance_set_refs,omitempty"`
-}
-
-// ServiceTemplateServiceApplianceSetRef references each other
-type ServiceTemplateServiceApplianceSetRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeServiceTemplate makes ServiceTemplate
 func MakeServiceTemplate() *ServiceTemplate {
@@ -41,7 +23,41 @@ func MakeServiceTemplate() *ServiceTemplate {
 	}
 }
 
+// MakeServiceTemplate makes ServiceTemplate
+func InterfaceToServiceTemplate(i interface{}) *ServiceTemplate {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &ServiceTemplate{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		ServiceTemplateProperties: InterfaceToServiceTemplateType(m["service_template_properties"]),
+	}
+}
+
 // MakeServiceTemplateSlice() makes a slice of ServiceTemplate
 func MakeServiceTemplateSlice() []*ServiceTemplate {
 	return []*ServiceTemplate{}
+}
+
+// InterfaceToServiceTemplateSlice() makes a slice of ServiceTemplate
+func InterfaceToServiceTemplateSlice(i interface{}) []*ServiceTemplate {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*ServiceTemplate{}
+	for _, item := range list {
+		result = append(result, InterfaceToServiceTemplate(item))
+	}
+	return result
 }

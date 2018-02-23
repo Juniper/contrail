@@ -1,20 +1,11 @@
 package models
 
-// Namespace
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// Namespace
-//proteus:generate
-type Namespace struct {
-	UUID          string         `json:"uuid,omitempty"`
-	ParentUUID    string         `json:"parent_uuid,omitempty"`
-	ParentType    string         `json:"parent_type,omitempty"`
-	FQName        []string       `json:"fq_name,omitempty"`
-	IDPerms       *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName   string         `json:"display_name,omitempty"`
-	Annotations   *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2        *PermType2     `json:"perms2,omitempty"`
-	NamespaceCidr *SubnetType    `json:"namespace_cidr,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeNamespace makes Namespace
 func MakeNamespace() *Namespace {
@@ -32,7 +23,41 @@ func MakeNamespace() *Namespace {
 	}
 }
 
+// MakeNamespace makes Namespace
+func InterfaceToNamespace(i interface{}) *Namespace {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &Namespace{
+		//TODO(nati): Apply default
+		UUID:          schema.InterfaceToString(m["uuid"]),
+		ParentUUID:    schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:    schema.InterfaceToString(m["parent_type"]),
+		FQName:        schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:       InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:   schema.InterfaceToString(m["display_name"]),
+		Annotations:   InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:        InterfaceToPermType2(m["perms2"]),
+		NamespaceCidr: InterfaceToSubnetType(m["namespace_cidr"]),
+	}
+}
+
 // MakeNamespaceSlice() makes a slice of Namespace
 func MakeNamespaceSlice() []*Namespace {
 	return []*Namespace{}
+}
+
+// InterfaceToNamespaceSlice() makes a slice of Namespace
+func InterfaceToNamespaceSlice(i interface{}) []*Namespace {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*Namespace{}
+	for _, item := range list {
+		result = append(result, InterfaceToNamespace(item))
+	}
+	return result
 }

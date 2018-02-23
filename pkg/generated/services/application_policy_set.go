@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTApplicationPolicySetUpdateRequest for update request for REST.
-type RESTApplicationPolicySetUpdateRequest struct {
-	Data map[string]interface{} `json:"application-policy-set"`
-}
-
 //RESTCreateApplicationPolicySet handle a Create REST service.
 func (service *ContrailService) RESTCreateApplicationPolicySet(c echo.Context) error {
-	requestData := &models.CreateApplicationPolicySetRequest{
-		ApplicationPolicySet: models.MakeApplicationPolicySet(),
-	}
+	requestData := &models.CreateApplicationPolicySetRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetApplicationPolicySet(c echo.Context) erro
 func (service *ContrailService) GetApplicationPolicySet(ctx context.Context, request *models.GetApplicationPolicySetRequest) (response *models.GetApplicationPolicySetResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListApplicationPolicySetRequest{

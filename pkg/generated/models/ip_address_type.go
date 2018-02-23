@@ -1,17 +1,8 @@
 package models
 
-// IpAddressType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type IpAddressType string
-
-// MakeIpAddressType makes IpAddressType
-func MakeIpAddressType() IpAddressType {
-	var data IpAddressType
-	return data
-}
-
-// MakeIpAddressTypeSlice() makes a slice of IpAddressType
-func MakeIpAddressTypeSlice() []IpAddressType {
-	return []IpAddressType{}
-}
+//To skip import error.
+var _ = schema.Version

@@ -1,17 +1,8 @@
 package models
 
-// VpnType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type VpnType string
-
-// MakeVpnType makes VpnType
-func MakeVpnType() VpnType {
-	var data VpnType
-	return data
-}
-
-// MakeVpnTypeSlice() makes a slice of VpnType
-func MakeVpnTypeSlice() []VpnType {
-	return []VpnType{}
-}
+//To skip import error.
+var _ = schema.Version

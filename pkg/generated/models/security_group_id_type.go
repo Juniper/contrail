@@ -1,17 +1,8 @@
 package models
 
-// SecurityGroupIdType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type SecurityGroupIdType int
-
-// MakeSecurityGroupIdType makes SecurityGroupIdType
-func MakeSecurityGroupIdType() SecurityGroupIdType {
-	var data SecurityGroupIdType
-	return data
-}
-
-// MakeSecurityGroupIdTypeSlice() makes a slice of SecurityGroupIdType
-func MakeSecurityGroupIdTypeSlice() []SecurityGroupIdType {
-	return []SecurityGroupIdType{}
-}
+//To skip import error.
+var _ = schema.Version

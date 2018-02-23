@@ -12,17 +12,20 @@ import (
 	"github.com/pkg/errors"
 )
 
+//For skip import error.
+var _ = errors.New("")
+
 func TestPhysicalRouter(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 	db := testDB
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	common.UseTable(db, "metadata")
-	common.UseTable(db, "physical_router")
+	mutexMetadata := common.UseTable(db, "metadata")
+	mutexTable := common.UseTable(db, "physical_router")
 	defer func() {
-		common.ClearTable(db, "physical_router")
-		common.ClearTable(db, "metadata")
+		mutexTable.Unlock()
+		mutexMetadata.Unlock()
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -400,6 +403,14 @@ func TestPhysicalRouter(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
+	//    var BGPRouterref []interface{}
+	//    BGPRouterref = append(BGPRouterref, map[string]interface{}{"operation":"delete", "uuid":"physical_router_bgp_router_ref_uuid", "to": []string{"test", "physical_router_bgp_router_ref_uuid"}})
+	//    BGPRouterref = append(BGPRouterref, map[string]interface{}{"operation":"add", "uuid":"physical_router_bgp_router_ref_uuid1", "to": []string{"test", "physical_router_bgp_router_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "BGPRouterRefs", ".", BGPRouterref)
+	//
 	//    var VirtualRouterref []interface{}
 	//    VirtualRouterref = append(VirtualRouterref, map[string]interface{}{"operation":"delete", "uuid":"physical_router_virtual_router_ref_uuid", "to": []string{"test", "physical_router_virtual_router_ref_uuid"}})
 	//    VirtualRouterref = append(VirtualRouterref, map[string]interface{}{"operation":"add", "uuid":"physical_router_virtual_router_ref_uuid1", "to": []string{"test", "physical_router_virtual_router_ref_uuid1"}})
@@ -415,14 +426,6 @@ func TestPhysicalRouter(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
-	//
-	//    var BGPRouterref []interface{}
-	//    BGPRouterref = append(BGPRouterref, map[string]interface{}{"operation":"delete", "uuid":"physical_router_bgp_router_ref_uuid", "to": []string{"test", "physical_router_bgp_router_ref_uuid"}})
-	//    BGPRouterref = append(BGPRouterref, map[string]interface{}{"operation":"add", "uuid":"physical_router_bgp_router_ref_uuid1", "to": []string{"test", "physical_router_bgp_router_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "BGPRouterRefs", ".", BGPRouterref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

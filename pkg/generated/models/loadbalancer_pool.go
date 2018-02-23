@@ -1,65 +1,11 @@
 package models
 
-// LoadbalancerPool
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// LoadbalancerPool
-//proteus:generate
-type LoadbalancerPool struct {
-	UUID                             string                `json:"uuid,omitempty"`
-	ParentUUID                       string                `json:"parent_uuid,omitempty"`
-	ParentType                       string                `json:"parent_type,omitempty"`
-	FQName                           []string              `json:"fq_name,omitempty"`
-	IDPerms                          *IdPermsType          `json:"id_perms,omitempty"`
-	DisplayName                      string                `json:"display_name,omitempty"`
-	Annotations                      *KeyValuePairs        `json:"annotations,omitempty"`
-	Perms2                           *PermType2            `json:"perms2,omitempty"`
-	LoadbalancerPoolProperties       *LoadbalancerPoolType `json:"loadbalancer_pool_properties,omitempty"`
-	LoadbalancerPoolCustomAttributes *KeyValuePairs        `json:"loadbalancer_pool_custom_attributes,omitempty"`
-	LoadbalancerPoolProvider         string                `json:"loadbalancer_pool_provider,omitempty"`
-
-	ServiceApplianceSetRefs       []*LoadbalancerPoolServiceApplianceSetRef       `json:"service_appliance_set_refs,omitempty"`
-	VirtualMachineInterfaceRefs   []*LoadbalancerPoolVirtualMachineInterfaceRef   `json:"virtual_machine_interface_refs,omitempty"`
-	LoadbalancerListenerRefs      []*LoadbalancerPoolLoadbalancerListenerRef      `json:"loadbalancer_listener_refs,omitempty"`
-	ServiceInstanceRefs           []*LoadbalancerPoolServiceInstanceRef           `json:"service_instance_refs,omitempty"`
-	LoadbalancerHealthmonitorRefs []*LoadbalancerPoolLoadbalancerHealthmonitorRef `json:"loadbalancer_healthmonitor_refs,omitempty"`
-
-	LoadbalancerMembers []*LoadbalancerMember `json:"loadbalancer_members,omitempty"`
-}
-
-// LoadbalancerPoolServiceApplianceSetRef references each other
-type LoadbalancerPoolServiceApplianceSetRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// LoadbalancerPoolVirtualMachineInterfaceRef references each other
-type LoadbalancerPoolVirtualMachineInterfaceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// LoadbalancerPoolLoadbalancerListenerRef references each other
-type LoadbalancerPoolLoadbalancerListenerRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// LoadbalancerPoolServiceInstanceRef references each other
-type LoadbalancerPoolServiceInstanceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// LoadbalancerPoolLoadbalancerHealthmonitorRef references each other
-type LoadbalancerPoolLoadbalancerHealthmonitorRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeLoadbalancerPool makes LoadbalancerPool
 func MakeLoadbalancerPool() *LoadbalancerPool {
@@ -79,7 +25,43 @@ func MakeLoadbalancerPool() *LoadbalancerPool {
 	}
 }
 
+// MakeLoadbalancerPool makes LoadbalancerPool
+func InterfaceToLoadbalancerPool(i interface{}) *LoadbalancerPool {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &LoadbalancerPool{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		LoadbalancerPoolProperties:       InterfaceToLoadbalancerPoolType(m["loadbalancer_pool_properties"]),
+		LoadbalancerPoolCustomAttributes: InterfaceToKeyValuePairs(m["loadbalancer_pool_custom_attributes"]),
+		LoadbalancerPoolProvider:         schema.InterfaceToString(m["loadbalancer_pool_provider"]),
+	}
+}
+
 // MakeLoadbalancerPoolSlice() makes a slice of LoadbalancerPool
 func MakeLoadbalancerPoolSlice() []*LoadbalancerPool {
 	return []*LoadbalancerPool{}
+}
+
+// InterfaceToLoadbalancerPoolSlice() makes a slice of LoadbalancerPool
+func InterfaceToLoadbalancerPoolSlice(i interface{}) []*LoadbalancerPool {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*LoadbalancerPool{}
+	for _, item := range list {
+		result = append(result, InterfaceToLoadbalancerPool(item))
+	}
+	return result
 }

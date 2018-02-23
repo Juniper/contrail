@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTProjectUpdateRequest for update request for REST.
-type RESTProjectUpdateRequest struct {
-	Data map[string]interface{} `json:"project"`
-}
-
 //RESTCreateProject handle a Create REST service.
 func (service *ContrailService) RESTCreateProject(c echo.Context) error {
-	requestData := &models.CreateProjectRequest{
-		Project: models.MakeProject(),
-	}
+	requestData := &models.CreateProjectRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetProject(c echo.Context) error {
 func (service *ContrailService) GetProject(ctx context.Context, request *models.GetProjectRequest) (response *models.GetProjectResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListProjectRequest{

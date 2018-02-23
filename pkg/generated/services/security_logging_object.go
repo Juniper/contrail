@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTSecurityLoggingObjectUpdateRequest for update request for REST.
-type RESTSecurityLoggingObjectUpdateRequest struct {
-	Data map[string]interface{} `json:"security-logging-object"`
-}
-
 //RESTCreateSecurityLoggingObject handle a Create REST service.
 func (service *ContrailService) RESTCreateSecurityLoggingObject(c echo.Context) error {
-	requestData := &models.CreateSecurityLoggingObjectRequest{
-		SecurityLoggingObject: models.MakeSecurityLoggingObject(),
-	}
+	requestData := &models.CreateSecurityLoggingObjectRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetSecurityLoggingObject(c echo.Context) err
 func (service *ContrailService) GetSecurityLoggingObject(ctx context.Context, request *models.GetSecurityLoggingObjectRequest) (response *models.GetSecurityLoggingObjectResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListSecurityLoggingObjectRequest{

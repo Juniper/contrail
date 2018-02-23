@@ -1,20 +1,11 @@
 package models
 
-// InstanceInfo
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// InstanceInfo
-//proteus:generate
-type InstanceInfo struct {
-	DisplayName  string `json:"display_name,omitempty"`
-	ImageSource  string `json:"image_source,omitempty"`
-	LocalGB      string `json:"local_gb,omitempty"`
-	MemoryMB     string `json:"memory_mb,omitempty"`
-	NovaHostID   string `json:"nova_host_id,omitempty"`
-	RootGB       string `json:"root_gb,omitempty"`
-	SwapMB       string `json:"swap_mb,omitempty"`
-	Vcpus        string `json:"vcpus,omitempty"`
-	Capabilities string `json:"capabilities,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeInstanceInfo makes InstanceInfo
 func MakeInstanceInfo() *InstanceInfo {
@@ -32,7 +23,41 @@ func MakeInstanceInfo() *InstanceInfo {
 	}
 }
 
+// MakeInstanceInfo makes InstanceInfo
+func InterfaceToInstanceInfo(i interface{}) *InstanceInfo {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &InstanceInfo{
+		//TODO(nati): Apply default
+		DisplayName:  schema.InterfaceToString(m["display_name"]),
+		ImageSource:  schema.InterfaceToString(m["image_source"]),
+		LocalGB:      schema.InterfaceToString(m["local_gb"]),
+		MemoryMB:     schema.InterfaceToString(m["memory_mb"]),
+		NovaHostID:   schema.InterfaceToString(m["nova_host_id"]),
+		RootGB:       schema.InterfaceToString(m["root_gb"]),
+		SwapMB:       schema.InterfaceToString(m["swap_mb"]),
+		Vcpus:        schema.InterfaceToString(m["vcpus"]),
+		Capabilities: schema.InterfaceToString(m["capabilities"]),
+	}
+}
+
 // MakeInstanceInfoSlice() makes a slice of InstanceInfo
 func MakeInstanceInfoSlice() []*InstanceInfo {
 	return []*InstanceInfo{}
+}
+
+// InterfaceToInstanceInfoSlice() makes a slice of InstanceInfo
+func InterfaceToInstanceInfoSlice(i interface{}) []*InstanceInfo {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*InstanceInfo{}
+	for _, item := range list {
+		result = append(result, InterfaceToInstanceInfo(item))
+	}
+	return result
 }

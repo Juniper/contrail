@@ -1,14 +1,11 @@
 package models
 
-// AllowedAddressPair
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// AllowedAddressPair
-//proteus:generate
-type AllowedAddressPair struct {
-	IP          *SubnetType `json:"ip,omitempty"`
-	Mac         string      `json:"mac,omitempty"`
-	AddressMode AddressMode `json:"address_mode,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeAllowedAddressPair makes AllowedAddressPair
 func MakeAllowedAddressPair() *AllowedAddressPair {
@@ -16,11 +13,39 @@ func MakeAllowedAddressPair() *AllowedAddressPair {
 		//TODO(nati): Apply default
 		IP:          MakeSubnetType(),
 		Mac:         "",
-		AddressMode: MakeAddressMode(),
+		AddressMode: "",
+	}
+}
+
+// MakeAllowedAddressPair makes AllowedAddressPair
+func InterfaceToAllowedAddressPair(i interface{}) *AllowedAddressPair {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &AllowedAddressPair{
+		//TODO(nati): Apply default
+		IP:          InterfaceToSubnetType(m["ip"]),
+		Mac:         schema.InterfaceToString(m["mac"]),
+		AddressMode: schema.InterfaceToString(m["address_mode"]),
 	}
 }
 
 // MakeAllowedAddressPairSlice() makes a slice of AllowedAddressPair
 func MakeAllowedAddressPairSlice() []*AllowedAddressPair {
 	return []*AllowedAddressPair{}
+}
+
+// InterfaceToAllowedAddressPairSlice() makes a slice of AllowedAddressPair
+func InterfaceToAllowedAddressPairSlice(i interface{}) []*AllowedAddressPair {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*AllowedAddressPair{}
+	for _, item := range list {
+		result = append(result, InterfaceToAllowedAddressPair(item))
+	}
+	return result
 }

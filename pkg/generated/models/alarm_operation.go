@@ -1,17 +1,8 @@
 package models
 
-// AlarmOperation
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type AlarmOperation string
-
-// MakeAlarmOperation makes AlarmOperation
-func MakeAlarmOperation() AlarmOperation {
-	var data AlarmOperation
-	return data
-}
-
-// MakeAlarmOperationSlice() makes a slice of AlarmOperation
-func MakeAlarmOperationSlice() []AlarmOperation {
-	return []AlarmOperation{}
-}
+//To skip import error.
+var _ = schema.Version

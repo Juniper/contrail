@@ -1,24 +1,11 @@
 package models
 
-// ContrailAnalyticsDatabaseNodeRole
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// ContrailAnalyticsDatabaseNodeRole
-//proteus:generate
-type ContrailAnalyticsDatabaseNodeRole struct {
-	ProvisioningLog           string         `json:"provisioning_log,omitempty"`
-	ProvisioningProgress      int            `json:"provisioning_progress,omitempty"`
-	ProvisioningProgressStage string         `json:"provisioning_progress_stage,omitempty"`
-	ProvisioningStartTime     string         `json:"provisioning_start_time,omitempty"`
-	ProvisioningState         string         `json:"provisioning_state,omitempty"`
-	UUID                      string         `json:"uuid,omitempty"`
-	ParentUUID                string         `json:"parent_uuid,omitempty"`
-	ParentType                string         `json:"parent_type,omitempty"`
-	FQName                    []string       `json:"fq_name,omitempty"`
-	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName               string         `json:"display_name,omitempty"`
-	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2                    *PermType2     `json:"perms2,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeContrailAnalyticsDatabaseNodeRole makes ContrailAnalyticsDatabaseNodeRole
 func MakeContrailAnalyticsDatabaseNodeRole() *ContrailAnalyticsDatabaseNodeRole {
@@ -40,7 +27,45 @@ func MakeContrailAnalyticsDatabaseNodeRole() *ContrailAnalyticsDatabaseNodeRole 
 	}
 }
 
+// MakeContrailAnalyticsDatabaseNodeRole makes ContrailAnalyticsDatabaseNodeRole
+func InterfaceToContrailAnalyticsDatabaseNodeRole(i interface{}) *ContrailAnalyticsDatabaseNodeRole {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &ContrailAnalyticsDatabaseNodeRole{
+		//TODO(nati): Apply default
+		ProvisioningLog:           schema.InterfaceToString(m["provisioning_log"]),
+		ProvisioningProgress:      schema.InterfaceToInt64(m["provisioning_progress"]),
+		ProvisioningProgressStage: schema.InterfaceToString(m["provisioning_progress_stage"]),
+		ProvisioningStartTime:     schema.InterfaceToString(m["provisioning_start_time"]),
+		ProvisioningState:         schema.InterfaceToString(m["provisioning_state"]),
+		UUID:                      schema.InterfaceToString(m["uuid"]),
+		ParentUUID:                schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:                schema.InterfaceToString(m["parent_type"]),
+		FQName:                    schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:                   InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:               schema.InterfaceToString(m["display_name"]),
+		Annotations:               InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:                    InterfaceToPermType2(m["perms2"]),
+	}
+}
+
 // MakeContrailAnalyticsDatabaseNodeRoleSlice() makes a slice of ContrailAnalyticsDatabaseNodeRole
 func MakeContrailAnalyticsDatabaseNodeRoleSlice() []*ContrailAnalyticsDatabaseNodeRole {
 	return []*ContrailAnalyticsDatabaseNodeRole{}
+}
+
+// InterfaceToContrailAnalyticsDatabaseNodeRoleSlice() makes a slice of ContrailAnalyticsDatabaseNodeRole
+func InterfaceToContrailAnalyticsDatabaseNodeRoleSlice(i interface{}) []*ContrailAnalyticsDatabaseNodeRole {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*ContrailAnalyticsDatabaseNodeRole{}
+	for _, item := range list {
+		result = append(result, InterfaceToContrailAnalyticsDatabaseNodeRole(item))
+	}
+	return result
 }

@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTServiceObjectUpdateRequest for update request for REST.
-type RESTServiceObjectUpdateRequest struct {
-	Data map[string]interface{} `json:"service-object"`
-}
-
 //RESTCreateServiceObject handle a Create REST service.
 func (service *ContrailService) RESTCreateServiceObject(c echo.Context) error {
-	requestData := &models.CreateServiceObjectRequest{
-		ServiceObject: models.MakeServiceObject(),
-	}
+	requestData := &models.CreateServiceObjectRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetServiceObject(c echo.Context) error {
 func (service *ContrailService) GetServiceObject(ctx context.Context, request *models.GetServiceObjectRequest) (response *models.GetServiceObjectResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListServiceObjectRequest{

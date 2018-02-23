@@ -1,29 +1,11 @@
 package models
 
-// PolicyManagement
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// PolicyManagement
-//proteus:generate
-type PolicyManagement struct {
-	UUID        string         `json:"uuid,omitempty"`
-	ParentUUID  string         `json:"parent_uuid,omitempty"`
-	ParentType  string         `json:"parent_type,omitempty"`
-	FQName      []string       `json:"fq_name,omitempty"`
-	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName string         `json:"display_name,omitempty"`
-	Annotations *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2      *PermType2     `json:"perms2,omitempty"`
-
-	AddressGroups []*AddressGroup `json:"address_groups,omitempty"`
-
-	ApplicationPolicySets []*ApplicationPolicySet `json:"application_policy_sets,omitempty"`
-
-	FirewallPolicys []*FirewallPolicy `json:"firewall_policys,omitempty"`
-
-	FirewallRules []*FirewallRule `json:"firewall_rules,omitempty"`
-
-	ServiceGroups []*ServiceGroup `json:"service_groups,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakePolicyManagement makes PolicyManagement
 func MakePolicyManagement() *PolicyManagement {
@@ -40,7 +22,40 @@ func MakePolicyManagement() *PolicyManagement {
 	}
 }
 
+// MakePolicyManagement makes PolicyManagement
+func InterfaceToPolicyManagement(i interface{}) *PolicyManagement {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &PolicyManagement{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+	}
+}
+
 // MakePolicyManagementSlice() makes a slice of PolicyManagement
 func MakePolicyManagementSlice() []*PolicyManagement {
 	return []*PolicyManagement{}
+}
+
+// InterfaceToPolicyManagementSlice() makes a slice of PolicyManagement
+func InterfaceToPolicyManagementSlice(i interface{}) []*PolicyManagement {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*PolicyManagement{}
+	for _, item := range list {
+		result = append(result, InterfaceToPolicyManagement(item))
+	}
+	return result
 }

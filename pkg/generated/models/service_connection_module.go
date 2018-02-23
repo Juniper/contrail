@@ -1,30 +1,11 @@
 package models
 
-// ServiceConnectionModule
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// ServiceConnectionModule
-//proteus:generate
-type ServiceConnectionModule struct {
-	UUID        string                `json:"uuid,omitempty"`
-	ParentUUID  string                `json:"parent_uuid,omitempty"`
-	ParentType  string                `json:"parent_type,omitempty"`
-	FQName      []string              `json:"fq_name,omitempty"`
-	IDPerms     *IdPermsType          `json:"id_perms,omitempty"`
-	DisplayName string                `json:"display_name,omitempty"`
-	Annotations *KeyValuePairs        `json:"annotations,omitempty"`
-	Perms2      *PermType2            `json:"perms2,omitempty"`
-	ServiceType ServiceConnectionType `json:"service_type,omitempty"`
-	E2Service   E2servicetype         `json:"e2_service,omitempty"`
-
-	ServiceObjectRefs []*ServiceConnectionModuleServiceObjectRef `json:"service_object_refs,omitempty"`
-}
-
-// ServiceConnectionModuleServiceObjectRef references each other
-type ServiceConnectionModuleServiceObjectRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeServiceConnectionModule makes ServiceConnectionModule
 func MakeServiceConnectionModule() *ServiceConnectionModule {
@@ -38,12 +19,47 @@ func MakeServiceConnectionModule() *ServiceConnectionModule {
 		DisplayName: "",
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
-		ServiceType: MakeServiceConnectionType(),
-		E2Service:   MakeE2servicetype(),
+		ServiceType: "",
+		E2Service:   "",
+	}
+}
+
+// MakeServiceConnectionModule makes ServiceConnectionModule
+func InterfaceToServiceConnectionModule(i interface{}) *ServiceConnectionModule {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &ServiceConnectionModule{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		ServiceType: schema.InterfaceToString(m["service_type"]),
+		E2Service:   schema.InterfaceToString(m["e2_service"]),
 	}
 }
 
 // MakeServiceConnectionModuleSlice() makes a slice of ServiceConnectionModule
 func MakeServiceConnectionModuleSlice() []*ServiceConnectionModule {
 	return []*ServiceConnectionModule{}
+}
+
+// InterfaceToServiceConnectionModuleSlice() makes a slice of ServiceConnectionModule
+func InterfaceToServiceConnectionModuleSlice(i interface{}) []*ServiceConnectionModule {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*ServiceConnectionModule{}
+	for _, item := range list {
+		result = append(result, InterfaceToServiceConnectionModule(item))
+	}
+	return result
 }

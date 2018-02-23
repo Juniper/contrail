@@ -1,17 +1,8 @@
 package models
 
-// SessionPersistenceType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type SessionPersistenceType string
-
-// MakeSessionPersistenceType makes SessionPersistenceType
-func MakeSessionPersistenceType() SessionPersistenceType {
-	var data SessionPersistenceType
-	return data
-}
-
-// MakeSessionPersistenceTypeSlice() makes a slice of SessionPersistenceType
-func MakeSessionPersistenceTypeSlice() []SessionPersistenceType {
-	return []SessionPersistenceType{}
-}
+//To skip import error.
+var _ = schema.Version

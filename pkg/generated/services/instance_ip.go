@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTInstanceIPUpdateRequest for update request for REST.
-type RESTInstanceIPUpdateRequest struct {
-	Data map[string]interface{} `json:"instance-ip"`
-}
-
 //RESTCreateInstanceIP handle a Create REST service.
 func (service *ContrailService) RESTCreateInstanceIP(c echo.Context) error {
-	requestData := &models.CreateInstanceIPRequest{
-		InstanceIP: models.MakeInstanceIP(),
-	}
+	requestData := &models.CreateInstanceIPRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetInstanceIP(c echo.Context) error {
 func (service *ContrailService) GetInstanceIP(ctx context.Context, request *models.GetInstanceIPRequest) (response *models.GetInstanceIPResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListInstanceIPRequest{

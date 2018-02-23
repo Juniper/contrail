@@ -12,17 +12,20 @@ import (
 	"github.com/pkg/errors"
 )
 
+//For skip import error.
+var _ = errors.New("")
+
 func TestRoutingPolicy(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 	db := testDB
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	common.UseTable(db, "metadata")
-	common.UseTable(db, "routing_policy")
+	mutexMetadata := common.UseTable(db, "metadata")
+	mutexTable := common.UseTable(db, "routing_policy")
 	defer func() {
-		common.ClearTable(db, "routing_policy")
-		common.ClearTable(db, "metadata")
+		mutexTable.Unlock()
+		mutexMetadata.Unlock()
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -202,11 +205,11 @@ func TestRoutingPolicy(t *testing.T) {
 	//
 	//
 	//
-	//    common.SetValueByPath(ServiceInstanceAttr, ".LeftSequence", ".", "test")
-	//
-	//
-	//
 	//    common.SetValueByPath(ServiceInstanceAttr, ".RightSequence", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(ServiceInstanceAttr, ".LeftSequence", ".", "test")
 	//
 	//
 	//

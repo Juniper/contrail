@@ -1,31 +1,11 @@
 package models
 
-// Tag
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// Tag
-//proteus:generate
-type Tag struct {
-	UUID        string         `json:"uuid,omitempty"`
-	ParentUUID  string         `json:"parent_uuid,omitempty"`
-	ParentType  string         `json:"parent_type,omitempty"`
-	FQName      []string       `json:"fq_name,omitempty"`
-	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName string         `json:"display_name,omitempty"`
-	Annotations *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2      *PermType2     `json:"perms2,omitempty"`
-	TagTypeName string         `json:"tag_type_name,omitempty"`
-	TagID       U32BitHexInt   `json:"tag_id,omitempty"`
-	TagValue    string         `json:"tag_value,omitempty"`
-
-	TagTypeRefs []*TagTagTypeRef `json:"tag_type_refs,omitempty"`
-}
-
-// TagTagTypeRef references each other
-type TagTagTypeRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeTag makes Tag
 func MakeTag() *Tag {
@@ -40,12 +20,48 @@ func MakeTag() *Tag {
 		Annotations: MakeKeyValuePairs(),
 		Perms2:      MakePermType2(),
 		TagTypeName: "",
-		TagID:       MakeU32BitHexInt(),
+		TagID:       "",
 		TagValue:    "",
+	}
+}
+
+// MakeTag makes Tag
+func InterfaceToTag(i interface{}) *Tag {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &Tag{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		TagTypeName: schema.InterfaceToString(m["tag_type_name"]),
+		TagID:       schema.InterfaceToString(m["tag_id"]),
+		TagValue:    schema.InterfaceToString(m["tag_value"]),
 	}
 }
 
 // MakeTagSlice() makes a slice of Tag
 func MakeTagSlice() []*Tag {
 	return []*Tag{}
+}
+
+// InterfaceToTagSlice() makes a slice of Tag
+func InterfaceToTagSlice(i interface{}) []*Tag {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*Tag{}
+	for _, item := range list {
+		result = append(result, InterfaceToTag(item))
+	}
+	return result
 }

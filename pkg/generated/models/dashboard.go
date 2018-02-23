@@ -1,20 +1,11 @@
 package models
 
-// Dashboard
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// Dashboard
-//proteus:generate
-type Dashboard struct {
-	UUID            string         `json:"uuid,omitempty"`
-	ParentUUID      string         `json:"parent_uuid,omitempty"`
-	ParentType      string         `json:"parent_type,omitempty"`
-	FQName          []string       `json:"fq_name,omitempty"`
-	IDPerms         *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName     string         `json:"display_name,omitempty"`
-	Annotations     *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2          *PermType2     `json:"perms2,omitempty"`
-	ContainerConfig string         `json:"container_config,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeDashboard makes Dashboard
 func MakeDashboard() *Dashboard {
@@ -32,7 +23,41 @@ func MakeDashboard() *Dashboard {
 	}
 }
 
+// MakeDashboard makes Dashboard
+func InterfaceToDashboard(i interface{}) *Dashboard {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &Dashboard{
+		//TODO(nati): Apply default
+		UUID:            schema.InterfaceToString(m["uuid"]),
+		ParentUUID:      schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:      schema.InterfaceToString(m["parent_type"]),
+		FQName:          schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:         InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:     schema.InterfaceToString(m["display_name"]),
+		Annotations:     InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:          InterfaceToPermType2(m["perms2"]),
+		ContainerConfig: schema.InterfaceToString(m["container_config"]),
+	}
+}
+
 // MakeDashboardSlice() makes a slice of Dashboard
 func MakeDashboardSlice() []*Dashboard {
 	return []*Dashboard{}
+}
+
+// InterfaceToDashboardSlice() makes a slice of Dashboard
+func InterfaceToDashboardSlice(i interface{}) []*Dashboard {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*Dashboard{}
+	for _, item := range list {
+		result = append(result, InterfaceToDashboard(item))
+	}
+	return result
 }

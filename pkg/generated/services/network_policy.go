@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTNetworkPolicyUpdateRequest for update request for REST.
-type RESTNetworkPolicyUpdateRequest struct {
-	Data map[string]interface{} `json:"network-policy"`
-}
-
 //RESTCreateNetworkPolicy handle a Create REST service.
 func (service *ContrailService) RESTCreateNetworkPolicy(c echo.Context) error {
-	requestData := &models.CreateNetworkPolicyRequest{
-		NetworkPolicy: models.MakeNetworkPolicy(),
-	}
+	requestData := &models.CreateNetworkPolicyRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetNetworkPolicy(c echo.Context) error {
 func (service *ContrailService) GetNetworkPolicy(ctx context.Context, request *models.GetNetworkPolicyRequest) (response *models.GetNetworkPolicyResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListNetworkPolicyRequest{

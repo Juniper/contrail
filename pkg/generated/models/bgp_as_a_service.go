@@ -1,42 +1,11 @@
 package models
 
-// BGPAsAService
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// BGPAsAService
-//proteus:generate
-type BGPAsAService struct {
-	UUID                             string               `json:"uuid,omitempty"`
-	ParentUUID                       string               `json:"parent_uuid,omitempty"`
-	ParentType                       string               `json:"parent_type,omitempty"`
-	FQName                           []string             `json:"fq_name,omitempty"`
-	IDPerms                          *IdPermsType         `json:"id_perms,omitempty"`
-	DisplayName                      string               `json:"display_name,omitempty"`
-	Annotations                      *KeyValuePairs       `json:"annotations,omitempty"`
-	Perms2                           *PermType2           `json:"perms2,omitempty"`
-	BgpaasShared                     bool                 `json:"bgpaas_shared"`
-	BgpaasSessionAttributes          string               `json:"bgpaas_session_attributes,omitempty"`
-	BgpaasSuppressRouteAdvertisement bool                 `json:"bgpaas_suppress_route_advertisement"`
-	BgpaasIpv4MappedIpv6Nexthop      bool                 `json:"bgpaas_ipv4_mapped_ipv6_nexthop"`
-	BgpaasIPAddress                  IpAddressType        `json:"bgpaas_ip_address,omitempty"`
-	AutonomousSystem                 AutonomousSystemType `json:"autonomous_system,omitempty"`
-
-	VirtualMachineInterfaceRefs []*BGPAsAServiceVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
-	ServiceHealthCheckRefs      []*BGPAsAServiceServiceHealthCheckRef      `json:"service_health_check_refs,omitempty"`
-}
-
-// BGPAsAServiceVirtualMachineInterfaceRef references each other
-type BGPAsAServiceVirtualMachineInterfaceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// BGPAsAServiceServiceHealthCheckRef references each other
-type BGPAsAServiceServiceHealthCheckRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeBGPAsAService makes BGPAsAService
 func MakeBGPAsAService() *BGPAsAService {
@@ -54,12 +23,51 @@ func MakeBGPAsAService() *BGPAsAService {
 		BgpaasSessionAttributes:          "",
 		BgpaasSuppressRouteAdvertisement: false,
 		BgpaasIpv4MappedIpv6Nexthop:      false,
-		BgpaasIPAddress:                  MakeIpAddressType(),
-		AutonomousSystem:                 MakeAutonomousSystemType(),
+		BgpaasIPAddress:                  "",
+		AutonomousSystem:                 0,
+	}
+}
+
+// MakeBGPAsAService makes BGPAsAService
+func InterfaceToBGPAsAService(i interface{}) *BGPAsAService {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &BGPAsAService{
+		//TODO(nati): Apply default
+		UUID:                             schema.InterfaceToString(m["uuid"]),
+		ParentUUID:                       schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:                       schema.InterfaceToString(m["parent_type"]),
+		FQName:                           schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:                          InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:                      schema.InterfaceToString(m["display_name"]),
+		Annotations:                      InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:                           InterfaceToPermType2(m["perms2"]),
+		BgpaasShared:                     schema.InterfaceToBool(m["bgpaas_shared"]),
+		BgpaasSessionAttributes:          schema.InterfaceToString(m["bgpaas_session_attributes"]),
+		BgpaasSuppressRouteAdvertisement: schema.InterfaceToBool(m["bgpaas_suppress_route_advertisement"]),
+		BgpaasIpv4MappedIpv6Nexthop:      schema.InterfaceToBool(m["bgpaas_ipv4_mapped_ipv6_nexthop"]),
+		BgpaasIPAddress:                  schema.InterfaceToString(m["bgpaas_ip_address"]),
+		AutonomousSystem:                 schema.InterfaceToInt64(m["autonomous_system"]),
 	}
 }
 
 // MakeBGPAsAServiceSlice() makes a slice of BGPAsAService
 func MakeBGPAsAServiceSlice() []*BGPAsAService {
 	return []*BGPAsAService{}
+}
+
+// InterfaceToBGPAsAServiceSlice() makes a slice of BGPAsAService
+func InterfaceToBGPAsAServiceSlice(i interface{}) []*BGPAsAService {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*BGPAsAService{}
+	for _, item := range list {
+		result = append(result, InterfaceToBGPAsAService(item))
+	}
+	return result
 }

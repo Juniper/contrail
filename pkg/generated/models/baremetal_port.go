@@ -1,25 +1,11 @@
 package models
 
-// BaremetalPort
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// BaremetalPort
-//proteus:generate
-type BaremetalPort struct {
-	UUID                string               `json:"uuid,omitempty"`
-	ParentUUID          string               `json:"parent_uuid,omitempty"`
-	ParentType          string               `json:"parent_type,omitempty"`
-	FQName              []string             `json:"fq_name,omitempty"`
-	IDPerms             *IdPermsType         `json:"id_perms,omitempty"`
-	DisplayName         string               `json:"display_name,omitempty"`
-	Annotations         *KeyValuePairs       `json:"annotations,omitempty"`
-	Perms2              *PermType2           `json:"perms2,omitempty"`
-	MacAddress          string               `json:"mac_address,omitempty"`
-	CreatedAt           string               `json:"created_at,omitempty"`
-	UpdatedAt           string               `json:"updated_at,omitempty"`
-	Node                string               `json:"node,omitempty"`
-	PxeEnabled          bool                 `json:"pxe_enabled"`
-	LocalLinkConnection *LocalLinkConnection `json:"local_link_connection,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeBaremetalPort makes BaremetalPort
 func MakeBaremetalPort() *BaremetalPort {
@@ -42,7 +28,46 @@ func MakeBaremetalPort() *BaremetalPort {
 	}
 }
 
+// MakeBaremetalPort makes BaremetalPort
+func InterfaceToBaremetalPort(i interface{}) *BaremetalPort {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &BaremetalPort{
+		//TODO(nati): Apply default
+		UUID:                schema.InterfaceToString(m["uuid"]),
+		ParentUUID:          schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:          schema.InterfaceToString(m["parent_type"]),
+		FQName:              schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:             InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:         schema.InterfaceToString(m["display_name"]),
+		Annotations:         InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:              InterfaceToPermType2(m["perms2"]),
+		MacAddress:          schema.InterfaceToString(m["mac_address"]),
+		CreatedAt:           schema.InterfaceToString(m["created_at"]),
+		UpdatedAt:           schema.InterfaceToString(m["updated_at"]),
+		Node:                schema.InterfaceToString(m["node"]),
+		PxeEnabled:          schema.InterfaceToBool(m["pxe_enabled"]),
+		LocalLinkConnection: InterfaceToLocalLinkConnection(m["local_link_connection"]),
+	}
+}
+
 // MakeBaremetalPortSlice() makes a slice of BaremetalPort
 func MakeBaremetalPortSlice() []*BaremetalPort {
 	return []*BaremetalPort{}
+}
+
+// InterfaceToBaremetalPortSlice() makes a slice of BaremetalPort
+func InterfaceToBaremetalPortSlice(i interface{}) []*BaremetalPort {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*BaremetalPort{}
+	for _, item := range list {
+		result = append(result, InterfaceToBaremetalPort(item))
+	}
+	return result
 }

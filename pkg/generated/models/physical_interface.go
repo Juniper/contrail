@@ -1,31 +1,11 @@
 package models
 
-// PhysicalInterface
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// PhysicalInterface
-//proteus:generate
-type PhysicalInterface struct {
-	UUID                      string         `json:"uuid,omitempty"`
-	ParentUUID                string         `json:"parent_uuid,omitempty"`
-	ParentType                string         `json:"parent_type,omitempty"`
-	FQName                    []string       `json:"fq_name,omitempty"`
-	IDPerms                   *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName               string         `json:"display_name,omitempty"`
-	Annotations               *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2                    *PermType2     `json:"perms2,omitempty"`
-	EthernetSegmentIdentifier string         `json:"ethernet_segment_identifier,omitempty"`
-
-	PhysicalInterfaceRefs []*PhysicalInterfacePhysicalInterfaceRef `json:"physical_interface_refs,omitempty"`
-
-	LogicalInterfaces []*LogicalInterface `json:"logical_interfaces,omitempty"`
-}
-
-// PhysicalInterfacePhysicalInterfaceRef references each other
-type PhysicalInterfacePhysicalInterfaceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakePhysicalInterface makes PhysicalInterface
 func MakePhysicalInterface() *PhysicalInterface {
@@ -43,7 +23,41 @@ func MakePhysicalInterface() *PhysicalInterface {
 	}
 }
 
+// MakePhysicalInterface makes PhysicalInterface
+func InterfaceToPhysicalInterface(i interface{}) *PhysicalInterface {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &PhysicalInterface{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		EthernetSegmentIdentifier: schema.InterfaceToString(m["ethernet_segment_identifier"]),
+	}
+}
+
 // MakePhysicalInterfaceSlice() makes a slice of PhysicalInterface
 func MakePhysicalInterfaceSlice() []*PhysicalInterface {
 	return []*PhysicalInterface{}
+}
+
+// InterfaceToPhysicalInterfaceSlice() makes a slice of PhysicalInterface
+func InterfaceToPhysicalInterfaceSlice(i interface{}) []*PhysicalInterface {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*PhysicalInterface{}
+	for _, item := range list {
+		result = append(result, InterfaceToPhysicalInterface(item))
+	}
+	return result
 }

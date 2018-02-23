@@ -1,17 +1,8 @@
 package models
 
-// ServiceInterfaceType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type ServiceInterfaceType string
-
-// MakeServiceInterfaceType makes ServiceInterfaceType
-func MakeServiceInterfaceType() ServiceInterfaceType {
-	var data ServiceInterfaceType
-	return data
-}
-
-// MakeServiceInterfaceTypeSlice() makes a slice of ServiceInterfaceType
-func MakeServiceInterfaceTypeSlice() []ServiceInterfaceType {
-	return []ServiceInterfaceType{}
-}
+//To skip import error.
+var _ = schema.Version

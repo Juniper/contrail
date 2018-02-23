@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTPortTupleUpdateRequest for update request for REST.
-type RESTPortTupleUpdateRequest struct {
-	Data map[string]interface{} `json:"port-tuple"`
-}
-
 //RESTCreatePortTuple handle a Create REST service.
 func (service *ContrailService) RESTCreatePortTuple(c echo.Context) error {
-	requestData := &models.CreatePortTupleRequest{
-		PortTuple: models.MakePortTuple(),
-	}
+	requestData := &models.CreatePortTupleRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetPortTuple(c echo.Context) error {
 func (service *ContrailService) GetPortTuple(ctx context.Context, request *models.GetPortTupleRequest) (response *models.GetPortTupleResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListPortTupleRequest{

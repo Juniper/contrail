@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTRouteTargetUpdateRequest for update request for REST.
-type RESTRouteTargetUpdateRequest struct {
-	Data map[string]interface{} `json:"route-target"`
-}
-
 //RESTCreateRouteTarget handle a Create REST service.
 func (service *ContrailService) RESTCreateRouteTarget(c echo.Context) error {
-	requestData := &models.CreateRouteTargetRequest{
-		RouteTarget: models.MakeRouteTarget(),
-	}
+	requestData := &models.CreateRouteTargetRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetRouteTarget(c echo.Context) error {
 func (service *ContrailService) GetRouteTarget(ctx context.Context, request *models.GetRouteTargetRequest) (response *models.GetRouteTargetResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListRouteTargetRequest{

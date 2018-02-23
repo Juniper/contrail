@@ -1,30 +1,11 @@
 package models
 
-// ServiceHealthCheck
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// ServiceHealthCheck
-//proteus:generate
-type ServiceHealthCheck struct {
-	UUID                         string                  `json:"uuid,omitempty"`
-	ParentUUID                   string                  `json:"parent_uuid,omitempty"`
-	ParentType                   string                  `json:"parent_type,omitempty"`
-	FQName                       []string                `json:"fq_name,omitempty"`
-	IDPerms                      *IdPermsType            `json:"id_perms,omitempty"`
-	DisplayName                  string                  `json:"display_name,omitempty"`
-	Annotations                  *KeyValuePairs          `json:"annotations,omitempty"`
-	Perms2                       *PermType2              `json:"perms2,omitempty"`
-	ServiceHealthCheckProperties *ServiceHealthCheckType `json:"service_health_check_properties,omitempty"`
-
-	ServiceInstanceRefs []*ServiceHealthCheckServiceInstanceRef `json:"service_instance_refs,omitempty"`
-}
-
-// ServiceHealthCheckServiceInstanceRef references each other
-type ServiceHealthCheckServiceInstanceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-	Attr *ServiceInterfaceTag
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeServiceHealthCheck makes ServiceHealthCheck
 func MakeServiceHealthCheck() *ServiceHealthCheck {
@@ -42,7 +23,41 @@ func MakeServiceHealthCheck() *ServiceHealthCheck {
 	}
 }
 
+// MakeServiceHealthCheck makes ServiceHealthCheck
+func InterfaceToServiceHealthCheck(i interface{}) *ServiceHealthCheck {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &ServiceHealthCheck{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		ServiceHealthCheckProperties: InterfaceToServiceHealthCheckType(m["service_health_check_properties"]),
+	}
+}
+
 // MakeServiceHealthCheckSlice() makes a slice of ServiceHealthCheck
 func MakeServiceHealthCheckSlice() []*ServiceHealthCheck {
 	return []*ServiceHealthCheck{}
+}
+
+// InterfaceToServiceHealthCheckSlice() makes a slice of ServiceHealthCheck
+func InterfaceToServiceHealthCheckSlice(i interface{}) []*ServiceHealthCheck {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*ServiceHealthCheck{}
+	for _, item := range list {
+		result = append(result, InterfaceToServiceHealthCheck(item))
+	}
+	return result
 }

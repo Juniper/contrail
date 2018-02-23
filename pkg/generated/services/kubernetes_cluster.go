@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTKubernetesClusterUpdateRequest for update request for REST.
-type RESTKubernetesClusterUpdateRequest struct {
-	Data map[string]interface{} `json:"kubernetes-cluster"`
-}
-
 //RESTCreateKubernetesCluster handle a Create REST service.
 func (service *ContrailService) RESTCreateKubernetesCluster(c echo.Context) error {
-	requestData := &models.CreateKubernetesClusterRequest{
-		KubernetesCluster: models.MakeKubernetesCluster(),
-	}
+	requestData := &models.CreateKubernetesClusterRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetKubernetesCluster(c echo.Context) error {
 func (service *ContrailService) GetKubernetesCluster(ctx context.Context, request *models.GetKubernetesClusterRequest) (response *models.GetKubernetesClusterResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListKubernetesClusterRequest{

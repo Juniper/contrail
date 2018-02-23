@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTFirewallPolicyUpdateRequest for update request for REST.
-type RESTFirewallPolicyUpdateRequest struct {
-	Data map[string]interface{} `json:"firewall-policy"`
-}
-
 //RESTCreateFirewallPolicy handle a Create REST service.
 func (service *ContrailService) RESTCreateFirewallPolicy(c echo.Context) error {
-	requestData := &models.CreateFirewallPolicyRequest{
-		FirewallPolicy: models.MakeFirewallPolicy(),
-	}
+	requestData := &models.CreateFirewallPolicyRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetFirewallPolicy(c echo.Context) error {
 func (service *ContrailService) GetFirewallPolicy(ctx context.Context, request *models.GetFirewallPolicyRequest) (response *models.GetFirewallPolicyResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListFirewallPolicyRequest{

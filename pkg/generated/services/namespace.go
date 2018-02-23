@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTNamespaceUpdateRequest for update request for REST.
-type RESTNamespaceUpdateRequest struct {
-	Data map[string]interface{} `json:"namespace"`
-}
-
 //RESTCreateNamespace handle a Create REST service.
 func (service *ContrailService) RESTCreateNamespace(c echo.Context) error {
-	requestData := &models.CreateNamespaceRequest{
-		Namespace: models.MakeNamespace(),
-	}
+	requestData := &models.CreateNamespaceRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetNamespace(c echo.Context) error {
 func (service *ContrailService) GetNamespace(ctx context.Context, request *models.GetNamespaceRequest) (response *models.GetNamespaceResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListNamespaceRequest{

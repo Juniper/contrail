@@ -1,30 +1,11 @@
 package models
 
-// InterfaceRouteTable
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// InterfaceRouteTable
-//proteus:generate
-type InterfaceRouteTable struct {
-	UUID                      string          `json:"uuid,omitempty"`
-	ParentUUID                string          `json:"parent_uuid,omitempty"`
-	ParentType                string          `json:"parent_type,omitempty"`
-	FQName                    []string        `json:"fq_name,omitempty"`
-	IDPerms                   *IdPermsType    `json:"id_perms,omitempty"`
-	DisplayName               string          `json:"display_name,omitempty"`
-	Annotations               *KeyValuePairs  `json:"annotations,omitempty"`
-	Perms2                    *PermType2      `json:"perms2,omitempty"`
-	InterfaceRouteTableRoutes *RouteTableType `json:"interface_route_table_routes,omitempty"`
-
-	ServiceInstanceRefs []*InterfaceRouteTableServiceInstanceRef `json:"service_instance_refs,omitempty"`
-}
-
-// InterfaceRouteTableServiceInstanceRef references each other
-type InterfaceRouteTableServiceInstanceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-	Attr *ServiceInterfaceTag
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeInterfaceRouteTable makes InterfaceRouteTable
 func MakeInterfaceRouteTable() *InterfaceRouteTable {
@@ -42,7 +23,41 @@ func MakeInterfaceRouteTable() *InterfaceRouteTable {
 	}
 }
 
+// MakeInterfaceRouteTable makes InterfaceRouteTable
+func InterfaceToInterfaceRouteTable(i interface{}) *InterfaceRouteTable {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &InterfaceRouteTable{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		InterfaceRouteTableRoutes: InterfaceToRouteTableType(m["interface_route_table_routes"]),
+	}
+}
+
 // MakeInterfaceRouteTableSlice() makes a slice of InterfaceRouteTable
 func MakeInterfaceRouteTableSlice() []*InterfaceRouteTable {
 	return []*InterfaceRouteTable{}
+}
+
+// InterfaceToInterfaceRouteTableSlice() makes a slice of InterfaceRouteTable
+func InterfaceToInterfaceRouteTableSlice(i interface{}) []*InterfaceRouteTable {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*InterfaceRouteTable{}
+	for _, item := range list {
+		result = append(result, InterfaceToInterfaceRouteTable(item))
+	}
+	return result
 }

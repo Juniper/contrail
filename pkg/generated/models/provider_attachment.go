@@ -1,28 +1,11 @@
 package models
 
-// ProviderAttachment
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// ProviderAttachment
-//proteus:generate
-type ProviderAttachment struct {
-	UUID        string         `json:"uuid,omitempty"`
-	ParentUUID  string         `json:"parent_uuid,omitempty"`
-	ParentType  string         `json:"parent_type,omitempty"`
-	FQName      []string       `json:"fq_name,omitempty"`
-	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName string         `json:"display_name,omitempty"`
-	Annotations *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2      *PermType2     `json:"perms2,omitempty"`
-
-	VirtualRouterRefs []*ProviderAttachmentVirtualRouterRef `json:"virtual_router_refs,omitempty"`
-}
-
-// ProviderAttachmentVirtualRouterRef references each other
-type ProviderAttachmentVirtualRouterRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeProviderAttachment makes ProviderAttachment
 func MakeProviderAttachment() *ProviderAttachment {
@@ -39,7 +22,40 @@ func MakeProviderAttachment() *ProviderAttachment {
 	}
 }
 
+// MakeProviderAttachment makes ProviderAttachment
+func InterfaceToProviderAttachment(i interface{}) *ProviderAttachment {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &ProviderAttachment{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+	}
+}
+
 // MakeProviderAttachmentSlice() makes a slice of ProviderAttachment
 func MakeProviderAttachmentSlice() []*ProviderAttachment {
 	return []*ProviderAttachment{}
+}
+
+// InterfaceToProviderAttachmentSlice() makes a slice of ProviderAttachment
+func InterfaceToProviderAttachmentSlice(i interface{}) []*ProviderAttachment {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*ProviderAttachment{}
+	for _, item := range list {
+		result = append(result, InterfaceToProviderAttachment(item))
+	}
+	return result
 }

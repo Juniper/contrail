@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTQosConfigUpdateRequest for update request for REST.
-type RESTQosConfigUpdateRequest struct {
-	Data map[string]interface{} `json:"qos-config"`
-}
-
 //RESTCreateQosConfig handle a Create REST service.
 func (service *ContrailService) RESTCreateQosConfig(c echo.Context) error {
-	requestData := &models.CreateQosConfigRequest{
-		QosConfig: models.MakeQosConfig(),
-	}
+	requestData := &models.CreateQosConfigRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetQosConfig(c echo.Context) error {
 func (service *ContrailService) GetQosConfig(ctx context.Context, request *models.GetQosConfigRequest) (response *models.GetQosConfigResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListQosConfigRequest{

@@ -1,17 +1,8 @@
 package models
 
-// TrafficDirectionType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type TrafficDirectionType string
-
-// MakeTrafficDirectionType makes TrafficDirectionType
-func MakeTrafficDirectionType() TrafficDirectionType {
-	var data TrafficDirectionType
-	return data
-}
-
-// MakeTrafficDirectionTypeSlice() makes a slice of TrafficDirectionType
-func MakeTrafficDirectionTypeSlice() []TrafficDirectionType {
-	return []TrafficDirectionType{}
-}
+//To skip import error.
+var _ = schema.Version

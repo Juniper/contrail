@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"net/url"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -49,11 +49,11 @@ type ResourceData struct {
 func (a *Agent) SchemaCLI(schemaID string) (string, error) {
 	schemas := a.serverAPI.Schemas
 	if schemaID != "" {
-		schema, ok := a.schemas[schemaID]
+		s, ok := a.schemas[schemaID]
 		if !ok {
 			return "", fmt.Errorf("schema %s not found", schemaID)
 		}
-		schemas = []*common.Schema{schema}
+		schemas = []*schema.Schema{s}
 
 	}
 	tpl, err := pongo2.FromString(schemaTemplate)
@@ -136,7 +136,7 @@ func (a *Agent) ListCLI(schemaID string, queryParameters url.Values) (string, er
 	return string(output), nil
 }
 
-func buildListHelpMessage(schemas []*common.Schema) (string, error) {
+func buildListHelpMessage(schemas []*schema.Schema) (string, error) {
 	tpl, err := pongo2.FromString(listHelpTemplate)
 	if err != nil {
 		return "", err

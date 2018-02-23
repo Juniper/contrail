@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTBridgeDomainUpdateRequest for update request for REST.
-type RESTBridgeDomainUpdateRequest struct {
-	Data map[string]interface{} `json:"bridge-domain"`
-}
-
 //RESTCreateBridgeDomain handle a Create REST service.
 func (service *ContrailService) RESTCreateBridgeDomain(c echo.Context) error {
-	requestData := &models.CreateBridgeDomainRequest{
-		BridgeDomain: models.MakeBridgeDomain(),
-	}
+	requestData := &models.CreateBridgeDomainRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetBridgeDomain(c echo.Context) error {
 func (service *ContrailService) GetBridgeDomain(ctx context.Context, request *models.GetBridgeDomainRequest) (response *models.GetBridgeDomainResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListBridgeDomainRequest{

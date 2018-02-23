@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTGlobalSystemConfigUpdateRequest for update request for REST.
-type RESTGlobalSystemConfigUpdateRequest struct {
-	Data map[string]interface{} `json:"global-system-config"`
-}
-
 //RESTCreateGlobalSystemConfig handle a Create REST service.
 func (service *ContrailService) RESTCreateGlobalSystemConfig(c echo.Context) error {
-	requestData := &models.CreateGlobalSystemConfigRequest{
-		GlobalSystemConfig: models.MakeGlobalSystemConfig(),
-	}
+	requestData := &models.CreateGlobalSystemConfigRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetGlobalSystemConfig(c echo.Context) error 
 func (service *ContrailService) GetGlobalSystemConfig(ctx context.Context, request *models.GetGlobalSystemConfigRequest) (response *models.GetGlobalSystemConfigResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListGlobalSystemConfigRequest{

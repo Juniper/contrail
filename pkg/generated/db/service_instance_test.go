@@ -12,17 +12,20 @@ import (
 	"github.com/pkg/errors"
 )
 
+//For skip import error.
+var _ = errors.New("")
+
 func TestServiceInstance(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 	db := testDB
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	common.UseTable(db, "metadata")
-	common.UseTable(db, "service_instance")
+	mutexMetadata := common.UseTable(db, "metadata")
+	mutexTable := common.UseTable(db, "service_instance")
 	defer func() {
-		common.ClearTable(db, "service_instance")
-		common.ClearTable(db, "metadata")
+		mutexTable.Unlock()
+		mutexMetadata.Unlock()
 		if p := recover(); p != nil {
 			panic(p)
 		}
@@ -34,37 +37,6 @@ func TestServiceInstance(t *testing.T) {
 	var err error
 
 	// Create referred objects
-
-	var ServiceTemplatecreateref []*models.ServiceInstanceServiceTemplateRef
-	var ServiceTemplaterefModel *models.ServiceTemplate
-	ServiceTemplaterefModel = models.MakeServiceTemplate()
-	ServiceTemplaterefModel.UUID = "service_instance_service_template_ref_uuid"
-	ServiceTemplaterefModel.FQName = []string{"test", "service_instance_service_template_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceTemplate(ctx, tx, &models.CreateServiceTemplateRequest{
-			ServiceTemplate: ServiceTemplaterefModel,
-		})
-	})
-	ServiceTemplaterefModel.UUID = "service_instance_service_template_ref_uuid1"
-	ServiceTemplaterefModel.FQName = []string{"test", "service_instance_service_template_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceTemplate(ctx, tx, &models.CreateServiceTemplateRequest{
-			ServiceTemplate: ServiceTemplaterefModel,
-		})
-	})
-	ServiceTemplaterefModel.UUID = "service_instance_service_template_ref_uuid2"
-	ServiceTemplaterefModel.FQName = []string{"test", "service_instance_service_template_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceTemplate(ctx, tx, &models.CreateServiceTemplateRequest{
-			ServiceTemplate: ServiceTemplaterefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	ServiceTemplatecreateref = append(ServiceTemplatecreateref, &models.ServiceInstanceServiceTemplateRef{UUID: "service_instance_service_template_ref_uuid", To: []string{"test", "service_instance_service_template_ref_uuid"}})
-	ServiceTemplatecreateref = append(ServiceTemplatecreateref, &models.ServiceInstanceServiceTemplateRef{UUID: "service_instance_service_template_ref_uuid2", To: []string{"test", "service_instance_service_template_ref_uuid2"}})
-	model.ServiceTemplateRefs = ServiceTemplatecreateref
 
 	var InstanceIPcreateref []*models.ServiceInstanceInstanceIPRef
 	var InstanceIPrefModel *models.InstanceIP
@@ -96,6 +68,37 @@ func TestServiceInstance(t *testing.T) {
 	InstanceIPcreateref = append(InstanceIPcreateref, &models.ServiceInstanceInstanceIPRef{UUID: "service_instance_instance_ip_ref_uuid", To: []string{"test", "service_instance_instance_ip_ref_uuid"}})
 	InstanceIPcreateref = append(InstanceIPcreateref, &models.ServiceInstanceInstanceIPRef{UUID: "service_instance_instance_ip_ref_uuid2", To: []string{"test", "service_instance_instance_ip_ref_uuid2"}})
 	model.InstanceIPRefs = InstanceIPcreateref
+
+	var ServiceTemplatecreateref []*models.ServiceInstanceServiceTemplateRef
+	var ServiceTemplaterefModel *models.ServiceTemplate
+	ServiceTemplaterefModel = models.MakeServiceTemplate()
+	ServiceTemplaterefModel.UUID = "service_instance_service_template_ref_uuid"
+	ServiceTemplaterefModel.FQName = []string{"test", "service_instance_service_template_ref_uuid"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateServiceTemplate(ctx, tx, &models.CreateServiceTemplateRequest{
+			ServiceTemplate: ServiceTemplaterefModel,
+		})
+	})
+	ServiceTemplaterefModel.UUID = "service_instance_service_template_ref_uuid1"
+	ServiceTemplaterefModel.FQName = []string{"test", "service_instance_service_template_ref_uuid1"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateServiceTemplate(ctx, tx, &models.CreateServiceTemplateRequest{
+			ServiceTemplate: ServiceTemplaterefModel,
+		})
+	})
+	ServiceTemplaterefModel.UUID = "service_instance_service_template_ref_uuid2"
+	ServiceTemplaterefModel.FQName = []string{"test", "service_instance_service_template_ref_uuid2"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateServiceTemplate(ctx, tx, &models.CreateServiceTemplateRequest{
+			ServiceTemplate: ServiceTemplaterefModel,
+		})
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	ServiceTemplatecreateref = append(ServiceTemplatecreateref, &models.ServiceInstanceServiceTemplateRef{UUID: "service_instance_service_template_ref_uuid", To: []string{"test", "service_instance_service_template_ref_uuid"}})
+	ServiceTemplatecreateref = append(ServiceTemplatecreateref, &models.ServiceInstanceServiceTemplateRef{UUID: "service_instance_service_template_ref_uuid2", To: []string{"test", "service_instance_service_template_ref_uuid2"}})
+	model.ServiceTemplateRefs = ServiceTemplatecreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()

@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -56,13 +57,13 @@ var ServiceInstanceFields = []string{
 // ServiceInstanceRefFields is db reference fields for ServiceInstance
 var ServiceInstanceRefFields = map[string][]string{
 
-	"service_template": {
-	// <common.Schema Value>
+	"service_template": []string{
+		// <schema.Schema Value>
 
 	},
 
-	"instance_ip": {
-		// <common.Schema Value>
+	"instance_ip": []string{
+		// <schema.Schema Value>
 		"interface_type",
 	},
 }
@@ -70,7 +71,7 @@ var ServiceInstanceRefFields = map[string][]string{
 // ServiceInstanceBackRefFields is db back reference fields for ServiceInstance
 var ServiceInstanceBackRefFields = map[string][]string{
 
-	"port_tuple": {
+	"port_tuple": []string{
 		"uuid",
 		"share",
 		"owner_access",
@@ -121,59 +122,42 @@ func CreateServiceInstance(
 		"model": model,
 		"query": insertServiceInstanceQuery,
 	}).Debug("create query")
-	_, err = stmt.ExecContext(ctx, string(model.UUID),
-		string(model.ServiceInstanceProperties.VirtualRouterID),
-		int(model.ServiceInstanceProperties.ScaleOut.MaxInstances),
-		bool(model.ServiceInstanceProperties.ScaleOut.AutoScale),
-		string(model.ServiceInstanceProperties.RightVirtualNetwork),
-		string(model.ServiceInstanceProperties.RightIPAddress),
-		string(model.ServiceInstanceProperties.ManagementVirtualNetwork),
-		string(model.ServiceInstanceProperties.LeftVirtualNetwork),
-		string(model.ServiceInstanceProperties.LeftIPAddress),
-		common.MustJSON(model.ServiceInstanceProperties.InterfaceList),
-		string(model.ServiceInstanceProperties.HaMode),
-		string(model.ServiceInstanceProperties.AvailabilityZone),
-		bool(model.ServiceInstanceProperties.AutoPolicy),
-		common.MustJSON(model.ServiceInstanceBindings.KeyValuePair),
-		common.MustJSON(model.Perms2.Share),
-		int(model.Perms2.OwnerAccess),
-		string(model.Perms2.Owner),
-		int(model.Perms2.GlobalAccess),
-		string(model.ParentUUID),
-		string(model.ParentType),
-		bool(model.IDPerms.UserVisible),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OtherAccess),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Group),
-		string(model.IDPerms.LastModified),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Creator),
-		string(model.IDPerms.Created),
-		common.MustJSON(model.FQName),
-		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair))
+	_, err = stmt.ExecContext(ctx, string(model.GetUUID()),
+		string(model.GetServiceInstanceProperties().GetVirtualRouterID()),
+		int(model.GetServiceInstanceProperties().GetScaleOut().GetMaxInstances()),
+		bool(model.GetServiceInstanceProperties().GetScaleOut().GetAutoScale()),
+		string(model.GetServiceInstanceProperties().GetRightVirtualNetwork()),
+		string(model.GetServiceInstanceProperties().GetRightIPAddress()),
+		string(model.GetServiceInstanceProperties().GetManagementVirtualNetwork()),
+		string(model.GetServiceInstanceProperties().GetLeftVirtualNetwork()),
+		string(model.GetServiceInstanceProperties().GetLeftIPAddress()),
+		common.MustJSON(model.GetServiceInstanceProperties().GetInterfaceList()),
+		string(model.GetServiceInstanceProperties().GetHaMode()),
+		string(model.GetServiceInstanceProperties().GetAvailabilityZone()),
+		bool(model.GetServiceInstanceProperties().GetAutoPolicy()),
+		common.MustJSON(model.GetServiceInstanceBindings().GetKeyValuePair()),
+		common.MustJSON(model.GetPerms2().GetShare()),
+		int(model.GetPerms2().GetOwnerAccess()),
+		string(model.GetPerms2().GetOwner()),
+		int(model.GetPerms2().GetGlobalAccess()),
+		string(model.GetParentUUID()),
+		string(model.GetParentType()),
+		bool(model.GetIDPerms().GetUserVisible()),
+		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
+		string(model.GetIDPerms().GetPermissions().GetOwner()),
+		int(model.GetIDPerms().GetPermissions().GetOtherAccess()),
+		int(model.GetIDPerms().GetPermissions().GetGroupAccess()),
+		string(model.GetIDPerms().GetPermissions().GetGroup()),
+		string(model.GetIDPerms().GetLastModified()),
+		bool(model.GetIDPerms().GetEnable()),
+		string(model.GetIDPerms().GetDescription()),
+		string(model.GetIDPerms().GetCreator()),
+		string(model.GetIDPerms().GetCreated()),
+		common.MustJSON(model.GetFQName()),
+		string(model.GetDisplayName()),
+		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
-	}
-
-	stmtInstanceIPRef, err := tx.Prepare(insertServiceInstanceInstanceIPQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing InstanceIPRefs create statement failed")
-	}
-	defer stmtInstanceIPRef.Close()
-	for _, ref := range model.InstanceIPRefs {
-
-		if ref.Attr == nil {
-			ref.Attr = models.MakeServiceInterfaceTag()
-		}
-
-		_, err = stmtInstanceIPRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.InterfaceType))
-		if err != nil {
-			return errors.Wrap(err, "InstanceIPRefs create failed")
-		}
 	}
 
 	stmtServiceTemplateRef, err := tx.Prepare(insertServiceInstanceServiceTemplateQuery)
@@ -189,6 +173,23 @@ func CreateServiceInstance(
 		}
 	}
 
+	stmtInstanceIPRef, err := tx.Prepare(insertServiceInstanceInstanceIPQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing InstanceIPRefs create statement failed")
+	}
+	defer stmtInstanceIPRef.Close()
+	for _, ref := range model.InstanceIPRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = &models.ServiceInterfaceTag{}
+		}
+
+		_, err = stmtInstanceIPRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.GetInterfaceType()))
+		if err != nil {
+			return errors.Wrap(err, "InstanceIPRefs create failed")
+		}
+	}
+
 	metaData := &common.MetaData{
 		UUID:   model.UUID,
 		Type:   "service_instance",
@@ -198,7 +199,7 @@ func CreateServiceInstance(
 	if err != nil {
 		return err
 	}
-	err = common.CreateSharing(tx, "service_instance", model.UUID, model.Perms2.Share)
+	err = common.CreateSharing(tx, "service_instance", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -213,73 +214,55 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
+		m.UUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["virtual_router_id"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ServiceInstanceProperties.VirtualRouterID = castedValue
+		m.ServiceInstanceProperties.VirtualRouterID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["max_instances"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.ServiceInstanceProperties.ScaleOut.MaxInstances = castedValue
+		m.ServiceInstanceProperties.ScaleOut.MaxInstances = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["auto_scale"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.ServiceInstanceProperties.ScaleOut.AutoScale = castedValue
+		m.ServiceInstanceProperties.ScaleOut.AutoScale = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["right_virtual_network"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ServiceInstanceProperties.RightVirtualNetwork = castedValue
+		m.ServiceInstanceProperties.RightVirtualNetwork = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["right_ip_address"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ServiceInstanceProperties.RightIPAddress = models.IpAddressType(castedValue)
+		m.ServiceInstanceProperties.RightIPAddress = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["management_virtual_network"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ServiceInstanceProperties.ManagementVirtualNetwork = castedValue
+		m.ServiceInstanceProperties.ManagementVirtualNetwork = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["left_virtual_network"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ServiceInstanceProperties.LeftVirtualNetwork = castedValue
+		m.ServiceInstanceProperties.LeftVirtualNetwork = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["left_ip_address"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ServiceInstanceProperties.LeftIPAddress = models.IpAddressType(castedValue)
+		m.ServiceInstanceProperties.LeftIPAddress = schema.InterfaceToString(value)
 
 	}
 
@@ -291,25 +274,19 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 
 	if value, ok := values["ha_mode"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ServiceInstanceProperties.HaMode = models.AddressMode(castedValue)
+		m.ServiceInstanceProperties.HaMode = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["availability_zone"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ServiceInstanceProperties.AvailabilityZone = castedValue
+		m.ServiceInstanceProperties.AvailabilityZone = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["auto_policy"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.ServiceInstanceProperties.AutoPolicy = castedValue
+		m.ServiceInstanceProperties.AutoPolicy = schema.InterfaceToBool(value)
 
 	}
 
@@ -327,129 +304,97 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.Perms2.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
+		m.Perms2.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.Perms2.GlobalAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentUUID = castedValue
+		m.ParentUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentType = castedValue
+		m.ParentType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.UserVisible = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
+		m.IDPerms.Permissions.Group = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.LastModified = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
+		m.IDPerms.Enable = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
+		m.IDPerms.Description = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.IDPerms.Creator = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
+		m.IDPerms.Created = schema.InterfaceToString(value)
 
 	}
 
@@ -461,9 +406,7 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		m.DisplayName = schema.InterfaceToString(value)
 
 	}
 
@@ -473,16 +416,36 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 
 	}
 
-	if value, ok := values["ref_instance_ip"]; ok {
+	if value, ok := values["ref_service_template"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ServiceInstanceServiceTemplateRef{}
+			referenceModel.UUID = uuid
+			m.ServiceTemplateRefs = append(m.ServiceTemplateRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_instance_ip"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
@@ -496,36 +459,16 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 		}
 	}
 
-	if value, ok := values["ref_service_template"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ServiceInstanceServiceTemplateRef{}
-			referenceModel.UUID = uuid
-			m.ServiceTemplateRefs = append(m.ServiceTemplateRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["backref_port_tuple"]; ok {
 		var childResources []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
 		for _, childResource := range childResources {
 			childResourceMap, ok := childResource.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
 			if uuid == "" {
 				continue
 			}
@@ -534,163 +477,127 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 
 			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.UUID = castedValue
+				childModel.UUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.OwnerAccess = models.AccessType(castedValue)
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.Perms2.Owner = castedValue
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.GlobalAccess = models.AccessType(castedValue)
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentUUID = castedValue
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentType = castedValue
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.UserVisible = castedValue
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Owner = castedValue
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Group = castedValue
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.LastModified = castedValue
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.Enable = castedValue
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Description = castedValue
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Creator = castedValue
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Created = castedValue
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.FQName)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
 
 			}
 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.DisplayName = castedValue
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
 
 			}
 
@@ -711,14 +618,14 @@ func ListServiceInstance(ctx context.Context, tx *sql.Tx, request *models.ListSe
 	qb.Fields = ServiceInstanceFields
 	qb.RefFields = ServiceInstanceRefFields
 	qb.BackRefFields = ServiceInstanceBackRefFields
-	result := models.MakeServiceInstanceSlice()
+	result := []*models.ServiceInstance{}
 
 	if spec.ParentFQName != nil {
 		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
-		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+		spec.Filters = common.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 
 	query := qb.BuildQuery()

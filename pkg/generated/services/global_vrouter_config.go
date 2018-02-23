@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTGlobalVrouterConfigUpdateRequest for update request for REST.
-type RESTGlobalVrouterConfigUpdateRequest struct {
-	Data map[string]interface{} `json:"global-vrouter-config"`
-}
-
 //RESTCreateGlobalVrouterConfig handle a Create REST service.
 func (service *ContrailService) RESTCreateGlobalVrouterConfig(c echo.Context) error {
-	requestData := &models.CreateGlobalVrouterConfigRequest{
-		GlobalVrouterConfig: models.MakeGlobalVrouterConfig(),
-	}
+	requestData := &models.CreateGlobalVrouterConfigRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetGlobalVrouterConfig(c echo.Context) error
 func (service *ContrailService) GetGlobalVrouterConfig(ctx context.Context, request *models.GetGlobalVrouterConfigRequest) (response *models.GetGlobalVrouterConfigResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListGlobalVrouterConfigRequest{

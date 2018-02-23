@@ -1,20 +1,11 @@
 package models
 
-// ServiceGroup
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// ServiceGroup
-//proteus:generate
-type ServiceGroup struct {
-	UUID                            string                    `json:"uuid,omitempty"`
-	ParentUUID                      string                    `json:"parent_uuid,omitempty"`
-	ParentType                      string                    `json:"parent_type,omitempty"`
-	FQName                          []string                  `json:"fq_name,omitempty"`
-	IDPerms                         *IdPermsType              `json:"id_perms,omitempty"`
-	DisplayName                     string                    `json:"display_name,omitempty"`
-	Annotations                     *KeyValuePairs            `json:"annotations,omitempty"`
-	Perms2                          *PermType2                `json:"perms2,omitempty"`
-	ServiceGroupFirewallServiceList *FirewallServiceGroupType `json:"service_group_firewall_service_list,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeServiceGroup makes ServiceGroup
 func MakeServiceGroup() *ServiceGroup {
@@ -32,7 +23,41 @@ func MakeServiceGroup() *ServiceGroup {
 	}
 }
 
+// MakeServiceGroup makes ServiceGroup
+func InterfaceToServiceGroup(i interface{}) *ServiceGroup {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &ServiceGroup{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		ServiceGroupFirewallServiceList: InterfaceToFirewallServiceGroupType(m["service_group_firewall_service_list"]),
+	}
+}
+
 // MakeServiceGroupSlice() makes a slice of ServiceGroup
 func MakeServiceGroupSlice() []*ServiceGroup {
 	return []*ServiceGroup{}
+}
+
+// InterfaceToServiceGroupSlice() makes a slice of ServiceGroup
+func InterfaceToServiceGroupSlice(i interface{}) []*ServiceGroup {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*ServiceGroup{}
+	for _, item := range list {
+		result = append(result, InterfaceToServiceGroup(item))
+	}
+	return result
 }

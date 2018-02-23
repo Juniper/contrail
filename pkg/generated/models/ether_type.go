@@ -1,17 +1,8 @@
 package models
 
-// EtherType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type EtherType string
-
-// MakeEtherType makes EtherType
-func MakeEtherType() EtherType {
-	var data EtherType
-	return data
-}
-
-// MakeEtherTypeSlice() makes a slice of EtherType
-func MakeEtherTypeSlice() []EtherType {
-	return []EtherType{}
-}
+//To skip import error.
+var _ = schema.Version

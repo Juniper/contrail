@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTAnalyticsNodeUpdateRequest for update request for REST.
-type RESTAnalyticsNodeUpdateRequest struct {
-	Data map[string]interface{} `json:"analytics-node"`
-}
-
 //RESTCreateAnalyticsNode handle a Create REST service.
 func (service *ContrailService) RESTCreateAnalyticsNode(c echo.Context) error {
-	requestData := &models.CreateAnalyticsNodeRequest{
-		AnalyticsNode: models.MakeAnalyticsNode(),
-	}
+	requestData := &models.CreateAnalyticsNodeRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetAnalyticsNode(c echo.Context) error {
 func (service *ContrailService) GetAnalyticsNode(ctx context.Context, request *models.GetAnalyticsNodeRequest) (response *models.GetAnalyticsNodeResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListAnalyticsNodeRequest{

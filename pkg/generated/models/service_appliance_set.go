@@ -1,24 +1,11 @@
 package models
 
-// ServiceApplianceSet
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// ServiceApplianceSet
-//proteus:generate
-type ServiceApplianceSet struct {
-	UUID                          string         `json:"uuid,omitempty"`
-	ParentUUID                    string         `json:"parent_uuid,omitempty"`
-	ParentType                    string         `json:"parent_type,omitempty"`
-	FQName                        []string       `json:"fq_name,omitempty"`
-	IDPerms                       *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName                   string         `json:"display_name,omitempty"`
-	Annotations                   *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2                        *PermType2     `json:"perms2,omitempty"`
-	ServiceApplianceSetProperties *KeyValuePairs `json:"service_appliance_set_properties,omitempty"`
-	ServiceApplianceHaMode        string         `json:"service_appliance_ha_mode,omitempty"`
-	ServiceApplianceDriver        string         `json:"service_appliance_driver,omitempty"`
-
-	ServiceAppliances []*ServiceAppliance `json:"service_appliances,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeServiceApplianceSet makes ServiceApplianceSet
 func MakeServiceApplianceSet() *ServiceApplianceSet {
@@ -38,7 +25,43 @@ func MakeServiceApplianceSet() *ServiceApplianceSet {
 	}
 }
 
+// MakeServiceApplianceSet makes ServiceApplianceSet
+func InterfaceToServiceApplianceSet(i interface{}) *ServiceApplianceSet {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &ServiceApplianceSet{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+		ServiceApplianceSetProperties: InterfaceToKeyValuePairs(m["service_appliance_set_properties"]),
+		ServiceApplianceHaMode:        schema.InterfaceToString(m["service_appliance_ha_mode"]),
+		ServiceApplianceDriver:        schema.InterfaceToString(m["service_appliance_driver"]),
+	}
+}
+
 // MakeServiceApplianceSetSlice() makes a slice of ServiceApplianceSet
 func MakeServiceApplianceSetSlice() []*ServiceApplianceSet {
 	return []*ServiceApplianceSet{}
+}
+
+// InterfaceToServiceApplianceSetSlice() makes a slice of ServiceApplianceSet
+func InterfaceToServiceApplianceSetSlice(i interface{}) []*ServiceApplianceSet {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*ServiceApplianceSet{}
+	for _, item := range list {
+		result = append(result, InterfaceToServiceApplianceSet(item))
+	}
+	return result
 }

@@ -1,34 +1,11 @@
 package models
 
-// BaremetalNode
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// BaremetalNode
-//proteus:generate
-type BaremetalNode struct {
-	UUID                 string               `json:"uuid,omitempty"`
-	ParentUUID           string               `json:"parent_uuid,omitempty"`
-	ParentType           string               `json:"parent_type,omitempty"`
-	FQName               []string             `json:"fq_name,omitempty"`
-	IDPerms              *IdPermsType         `json:"id_perms,omitempty"`
-	DisplayName          string               `json:"display_name,omitempty"`
-	Annotations          *KeyValuePairs       `json:"annotations,omitempty"`
-	Perms2               *PermType2           `json:"perms2,omitempty"`
-	Name                 string               `json:"name,omitempty"`
-	DriverInfo           *DriverInfo          `json:"driver_info,omitempty"`
-	BMProperties         *BaremetalProperties `json:"bm_properties,omitempty"`
-	InstanceUUID         string               `json:"instance_uuid,omitempty"`
-	InstanceInfo         *InstanceInfo        `json:"instance_info,omitempty"`
-	Maintenance          bool                 `json:"maintenance"`
-	MaintenanceReason    string               `json:"maintenance_reason,omitempty"`
-	PowerState           string               `json:"power_state,omitempty"`
-	TargetPowerState     string               `json:"target_power_state,omitempty"`
-	ProvisionState       string               `json:"provision_state,omitempty"`
-	TargetProvisionState string               `json:"target_provision_state,omitempty"`
-	ConsoleEnabled       bool                 `json:"console_enabled"`
-	CreatedAt            string               `json:"created_at,omitempty"`
-	UpdatedAt            string               `json:"updated_at,omitempty"`
-	LastError            string               `json:"last_error,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeBaremetalNode makes BaremetalNode
 func MakeBaremetalNode() *BaremetalNode {
@@ -60,7 +37,55 @@ func MakeBaremetalNode() *BaremetalNode {
 	}
 }
 
+// MakeBaremetalNode makes BaremetalNode
+func InterfaceToBaremetalNode(i interface{}) *BaremetalNode {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &BaremetalNode{
+		//TODO(nati): Apply default
+		UUID:                 schema.InterfaceToString(m["uuid"]),
+		ParentUUID:           schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:           schema.InterfaceToString(m["parent_type"]),
+		FQName:               schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:              InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:          schema.InterfaceToString(m["display_name"]),
+		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:               InterfaceToPermType2(m["perms2"]),
+		Name:                 schema.InterfaceToString(m["name"]),
+		DriverInfo:           InterfaceToDriverInfo(m["driver_info"]),
+		BMProperties:         InterfaceToBaremetalProperties(m["bm_properties"]),
+		InstanceUUID:         schema.InterfaceToString(m["instance_uuid"]),
+		InstanceInfo:         InterfaceToInstanceInfo(m["instance_info"]),
+		Maintenance:          schema.InterfaceToBool(m["maintenance"]),
+		MaintenanceReason:    schema.InterfaceToString(m["maintenance_reason"]),
+		PowerState:           schema.InterfaceToString(m["power_state"]),
+		TargetPowerState:     schema.InterfaceToString(m["target_power_state"]),
+		ProvisionState:       schema.InterfaceToString(m["provision_state"]),
+		TargetProvisionState: schema.InterfaceToString(m["target_provision_state"]),
+		ConsoleEnabled:       schema.InterfaceToBool(m["console_enabled"]),
+		CreatedAt:            schema.InterfaceToString(m["created_at"]),
+		UpdatedAt:            schema.InterfaceToString(m["updated_at"]),
+		LastError:            schema.InterfaceToString(m["last_error"]),
+	}
+}
+
 // MakeBaremetalNodeSlice() makes a slice of BaremetalNode
 func MakeBaremetalNodeSlice() []*BaremetalNode {
 	return []*BaremetalNode{}
+}
+
+// InterfaceToBaremetalNodeSlice() makes a slice of BaremetalNode
+func InterfaceToBaremetalNodeSlice(i interface{}) []*BaremetalNode {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*BaremetalNode{}
+	for _, item := range list {
+		result = append(result, InterfaceToBaremetalNode(item))
+	}
+	return result
 }

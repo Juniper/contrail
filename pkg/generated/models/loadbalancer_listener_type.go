@@ -1,24 +1,18 @@
 package models
 
-// LoadbalancerListenerType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// LoadbalancerListenerType
-//proteus:generate
-type LoadbalancerListenerType struct {
-	DefaultTLSContainer string                   `json:"default_tls_container,omitempty"`
-	Protocol            LoadbalancerProtocolType `json:"protocol,omitempty"`
-	ConnectionLimit     int                      `json:"connection_limit,omitempty"`
-	AdminState          bool                     `json:"admin_state"`
-	SniContainers       []string                 `json:"sni_containers,omitempty"`
-	ProtocolPort        int                      `json:"protocol_port,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeLoadbalancerListenerType makes LoadbalancerListenerType
 func MakeLoadbalancerListenerType() *LoadbalancerListenerType {
 	return &LoadbalancerListenerType{
 		//TODO(nati): Apply default
 		DefaultTLSContainer: "",
-		Protocol:            MakeLoadbalancerProtocolType(),
+		Protocol:            "",
 		ConnectionLimit:     0,
 		AdminState:          false,
 		SniContainers:       []string{},
@@ -26,7 +20,38 @@ func MakeLoadbalancerListenerType() *LoadbalancerListenerType {
 	}
 }
 
+// MakeLoadbalancerListenerType makes LoadbalancerListenerType
+func InterfaceToLoadbalancerListenerType(i interface{}) *LoadbalancerListenerType {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &LoadbalancerListenerType{
+		//TODO(nati): Apply default
+		DefaultTLSContainer: schema.InterfaceToString(m["default_tls_container"]),
+		Protocol:            schema.InterfaceToString(m["protocol"]),
+		ConnectionLimit:     schema.InterfaceToInt64(m["connection_limit"]),
+		AdminState:          schema.InterfaceToBool(m["admin_state"]),
+		SniContainers:       schema.InterfaceToStringList(m["sni_containers"]),
+		ProtocolPort:        schema.InterfaceToInt64(m["protocol_port"]),
+	}
+}
+
 // MakeLoadbalancerListenerTypeSlice() makes a slice of LoadbalancerListenerType
 func MakeLoadbalancerListenerTypeSlice() []*LoadbalancerListenerType {
 	return []*LoadbalancerListenerType{}
+}
+
+// InterfaceToLoadbalancerListenerTypeSlice() makes a slice of LoadbalancerListenerType
+func InterfaceToLoadbalancerListenerTypeSlice(i interface{}) []*LoadbalancerListenerType {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*LoadbalancerListenerType{}
+	for _, item := range list {
+		result = append(result, InterfaceToLoadbalancerListenerType(item))
+	}
+	return result
 }

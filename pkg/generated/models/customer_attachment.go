@@ -1,36 +1,11 @@
 package models
 
-// CustomerAttachment
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// CustomerAttachment
-//proteus:generate
-type CustomerAttachment struct {
-	UUID        string         `json:"uuid,omitempty"`
-	ParentUUID  string         `json:"parent_uuid,omitempty"`
-	ParentType  string         `json:"parent_type,omitempty"`
-	FQName      []string       `json:"fq_name,omitempty"`
-	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName string         `json:"display_name,omitempty"`
-	Annotations *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2      *PermType2     `json:"perms2,omitempty"`
-
-	VirtualMachineInterfaceRefs []*CustomerAttachmentVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
-	FloatingIPRefs              []*CustomerAttachmentFloatingIPRef              `json:"floating_ip_refs,omitempty"`
-}
-
-// CustomerAttachmentVirtualMachineInterfaceRef references each other
-type CustomerAttachmentVirtualMachineInterfaceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// CustomerAttachmentFloatingIPRef references each other
-type CustomerAttachmentFloatingIPRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeCustomerAttachment makes CustomerAttachment
 func MakeCustomerAttachment() *CustomerAttachment {
@@ -47,7 +22,40 @@ func MakeCustomerAttachment() *CustomerAttachment {
 	}
 }
 
+// MakeCustomerAttachment makes CustomerAttachment
+func InterfaceToCustomerAttachment(i interface{}) *CustomerAttachment {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &CustomerAttachment{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+	}
+}
+
 // MakeCustomerAttachmentSlice() makes a slice of CustomerAttachment
 func MakeCustomerAttachmentSlice() []*CustomerAttachment {
 	return []*CustomerAttachment{}
+}
+
+// InterfaceToCustomerAttachmentSlice() makes a slice of CustomerAttachment
+func InterfaceToCustomerAttachmentSlice(i interface{}) []*CustomerAttachment {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*CustomerAttachment{}
+	for _, item := range list {
+		result = append(result, InterfaceToCustomerAttachment(item))
+	}
+	return result
 }

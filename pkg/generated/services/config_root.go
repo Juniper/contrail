@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTConfigRootUpdateRequest for update request for REST.
-type RESTConfigRootUpdateRequest struct {
-	Data map[string]interface{} `json:"config-root"`
-}
-
 //RESTCreateConfigRoot handle a Create REST service.
 func (service *ContrailService) RESTCreateConfigRoot(c echo.Context) error {
-	requestData := &models.CreateConfigRootRequest{
-		ConfigRoot: models.MakeConfigRoot(),
-	}
+	requestData := &models.CreateConfigRootRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetConfigRoot(c echo.Context) error {
 func (service *ContrailService) GetConfigRoot(ctx context.Context, request *models.GetConfigRootRequest) (response *models.GetConfigRootResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListConfigRootRequest{

@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTServiceHealthCheckUpdateRequest for update request for REST.
-type RESTServiceHealthCheckUpdateRequest struct {
-	Data map[string]interface{} `json:"service-health-check"`
-}
-
 //RESTCreateServiceHealthCheck handle a Create REST service.
 func (service *ContrailService) RESTCreateServiceHealthCheck(c echo.Context) error {
-	requestData := &models.CreateServiceHealthCheckRequest{
-		ServiceHealthCheck: models.MakeServiceHealthCheck(),
-	}
+	requestData := &models.CreateServiceHealthCheckRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetServiceHealthCheck(c echo.Context) error 
 func (service *ContrailService) GetServiceHealthCheck(ctx context.Context, request *models.GetServiceHealthCheckRequest) (response *models.GetServiceHealthCheckResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListServiceHealthCheckRequest{

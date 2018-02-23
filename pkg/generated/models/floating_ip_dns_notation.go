@@ -1,17 +1,8 @@
 package models
 
-// FloatingIpDnsNotation
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type FloatingIpDnsNotation string
-
-// MakeFloatingIpDnsNotation makes FloatingIpDnsNotation
-func MakeFloatingIpDnsNotation() FloatingIpDnsNotation {
-	var data FloatingIpDnsNotation
-	return data
-}
-
-// MakeFloatingIpDnsNotationSlice() makes a slice of FloatingIpDnsNotation
-func MakeFloatingIpDnsNotationSlice() []FloatingIpDnsNotation {
-	return []FloatingIpDnsNotation{}
-}
+//To skip import error.
+var _ = schema.Version

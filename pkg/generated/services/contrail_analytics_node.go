@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTContrailAnalyticsNodeUpdateRequest for update request for REST.
-type RESTContrailAnalyticsNodeUpdateRequest struct {
-	Data map[string]interface{} `json:"contrail-analytics-node"`
-}
-
 //RESTCreateContrailAnalyticsNode handle a Create REST service.
 func (service *ContrailService) RESTCreateContrailAnalyticsNode(c echo.Context) error {
-	requestData := &models.CreateContrailAnalyticsNodeRequest{
-		ContrailAnalyticsNode: models.MakeContrailAnalyticsNode(),
-	}
+	requestData := &models.CreateContrailAnalyticsNodeRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetContrailAnalyticsNode(c echo.Context) err
 func (service *ContrailService) GetContrailAnalyticsNode(ctx context.Context, request *models.GetContrailAnalyticsNodeRequest) (response *models.GetContrailAnalyticsNodeResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListContrailAnalyticsNodeRequest{

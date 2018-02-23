@@ -1,23 +1,11 @@
 package models
 
-// ServiceTemplateType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// ServiceTemplateType
-//proteus:generate
-type ServiceTemplateType struct {
-	AvailabilityZoneEnable    bool                            `json:"availability_zone_enable"`
-	InstanceData              string                          `json:"instance_data,omitempty"`
-	OrderedInterfaces         bool                            `json:"ordered_interfaces"`
-	ServiceVirtualizationType ServiceVirtualizationType       `json:"service_virtualization_type,omitempty"`
-	InterfaceType             []*ServiceTemplateInterfaceType `json:"interface_type,omitempty"`
-	ImageName                 string                          `json:"image_name,omitempty"`
-	ServiceMode               ServiceModeType                 `json:"service_mode,omitempty"`
-	Version                   int                             `json:"version,omitempty"`
-	ServiceType               ServiceType                     `json:"service_type,omitempty"`
-	Flavor                    string                          `json:"flavor,omitempty"`
-	ServiceScaling            bool                            `json:"service_scaling"`
-	VrouterInstanceType       VRouterInstanceType             `json:"vrouter_instance_type,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeServiceTemplateType makes ServiceTemplateType
 func MakeServiceTemplateType() *ServiceTemplateType {
@@ -26,21 +14,60 @@ func MakeServiceTemplateType() *ServiceTemplateType {
 		AvailabilityZoneEnable:    false,
 		InstanceData:              "",
 		OrderedInterfaces:         false,
-		ServiceVirtualizationType: MakeServiceVirtualizationType(),
+		ServiceVirtualizationType: "",
 
 		InterfaceType: MakeServiceTemplateInterfaceTypeSlice(),
 
 		ImageName:           "",
-		ServiceMode:         MakeServiceModeType(),
+		ServiceMode:         "",
 		Version:             0,
-		ServiceType:         MakeServiceType(),
+		ServiceType:         "",
 		Flavor:              "",
 		ServiceScaling:      false,
-		VrouterInstanceType: MakeVRouterInstanceType(),
+		VrouterInstanceType: "",
+	}
+}
+
+// MakeServiceTemplateType makes ServiceTemplateType
+func InterfaceToServiceTemplateType(i interface{}) *ServiceTemplateType {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &ServiceTemplateType{
+		//TODO(nati): Apply default
+		AvailabilityZoneEnable:    schema.InterfaceToBool(m["availability_zone_enable"]),
+		InstanceData:              schema.InterfaceToString(m["instance_data"]),
+		OrderedInterfaces:         schema.InterfaceToBool(m["ordered_interfaces"]),
+		ServiceVirtualizationType: schema.InterfaceToString(m["service_virtualization_type"]),
+
+		InterfaceType: InterfaceToServiceTemplateInterfaceTypeSlice(m["interface_type"]),
+
+		ImageName:           schema.InterfaceToString(m["image_name"]),
+		ServiceMode:         schema.InterfaceToString(m["service_mode"]),
+		Version:             schema.InterfaceToInt64(m["version"]),
+		ServiceType:         schema.InterfaceToString(m["service_type"]),
+		Flavor:              schema.InterfaceToString(m["flavor"]),
+		ServiceScaling:      schema.InterfaceToBool(m["service_scaling"]),
+		VrouterInstanceType: schema.InterfaceToString(m["vrouter_instance_type"]),
 	}
 }
 
 // MakeServiceTemplateTypeSlice() makes a slice of ServiceTemplateType
 func MakeServiceTemplateTypeSlice() []*ServiceTemplateType {
 	return []*ServiceTemplateType{}
+}
+
+// InterfaceToServiceTemplateTypeSlice() makes a slice of ServiceTemplateType
+func InterfaceToServiceTemplateTypeSlice(i interface{}) []*ServiceTemplateType {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*ServiceTemplateType{}
+	for _, item := range list {
+		result = append(result, InterfaceToServiceTemplateType(item))
+	}
+	return result
 }

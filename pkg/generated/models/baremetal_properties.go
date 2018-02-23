@@ -1,15 +1,11 @@
 package models
 
-// BaremetalProperties
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// BaremetalProperties
-//proteus:generate
-type BaremetalProperties struct {
-	CPUCount int    `json:"cpu_count,omitempty"`
-	CPUArch  string `json:"cpu_arch,omitempty"`
-	DiskGB   int    `json:"disk_gb,omitempty"`
-	MemoryMB int    `json:"memory_mb,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeBaremetalProperties makes BaremetalProperties
 func MakeBaremetalProperties() *BaremetalProperties {
@@ -22,7 +18,36 @@ func MakeBaremetalProperties() *BaremetalProperties {
 	}
 }
 
+// MakeBaremetalProperties makes BaremetalProperties
+func InterfaceToBaremetalProperties(i interface{}) *BaremetalProperties {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &BaremetalProperties{
+		//TODO(nati): Apply default
+		CPUCount: schema.InterfaceToInt64(m["cpu_count"]),
+		CPUArch:  schema.InterfaceToString(m["cpu_arch"]),
+		DiskGB:   schema.InterfaceToInt64(m["disk_gb"]),
+		MemoryMB: schema.InterfaceToInt64(m["memory_mb"]),
+	}
+}
+
 // MakeBaremetalPropertiesSlice() makes a slice of BaremetalProperties
 func MakeBaremetalPropertiesSlice() []*BaremetalProperties {
 	return []*BaremetalProperties{}
+}
+
+// InterfaceToBaremetalPropertiesSlice() makes a slice of BaremetalProperties
+func InterfaceToBaremetalPropertiesSlice(i interface{}) []*BaremetalProperties {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*BaremetalProperties{}
+	for _, item := range list {
+		result = append(result, InterfaceToBaremetalProperties(item))
+	}
+	return result
 }

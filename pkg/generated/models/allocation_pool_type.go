@@ -1,14 +1,11 @@
 package models
 
-// AllocationPoolType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// AllocationPoolType
-//proteus:generate
-type AllocationPoolType struct {
-	VrouterSpecificPool bool   `json:"vrouter_specific_pool"`
-	Start               string `json:"start,omitempty"`
-	End                 string `json:"end,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeAllocationPoolType makes AllocationPoolType
 func MakeAllocationPoolType() *AllocationPoolType {
@@ -20,7 +17,35 @@ func MakeAllocationPoolType() *AllocationPoolType {
 	}
 }
 
+// MakeAllocationPoolType makes AllocationPoolType
+func InterfaceToAllocationPoolType(i interface{}) *AllocationPoolType {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &AllocationPoolType{
+		//TODO(nati): Apply default
+		VrouterSpecificPool: schema.InterfaceToBool(m["vrouter_specific_pool"]),
+		Start:               schema.InterfaceToString(m["start"]),
+		End:                 schema.InterfaceToString(m["end"]),
+	}
+}
+
 // MakeAllocationPoolTypeSlice() makes a slice of AllocationPoolType
 func MakeAllocationPoolTypeSlice() []*AllocationPoolType {
 	return []*AllocationPoolType{}
+}
+
+// InterfaceToAllocationPoolTypeSlice() makes a slice of AllocationPoolType
+func InterfaceToAllocationPoolTypeSlice(i interface{}) []*AllocationPoolType {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*AllocationPoolType{}
+	for _, item := range list {
+		result = append(result, InterfaceToAllocationPoolType(item))
+	}
+	return result
 }

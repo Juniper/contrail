@@ -1,17 +1,8 @@
 package models
 
-// VlanIdType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type VlanIdType int
-
-// MakeVlanIdType makes VlanIdType
-func MakeVlanIdType() VlanIdType {
-	var data VlanIdType
-	return data
-}
-
-// MakeVlanIdTypeSlice() makes a slice of VlanIdType
-func MakeVlanIdTypeSlice() []VlanIdType {
-	return []VlanIdType{}
-}
+//To skip import error.
+var _ = schema.Version

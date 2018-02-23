@@ -1,30 +1,19 @@
 package models
 
-// MirrorActionType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// MirrorActionType
-//proteus:generate
-type MirrorActionType struct {
-	NicAssistedMirroringVlan VlanIdType          `json:"nic_assisted_mirroring_vlan,omitempty"`
-	AnalyzerName             string              `json:"analyzer_name,omitempty"`
-	NHMode                   NHModeType          `json:"nh_mode,omitempty"`
-	JuniperHeader            bool                `json:"juniper_header"`
-	UDPPort                  int                 `json:"udp_port,omitempty"`
-	RoutingInstance          string              `json:"routing_instance,omitempty"`
-	StaticNHHeader           *StaticMirrorNhType `json:"static_nh_header,omitempty"`
-	AnalyzerIPAddress        string              `json:"analyzer_ip_address,omitempty"`
-	Encapsulation            string              `json:"encapsulation,omitempty"`
-	AnalyzerMacAddress       string              `json:"analyzer_mac_address,omitempty"`
-	NicAssistedMirroring     bool                `json:"nic_assisted_mirroring"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeMirrorActionType makes MirrorActionType
 func MakeMirrorActionType() *MirrorActionType {
 	return &MirrorActionType{
 		//TODO(nati): Apply default
-		NicAssistedMirroringVlan: MakeVlanIdType(),
+		NicAssistedMirroringVlan: 0,
 		AnalyzerName:             "",
-		NHMode:                   MakeNHModeType(),
+		NHMode:                   "",
 		JuniperHeader:            false,
 		UDPPort:                  0,
 		RoutingInstance:          "",
@@ -36,7 +25,43 @@ func MakeMirrorActionType() *MirrorActionType {
 	}
 }
 
+// MakeMirrorActionType makes MirrorActionType
+func InterfaceToMirrorActionType(i interface{}) *MirrorActionType {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &MirrorActionType{
+		//TODO(nati): Apply default
+		NicAssistedMirroringVlan: schema.InterfaceToInt64(m["nic_assisted_mirroring_vlan"]),
+		AnalyzerName:             schema.InterfaceToString(m["analyzer_name"]),
+		NHMode:                   schema.InterfaceToString(m["nh_mode"]),
+		JuniperHeader:            schema.InterfaceToBool(m["juniper_header"]),
+		UDPPort:                  schema.InterfaceToInt64(m["udp_port"]),
+		RoutingInstance:          schema.InterfaceToString(m["routing_instance"]),
+		StaticNHHeader:           InterfaceToStaticMirrorNhType(m["static_nh_header"]),
+		AnalyzerIPAddress:        schema.InterfaceToString(m["analyzer_ip_address"]),
+		Encapsulation:            schema.InterfaceToString(m["encapsulation"]),
+		AnalyzerMacAddress:       schema.InterfaceToString(m["analyzer_mac_address"]),
+		NicAssistedMirroring:     schema.InterfaceToBool(m["nic_assisted_mirroring"]),
+	}
+}
+
 // MakeMirrorActionTypeSlice() makes a slice of MirrorActionType
 func MakeMirrorActionTypeSlice() []*MirrorActionType {
 	return []*MirrorActionType{}
+}
+
+// InterfaceToMirrorActionTypeSlice() makes a slice of MirrorActionType
+func InterfaceToMirrorActionTypeSlice(i interface{}) []*MirrorActionType {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*MirrorActionType{}
+	for _, item := range list {
+		result = append(result, InterfaceToMirrorActionType(item))
+	}
+	return result
 }

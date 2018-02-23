@@ -1,37 +1,11 @@
 package models
 
-// QuotaType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// QuotaType
-//proteus:generate
-type QuotaType struct {
-	VirtualRouter             int `json:"virtual_router,omitempty"`
-	NetworkPolicy             int `json:"network_policy,omitempty"`
-	LoadbalancerPool          int `json:"loadbalancer_pool,omitempty"`
-	RouteTable                int `json:"route_table,omitempty"`
-	Subnet                    int `json:"subnet,omitempty"`
-	NetworkIpam               int `json:"network_ipam,omitempty"`
-	VirtualDNSRecord          int `json:"virtual_DNS_record,omitempty"`
-	LogicalRouter             int `json:"logical_router,omitempty"`
-	SecurityGroupRule         int `json:"security_group_rule,omitempty"`
-	VirtualDNS                int `json:"virtual_DNS,omitempty"`
-	ServiceInstance           int `json:"service_instance,omitempty"`
-	ServiceTemplate           int `json:"service_template,omitempty"`
-	BGPRouter                 int `json:"bgp_router,omitempty"`
-	FloatingIP                int `json:"floating_ip,omitempty"`
-	FloatingIPPool            int `json:"floating_ip_pool,omitempty"`
-	LoadbalancerMember        int `json:"loadbalancer_member,omitempty"`
-	AccessControlList         int `json:"access_control_list,omitempty"`
-	VirtualMachineInterface   int `json:"virtual_machine_interface,omitempty"`
-	InstanceIP                int `json:"instance_ip,omitempty"`
-	GlobalVrouterConfig       int `json:"global_vrouter_config,omitempty"`
-	SecurityLoggingObject     int `json:"security_logging_object,omitempty"`
-	LoadbalancerHealthmonitor int `json:"loadbalancer_healthmonitor,omitempty"`
-	VirtualIP                 int `json:"virtual_ip,omitempty"`
-	Defaults                  int `json:"defaults,omitempty"`
-	SecurityGroup             int `json:"security_group,omitempty"`
-	VirtualNetwork            int `json:"virtual_network,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeQuotaType makes QuotaType
 func MakeQuotaType() *QuotaType {
@@ -66,7 +40,58 @@ func MakeQuotaType() *QuotaType {
 	}
 }
 
+// MakeQuotaType makes QuotaType
+func InterfaceToQuotaType(i interface{}) *QuotaType {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &QuotaType{
+		//TODO(nati): Apply default
+		VirtualRouter:             schema.InterfaceToInt64(m["virtual_router"]),
+		NetworkPolicy:             schema.InterfaceToInt64(m["network_policy"]),
+		LoadbalancerPool:          schema.InterfaceToInt64(m["loadbalancer_pool"]),
+		RouteTable:                schema.InterfaceToInt64(m["route_table"]),
+		Subnet:                    schema.InterfaceToInt64(m["subnet"]),
+		NetworkIpam:               schema.InterfaceToInt64(m["network_ipam"]),
+		VirtualDNSRecord:          schema.InterfaceToInt64(m["virtual_DNS_record"]),
+		LogicalRouter:             schema.InterfaceToInt64(m["logical_router"]),
+		SecurityGroupRule:         schema.InterfaceToInt64(m["security_group_rule"]),
+		VirtualDNS:                schema.InterfaceToInt64(m["virtual_DNS"]),
+		ServiceInstance:           schema.InterfaceToInt64(m["service_instance"]),
+		ServiceTemplate:           schema.InterfaceToInt64(m["service_template"]),
+		BGPRouter:                 schema.InterfaceToInt64(m["bgp_router"]),
+		FloatingIP:                schema.InterfaceToInt64(m["floating_ip"]),
+		FloatingIPPool:            schema.InterfaceToInt64(m["floating_ip_pool"]),
+		LoadbalancerMember:        schema.InterfaceToInt64(m["loadbalancer_member"]),
+		AccessControlList:         schema.InterfaceToInt64(m["access_control_list"]),
+		VirtualMachineInterface:   schema.InterfaceToInt64(m["virtual_machine_interface"]),
+		InstanceIP:                schema.InterfaceToInt64(m["instance_ip"]),
+		GlobalVrouterConfig:       schema.InterfaceToInt64(m["global_vrouter_config"]),
+		SecurityLoggingObject:     schema.InterfaceToInt64(m["security_logging_object"]),
+		LoadbalancerHealthmonitor: schema.InterfaceToInt64(m["loadbalancer_healthmonitor"]),
+		VirtualIP:                 schema.InterfaceToInt64(m["virtual_ip"]),
+		Defaults:                  schema.InterfaceToInt64(m["defaults"]),
+		SecurityGroup:             schema.InterfaceToInt64(m["security_group"]),
+		VirtualNetwork:            schema.InterfaceToInt64(m["virtual_network"]),
+	}
+}
+
 // MakeQuotaTypeSlice() makes a slice of QuotaType
 func MakeQuotaTypeSlice() []*QuotaType {
 	return []*QuotaType{}
+}
+
+// InterfaceToQuotaTypeSlice() makes a slice of QuotaType
+func InterfaceToQuotaTypeSlice(i interface{}) []*QuotaType {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*QuotaType{}
+	for _, item := range list {
+		result = append(result, InterfaceToQuotaType(item))
+	}
+	return result
 }

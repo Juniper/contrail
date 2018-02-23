@@ -1,44 +1,11 @@
 package models
 
-// ServiceEndpoint
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// ServiceEndpoint
-//proteus:generate
-type ServiceEndpoint struct {
-	UUID        string         `json:"uuid,omitempty"`
-	ParentUUID  string         `json:"parent_uuid,omitempty"`
-	ParentType  string         `json:"parent_type,omitempty"`
-	FQName      []string       `json:"fq_name,omitempty"`
-	IDPerms     *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName string         `json:"display_name,omitempty"`
-	Annotations *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2      *PermType2     `json:"perms2,omitempty"`
-
-	ServiceConnectionModuleRefs []*ServiceEndpointServiceConnectionModuleRef `json:"service_connection_module_refs,omitempty"`
-	PhysicalRouterRefs          []*ServiceEndpointPhysicalRouterRef          `json:"physical_router_refs,omitempty"`
-	ServiceObjectRefs           []*ServiceEndpointServiceObjectRef           `json:"service_object_refs,omitempty"`
-}
-
-// ServiceEndpointServiceConnectionModuleRef references each other
-type ServiceEndpointServiceConnectionModuleRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// ServiceEndpointPhysicalRouterRef references each other
-type ServiceEndpointPhysicalRouterRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// ServiceEndpointServiceObjectRef references each other
-type ServiceEndpointServiceObjectRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeServiceEndpoint makes ServiceEndpoint
 func MakeServiceEndpoint() *ServiceEndpoint {
@@ -55,7 +22,40 @@ func MakeServiceEndpoint() *ServiceEndpoint {
 	}
 }
 
+// MakeServiceEndpoint makes ServiceEndpoint
+func InterfaceToServiceEndpoint(i interface{}) *ServiceEndpoint {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &ServiceEndpoint{
+		//TODO(nati): Apply default
+		UUID:        schema.InterfaceToString(m["uuid"]),
+		ParentUUID:  schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:  schema.InterfaceToString(m["parent_type"]),
+		FQName:      schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:     InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName: schema.InterfaceToString(m["display_name"]),
+		Annotations: InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:      InterfaceToPermType2(m["perms2"]),
+	}
+}
+
 // MakeServiceEndpointSlice() makes a slice of ServiceEndpoint
 func MakeServiceEndpointSlice() []*ServiceEndpoint {
 	return []*ServiceEndpoint{}
+}
+
+// InterfaceToServiceEndpointSlice() makes a slice of ServiceEndpoint
+func InterfaceToServiceEndpointSlice(i interface{}) []*ServiceEndpoint {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*ServiceEndpoint{}
+	for _, item := range list {
+		result = append(result, InterfaceToServiceEndpoint(item))
+	}
+	return result
 }

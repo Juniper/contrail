@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTLogicalInterfaceUpdateRequest for update request for REST.
-type RESTLogicalInterfaceUpdateRequest struct {
-	Data map[string]interface{} `json:"logical-interface"`
-}
-
 //RESTCreateLogicalInterface handle a Create REST service.
 func (service *ContrailService) RESTCreateLogicalInterface(c echo.Context) error {
-	requestData := &models.CreateLogicalInterfaceRequest{
-		LogicalInterface: models.MakeLogicalInterface(),
-	}
+	requestData := &models.CreateLogicalInterfaceRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetLogicalInterface(c echo.Context) error {
 func (service *ContrailService) GetLogicalInterface(ctx context.Context, request *models.GetLogicalInterfaceRequest) (response *models.GetLogicalInterfaceResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListLogicalInterfaceRequest{

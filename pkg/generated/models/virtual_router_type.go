@@ -1,17 +1,8 @@
 package models
 
-// VirtualRouterType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type VirtualRouterType string
-
-// MakeVirtualRouterType makes VirtualRouterType
-func MakeVirtualRouterType() VirtualRouterType {
-	var data VirtualRouterType
-	return data
-}
-
-// MakeVirtualRouterTypeSlice() makes a slice of VirtualRouterType
-func MakeVirtualRouterTypeSlice() []VirtualRouterType {
-	return []VirtualRouterType{}
-}
+//To skip import error.
+var _ = schema.Version

@@ -1,20 +1,11 @@
 package models
 
-// ConfigNode
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// ConfigNode
-//proteus:generate
-type ConfigNode struct {
-	UUID                string         `json:"uuid,omitempty"`
-	ParentUUID          string         `json:"parent_uuid,omitempty"`
-	ParentType          string         `json:"parent_type,omitempty"`
-	FQName              []string       `json:"fq_name,omitempty"`
-	IDPerms             *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName         string         `json:"display_name,omitempty"`
-	Annotations         *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2              *PermType2     `json:"perms2,omitempty"`
-	ConfigNodeIPAddress IpAddressType  `json:"config_node_ip_address,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeConfigNode makes ConfigNode
 func MakeConfigNode() *ConfigNode {
@@ -28,11 +19,45 @@ func MakeConfigNode() *ConfigNode {
 		DisplayName:         "",
 		Annotations:         MakeKeyValuePairs(),
 		Perms2:              MakePermType2(),
-		ConfigNodeIPAddress: MakeIpAddressType(),
+		ConfigNodeIPAddress: "",
+	}
+}
+
+// MakeConfigNode makes ConfigNode
+func InterfaceToConfigNode(i interface{}) *ConfigNode {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &ConfigNode{
+		//TODO(nati): Apply default
+		UUID:                schema.InterfaceToString(m["uuid"]),
+		ParentUUID:          schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:          schema.InterfaceToString(m["parent_type"]),
+		FQName:              schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:             InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:         schema.InterfaceToString(m["display_name"]),
+		Annotations:         InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:              InterfaceToPermType2(m["perms2"]),
+		ConfigNodeIPAddress: schema.InterfaceToString(m["config_node_ip_address"]),
 	}
 }
 
 // MakeConfigNodeSlice() makes a slice of ConfigNode
 func MakeConfigNodeSlice() []*ConfigNode {
 	return []*ConfigNode{}
+}
+
+// InterfaceToConfigNodeSlice() makes a slice of ConfigNode
+func InterfaceToConfigNodeSlice(i interface{}) []*ConfigNode {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*ConfigNode{}
+	for _, item := range list {
+		result = append(result, InterfaceToConfigNode(item))
+	}
+	return result
 }

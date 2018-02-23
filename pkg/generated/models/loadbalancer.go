@@ -1,46 +1,11 @@
 package models
 
-// Loadbalancer
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// Loadbalancer
-//proteus:generate
-type Loadbalancer struct {
-	UUID                   string            `json:"uuid,omitempty"`
-	ParentUUID             string            `json:"parent_uuid,omitempty"`
-	ParentType             string            `json:"parent_type,omitempty"`
-	FQName                 []string          `json:"fq_name,omitempty"`
-	IDPerms                *IdPermsType      `json:"id_perms,omitempty"`
-	DisplayName            string            `json:"display_name,omitempty"`
-	Annotations            *KeyValuePairs    `json:"annotations,omitempty"`
-	Perms2                 *PermType2        `json:"perms2,omitempty"`
-	LoadbalancerProperties *LoadbalancerType `json:"loadbalancer_properties,omitempty"`
-	LoadbalancerProvider   string            `json:"loadbalancer_provider,omitempty"`
-
-	ServiceApplianceSetRefs     []*LoadbalancerServiceApplianceSetRef     `json:"service_appliance_set_refs,omitempty"`
-	VirtualMachineInterfaceRefs []*LoadbalancerVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
-	ServiceInstanceRefs         []*LoadbalancerServiceInstanceRef         `json:"service_instance_refs,omitempty"`
-}
-
-// LoadbalancerVirtualMachineInterfaceRef references each other
-type LoadbalancerVirtualMachineInterfaceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// LoadbalancerServiceInstanceRef references each other
-type LoadbalancerServiceInstanceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
-
-// LoadbalancerServiceApplianceSetRef references each other
-type LoadbalancerServiceApplianceSetRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeLoadbalancer makes Loadbalancer
 func MakeLoadbalancer() *Loadbalancer {
@@ -59,7 +24,42 @@ func MakeLoadbalancer() *Loadbalancer {
 	}
 }
 
+// MakeLoadbalancer makes Loadbalancer
+func InterfaceToLoadbalancer(i interface{}) *Loadbalancer {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &Loadbalancer{
+		//TODO(nati): Apply default
+		UUID:                   schema.InterfaceToString(m["uuid"]),
+		ParentUUID:             schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:             schema.InterfaceToString(m["parent_type"]),
+		FQName:                 schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:                InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:            schema.InterfaceToString(m["display_name"]),
+		Annotations:            InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:                 InterfaceToPermType2(m["perms2"]),
+		LoadbalancerProperties: InterfaceToLoadbalancerType(m["loadbalancer_properties"]),
+		LoadbalancerProvider:   schema.InterfaceToString(m["loadbalancer_provider"]),
+	}
+}
+
 // MakeLoadbalancerSlice() makes a slice of Loadbalancer
 func MakeLoadbalancerSlice() []*Loadbalancer {
 	return []*Loadbalancer{}
+}
+
+// InterfaceToLoadbalancerSlice() makes a slice of Loadbalancer
+func InterfaceToLoadbalancerSlice(i interface{}) []*Loadbalancer {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*Loadbalancer{}
+	for _, item := range list {
+		result = append(result, InterfaceToLoadbalancer(item))
+	}
+	return result
 }

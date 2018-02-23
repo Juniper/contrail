@@ -1,17 +1,8 @@
 package models
 
-// AlarmSeverity
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type AlarmSeverity int
-
-// MakeAlarmSeverity makes AlarmSeverity
-func MakeAlarmSeverity() AlarmSeverity {
-	var data AlarmSeverity
-	return data
-}
-
-// MakeAlarmSeveritySlice() makes a slice of AlarmSeverity
-func MakeAlarmSeveritySlice() []AlarmSeverity {
-	return []AlarmSeverity{}
-}
+//To skip import error.
+var _ = schema.Version

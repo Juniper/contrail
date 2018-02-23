@@ -13,15 +13,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//REST{{ schema.JSONSchema.GoName }}UpdateRequest for update request for REST.
-type REST{{ schema.JSONSchema.GoName }}UpdateRequest struct {
-    Data map[string]interface{} `json:"{{ schema.Path }}"`
-}
-
 //RESTCreate{{ schema.JSONSchema.GoName }} handle a Create REST service.
 func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
     requestData := &models.Create{{ schema.JSONSchema.GoName }}Request{
-        {{ schema.JSONSchema.GoName }}: models.Make{{ schema.JSONSchema.GoName }}(),
     }
     if err := c.Bind(requestData); err != nil {
         log.WithFields(log.Fields{
@@ -166,8 +160,11 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
 func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Get{{ schema.JSONSchema.GoName }}Request) (response *models.Get{{ schema.JSONSchema.GoName }}Response, err error) {
     spec := &models.ListSpec{
                 Limit: 1,
-                Filter: models.Filter{
-                    "uuid": []string{request.ID},
+                Filters: []*models.Filter{
+                    &models.Filter{
+                        Key: "uuid",
+                        Values: []string{request.ID},
+                    },
                 },
     }
     listRequest := &models.List{{ schema.JSONSchema.GoName }}Request{

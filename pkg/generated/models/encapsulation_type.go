@@ -1,17 +1,8 @@
 package models
 
-// EncapsulationType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type EncapsulationType []string
-
-// MakeEncapsulationType makes EncapsulationType
-func MakeEncapsulationType() EncapsulationType {
-	var data EncapsulationType
-	return data
-}
-
-// MakeEncapsulationTypeSlice() makes a slice of EncapsulationType
-func MakeEncapsulationTypeSlice() []EncapsulationType {
-	return []EncapsulationType{}
-}
+//To skip import error.
+var _ = schema.Version

@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTDsaRuleUpdateRequest for update request for REST.
-type RESTDsaRuleUpdateRequest struct {
-	Data map[string]interface{} `json:"dsa-rule"`
-}
-
 //RESTCreateDsaRule handle a Create REST service.
 func (service *ContrailService) RESTCreateDsaRule(c echo.Context) error {
-	requestData := &models.CreateDsaRuleRequest{
-		DsaRule: models.MakeDsaRule(),
-	}
+	requestData := &models.CreateDsaRuleRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetDsaRule(c echo.Context) error {
 func (service *ContrailService) GetDsaRule(ctx context.Context, request *models.GetDsaRuleRequest) (response *models.GetDsaRuleResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListDsaRuleRequest{

@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTInterfaceRouteTableUpdateRequest for update request for REST.
-type RESTInterfaceRouteTableUpdateRequest struct {
-	Data map[string]interface{} `json:"interface-route-table"`
-}
-
 //RESTCreateInterfaceRouteTable handle a Create REST service.
 func (service *ContrailService) RESTCreateInterfaceRouteTable(c echo.Context) error {
-	requestData := &models.CreateInterfaceRouteTableRequest{
-		InterfaceRouteTable: models.MakeInterfaceRouteTable(),
-	}
+	requestData := &models.CreateInterfaceRouteTableRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetInterfaceRouteTable(c echo.Context) error
 func (service *ContrailService) GetInterfaceRouteTable(ctx context.Context, request *models.GetInterfaceRouteTableRequest) (response *models.GetInterfaceRouteTableResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListInterfaceRouteTableRequest{

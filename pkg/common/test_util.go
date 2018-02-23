@@ -7,16 +7,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var dbMutex = &sync.Mutex{}
+var dbMutex *sync.Mutex
 var tableMutex = map[string]*sync.Mutex{}
 
+func init() {
+	dbMutex = new(sync.Mutex)
+}
+
 //UseTable lock and initialize a table for testing.
-func UseTable(db *sql.DB, table string) {
+func UseTable(db *sql.DB, table string) *sync.Mutex {
 	dbMutex.Lock()
 	mutex, ok := tableMutex[table]
 	if !ok {
 		mutex = &sync.Mutex{}
-		tableMutex[table] = mutex
+		tableMutex[table] = new(sync.Mutex)
 	}
 	dbMutex.Unlock()
 	mutex.Lock()
@@ -24,19 +28,5 @@ func UseTable(db *sql.DB, table string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-//ClearTable clean and unlock the table.
-func ClearTable(db *sql.DB, table string) {
-	dbMutex.Lock()
-	mutex, ok := tableMutex[table]
-	dbMutex.Unlock()
-	if !ok {
-		return
-	}
-	_, err := db.Exec("delete from " + table)
-	if err != nil {
-		log.Fatal(err)
-	}
-	mutex.Unlock()
+	return mutex
 }

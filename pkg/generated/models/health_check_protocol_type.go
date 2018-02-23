@@ -1,17 +1,8 @@
 package models
 
-// HealthCheckProtocolType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-//proteus:generate
-type HealthCheckProtocolType string
-
-// MakeHealthCheckProtocolType makes HealthCheckProtocolType
-func MakeHealthCheckProtocolType() HealthCheckProtocolType {
-	var data HealthCheckProtocolType
-	return data
-}
-
-// MakeHealthCheckProtocolTypeSlice() makes a slice of HealthCheckProtocolType
-func MakeHealthCheckProtocolTypeSlice() []HealthCheckProtocolType {
-	return []HealthCheckProtocolType{}
-}
+//To skip import error.
+var _ = schema.Version

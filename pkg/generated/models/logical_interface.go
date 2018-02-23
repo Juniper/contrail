@@ -1,30 +1,11 @@
 package models
 
-// LogicalInterface
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// LogicalInterface
-//proteus:generate
-type LogicalInterface struct {
-	UUID                    string               `json:"uuid,omitempty"`
-	ParentUUID              string               `json:"parent_uuid,omitempty"`
-	ParentType              string               `json:"parent_type,omitempty"`
-	FQName                  []string             `json:"fq_name,omitempty"`
-	IDPerms                 *IdPermsType         `json:"id_perms,omitempty"`
-	DisplayName             string               `json:"display_name,omitempty"`
-	Annotations             *KeyValuePairs       `json:"annotations,omitempty"`
-	Perms2                  *PermType2           `json:"perms2,omitempty"`
-	LogicalInterfaceVlanTag int                  `json:"logical_interface_vlan_tag,omitempty"`
-	LogicalInterfaceType    LogicalInterfaceType `json:"logical_interface_type,omitempty"`
-
-	VirtualMachineInterfaceRefs []*LogicalInterfaceVirtualMachineInterfaceRef `json:"virtual_machine_interface_refs,omitempty"`
-}
-
-// LogicalInterfaceVirtualMachineInterfaceRef references each other
-type LogicalInterfaceVirtualMachineInterfaceRef struct {
-	UUID string   `json:"uuid"`
-	To   []string `json:"to"` //FQDN
-
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeLogicalInterface makes LogicalInterface
 func MakeLogicalInterface() *LogicalInterface {
@@ -39,11 +20,46 @@ func MakeLogicalInterface() *LogicalInterface {
 		Annotations:             MakeKeyValuePairs(),
 		Perms2:                  MakePermType2(),
 		LogicalInterfaceVlanTag: 0,
-		LogicalInterfaceType:    MakeLogicalInterfaceType(),
+		LogicalInterfaceType:    "",
+	}
+}
+
+// MakeLogicalInterface makes LogicalInterface
+func InterfaceToLogicalInterface(i interface{}) *LogicalInterface {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &LogicalInterface{
+		//TODO(nati): Apply default
+		UUID:                    schema.InterfaceToString(m["uuid"]),
+		ParentUUID:              schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:              schema.InterfaceToString(m["parent_type"]),
+		FQName:                  schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:                 InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:             schema.InterfaceToString(m["display_name"]),
+		Annotations:             InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:                  InterfaceToPermType2(m["perms2"]),
+		LogicalInterfaceVlanTag: schema.InterfaceToInt64(m["logical_interface_vlan_tag"]),
+		LogicalInterfaceType:    schema.InterfaceToString(m["logical_interface_type"]),
 	}
 }
 
 // MakeLogicalInterfaceSlice() makes a slice of LogicalInterface
 func MakeLogicalInterfaceSlice() []*LogicalInterface {
 	return []*LogicalInterface{}
+}
+
+// InterfaceToLogicalInterfaceSlice() makes a slice of LogicalInterface
+func InterfaceToLogicalInterfaceSlice(i interface{}) []*LogicalInterface {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*LogicalInterface{}
+	for _, item := range list {
+		result = append(result, InterfaceToLogicalInterface(item))
+	}
+	return result
 }

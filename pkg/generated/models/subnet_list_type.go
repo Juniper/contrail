@@ -1,12 +1,11 @@
 package models
 
-// SubnetListType
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// SubnetListType
-//proteus:generate
-type SubnetListType struct {
-	Subnet []*SubnetType `json:"subnet,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeSubnetListType makes SubnetListType
 func MakeSubnetListType() *SubnetListType {
@@ -17,7 +16,34 @@ func MakeSubnetListType() *SubnetListType {
 	}
 }
 
+// MakeSubnetListType makes SubnetListType
+func InterfaceToSubnetListType(i interface{}) *SubnetListType {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &SubnetListType{
+		//TODO(nati): Apply default
+
+		Subnet: InterfaceToSubnetTypeSlice(m["subnet"]),
+	}
+}
+
 // MakeSubnetListTypeSlice() makes a slice of SubnetListType
 func MakeSubnetListTypeSlice() []*SubnetListType {
 	return []*SubnetListType{}
+}
+
+// InterfaceToSubnetListTypeSlice() makes a slice of SubnetListType
+func InterfaceToSubnetListTypeSlice(i interface{}) []*SubnetListType {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*SubnetListType{}
+	for _, item := range list {
+		result = append(result, InterfaceToSubnetListType(item))
+	}
+	return result
 }

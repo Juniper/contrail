@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTAccessControlListUpdateRequest for update request for REST.
-type RESTAccessControlListUpdateRequest struct {
-	Data map[string]interface{} `json:"access-control-list"`
-}
-
 //RESTCreateAccessControlList handle a Create REST service.
 func (service *ContrailService) RESTCreateAccessControlList(c echo.Context) error {
-	requestData := &models.CreateAccessControlListRequest{
-		AccessControlList: models.MakeAccessControlList(),
-	}
+	requestData := &models.CreateAccessControlListRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetAccessControlList(c echo.Context) error {
 func (service *ContrailService) GetAccessControlList(ctx context.Context, request *models.GetAccessControlListRequest) (response *models.GetAccessControlListResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListAccessControlListRequest{

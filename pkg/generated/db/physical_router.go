@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -76,18 +77,18 @@ var PhysicalRouterFields = []string{
 // PhysicalRouterRefFields is db reference fields for PhysicalRouter
 var PhysicalRouterRefFields = map[string][]string{
 
-	"virtual_network": {
-	// <common.Schema Value>
+	"virtual_network": []string{
+		// <schema.Schema Value>
 
 	},
 
-	"bgp_router": {
-	// <common.Schema Value>
+	"bgp_router": []string{
+		// <schema.Schema Value>
 
 	},
 
-	"virtual_router": {
-	// <common.Schema Value>
+	"virtual_router": []string{
+		// <schema.Schema Value>
 
 	},
 }
@@ -95,7 +96,7 @@ var PhysicalRouterRefFields = map[string][]string{
 // PhysicalRouterBackRefFields is db back reference fields for PhysicalRouter
 var PhysicalRouterBackRefFields = map[string][]string{
 
-	"logical_interface": {
+	"logical_interface": []string{
 		"uuid",
 		"share",
 		"owner_access",
@@ -121,7 +122,7 @@ var PhysicalRouterBackRefFields = map[string][]string{
 		"key_value_pair",
 	},
 
-	"physical_interface": {
+	"physical_interface": []string{
 		"uuid",
 		"share",
 		"owner_access",
@@ -177,60 +178,60 @@ func CreatePhysicalRouter(
 		"model": model,
 		"query": insertPhysicalRouterQuery,
 	}).Debug("create query")
-	_, err = stmt.ExecContext(ctx, string(model.UUID),
-		int(model.TelemetryInfo.ServerPort),
-		string(model.TelemetryInfo.ServerIP),
-		common.MustJSON(model.TelemetryInfo.Resource),
-		bool(model.PhysicalRouterVNCManaged),
-		string(model.PhysicalRouterVendorName),
-		string(model.PhysicalRouterUserCredentials.Username),
-		string(model.PhysicalRouterUserCredentials.Password),
-		int(model.PhysicalRouterSNMPCredentials.Version),
-		string(model.PhysicalRouterSNMPCredentials.V3SecurityName),
-		string(model.PhysicalRouterSNMPCredentials.V3SecurityLevel),
-		string(model.PhysicalRouterSNMPCredentials.V3SecurityEngineID),
-		string(model.PhysicalRouterSNMPCredentials.V3PrivacyProtocol),
-		string(model.PhysicalRouterSNMPCredentials.V3PrivacyPassword),
-		int(model.PhysicalRouterSNMPCredentials.V3EngineTime),
-		string(model.PhysicalRouterSNMPCredentials.V3EngineID),
-		int(model.PhysicalRouterSNMPCredentials.V3EngineBoots),
-		string(model.PhysicalRouterSNMPCredentials.V3ContextEngineID),
-		string(model.PhysicalRouterSNMPCredentials.V3Context),
-		string(model.PhysicalRouterSNMPCredentials.V3AuthenticationProtocol),
-		string(model.PhysicalRouterSNMPCredentials.V3AuthenticationPassword),
-		string(model.PhysicalRouterSNMPCredentials.V2Community),
-		int(model.PhysicalRouterSNMPCredentials.Timeout),
-		int(model.PhysicalRouterSNMPCredentials.Retries),
-		int(model.PhysicalRouterSNMPCredentials.LocalPort),
-		bool(model.PhysicalRouterSNMP),
-		string(model.PhysicalRouterRole),
-		string(model.PhysicalRouterProductName),
-		string(model.PhysicalRouterManagementIP),
-		string(model.PhysicalRouterLoopbackIP),
-		bool(model.PhysicalRouterLLDP),
-		common.MustJSON(model.PhysicalRouterJunosServicePorts.ServicePort),
-		string(model.PhysicalRouterImageURI),
-		string(model.PhysicalRouterDataplaneIP),
-		common.MustJSON(model.Perms2.Share),
-		int(model.Perms2.OwnerAccess),
-		string(model.Perms2.Owner),
-		int(model.Perms2.GlobalAccess),
-		string(model.ParentUUID),
-		string(model.ParentType),
-		bool(model.IDPerms.UserVisible),
-		int(model.IDPerms.Permissions.OwnerAccess),
-		string(model.IDPerms.Permissions.Owner),
-		int(model.IDPerms.Permissions.OtherAccess),
-		int(model.IDPerms.Permissions.GroupAccess),
-		string(model.IDPerms.Permissions.Group),
-		string(model.IDPerms.LastModified),
-		bool(model.IDPerms.Enable),
-		string(model.IDPerms.Description),
-		string(model.IDPerms.Creator),
-		string(model.IDPerms.Created),
-		common.MustJSON(model.FQName),
-		string(model.DisplayName),
-		common.MustJSON(model.Annotations.KeyValuePair))
+	_, err = stmt.ExecContext(ctx, string(model.GetUUID()),
+		int(model.GetTelemetryInfo().GetServerPort()),
+		string(model.GetTelemetryInfo().GetServerIP()),
+		common.MustJSON(model.GetTelemetryInfo().GetResource()),
+		bool(model.GetPhysicalRouterVNCManaged()),
+		string(model.GetPhysicalRouterVendorName()),
+		string(model.GetPhysicalRouterUserCredentials().GetUsername()),
+		string(model.GetPhysicalRouterUserCredentials().GetPassword()),
+		int(model.GetPhysicalRouterSNMPCredentials().GetVersion()),
+		string(model.GetPhysicalRouterSNMPCredentials().GetV3SecurityName()),
+		string(model.GetPhysicalRouterSNMPCredentials().GetV3SecurityLevel()),
+		string(model.GetPhysicalRouterSNMPCredentials().GetV3SecurityEngineID()),
+		string(model.GetPhysicalRouterSNMPCredentials().GetV3PrivacyProtocol()),
+		string(model.GetPhysicalRouterSNMPCredentials().GetV3PrivacyPassword()),
+		int(model.GetPhysicalRouterSNMPCredentials().GetV3EngineTime()),
+		string(model.GetPhysicalRouterSNMPCredentials().GetV3EngineID()),
+		int(model.GetPhysicalRouterSNMPCredentials().GetV3EngineBoots()),
+		string(model.GetPhysicalRouterSNMPCredentials().GetV3ContextEngineID()),
+		string(model.GetPhysicalRouterSNMPCredentials().GetV3Context()),
+		string(model.GetPhysicalRouterSNMPCredentials().GetV3AuthenticationProtocol()),
+		string(model.GetPhysicalRouterSNMPCredentials().GetV3AuthenticationPassword()),
+		string(model.GetPhysicalRouterSNMPCredentials().GetV2Community()),
+		int(model.GetPhysicalRouterSNMPCredentials().GetTimeout()),
+		int(model.GetPhysicalRouterSNMPCredentials().GetRetries()),
+		int(model.GetPhysicalRouterSNMPCredentials().GetLocalPort()),
+		bool(model.GetPhysicalRouterSNMP()),
+		string(model.GetPhysicalRouterRole()),
+		string(model.GetPhysicalRouterProductName()),
+		string(model.GetPhysicalRouterManagementIP()),
+		string(model.GetPhysicalRouterLoopbackIP()),
+		bool(model.GetPhysicalRouterLLDP()),
+		common.MustJSON(model.GetPhysicalRouterJunosServicePorts().GetServicePort()),
+		string(model.GetPhysicalRouterImageURI()),
+		string(model.GetPhysicalRouterDataplaneIP()),
+		common.MustJSON(model.GetPerms2().GetShare()),
+		int(model.GetPerms2().GetOwnerAccess()),
+		string(model.GetPerms2().GetOwner()),
+		int(model.GetPerms2().GetGlobalAccess()),
+		string(model.GetParentUUID()),
+		string(model.GetParentType()),
+		bool(model.GetIDPerms().GetUserVisible()),
+		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
+		string(model.GetIDPerms().GetPermissions().GetOwner()),
+		int(model.GetIDPerms().GetPermissions().GetOtherAccess()),
+		int(model.GetIDPerms().GetPermissions().GetGroupAccess()),
+		string(model.GetIDPerms().GetPermissions().GetGroup()),
+		string(model.GetIDPerms().GetLastModified()),
+		bool(model.GetIDPerms().GetEnable()),
+		string(model.GetIDPerms().GetDescription()),
+		string(model.GetIDPerms().GetCreator()),
+		string(model.GetIDPerms().GetCreated()),
+		common.MustJSON(model.GetFQName()),
+		string(model.GetDisplayName()),
+		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
 	}
@@ -283,7 +284,7 @@ func CreatePhysicalRouter(
 	if err != nil {
 		return err
 	}
-	err = common.CreateSharing(tx, "physical_router", model.UUID, model.Perms2.Share)
+	err = common.CreateSharing(tx, "physical_router", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -298,25 +299,19 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 
 	if value, ok := values["uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.UUID = castedValue
+		m.UUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["server_port"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.TelemetryInfo.ServerPort = castedValue
+		m.TelemetryInfo.ServerPort = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["server_ip"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.TelemetryInfo.ServerIP = castedValue
+		m.TelemetryInfo.ServerIP = schema.InterfaceToString(value)
 
 	}
 
@@ -328,217 +323,163 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 
 	if value, ok := values["physical_router_vnc_managed"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.PhysicalRouterVNCManaged = castedValue
+		m.PhysicalRouterVNCManaged = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["physical_router_vendor_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterVendorName = castedValue
+		m.PhysicalRouterVendorName = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["username"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterUserCredentials.Username = castedValue
+		m.PhysicalRouterUserCredentials.Username = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["password"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterUserCredentials.Password = castedValue
+		m.PhysicalRouterUserCredentials.Password = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["version"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.PhysicalRouterSNMPCredentials.Version = castedValue
+		m.PhysicalRouterSNMPCredentials.Version = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["v3_security_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterSNMPCredentials.V3SecurityName = castedValue
+		m.PhysicalRouterSNMPCredentials.V3SecurityName = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["v3_security_level"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterSNMPCredentials.V3SecurityLevel = castedValue
+		m.PhysicalRouterSNMPCredentials.V3SecurityLevel = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["v3_security_engine_id"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterSNMPCredentials.V3SecurityEngineID = castedValue
+		m.PhysicalRouterSNMPCredentials.V3SecurityEngineID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["v3_privacy_protocol"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterSNMPCredentials.V3PrivacyProtocol = castedValue
+		m.PhysicalRouterSNMPCredentials.V3PrivacyProtocol = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["v3_privacy_password"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterSNMPCredentials.V3PrivacyPassword = castedValue
+		m.PhysicalRouterSNMPCredentials.V3PrivacyPassword = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["v3_engine_time"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.PhysicalRouterSNMPCredentials.V3EngineTime = castedValue
+		m.PhysicalRouterSNMPCredentials.V3EngineTime = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["v3_engine_id"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterSNMPCredentials.V3EngineID = castedValue
+		m.PhysicalRouterSNMPCredentials.V3EngineID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["v3_engine_boots"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.PhysicalRouterSNMPCredentials.V3EngineBoots = castedValue
+		m.PhysicalRouterSNMPCredentials.V3EngineBoots = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["v3_context_engine_id"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterSNMPCredentials.V3ContextEngineID = castedValue
+		m.PhysicalRouterSNMPCredentials.V3ContextEngineID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["v3_context"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterSNMPCredentials.V3Context = castedValue
+		m.PhysicalRouterSNMPCredentials.V3Context = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["v3_authentication_protocol"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterSNMPCredentials.V3AuthenticationProtocol = castedValue
+		m.PhysicalRouterSNMPCredentials.V3AuthenticationProtocol = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["v3_authentication_password"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterSNMPCredentials.V3AuthenticationPassword = castedValue
+		m.PhysicalRouterSNMPCredentials.V3AuthenticationPassword = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["v2_community"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterSNMPCredentials.V2Community = castedValue
+		m.PhysicalRouterSNMPCredentials.V2Community = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["timeout"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.PhysicalRouterSNMPCredentials.Timeout = castedValue
+		m.PhysicalRouterSNMPCredentials.Timeout = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["retries"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.PhysicalRouterSNMPCredentials.Retries = castedValue
+		m.PhysicalRouterSNMPCredentials.Retries = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["local_port"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.PhysicalRouterSNMPCredentials.LocalPort = castedValue
+		m.PhysicalRouterSNMPCredentials.LocalPort = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["physical_router_snmp"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.PhysicalRouterSNMP = castedValue
+		m.PhysicalRouterSNMP = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["physical_router_role"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterRole = models.PhysicalRouterRole(castedValue)
+		m.PhysicalRouterRole = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["physical_router_product_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterProductName = castedValue
+		m.PhysicalRouterProductName = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["physical_router_management_ip"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterManagementIP = castedValue
+		m.PhysicalRouterManagementIP = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["physical_router_loopback_ip"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterLoopbackIP = castedValue
+		m.PhysicalRouterLoopbackIP = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["physical_router_lldp"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.PhysicalRouterLLDP = castedValue
+		m.PhysicalRouterLLDP = schema.InterfaceToBool(value)
 
 	}
 
@@ -550,17 +491,13 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 
 	if value, ok := values["physical_router_image_uri"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterImageURI = castedValue
+		m.PhysicalRouterImageURI = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["physical_router_dataplane_ip"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.PhysicalRouterDataplaneIP = castedValue
+		m.PhysicalRouterDataplaneIP = schema.InterfaceToString(value)
 
 	}
 
@@ -572,129 +509,97 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 
 	if value, ok := values["owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.OwnerAccess = models.AccessType(castedValue)
+		m.Perms2.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.Perms2.Owner = castedValue
+		m.Perms2.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["global_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.Perms2.GlobalAccess = models.AccessType(castedValue)
+		m.Perms2.GlobalAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["parent_uuid"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentUUID = castedValue
+		m.ParentUUID = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["parent_type"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.ParentType = castedValue
+		m.ParentType = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["user_visible"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.UserVisible = castedValue
+		m.IDPerms.UserVisible = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["permissions_owner_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["permissions_owner"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Owner = castedValue
+		m.IDPerms.Permissions.Owner = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["other_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group_access"]; ok {
 
-		castedValue := common.InterfaceToInt(value)
-
-		m.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+		m.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(value)
 
 	}
 
 	if value, ok := values["group"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Permissions.Group = castedValue
+		m.IDPerms.Permissions.Group = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["last_modified"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.LastModified = castedValue
+		m.IDPerms.LastModified = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["enable"]; ok {
 
-		castedValue := common.InterfaceToBool(value)
-
-		m.IDPerms.Enable = castedValue
+		m.IDPerms.Enable = schema.InterfaceToBool(value)
 
 	}
 
 	if value, ok := values["description"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Description = castedValue
+		m.IDPerms.Description = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["creator"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Creator = castedValue
+		m.IDPerms.Creator = schema.InterfaceToString(value)
 
 	}
 
 	if value, ok := values["created"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.IDPerms.Created = castedValue
+		m.IDPerms.Created = schema.InterfaceToString(value)
 
 	}
 
@@ -706,9 +611,7 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 
 	if value, ok := values["display_name"]; ok {
 
-		castedValue := common.InterfaceToString(value)
-
-		m.DisplayName = castedValue
+		m.DisplayName = schema.InterfaceToString(value)
 
 	}
 
@@ -718,16 +621,36 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 
 	}
 
-	if value, ok := values["ref_virtual_network"]; ok {
+	if value, ok := values["ref_virtual_router"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.PhysicalRouterVirtualRouterRef{}
+			referenceModel.UUID = uuid
+			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_network"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
@@ -740,14 +663,14 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 
 	if value, ok := values["ref_bgp_router"]; ok {
 		var references []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
 		for _, reference := range references {
 			referenceMap, ok := reference.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(referenceMap["to"])
+			uuid := schema.InterfaceToString(referenceMap["to"])
 			if uuid == "" {
 				continue
 			}
@@ -758,36 +681,16 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 		}
 	}
 
-	if value, ok := values["ref_virtual_router"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.PhysicalRouterVirtualRouterRef{}
-			referenceModel.UUID = uuid
-			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["backref_logical_interface"]; ok {
 		var childResources []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
 		for _, childResource := range childResources {
 			childResourceMap, ok := childResource.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
 			if uuid == "" {
 				continue
 			}
@@ -796,179 +699,139 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 
 			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.UUID = castedValue
+				childModel.UUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.OwnerAccess = models.AccessType(castedValue)
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.Perms2.Owner = castedValue
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.GlobalAccess = models.AccessType(castedValue)
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentUUID = castedValue
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentType = castedValue
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["logical_interface_vlan_tag"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.LogicalInterfaceVlanTag = castedValue
+				childModel.LogicalInterfaceVlanTag = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["logical_interface_type"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.LogicalInterfaceType = models.LogicalInterfaceType(castedValue)
+				childModel.LogicalInterfaceType = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.UserVisible = castedValue
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Owner = castedValue
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Group = castedValue
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.LastModified = castedValue
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.Enable = castedValue
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Description = castedValue
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Creator = castedValue
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Created = castedValue
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.FQName)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
 
 			}
 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.DisplayName = castedValue
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
 
 			}
 
@@ -977,14 +840,14 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 
 	if value, ok := values["backref_physical_interface"]; ok {
 		var childResources []interface{}
-		stringValue := common.InterfaceToString(value)
+		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
 		for _, childResource := range childResources {
 			childResourceMap, ok := childResource.(map[string]interface{})
 			if !ok {
 				continue
 			}
-			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
 			if uuid == "" {
 				continue
 			}
@@ -993,171 +856,133 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 
 			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.UUID = castedValue
+				childModel.UUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.OwnerAccess = models.AccessType(castedValue)
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.Perms2.Owner = castedValue
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.Perms2.GlobalAccess = models.AccessType(castedValue)
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentUUID = castedValue
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.ParentType = castedValue
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.UserVisible = castedValue
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OwnerAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Owner = castedValue
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.OtherAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToInt(propertyValue)
-
-				childModel.IDPerms.Permissions.GroupAccess = models.AccessType(castedValue)
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Permissions.Group = castedValue
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.LastModified = castedValue
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToBool(propertyValue)
-
-				childModel.IDPerms.Enable = castedValue
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Description = castedValue
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Creator = castedValue
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.IDPerms.Created = castedValue
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.FQName)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
 
 			}
 
 			if propertyValue, ok := childResourceMap["ethernet_segment_identifier"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.EthernetSegmentIdentifier = castedValue
+				childModel.EthernetSegmentIdentifier = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
-				castedValue := common.InterfaceToString(propertyValue)
-
-				childModel.DisplayName = castedValue
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
 
 			}
 
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
-				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
 
 			}
 
@@ -1178,14 +1003,14 @@ func ListPhysicalRouter(ctx context.Context, tx *sql.Tx, request *models.ListPhy
 	qb.Fields = PhysicalRouterFields
 	qb.RefFields = PhysicalRouterRefFields
 	qb.BackRefFields = PhysicalRouterBackRefFields
-	result := models.MakePhysicalRouterSlice()
+	result := []*models.PhysicalRouter{}
 
 	if spec.ParentFQName != nil {
 		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
-		spec.Filter.AppendValues("parent_uuid", []string{parentMetaData.UUID})
+		spec.Filters = common.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 
 	query := qb.BuildQuery()

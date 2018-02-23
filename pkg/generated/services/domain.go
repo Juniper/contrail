@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTDomainUpdateRequest for update request for REST.
-type RESTDomainUpdateRequest struct {
-	Data map[string]interface{} `json:"domain"`
-}
-
 //RESTCreateDomain handle a Create REST service.
 func (service *ContrailService) RESTCreateDomain(c echo.Context) error {
-	requestData := &models.CreateDomainRequest{
-		Domain: models.MakeDomain(),
-	}
+	requestData := &models.CreateDomainRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetDomain(c echo.Context) error {
 func (service *ContrailService) GetDomain(ctx context.Context, request *models.GetDomainRequest) (response *models.GetDomainResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListDomainRequest{

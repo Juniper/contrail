@@ -1,14 +1,11 @@
 package models
 
-// TelemetryStateInfo
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// TelemetryStateInfo
-//proteus:generate
-type TelemetryStateInfo struct {
-	Resource   []*TelemetryResourceInfo `json:"resource,omitempty"`
-	ServerPort int                      `json:"server_port,omitempty"`
-	ServerIP   string                   `json:"server_ip,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeTelemetryStateInfo makes TelemetryStateInfo
 func MakeTelemetryStateInfo() *TelemetryStateInfo {
@@ -22,7 +19,37 @@ func MakeTelemetryStateInfo() *TelemetryStateInfo {
 	}
 }
 
+// MakeTelemetryStateInfo makes TelemetryStateInfo
+func InterfaceToTelemetryStateInfo(i interface{}) *TelemetryStateInfo {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &TelemetryStateInfo{
+		//TODO(nati): Apply default
+
+		Resource: InterfaceToTelemetryResourceInfoSlice(m["resource"]),
+
+		ServerPort: schema.InterfaceToInt64(m["server_port"]),
+		ServerIP:   schema.InterfaceToString(m["server_ip"]),
+	}
+}
+
 // MakeTelemetryStateInfoSlice() makes a slice of TelemetryStateInfo
 func MakeTelemetryStateInfoSlice() []*TelemetryStateInfo {
 	return []*TelemetryStateInfo{}
+}
+
+// InterfaceToTelemetryStateInfoSlice() makes a slice of TelemetryStateInfo
+func InterfaceToTelemetryStateInfoSlice(i interface{}) []*TelemetryStateInfo {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*TelemetryStateInfo{}
+	for _, item := range list {
+		result = append(result, InterfaceToTelemetryStateInfo(item))
+	}
+	return result
 }

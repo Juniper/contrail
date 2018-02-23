@@ -1,13 +1,11 @@
 package models
 
-// AlarmOperand2
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// AlarmOperand2
-//proteus:generate
-type AlarmOperand2 struct {
-	UveAttribute string `json:"uve_attribute,omitempty"`
-	JSONValue    string `json:"json_value,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeAlarmOperand2 makes AlarmOperand2
 func MakeAlarmOperand2() *AlarmOperand2 {
@@ -18,7 +16,34 @@ func MakeAlarmOperand2() *AlarmOperand2 {
 	}
 }
 
+// MakeAlarmOperand2 makes AlarmOperand2
+func InterfaceToAlarmOperand2(i interface{}) *AlarmOperand2 {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &AlarmOperand2{
+		//TODO(nati): Apply default
+		UveAttribute: schema.InterfaceToString(m["uve_attribute"]),
+		JSONValue:    schema.InterfaceToString(m["json_value"]),
+	}
+}
+
 // MakeAlarmOperand2Slice() makes a slice of AlarmOperand2
 func MakeAlarmOperand2Slice() []*AlarmOperand2 {
 	return []*AlarmOperand2{}
+}
+
+// InterfaceToAlarmOperand2Slice() makes a slice of AlarmOperand2
+func InterfaceToAlarmOperand2Slice(i interface{}) []*AlarmOperand2 {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*AlarmOperand2{}
+	for _, item := range list {
+		result = append(result, InterfaceToAlarmOperand2(item))
+	}
+	return result
 }

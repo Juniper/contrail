@@ -14,14 +14,12 @@ option (gogoproto.benchgen_all) = true;
 option (gogoproto.marshaler_all) = true;
 option (gogoproto.sizer_all) = true;
 option (gogoproto.unmarshaler_all) = true;
-
 option (gogoproto.protosizer_all) = false;
 
 option go_package = "models";
 
 message ListSpec {
-	option (gogoproto.goproto_getters) = false;
-	option (gogoproto.typedecl) = false;
+    repeated Filter filters = 1 [(gogoproto.customname) = "Filters"];
 	int64 limit = 2 [(gogoproto.customname) = "Limit", (gogoproto.casttype) = "int"];
 	int64 offset = 3 [(gogoproto.customname) = "Offset", (gogoproto.casttype) = "int"];
     bool detail = 4 [(gogoproto.customname) = "Detail"];
@@ -36,13 +34,16 @@ message ListSpec {
     repeated string fields = 13 [(gogoproto.customname) = "Fields"];
 }
 
+message Filter {
+    string key = 1 [(gogoproto.customname) = "Key"];
+    repeated string values = 2 [(gogoproto.customname) = "Values"];
+}
+
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
 message {{ schema.JSONSchema.GoName }} {
-	option (gogoproto.goproto_getters) = false;
-	option (gogoproto.typedecl) = false;
 {% for property in schema.JSONSchema.OrderedProperties %}
-    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}" {% if property.ProtoCastType != "" %},(gogoproto.casttype) = "{{ property.ProtoCastType }}"{% endif %}];{% endfor %} 
+    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}"];{% endfor %} 
 {% for linkTo, reference in schema.References %}
     repeated {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ linkTo }}_refs = {{ reference.Index }} [(gogoproto.customname) = "{{ reference.GoName }}Refs"];{% endfor %}
 {% for backref in schema.Children %}
@@ -52,8 +53,6 @@ message {{ schema.JSONSchema.GoName }} {
 
 {% for linkTo, reference in schema.References %}
 message {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
-	option (gogoproto.goproto_getters) = false;
-	option (gogoproto.typedecl) = false;
     string uuid = 1 [(gogoproto.customname) = "UUID"];
     repeated string to = 2 [(gogoproto.customname) = "To"];
     {% if reference.RefType %}
@@ -63,64 +62,44 @@ message {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
 {% endfor %}
 
 message Create{{ schema.JSONSchema.GoName }}Request {
-	option (gogoproto.goproto_getters) = false;
-	option (gogoproto.typedecl) = false;
-    {{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}"];
+    {{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}",(gogoproto.jsontag) = "{{ schema.Path }}"];
 }
 
 message Create{{ schema.JSONSchema.GoName }}Response {
-	option (gogoproto.goproto_getters) = false;
-	option (gogoproto.typedecl) = false;
-    {{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}"];
+    {{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}" ,(gogoproto.jsontag) = "{{ schema.Path }}"];
 }
 
 message Update{{ schema.JSONSchema.GoName }}Request {
-	option (gogoproto.goproto_getters) = false;
-	option (gogoproto.typedecl) = false;
-    {{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}"];
+    {{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}",(gogoproto.jsontag) = "{{ schema.Path }}"];
     google.protobuf.FieldMask field_mask = 2 [(gogoproto.nullable) = false];
 }
 
 message Update{{ schema.JSONSchema.GoName }}Response {
-	option (gogoproto.goproto_getters) = false;
-	option (gogoproto.typedecl) = false;
-    {{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}"];
+    {{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}",(gogoproto.jsontag) = "{{ schema.Path }}"];
 }
 
 message Delete{{ schema.JSONSchema.GoName }}Request {
-	option (gogoproto.goproto_getters) = false;
-	option (gogoproto.typedecl) = false;
     string id = 1 [(gogoproto.customname) = "ID"];
 }
 
 message Delete{{ schema.JSONSchema.GoName }}Response {
-	option (gogoproto.goproto_getters) = false;
-	option (gogoproto.typedecl) = false;
     string id = 1 [(gogoproto.customname) = "ID"];
 }
 
 message List{{ schema.JSONSchema.GoName }}Request {
-	option (gogoproto.goproto_getters) = false;
-	option (gogoproto.typedecl) = false;
     ListSpec spec = 1 [(gogoproto.customname) = "Spec"];
 }
 
 message List{{ schema.JSONSchema.GoName }}Response {
-	option (gogoproto.goproto_getters) = false;
-	option (gogoproto.typedecl) = false;
-    repeated {{ schema.JSONSchema.GoName }} {{ schema.Plural }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}s"];
+    repeated {{ schema.JSONSchema.GoName }} {{ schema.Plural }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}s", (gogoproto.jsontag) = "{{ schema.PluralPath }}"];
 }
 
 message Get{{ schema.JSONSchema.GoName }}Request {
-	option (gogoproto.goproto_getters) = false;
-	option (gogoproto.typedecl) = false;
     string id = 1 [(gogoproto.customname) = "ID"];
 }
 
 message Get{{ schema.JSONSchema.GoName }}Response {
-	option (gogoproto.goproto_getters) = false;
-	option (gogoproto.typedecl) = false;
-    {{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}"];
+    {{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}", (gogoproto.jsontag) = "{{ schema.Path }}"];
 }
 
 {% endif %}{% endfor %}
@@ -128,10 +107,8 @@ message Get{{ schema.JSONSchema.GoName }}Response {
 {% for type, definition in types %}
 {% if definition.Type == "object" %}
 message {{ type }} {
-	option (gogoproto.goproto_getters) = false;
-	option (gogoproto.typedecl) = false;
 {% for property in definition.OrderedProperties %}
-    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}" {% if property.ProtoCastType != "" %},(gogoproto.casttype) = "{{ property.ProtoCastType }}"{% endif %}];{% endfor %} 
+    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}"];{% endfor %} 
 }
 {% endif %}
 {% endfor %}

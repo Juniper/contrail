@@ -1,22 +1,11 @@
 package models
 
-// Widget
+import (
+	"github.com/Juniper/contrail/pkg/schema"
+)
 
-// Widget
-//proteus:generate
-type Widget struct {
-	UUID            string         `json:"uuid,omitempty"`
-	ParentUUID      string         `json:"parent_uuid,omitempty"`
-	ParentType      string         `json:"parent_type,omitempty"`
-	FQName          []string       `json:"fq_name,omitempty"`
-	IDPerms         *IdPermsType   `json:"id_perms,omitempty"`
-	DisplayName     string         `json:"display_name,omitempty"`
-	Annotations     *KeyValuePairs `json:"annotations,omitempty"`
-	Perms2          *PermType2     `json:"perms2,omitempty"`
-	ContainerConfig string         `json:"container_config,omitempty"`
-	ContentConfig   string         `json:"content_config,omitempty"`
-	LayoutConfig    string         `json:"layout_config,omitempty"`
-}
+//To skip import error.
+var _ = schema.Version
 
 // MakeWidget makes Widget
 func MakeWidget() *Widget {
@@ -36,7 +25,43 @@ func MakeWidget() *Widget {
 	}
 }
 
+// MakeWidget makes Widget
+func InterfaceToWidget(i interface{}) *Widget {
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &Widget{
+		//TODO(nati): Apply default
+		UUID:            schema.InterfaceToString(m["uuid"]),
+		ParentUUID:      schema.InterfaceToString(m["parent_uuid"]),
+		ParentType:      schema.InterfaceToString(m["parent_type"]),
+		FQName:          schema.InterfaceToStringList(m["fq_name"]),
+		IDPerms:         InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:     schema.InterfaceToString(m["display_name"]),
+		Annotations:     InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:          InterfaceToPermType2(m["perms2"]),
+		ContainerConfig: schema.InterfaceToString(m["container_config"]),
+		ContentConfig:   schema.InterfaceToString(m["content_config"]),
+		LayoutConfig:    schema.InterfaceToString(m["layout_config"]),
+	}
+}
+
 // MakeWidgetSlice() makes a slice of Widget
 func MakeWidgetSlice() []*Widget {
 	return []*Widget{}
+}
+
+// InterfaceToWidgetSlice() makes a slice of Widget
+func InterfaceToWidgetSlice(i interface{}) []*Widget {
+	list := schema.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []*Widget{}
+	for _, item := range list {
+		result = append(result, InterfaceToWidget(item))
+	}
+	return result
 }

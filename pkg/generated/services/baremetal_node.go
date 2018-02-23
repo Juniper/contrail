@@ -14,16 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//RESTBaremetalNodeUpdateRequest for update request for REST.
-type RESTBaremetalNodeUpdateRequest struct {
-	Data map[string]interface{} `json:"baremetal-node"`
-}
-
 //RESTCreateBaremetalNode handle a Create REST service.
 func (service *ContrailService) RESTCreateBaremetalNode(c echo.Context) error {
-	requestData := &models.CreateBaremetalNodeRequest{
-		BaremetalNode: models.MakeBaremetalNode(),
-	}
+	requestData := &models.CreateBaremetalNodeRequest{}
 	if err := c.Bind(requestData); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -166,8 +159,11 @@ func (service *ContrailService) RESTGetBaremetalNode(c echo.Context) error {
 func (service *ContrailService) GetBaremetalNode(ctx context.Context, request *models.GetBaremetalNodeRequest) (response *models.GetBaremetalNodeResponse, err error) {
 	spec := &models.ListSpec{
 		Limit: 1,
-		Filter: models.Filter{
-			"uuid": []string{request.ID},
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
 		},
 	}
 	listRequest := &models.ListBaremetalNodeRequest{
