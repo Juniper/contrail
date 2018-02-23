@@ -1,0 +1,6 @@
+Election
+- callback to user telling State (Master/Backup)
+- API to query state
+- relinquish Mastership
+
+main
