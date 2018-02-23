@@ -2,7 +2,6 @@ package apisrv
 
 import (
 	"database/sql"
-	"net/url"
 	"time"
 
 	"github.com/labstack/echo"
@@ -44,7 +43,7 @@ func (s *Server) Init() error {
 	e := s.Echo
 	e.Use(middleware.Logger())
 	//e.Use(middleware.Recover())
-	e.Use(middleware.BodyLimit("10M"))
+	//e.Use(middleware.BodyLimit("10M"))
 
 	service := &services.ContrailService{
 		DB: db,
@@ -80,25 +79,11 @@ func (s *Server) Init() error {
 
 	proxy := viper.GetStringMapStringSlice("proxy")
 	if proxy != nil {
-		for prefix, targetStrings := range proxy {
-			targets := []*middleware.ProxyTarget{}
-			for _, targetString := range targetStrings {
-				targetURL, err := url.Parse(targetString)
-				if err != nil {
-					e.Logger.Fatal(err)
-				}
-				targets = append(targets,
-					&middleware.ProxyTarget{
-						URL: targetURL,
-					})
-			}
-
+		for prefix, target := range proxy {
 			g := e.Group(prefix)
 			g.Use(removePathPrefixMiddleware(prefix))
-			g.Use(middleware.Proxy(&middleware.RoundRobinBalancer{
-				Targets: targets}))
+			g.Use(proxyMiddleware(prefix, target[0], viper.GetBool("server.proxy.insecure")))
 		}
-
 	}
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	if keystoneAuthURL != "" {
