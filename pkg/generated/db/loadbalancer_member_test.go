@@ -23,6 +23,7 @@ func TestLoadbalancerMember(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "loadbalancer_member")
+	// mutexProject := common.UseTable(db, "loadbalancer_member")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

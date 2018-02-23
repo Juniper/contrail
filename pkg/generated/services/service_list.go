@@ -2,11 +2,10 @@ package services
 
 import (
 	"database/sql"
-	"net/http"
-
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
+	"net/http"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -1045,17 +1044,17 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 				Data: response.VirtualRouter,
 			})
 
-		case "appformix_node_role":
-			request := &models.CreateAppformixNodeRoleRequest{
-				AppformixNodeRole: models.InterfaceToAppformixNodeRole(resource.Data),
+		case "appformix_node":
+			request := &models.CreateAppformixNodeRequest{
+				AppformixNode: models.InterfaceToAppformixNode(resource.Data),
 			}
-			response, err := service.CreateAppformixNodeRole(ctx, request)
+			response, err := service.CreateAppformixNode(ctx, request)
 			if err != nil {
 				return common.ToHTTPError(err)
 			}
 			responses = append(responses, &RESTResource{
 				Kind: resource.Kind,
-				Data: response.AppformixNodeRole,
+				Data: response.AppformixNode,
 			})
 
 		case "baremetal_node":
@@ -1084,17 +1083,17 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 				Data: response.BaremetalPort,
 			})
 
-		case "contrail_analytics_database_node_role":
-			request := &models.CreateContrailAnalyticsDatabaseNodeRoleRequest{
-				ContrailAnalyticsDatabaseNodeRole: models.InterfaceToContrailAnalyticsDatabaseNodeRole(resource.Data),
+		case "contrail_analytics_database_node":
+			request := &models.CreateContrailAnalyticsDatabaseNodeRequest{
+				ContrailAnalyticsDatabaseNode: models.InterfaceToContrailAnalyticsDatabaseNode(resource.Data),
 			}
-			response, err := service.CreateContrailAnalyticsDatabaseNodeRole(ctx, request)
+			response, err := service.CreateContrailAnalyticsDatabaseNode(ctx, request)
 			if err != nil {
 				return common.ToHTTPError(err)
 			}
 			responses = append(responses, &RESTResource{
 				Kind: resource.Kind,
-				Data: response.ContrailAnalyticsDatabaseNodeRole,
+				Data: response.ContrailAnalyticsDatabaseNode,
 			})
 
 		case "contrail_analytics_node":
@@ -1123,30 +1122,82 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 				Data: response.ContrailCluster,
 			})
 
-		case "contrail_controller_node_role":
-			request := &models.CreateContrailControllerNodeRoleRequest{
-				ContrailControllerNodeRole: models.InterfaceToContrailControllerNodeRole(resource.Data),
+		case "contrail_config_database_node":
+			request := &models.CreateContrailConfigDatabaseNodeRequest{
+				ContrailConfigDatabaseNode: models.InterfaceToContrailConfigDatabaseNode(resource.Data),
 			}
-			response, err := service.CreateContrailControllerNodeRole(ctx, request)
+			response, err := service.CreateContrailConfigDatabaseNode(ctx, request)
 			if err != nil {
 				return common.ToHTTPError(err)
 			}
 			responses = append(responses, &RESTResource{
 				Kind: resource.Kind,
-				Data: response.ContrailControllerNodeRole,
+				Data: response.ContrailConfigDatabaseNode,
 			})
 
-		case "controller_node_role":
-			request := &models.CreateControllerNodeRoleRequest{
-				ControllerNodeRole: models.InterfaceToControllerNodeRole(resource.Data),
+		case "contrail_config_node":
+			request := &models.CreateContrailConfigNodeRequest{
+				ContrailConfigNode: models.InterfaceToContrailConfigNode(resource.Data),
 			}
-			response, err := service.CreateControllerNodeRole(ctx, request)
+			response, err := service.CreateContrailConfigNode(ctx, request)
 			if err != nil {
 				return common.ToHTTPError(err)
 			}
 			responses = append(responses, &RESTResource{
 				Kind: resource.Kind,
-				Data: response.ControllerNodeRole,
+				Data: response.ContrailConfigNode,
+			})
+
+		case "contrail_control_node":
+			request := &models.CreateContrailControlNodeRequest{
+				ContrailControlNode: models.InterfaceToContrailControlNode(resource.Data),
+			}
+			response, err := service.CreateContrailControlNode(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ContrailControlNode,
+			})
+
+		case "contrail_storage_node":
+			request := &models.CreateContrailStorageNodeRequest{
+				ContrailStorageNode: models.InterfaceToContrailStorageNode(resource.Data),
+			}
+			response, err := service.CreateContrailStorageNode(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ContrailStorageNode,
+			})
+
+		case "contrail_vrouter_node":
+			request := &models.CreateContrailVrouterNodeRequest{
+				ContrailVrouterNode: models.InterfaceToContrailVrouterNode(resource.Data),
+			}
+			response, err := service.CreateContrailVrouterNode(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ContrailVrouterNode,
+			})
+
+		case "contrail_controller_node":
+			request := &models.CreateContrailControllerNodeRequest{
+				ContrailControllerNode: models.InterfaceToContrailControllerNode(resource.Data),
+			}
+			response, err := service.CreateContrailControllerNode(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.ContrailControllerNode,
 			})
 
 		case "dashboard":
@@ -1201,17 +1252,17 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 				Data: response.Keypair,
 			})
 
-		case "kubernetes_cluster":
-			request := &models.CreateKubernetesClusterRequest{
-				KubernetesCluster: models.InterfaceToKubernetesCluster(resource.Data),
+		case "kubernetes_master_node":
+			request := &models.CreateKubernetesMasterNodeRequest{
+				KubernetesMasterNode: models.InterfaceToKubernetesMasterNode(resource.Data),
 			}
-			response, err := service.CreateKubernetesCluster(ctx, request)
+			response, err := service.CreateKubernetesMasterNode(ctx, request)
 			if err != nil {
 				return common.ToHTTPError(err)
 			}
 			responses = append(responses, &RESTResource{
 				Kind: resource.Kind,
-				Data: response.KubernetesCluster,
+				Data: response.KubernetesMasterNode,
 			})
 
 		case "kubernetes_node":
@@ -1251,45 +1302,6 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 			responses = append(responses, &RESTResource{
 				Kind: resource.Kind,
 				Data: response.Node,
-			})
-
-		case "openstack_cluster":
-			request := &models.CreateOpenstackClusterRequest{
-				OpenstackCluster: models.InterfaceToOpenstackCluster(resource.Data),
-			}
-			response, err := service.CreateOpenstackCluster(ctx, request)
-			if err != nil {
-				return common.ToHTTPError(err)
-			}
-			responses = append(responses, &RESTResource{
-				Kind: resource.Kind,
-				Data: response.OpenstackCluster,
-			})
-
-		case "openstack_compute_node_role":
-			request := &models.CreateOpenstackComputeNodeRoleRequest{
-				OpenstackComputeNodeRole: models.InterfaceToOpenstackComputeNodeRole(resource.Data),
-			}
-			response, err := service.CreateOpenstackComputeNodeRole(ctx, request)
-			if err != nil {
-				return common.ToHTTPError(err)
-			}
-			responses = append(responses, &RESTResource{
-				Kind: resource.Kind,
-				Data: response.OpenstackComputeNodeRole,
-			})
-
-		case "openstack_storage_node_role":
-			request := &models.CreateOpenstackStorageNodeRoleRequest{
-				OpenstackStorageNodeRole: models.InterfaceToOpenstackStorageNodeRole(resource.Data),
-			}
-			response, err := service.CreateOpenstackStorageNodeRole(ctx, request)
-			if err != nil {
-				return common.ToHTTPError(err)
-			}
-			responses = append(responses, &RESTResource{
-				Kind: resource.Kind,
-				Data: response.OpenstackStorageNodeRole,
 			})
 
 		case "server":
@@ -1801,11 +1813,11 @@ func (service *ContrailService) RegisterRESTAPI(e *echo.Echo) {
 	e.GET("/virtual-router/:id", service.RESTGetVirtualRouter)
 	e.DELETE("/virtual-router/:id", service.RESTDeleteVirtualRouter)
 
-	e.POST("/appformix-node-roles", service.RESTCreateAppformixNodeRole)
-	e.GET("/appformix-node-roles", service.RESTListAppformixNodeRole)
-	e.PUT("/appformix-node-role/:id", service.RESTUpdateAppformixNodeRole)
-	e.GET("/appformix-node-role/:id", service.RESTGetAppformixNodeRole)
-	e.DELETE("/appformix-node-role/:id", service.RESTDeleteAppformixNodeRole)
+	e.POST("/appformix-nodes", service.RESTCreateAppformixNode)
+	e.GET("/appformix-nodes", service.RESTListAppformixNode)
+	e.PUT("/appformix-node/:id", service.RESTUpdateAppformixNode)
+	e.GET("/appformix-node/:id", service.RESTGetAppformixNode)
+	e.DELETE("/appformix-node/:id", service.RESTDeleteAppformixNode)
 
 	e.POST("/openstackbaremetal-nodes", service.RESTCreateBaremetalNode)
 	e.GET("/openstackbaremetal-nodes", service.RESTListBaremetalNode)
@@ -1819,11 +1831,11 @@ func (service *ContrailService) RegisterRESTAPI(e *echo.Echo) {
 	e.GET("/openstackbaremetal-port/:id", service.RESTGetBaremetalPort)
 	e.DELETE("/openstackbaremetal-port/:id", service.RESTDeleteBaremetalPort)
 
-	e.POST("/contrail-analytics-database-node-roles", service.RESTCreateContrailAnalyticsDatabaseNodeRole)
-	e.GET("/contrail-analytics-database-node-roles", service.RESTListContrailAnalyticsDatabaseNodeRole)
-	e.PUT("/contrail-analytics-database-node-role/:id", service.RESTUpdateContrailAnalyticsDatabaseNodeRole)
-	e.GET("/contrail-analytics-database-node-role/:id", service.RESTGetContrailAnalyticsDatabaseNodeRole)
-	e.DELETE("/contrail-analytics-database-node-role/:id", service.RESTDeleteContrailAnalyticsDatabaseNodeRole)
+	e.POST("/contrail-analytics-database-nodes", service.RESTCreateContrailAnalyticsDatabaseNode)
+	e.GET("/contrail-analytics-database-nodes", service.RESTListContrailAnalyticsDatabaseNode)
+	e.PUT("/contrail-analytics-database-node/:id", service.RESTUpdateContrailAnalyticsDatabaseNode)
+	e.GET("/contrail-analytics-database-node/:id", service.RESTGetContrailAnalyticsDatabaseNode)
+	e.DELETE("/contrail-analytics-database-node/:id", service.RESTDeleteContrailAnalyticsDatabaseNode)
 
 	e.POST("/contrail-analytics-nodes", service.RESTCreateContrailAnalyticsNode)
 	e.GET("/contrail-analytics-nodes", service.RESTListContrailAnalyticsNode)
@@ -1837,17 +1849,41 @@ func (service *ContrailService) RegisterRESTAPI(e *echo.Echo) {
 	e.GET("/contrail-cluster/:id", service.RESTGetContrailCluster)
 	e.DELETE("/contrail-cluster/:id", service.RESTDeleteContrailCluster)
 
-	e.POST("/contrail-controller-node-roles", service.RESTCreateContrailControllerNodeRole)
-	e.GET("/contrail-controller-node-roles", service.RESTListContrailControllerNodeRole)
-	e.PUT("/contrail-controller-node-role/:id", service.RESTUpdateContrailControllerNodeRole)
-	e.GET("/contrail-controller-node-role/:id", service.RESTGetContrailControllerNodeRole)
-	e.DELETE("/contrail-controller-node-role/:id", service.RESTDeleteContrailControllerNodeRole)
+	e.POST("/contrail-config-database-nodes", service.RESTCreateContrailConfigDatabaseNode)
+	e.GET("/contrail-config-database-nodes", service.RESTListContrailConfigDatabaseNode)
+	e.PUT("/contrail-config-database-node/:id", service.RESTUpdateContrailConfigDatabaseNode)
+	e.GET("/contrail-config-database-node/:id", service.RESTGetContrailConfigDatabaseNode)
+	e.DELETE("/contrail-config-database-node/:id", service.RESTDeleteContrailConfigDatabaseNode)
 
-	e.POST("/controller-node-roles", service.RESTCreateControllerNodeRole)
-	e.GET("/controller-node-roles", service.RESTListControllerNodeRole)
-	e.PUT("/controller-node-role/:id", service.RESTUpdateControllerNodeRole)
-	e.GET("/controller-node-role/:id", service.RESTGetControllerNodeRole)
-	e.DELETE("/controller-node-role/:id", service.RESTDeleteControllerNodeRole)
+	e.POST("/contrail-config-nodes", service.RESTCreateContrailConfigNode)
+	e.GET("/contrail-config-nodes", service.RESTListContrailConfigNode)
+	e.PUT("/contrail-config-node/:id", service.RESTUpdateContrailConfigNode)
+	e.GET("/contrail-config-node/:id", service.RESTGetContrailConfigNode)
+	e.DELETE("/contrail-config-node/:id", service.RESTDeleteContrailConfigNode)
+
+	e.POST("/contrail-control-nodes", service.RESTCreateContrailControlNode)
+	e.GET("/contrail-control-nodes", service.RESTListContrailControlNode)
+	e.PUT("/contrail-control-node/:id", service.RESTUpdateContrailControlNode)
+	e.GET("/contrail-control-node/:id", service.RESTGetContrailControlNode)
+	e.DELETE("/contrail-control-node/:id", service.RESTDeleteContrailControlNode)
+
+	e.POST("/contrail-storage-nodes", service.RESTCreateContrailStorageNode)
+	e.GET("/contrail-storage-nodes", service.RESTListContrailStorageNode)
+	e.PUT("/contrail-storage-node/:id", service.RESTUpdateContrailStorageNode)
+	e.GET("/contrail-storage-node/:id", service.RESTGetContrailStorageNode)
+	e.DELETE("/contrail-storage-node/:id", service.RESTDeleteContrailStorageNode)
+
+	e.POST("/contrailcontrail-vrouter-nodes", service.RESTCreateContrailVrouterNode)
+	e.GET("/contrailcontrail-vrouter-nodes", service.RESTListContrailVrouterNode)
+	e.PUT("/contrailcontrail-vrouter-node/:id", service.RESTUpdateContrailVrouterNode)
+	e.GET("/contrailcontrail-vrouter-node/:id", service.RESTGetContrailVrouterNode)
+	e.DELETE("/contrailcontrail-vrouter-node/:id", service.RESTDeleteContrailVrouterNode)
+
+	e.POST("/contrail-controller-nodes", service.RESTCreateContrailControllerNode)
+	e.GET("/contrail-controller-nodes", service.RESTListContrailControllerNode)
+	e.PUT("/contrail-controller-node/:id", service.RESTUpdateContrailControllerNode)
+	e.GET("/contrail-controller-node/:id", service.RESTGetContrailControllerNode)
+	e.DELETE("/contrail-controller-node/:id", service.RESTDeleteContrailControllerNode)
 
 	e.POST("/dashboards", service.RESTCreateDashboard)
 	e.GET("/dashboards", service.RESTListDashboard)
@@ -1873,11 +1909,11 @@ func (service *ContrailService) RegisterRESTAPI(e *echo.Echo) {
 	e.GET("/openstackkeypair/:id", service.RESTGetKeypair)
 	e.DELETE("/openstackkeypair/:id", service.RESTDeleteKeypair)
 
-	e.POST("/kubernetes-clusters", service.RESTCreateKubernetesCluster)
-	e.GET("/kubernetes-clusters", service.RESTListKubernetesCluster)
-	e.PUT("/kubernetes-cluster/:id", service.RESTUpdateKubernetesCluster)
-	e.GET("/kubernetes-cluster/:id", service.RESTGetKubernetesCluster)
-	e.DELETE("/kubernetes-cluster/:id", service.RESTDeleteKubernetesCluster)
+	e.POST("/kubernetes-master-nodes", service.RESTCreateKubernetesMasterNode)
+	e.GET("/kubernetes-master-nodes", service.RESTListKubernetesMasterNode)
+	e.PUT("/kubernetes-master-node/:id", service.RESTUpdateKubernetesMasterNode)
+	e.GET("/kubernetes-master-node/:id", service.RESTGetKubernetesMasterNode)
+	e.DELETE("/kubernetes-master-node/:id", service.RESTDeleteKubernetesMasterNode)
 
 	e.POST("/kubernetes-nodes", service.RESTCreateKubernetesNode)
 	e.GET("/kubernetes-nodes", service.RESTListKubernetesNode)
@@ -1896,24 +1932,6 @@ func (service *ContrailService) RegisterRESTAPI(e *echo.Echo) {
 	e.PUT("/node/:id", service.RESTUpdateNode)
 	e.GET("/node/:id", service.RESTGetNode)
 	e.DELETE("/node/:id", service.RESTDeleteNode)
-
-	e.POST("/openstack-clusters", service.RESTCreateOpenstackCluster)
-	e.GET("/openstack-clusters", service.RESTListOpenstackCluster)
-	e.PUT("/openstack-cluster/:id", service.RESTUpdateOpenstackCluster)
-	e.GET("/openstack-cluster/:id", service.RESTGetOpenstackCluster)
-	e.DELETE("/openstack-cluster/:id", service.RESTDeleteOpenstackCluster)
-
-	e.POST("/contrailopenstack-compute-node-roles", service.RESTCreateOpenstackComputeNodeRole)
-	e.GET("/contrailopenstack-compute-node-roles", service.RESTListOpenstackComputeNodeRole)
-	e.PUT("/contrailopenstack-compute-node-role/:id", service.RESTUpdateOpenstackComputeNodeRole)
-	e.GET("/contrailopenstack-compute-node-role/:id", service.RESTGetOpenstackComputeNodeRole)
-	e.DELETE("/contrailopenstack-compute-node-role/:id", service.RESTDeleteOpenstackComputeNodeRole)
-
-	e.POST("/openstack-storage-node-roles", service.RESTCreateOpenstackStorageNodeRole)
-	e.GET("/openstack-storage-node-roles", service.RESTListOpenstackStorageNodeRole)
-	e.PUT("/openstack-storage-node-role/:id", service.RESTUpdateOpenstackStorageNodeRole)
-	e.GET("/openstack-storage-node-role/:id", service.RESTGetOpenstackStorageNodeRole)
-	e.DELETE("/openstack-storage-node-role/:id", service.RESTDeleteOpenstackStorageNodeRole)
 
 	e.POST("/openserverservers", service.RESTCreateServer)
 	e.GET("/openserverservers", service.RESTListServer)

@@ -23,6 +23,7 @@ func TestAddressGroup(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "address_group")
+	// mutexProject := common.UseTable(db, "address_group")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

@@ -47,7 +47,7 @@ var SubnetFields = []string{
 var SubnetRefFields = map[string][]string{
 
 	"virtual_machine_interface": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }

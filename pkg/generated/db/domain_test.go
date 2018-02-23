@@ -23,6 +23,7 @@ func TestDomain(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "domain")
+	// mutexProject := common.UseTable(db, "domain")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

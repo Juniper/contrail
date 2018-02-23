@@ -23,6 +23,7 @@ func TestBGPVPN(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "bgpvpn")
+	// mutexProject := common.UseTable(db, "bgpvpn")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

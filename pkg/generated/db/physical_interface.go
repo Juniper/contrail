@@ -46,7 +46,7 @@ var PhysicalInterfaceFields = []string{
 var PhysicalInterfaceRefFields = map[string][]string{
 
 	"physical_interface": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }

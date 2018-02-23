@@ -23,6 +23,7 @@ func TestKeypair(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "keypair")
+	// mutexProject := common.UseTable(db, "keypair")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

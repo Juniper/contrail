@@ -17,6 +17,9 @@ generate: ## Run the source code generator
 	go run cmd/contrailutil/main.go generate --schemas schemas --templates tools/templates/template_config.yaml --schema-output public/schema.json
 	protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/generated/models/generated.proto
 	protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/generated/services/generated.proto
+	go fmt github.com/Juniper/contrail/pkg/generated/db
+	go fmt github.com/Juniper/contrail/pkg/generated/models 
+	go fmt github.com/Juniper/contrail/pkg/generated/services
 
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package

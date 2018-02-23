@@ -23,6 +23,7 @@ func TestGlobalQosConfig(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "global_qos_config")
+	// mutexProject := common.UseTable(db, "global_qos_config")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

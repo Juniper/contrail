@@ -23,6 +23,7 @@ func TestConfigRoot(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "config_root")
+	// mutexProject := common.UseTable(db, "config_root")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

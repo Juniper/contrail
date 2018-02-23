@@ -47,13 +47,21 @@ var KubernetesNodeFields = []string{
 }
 
 // KubernetesNodeRefFields is db reference fields for KubernetesNode
-var KubernetesNodeRefFields = map[string][]string{}
+var KubernetesNodeRefFields = map[string][]string{
+
+	"node": []string{
+	// <schema.Schema Value>
+
+	},
+}
 
 // KubernetesNodeBackRefFields is db back reference fields for KubernetesNode
 var KubernetesNodeBackRefFields = map[string][]string{}
 
 // KubernetesNodeParentTypes is possible parents for KubernetesNode
 var KubernetesNodeParents = []string{}
+
+const insertKubernetesNodeNodeQuery = "insert into `ref_kubernetes_node_node` (`from`, `to` ) values (?, ?);"
 
 // CreateKubernetesNode inserts KubernetesNode to DB
 func CreateKubernetesNode(
@@ -99,6 +107,19 @@ func CreateKubernetesNode(
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
+	}
+
+	stmtNodeRef, err := tx.Prepare(insertKubernetesNodeNodeQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing NodeRefs create statement failed")
+	}
+	defer stmtNodeRef.Close()
+	for _, ref := range model.NodeRefs {
+
+		_, err = stmtNodeRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "NodeRefs create failed")
+		}
 	}
 
 	metaData := &common.MetaData{
@@ -277,6 +298,26 @@ func scanKubernetesNode(values map[string]interface{}) (*models.KubernetesNode, 
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
+	}
+
+	if value, ok := values["ref_node"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.KubernetesNodeNodeRef{}
+			referenceModel.UUID = uuid
+			m.NodeRefs = append(m.NodeRefs, referenceModel)
+
+		}
 	}
 
 	return m, nil

@@ -45,7 +45,7 @@ var ProviderAttachmentFields = []string{
 var ProviderAttachmentRefFields = map[string][]string{
 
 	"virtual_router": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }

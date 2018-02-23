@@ -3,13 +3,12 @@ package services
 import (
 	"context"
 	"database/sql"
-	"net/http"
-
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
+	"net/http"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -46,10 +45,11 @@ func (service *ContrailService) CreateAlarm(
 	}
 
 	if model.FQName == nil {
-		if model.DisplayName == "" {
-			return nil, common.ErrorBadRequest("Both of FQName and Display Name is empty")
+		if model.DisplayName != "" {
+			model.FQName = []string{auth.DomainID(), auth.ProjectID(), model.DisplayName}
+		} else {
+			model.FQName = []string{auth.DomainID(), auth.ProjectID(), model.UUID}
 		}
-		model.FQName = []string{auth.DomainID(), auth.ProjectID(), model.DisplayName}
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()

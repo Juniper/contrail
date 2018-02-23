@@ -45,7 +45,7 @@ var NetworkDeviceConfigFields = []string{
 var NetworkDeviceConfigRefFields = map[string][]string{
 
 	"physical_router": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }

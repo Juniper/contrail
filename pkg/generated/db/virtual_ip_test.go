@@ -23,6 +23,7 @@ func TestVirtualIP(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "virtual_ip")
+	// mutexProject := common.UseTable(db, "virtual_ip")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -37,37 +38,6 @@ func TestVirtualIP(t *testing.T) {
 	var err error
 
 	// Create referred objects
-
-	var VirtualMachineInterfacecreateref []*models.VirtualIPVirtualMachineInterfaceRef
-	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
-	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
-	VirtualMachineInterfacerefModel.UUID = "virtual_ip_virtual_machine_interface_ref_uuid"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualMachineInterface(ctx, tx, &models.CreateVirtualMachineInterfaceRequest{
-			VirtualMachineInterface: VirtualMachineInterfacerefModel,
-		})
-	})
-	VirtualMachineInterfacerefModel.UUID = "virtual_ip_virtual_machine_interface_ref_uuid1"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualMachineInterface(ctx, tx, &models.CreateVirtualMachineInterfaceRequest{
-			VirtualMachineInterface: VirtualMachineInterfacerefModel,
-		})
-	})
-	VirtualMachineInterfacerefModel.UUID = "virtual_ip_virtual_machine_interface_ref_uuid2"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualMachineInterface(ctx, tx, &models.CreateVirtualMachineInterfaceRequest{
-			VirtualMachineInterface: VirtualMachineInterfacerefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.VirtualIPVirtualMachineInterfaceRef{UUID: "virtual_ip_virtual_machine_interface_ref_uuid", To: []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid"}})
-	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.VirtualIPVirtualMachineInterfaceRef{UUID: "virtual_ip_virtual_machine_interface_ref_uuid2", To: []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid2"}})
-	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
 
 	var LoadbalancerPoolcreateref []*models.VirtualIPLoadbalancerPoolRef
 	var LoadbalancerPoolrefModel *models.LoadbalancerPool
@@ -99,6 +69,37 @@ func TestVirtualIP(t *testing.T) {
 	LoadbalancerPoolcreateref = append(LoadbalancerPoolcreateref, &models.VirtualIPLoadbalancerPoolRef{UUID: "virtual_ip_loadbalancer_pool_ref_uuid", To: []string{"test", "virtual_ip_loadbalancer_pool_ref_uuid"}})
 	LoadbalancerPoolcreateref = append(LoadbalancerPoolcreateref, &models.VirtualIPLoadbalancerPoolRef{UUID: "virtual_ip_loadbalancer_pool_ref_uuid2", To: []string{"test", "virtual_ip_loadbalancer_pool_ref_uuid2"}})
 	model.LoadbalancerPoolRefs = LoadbalancerPoolcreateref
+
+	var VirtualMachineInterfacecreateref []*models.VirtualIPVirtualMachineInterfaceRef
+	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
+	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
+	VirtualMachineInterfacerefModel.UUID = "virtual_ip_virtual_machine_interface_ref_uuid"
+	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateVirtualMachineInterface(ctx, tx, &models.CreateVirtualMachineInterfaceRequest{
+			VirtualMachineInterface: VirtualMachineInterfacerefModel,
+		})
+	})
+	VirtualMachineInterfacerefModel.UUID = "virtual_ip_virtual_machine_interface_ref_uuid1"
+	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid1"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateVirtualMachineInterface(ctx, tx, &models.CreateVirtualMachineInterfaceRequest{
+			VirtualMachineInterface: VirtualMachineInterfacerefModel,
+		})
+	})
+	VirtualMachineInterfacerefModel.UUID = "virtual_ip_virtual_machine_interface_ref_uuid2"
+	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid2"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateVirtualMachineInterface(ctx, tx, &models.CreateVirtualMachineInterfaceRequest{
+			VirtualMachineInterface: VirtualMachineInterfacerefModel,
+		})
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.VirtualIPVirtualMachineInterfaceRef{UUID: "virtual_ip_virtual_machine_interface_ref_uuid", To: []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid"}})
+	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.VirtualIPVirtualMachineInterfaceRef{UUID: "virtual_ip_virtual_machine_interface_ref_uuid2", To: []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid2"}})
+	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()

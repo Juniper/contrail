@@ -23,6 +23,7 @@ func TestContrailCluster(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "contrail_cluster")
+	// mutexProject := common.UseTable(db, "contrail_cluster")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -67,6 +68,30 @@ func TestContrailCluster(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(updateMap, ".ProvisioningState", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".ProvisioningStartTime", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".ProvisioningProgressStage", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".ProvisioningProgress", ".", 1.0)
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".ProvisioningLog", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".ProvisionerType", ".", "test")
+	//
+	//
+	//
 	//    if ".Perms2.Share" == ".Perms2.Share" {
 	//        var share []interface{}
 	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
@@ -94,6 +119,22 @@ func TestContrailCluster(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, ".ParentType", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".Orchestrator", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".Openstack", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".KubernetesMaster", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".Kubernetes", ".", "test")
 	//
 	//
 	//
@@ -176,6 +217,30 @@ func TestContrailCluster(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, ".ContrailWebui", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".ContrailVrouter", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".ContrailControl", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".ContrailConfigdb", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".ContrailConfig", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".ContrailAnalyticsdb", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".ContrailAnalytics", ".", "test")
 	//
 	//
 	//

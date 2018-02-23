@@ -23,6 +23,7 @@ func TestInterfaceRouteTable(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "interface_route_table")
+	// mutexProject := common.UseTable(db, "interface_route_table")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

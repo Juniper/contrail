@@ -58,7 +58,7 @@ var ServiceInstanceFields = []string{
 var ServiceInstanceRefFields = map[string][]string{
 
 	"service_template": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 

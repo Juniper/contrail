@@ -23,6 +23,7 @@ func TestPortTuple(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "port_tuple")
+	// mutexProject := common.UseTable(db, "port_tuple")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

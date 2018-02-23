@@ -23,6 +23,7 @@ func TestPolicyManagement(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "policy_management")
+	// mutexProject := common.UseTable(db, "policy_management")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

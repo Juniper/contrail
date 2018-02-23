@@ -73,7 +73,7 @@ var ProjectFields = []string{
 var ProjectRefFields = map[string][]string{
 
 	"alias_ip_pool": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
@@ -84,12 +84,12 @@ var ProjectRefFields = map[string][]string{
 	},
 
 	"application_policy_set": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"floating_ip_pool": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }
@@ -1047,13 +1047,13 @@ var ProjectParents = []string{
 	"domain",
 }
 
+const insertProjectAliasIPPoolQuery = "insert into `ref_project_alias_ip_pool` (`from`, `to` ) values (?, ?);"
+
 const insertProjectNamespaceQuery = "insert into `ref_project_namespace` (`from`, `to` ,`ip_prefix_len`,`ip_prefix`) values (?, ?,?,?);"
 
 const insertProjectApplicationPolicySetQuery = "insert into `ref_project_application_policy_set` (`from`, `to` ) values (?, ?);"
 
 const insertProjectFloatingIPPoolQuery = "insert into `ref_project_floating_ip_pool` (`from`, `to` ) values (?, ?);"
-
-const insertProjectAliasIPPoolQuery = "insert into `ref_project_alias_ip_pool` (`from`, `to` ) values (?, ?);"
 
 // CreateProject inserts Project to DB
 func CreateProject(
@@ -1497,26 +1497,6 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 
 	}
 
-	if value, ok := values["ref_floating_ip_pool"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ProjectFloatingIPPoolRef{}
-			referenceModel.UUID = uuid
-			m.FloatingIPPoolRefs = append(m.FloatingIPPoolRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_alias_ip_pool"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -1576,6 +1556,26 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			referenceModel := &models.ProjectApplicationPolicySetRef{}
 			referenceModel.UUID = uuid
 			m.ApplicationPolicySetRefs = append(m.ApplicationPolicySetRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_floating_ip_pool"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ProjectFloatingIPPoolRef{}
+			referenceModel.UUID = uuid
+			m.FloatingIPPoolRefs = append(m.FloatingIPPoolRefs, referenceModel)
 
 		}
 	}

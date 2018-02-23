@@ -13,7 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertNodeQuery = "insert into `node` (`uuid`,`username`,`type`,`ssh_key`,`private_power_management_username`,`private_power_management_password`,`private_power_management_ip`,`private_machine_state`,`private_machine_properties`,`share`,`owner_access`,`owner`,`global_access`,`password`,`parent_uuid`,`parent_type`,`mac_address`,`ip_address`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`hostname`,`gcp_machine_type`,`gcp_image`,`fq_name`,`display_name`,`aws_instance_type`,`aws_ami`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const insertNodeQuery = "insert into `node` (`uuid`,`username`,`type`,`ssh_key`,`private_machine_state`,`private_machine_properties`,`share`,`owner_access`,`owner`,`global_access`,`password`,`parent_uuid`,`parent_type`,`mac_address`,`ipmi_username`,`ipmi_password`,`ipmi_address`,`ip_address`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`hostname`,`gcp_machine_type`,`gcp_image`,`fq_name`,`display_name`,`aws_instance_type`,`aws_ami`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
 const deleteNodeQuery = "delete from `node` where uuid = ?"
 
 // NodeFields is db columns for Node
@@ -22,9 +22,6 @@ var NodeFields = []string{
 	"username",
 	"type",
 	"ssh_key",
-	"private_power_management_username",
-	"private_power_management_password",
-	"private_power_management_ip",
 	"private_machine_state",
 	"private_machine_properties",
 	"share",
@@ -35,6 +32,9 @@ var NodeFields = []string{
 	"parent_uuid",
 	"parent_type",
 	"mac_address",
+	"ipmi_username",
+	"ipmi_password",
+	"ipmi_address",
 	"ip_address",
 	"user_visible",
 	"permissions_owner_access",
@@ -86,9 +86,6 @@ func CreateNode(
 		string(model.GetUsername()),
 		string(model.GetType()),
 		string(model.GetSSHKey()),
-		string(model.GetPrivatePowerManagementUsername()),
-		string(model.GetPrivatePowerManagementPassword()),
-		string(model.GetPrivatePowerManagementIP()),
 		string(model.GetPrivateMachineState()),
 		string(model.GetPrivateMachineProperties()),
 		common.MustJSON(model.GetPerms2().GetShare()),
@@ -99,6 +96,9 @@ func CreateNode(
 		string(model.GetParentUUID()),
 		string(model.GetParentType()),
 		string(model.GetMacAddress()),
+		string(model.GetIpmiUsername()),
+		string(model.GetIpmiPassword()),
+		string(model.GetIpmiAddress()),
 		string(model.GetIPAddress()),
 		bool(model.GetIDPerms().GetUserVisible()),
 		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
@@ -169,24 +169,6 @@ func scanNode(values map[string]interface{}) (*models.Node, error) {
 
 	}
 
-	if value, ok := values["private_power_management_username"]; ok {
-
-		m.PrivatePowerManagementUsername = schema.InterfaceToString(value)
-
-	}
-
-	if value, ok := values["private_power_management_password"]; ok {
-
-		m.PrivatePowerManagementPassword = schema.InterfaceToString(value)
-
-	}
-
-	if value, ok := values["private_power_management_ip"]; ok {
-
-		m.PrivatePowerManagementIP = schema.InterfaceToString(value)
-
-	}
-
 	if value, ok := values["private_machine_state"]; ok {
 
 		m.PrivateMachineState = schema.InterfaceToString(value)
@@ -244,6 +226,24 @@ func scanNode(values map[string]interface{}) (*models.Node, error) {
 	if value, ok := values["mac_address"]; ok {
 
 		m.MacAddress = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["ipmi_username"]; ok {
+
+		m.IpmiUsername = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["ipmi_password"]; ok {
+
+		m.IpmiPassword = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["ipmi_address"]; ok {
+
+		m.IpmiAddress = schema.InterfaceToString(value)
 
 	}
 

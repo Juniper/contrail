@@ -20,9 +20,9 @@ truncate table address_group;
 
 
 
-truncate table parent_address_group_project;
-
 truncate table parent_address_group_policy_management;
+
+truncate table parent_address_group_project;
 
 
 
@@ -52,9 +52,9 @@ truncate table parent_alias_ip_pool_virtual_network;
 truncate table alias_ip;
 
 
-truncate table ref_alias_ip_virtual_machine_interface;
-
 truncate table ref_alias_ip_project;
+
+truncate table ref_alias_ip_virtual_machine_interface;
 
 
 
@@ -78,11 +78,11 @@ truncate table api_access_list;
 
 
 
+truncate table parent_api_access_list_domain;
+
 truncate table parent_api_access_list_project;
 
 truncate table parent_api_access_list_global_system_config;
-
-truncate table parent_api_access_list_domain;
 
 
 
@@ -218,9 +218,9 @@ truncate table parent_dsa_rule_discovery_service_assignment;
 truncate table e2_service_provider;
 
 
-truncate table ref_e2_service_provider_peering_policy;
-
 truncate table ref_e2_service_provider_physical_router;
+
+truncate table ref_e2_service_provider_peering_policy;
 
 
 
@@ -256,9 +256,9 @@ truncate table ref_firewall_rule_virtual_network;
 
 
 
-truncate table parent_firewall_rule_project;
-
 truncate table parent_firewall_rule_policy_management;
+
+truncate table parent_firewall_rule_project;
 
 
 
@@ -336,8 +336,6 @@ truncate table parent_global_vrouter_config_global_system_config;
 truncate table instance_ip;
 
 
-truncate table ref_instance_ip_network_ipam;
-
 truncate table ref_instance_ip_virtual_network;
 
 truncate table ref_instance_ip_virtual_machine_interface;
@@ -345,6 +343,8 @@ truncate table ref_instance_ip_virtual_machine_interface;
 truncate table ref_instance_ip_physical_router;
 
 truncate table ref_instance_ip_virtual_router;
+
+truncate table ref_instance_ip_network_ipam;
 
 
 
@@ -398,6 +398,8 @@ truncate table parent_loadbalancer_member_loadbalancer_pool;
 truncate table loadbalancer_pool;
 
 
+truncate table ref_loadbalancer_pool_loadbalancer_healthmonitor;
+
 truncate table ref_loadbalancer_pool_service_appliance_set;
 
 truncate table ref_loadbalancer_pool_virtual_machine_interface;
@@ -405,8 +407,6 @@ truncate table ref_loadbalancer_pool_virtual_machine_interface;
 truncate table ref_loadbalancer_pool_loadbalancer_listener;
 
 truncate table ref_loadbalancer_pool_service_instance;
-
-truncate table ref_loadbalancer_pool_loadbalancer_healthmonitor;
 
 
 
@@ -418,11 +418,11 @@ truncate table parent_loadbalancer_pool_project;
 truncate table loadbalancer;
 
 
-truncate table ref_loadbalancer_service_instance;
-
 truncate table ref_loadbalancer_service_appliance_set;
 
 truncate table ref_loadbalancer_virtual_machine_interface;
+
+truncate table ref_loadbalancer_service_instance;
 
 
 
@@ -448,6 +448,8 @@ truncate table parent_logical_interface_physical_interface;
 truncate table logical_router;
 
 
+truncate table ref_logical_router_virtual_machine_interface;
+
 truncate table ref_logical_router_service_instance;
 
 truncate table ref_logical_router_route_table;
@@ -459,8 +461,6 @@ truncate table ref_logical_router_physical_router;
 truncate table ref_logical_router_bgpvpn;
 
 truncate table ref_logical_router_route_target;
-
-truncate table ref_logical_router_virtual_machine_interface;
 
 
 
@@ -880,33 +880,33 @@ truncate table parent_virtual_ip_project;
 truncate table virtual_machine_interface;
 
 
-truncate table ref_virtual_machine_interface_bridge_domain;
-
-truncate table ref_virtual_machine_interface_security_logging_object;
-
-truncate table ref_virtual_machine_interface_interface_route_table;
-
-truncate table ref_virtual_machine_interface_security_group;
+truncate table ref_virtual_machine_interface_service_health_check;
 
 truncate table ref_virtual_machine_interface_virtual_network;
 
-truncate table ref_virtual_machine_interface_service_endpoint;
+truncate table ref_virtual_machine_interface_bridge_domain;
 
 truncate table ref_virtual_machine_interface_virtual_machine_interface;
-
-truncate table ref_virtual_machine_interface_bgp_router;
-
-truncate table ref_virtual_machine_interface_port_tuple;
-
-truncate table ref_virtual_machine_interface_virtual_machine;
 
 truncate table ref_virtual_machine_interface_routing_instance;
 
 truncate table ref_virtual_machine_interface_qos_config;
 
+truncate table ref_virtual_machine_interface_port_tuple;
+
+truncate table ref_virtual_machine_interface_bgp_router;
+
+truncate table ref_virtual_machine_interface_virtual_machine;
+
+truncate table ref_virtual_machine_interface_security_logging_object;
+
+truncate table ref_virtual_machine_interface_interface_route_table;
+
 truncate table ref_virtual_machine_interface_physical_interface;
 
-truncate table ref_virtual_machine_interface_service_health_check;
+truncate table ref_virtual_machine_interface_security_group;
+
+truncate table ref_virtual_machine_interface_service_endpoint;
 
 
 
@@ -932,6 +932,8 @@ truncate table ref_virtual_machine_service_instance;
 truncate table virtual_network;
 
 
+truncate table ref_virtual_network_bgpvpn;
+
 truncate table ref_virtual_network_network_ipam;
 
 truncate table ref_virtual_network_security_logging_object;
@@ -943,8 +945,6 @@ truncate table ref_virtual_network_qos_config;
 truncate table ref_virtual_network_route_table;
 
 truncate table ref_virtual_network_virtual_network;
-
-truncate table ref_virtual_network_bgpvpn;
 
 
 
@@ -967,8 +967,10 @@ truncate table parent_virtual_router_global_system_config;
 
 
 
-truncate table appformix_node_role;
+truncate table appformix_node;
 
+
+truncate table ref_appformix_node_node;
 
 
 
@@ -991,8 +993,10 @@ truncate table baremetal_port;
 
 
 
-truncate table contrail_analytics_database_node_role;
+truncate table contrail_analytics_database_node;
 
+
+truncate table ref_contrail_analytics_database_node_node;
 
 
 
@@ -1001,6 +1005,8 @@ truncate table contrail_analytics_database_node_role;
 
 truncate table contrail_analytics_node;
 
+
+truncate table ref_contrail_analytics_node_node;
 
 
 
@@ -1015,16 +1021,60 @@ truncate table contrail_cluster;
 
 
 
-truncate table contrail_controller_node_role;
+truncate table contrail_config_database_node;
+
+
+truncate table ref_contrail_config_database_node_node;
 
 
 
 
 
 
+truncate table contrail_config_node;
 
-truncate table controller_node_role;
 
+truncate table ref_contrail_config_node_node;
+
+
+
+
+
+
+truncate table contrail_control_node;
+
+
+truncate table ref_contrail_control_node_node;
+
+
+
+
+
+
+truncate table contrail_storage_node;
+
+
+truncate table ref_contrail_storage_node_node;
+
+
+
+
+
+
+truncate table contrail_vrouter_node;
+
+
+truncate table ref_contrail_vrouter_node_node;
+
+
+
+
+
+
+truncate table contrail_controller_node;
+
+
+truncate table ref_contrail_controller_node_node;
 
 
 
@@ -1063,8 +1113,10 @@ truncate table keypair;
 
 
 
-truncate table kubernetes_cluster;
+truncate table kubernetes_master_node;
 
+
+truncate table ref_kubernetes_master_node_node;
 
 
 
@@ -1073,6 +1125,8 @@ truncate table kubernetes_cluster;
 
 truncate table kubernetes_node;
 
+
+truncate table ref_kubernetes_node_node;
 
 
 
@@ -1088,30 +1142,6 @@ truncate table location;
 
 
 truncate table node;
-
-
-
-
-
-
-
-truncate table openstack_cluster;
-
-
-
-
-
-
-
-truncate table openstack_compute_node_role;
-
-
-
-
-
-
-
-truncate table openstack_storage_node_role;
 
 
 

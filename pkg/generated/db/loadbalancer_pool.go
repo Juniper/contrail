@@ -55,27 +55,27 @@ var LoadbalancerPoolFields = []string{
 var LoadbalancerPoolRefFields = map[string][]string{
 
 	"service_appliance_set": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"virtual_machine_interface": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"loadbalancer_listener": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"service_instance": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"loadbalancer_healthmonitor": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }
@@ -181,6 +181,32 @@ func CreateLoadbalancerPool(
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtLoadbalancerListenerRef, err := tx.Prepare(insertLoadbalancerPoolLoadbalancerListenerQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing LoadbalancerListenerRefs create statement failed")
+	}
+	defer stmtLoadbalancerListenerRef.Close()
+	for _, ref := range model.LoadbalancerListenerRefs {
+
+		_, err = stmtLoadbalancerListenerRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "LoadbalancerListenerRefs create failed")
+		}
+	}
+
+	stmtServiceInstanceRef, err := tx.Prepare(insertLoadbalancerPoolServiceInstanceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceInstanceRefs create statement failed")
+	}
+	defer stmtServiceInstanceRef.Close()
+	for _, ref := range model.ServiceInstanceRefs {
+
+		_, err = stmtServiceInstanceRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceInstanceRefs create failed")
+		}
+	}
+
 	stmtLoadbalancerHealthmonitorRef, err := tx.Prepare(insertLoadbalancerPoolLoadbalancerHealthmonitorQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing LoadbalancerHealthmonitorRefs create statement failed")
@@ -217,32 +243,6 @@ func CreateLoadbalancerPool(
 		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
-	stmtLoadbalancerListenerRef, err := tx.Prepare(insertLoadbalancerPoolLoadbalancerListenerQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing LoadbalancerListenerRefs create statement failed")
-	}
-	defer stmtLoadbalancerListenerRef.Close()
-	for _, ref := range model.LoadbalancerListenerRefs {
-
-		_, err = stmtLoadbalancerListenerRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "LoadbalancerListenerRefs create failed")
-		}
-	}
-
-	stmtServiceInstanceRef, err := tx.Prepare(insertLoadbalancerPoolServiceInstanceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceInstanceRefs create statement failed")
-	}
-	defer stmtServiceInstanceRef.Close()
-	for _, ref := range model.ServiceInstanceRefs {
-
-		_, err = stmtServiceInstanceRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceInstanceRefs create failed")
 		}
 	}
 

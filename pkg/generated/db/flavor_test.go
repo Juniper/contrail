@@ -23,6 +23,7 @@ func TestFlavor(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "flavor")
+	// mutexProject := common.UseTable(db, "flavor")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

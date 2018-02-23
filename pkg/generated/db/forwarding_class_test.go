@@ -23,6 +23,7 @@ func TestForwardingClass(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "forwarding_class")
+	// mutexProject := common.UseTable(db, "forwarding_class")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

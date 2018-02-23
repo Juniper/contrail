@@ -53,9 +53,9 @@ var AccessControlListBackRefFields = map[string][]string{}
 // AccessControlListParentTypes is possible parents for AccessControlList
 var AccessControlListParents = []string{
 
-	"virtual_network",
-
 	"security_group",
+
+	"virtual_network",
 }
 
 // CreateAccessControlList inserts AccessControlList to DB

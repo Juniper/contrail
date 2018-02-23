@@ -23,6 +23,7 @@ func TestProviderAttachment(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "provider_attachment")
+	// mutexProject := common.UseTable(db, "provider_attachment")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

@@ -45,7 +45,7 @@ var VirtualMachineFields = []string{
 var VirtualMachineRefFields = map[string][]string{
 
 	"service_instance": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }

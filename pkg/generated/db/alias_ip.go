@@ -46,13 +46,13 @@ var AliasIPFields = []string{
 // AliasIPRefFields is db reference fields for AliasIP
 var AliasIPRefFields = map[string][]string{
 
-	"project": []string{
-		// <schema.Schema Value>
+	"virtual_machine_interface": []string{
+	// <schema.Schema Value>
 
 	},
 
-	"virtual_machine_interface": []string{
-		// <schema.Schema Value>
+	"project": []string{
+	// <schema.Schema Value>
 
 	},
 }

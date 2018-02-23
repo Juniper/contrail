@@ -51,7 +51,7 @@ var LoadbalancerListenerFields = []string{
 var LoadbalancerListenerRefFields = map[string][]string{
 
 	"loadbalancer": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }

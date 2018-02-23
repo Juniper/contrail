@@ -23,6 +23,7 @@ func TestGlobalVrouterConfig(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "global_vrouter_config")
+	// mutexProject := common.UseTable(db, "global_vrouter_config")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

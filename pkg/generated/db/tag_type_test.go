@@ -23,6 +23,7 @@ func TestTagType(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "tag_type")
+	// mutexProject := common.UseTable(db, "tag_type")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

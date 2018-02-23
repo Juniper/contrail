@@ -51,7 +51,7 @@ var VPNGroupFields = []string{
 var VPNGroupRefFields = map[string][]string{
 
 	"location": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }

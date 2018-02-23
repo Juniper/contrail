@@ -23,6 +23,7 @@ func TestDashboard(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "dashboard")
+	// mutexProject := common.UseTable(db, "dashboard")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

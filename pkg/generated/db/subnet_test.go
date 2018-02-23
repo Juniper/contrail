@@ -23,6 +23,7 @@ func TestSubnet(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "subnet")
+	// mutexProject := common.UseTable(db, "subnet")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

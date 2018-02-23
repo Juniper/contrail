@@ -10,7 +10,7 @@ var _ = schema.Version
 // MakeCommunityAttributes makes CommunityAttributes
 func MakeCommunityAttributes() *CommunityAttributes {
 	return &CommunityAttributes{
-		//TODO(nati): Apply default
+	//TODO(nati): Apply default
 
 	}
 }
@@ -23,7 +23,7 @@ func InterfaceToCommunityAttributes(i interface{}) *CommunityAttributes {
 		return nil
 	}
 	return &CommunityAttributes{
-		//TODO(nati): Apply default
+	//TODO(nati): Apply default
 
 	}
 }

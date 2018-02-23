@@ -23,6 +23,7 @@ func TestAlarm(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "alarm")
+	// mutexProject := common.UseTable(db, "alarm")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

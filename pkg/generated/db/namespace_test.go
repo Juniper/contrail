@@ -23,6 +23,7 @@ func TestNamespace(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "namespace")
+	// mutexProject := common.UseTable(db, "namespace")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

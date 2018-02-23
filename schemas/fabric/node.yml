@@ -82,7 +82,7 @@ schema:
       permission:
       - create
       - update
-      sql: ""
+      sql: tinytext
       title: SSH public key
       type: string
       view:
@@ -169,7 +169,7 @@ schema:
       type: string
       view:
       - detail
-    private_power_management_ip:
+    ipmi_address:
       default: ""
       description: IP address used for power management (IPMI)
       nullable: false
@@ -182,7 +182,7 @@ schema:
       view:
       - create
       - detail
-    private_power_management_password:
+    ipmi_password:
       default: ADMIN
       description: UserPassword for PowerManagement
       nullable: false
@@ -195,7 +195,7 @@ schema:
       view:
       - create
       - detail
-    private_power_management_username:
+    ipmi_username:
       default: ADMIN
       description: User Name for PowerManagement
       nullable: false

@@ -23,6 +23,7 @@ func TestVPNGroup(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "vpn_group")
+	// mutexProject := common.UseTable(db, "vpn_group")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

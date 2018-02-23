@@ -23,6 +23,7 @@ func TestVirtualMachine(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "virtual_machine")
+	// mutexProject := common.UseTable(db, "virtual_machine")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

@@ -23,6 +23,7 @@ func TestPhysicalRouter(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "physical_router")
+	// mutexProject := common.UseTable(db, "physical_router")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -37,37 +38,6 @@ func TestPhysicalRouter(t *testing.T) {
 	var err error
 
 	// Create referred objects
-
-	var VirtualNetworkcreateref []*models.PhysicalRouterVirtualNetworkRef
-	var VirtualNetworkrefModel *models.VirtualNetwork
-	VirtualNetworkrefModel = models.MakeVirtualNetwork()
-	VirtualNetworkrefModel.UUID = "physical_router_virtual_network_ref_uuid"
-	VirtualNetworkrefModel.FQName = []string{"test", "physical_router_virtual_network_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualNetwork(ctx, tx, &models.CreateVirtualNetworkRequest{
-			VirtualNetwork: VirtualNetworkrefModel,
-		})
-	})
-	VirtualNetworkrefModel.UUID = "physical_router_virtual_network_ref_uuid1"
-	VirtualNetworkrefModel.FQName = []string{"test", "physical_router_virtual_network_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualNetwork(ctx, tx, &models.CreateVirtualNetworkRequest{
-			VirtualNetwork: VirtualNetworkrefModel,
-		})
-	})
-	VirtualNetworkrefModel.UUID = "physical_router_virtual_network_ref_uuid2"
-	VirtualNetworkrefModel.FQName = []string{"test", "physical_router_virtual_network_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualNetwork(ctx, tx, &models.CreateVirtualNetworkRequest{
-			VirtualNetwork: VirtualNetworkrefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.PhysicalRouterVirtualNetworkRef{UUID: "physical_router_virtual_network_ref_uuid", To: []string{"test", "physical_router_virtual_network_ref_uuid"}})
-	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.PhysicalRouterVirtualNetworkRef{UUID: "physical_router_virtual_network_ref_uuid2", To: []string{"test", "physical_router_virtual_network_ref_uuid2"}})
-	model.VirtualNetworkRefs = VirtualNetworkcreateref
 
 	var BGPRoutercreateref []*models.PhysicalRouterBGPRouterRef
 	var BGPRouterrefModel *models.BGPRouter
@@ -130,6 +100,37 @@ func TestPhysicalRouter(t *testing.T) {
 	VirtualRoutercreateref = append(VirtualRoutercreateref, &models.PhysicalRouterVirtualRouterRef{UUID: "physical_router_virtual_router_ref_uuid", To: []string{"test", "physical_router_virtual_router_ref_uuid"}})
 	VirtualRoutercreateref = append(VirtualRoutercreateref, &models.PhysicalRouterVirtualRouterRef{UUID: "physical_router_virtual_router_ref_uuid2", To: []string{"test", "physical_router_virtual_router_ref_uuid2"}})
 	model.VirtualRouterRefs = VirtualRoutercreateref
+
+	var VirtualNetworkcreateref []*models.PhysicalRouterVirtualNetworkRef
+	var VirtualNetworkrefModel *models.VirtualNetwork
+	VirtualNetworkrefModel = models.MakeVirtualNetwork()
+	VirtualNetworkrefModel.UUID = "physical_router_virtual_network_ref_uuid"
+	VirtualNetworkrefModel.FQName = []string{"test", "physical_router_virtual_network_ref_uuid"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateVirtualNetwork(ctx, tx, &models.CreateVirtualNetworkRequest{
+			VirtualNetwork: VirtualNetworkrefModel,
+		})
+	})
+	VirtualNetworkrefModel.UUID = "physical_router_virtual_network_ref_uuid1"
+	VirtualNetworkrefModel.FQName = []string{"test", "physical_router_virtual_network_ref_uuid1"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateVirtualNetwork(ctx, tx, &models.CreateVirtualNetworkRequest{
+			VirtualNetwork: VirtualNetworkrefModel,
+		})
+	})
+	VirtualNetworkrefModel.UUID = "physical_router_virtual_network_ref_uuid2"
+	VirtualNetworkrefModel.FQName = []string{"test", "physical_router_virtual_network_ref_uuid2"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateVirtualNetwork(ctx, tx, &models.CreateVirtualNetworkRequest{
+			VirtualNetwork: VirtualNetworkrefModel,
+		})
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.PhysicalRouterVirtualNetworkRef{UUID: "physical_router_virtual_network_ref_uuid", To: []string{"test", "physical_router_virtual_network_ref_uuid"}})
+	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.PhysicalRouterVirtualNetworkRef{UUID: "physical_router_virtual_network_ref_uuid2", To: []string{"test", "physical_router_virtual_network_ref_uuid2"}})
+	model.VirtualNetworkRefs = VirtualNetworkcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -403,6 +404,14 @@ func TestPhysicalRouter(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
+	//    var VirtualNetworkref []interface{}
+	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"delete", "uuid":"physical_router_virtual_network_ref_uuid", "to": []string{"test", "physical_router_virtual_network_ref_uuid"}})
+	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"add", "uuid":"physical_router_virtual_network_ref_uuid1", "to": []string{"test", "physical_router_virtual_network_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
+	//
 	//    var BGPRouterref []interface{}
 	//    BGPRouterref = append(BGPRouterref, map[string]interface{}{"operation":"delete", "uuid":"physical_router_bgp_router_ref_uuid", "to": []string{"test", "physical_router_bgp_router_ref_uuid"}})
 	//    BGPRouterref = append(BGPRouterref, map[string]interface{}{"operation":"add", "uuid":"physical_router_bgp_router_ref_uuid1", "to": []string{"test", "physical_router_bgp_router_ref_uuid1"}})
@@ -418,14 +427,6 @@ func TestPhysicalRouter(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "VirtualRouterRefs", ".", VirtualRouterref)
-	//
-	//    var VirtualNetworkref []interface{}
-	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"delete", "uuid":"physical_router_virtual_network_ref_uuid", "to": []string{"test", "physical_router_virtual_network_ref_uuid"}})
-	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"add", "uuid":"physical_router_virtual_network_ref_uuid1", "to": []string{"test", "physical_router_virtual_network_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

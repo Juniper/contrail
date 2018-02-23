@@ -10,7 +10,7 @@ var _ = schema.Version
 // MakeEncapsulationPrioritiesType makes EncapsulationPrioritiesType
 func MakeEncapsulationPrioritiesType() *EncapsulationPrioritiesType {
 	return &EncapsulationPrioritiesType{
-		//TODO(nati): Apply default
+	//TODO(nati): Apply default
 
 	}
 }
@@ -23,7 +23,7 @@ func InterfaceToEncapsulationPrioritiesType(i interface{}) *EncapsulationPriorit
 		return nil
 	}
 	return &EncapsulationPrioritiesType{
-		//TODO(nati): Apply default
+	//TODO(nati): Apply default
 
 	}
 }

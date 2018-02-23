@@ -1,0 +1,23 @@
+description: Appformix Node
+extends:
+- base
+- has_status
+id: appformix_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this config node."
+      presence: "optional"
+parent: contrail_cluster
+plural: appformix_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: appformix_node
+title: Appformix Node
+type: ""

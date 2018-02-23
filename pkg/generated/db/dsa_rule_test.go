@@ -23,6 +23,7 @@ func TestDsaRule(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "dsa_rule")
+	// mutexProject := common.UseTable(db, "dsa_rule")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
