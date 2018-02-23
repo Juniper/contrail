@@ -47,3 +47,6 @@ keystone:
         type: memory
         expire: 3600
     authurl: http://localhost:9091/v3
+
+# disable authentication with no_auth true and comment out keystone configuraion.
+# no_auth: false
