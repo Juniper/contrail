@@ -1,7 +1,9 @@
 package apisrv
 
 import (
+	"crypto/tls"
 	"database/sql"
+	"net/http"
 	"net/url"
 	"time"
 
@@ -55,7 +57,9 @@ func (s *Server) Init() error {
 	writeTimeout := viper.GetInt("server.write_timeout")
 	e.Server.ReadTimeout = time.Duration(readTimeout) * time.Second
 	e.Server.WriteTimeout = time.Duration(writeTimeout) * time.Second
-
+	if viper.GetBool("server.no_cert_check") {
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true} // nolint: gas
+	}
 	cors := viper.GetString("cors")
 
 	if cors != "" {
@@ -127,6 +131,7 @@ func (s *Server) Init() error {
 		services.RegisterContrailServiceServer(grpcServer, service)
 		e.Use(gRPCMiddleware(grpcServer))
 	}
+
 	return nil
 }
 
