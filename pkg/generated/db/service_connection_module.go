@@ -47,7 +47,7 @@ var ServiceConnectionModuleFields = []string{
 var ServiceConnectionModuleRefFields = map[string][]string{
 
 	"service_object": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }

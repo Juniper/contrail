@@ -23,6 +23,7 @@ func TestRoutingInstance(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "routing_instance")
+	// mutexProject := common.UseTable(db, "routing_instance")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

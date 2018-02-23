@@ -23,6 +23,7 @@ func TestAccessControlList(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "access_control_list")
+	// mutexProject := common.UseTable(db, "access_control_list")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

@@ -23,6 +23,7 @@ func TestLocation(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "location")
+	// mutexProject := common.UseTable(db, "location")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

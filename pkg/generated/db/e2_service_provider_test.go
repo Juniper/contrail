@@ -23,6 +23,7 @@ func TestE2ServiceProvider(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "e2_service_provider")
+	// mutexProject := common.UseTable(db, "e2_service_provider")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

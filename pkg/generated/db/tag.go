@@ -48,7 +48,7 @@ var TagFields = []string{
 var TagRefFields = map[string][]string{
 
 	"tag_type": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }

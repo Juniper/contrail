@@ -44,18 +44,18 @@ var ServiceEndpointFields = []string{
 // ServiceEndpointRefFields is db reference fields for ServiceEndpoint
 var ServiceEndpointRefFields = map[string][]string{
 
-	"service_connection_module": []string{
-		// <schema.Schema Value>
-
-	},
-
 	"physical_router": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"service_object": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
+
+	},
+
+	"service_connection_module": []string{
+	// <schema.Schema Value>
 
 	},
 }
@@ -113,19 +113,6 @@ func CreateServiceEndpoint(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtServiceObjectRef, err := tx.Prepare(insertServiceEndpointServiceObjectQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceObjectRefs create statement failed")
-	}
-	defer stmtServiceObjectRef.Close()
-	for _, ref := range model.ServiceObjectRefs {
-
-		_, err = stmtServiceObjectRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceObjectRefs create failed")
-		}
-	}
-
 	stmtServiceConnectionModuleRef, err := tx.Prepare(insertServiceEndpointServiceConnectionModuleQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ServiceConnectionModuleRefs create statement failed")
@@ -149,6 +136,19 @@ func CreateServiceEndpoint(
 		_, err = stmtPhysicalRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PhysicalRouterRefs create failed")
+		}
+	}
+
+	stmtServiceObjectRef, err := tx.Prepare(insertServiceEndpointServiceObjectQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceObjectRefs create statement failed")
+	}
+	defer stmtServiceObjectRef.Close()
+	for _, ref := range model.ServiceObjectRefs {
+
+		_, err = stmtServiceObjectRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceObjectRefs create failed")
 		}
 	}
 

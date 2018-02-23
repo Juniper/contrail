@@ -68,9 +68,9 @@ var SecurityLoggingObjectParents = []string{
 	"global_vrouter_config",
 }
 
-const insertSecurityLoggingObjectSecurityGroupQuery = "insert into `ref_security_logging_object_security_group` (`from`, `to` ,`rule`) values (?, ?,?);"
-
 const insertSecurityLoggingObjectNetworkPolicyQuery = "insert into `ref_security_logging_object_network_policy` (`from`, `to` ,`rule`) values (?, ?,?);"
+
+const insertSecurityLoggingObjectSecurityGroupQuery = "insert into `ref_security_logging_object_security_group` (`from`, `to` ,`rule`) values (?, ?,?);"
 
 // CreateSecurityLoggingObject inserts SecurityLoggingObject to DB
 func CreateSecurityLoggingObject(
@@ -115,23 +115,6 @@ func CreateSecurityLoggingObject(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtSecurityGroupRef, err := tx.Prepare(insertSecurityLoggingObjectSecurityGroupQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing SecurityGroupRefs create statement failed")
-	}
-	defer stmtSecurityGroupRef.Close()
-	for _, ref := range model.SecurityGroupRefs {
-
-		if ref.Attr == nil {
-			ref.Attr = &models.SecurityLoggingObjectRuleListType{}
-		}
-
-		_, err = stmtSecurityGroupRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetRule()))
-		if err != nil {
-			return errors.Wrap(err, "SecurityGroupRefs create failed")
-		}
-	}
-
 	stmtNetworkPolicyRef, err := tx.Prepare(insertSecurityLoggingObjectNetworkPolicyQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing NetworkPolicyRefs create statement failed")
@@ -146,6 +129,23 @@ func CreateSecurityLoggingObject(
 		_, err = stmtNetworkPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetRule()))
 		if err != nil {
 			return errors.Wrap(err, "NetworkPolicyRefs create failed")
+		}
+	}
+
+	stmtSecurityGroupRef, err := tx.Prepare(insertSecurityLoggingObjectSecurityGroupQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing SecurityGroupRefs create statement failed")
+	}
+	defer stmtSecurityGroupRef.Close()
+	for _, ref := range model.SecurityGroupRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = &models.SecurityLoggingObjectRuleListType{}
+		}
+
+		_, err = stmtSecurityGroupRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetRule()))
+		if err != nil {
+			return errors.Wrap(err, "SecurityGroupRefs create failed")
 		}
 	}
 
@@ -309,29 +309,6 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 
 	}
 
-	if value, ok := values["ref_network_policy"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.SecurityLoggingObjectNetworkPolicyRef{}
-			referenceModel.UUID = uuid
-			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
-
-			attr := models.MakeSecurityLoggingObjectRuleListType()
-			referenceModel.Attr = attr
-
-		}
-	}
-
 	if value, ok := values["ref_security_group"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -348,6 +325,29 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 			referenceModel := &models.SecurityLoggingObjectSecurityGroupRef{}
 			referenceModel.UUID = uuid
 			m.SecurityGroupRefs = append(m.SecurityGroupRefs, referenceModel)
+
+			attr := models.MakeSecurityLoggingObjectRuleListType()
+			referenceModel.Attr = attr
+
+		}
+	}
+
+	if value, ok := values["ref_network_policy"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.SecurityLoggingObjectNetworkPolicyRef{}
+			referenceModel.UUID = uuid
+			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
 
 			attr := models.MakeSecurityLoggingObjectRuleListType()
 			referenceModel.Attr = attr

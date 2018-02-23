@@ -52,12 +52,12 @@ var FloatingIPFields = []string{
 var FloatingIPRefFields = map[string][]string{
 
 	"project": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"virtual_machine_interface": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }

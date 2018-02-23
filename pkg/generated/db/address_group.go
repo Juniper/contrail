@@ -51,9 +51,9 @@ var AddressGroupBackRefFields = map[string][]string{}
 // AddressGroupParentTypes is possible parents for AddressGroup
 var AddressGroupParents = []string{
 
-	"policy_management",
-
 	"project",
+
+	"policy_management",
 }
 
 // CreateAddressGroup inserts AddressGroup to DB

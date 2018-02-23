@@ -23,6 +23,7 @@ func TestFirewallPolicy(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "firewall_policy")
+	// mutexProject := common.UseTable(db, "firewall_policy")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -228,14 +229,6 @@ func TestFirewallPolicy(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var SecurityLoggingObjectref []interface{}
-	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"firewall_policy_security_logging_object_ref_uuid", "to": []string{"test", "firewall_policy_security_logging_object_ref_uuid"}})
-	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"firewall_policy_security_logging_object_ref_uuid1", "to": []string{"test", "firewall_policy_security_logging_object_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "SecurityLoggingObjectRefs", ".", SecurityLoggingObjectref)
-	//
 	//    var FirewallRuleref []interface{}
 	//    FirewallRuleref = append(FirewallRuleref, map[string]interface{}{"operation":"delete", "uuid":"firewall_policy_firewall_rule_ref_uuid", "to": []string{"test", "firewall_policy_firewall_rule_ref_uuid"}})
 	//    FirewallRuleref = append(FirewallRuleref, map[string]interface{}{"operation":"add", "uuid":"firewall_policy_firewall_rule_ref_uuid1", "to": []string{"test", "firewall_policy_firewall_rule_ref_uuid1"}})
@@ -251,6 +244,14 @@ func TestFirewallPolicy(t *testing.T) {
 	//    FirewallRuleref = append(FirewallRuleref, map[string]interface{}{"operation":"update", "uuid":"firewall_policy_firewall_rule_ref_uuid2", "to": []string{"test", "firewall_policy_firewall_rule_ref_uuid2"}, "attr": FirewallRuleAttr})
 	//
 	//    common.SetValueByPath(updateMap, "FirewallRuleRefs", ".", FirewallRuleref)
+	//
+	//    var SecurityLoggingObjectref []interface{}
+	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"firewall_policy_security_logging_object_ref_uuid", "to": []string{"test", "firewall_policy_security_logging_object_ref_uuid"}})
+	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"firewall_policy_security_logging_object_ref_uuid1", "to": []string{"test", "firewall_policy_security_logging_object_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "SecurityLoggingObjectRefs", ".", SecurityLoggingObjectref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
@@ -271,47 +272,6 @@ func TestFirewallPolicy(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_firewall_policy_firewall_rule` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing FirewallRuleRefs delete statement failed")
-		}
-		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_firewall_rule_ref_uuid")
-		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_firewall_rule_ref_uuid1")
-		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_firewall_rule_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "FirewallRuleRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteFirewallRule(ctx, tx,
-			&models.DeleteFirewallRuleRequest{
-				ID: "firewall_policy_firewall_rule_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref firewall_policy_firewall_rule_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteFirewallRule(ctx, tx,
-			&models.DeleteFirewallRuleRequest{
-				ID: "firewall_policy_firewall_rule_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref firewall_policy_firewall_rule_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteFirewallRule(
-			ctx,
-			tx,
-			&models.DeleteFirewallRuleRequest{
-				ID: "firewall_policy_firewall_rule_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref firewall_policy_firewall_rule_ref_uuid2 failed", err)
-	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		stmt, err := tx.Prepare("delete from `ref_firewall_policy_security_logging_object` where `from` = ? AND `to` = ?;")
@@ -352,6 +312,47 @@ func TestFirewallPolicy(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("delete ref firewall_policy_security_logging_object_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_firewall_policy_firewall_rule` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing FirewallRuleRefs delete statement failed")
+		}
+		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_firewall_rule_ref_uuid")
+		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_firewall_rule_ref_uuid1")
+		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_firewall_rule_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "FirewallRuleRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteFirewallRule(ctx, tx,
+			&models.DeleteFirewallRuleRequest{
+				ID: "firewall_policy_firewall_rule_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref firewall_policy_firewall_rule_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteFirewallRule(ctx, tx,
+			&models.DeleteFirewallRuleRequest{
+				ID: "firewall_policy_firewall_rule_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref firewall_policy_firewall_rule_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteFirewallRule(
+			ctx,
+			tx,
+			&models.DeleteFirewallRuleRequest{
+				ID: "firewall_policy_firewall_rule_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref firewall_policy_firewall_rule_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

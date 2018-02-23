@@ -23,6 +23,7 @@ func TestFloatingIP(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "floating_ip")
+	// mutexProject := common.UseTable(db, "floating_ip")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

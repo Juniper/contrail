@@ -23,6 +23,7 @@ func TestWidget(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "widget")
+	// mutexProject := common.UseTable(db, "widget")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

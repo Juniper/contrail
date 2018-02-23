@@ -23,6 +23,7 @@ func TestBGPAsAService(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "bgp_as_a_service")
+	// mutexProject := common.UseTable(db, "bgp_as_a_service")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

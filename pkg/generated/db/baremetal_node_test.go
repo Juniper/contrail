@@ -23,6 +23,7 @@ func TestBaremetalNode(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "baremetal_node")
+	// mutexProject := common.UseTable(db, "baremetal_node")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

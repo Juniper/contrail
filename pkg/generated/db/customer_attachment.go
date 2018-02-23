@@ -45,12 +45,12 @@ var CustomerAttachmentFields = []string{
 var CustomerAttachmentRefFields = map[string][]string{
 
 	"virtual_machine_interface": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"floating_ip": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }

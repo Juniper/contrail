@@ -23,6 +23,7 @@ func TestServiceInstance(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "service_instance")
+	// mutexProject := common.UseTable(db, "service_instance")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -37,37 +38,6 @@ func TestServiceInstance(t *testing.T) {
 	var err error
 
 	// Create referred objects
-
-	var InstanceIPcreateref []*models.ServiceInstanceInstanceIPRef
-	var InstanceIPrefModel *models.InstanceIP
-	InstanceIPrefModel = models.MakeInstanceIP()
-	InstanceIPrefModel.UUID = "service_instance_instance_ip_ref_uuid"
-	InstanceIPrefModel.FQName = []string{"test", "service_instance_instance_ip_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateInstanceIP(ctx, tx, &models.CreateInstanceIPRequest{
-			InstanceIP: InstanceIPrefModel,
-		})
-	})
-	InstanceIPrefModel.UUID = "service_instance_instance_ip_ref_uuid1"
-	InstanceIPrefModel.FQName = []string{"test", "service_instance_instance_ip_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateInstanceIP(ctx, tx, &models.CreateInstanceIPRequest{
-			InstanceIP: InstanceIPrefModel,
-		})
-	})
-	InstanceIPrefModel.UUID = "service_instance_instance_ip_ref_uuid2"
-	InstanceIPrefModel.FQName = []string{"test", "service_instance_instance_ip_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateInstanceIP(ctx, tx, &models.CreateInstanceIPRequest{
-			InstanceIP: InstanceIPrefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	InstanceIPcreateref = append(InstanceIPcreateref, &models.ServiceInstanceInstanceIPRef{UUID: "service_instance_instance_ip_ref_uuid", To: []string{"test", "service_instance_instance_ip_ref_uuid"}})
-	InstanceIPcreateref = append(InstanceIPcreateref, &models.ServiceInstanceInstanceIPRef{UUID: "service_instance_instance_ip_ref_uuid2", To: []string{"test", "service_instance_instance_ip_ref_uuid2"}})
-	model.InstanceIPRefs = InstanceIPcreateref
 
 	var ServiceTemplatecreateref []*models.ServiceInstanceServiceTemplateRef
 	var ServiceTemplaterefModel *models.ServiceTemplate
@@ -99,6 +69,37 @@ func TestServiceInstance(t *testing.T) {
 	ServiceTemplatecreateref = append(ServiceTemplatecreateref, &models.ServiceInstanceServiceTemplateRef{UUID: "service_instance_service_template_ref_uuid", To: []string{"test", "service_instance_service_template_ref_uuid"}})
 	ServiceTemplatecreateref = append(ServiceTemplatecreateref, &models.ServiceInstanceServiceTemplateRef{UUID: "service_instance_service_template_ref_uuid2", To: []string{"test", "service_instance_service_template_ref_uuid2"}})
 	model.ServiceTemplateRefs = ServiceTemplatecreateref
+
+	var InstanceIPcreateref []*models.ServiceInstanceInstanceIPRef
+	var InstanceIPrefModel *models.InstanceIP
+	InstanceIPrefModel = models.MakeInstanceIP()
+	InstanceIPrefModel.UUID = "service_instance_instance_ip_ref_uuid"
+	InstanceIPrefModel.FQName = []string{"test", "service_instance_instance_ip_ref_uuid"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateInstanceIP(ctx, tx, &models.CreateInstanceIPRequest{
+			InstanceIP: InstanceIPrefModel,
+		})
+	})
+	InstanceIPrefModel.UUID = "service_instance_instance_ip_ref_uuid1"
+	InstanceIPrefModel.FQName = []string{"test", "service_instance_instance_ip_ref_uuid1"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateInstanceIP(ctx, tx, &models.CreateInstanceIPRequest{
+			InstanceIP: InstanceIPrefModel,
+		})
+	})
+	InstanceIPrefModel.UUID = "service_instance_instance_ip_ref_uuid2"
+	InstanceIPrefModel.FQName = []string{"test", "service_instance_instance_ip_ref_uuid2"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateInstanceIP(ctx, tx, &models.CreateInstanceIPRequest{
+			InstanceIP: InstanceIPrefModel,
+		})
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	InstanceIPcreateref = append(InstanceIPcreateref, &models.ServiceInstanceInstanceIPRef{UUID: "service_instance_instance_ip_ref_uuid", To: []string{"test", "service_instance_instance_ip_ref_uuid"}})
+	InstanceIPcreateref = append(InstanceIPcreateref, &models.ServiceInstanceInstanceIPRef{UUID: "service_instance_instance_ip_ref_uuid2", To: []string{"test", "service_instance_instance_ip_ref_uuid2"}})
+	model.InstanceIPRefs = InstanceIPcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()

@@ -23,6 +23,7 @@ func TestPhysicalInterface(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "physical_interface")
+	// mutexProject := common.UseTable(db, "physical_interface")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

@@ -50,7 +50,7 @@ var FirewallPolicyRefFields = map[string][]string{
 	},
 
 	"security_logging_object": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }
@@ -66,9 +66,9 @@ var FirewallPolicyParents = []string{
 	"policy_management",
 }
 
-const insertFirewallPolicyFirewallRuleQuery = "insert into `ref_firewall_policy_firewall_rule` (`from`, `to` ,`sequence`) values (?, ?,?);"
-
 const insertFirewallPolicySecurityLoggingObjectQuery = "insert into `ref_firewall_policy_security_logging_object` (`from`, `to` ) values (?, ?);"
+
+const insertFirewallPolicyFirewallRuleQuery = "insert into `ref_firewall_policy_firewall_rule` (`from`, `to` ,`sequence`) values (?, ?,?);"
 
 // CreateFirewallPolicy inserts FirewallPolicy to DB
 func CreateFirewallPolicy(

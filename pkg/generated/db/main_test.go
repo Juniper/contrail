@@ -2,11 +2,10 @@ package db
 
 import (
 	"database/sql"
-	"os"
-	"testing"
-
 	"github.com/Juniper/contrail/pkg/common"
 	log "github.com/sirupsen/logrus"
+	"os"
+	"testing"
 	//Import mysql driver
 	_ "github.com/go-sql-driver/mysql"
 )

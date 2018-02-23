@@ -23,6 +23,7 @@ func TestNetworkIpam(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "network_ipam")
+	// mutexProject := common.UseTable(db, "network_ipam")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

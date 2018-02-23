@@ -54,7 +54,7 @@ var VirtualRouterRefFields = map[string][]string{
 	},
 
 	"virtual_machine": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }

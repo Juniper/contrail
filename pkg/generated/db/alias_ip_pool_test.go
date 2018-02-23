@@ -23,6 +23,7 @@ func TestAliasIPPool(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "alias_ip_pool")
+	// mutexProject := common.UseTable(db, "alias_ip_pool")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

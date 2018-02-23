@@ -23,6 +23,7 @@ func TestNetworkPolicy(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "network_policy")
+	// mutexProject := common.UseTable(db, "network_policy")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

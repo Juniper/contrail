@@ -23,6 +23,7 @@ func TestAnalyticsNode(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "analytics_node")
+	// mutexProject := common.UseTable(db, "analytics_node")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

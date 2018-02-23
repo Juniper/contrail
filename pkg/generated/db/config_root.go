@@ -45,7 +45,7 @@ var ConfigRootFields = []string{
 var ConfigRootRefFields = map[string][]string{
 
 	"tag": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }

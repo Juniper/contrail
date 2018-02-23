@@ -23,6 +23,7 @@ func TestVirtualNetwork(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "virtual_network")
+	// mutexProject := common.UseTable(db, "virtual_network")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -37,68 +38,6 @@ func TestVirtualNetwork(t *testing.T) {
 	var err error
 
 	// Create referred objects
-
-	var NetworkIpamcreateref []*models.VirtualNetworkNetworkIpamRef
-	var NetworkIpamrefModel *models.NetworkIpam
-	NetworkIpamrefModel = models.MakeNetworkIpam()
-	NetworkIpamrefModel.UUID = "virtual_network_network_ipam_ref_uuid"
-	NetworkIpamrefModel.FQName = []string{"test", "virtual_network_network_ipam_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNetworkIpam(ctx, tx, &models.CreateNetworkIpamRequest{
-			NetworkIpam: NetworkIpamrefModel,
-		})
-	})
-	NetworkIpamrefModel.UUID = "virtual_network_network_ipam_ref_uuid1"
-	NetworkIpamrefModel.FQName = []string{"test", "virtual_network_network_ipam_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNetworkIpam(ctx, tx, &models.CreateNetworkIpamRequest{
-			NetworkIpam: NetworkIpamrefModel,
-		})
-	})
-	NetworkIpamrefModel.UUID = "virtual_network_network_ipam_ref_uuid2"
-	NetworkIpamrefModel.FQName = []string{"test", "virtual_network_network_ipam_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNetworkIpam(ctx, tx, &models.CreateNetworkIpamRequest{
-			NetworkIpam: NetworkIpamrefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	NetworkIpamcreateref = append(NetworkIpamcreateref, &models.VirtualNetworkNetworkIpamRef{UUID: "virtual_network_network_ipam_ref_uuid", To: []string{"test", "virtual_network_network_ipam_ref_uuid"}})
-	NetworkIpamcreateref = append(NetworkIpamcreateref, &models.VirtualNetworkNetworkIpamRef{UUID: "virtual_network_network_ipam_ref_uuid2", To: []string{"test", "virtual_network_network_ipam_ref_uuid2"}})
-	model.NetworkIpamRefs = NetworkIpamcreateref
-
-	var SecurityLoggingObjectcreateref []*models.VirtualNetworkSecurityLoggingObjectRef
-	var SecurityLoggingObjectrefModel *models.SecurityLoggingObject
-	SecurityLoggingObjectrefModel = models.MakeSecurityLoggingObject()
-	SecurityLoggingObjectrefModel.UUID = "virtual_network_security_logging_object_ref_uuid"
-	SecurityLoggingObjectrefModel.FQName = []string{"test", "virtual_network_security_logging_object_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateSecurityLoggingObject(ctx, tx, &models.CreateSecurityLoggingObjectRequest{
-			SecurityLoggingObject: SecurityLoggingObjectrefModel,
-		})
-	})
-	SecurityLoggingObjectrefModel.UUID = "virtual_network_security_logging_object_ref_uuid1"
-	SecurityLoggingObjectrefModel.FQName = []string{"test", "virtual_network_security_logging_object_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateSecurityLoggingObject(ctx, tx, &models.CreateSecurityLoggingObjectRequest{
-			SecurityLoggingObject: SecurityLoggingObjectrefModel,
-		})
-	})
-	SecurityLoggingObjectrefModel.UUID = "virtual_network_security_logging_object_ref_uuid2"
-	SecurityLoggingObjectrefModel.FQName = []string{"test", "virtual_network_security_logging_object_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateSecurityLoggingObject(ctx, tx, &models.CreateSecurityLoggingObjectRequest{
-			SecurityLoggingObject: SecurityLoggingObjectrefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.VirtualNetworkSecurityLoggingObjectRef{UUID: "virtual_network_security_logging_object_ref_uuid", To: []string{"test", "virtual_network_security_logging_object_ref_uuid"}})
-	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.VirtualNetworkSecurityLoggingObjectRef{UUID: "virtual_network_security_logging_object_ref_uuid2", To: []string{"test", "virtual_network_security_logging_object_ref_uuid2"}})
-	model.SecurityLoggingObjectRefs = SecurityLoggingObjectcreateref
 
 	var NetworkPolicycreateref []*models.VirtualNetworkNetworkPolicyRef
 	var NetworkPolicyrefModel *models.NetworkPolicy
@@ -254,6 +193,68 @@ func TestVirtualNetwork(t *testing.T) {
 	BGPVPNcreateref = append(BGPVPNcreateref, &models.VirtualNetworkBGPVPNRef{UUID: "virtual_network_bgpvpn_ref_uuid", To: []string{"test", "virtual_network_bgpvpn_ref_uuid"}})
 	BGPVPNcreateref = append(BGPVPNcreateref, &models.VirtualNetworkBGPVPNRef{UUID: "virtual_network_bgpvpn_ref_uuid2", To: []string{"test", "virtual_network_bgpvpn_ref_uuid2"}})
 	model.BGPVPNRefs = BGPVPNcreateref
+
+	var NetworkIpamcreateref []*models.VirtualNetworkNetworkIpamRef
+	var NetworkIpamrefModel *models.NetworkIpam
+	NetworkIpamrefModel = models.MakeNetworkIpam()
+	NetworkIpamrefModel.UUID = "virtual_network_network_ipam_ref_uuid"
+	NetworkIpamrefModel.FQName = []string{"test", "virtual_network_network_ipam_ref_uuid"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateNetworkIpam(ctx, tx, &models.CreateNetworkIpamRequest{
+			NetworkIpam: NetworkIpamrefModel,
+		})
+	})
+	NetworkIpamrefModel.UUID = "virtual_network_network_ipam_ref_uuid1"
+	NetworkIpamrefModel.FQName = []string{"test", "virtual_network_network_ipam_ref_uuid1"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateNetworkIpam(ctx, tx, &models.CreateNetworkIpamRequest{
+			NetworkIpam: NetworkIpamrefModel,
+		})
+	})
+	NetworkIpamrefModel.UUID = "virtual_network_network_ipam_ref_uuid2"
+	NetworkIpamrefModel.FQName = []string{"test", "virtual_network_network_ipam_ref_uuid2"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateNetworkIpam(ctx, tx, &models.CreateNetworkIpamRequest{
+			NetworkIpam: NetworkIpamrefModel,
+		})
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	NetworkIpamcreateref = append(NetworkIpamcreateref, &models.VirtualNetworkNetworkIpamRef{UUID: "virtual_network_network_ipam_ref_uuid", To: []string{"test", "virtual_network_network_ipam_ref_uuid"}})
+	NetworkIpamcreateref = append(NetworkIpamcreateref, &models.VirtualNetworkNetworkIpamRef{UUID: "virtual_network_network_ipam_ref_uuid2", To: []string{"test", "virtual_network_network_ipam_ref_uuid2"}})
+	model.NetworkIpamRefs = NetworkIpamcreateref
+
+	var SecurityLoggingObjectcreateref []*models.VirtualNetworkSecurityLoggingObjectRef
+	var SecurityLoggingObjectrefModel *models.SecurityLoggingObject
+	SecurityLoggingObjectrefModel = models.MakeSecurityLoggingObject()
+	SecurityLoggingObjectrefModel.UUID = "virtual_network_security_logging_object_ref_uuid"
+	SecurityLoggingObjectrefModel.FQName = []string{"test", "virtual_network_security_logging_object_ref_uuid"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateSecurityLoggingObject(ctx, tx, &models.CreateSecurityLoggingObjectRequest{
+			SecurityLoggingObject: SecurityLoggingObjectrefModel,
+		})
+	})
+	SecurityLoggingObjectrefModel.UUID = "virtual_network_security_logging_object_ref_uuid1"
+	SecurityLoggingObjectrefModel.FQName = []string{"test", "virtual_network_security_logging_object_ref_uuid1"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateSecurityLoggingObject(ctx, tx, &models.CreateSecurityLoggingObjectRequest{
+			SecurityLoggingObject: SecurityLoggingObjectrefModel,
+		})
+	})
+	SecurityLoggingObjectrefModel.UUID = "virtual_network_security_logging_object_ref_uuid2"
+	SecurityLoggingObjectrefModel.FQName = []string{"test", "virtual_network_security_logging_object_ref_uuid2"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateSecurityLoggingObject(ctx, tx, &models.CreateSecurityLoggingObjectRequest{
+			SecurityLoggingObject: SecurityLoggingObjectrefModel,
+		})
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.VirtualNetworkSecurityLoggingObjectRef{UUID: "virtual_network_security_logging_object_ref_uuid", To: []string{"test", "virtual_network_security_logging_object_ref_uuid"}})
+	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.VirtualNetworkSecurityLoggingObjectRef{UUID: "virtual_network_security_logging_object_ref_uuid2", To: []string{"test", "virtual_network_security_logging_object_ref_uuid2"}})
+	model.SecurityLoggingObjectRefs = SecurityLoggingObjectcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -541,6 +542,30 @@ func TestVirtualNetwork(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
+	//    var QosConfigref []interface{}
+	//    QosConfigref = append(QosConfigref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_qos_config_ref_uuid", "to": []string{"test", "virtual_network_qos_config_ref_uuid"}})
+	//    QosConfigref = append(QosConfigref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_qos_config_ref_uuid1", "to": []string{"test", "virtual_network_qos_config_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "QosConfigRefs", ".", QosConfigref)
+	//
+	//    var RouteTableref []interface{}
+	//    RouteTableref = append(RouteTableref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_route_table_ref_uuid", "to": []string{"test", "virtual_network_route_table_ref_uuid"}})
+	//    RouteTableref = append(RouteTableref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_route_table_ref_uuid1", "to": []string{"test", "virtual_network_route_table_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "RouteTableRefs", ".", RouteTableref)
+	//
+	//    var VirtualNetworkref []interface{}
+	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_virtual_network_ref_uuid", "to": []string{"test", "virtual_network_virtual_network_ref_uuid"}})
+	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_virtual_network_ref_uuid1", "to": []string{"test", "virtual_network_virtual_network_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
+	//
 	//    var BGPVPNref []interface{}
 	//    BGPVPNref = append(BGPVPNref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_bgpvpn_ref_uuid", "to": []string{"test", "virtual_network_bgpvpn_ref_uuid"}})
 	//    BGPVPNref = append(BGPVPNref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_bgpvpn_ref_uuid1", "to": []string{"test", "virtual_network_bgpvpn_ref_uuid1"}})
@@ -601,41 +626,17 @@ func TestVirtualNetwork(t *testing.T) {
 	//
 	//
 	//
-	//    common.SetValueByPath(NetworkPolicyAttr, ".Sequence.Minor", ".", 1.0)
-	//
-	//
-	//
 	//    common.SetValueByPath(NetworkPolicyAttr, ".Sequence.Major", ".", 1.0)
+	//
+	//
+	//
+	//    common.SetValueByPath(NetworkPolicyAttr, ".Sequence.Minor", ".", 1.0)
 	//
 	//
 	//
 	//    NetworkPolicyref = append(NetworkPolicyref, map[string]interface{}{"operation":"update", "uuid":"virtual_network_network_policy_ref_uuid2", "to": []string{"test", "virtual_network_network_policy_ref_uuid2"}, "attr": NetworkPolicyAttr})
 	//
 	//    common.SetValueByPath(updateMap, "NetworkPolicyRefs", ".", NetworkPolicyref)
-	//
-	//    var QosConfigref []interface{}
-	//    QosConfigref = append(QosConfigref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_qos_config_ref_uuid", "to": []string{"test", "virtual_network_qos_config_ref_uuid"}})
-	//    QosConfigref = append(QosConfigref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_qos_config_ref_uuid1", "to": []string{"test", "virtual_network_qos_config_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "QosConfigRefs", ".", QosConfigref)
-	//
-	//    var RouteTableref []interface{}
-	//    RouteTableref = append(RouteTableref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_route_table_ref_uuid", "to": []string{"test", "virtual_network_route_table_ref_uuid"}})
-	//    RouteTableref = append(RouteTableref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_route_table_ref_uuid1", "to": []string{"test", "virtual_network_route_table_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "RouteTableRefs", ".", RouteTableref)
-	//
-	//    var VirtualNetworkref []interface{}
-	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_virtual_network_ref_uuid", "to": []string{"test", "virtual_network_virtual_network_ref_uuid"}})
-	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_virtual_network_ref_uuid1", "to": []string{"test", "virtual_network_virtual_network_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

@@ -1,0 +1,72 @@
+description: Contrail Storage Node
+extends:
+- base
+- has_status
+id: contrail_storage_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this storage node."
+      presence: "optional"
+parent: contrail_cluster
+plural: contrail_storage_nodes
+prefix: /
+schema:
+  properties:
+    journal_drives:
+      default: sdf
+      description: SSD Drives to use for journals
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Journal Drives
+      type: string
+      view:
+      - create
+      - detail
+    osd_drives:
+      default: sdc,sdd,sde
+      description: Drives to use for cloud storage
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Stoage Drives
+      type: string
+      view:
+      - create
+      - detail
+    storage_access_bond_interface_members:
+      default: ens8f0,ens8f1
+      description: Storage Management  Bond Interface Members
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Storage Access  Bond Interface Members
+      type: string
+      view:
+      - detail
+    storage_backend_bond_interface_members:
+      default: ens9f0,ens9f1
+      description: Storage Backend Bond Interface Members
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Storage Backend Bond Interface Members
+      type: string
+      view:
+      - detail
+  required: []
+  type: object
+singular: contrail_storage_node
+title: Contrail Storage Node
+type: ""

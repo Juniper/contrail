@@ -46,38 +46,38 @@ var LogicalRouterFields = []string{
 // LogicalRouterRefFields is db reference fields for LogicalRouter
 var LogicalRouterRefFields = map[string][]string{
 
-	"bgpvpn": []string{
-		// <schema.Schema Value>
-
-	},
-
 	"route_target": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"virtual_machine_interface": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"service_instance": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"route_table": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"virtual_network": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"physical_router": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
+
+	},
+
+	"bgpvpn": []string{
+	// <schema.Schema Value>
 
 	},
 }
@@ -91,10 +91,6 @@ var LogicalRouterParents = []string{
 	"project",
 }
 
-const insertLogicalRouterPhysicalRouterQuery = "insert into `ref_logical_router_physical_router` (`from`, `to` ) values (?, ?);"
-
-const insertLogicalRouterBGPVPNQuery = "insert into `ref_logical_router_bgpvpn` (`from`, `to` ) values (?, ?);"
-
 const insertLogicalRouterRouteTargetQuery = "insert into `ref_logical_router_route_target` (`from`, `to` ) values (?, ?);"
 
 const insertLogicalRouterVirtualMachineInterfaceQuery = "insert into `ref_logical_router_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
@@ -104,6 +100,10 @@ const insertLogicalRouterServiceInstanceQuery = "insert into `ref_logical_router
 const insertLogicalRouterRouteTableQuery = "insert into `ref_logical_router_route_table` (`from`, `to` ) values (?, ?);"
 
 const insertLogicalRouterVirtualNetworkQuery = "insert into `ref_logical_router_virtual_network` (`from`, `to` ) values (?, ?);"
+
+const insertLogicalRouterPhysicalRouterQuery = "insert into `ref_logical_router_physical_router` (`from`, `to` ) values (?, ?);"
+
+const insertLogicalRouterBGPVPNQuery = "insert into `ref_logical_router_bgpvpn` (`from`, `to` ) values (?, ?);"
 
 // CreateLogicalRouter inserts LogicalRouter to DB
 func CreateLogicalRouter(
@@ -146,32 +146,6 @@ func CreateLogicalRouter(
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
-	}
-
-	stmtRouteTableRef, err := tx.Prepare(insertLogicalRouterRouteTableQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing RouteTableRefs create statement failed")
-	}
-	defer stmtRouteTableRef.Close()
-	for _, ref := range model.RouteTableRefs {
-
-		_, err = stmtRouteTableRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "RouteTableRefs create failed")
-		}
-	}
-
-	stmtVirtualNetworkRef, err := tx.Prepare(insertLogicalRouterVirtualNetworkQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
-	}
-	defer stmtVirtualNetworkRef.Close()
-	for _, ref := range model.VirtualNetworkRefs {
-
-		_, err = stmtVirtualNetworkRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs create failed")
-		}
 	}
 
 	stmtPhysicalRouterRef, err := tx.Prepare(insertLogicalRouterPhysicalRouterQuery)
@@ -236,6 +210,32 @@ func CreateLogicalRouter(
 		_, err = stmtServiceInstanceRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceInstanceRefs create failed")
+		}
+	}
+
+	stmtRouteTableRef, err := tx.Prepare(insertLogicalRouterRouteTableQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing RouteTableRefs create statement failed")
+	}
+	defer stmtRouteTableRef.Close()
+	for _, ref := range model.RouteTableRefs {
+
+		_, err = stmtRouteTableRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "RouteTableRefs create failed")
+		}
+	}
+
+	stmtVirtualNetworkRef, err := tx.Prepare(insertLogicalRouterVirtualNetworkQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
+	}
+	defer stmtVirtualNetworkRef.Close()
+	for _, ref := range model.VirtualNetworkRefs {
+
+		_, err = stmtVirtualNetworkRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs create failed")
 		}
 	}
 
@@ -399,6 +399,46 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 
 	}
 
+	if value, ok := values["ref_route_target"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterRouteTargetRef{}
+			referenceModel.UUID = uuid
+			m.RouteTargetRefs = append(m.RouteTargetRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_machine_interface"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterVirtualMachineInterfaceRef{}
+			referenceModel.UUID = uuid
+			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_service_instance"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -495,46 +535,6 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 			referenceModel := &models.LogicalRouterBGPVPNRef{}
 			referenceModel.UUID = uuid
 			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_route_target"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LogicalRouterRouteTargetRef{}
-			referenceModel.UUID = uuid
-			m.RouteTargetRefs = append(m.RouteTargetRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_virtual_machine_interface"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LogicalRouterVirtualMachineInterfaceRef{}
-			referenceModel.UUID = uuid
-			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
 
 		}
 	}

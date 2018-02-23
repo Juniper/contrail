@@ -472,11 +472,11 @@ rpc CreateVirtualRouter (github.com.Juniper.contrail.pkg.generated.models.Create
 rpc UpdateVirtualRouter (github.com.Juniper.contrail.pkg.generated.models.UpdateVirtualRouterRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateVirtualRouterResponse);
 rpc DeleteVirtualRouter (github.com.Juniper.contrail.pkg.generated.models.DeleteVirtualRouterRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteVirtualRouterResponse);
 
-rpc GetAppformixNodeRole (github.com.Juniper.contrail.pkg.generated.models.GetAppformixNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetAppformixNodeRoleResponse);
-rpc ListAppformixNodeRole (github.com.Juniper.contrail.pkg.generated.models.ListAppformixNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListAppformixNodeRoleResponse);
-rpc CreateAppformixNodeRole (github.com.Juniper.contrail.pkg.generated.models.CreateAppformixNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateAppformixNodeRoleResponse);
-rpc UpdateAppformixNodeRole (github.com.Juniper.contrail.pkg.generated.models.UpdateAppformixNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateAppformixNodeRoleResponse);
-rpc DeleteAppformixNodeRole (github.com.Juniper.contrail.pkg.generated.models.DeleteAppformixNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteAppformixNodeRoleResponse);
+rpc GetAppformixNode (github.com.Juniper.contrail.pkg.generated.models.GetAppformixNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetAppformixNodeResponse);
+rpc ListAppformixNode (github.com.Juniper.contrail.pkg.generated.models.ListAppformixNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListAppformixNodeResponse);
+rpc CreateAppformixNode (github.com.Juniper.contrail.pkg.generated.models.CreateAppformixNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateAppformixNodeResponse);
+rpc UpdateAppformixNode (github.com.Juniper.contrail.pkg.generated.models.UpdateAppformixNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateAppformixNodeResponse);
+rpc DeleteAppformixNode (github.com.Juniper.contrail.pkg.generated.models.DeleteAppformixNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteAppformixNodeResponse);
 
 rpc GetBaremetalNode (github.com.Juniper.contrail.pkg.generated.models.GetBaremetalNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetBaremetalNodeResponse);
 rpc ListBaremetalNode (github.com.Juniper.contrail.pkg.generated.models.ListBaremetalNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListBaremetalNodeResponse);
@@ -490,11 +490,11 @@ rpc CreateBaremetalPort (github.com.Juniper.contrail.pkg.generated.models.Create
 rpc UpdateBaremetalPort (github.com.Juniper.contrail.pkg.generated.models.UpdateBaremetalPortRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateBaremetalPortResponse);
 rpc DeleteBaremetalPort (github.com.Juniper.contrail.pkg.generated.models.DeleteBaremetalPortRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteBaremetalPortResponse);
 
-rpc GetContrailAnalyticsDatabaseNodeRole (github.com.Juniper.contrail.pkg.generated.models.GetContrailAnalyticsDatabaseNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetContrailAnalyticsDatabaseNodeRoleResponse);
-rpc ListContrailAnalyticsDatabaseNodeRole (github.com.Juniper.contrail.pkg.generated.models.ListContrailAnalyticsDatabaseNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListContrailAnalyticsDatabaseNodeRoleResponse);
-rpc CreateContrailAnalyticsDatabaseNodeRole (github.com.Juniper.contrail.pkg.generated.models.CreateContrailAnalyticsDatabaseNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateContrailAnalyticsDatabaseNodeRoleResponse);
-rpc UpdateContrailAnalyticsDatabaseNodeRole (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailAnalyticsDatabaseNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailAnalyticsDatabaseNodeRoleResponse);
-rpc DeleteContrailAnalyticsDatabaseNodeRole (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailAnalyticsDatabaseNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailAnalyticsDatabaseNodeRoleResponse);
+rpc GetContrailAnalyticsDatabaseNode (github.com.Juniper.contrail.pkg.generated.models.GetContrailAnalyticsDatabaseNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetContrailAnalyticsDatabaseNodeResponse);
+rpc ListContrailAnalyticsDatabaseNode (github.com.Juniper.contrail.pkg.generated.models.ListContrailAnalyticsDatabaseNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListContrailAnalyticsDatabaseNodeResponse);
+rpc CreateContrailAnalyticsDatabaseNode (github.com.Juniper.contrail.pkg.generated.models.CreateContrailAnalyticsDatabaseNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateContrailAnalyticsDatabaseNodeResponse);
+rpc UpdateContrailAnalyticsDatabaseNode (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailAnalyticsDatabaseNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailAnalyticsDatabaseNodeResponse);
+rpc DeleteContrailAnalyticsDatabaseNode (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailAnalyticsDatabaseNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailAnalyticsDatabaseNodeResponse);
 
 rpc GetContrailAnalyticsNode (github.com.Juniper.contrail.pkg.generated.models.GetContrailAnalyticsNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetContrailAnalyticsNodeResponse);
 rpc ListContrailAnalyticsNode (github.com.Juniper.contrail.pkg.generated.models.ListContrailAnalyticsNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListContrailAnalyticsNodeResponse);
@@ -508,17 +508,41 @@ rpc CreateContrailCluster (github.com.Juniper.contrail.pkg.generated.models.Crea
 rpc UpdateContrailCluster (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailClusterRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailClusterResponse);
 rpc DeleteContrailCluster (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailClusterRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailClusterResponse);
 
-rpc GetContrailControllerNodeRole (github.com.Juniper.contrail.pkg.generated.models.GetContrailControllerNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetContrailControllerNodeRoleResponse);
-rpc ListContrailControllerNodeRole (github.com.Juniper.contrail.pkg.generated.models.ListContrailControllerNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListContrailControllerNodeRoleResponse);
-rpc CreateContrailControllerNodeRole (github.com.Juniper.contrail.pkg.generated.models.CreateContrailControllerNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateContrailControllerNodeRoleResponse);
-rpc UpdateContrailControllerNodeRole (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailControllerNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailControllerNodeRoleResponse);
-rpc DeleteContrailControllerNodeRole (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailControllerNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailControllerNodeRoleResponse);
+rpc GetContrailConfigDatabaseNode (github.com.Juniper.contrail.pkg.generated.models.GetContrailConfigDatabaseNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetContrailConfigDatabaseNodeResponse);
+rpc ListContrailConfigDatabaseNode (github.com.Juniper.contrail.pkg.generated.models.ListContrailConfigDatabaseNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListContrailConfigDatabaseNodeResponse);
+rpc CreateContrailConfigDatabaseNode (github.com.Juniper.contrail.pkg.generated.models.CreateContrailConfigDatabaseNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateContrailConfigDatabaseNodeResponse);
+rpc UpdateContrailConfigDatabaseNode (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailConfigDatabaseNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailConfigDatabaseNodeResponse);
+rpc DeleteContrailConfigDatabaseNode (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailConfigDatabaseNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailConfigDatabaseNodeResponse);
 
-rpc GetControllerNodeRole (github.com.Juniper.contrail.pkg.generated.models.GetControllerNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetControllerNodeRoleResponse);
-rpc ListControllerNodeRole (github.com.Juniper.contrail.pkg.generated.models.ListControllerNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListControllerNodeRoleResponse);
-rpc CreateControllerNodeRole (github.com.Juniper.contrail.pkg.generated.models.CreateControllerNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateControllerNodeRoleResponse);
-rpc UpdateControllerNodeRole (github.com.Juniper.contrail.pkg.generated.models.UpdateControllerNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateControllerNodeRoleResponse);
-rpc DeleteControllerNodeRole (github.com.Juniper.contrail.pkg.generated.models.DeleteControllerNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteControllerNodeRoleResponse);
+rpc GetContrailConfigNode (github.com.Juniper.contrail.pkg.generated.models.GetContrailConfigNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetContrailConfigNodeResponse);
+rpc ListContrailConfigNode (github.com.Juniper.contrail.pkg.generated.models.ListContrailConfigNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListContrailConfigNodeResponse);
+rpc CreateContrailConfigNode (github.com.Juniper.contrail.pkg.generated.models.CreateContrailConfigNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateContrailConfigNodeResponse);
+rpc UpdateContrailConfigNode (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailConfigNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailConfigNodeResponse);
+rpc DeleteContrailConfigNode (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailConfigNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailConfigNodeResponse);
+
+rpc GetContrailControlNode (github.com.Juniper.contrail.pkg.generated.models.GetContrailControlNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetContrailControlNodeResponse);
+rpc ListContrailControlNode (github.com.Juniper.contrail.pkg.generated.models.ListContrailControlNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListContrailControlNodeResponse);
+rpc CreateContrailControlNode (github.com.Juniper.contrail.pkg.generated.models.CreateContrailControlNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateContrailControlNodeResponse);
+rpc UpdateContrailControlNode (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailControlNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailControlNodeResponse);
+rpc DeleteContrailControlNode (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailControlNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailControlNodeResponse);
+
+rpc GetContrailStorageNode (github.com.Juniper.contrail.pkg.generated.models.GetContrailStorageNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetContrailStorageNodeResponse);
+rpc ListContrailStorageNode (github.com.Juniper.contrail.pkg.generated.models.ListContrailStorageNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListContrailStorageNodeResponse);
+rpc CreateContrailStorageNode (github.com.Juniper.contrail.pkg.generated.models.CreateContrailStorageNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateContrailStorageNodeResponse);
+rpc UpdateContrailStorageNode (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailStorageNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailStorageNodeResponse);
+rpc DeleteContrailStorageNode (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailStorageNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailStorageNodeResponse);
+
+rpc GetContrailVrouterNode (github.com.Juniper.contrail.pkg.generated.models.GetContrailVrouterNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetContrailVrouterNodeResponse);
+rpc ListContrailVrouterNode (github.com.Juniper.contrail.pkg.generated.models.ListContrailVrouterNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListContrailVrouterNodeResponse);
+rpc CreateContrailVrouterNode (github.com.Juniper.contrail.pkg.generated.models.CreateContrailVrouterNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateContrailVrouterNodeResponse);
+rpc UpdateContrailVrouterNode (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailVrouterNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailVrouterNodeResponse);
+rpc DeleteContrailVrouterNode (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailVrouterNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailVrouterNodeResponse);
+
+rpc GetContrailControllerNode (github.com.Juniper.contrail.pkg.generated.models.GetContrailControllerNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetContrailControllerNodeResponse);
+rpc ListContrailControllerNode (github.com.Juniper.contrail.pkg.generated.models.ListContrailControllerNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListContrailControllerNodeResponse);
+rpc CreateContrailControllerNode (github.com.Juniper.contrail.pkg.generated.models.CreateContrailControllerNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateContrailControllerNodeResponse);
+rpc UpdateContrailControllerNode (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailControllerNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateContrailControllerNodeResponse);
+rpc DeleteContrailControllerNode (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailControllerNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteContrailControllerNodeResponse);
 
 rpc GetDashboard (github.com.Juniper.contrail.pkg.generated.models.GetDashboardRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetDashboardResponse);
 rpc ListDashboard (github.com.Juniper.contrail.pkg.generated.models.ListDashboardRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListDashboardResponse);
@@ -544,11 +568,11 @@ rpc CreateKeypair (github.com.Juniper.contrail.pkg.generated.models.CreateKeypai
 rpc UpdateKeypair (github.com.Juniper.contrail.pkg.generated.models.UpdateKeypairRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateKeypairResponse);
 rpc DeleteKeypair (github.com.Juniper.contrail.pkg.generated.models.DeleteKeypairRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteKeypairResponse);
 
-rpc GetKubernetesCluster (github.com.Juniper.contrail.pkg.generated.models.GetKubernetesClusterRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetKubernetesClusterResponse);
-rpc ListKubernetesCluster (github.com.Juniper.contrail.pkg.generated.models.ListKubernetesClusterRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListKubernetesClusterResponse);
-rpc CreateKubernetesCluster (github.com.Juniper.contrail.pkg.generated.models.CreateKubernetesClusterRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateKubernetesClusterResponse);
-rpc UpdateKubernetesCluster (github.com.Juniper.contrail.pkg.generated.models.UpdateKubernetesClusterRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateKubernetesClusterResponse);
-rpc DeleteKubernetesCluster (github.com.Juniper.contrail.pkg.generated.models.DeleteKubernetesClusterRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteKubernetesClusterResponse);
+rpc GetKubernetesMasterNode (github.com.Juniper.contrail.pkg.generated.models.GetKubernetesMasterNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetKubernetesMasterNodeResponse);
+rpc ListKubernetesMasterNode (github.com.Juniper.contrail.pkg.generated.models.ListKubernetesMasterNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListKubernetesMasterNodeResponse);
+rpc CreateKubernetesMasterNode (github.com.Juniper.contrail.pkg.generated.models.CreateKubernetesMasterNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateKubernetesMasterNodeResponse);
+rpc UpdateKubernetesMasterNode (github.com.Juniper.contrail.pkg.generated.models.UpdateKubernetesMasterNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateKubernetesMasterNodeResponse);
+rpc DeleteKubernetesMasterNode (github.com.Juniper.contrail.pkg.generated.models.DeleteKubernetesMasterNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteKubernetesMasterNodeResponse);
 
 rpc GetKubernetesNode (github.com.Juniper.contrail.pkg.generated.models.GetKubernetesNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetKubernetesNodeResponse);
 rpc ListKubernetesNode (github.com.Juniper.contrail.pkg.generated.models.ListKubernetesNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListKubernetesNodeResponse);
@@ -567,24 +591,6 @@ rpc ListNode (github.com.Juniper.contrail.pkg.generated.models.ListNodeRequest) 
 rpc CreateNode (github.com.Juniper.contrail.pkg.generated.models.CreateNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateNodeResponse);
 rpc UpdateNode (github.com.Juniper.contrail.pkg.generated.models.UpdateNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateNodeResponse);
 rpc DeleteNode (github.com.Juniper.contrail.pkg.generated.models.DeleteNodeRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteNodeResponse);
-
-rpc GetOpenstackCluster (github.com.Juniper.contrail.pkg.generated.models.GetOpenstackClusterRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetOpenstackClusterResponse);
-rpc ListOpenstackCluster (github.com.Juniper.contrail.pkg.generated.models.ListOpenstackClusterRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListOpenstackClusterResponse);
-rpc CreateOpenstackCluster (github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackClusterRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackClusterResponse);
-rpc UpdateOpenstackCluster (github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackClusterRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackClusterResponse);
-rpc DeleteOpenstackCluster (github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackClusterRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackClusterResponse);
-
-rpc GetOpenstackComputeNodeRole (github.com.Juniper.contrail.pkg.generated.models.GetOpenstackComputeNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetOpenstackComputeNodeRoleResponse);
-rpc ListOpenstackComputeNodeRole (github.com.Juniper.contrail.pkg.generated.models.ListOpenstackComputeNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListOpenstackComputeNodeRoleResponse);
-rpc CreateOpenstackComputeNodeRole (github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackComputeNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackComputeNodeRoleResponse);
-rpc UpdateOpenstackComputeNodeRole (github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackComputeNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackComputeNodeRoleResponse);
-rpc DeleteOpenstackComputeNodeRole (github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackComputeNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackComputeNodeRoleResponse);
-
-rpc GetOpenstackStorageNodeRole (github.com.Juniper.contrail.pkg.generated.models.GetOpenstackStorageNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetOpenstackStorageNodeRoleResponse);
-rpc ListOpenstackStorageNodeRole (github.com.Juniper.contrail.pkg.generated.models.ListOpenstackStorageNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListOpenstackStorageNodeRoleResponse);
-rpc CreateOpenstackStorageNodeRole (github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackStorageNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackStorageNodeRoleResponse);
-rpc UpdateOpenstackStorageNodeRole (github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackStorageNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackStorageNodeRoleResponse);
-rpc DeleteOpenstackStorageNodeRole (github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackStorageNodeRoleRequest) returns (github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackStorageNodeRoleResponse);
 
 rpc GetServer (github.com.Juniper.contrail.pkg.generated.models.GetServerRequest) returns (github.com.Juniper.contrail.pkg.generated.models.GetServerResponse);
 rpc ListServer (github.com.Juniper.contrail.pkg.generated.models.ListServerRequest) returns (github.com.Juniper.contrail.pkg.generated.models.ListServerResponse);

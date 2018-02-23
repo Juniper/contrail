@@ -23,6 +23,7 @@ func TestPeeringPolicy(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "peering_policy")
+	// mutexProject := common.UseTable(db, "peering_policy")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

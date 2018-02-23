@@ -23,6 +23,7 @@ func TestOsImage(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "os_image")
+	// mutexProject := common.UseTable(db, "os_image")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

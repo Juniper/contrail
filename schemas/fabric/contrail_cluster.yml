@@ -2,6 +2,7 @@ description: Contrail Cluster
 extends:
 - base
 - ownable
+- has_status
 id: contrail_cluster
 metadata:
   category: cluster
@@ -10,6 +11,67 @@ plural: contrail_clusters
 prefix: /
 schema:
   properties:
+    provisioner_type:
+      default: ansible
+      description: Tool to be used to provision the cluster
+      nullable: false
+      enum:
+      - ansible
+      - helm
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Provisioning Tool
+      type: string
+      view:
+      - create
+      - detail
+    orchestrator:
+      default: ""
+      description: Orchestrator to use with contrrail
+      enum:
+      - openstack
+      - kubernetes
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Orchestrator
+      type: string
+      view:
+      - create
+      - detail
+    kubernetes:
+      default: ""
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Kubernetes
+      type: string
+    kubernetes_master:
+      default: ""
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Kubernetes Master
+      type: string
+    openstack:
+      default: ""
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Openstack
+      type: string
     config_audit_ttl:
       default: "2160"
       description: Configuration Audit Retention Time in hours
@@ -23,6 +85,36 @@ schema:
       view:
       - create
       - detail
+    contrail_config:
+      default: ""
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Contrail Config
+      type: string
+    contrail_configdb:
+      default: ""
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Contrail Config Database
+      type: string
+    contrail_control:
+      default: ""
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Contrail Control
+      type: string
     contrail_webui:
       default: ""
       description: ""
@@ -32,6 +124,36 @@ schema:
       - update
       sql: ""
       title: Contrail WebUI
+      type: string
+    contrail_analytics:
+      default: ""
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Contrail Analytics
+      type: string
+    contrail_analyticsdb:
+      default: ""
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Contrail Analytics Database
+      type: string
+    contrail_vrouter:
+      default: ""
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Contrail Vrouter
       type: string
     data_ttl:
       default: "48"

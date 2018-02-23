@@ -1,11 +1,15 @@
 description: Contrail Analytics Node
 extends:
 - base
-- has_node
 - has_status
 id: contrail_analytics_node
 metadata:
   category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this analytics node."
+      presence: "optional"
 parent: contrail_cluster
 plural: contrail_analytics_nodes
 prefix: /

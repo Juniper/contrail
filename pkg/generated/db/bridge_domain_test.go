@@ -23,6 +23,7 @@ func TestBridgeDomain(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "bridge_domain")
+	// mutexProject := common.UseTable(db, "bridge_domain")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

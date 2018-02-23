@@ -23,6 +23,7 @@ func TestNode(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "node")
+	// mutexProject := common.UseTable(db, "node")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -75,18 +76,6 @@ func TestNode(t *testing.T) {
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".PrivatePowerManagementUsername", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".PrivatePowerManagementPassword", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".PrivatePowerManagementIP", ".", "test")
-	//
-	//
-	//
 	//    common.SetValueByPath(updateMap, ".PrivateMachineState", ".", "test")
 	//
 	//
@@ -130,6 +119,18 @@ func TestNode(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, ".MacAddress", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".IpmiUsername", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".IpmiPassword", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".IpmiAddress", ".", "test")
 	//
 	//
 	//

@@ -23,6 +23,7 @@ func TestDatabaseNode(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "database_node")
+	// mutexProject := common.UseTable(db, "database_node")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

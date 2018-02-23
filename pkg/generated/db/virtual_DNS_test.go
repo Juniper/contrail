@@ -23,6 +23,7 @@ func TestVirtualDNS(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "virtual_DNS")
+	// mutexProject := common.UseTable(db, "virtual_DNS")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

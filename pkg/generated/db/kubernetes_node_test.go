@@ -23,6 +23,7 @@ func TestKubernetesNode(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "kubernetes_node")
+	// mutexProject := common.UseTable(db, "kubernetes_node")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -37,6 +38,37 @@ func TestKubernetesNode(t *testing.T) {
 	var err error
 
 	// Create referred objects
+
+	var Nodecreateref []*models.KubernetesNodeNodeRef
+	var NoderefModel *models.Node
+	NoderefModel = models.MakeNode()
+	NoderefModel.UUID = "kubernetes_node_node_ref_uuid"
+	NoderefModel.FQName = []string{"test", "kubernetes_node_node_ref_uuid"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateNode(ctx, tx, &models.CreateNodeRequest{
+			Node: NoderefModel,
+		})
+	})
+	NoderefModel.UUID = "kubernetes_node_node_ref_uuid1"
+	NoderefModel.FQName = []string{"test", "kubernetes_node_node_ref_uuid1"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateNode(ctx, tx, &models.CreateNodeRequest{
+			Node: NoderefModel,
+		})
+	})
+	NoderefModel.UUID = "kubernetes_node_node_ref_uuid2"
+	NoderefModel.FQName = []string{"test", "kubernetes_node_node_ref_uuid2"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateNode(ctx, tx, &models.CreateNodeRequest{
+			Node: NoderefModel,
+		})
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	Nodecreateref = append(Nodecreateref, &models.KubernetesNodeNodeRef{UUID: "kubernetes_node_node_ref_uuid", To: []string{"test", "kubernetes_node_node_ref_uuid"}})
+	Nodecreateref = append(Nodecreateref, &models.KubernetesNodeNodeRef{UUID: "kubernetes_node_node_ref_uuid2", To: []string{"test", "kubernetes_node_node_ref_uuid2"}})
+	model.NodeRefs = Nodecreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -186,6 +218,14 @@ func TestKubernetesNode(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
+	//    var Noderef []interface{}
+	//    Noderef = append(Noderef, map[string]interface{}{"operation":"delete", "uuid":"kubernetes_node_node_ref_uuid", "to": []string{"test", "kubernetes_node_node_ref_uuid"}})
+	//    Noderef = append(Noderef, map[string]interface{}{"operation":"add", "uuid":"kubernetes_node_node_ref_uuid1", "to": []string{"test", "kubernetes_node_node_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "NodeRefs", ".", Noderef)
+	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		return CreateKubernetesNode(ctx, tx,
@@ -205,6 +245,47 @@ func TestKubernetesNode(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_kubernetes_node_node` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing NodeRefs delete statement failed")
+		}
+		_, err = stmt.Exec("kubernetes_node_dummy_uuid", "kubernetes_node_node_ref_uuid")
+		_, err = stmt.Exec("kubernetes_node_dummy_uuid", "kubernetes_node_node_ref_uuid1")
+		_, err = stmt.Exec("kubernetes_node_dummy_uuid", "kubernetes_node_node_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "NodeRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteNode(ctx, tx,
+			&models.DeleteNodeRequest{
+				ID: "kubernetes_node_node_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref kubernetes_node_node_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteNode(ctx, tx,
+			&models.DeleteNodeRequest{
+				ID: "kubernetes_node_node_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref kubernetes_node_node_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteNode(
+			ctx,
+			tx,
+			&models.DeleteNodeRequest{
+				ID: "kubernetes_node_node_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref kubernetes_node_node_ref_uuid2 failed", err)
+	}
 
 	//Delete the project created for sharing
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

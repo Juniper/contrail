@@ -67,7 +67,7 @@ var GlobalSystemConfigFields = []string{
 var GlobalSystemConfigRefFields = map[string][]string{
 
 	"bgp_router": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }

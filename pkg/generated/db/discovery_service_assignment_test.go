@@ -23,6 +23,7 @@ func TestDiscoveryServiceAssignment(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "discovery_service_assignment")
+	// mutexProject := common.UseTable(db, "discovery_service_assignment")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

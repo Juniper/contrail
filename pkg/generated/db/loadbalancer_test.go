@@ -23,6 +23,7 @@ func TestLoadbalancer(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "loadbalancer")
+	// mutexProject := common.UseTable(db, "loadbalancer")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -37,37 +38,6 @@ func TestLoadbalancer(t *testing.T) {
 	var err error
 
 	// Create referred objects
-
-	var ServiceApplianceSetcreateref []*models.LoadbalancerServiceApplianceSetRef
-	var ServiceApplianceSetrefModel *models.ServiceApplianceSet
-	ServiceApplianceSetrefModel = models.MakeServiceApplianceSet()
-	ServiceApplianceSetrefModel.UUID = "loadbalancer_service_appliance_set_ref_uuid"
-	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_service_appliance_set_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceApplianceSet(ctx, tx, &models.CreateServiceApplianceSetRequest{
-			ServiceApplianceSet: ServiceApplianceSetrefModel,
-		})
-	})
-	ServiceApplianceSetrefModel.UUID = "loadbalancer_service_appliance_set_ref_uuid1"
-	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_service_appliance_set_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceApplianceSet(ctx, tx, &models.CreateServiceApplianceSetRequest{
-			ServiceApplianceSet: ServiceApplianceSetrefModel,
-		})
-	})
-	ServiceApplianceSetrefModel.UUID = "loadbalancer_service_appliance_set_ref_uuid2"
-	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_service_appliance_set_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceApplianceSet(ctx, tx, &models.CreateServiceApplianceSetRequest{
-			ServiceApplianceSet: ServiceApplianceSetrefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	ServiceApplianceSetcreateref = append(ServiceApplianceSetcreateref, &models.LoadbalancerServiceApplianceSetRef{UUID: "loadbalancer_service_appliance_set_ref_uuid", To: []string{"test", "loadbalancer_service_appliance_set_ref_uuid"}})
-	ServiceApplianceSetcreateref = append(ServiceApplianceSetcreateref, &models.LoadbalancerServiceApplianceSetRef{UUID: "loadbalancer_service_appliance_set_ref_uuid2", To: []string{"test", "loadbalancer_service_appliance_set_ref_uuid2"}})
-	model.ServiceApplianceSetRefs = ServiceApplianceSetcreateref
 
 	var VirtualMachineInterfacecreateref []*models.LoadbalancerVirtualMachineInterfaceRef
 	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
@@ -130,6 +100,37 @@ func TestLoadbalancer(t *testing.T) {
 	ServiceInstancecreateref = append(ServiceInstancecreateref, &models.LoadbalancerServiceInstanceRef{UUID: "loadbalancer_service_instance_ref_uuid", To: []string{"test", "loadbalancer_service_instance_ref_uuid"}})
 	ServiceInstancecreateref = append(ServiceInstancecreateref, &models.LoadbalancerServiceInstanceRef{UUID: "loadbalancer_service_instance_ref_uuid2", To: []string{"test", "loadbalancer_service_instance_ref_uuid2"}})
 	model.ServiceInstanceRefs = ServiceInstancecreateref
+
+	var ServiceApplianceSetcreateref []*models.LoadbalancerServiceApplianceSetRef
+	var ServiceApplianceSetrefModel *models.ServiceApplianceSet
+	ServiceApplianceSetrefModel = models.MakeServiceApplianceSet()
+	ServiceApplianceSetrefModel.UUID = "loadbalancer_service_appliance_set_ref_uuid"
+	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_service_appliance_set_ref_uuid"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateServiceApplianceSet(ctx, tx, &models.CreateServiceApplianceSetRequest{
+			ServiceApplianceSet: ServiceApplianceSetrefModel,
+		})
+	})
+	ServiceApplianceSetrefModel.UUID = "loadbalancer_service_appliance_set_ref_uuid1"
+	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_service_appliance_set_ref_uuid1"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateServiceApplianceSet(ctx, tx, &models.CreateServiceApplianceSetRequest{
+			ServiceApplianceSet: ServiceApplianceSetrefModel,
+		})
+	})
+	ServiceApplianceSetrefModel.UUID = "loadbalancer_service_appliance_set_ref_uuid2"
+	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_service_appliance_set_ref_uuid2"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateServiceApplianceSet(ctx, tx, &models.CreateServiceApplianceSetRequest{
+			ServiceApplianceSet: ServiceApplianceSetrefModel,
+		})
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	ServiceApplianceSetcreateref = append(ServiceApplianceSetcreateref, &models.LoadbalancerServiceApplianceSetRef{UUID: "loadbalancer_service_appliance_set_ref_uuid", To: []string{"test", "loadbalancer_service_appliance_set_ref_uuid"}})
+	ServiceApplianceSetcreateref = append(ServiceApplianceSetcreateref, &models.LoadbalancerServiceApplianceSetRef{UUID: "loadbalancer_service_appliance_set_ref_uuid2", To: []string{"test", "loadbalancer_service_appliance_set_ref_uuid2"}})
+	model.ServiceApplianceSetRefs = ServiceApplianceSetcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -287,6 +288,14 @@ func TestLoadbalancer(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
+	//    var ServiceApplianceSetref []interface{}
+	//    ServiceApplianceSetref = append(ServiceApplianceSetref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_service_appliance_set_ref_uuid", "to": []string{"test", "loadbalancer_service_appliance_set_ref_uuid"}})
+	//    ServiceApplianceSetref = append(ServiceApplianceSetref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_service_appliance_set_ref_uuid1", "to": []string{"test", "loadbalancer_service_appliance_set_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "ServiceApplianceSetRefs", ".", ServiceApplianceSetref)
+	//
 	//    var VirtualMachineInterfaceref []interface{}
 	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_virtual_machine_interface_ref_uuid", "to": []string{"test", "loadbalancer_virtual_machine_interface_ref_uuid"}})
 	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_virtual_machine_interface_ref_uuid1", "to": []string{"test", "loadbalancer_virtual_machine_interface_ref_uuid1"}})
@@ -302,14 +311,6 @@ func TestLoadbalancer(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "ServiceInstanceRefs", ".", ServiceInstanceref)
-	//
-	//    var ServiceApplianceSetref []interface{}
-	//    ServiceApplianceSetref = append(ServiceApplianceSetref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_service_appliance_set_ref_uuid", "to": []string{"test", "loadbalancer_service_appliance_set_ref_uuid"}})
-	//    ServiceApplianceSetref = append(ServiceApplianceSetref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_service_appliance_set_ref_uuid1", "to": []string{"test", "loadbalancer_service_appliance_set_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ServiceApplianceSetRefs", ".", ServiceApplianceSetref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
@@ -330,47 +331,6 @@ func TestLoadbalancer(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_loadbalancer_service_instance` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing ServiceInstanceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_service_instance_ref_uuid")
-		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_service_instance_ref_uuid1")
-		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_service_instance_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "ServiceInstanceRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceInstance(ctx, tx,
-			&models.DeleteServiceInstanceRequest{
-				ID: "loadbalancer_service_instance_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_service_instance_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceInstance(ctx, tx,
-			&models.DeleteServiceInstanceRequest{
-				ID: "loadbalancer_service_instance_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_service_instance_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceInstance(
-			ctx,
-			tx,
-			&models.DeleteServiceInstanceRequest{
-				ID: "loadbalancer_service_instance_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_service_instance_ref_uuid2 failed", err)
-	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		stmt, err := tx.Prepare("delete from `ref_loadbalancer_service_appliance_set` where `from` = ? AND `to` = ?;")
@@ -452,6 +412,47 @@ func TestLoadbalancer(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("delete ref loadbalancer_virtual_machine_interface_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_loadbalancer_service_instance` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing ServiceInstanceRefs delete statement failed")
+		}
+		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_service_instance_ref_uuid")
+		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_service_instance_ref_uuid1")
+		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_service_instance_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "ServiceInstanceRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteServiceInstance(ctx, tx,
+			&models.DeleteServiceInstanceRequest{
+				ID: "loadbalancer_service_instance_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref loadbalancer_service_instance_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteServiceInstance(ctx, tx,
+			&models.DeleteServiceInstanceRequest{
+				ID: "loadbalancer_service_instance_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref loadbalancer_service_instance_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteServiceInstance(
+			ctx,
+			tx,
+			&models.DeleteServiceInstanceRequest{
+				ID: "loadbalancer_service_instance_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref loadbalancer_service_instance_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

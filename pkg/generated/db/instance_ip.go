@@ -54,28 +54,28 @@ var InstanceIPFields = []string{
 // InstanceIPRefFields is db reference fields for InstanceIP
 var InstanceIPRefFields = map[string][]string{
 
+	"network_ipam": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"virtual_network": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"virtual_machine_interface": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"physical_router": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"virtual_router": []string{
-		// <schema.Schema Value>
-
-	},
-
-	"network_ipam": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }
@@ -118,15 +118,15 @@ var InstanceIPBackRefFields = map[string][]string{
 // InstanceIPParentTypes is possible parents for InstanceIP
 var InstanceIPParents = []string{}
 
+const insertInstanceIPVirtualMachineInterfaceQuery = "insert into `ref_instance_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
+
+const insertInstanceIPPhysicalRouterQuery = "insert into `ref_instance_ip_physical_router` (`from`, `to` ) values (?, ?);"
+
 const insertInstanceIPVirtualRouterQuery = "insert into `ref_instance_ip_virtual_router` (`from`, `to` ) values (?, ?);"
 
 const insertInstanceIPNetworkIpamQuery = "insert into `ref_instance_ip_network_ipam` (`from`, `to` ) values (?, ?);"
 
 const insertInstanceIPVirtualNetworkQuery = "insert into `ref_instance_ip_virtual_network` (`from`, `to` ) values (?, ?);"
-
-const insertInstanceIPVirtualMachineInterfaceQuery = "insert into `ref_instance_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
-
-const insertInstanceIPPhysicalRouterQuery = "insert into `ref_instance_ip_physical_router` (`from`, `to` ) values (?, ?);"
 
 // CreateInstanceIP inserts InstanceIP to DB
 func CreateInstanceIP(
@@ -179,19 +179,6 @@ func CreateInstanceIP(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtPhysicalRouterRef, err := tx.Prepare(insertInstanceIPPhysicalRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing PhysicalRouterRefs create statement failed")
-	}
-	defer stmtPhysicalRouterRef.Close()
-	for _, ref := range model.PhysicalRouterRefs {
-
-		_, err = stmtPhysicalRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "PhysicalRouterRefs create failed")
-		}
-	}
-
 	stmtVirtualRouterRef, err := tx.Prepare(insertInstanceIPVirtualRouterQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing VirtualRouterRefs create statement failed")
@@ -241,6 +228,19 @@ func CreateInstanceIP(
 		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
+	}
+
+	stmtPhysicalRouterRef, err := tx.Prepare(insertInstanceIPPhysicalRouterQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing PhysicalRouterRefs create statement failed")
+	}
+	defer stmtPhysicalRouterRef.Close()
+	for _, ref := range model.PhysicalRouterRefs {
+
+		_, err = stmtPhysicalRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "PhysicalRouterRefs create failed")
 		}
 	}
 

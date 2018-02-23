@@ -23,6 +23,7 @@ func TestLogicalInterface(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "logical_interface")
+	// mutexProject := common.UseTable(db, "logical_interface")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

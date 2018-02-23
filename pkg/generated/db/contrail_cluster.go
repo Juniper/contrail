@@ -13,19 +13,29 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertContrailClusterQuery = "insert into `contrail_cluster` (`uuid`,`statistics_ttl`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`flow_ttl`,`display_name`,`default_vrouter_bond_interface_members`,`default_vrouter_bond_interface`,`default_gateway`,`data_ttl`,`contrail_webui`,`config_audit_ttl`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const insertContrailClusterQuery = "insert into `contrail_cluster` (`uuid`,`statistics_ttl`,`provisioning_state`,`provisioning_start_time`,`provisioning_progress_stage`,`provisioning_progress`,`provisioning_log`,`provisioner_type`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`orchestrator`,`openstack`,`kubernetes_master`,`kubernetes`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`flow_ttl`,`display_name`,`default_vrouter_bond_interface_members`,`default_vrouter_bond_interface`,`default_gateway`,`data_ttl`,`contrail_webui`,`contrail_vrouter`,`contrail_control`,`contrail_configdb`,`contrail_config`,`contrail_analyticsdb`,`contrail_analytics`,`config_audit_ttl`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
 const deleteContrailClusterQuery = "delete from `contrail_cluster` where uuid = ?"
 
 // ContrailClusterFields is db columns for ContrailCluster
 var ContrailClusterFields = []string{
 	"uuid",
 	"statistics_ttl",
+	"provisioning_state",
+	"provisioning_start_time",
+	"provisioning_progress_stage",
+	"provisioning_progress",
+	"provisioning_log",
+	"provisioner_type",
 	"share",
 	"owner_access",
 	"owner",
 	"global_access",
 	"parent_uuid",
 	"parent_type",
+	"orchestrator",
+	"openstack",
+	"kubernetes_master",
+	"kubernetes",
 	"user_visible",
 	"permissions_owner_access",
 	"permissions_owner",
@@ -45,6 +55,12 @@ var ContrailClusterFields = []string{
 	"default_gateway",
 	"data_ttl",
 	"contrail_webui",
+	"contrail_vrouter",
+	"contrail_control",
+	"contrail_configdb",
+	"contrail_config",
+	"contrail_analyticsdb",
+	"contrail_analytics",
 	"config_audit_ttl",
 	"key_value_pair",
 }
@@ -76,12 +92,22 @@ func CreateContrailCluster(
 	}).Debug("create query")
 	_, err = stmt.ExecContext(ctx, string(model.GetUUID()),
 		string(model.GetStatisticsTTL()),
+		string(model.GetProvisioningState()),
+		string(model.GetProvisioningStartTime()),
+		string(model.GetProvisioningProgressStage()),
+		int(model.GetProvisioningProgress()),
+		string(model.GetProvisioningLog()),
+		string(model.GetProvisionerType()),
 		common.MustJSON(model.GetPerms2().GetShare()),
 		int(model.GetPerms2().GetOwnerAccess()),
 		string(model.GetPerms2().GetOwner()),
 		int(model.GetPerms2().GetGlobalAccess()),
 		string(model.GetParentUUID()),
 		string(model.GetParentType()),
+		string(model.GetOrchestrator()),
+		string(model.GetOpenstack()),
+		string(model.GetKubernetesMaster()),
+		string(model.GetKubernetes()),
 		bool(model.GetIDPerms().GetUserVisible()),
 		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
 		string(model.GetIDPerms().GetPermissions().GetOwner()),
@@ -101,6 +127,12 @@ func CreateContrailCluster(
 		string(model.GetDefaultGateway()),
 		string(model.GetDataTTL()),
 		string(model.GetContrailWebui()),
+		string(model.GetContrailVrouter()),
+		string(model.GetContrailControl()),
+		string(model.GetContrailConfigdb()),
+		string(model.GetContrailConfig()),
+		string(model.GetContrailAnalyticsdb()),
+		string(model.GetContrailAnalytics()),
 		string(model.GetConfigAuditTTL()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
@@ -141,6 +173,42 @@ func scanContrailCluster(values map[string]interface{}) (*models.ContrailCluster
 
 	}
 
+	if value, ok := values["provisioning_state"]; ok {
+
+		m.ProvisioningState = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["provisioning_start_time"]; ok {
+
+		m.ProvisioningStartTime = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["provisioning_progress_stage"]; ok {
+
+		m.ProvisioningProgressStage = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["provisioning_progress"]; ok {
+
+		m.ProvisioningProgress = schema.InterfaceToInt64(value)
+
+	}
+
+	if value, ok := values["provisioning_log"]; ok {
+
+		m.ProvisioningLog = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["provisioner_type"]; ok {
+
+		m.ProvisionerType = schema.InterfaceToString(value)
+
+	}
+
 	if value, ok := values["share"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Perms2.Share)
@@ -174,6 +242,30 @@ func scanContrailCluster(values map[string]interface{}) (*models.ContrailCluster
 	if value, ok := values["parent_type"]; ok {
 
 		m.ParentType = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["orchestrator"]; ok {
+
+		m.Orchestrator = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["openstack"]; ok {
+
+		m.Openstack = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["kubernetes_master"]; ok {
+
+		m.KubernetesMaster = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["kubernetes"]; ok {
+
+		m.Kubernetes = schema.InterfaceToString(value)
 
 	}
 
@@ -288,6 +380,42 @@ func scanContrailCluster(values map[string]interface{}) (*models.ContrailCluster
 	if value, ok := values["contrail_webui"]; ok {
 
 		m.ContrailWebui = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["contrail_vrouter"]; ok {
+
+		m.ContrailVrouter = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["contrail_control"]; ok {
+
+		m.ContrailControl = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["contrail_configdb"]; ok {
+
+		m.ContrailConfigdb = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["contrail_config"]; ok {
+
+		m.ContrailConfig = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["contrail_analyticsdb"]; ok {
+
+		m.ContrailAnalyticsdb = schema.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["contrail_analytics"]; ok {
+
+		m.ContrailAnalytics = schema.InterfaceToString(value)
 
 	}
 

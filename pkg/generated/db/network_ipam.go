@@ -55,7 +55,7 @@ var NetworkIpamFields = []string{
 var NetworkIpamRefFields = map[string][]string{
 
 	"virtual_DNS": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }

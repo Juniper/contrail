@@ -23,6 +23,7 @@ func TestNetworkDeviceConfig(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "network_device_config")
+	// mutexProject := common.UseTable(db, "network_device_config")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

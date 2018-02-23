@@ -23,6 +23,7 @@ func TestBGPRouter(t *testing.T) {
 
 	mutexMetadata := common.UseTable(db, "metadata")
 	mutexTable := common.UseTable(db, "bgp_router")
+	// mutexProject := common.UseTable(db, "bgp_router")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()

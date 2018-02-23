@@ -77,18 +77,18 @@ var PhysicalRouterFields = []string{
 // PhysicalRouterRefFields is db reference fields for PhysicalRouter
 var PhysicalRouterRefFields = map[string][]string{
 
+	"virtual_router": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"virtual_network": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 
 	"bgp_router": []string{
-		// <schema.Schema Value>
-
-	},
-
-	"virtual_router": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }
@@ -156,11 +156,11 @@ var PhysicalRouterParents = []string{
 	"location",
 }
 
-const insertPhysicalRouterVirtualNetworkQuery = "insert into `ref_physical_router_virtual_network` (`from`, `to` ) values (?, ?);"
-
 const insertPhysicalRouterBGPRouterQuery = "insert into `ref_physical_router_bgp_router` (`from`, `to` ) values (?, ?);"
 
 const insertPhysicalRouterVirtualRouterQuery = "insert into `ref_physical_router_virtual_router` (`from`, `to` ) values (?, ?);"
+
+const insertPhysicalRouterVirtualNetworkQuery = "insert into `ref_physical_router_virtual_network` (`from`, `to` ) values (?, ?);"
 
 // CreatePhysicalRouter inserts PhysicalRouter to DB
 func CreatePhysicalRouter(
@@ -621,26 +621,6 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 
 	}
 
-	if value, ok := values["ref_virtual_router"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.PhysicalRouterVirtualRouterRef{}
-			referenceModel.UUID = uuid
-			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_network"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -677,6 +657,26 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 			referenceModel := &models.PhysicalRouterBGPRouterRef{}
 			referenceModel.UUID = uuid
 			m.BGPRouterRefs = append(m.BGPRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_router"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.PhysicalRouterVirtualRouterRef{}
+			referenceModel.UUID = uuid
+			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
 
 		}
 	}

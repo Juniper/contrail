@@ -47,13 +47,21 @@ var ContrailAnalyticsNodeFields = []string{
 }
 
 // ContrailAnalyticsNodeRefFields is db reference fields for ContrailAnalyticsNode
-var ContrailAnalyticsNodeRefFields = map[string][]string{}
+var ContrailAnalyticsNodeRefFields = map[string][]string{
+
+	"node": []string{
+	// <schema.Schema Value>
+
+	},
+}
 
 // ContrailAnalyticsNodeBackRefFields is db back reference fields for ContrailAnalyticsNode
 var ContrailAnalyticsNodeBackRefFields = map[string][]string{}
 
 // ContrailAnalyticsNodeParentTypes is possible parents for ContrailAnalyticsNode
 var ContrailAnalyticsNodeParents = []string{}
+
+const insertContrailAnalyticsNodeNodeQuery = "insert into `ref_contrail_analytics_node_node` (`from`, `to` ) values (?, ?);"
 
 // CreateContrailAnalyticsNode inserts ContrailAnalyticsNode to DB
 func CreateContrailAnalyticsNode(
@@ -99,6 +107,19 @@ func CreateContrailAnalyticsNode(
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
+	}
+
+	stmtNodeRef, err := tx.Prepare(insertContrailAnalyticsNodeNodeQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing NodeRefs create statement failed")
+	}
+	defer stmtNodeRef.Close()
+	for _, ref := range model.NodeRefs {
+
+		_, err = stmtNodeRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "NodeRefs create failed")
+		}
 	}
 
 	metaData := &common.MetaData{
@@ -277,6 +298,26 @@ func scanContrailAnalyticsNode(values map[string]interface{}) (*models.ContrailA
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
+	}
+
+	if value, ok := values["ref_node"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ContrailAnalyticsNodeNodeRef{}
+			referenceModel.UUID = uuid
+			m.NodeRefs = append(m.NodeRefs, referenceModel)
+
+		}
 	}
 
 	return m, nil

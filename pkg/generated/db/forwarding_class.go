@@ -49,7 +49,7 @@ var ForwardingClassFields = []string{
 var ForwardingClassRefFields = map[string][]string{
 
 	"qos_queue": []string{
-		// <schema.Schema Value>
+	// <schema.Schema Value>
 
 	},
 }
