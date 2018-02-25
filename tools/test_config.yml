@@ -11,15 +11,18 @@ log_level: debug
 server:
     read_timeout: 10
     write_timeout: 5
+    proxy:
+        # True for skip backend certificate check
+        insecure: false
 
 # Bind addresss
 address: ":9091"
 
 # TLS Configuration
 tls:
-    enabled: false
-    key_file: tools/server.crt
-    cert_file: tools/server.key
+    enabled: true 
+    key_file: tools/server.key
+    cert_file: tools/server.crt
 
 # Enable GRPC or not
 enable_grpc: false 
@@ -38,12 +41,12 @@ proxy:
     - http://localhost:8082
 
 # Keystone configuration
-keystone:
-    local: true # Enable local keystone v3. This is only for testing now.
-    assignment:
-        type: static
-        file: tools/keystone.yml
-    store:
-        type: memory
-        expire: 3600
-    authurl: http://localhost:9091/v3
+# keystone:
+#     local: true # Enable local keystone v3. This is only for testing now.
+#     assignment:
+#         type: static
+#         file: tools/keystone.yml
+#     store:
+#         type: memory
+#         expire: 3600
+#     authurl: http://localhost:9091/v3
