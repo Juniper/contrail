@@ -107,6 +107,8 @@ func (s *Server) Init() error {
 			[]string{
 				"/v3/auth/tokens",
 				"/public"}))
+	} else if viper.GetBool("no_auth") {
+		e.Use(noAuthMiddleware())
 	}
 	localKeystone := viper.GetBool("keystone.local")
 	if localKeystone {
@@ -121,9 +123,16 @@ func (s *Server) Init() error {
 			log.Fatal("GRPC support requires TLS configuraion.")
 		}
 		log.Debug("enabling grpc")
-		grpcServer := grpc.NewServer(
-			grpc.UnaryInterceptor(
-				keystone.AuthInterceptor(keystoneAuthURL, viper.GetBool("keystone.insecure"))))
+		var grpcServer *grpc.Server
+		if keystoneAuthURL != "" {
+			grpcServer = grpc.NewServer(
+				grpc.UnaryInterceptor(
+					keystone.AuthInterceptor(keystoneAuthURL, viper.GetBool("keystone.insecure"))))
+		} else if viper.GetBool("no_auth") {
+			grpcServer = grpc.NewServer(
+				grpc.UnaryInterceptor(
+					noAuthInterceptor()))
+		}
 		services.RegisterContrailServiceServer(grpcServer, service)
 		e.Use(gRPCMiddleware(grpcServer))
 	}

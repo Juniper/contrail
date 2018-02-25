@@ -53,7 +53,7 @@ func NewClient(endpoint, authURL, id, password string, scope *keystone.Scope) *C
 func (c *Client) Init() {
 	tr := &http.Transport{
 		Dial: (&net.Dialer{
-			//Timeout: 5 * time.Second,
+		//Timeout: 5 * time.Second,
 		}).Dial,
 		//TLSHandshakeTimeout: 5 * time.Second,
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: c.InSecure},
