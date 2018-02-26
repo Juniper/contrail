@@ -1,0 +1,11 @@
+{% if config.auth_url %}
+id: {{ config.id }}
+password: {{ config.password }}
+project_id: {{ config.project_id }}
+auth_url: {{ config.auth_url }}
+{% endif %}
+endpoint: {{ config.endpoint }}
+insecure: {{ config.insecure }}
+cluster_id: {{ resource.uuid }}
+cluster_action: {{ action }}
+
