@@ -68,9 +68,17 @@ func (task *task) init(agent *Agent) {
 }
 
 func (task *task) action(action string, resource map[string]interface{}) error {
+	config := map[string]string{
+		"id":         task.agent.config.ID,
+		"password":   task.agent.config.Password,
+		"project_id": task.agent.config.ProjectID,
+		"auth_url":   task.agent.config.AuthURL,
+		"endpoint":   task.agent.config.Endpoint,
+	}
 	context := pongo2.Context{
 		"resource": resource,
 		"action":   action,
+		"config":   config,
 	}
 	err := task.runHandlers(task.Common, context)
 	if err != nil {
