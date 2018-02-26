@@ -1,0 +1,36 @@
+- type: type
+  template_path: model.tmpl
+  output_path: pkg/generated/models/__resource__.go
+# - type: resource
+#   template_path: model_api.tmpl
+#   output_path: pkg/generated/models/__resource___api.go
+# - type: type
+#   template_path: model_test.tmpl
+#   output_path: pkg/generated/models/__resource___test.go
+- type: all
+  template_path: sql.tmpl
+  output_path: tools/init.sql
+- type: all
+  template_path: sql_cleanup.tmpl
+  output_path: tools/cleanup.sql
+- type: resource
+  template_path: db.tmpl
+  output_path: pkg/generated/db/__resource__.go
+- type: resource
+  template_path: db_test.tmpl
+  output_path: pkg/generated/db/__resource___test.go
+- type: all
+  template_path: service_list.tmpl
+  output_path: pkg/generated/services/service_list.go
+- type: resource
+  template_path: service.tmpl
+  output_path: pkg/generated/services/__resource__.go
+- type: all
+  template_path: proto_model.tmpl
+  output_path: proto/github.com/Juniper/contrail/pkg/generated/models/generated.proto
+- type: all
+  template_path: proto_service.tmpl
+  output_path: proto/github.com/Juniper/contrail/pkg/generated/services/generated.proto
+- type: all
+  template_path: db_test_main.tmpl
+  output_path: pkg/generated/db/main_test.go

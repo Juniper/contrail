@@ -1,0 +1,329 @@
+package db
+
+import (
+	"context"
+	"database/sql"
+	"encoding/json"
+
+	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/generated/models"
+	"github.com/Juniper/contrail/pkg/schema"
+	"github.com/pkg/errors"
+
+	log "github.com/sirupsen/logrus"
+)
+
+const insert{{ schema.JSONSchema.GoName }}Query = "insert into `{{schema.ID}}` ({% for column in schema.Columns %}`{{column.Column }}`{% if not forloop.Last %},{% endif %}{% endfor %}) values ({% for column in schema.Columns %}?{% if not forloop.Last %},{% endif %}{% endfor %});"
+const delete{{ schema.JSONSchema.GoName }}Query = "delete from `{{schema.ID}}` where uuid = ?"
+
+// {{ schema.JSONSchema.GoName }}Fields is db columns for {{ schema.JSONSchema.GoName }}
+var {{ schema.JSONSchema.GoName }}Fields = []string{
+   {% for column in schema.Columns %}"{{ column.Column }}",
+   {% endfor %}
+}
+
+// {{ schema.JSONSchema.GoName }}RefFields is db reference fields for {{ schema.JSONSchema.GoName }}
+var {{ schema.JSONSchema.GoName }}RefFields = map[string][]string{
+   {% for linkTo, reference in schema.References %}
+    "{{ linkTo }}": []string{
+        // {{ reference.LinkTo }}
+        {% for column in reference.Columns %}"{{ column.Column }}",
+        {% endfor %}
+    },
+   {% endfor %}
+}
+
+// {{ schema.JSONSchema.GoName }}BackRefFields is db back reference fields for {{ schema.JSONSchema.GoName }}
+var {{ schema.JSONSchema.GoName }}BackRefFields = map[string][]string{
+   {% for backref in schema.Children %}
+   {% set child = backref.LinkTo %}
+   "{{ child.ID }}": []string{
+        {% for column in child.Columns %}"{{ column.Column }}",
+        {% endfor %}
+   },
+   {% endfor %}
+}
+
+// {{ schema.JSONSchema.GoName }}ParentTypes is possible parents for {{ schema.JSONSchema.GoName }}
+var {{ schema.JSONSchema.GoName }}Parents = []string{
+   {% for parent in schema.Parents %}
+   "{{ parent }}",
+   {% endfor %}
+}
+
+{% for linkTo, reference in schema.References %}
+const insert{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Query = "insert into `ref_{{ schema.ID }}_{{ linkTo }}` (`from`, `to` {% for column in reference.Columns %},`{{column.Column }}`{% endfor %}) values (?, ?{% for column in reference.Columns %},?{% endfor %});"
+{% endfor %}
+
+// Create{{ schema.JSONSchema.GoName }} inserts {{ schema.JSONSchema.GoName }} to DB
+func Create{{ schema.JSONSchema.GoName }}(
+    ctx context.Context, 
+    tx *sql.Tx, 
+    request *models.Create{{ schema.JSONSchema.GoName }}Request) error {
+    model := request.{{ schema.JSONSchema.GoName }}
+	// Prepare statement for inserting data
+	stmt, err := tx.Prepare(insert{{ schema.JSONSchema.GoName }}Query)
+	if err != nil {
+        return errors.Wrap(err, "preparing create statement failed")
+	}
+	defer stmt.Close()
+    log.WithFields(log.Fields{
+        "model": model,
+        "query": insert{{ schema.JSONSchema.GoName }}Query,
+    }).Debug("create query")
+    _, err = stmt.ExecContext(ctx, {% for column in schema.Columns %}{% if column.Bind == "json" %}common.MustJSON(model{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.GetPath }}){% else %}model{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
+    {% endif %}{% endfor %})
+	if err != nil {
+        return errors.Wrap(err, "create failed")
+	}
+    {% for linkTo, reference in schema.References %}
+    stmt{{ reference.GoName }}Ref, err := tx.Prepare(insert{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Query)
+	if err != nil {
+        return errors.Wrap(err,"preparing {{ reference.GoName }}Refs create statement failed")
+	}
+    defer stmt{{ reference.GoName }}Ref.Close()
+    for _, ref := range model.{{ reference.GoName }}Refs {
+       {% if reference.RefType  %}
+       if ref.Attr == nil {
+           ref.Attr = &models.{{ reference.RefType }}{}
+       }
+       {% endif %}
+        _, err = stmt{{ reference.GoName }}Ref.ExecContext(ctx, model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
+    {% endif %}{% endfor %})
+	    if err != nil {
+            return errors.Wrap(err,"{{ reference.GoName }}Refs create failed")
+        }
+    }
+    {% endfor %}
+    metaData := &common.MetaData{
+        UUID: model.UUID,
+        Type: "{{ schema.ID }}",
+        FQName: model.FQName,
+    }
+    err = common.CreateMetaData(tx, metaData)
+    if err != nil {
+        return err
+    }
+    err = common.CreateSharing(tx, "{{ schema.ID }}", model.UUID, model.GetPerms2().GetShare())
+    if err != nil {
+        return err
+    }
+    log.WithFields(log.Fields{
+        "model": model,
+    }).Debug("created")
+    return nil
+}
+
+func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models.{{ schema.JSONSchema.GoName }}, error) {
+    m := models.Make{{ schema.JSONSchema.GoName }}()
+    {% for column in schema.Columns %}
+    if value, ok := values["{{ column.Column }}"]; ok {
+        {% if column.Bind == "json" %}
+            json.Unmarshal(value.([]byte), &m{{ column.Path }})
+        {% else %}
+            {% if column.Bind == "int" %}
+               m{{ column.Path }} = schema.InterfaceToInt64(value)
+            {% elif column.Bind == "bool" %}
+               m{{ column.Path }} = schema.InterfaceToBool(value)
+            {% elif column.Bind == "string" %}
+               m{{ column.Path }} = schema.InterfaceToString(value)
+            {% endif %}
+        {% endif %}
+    }
+    {% endfor %}
+    {% for linkTo, reference in schema.References %}
+    if value, ok := values["ref_{{ linkTo }}"]; ok {
+        var references []interface{}
+        stringValue := schema.InterfaceToString(value)
+        json.Unmarshal([]byte("[" + stringValue + "]"), &references )
+        for _, reference := range references {
+            referenceMap, ok := reference.(map[string]interface{})
+            if !ok {
+                continue
+            }
+            uuid := schema.InterfaceToString(referenceMap["to"])
+            if uuid == "" {
+                continue
+            }
+            referenceModel := &models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{}
+            referenceModel.UUID = uuid
+            m.{{ reference.GoName }}Refs = append(m.{{ reference.GoName }}Refs, referenceModel)
+            {% if reference.RefType %}
+            attr := models.Make{{reference.RefType}}()
+            referenceModel.Attr = attr
+            {% for column in reference.Colums %}
+                if refAttrValue, ok := referenceMap[column]; ok && refAttrValue != nil {
+                {% if column.Bind == "json" %}
+                    json.Unmarshal(schema.InterfaceToBytes(refAttrValue), &attr{{ column.Path }})
+                {% else %}
+                    {% if column.Bind == "int" %}
+                        attr{{ column.Path }} = schema.InterfaceToInt64(refAttrValue)
+                    {% elif column.Bind == "bool" %}
+                        attr{{ column.Path }} = schema.InterfaceToBool(refAttrValue)
+                    {% elif column.Bind == "string" %}
+                        attr{{ column.Path }} = schema.InterfaceToString(refAttrValue)
+                    {% endif %}
+                {% endif %}
+                }
+            {% endfor %}
+            {% endif %}
+        }
+    }
+    {% endfor %}
+    {% for backref in schema.Children %}
+    {% set child = backref.LinkTo %}
+    if value, ok := values["backref_{{ child.ID }}"]; ok {
+        var childResources []interface{}
+        stringValue := schema.InterfaceToString(value)
+        json.Unmarshal([]byte("[" + stringValue + "]"), &childResources )
+        for _, childResource := range childResources {
+            childResourceMap, ok := childResource.(map[string]interface{})
+            if !ok {
+                continue
+            }
+            uuid := schema.InterfaceToString(childResourceMap["uuid"])
+            if uuid == "" {
+                continue
+            }
+            childModel := models.Make{{ child.JSONSchema.GoName }}()
+            m.{{ child.JSONSchema.GoName }}s = append(m.{{ child.JSONSchema.GoName }}s, childModel)
+
+            {% for column in child.Columns %}
+                if propertyValue, ok := childResourceMap["{{ column.Column }}"]; ok && propertyValue != nil {
+                {% if column.Bind == "json" %}
+                    json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel{{ column.Path }})
+                {% else %}
+                    {% if column.Bind == "int" %}
+                        childModel{{ column.Path }} = schema.InterfaceToInt64(propertyValue)
+                    {% elif column.Bind == "bool" %}
+                        childModel{{ column.Path }} = schema.InterfaceToBool(propertyValue)
+                    {% elif column.Bind == "string" %}
+                        childModel{{ column.Path }} = schema.InterfaceToString(propertyValue)
+                    {% endif %}
+                {% endif %}
+                }
+            {% endfor %}
+        }
+    }
+    {% endfor %}
+    return m, nil
+}
+
+// List{{ schema.JSONSchema.GoName }} lists {{ schema.JSONSchema.GoName }} with list spec.
+func List{{ schema.JSONSchema.GoName }}(ctx context.Context, tx *sql.Tx, request *models.List{{ schema.JSONSchema.GoName }}Request) (response *models.List{{ schema.JSONSchema.GoName }}Response, err error) {
+    var rows *sql.Rows
+    qb := &common.ListQueryBuilder{}
+    qb.Auth = common.GetAuthCTX(ctx) 
+    spec := request.Spec
+    qb.Spec = spec
+    qb.Table = "{{ schema.ID }}"
+    qb.Fields = {{ schema.JSONSchema.GoName }}Fields
+    qb.RefFields = {{ schema.JSONSchema.GoName }}RefFields
+    qb.BackRefFields = {{ schema.JSONSchema.GoName }}BackRefFields
+    result := []*models.{{ schema.JSONSchema.GoName }}{}
+
+    if spec.ParentFQName != nil {
+       parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+       if err != nil {
+           return nil, errors.Wrap(err, "can't find parents")
+       }
+       spec.Filters = common.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
+    }
+
+    query := qb.BuildQuery()
+    columns := qb.Columns
+    values := qb.Values
+    log.WithFields(log.Fields{
+        "listSpec": spec,
+        "query": query,
+    }).Debug("select query")
+    rows, err = tx.QueryContext(ctx, query, values...)
+    if err != nil {
+        return nil, errors.Wrap(err,"select query failed")
+    }
+    defer rows.Close()
+    if err := rows.Err(); err != nil {
+            return nil, errors.Wrap(err, "row error")
+    }
+
+    for rows.Next() {
+            valuesMap := map[string]interface{}{}
+            values := make([]interface{}, len(columns))
+            valuesPointers := make([]interface{}, len(columns))
+            for _, index := range columns {
+                valuesPointers[index] = &values[index]
+            }
+            if err := rows.Scan(valuesPointers...); err != nil {
+                    return nil, errors.Wrap(err, "scan failed")
+            }
+            for column, index := range columns {
+                val := valuesPointers[index].(*interface{})
+                valuesMap[column] = *val
+            }
+            m, err := scan{{ schema.JSONSchema.GoName }}(valuesMap)
+            if err != nil {
+                return nil, errors.Wrap(err, "scan row failed")
+            }
+            result = append(result, m)
+    }
+    response = &models.List{{ schema.JSONSchema.GoName }}Response{
+       {{ schema.JSONSchema.GoName }}s: result,
+    }
+    return response, nil
+}
+
+// Update{{ schema.JSONSchema.GoName }} updates a resource
+func Update{{ schema.JSONSchema.GoName }}(
+    ctx context.Context, 
+    tx *sql.Tx, 
+    request *models.Update{{ schema.JSONSchema.GoName }}Request,
+    ) error {
+    //TODO
+    return nil
+}
+
+// Delete{{ schema.JSONSchema.GoName }} deletes a resource
+func Delete{{ schema.JSONSchema.GoName }}(
+    ctx context.Context,
+    tx *sql.Tx, 
+    request *models.Delete{{ schema.JSONSchema.GoName }}Request) error {
+    deleteQuery := delete{{ schema.JSONSchema.GoName }}Query
+    selectQuery := "select count(uuid) from {{ schema.ID }} where uuid = ?"
+    var err error
+    var count int
+    uuid := request.ID
+    auth := common.GetAuthCTX(ctx)
+    if auth.IsAdmin() {
+        row := tx.QueryRowContext(ctx, selectQuery, uuid)
+        if err != nil {
+            return errors.Wrap(err, "not found")
+        }
+        row.Scan(&count)
+        if count == 0 {
+           return errors.New("Not found")
+        }
+        _, err = tx.ExecContext(ctx, deleteQuery, uuid)
+    }else{
+        deleteQuery += " and owner = ?"
+        selectQuery += " and owner = ?"
+        row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID() )
+        if err != nil {
+            return errors.Wrap(err, "not found")
+        }
+        row.Scan(&count)
+        if count == 0 {
+           return errors.New("Not found")
+        }
+        _, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID() )
+    }
+
+    if err != nil {
+        return errors.Wrap(err, "delete failed")
+    }
+
+    err = common.DeleteMetaData(tx, uuid)
+    log.WithFields(log.Fields{
+        "uuid": uuid,
+    }).Debug("deleted")
+    return err
+}

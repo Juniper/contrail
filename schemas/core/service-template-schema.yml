@@ -1,0 +1,28 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    service_appliance_set: 
+      operations: "CRUD"
+      description: "Reference to the service appliance set represented by this service template."
+      presence: "optional"
+  parents: 
+    domain: 
+      operations: "CRUD"
+      description: "Service template defines how a service may be deployed in the network. Service instance is instantiated from config in service template."
+      presence: "optional"
+  plural: "service_templates"
+  id: "service_template"
+  schema: 
+    required: 
+      - "service_template_properties"
+    type: "object"
+    properties: 
+      service_template_properties: 
+        operations: "CRUD"
+        presence: "required"
+        description: "Service template configuration parameters."
+        $ref: "types.json#/definitions/ServiceTemplateType"
+

@@ -1,0 +1,45 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    virtual_network: 
+      operations: "CRUD"
+      description: "bridge-domains configured in a virtual network"
+      presence: "optional"
+  plural: "bridge_domains"
+  id: "bridge_domain"
+  schema: 
+    required: 
+      - "isid"
+    type: "object"
+    properties: 
+      mac_aging_time: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "MAC aging time on the network"
+        $ref: "types.json#/definitions/MACAgingTime"
+      isid: 
+        operations: "CRUD"
+        presence: "required"
+        description: "i-sid value"
+        $ref: "types.json#/definitions/IsidType"
+      mac_learning_enabled: 
+        default: false
+        operations: "CRUD"
+        type: "boolean"
+        description: "Enable MAC learning on the network"
+        presence: "optional"
+      mac_move_control: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "MAC move control on the network"
+        $ref: "types.json#/definitions/MACMoveLimitControlType"
+      mac_limit_control: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "MAC limit control on the network"
+        $ref: "types.json#/definitions/MACLimitControlType"
+

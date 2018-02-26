@@ -1,0 +1,40 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    global_system_config: 
+      operations: "CRUD"
+      description: "List of alarms that are applicable to objects anchored under global-system-config."
+      presence: "optional"
+    project: 
+      operations: "CRUD"
+      description: "List of alarms that are applicable to objects anchored under the project."
+      presence: "optional"
+  plural: "alarms"
+  id: "alarm"
+  schema: 
+    required: 
+      - "uve_keys"
+      - "alarm_severity"
+    type: "object"
+    properties: 
+      alarm_rules: 
+        operations: "CRUD"
+        collectionType: "list"
+        presence: "optional"
+        description: "Rules based on the UVE attributes specified as OR-of-ANDs of AlarmExpression template. Example: \"alarm_rules\": {\"or_list\": [{\"and_list\": [{AlarmExpression1}, {AlarmExpression2}, ...]}, {\"and_list\": [{AlarmExpression3}, {AlarmExpression4}, ...]}]}"
+        $ref: "types.json#/definitions/AlarmOrList"
+      uve_keys: 
+        operations: "CRUD"
+        presence: "required"
+        description: "List of UVE tables or UVE objects where this alarm config should be applied. For example, rules based on NodeStatus UVE can be applied to multiple object types or specific uve objects such as analytics-node, config-node, control-node:<hostname>, etc.,"
+        $ref: "types.json#/definitions/UveKeysType"
+      alarm_severity: 
+        operations: "CRUD"
+        presence: "required"
+        description: "Severity level for the alarm."
+        $ref: "types.json#/definitions/AlarmSeverity"
+

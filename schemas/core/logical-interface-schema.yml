@@ -1,0 +1,35 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    virtual_machine_interface: 
+      operations: "CRUD"
+      description: "References to virtual machine interfaces that represent end points that are reachable by this logical interface."
+      presence: "optional"
+  parents: 
+    physical_router: 
+      operations: "CRUD"
+      description: "Logical interfaces on physical routers."
+      presence: "optional"
+    physical_interface: 
+      operations: "CRUD"
+      description: "Logical interfaces on physical interface on physical routers."
+      presence: "optional"
+  plural: "logical_interfaces"
+  id: "logical_interface"
+  schema: 
+    required: []
+    type: "object"
+    properties: 
+      logical_interface_vlan_tag: 
+        operations: "CRUD"
+        type: "integer"
+        description: "VLAN tag (.1Q) classifier for this logical interface."
+        presence: "optional"
+      logical_interface_type: 
+        operations: "CRUD"
+        presence: "optional"
+        $ref: "types.json#/definitions/LogicalInterfaceType"
+

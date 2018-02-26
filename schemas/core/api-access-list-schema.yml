@@ -1,0 +1,32 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    project: 
+      operations: "CRUD"
+      description: "API access list is list of rules that define role based access to each API and its properties at project level."
+      presence: "optional"
+    global_system_config: 
+      operations: "CRUD"
+      description: "Global API access list applicable to all domain and projects"
+      presence: "required"
+    domain: 
+      operations: "CRUD"
+      description: "API access list is list of rules that define role based access to each API and its properties at domain level."
+      presence: "optional"
+  plural: "api_access_lists"
+  id: "api_access_list"
+  schema: 
+    required: 
+      - "api_access_list_entries"
+    type: "object"
+    properties: 
+      api_access_list_entries: 
+        operations: "CRUD"
+        presence: "required"
+        description: "List of rules e.g network.* => admin:CRUD (admin can perform all ops on networks)."
+        $ref: "types.json#/definitions/RbacRuleEntriesType"
+

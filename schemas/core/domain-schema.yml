@@ -1,0 +1,23 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    config_root: 
+      operations: "CRUD"
+      description: "Domain is authentication namespace, a collection of projects."
+      presence: "system-only"
+  plural: "domains"
+  id: "domain"
+  schema: 
+    required: []
+    type: "object"
+    properties: 
+      domain_limits: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Domain level quota, not currently implemented"
+        $ref: "types.json#/definitions/DomainLimitsType"
+

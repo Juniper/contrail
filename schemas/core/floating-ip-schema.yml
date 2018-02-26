@@ -1,0 +1,68 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    project: 
+      operations: "CRUD"
+      description: "Reference to project is which this floating ip was allocated."
+      presence: "required"
+    virtual_machine_interface: 
+      operations: "CRUD"
+      description: "Reference to virtual machine interface to which this floating ip is attached."
+      presence: "optional"
+  parents: 
+    instance_ip: 
+      operations: "CRUD"
+      description: "floating-ip can be child of instance-ip. By doing so instance-ip can be used as floating-ip."
+      presence: "optional"
+    floating_ip_pool: 
+      operations: "CRUD"
+      description: "Floating ip is a ip that can be assigned to (virtual machine interface(VMI), ip), By doing so VMI can no be part of the floating ip network and floating ip is used as one:one to NAT for doing so."
+      presence: "optional"
+  plural: "floating_ips"
+  id: "floating_ip"
+  schema: 
+    required: 
+      - "floating_ip_address"
+    type: "object"
+    properties: 
+      floating_ip_address_family: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Ip address family of the floating ip, IpV4 or IpV6"
+        $ref: "types.json#/definitions/IpAddressFamilyType"
+      floating_ip_port_mappings: 
+        operations: "CRUD"
+        collectionType: "list"
+        presence: "optional"
+        description: "List of PortMaps for this floating-ip."
+        $ref: "types.json#/definitions/PortMappings"
+      floating_ip_is_virtual_ip: 
+        operations: "CRUD"
+        type: "boolean"
+        description: "This floating ip is used as virtual ip (VIP) in case of LBaaS."
+        presence: "optional"
+      floating_ip_address: 
+        operations: "CR"
+        presence: "required"
+        description: "Floating ip address."
+        $ref: "types.json#/definitions/IpAddressType"
+      floating_ip_port_mappings_enable: 
+        default: false
+        operations: "CRUD"
+        type: "boolean"
+        description: "If it is false, floating-ip Nat is done for all Ports. If it is true, floating-ip Nat is done to the list of PortMaps."
+        presence: "optional"
+      floating_ip_fixed_ip_address: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "This floating is tracking given fixed ip of the interface. The given fixed ip is used in 1:1 NAT."
+        $ref: "types.json#/definitions/IpAddressType"
+      floating_ip_traffic_direction: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Specifies direction of traffic for the floating-ip"
+        $ref: "types.json#/definitions/TrafficDirectionType"
+

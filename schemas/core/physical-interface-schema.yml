@@ -1,0 +1,27 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    physical_interface: 
+      operations: "CRUD"
+      description: "Reference to the other physical interface that is connected to this  physical interface."
+      presence: "optional"
+  parents: 
+    physical_router: 
+      operations: "CRUD"
+      description: "Physical interfaces on physical routers."
+      presence: "optional"
+  plural: "physical_interfaces"
+  id: "physical_interface"
+  schema: 
+    required: []
+    type: "object"
+    properties: 
+      ethernet_segment_identifier: 
+        operations: "CRUD"
+        type: "string"
+        description: "Ethernet Segment Id configured for the Physical Interface. In a multihomed environment, user should configure the peer Physical interface with the same ESI."
+        presence: "optional"
+

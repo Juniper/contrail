@@ -1,0 +1,107 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    virtual_network: 
+      operations: "CRUD"
+      description: "Reference to virtual network, whose VRF is present on this physical router, Applicable when only VRF is present with no physical interfaces from this physical vrouter. Generally used when using device manager and option A+B for this virtual network in L3VPN use case."
+      presence: "optional"
+    bgp_router:
+      operations: "CRUD"
+      description: "Reference to BGP peer representing this physical router."
+      presence: "optional"
+    virtual_router: 
+      operations: "CRUD"
+      description: "Reference to vrouter responsible for this physical router. Currently only applicable for vrouters that are TOR agents."
+      presence: "optional"
+  parents: 
+    global_system_config: 
+      operations: "CRUD"
+      description: "Physical router object represent any physical device that participates in virtual networking, like routers, switches, servers, firewalls etc."
+      presence: "optional"
+    location: 
+      operations: "CRUD"
+      description: "Physical router location."
+      presence: "optional"
+  plural: "physical_routers"
+  id: "physical_router"
+  schema: 
+    required: 
+      - "physical_router_management_ip"
+      - "physical_router_vendor_name"
+      - "physical_router_product_name"
+    type: "object"
+    properties: 
+      physical_router_management_ip: 
+        operations: "CRUD"
+        type: "string"
+        description: "Management ip for this physical router. It is used by the device manager to perform netconf and by SNMP collector if enabled."
+        presence: "required"
+      physical_router_snmp_credentials: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "SNMP credentials for the physical router used by SNMP collector."
+        $ref: "types.json#/definitions/SNMPCredentials"
+      physical_router_role: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Physical router role (e.g spine or leaf), used by the device manager to provision physical router, for e.g device manager may choose to configure physical router based on its role."
+        $ref: "types.json#/definitions/PhysicalRouterRole"
+      physical_router_user_credentials: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Username and password for netconf to the physical router by device manager."
+        $ref: "types.json#/definitions/UserCredentials"
+      physical_router_vendor_name: 
+        operations: "CRUD"
+        type: "string"
+        description: "Vendor name of the physical router (e.g juniper). Used by the device manager to select driver."
+        presence: "required"
+      physical_router_vnc_managed: 
+        operations: "CRUD"
+        type: "boolean"
+        description: "This physical router is enabled to be configured by device manager."
+        presence: "optional"
+      physical_router_product_name: 
+        operations: "CRUD"
+        type: "string"
+        description: "Model name of the physical router (e.g juniper). Used by the device manager to select driver."
+        presence: "required"
+      physical_router_lldp: 
+        operations: "CRUD"
+        type: "boolean"
+        description: "LLDP support on this router"
+        presence: "optional"
+      physical_router_loopback_ip: 
+        operations: "CRUD"
+        type: "string"
+        description: "This is ip address of loopback interface of physical router. Used by the device manager to configure physical router loopback interface."
+        presence: "optional"
+      physical_router_image_uri: 
+        operations: "CRUD"
+        type: "string"
+        description: "Physical router OS image uri"
+        presence: "optional"
+      telemetry_info: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Telemetry info of router. Check TelemetryStateInfo"
+        $ref: "types.json#/definitions/TelemetryStateInfo"
+      physical_router_snmp: 
+        operations: "CRUD"
+        type: "boolean"
+        description: "SNMP support on this router"
+        presence: "optional"
+      physical_router_dataplane_ip: 
+        operations: "CRUD"
+        type: "string"
+        description: "This is ip address in the ip-fabric(underlay) network that can be used in data plane by physical router. Usually it is the VTEP address in VxLAN for the TOR switch."
+        presence: "optional"
+      physical_router_junos_service_ports: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Juniper JUNOS specific service interfaces name  to perform services like NAT."
+        $ref: "types.json#/definitions/JunosServicePorts"
+

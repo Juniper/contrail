@@ -1,0 +1,41 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    service_appliance_set: 
+      operations: "CRUD"
+      description: ""
+      presence: "optional"
+    virtual_machine_interface: 
+      operations: "CRUD"
+      description: "Reference to the virtual machine interface for VIP, created automatically by the system."
+      presence: "system-only"
+    service_instance: 
+      operations: "CRUD"
+      description: "Reference to the service instance, created automatically by the system."
+      presence: "system-only"
+  parents: 
+    project: 
+      operations: "CRUD"
+      description: "Loadbalancer object represents a LBaaS instance. One single Virtual IP and multiple (listeners, pools). Applicable to LBaaS V2."
+      presence: "optional"
+  plural: "loadbalancers"
+  id: "loadbalancer"
+  schema: 
+    required: 
+      - "loadbalancer_properties"
+    type: "object"
+    properties: 
+      loadbalancer_properties: 
+        operations: "CRUD"
+        presence: "required"
+        description: "Loadbalancer configuration like  admin state, VIP, VIP subnet etc."
+        $ref: "types.json#/definitions/LoadbalancerType"
+      loadbalancer_provider: 
+        operations: "CR"
+        type: "string"
+        description: "Provider field selects backend provider of the LBaaS, Cloudadmin could offer different levels of service like gold, silver, bronze. Provided by  HA-proxy or various HW or SW appliances in the backend."
+        presence: "optional"
+

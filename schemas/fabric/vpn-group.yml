@@ -1,0 +1,28 @@
+description: VPN Group 
+extends:
+- base
+- has_status
+id: vpn_group 
+metadata:
+plural: vpn_groups 
+prefix: /
+references: 
+  location: 
+    operations: "CRUD"
+    description: "Reference to the locations"
+    presence: "required"
+schema:
+  properties:
+    type:
+      default: ipsec 
+      description: Type of VPN 
+      title: VPN Type
+      type: string
+      view:
+      - create
+      - detail
+  required: []
+  type: object
+singular: vpn_group
+title: VPN Group
+type: ""

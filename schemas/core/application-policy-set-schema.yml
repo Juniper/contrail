@@ -1,0 +1,37 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    firewall_policy: 
+      operations: "CRUD"
+      $ref: "types.json#/definitions/FirewallSequence"
+      description: "Reference to firewall-policy attached to this application-policy"
+      presence: "required"
+    global_vrouter_config: 
+      operations: "CRUD"
+      description: "Reference to global-vrouter-config is automatically created by system for global           application policy sets"
+      presence: "system-only"
+  parents: 
+    project: 
+      operations: "CRUD"
+      description: "Project level application-policy object defining policies to apply for a given application tag"
+      presence: "optional"
+    policy_management: 
+      operations: "CRUD"
+      description: "Application-policy object defining policies to apply for a given application tag"
+      presence: "optional"
+  plural: "application_policy_sets"
+  id: "application_policy_set"
+  schema: 
+    required: []
+    type: "object"
+    properties: 
+      all_applications: 
+        default: false
+        operations: "R"
+        type: "boolean"
+        description: "If set, indicates application policy set to be applied to all application tags"
+        presence: "optional"
+

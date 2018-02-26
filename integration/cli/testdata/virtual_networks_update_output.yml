@@ -1,0 +1,4 @@
+- kind: virtual_network
+  data:
+  - uri: /virtual-network/first-uuid
+    uuid: first-uuid

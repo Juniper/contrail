@@ -1,0 +1,23 @@
+description: Contrail Config Database Node
+extends:
+- base
+- has_status
+id: contrail_config_database_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this configdb node."
+      presence: "optional"
+parent: contrail_cluster
+plural: contrail_config_database_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: contrail_config_database_node
+title: Contrail Config Database Node
+type: ""

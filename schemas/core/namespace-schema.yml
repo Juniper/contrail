@@ -1,0 +1,23 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    domain: 
+      operations: "CRUD"
+      description: "Namespace is unique networking namespace within this domain. If namespace is not present then default namespace of default project is used."
+      presence: "optional"
+  plural: "namespaces"
+  id: "namespace"
+  schema: 
+    required: []
+    type: "object"
+    properties: 
+      namespace_cidr: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "All networks in this namespace belong to this list of Prefixes. Not implemented."
+        $ref: "types.json#/definitions/SubnetType"
+

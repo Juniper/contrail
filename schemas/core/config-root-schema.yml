@@ -1,0 +1,18 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    tag: 
+      operations: "CRUD"
+      description: "Attribute attached to objects - has a type and value"
+      presence: "optional"
+  parents: {}
+  plural: "config_roots"
+  id: "config_root"
+  schema: 
+    required: []
+    type: "object"
+    properties: {}
+

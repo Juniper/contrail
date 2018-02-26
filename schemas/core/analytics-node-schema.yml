@@ -1,0 +1,23 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    global_system_config: 
+      operations: "CRUD"
+      description: "Analytics node is object representing a logical node in system which serves operational API and analytics collector."
+      presence: "admin-only"
+  plural: "analytics_nodes"
+  id: "analytics_node"
+  schema: 
+    required: []
+    type: "object"
+    properties: 
+      analytics_node_ip_address: 
+        operations: "CRUD"
+        presence: "admin-only"
+        description: "Ip address of the analytics node, set while provisioning."
+        $ref: "types.json#/definitions/IpAddressType"
+

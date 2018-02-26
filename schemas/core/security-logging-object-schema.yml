@@ -1,0 +1,43 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    security_group: 
+      operations: "CRUD"
+      $ref: "types.json#definitions/SecurityLoggingObjectRuleListType"
+      description: "Reference to security-group attached to this security-logging-object"
+      presence: "optional"
+    network_policy: 
+      operations: "CRUD"
+      $ref: "types.json#definitions/SecurityLoggingObjectRuleListType"
+      description: "Reference to network-policy attached to this security-logging-object"
+      presence: "optional"
+  parents: 
+    project: 
+      operations: "CRUD"
+      description: "Security logging object configuration for specifying session logging criteria"
+      presence: "optional"
+    global_vrouter_config: 
+      operations: "CRUD"
+      description: "Reference to security logging object for global-vrouter-config."
+      presence: "optional"
+  plural: "security_logging_objects"
+  id: "security_logging_object"
+  schema: 
+    required: []
+    type: "object"
+    properties: 
+      security_logging_object_rules: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Security logging object rules derived internally."
+        $ref: "types.json#/definitions/SecurityLoggingObjectRuleListType"
+      security_logging_object_rate: 
+        default: "100"
+        operations: "CRUD"
+        type: "integer"
+        description: "Security logging object rate defining rate of session logging"
+        presence: "optional"
+

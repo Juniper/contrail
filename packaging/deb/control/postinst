@@ -1,0 +1,75 @@
+#!/bin/sh
+
+set -e
+
+[ -f /etc/default/contrail ] && . /etc/default/contrail
+
+IS_UPGRADE=false
+
+
+case "$1" in
+	configure)
+	[ -z "$CONTRAIL_USER" ] && CONTRAIL_USER="contrail"
+	[ -z "$CONTRAIL_GROUP" ] && CONTRAIL_GROUP="contrail"
+	if ! getent group "$CONTRAIL_GROUP" > /dev/null 2>&1 ; then
+	    addgroup --system "$CONTRAIL_GROUP" --quiet
+	fi
+	if ! id $CONTRAIL_USER > /dev/null 2>&1 ; then
+	    adduser --system --home /usr/share/contrail --no-create-home \
+		--ingroup "$CONTRAIL_GROUP" --disabled-password --shell /bin/false \
+		"$CONTRAIL_USER"
+	fi
+
+	# Set user permissions on /var/log/contrail, /var/lib/contrail
+	mkdir -p /var/log/contrail /var/lib/contrail
+	chown -R $CONTRAIL_USER:$CONTRAIL_GROUP /var/log/contrail /var/lib/contrail
+	chmod 755 /var/log/contrail /var/lib/contrail
+
+  # copy user config files
+  if [ ! -f $CONF_FILE ]; then
+    cp /usr/share/contrail/apisrv.yml $CONF_FILE
+  fi
+
+	# configuration files should not be modifiable by contrail user, as this can be a security issue
+	chown -Rh root:$CONTRAIL_GROUP /etc/contrail/*
+	chmod 755 /etc/contrail
+	find /etc/contrail -type f -exec chmod 640 {} ';'
+	find /etc/contrail -type d -exec chmod 755 {} ';'
+
+  # If $1=configure and $2 is set, this is an upgrade
+  if [ "$2" != "" ]; then
+    IS_UPGRADE=true
+  fi
+
+  if [ "x$IS_UPGRADE" != "xtrue" ]; then
+    if command -v systemctl >/dev/null; then
+      echo "### NOT starting on installation, please execute the following statements to configure contrail to start automatically using systemd"
+      echo " sudo /bin/systemctl daemon-reload"
+      echo " sudo /bin/systemctl enable contrail"
+      echo "### You can start contrail by executing"
+      echo " sudo /bin/systemctl start contrail"
+    elif command -v update-rc.d >/dev/null; then
+      echo "### NOT starting contrail by default on bootup, please execute"
+      echo " sudo update-rc.d contrail defaults 95 10"
+      echo "### In order to start contrail, execute"
+      echo " sudo service contrail start"
+    fi
+  elif [ "$RESTART_ON_UPGRADE" = "true" ]; then
+
+    echo -n "Restarting contrail service..."
+
+    if command -v systemctl >/dev/null; then
+      systemctl daemon-reload
+      systemctl restart contrail || true
+    elif [ -x /etc/init.d/contrail ]; then
+      if command -v invoke-rc.d >/dev/null; then
+        invoke-rc.d contrail restart || true
+      else
+        /etc/init.d/contrail restart || true
+      fi
+    fi
+    echo " OK"
+
+	fi
+	;;
+esac

@@ -1,0 +1,2222 @@
+---
+  definitions:
+    DnsRecordTypeType:
+      enum:
+        - "A"
+        - "AAAA"
+        - "CNAME"
+        - "PTR"
+        - "NS"
+        - "MX"
+      type: "string"
+    VirtualDnsType:
+      type: "object"
+      properties:
+        floating_ip_record:
+          presence: "optional"
+          description: "Decides how floating ip records are added"
+          $ref: "types.json#/definitions/FloatingIpDnsNotation"
+        domain_name:
+          type: "string"
+          description: "Default domain name for this virtual DNS server"
+          presence: "true"
+        external_visible:
+          type: "boolean"
+          description: "Currently this option is not supported"
+          presence: "optional"
+        next_virtual_DNS:
+          type: "string"
+          description: "Next virtual DNS server to lookup if record is not found. Default is proxy to infrastructure DNS"
+          presence: "optional"
+        dynamic_records_from_client:
+          type: "boolean"
+          description: "Allow automatic addition of records on VM launch, default is True"
+          presence: "optional"
+        reverse_resolution:
+          type: "boolean"
+          description: "Allow reverse DNS resolution, ip to name mapping"
+          presence: "optional"
+        default_ttl_seconds:
+          type: "integer"
+          description: "Default Time To Live for DNS records"
+          presence: "optional"
+        record_order:
+          presence: "optional"
+          description: "Order of DNS load balancing, fixed, random, round-robin. Default is random"
+          $ref: "types.json#/definitions/DnsRecordOrderType"
+    VrfAssignTableType:
+      type: "object"
+      properties:
+        vrf_assign_rule:
+          items:
+            $ref: "types.json#/definitions/VrfAssignRuleType"
+          type: "array"
+    UserDefinedLogStat:
+      type: "object"
+      properties:
+        pattern:
+          type: "string"
+          description: "Perl type regular expression pattern to match"
+          presence: "true"
+        name:
+          type: "string"
+          description: "Name of the stat"
+          presence: "true"
+    AddressMode:
+      enum:
+        - "active-active"
+        - "active-standby"
+      type: "string"
+    VrfAssignRuleType:
+      type: "object"
+      properties:
+        routing_instance:
+          type: "string"
+        match_condition:
+          $ref: "types.json#/definitions/MatchConditionType"
+        vlan_tag:
+          type: "integer"
+        ignore_acl:
+          type: "boolean"
+    ConfiguredSecurityGroupIdType:
+      default: "0"
+      minimum: 0
+      type: "integer"
+      maximum: 7999999
+    VirtualMachineInterfacePropertiesType:
+      type: "object"
+      properties:
+        sub_interface_vlan_tag:
+          type: "integer"
+          description: "802.1Q VLAN tag to be used if this interface is sub-interface for some other interface."
+          presence: "optional"
+        local_preference:
+          type: "integer"
+          description: "BGP route local preference for routes representing this interface, higher value is higher preference"
+          presence: "optional"
+        interface_mirror:
+          presence: "optional"
+          description: "Interface Mirror configuration"
+          $ref: "types.json#/definitions/InterfaceMirrorType"
+        service_interface_type:
+          presence: "optional"
+          description: "This interface belongs to Service Instance and is tagged as left, right or other"
+          $ref: "types.json#/definitions/ServiceInterfaceType"
+    StaticMirrorNhType:
+      type: "object"
+      properties:
+        vtep_dst_ip_address:
+          type: "string"
+          description: "ip address of destination vtep"
+          presence: "true"
+        vtep_dst_mac_address:
+          type: "string"
+          description: "mac address of destination vtep"
+          presence: "optional"
+        vni:
+          presence: "true"
+          description: "Vni of vtep"
+          $ref: "types.json#/definitions/VxlanNetworkIdentifierType"
+    IpamType:
+      type: "object"
+      properties:
+        ipam_method:
+          presence: "optional"
+          $ref: "types.json#/definitions/IpamMethodType"
+        ipam_dns_method:
+          presence: "optional"
+          $ref: "types.json#/definitions/IpamDnsMethodType"
+        ipam_dns_server:
+          presence: "optional"
+          $ref: "types.json#/definitions/IpamDnsAddressType"
+        dhcp_option_list:
+          presence: "optional"
+          $ref: "types.json#/definitions/DhcpOptionsListType"
+        host_routes:
+          presence: "optional"
+          $ref: "types.json#/definitions/RouteTableType"
+        cidr_block:
+          presence: "optional"
+          $ref: "types.json#/definitions/SubnetType"
+    BridgeDomainMembershipType:
+      type: "object"
+      properties:
+        vlan_tag:
+          description: "VLAN tag of the incoming packet that maps the                      virtual-machine-interface to bridge domain"
+          $ref: "types.json#/definitions/Dot1QTagType"
+    FloatingIpPoolSubnetType:
+      type: "object"
+      properties:
+        subnet_uuid:
+          items:
+            type: "string"
+          type: "array"
+          description: "List of subnets associated with this floating ip pool."
+    LoadbalancerListenerType:
+      type: "object"
+      properties:
+        default_tls_container:
+          type: "string"
+        protocol:
+          $ref: "types.json#/definitions/LoadbalancerProtocolType"
+        connection_limit:
+          type: "integer"
+        admin_state:
+          type: "boolean"
+        sni_containers:
+          items:
+            type: "string"
+          type: "array"
+        protocol_port:
+          type: "integer"
+    FirewallRuleMatchTagsType:
+      type: "object"
+      properties:
+        tag_list:
+          items:
+            type: "string"
+          type: "array"
+          presence: "true"
+    AlarmOperand2:
+      type: "object"
+      properties:
+        uve_attribute:
+          type: "string"
+          description: "UVE attribute specified in the dotted format. Example: NodeStatus.process_info.process_state"
+          presence: "exclusive"
+        json_value:
+          type: "string"
+          description: "json value as string"
+          presence: "exclusive"
+    TimerType:
+      type: "object"
+      properties:
+        start_time:
+          presence: "true"
+          type: "string"
+          format: "date-time"
+        off_interval:
+          type: "string"
+          presence: "true"
+        on_interval:
+          type: "string"
+          presence: "true"
+        end_time:
+          presence: "true"
+          type: "string"
+          format: "date-time"
+    VirtualNetworkType:
+      type: "object"
+      properties:
+        forwarding_mode:
+          presence: "optional"
+          description: "Packet forwarding mode for this virtual network"
+          $ref: "types.json#/definitions/ForwardingModeType"
+        allow_transit:
+          type: "boolean"
+          presence: "optional"
+        network_id:
+          type: "integer"
+          description: "Not currently in used"
+          presence: "system-only"
+        mirror_destination:
+          type: "boolean"
+          description: "Flag to mark the virtual network as mirror destination network"
+          presence: "optional"
+        vxlan_network_identifier:
+          presence: "true"
+          description: "VxLAN VNI value for this network"
+          $ref: "types.json#/definitions/VxlanNetworkIdentifierType"
+        rpf:
+          presence: "optional"
+          description: "Flag used to disable Reverse Path Forwarding(RPF) check for this network"
+          $ref: "types.json#/definitions/RpfModeType"
+    SubnetListType:
+      type: "object"
+      properties:
+        subnet:
+          items:
+            $ref: "types.json#/definitions/SubnetType"
+          type: "array"
+    PluginProperty:
+      type: "object"
+      properties:
+        property:
+          type: "string"
+        value:
+          type: "string"
+    ForwardingClassId:
+      default: "0"
+      minimum: 0
+      type: "integer"
+      maximum: 255
+    MirrorActionType:
+      type: "object"
+      properties:
+        nic_assisted_mirroring_vlan:
+          presence: "optional"
+          description: "The VLAN to be tagged on the traffic for NIC to Mirror"
+          $ref: "types.json#/definitions/VlanIdType"
+        analyzer_name:
+          type: "string"
+          description: "Name of service instance used as analyzer"
+          presence: "optional"
+        nh_mode:
+          presence: "optional"
+          description: "This mode used to determine static or dynamic nh "
+          $ref: "types.json#/definitions/NHModeType"
+        juniper_header:
+          type: "boolean"
+          description: "This flag is used to determine with/without juniper-header"
+          presence: "optional"
+        udp_port:
+          type: "integer"
+          description: "ip udp port used in contrail default encapsulation for mirroring"
+          presence: "optional"
+        routing_instance:
+          type: "string"
+          description: "Internal use only, should be set to -1"
+          presence: "true"
+        static_nh_header:
+          presence: "optional"
+          description: "vtep details required if static nh enabled"
+          $ref: "types.json#/definitions/StaticMirrorNhType"
+        analyzer_ip_address:
+          type: "string"
+          description: "ip address of interface to which mirrored packets are sent"
+          presence: "true"
+        encapsulation:
+          type: "string"
+          description: "Encapsulation for Mirrored packet, not used currently"
+          presence: "optional"
+        analyzer_mac_address:
+          type: "string"
+          description: "mac address of interface to which mirrored packets are sent "
+          presence: "optional"
+        nic_assisted_mirroring:
+          type: "boolean"
+          description: "This flag is used to select nic assisted mirroring"
+          presence: "optional"
+    ServiceInstanceInterfaceType:
+      type: "object"
+      properties:
+        virtual_network:
+          type: "string"
+          description: "Interface belongs to this virtual network."
+          presence: "true"
+        ip_address:
+          presence: "optional"
+          description: "Shared ip for this interface (Only V1)"
+          $ref: "types.json#/definitions/IpAddressType"
+        allowed_address_pairs:
+          presence: "optional"
+          description: "Allowed address pairs, list of (IP address, MAC) for this interface"
+          $ref: "types.json#/definitions/AllowedAddressPairs"
+        static_routes:
+          presence: "optional"
+          description: "Static routes for this interface (Only V1)"
+          $ref: "types.json#/definitions/RouteTableType"
+    VirtualNetworkPolicyType:
+      type: "object"
+      properties:
+        timer:
+          presence: "optional"
+          description: "Timer to specify when the policy can be active"
+          $ref: "types.json#/definitions/TimerType"
+        sequence:
+          presence: "optional"
+          description: "Sequence number to specify order of policy attachment to network"
+          $ref: "types.json#/definitions/SequenceType"
+    VlanIdType:
+      minimum: 1
+      type: "integer"
+      maximum: 4094
+    ServiceInstanceType:
+      type: "object"
+      properties:
+        right_virtual_network:
+          type: "string"
+          description: "Deprecated"
+          presence: "optional"
+        right_ip_address:
+          presence: "optional"
+          description: "Deprecated"
+          $ref: "types.json#/definitions/IpAddressType"
+        availability_zone:
+          type: "string"
+          description: "Availability zone used to spawn VM(s) for this service instance, used in version 1 (V1) only"
+          presence: "optional"
+        management_virtual_network:
+          type: "string"
+          description: "Deprecated"
+          presence: "optional"
+        scale_out:
+          presence: "optional"
+          description: "Number of virtual machines in this service instance, used in version 1 (V1) only"
+          $ref: "types.json#/definitions/ServiceScaleOutType"
+        ha_mode:
+          presence: "optional"
+          description: "When scale-out is greater than one, decides if active-active or active-backup, used in version 1 (V1) only"
+          $ref: "types.json#/definitions/AddressMode"
+        virtual_router_id:
+          type: "string"
+          description: "UUID of a virtual-router on which this service instance need to spawn. Used to spawn services on CPE device when Nova is not present"
+          presence: "optional"
+        interface_list:
+          items:
+            $ref: "types.json#/definitions/ServiceInstanceInterfaceType"
+          type: "array"
+          description: "List of service instance interface properties. Ordered list as per service template"
+          presence: "true"
+        left_ip_address:
+          presence: "optional"
+          description: "Deprecated"
+          $ref: "types.json#/definitions/IpAddressType"
+        left_virtual_network:
+          type: "string"
+          description: "Deprecated"
+          presence: "optional"
+        auto_policy:
+          type: "boolean"
+          description: "Set when system creates internal service chains, example SNAT with router external flag in logical router"
+          presence: "system-only"
+    SecurityGroupIdType:
+      minimum: 8000000
+      type: "integer"
+      maximum: 4294967296
+    AddressAllocationModeType:
+      enum:
+        - "user-defined-subnet-preferred"
+        - "user-defined-subnet-only"
+        - "flat-subnet-preferred"
+        - "flat-subnet-only"
+      type: "string"
+    HealthCheckProtocolType:
+      enum:
+        - "PING"
+        - "HTTP"
+        - "BFD"
+      type: "string"
+    DirectionType:
+      enum:
+        - ">"
+        - "<>"
+      type: "string"
+    MACMoveTimeWindow:
+      minimum: 1
+      type: "integer"
+      maximum: 60
+    HealthmonitorType:
+      enum:
+        - "PING"
+        - "TCP"
+        - "HTTP"
+        - "HTTPS"
+      type: "string"
+    DhcpOptionsListType:
+      type: "object"
+      properties:
+        dhcp_option:
+          items:
+            $ref: "types.json#/definitions/DhcpOptionType"
+          type: "array"
+          description: "List of DHCP options"
+    VlanPriorityType:
+      minimum: 0
+      type: "integer"
+      maximum: 7
+    UveKeysType:
+      type: "object"
+      properties:
+        uve_key:
+          items:
+            type: "string"
+          type: "array"
+          description: "List of UVE tables where this alarm config should be applied"
+          presence: "true"
+    RpfModeType:
+      enum:
+        - "enable"
+        - "disable"
+      type: "string"
+    IpAddressType:
+      type: "string"
+    LoadbalancerHealthmonitorType:
+      type: "object"
+      properties:
+        delay:
+          type: "integer"
+          description: "Time in seconds  at which health check is repeated"
+          presence: "true"
+        expected_codes:
+          type: "string"
+          description: "In case monitor protocol is HTTP, expected return code for HTTP operations like 200 ok."
+          presence: "optional"
+        max_retries:
+          type: "integer"
+          description: "Number of failures before declaring health bad"
+          presence: "true"
+        http_method:
+          type: "string"
+          description: "In case monitor protocol is HTTP, type of http method used like GET, PUT, POST etc"
+          presence: "optional"
+        admin_state:
+          type: "boolean"
+          description: "Administratively up or dowm."
+          presence: "optional"
+        timeout:
+          type: "integer"
+          description: "Time in seconds to wait for response"
+          presence: "true"
+        url_path:
+          type: "string"
+          description: "In case monitor protocol is HTTP, URL to be used. In case of ICMP, ip address"
+          presence: "optional"
+        monitor_type:
+          presence: "true"
+          description: "Protocol used to monitor health, PING, HTTP, HTTPS or TCP"
+          $ref: "types.json#/definitions/HealthmonitorType"
+    IpamSubnetType:
+      type: "object"
+      properties:
+        subnet:
+          presence: "true"
+          description: "ip prefix and length for the subnet"
+          $ref: "types.json#/definitions/SubnetType"
+        addr_from_start:
+          type: "boolean"
+          description: "Start address allocation from start or from end of address range."
+          presence: "optional"
+        enable_dhcp:
+          type: "boolean"
+          description: "Enable DHCP for the VM(s) in this subnet"
+          presence: "optional"
+        default_gateway:
+          presence: "optional"
+          description: "default-gateway ip address in the subnet, if not provided one is auto generated by the system."
+          $ref: "types.json#/definitions/IpAddressType"
+        alloc_unit:
+          type: "integer"
+          description: "allocation unit for this subnet to allocate bulk ip addresses"
+          presence: "optional"
+        created:
+          presence: "optional"
+          type: "string"
+          description: "timestamp when subnet object gets created"
+          format: "date-time"
+        dns_nameservers:
+          items:
+            type: "string"
+          type: "array"
+          description: "Tenant DNS servers ip address in tenant DNS method"
+          presence: "optional"
+        dhcp_option_list:
+          presence: "optional"
+          description: "DHCP options list to be sent via DHCP for  VM(s) in this subnet"
+          $ref: "types.json#/definitions/DhcpOptionsListType"
+        subnet_uuid:
+          type: "string"
+          description: "Subnet UUID is auto generated by the system"
+          presence: "system-only"
+        allocation_pools:
+          items:
+            $ref: "types.json#/definitions/AllocationPoolType"
+          type: "array"
+          description: "List of ranges of ip address within the subnet from which to allocate ip address. default is entire prefix"
+          presence: "optional"
+        last_modified:
+          presence: "optional"
+          type: "string"
+          description: "timestamp when subnet object gets updated"
+          format: "date-time"
+        host_routes:
+          presence: "optional"
+          description: "Host routes to be sent via DHCP for VM(s) in this subnet, Next hop for these routes is always default gateway"
+          $ref: "types.json#/definitions/RouteTableType"
+        dns_server_address:
+          presence: "optional"
+          description: "DNS server ip address in the subnet, if not provided one is auto generated by the system."
+          $ref: "types.json#/definitions/IpAddressType"
+        subnet_name:
+          type: "string"
+          description: "User provided name for this subnet"
+          presence: "optional"
+    LoadbalancerMethodType:
+      enum:
+        - "ROUND_ROBIN"
+        - "LEAST_CONNECTIONS"
+        - "SOURCE_IP"
+      type: "string"
+    LongLivedGracefulRestartTimeType:
+      minimum: 0
+      type: "integer"
+      maximum: 16777215
+    IpAddressesType:
+      type: "object"
+      properties:
+        ip_address:
+          $ref: "types.json#/definitions/IpAddressType"
+    E2servicetype:
+      enum:
+        - "point-to-point"
+        - "point-to-list"
+        - "multi-point-to-multi-point"
+      type: "string"
+    SecurityLoggingObjectRuleListType:
+      type: "object"
+      properties:
+        rule:
+          items:
+            $ref: "types.json#/definitions/SecurityLoggingObjectRuleEntryType"
+          type: "array"
+          description: "List of rules along with logging rate for each rule. Both rule-uuid and rate are optional. When rule-uuid is absent then it means all rules of associated SG or network-policy"
+          presence: "optional"
+    AclEntriesType:
+      type: "object"
+      properties:
+        dynamic:
+          type: "boolean"
+          description: "For Internal use only"
+          presence: "optional"
+        acl_rule:
+          items:
+            $ref: "types.json#/definitions/AclRuleType"
+          type: "array"
+          description: "For Internal use only"
+          presence: "true"
+    ServiceHealthCheckType:
+      type: "object"
+      properties:
+        delayUsecs:
+          type: "integer"
+          description: "Time in micro seconds at which health check is repeated"
+          presence: "optional"
+        timeoutUsecs:
+          type: "integer"
+          description: "Time in micro seconds to wait for response"
+          presence: "optional"
+        enabled:
+          type: "boolean"
+          description: "Administratively enable or disable this health check."
+          presence: "optional"
+        delay:
+          type: "integer"
+          description: "Time in seconds at which health check is repeated"
+          presence: "true"
+        expected_codes:
+          type: "string"
+          description: "In case monitor protocol is HTTP, expected return code for HTTP operations like 200 ok."
+          presence: "optional"
+        max_retries:
+          type: "integer"
+          description: "Number of failures before declaring health bad"
+          presence: "true"
+        health_check_type:
+          presence: "true"
+          description: "Health check type, currently only link-local, end-to-end and segment are supported"
+          $ref: "types.json#/definitions/HealthCheckType"
+        http_method:
+          type: "string"
+          description: "In case monitor protocol is HTTP, type of http method used like GET, PUT, POST etc"
+          presence: "optional"
+        timeout:
+          type: "integer"
+          description: "Time in seconds to wait for response"
+          presence: "true"
+        url_path:
+          type: "string"
+          description: "In case monitor protocol is HTTP, URL to be used. In case of ICMP, ip address"
+          presence: "optional"
+        monitor_type:
+          presence: "true"
+          description: "Protocol used to monitor health, currently only HTTP, ICMP(ping), and BFD are supported"
+          $ref: "types.json#/definitions/HealthCheckProtocolType"
+    PermType2:
+      type: "object"
+      properties:
+        owner:
+          type: "string"
+          description: "Owner tenant of the object"
+          presence: "true"
+        owner_access:
+          presence: "true"
+          description: "Owner permissions of the object"
+          $ref: "types.json#/definitions/AccessType"
+        global_access:
+          presence: "optional"
+          description: "Globally(others) shared object and permissions for others of the object"
+          $ref: "types.json#/definitions/AccessType"
+        share:
+          items:
+            $ref: "types.json#/definitions/ShareType"
+          type: "array"
+          description: "Selectively shared object, List of (tenant, permissions)"
+          presence: "optional"
+    IpAddressFamilyType:
+      enum:
+        - "v4"
+        - "v6"
+      type: "string"
+    PolicyEntriesType:
+      type: "object"
+      properties:
+        policy_rule:
+          items:
+            $ref: "types.json#/definitions/PolicyRuleType"
+          type: "array"
+          description: "List of policy rules"
+          presence: "true"
+    MACLimitControlType:
+      type: "object"
+      properties:
+        mac_limit:
+          type: "integer"
+          description: "Number of MACs that can be learnt"
+          presence: "true"
+        mac_limit_action:
+          presence: "optional"
+          description: "Action to be taken when MAC limit exceeds"
+          $ref: "types.json#/definitions/MACLimitExceedActionType"
+    TrafficDirectionType:
+      default: "both"
+      enum:
+        - "ingress"
+        - "egress"
+        - "both"
+      type: "string"
+    PortMappings:
+      type: "object"
+      properties:
+        port_mappings:
+          items:
+            $ref: "types.json#/definitions/PortMap"
+          type: "array"
+    SubnetMethodType:
+      enum:
+        - "user-defined-subnet"
+        - "flat-subnet"
+        - "auto-subnet"
+      type: "string"
+    KeyValuePair:
+      type: "object"
+      properties:
+        value:
+          type: "string"
+        key:
+          type: "string"
+    FlowAgingTimeout:
+      type: "object"
+      properties:
+        timeout_in_seconds:
+          type: "integer"
+        protocol:
+          type: "string"
+        port:
+          type: "integer"
+    RouteTargetList:
+      type: "object"
+      properties:
+        route_target:
+          items:
+            type: "string"
+          type: "array"
+    FlowAgingTimeoutList:
+      type: "object"
+      properties:
+        flow_aging_timeout:
+          items:
+            $ref: "types.json#/definitions/FlowAgingTimeout"
+          type: "array"
+          description: "List of (ip protocol, port number, timeout in seconds)"
+          presence: "optional"
+    NHModeType:
+      enum:
+        - "dynamic"
+        - "static"
+      type: "string"
+    AlarmExpression:
+      type: "object"
+      properties:
+        operations:
+          presence: "true"
+          description: "operation to compare operand1 and operand2"
+          $ref: "types.json#/definitions/AlarmOperation"
+        operand1:
+          type: "string"
+          description: "UVE attribute specified in the dotted format. Example: NodeStatus.process_info.process_state"
+          presence: "true"
+        variables:
+          items:
+            type: "string"
+          type: "array"
+          description: "List of UVE attributes that would be useful when the alarm is raised. For example, user may want to raise an alarm if the NodeStatus.process_info.process_state != PROCESS_STATE_RUNNING. But, it would be useful to know the process_name whose state != PROCESS_STATE_RUNNING. This UVE attribute which is neither part of operand1 nor operand2 may be specified in variables"
+          presence: "optional"
+        operand2:
+          presence: "true"
+          description: "UVE attribute or a json value to compare with the UVE attribute in operand1"
+          $ref: "types.json#/definitions/AlarmOperand2"
+    QosConfigType:
+      enum:
+        - "vhost"
+        - "fabric"
+        - "project"
+      type: "string"
+    LogicalInterfaceType:
+      enum:
+        - "l2"
+        - "l3"
+      type: "string"
+    DiscoveryServiceAssignmentType:
+      type: "object"
+      properties:
+        subscriber:
+          items:
+            $ref: "types.json#/definitions/DiscoveryPubSubEndPointType"
+          type: "array"
+          description: "subscriber set"
+          presence: "true"
+        publisher:
+          presence: "true"
+          description: "Publisher set"
+          $ref: "types.json#/definitions/DiscoveryPubSubEndPointType"
+    TelemetryResourceInfo:
+      type: "object"
+      properties:
+        path:
+          type: "string"
+        rate:
+          type: "string"
+        name:
+          type: "string"
+    MatchConditionType:
+      type: "object"
+      properties:
+        src_port:
+          presence: "true"
+          description: "Range of source port for layer 4 protocol"
+          $ref: "types.json#/definitions/PortType"
+        src_address:
+          presence: "true"
+          description: "Source ip matching criteria"
+          $ref: "types.json#/definitions/AddressType"
+        ethertype:
+          presence: "true"
+          $ref: "types.json#/definitions/EtherType"
+        dst_address:
+          presence: "true"
+          description: "Destination ip matching criteria"
+          $ref: "types.json#/definitions/AddressType"
+        dst_port:
+          presence: "true"
+          description: "Range of destination  port for layer 4 protocol"
+          $ref: "types.json#/definitions/PortType"
+        protocol:
+          type: "string"
+          description: "Layer 4 protocol in ip packet"
+          presence: "true"
+    SNMPCredentials:
+      type: "object"
+      properties:
+        v3_privacy_protocol:
+          type: "string"
+        retries:
+          type: "integer"
+        v3_authentication_password:
+          type: "string"
+        v3_engine_time:
+          type: "integer"
+        v3_engine_id:
+          type: "string"
+        local_port:
+          type: "integer"
+        v3_security_level:
+          type: "string"
+        v3_context:
+          type: "string"
+        v3_security_name:
+          type: "string"
+        v3_authentication_protocol:
+          type: "string"
+        v2_community:
+          type: "string"
+        v3_security_engine_id:
+          type: "string"
+        v3_context_engine_id:
+          type: "string"
+        version:
+          type: "integer"
+        timeout:
+          type: "integer"
+        v3_privacy_password:
+          type: "string"
+        v3_engine_boots:
+          type: "integer"
+    DnsRecordOrderType:
+      enum:
+        - "fixed"
+        - "random"
+        - "round-robin"
+      type: "string"
+    QosIdForwardingClassPairs:
+      type: "object"
+      properties:
+        qos_id_forwarding_class_pair:
+          items:
+            $ref: "types.json#/definitions/QosIdForwardingClassPair"
+          type: "array"
+    IpamDnsMethodType:
+      enum:
+        - "none"
+        - "default-dns-server"
+        - "tenant-dns-server"
+        - "virtual-dns-server"
+      type: "string"
+    VirtualRouterNetworkIpamType:
+      type: "object"
+      properties:
+        subnet:
+          items:
+            $ref: "types.json#/definitions/SubnetType"
+          type: "array"
+          description: "List of ip prefix and length for vrouter specific subnets"
+          presence: "optional"
+        allocation_pools:
+          items:
+            $ref: "types.json#/definitions/AllocationPoolType"
+          type: "array"
+          description: "List of ranges of ip address for vrouter specific allocation"
+          presence: "optional"
+    MACLimitExceedActionType:
+      enum:
+        - "log"
+        - "alarm"
+        - "shutdown"
+        - "drop"
+      type: "string"
+    PeeringServiceType:
+      enum:
+        - "public-peering"
+      type: "string"
+    ServiceType:
+      enum:
+        - "firewall"
+        - "analyzer"
+        - "source-nat"
+        - "loadbalancer"
+      type: "string"
+    ServiceModeType:
+      enum:
+        - "transparent"
+        - "in-network"
+        - "in-network-nat"
+      type: "string"
+    DomainLimitsType:
+      type: "object"
+      properties:
+        project_limit:
+          type: "integer"
+          description: "Maximum number of projects allowed in this domain"
+          presence: "optional"
+        virtual_network_limit:
+          type: "integer"
+          description: "Maximum number of virtual networks allowed in this domain"
+          presence: "optional"
+        security_group_limit:
+          type: "integer"
+          description: "Maximum number of security groups allowed in this domain"
+          presence: "optional"
+    TelemetryStateInfo:
+      type: "object"
+      properties:
+        resource:
+          items:
+            $ref: "types.json#/definitions/TelemetryResourceInfo"
+          type: "array"
+        server_port:
+          type: "integer"
+        server_ip:
+          type: "string"
+    FirewallRuleMatchTagsTypeIdList:
+      type: "object"
+      properties:
+        tag_type:
+          items:
+            type: "integer"
+          type: "array"
+          presence: "true"
+    DiscoveryPubSubEndPointType:
+      type: "object"
+      properties:
+        ep_version:
+          type: "string"
+          description: "All  servers or clients whose version match this version"
+          presence: "optional"
+        ep_id:
+          type: "string"
+          description: "Specific service or client which is set of one."
+          presence: "optional"
+        ep_type:
+          type: "string"
+          description: "Type of service or client"
+          presence: "true"
+        ep_prefix:
+          presence: "optional"
+          description: "All  servers or clients whose ip match this prefix"
+          $ref: "types.json#/definitions/SubnetType"
+    IpamDnsAddressType:
+      type: "object"
+      properties:
+        tenant_dns_server_address:
+          presence: "optional"
+          description: "In case of tenant DNS server method, Ip address of DNS server. This will be given in DHCP"
+          $ref: "types.json#/definitions/IpAddressesType"
+        virtual_dns_server_name:
+          type: "string"
+          description: "In case of virtual DNS server, name of virtual DNS server"
+          presence: "optional"
+    RouteNextHopType:
+      enum:
+        - "service-instance"
+        - "ip-address"
+      type: "string"
+    VirtualNetworkIdType:
+      minimum: 1
+      type: "integer"
+      maximum: 4294967296
+    MACMoveLimitControlType:
+      type: "object"
+      properties:
+        mac_move_time_window:
+          presence: "true"
+          description: "MAC move time window"
+          $ref: "types.json#/definitions/MACMoveTimeWindow"
+        mac_move_limit:
+          type: "integer"
+          description: "Number of MAC moves permitted in mac move time window"
+          presence: "true"
+        mac_move_limit_action:
+          presence: "optional"
+          description: "Action to be taken when MAC move limit exceeds"
+          $ref: "types.json#/definitions/MACLimitExceedActionType"
+    VirtualIpType:
+      type: "object"
+      properties:
+        status:
+          type: "string"
+          description: "Operating status for this virtual ip."
+          presence: "system-only"
+        status_description:
+          type: "string"
+          description: "Operating status description this virtual ip."
+          presence: "system-only"
+        protocol:
+          presence: "required"
+          description: "IP protocol string like http, https or tcp."
+          $ref: "types.json#/definitions/LoadbalancerProtocolType"
+        subnet_id:
+          presence: "required"
+          description: "UUID of subnet in which to allocate the Virtual IP."
+          $ref: "types.json#/definitions/UuidStringType"
+        persistence_cookie_name:
+          type: "string"
+          description: "Set this string if the relation of client and server(pool member) need to persist."
+          presence: "optional"
+        connection_limit:
+          type: "integer"
+          description: "Maximum number of concurrent connections"
+          presence: "optional"
+        persistence_type:
+          presence: "optional"
+          description: "Method for persistence. HTTP_COOKIE, SOURCE_IP or APP_COOKIE."
+          $ref: "types.json#/definitions/SessionPersistenceType"
+        admin_state:
+          type: "boolean"
+          description: "Administrative up or down."
+          presence: "optional"
+        address:
+          presence: "system-only"
+          description: "IP address automatically allocated by system."
+          $ref: "types.json#/definitions/IpAddressType"
+        protocol_port:
+          type: "integer"
+          description: "Layer 4 protocol destination port."
+          presence: "required"
+    FatFlowProtocols:
+      type: "object"
+      properties:
+        fat_flow_protocol:
+          items:
+            $ref: "types.json#/definitions/ProtocolType"
+          type: "array"
+    PhysicalRouterRole:
+      enum:
+        - "spine"
+        - "leaf"
+        - "e2-access"
+        - "e2-provider"
+        - "e2-internet"
+        - "e2-vrr"
+      type: "string"
+    VpnType:
+      default: "l3"
+      enum:
+        - "l2"
+        - "l3"
+      type: "string"
+    LinklocalServiceEntryType:
+      type: "object"
+      properties:
+        ip_fabric_service_ip:
+          items:
+            type: "string"
+          type: "array"
+          description: "Destination ip address to which link local traffic will forwarded"
+          presence: "optional"
+        linklocal_service_name:
+          type: "string"
+          description: "Name of the link local service. VM name resolution of this name will result in link local ip address"
+          presence: "true"
+        linklocal_service_ip:
+          type: "string"
+          description: "ip address of the link local service."
+          presence: "true"
+        ip_fabric_service_port:
+          type: "integer"
+          description: "Destination TCP port number to which link local traffic will forwarded"
+          presence: "true"
+        ip_fabric_DNS_service_name:
+          type: "string"
+          description: "DNS name to which link local service will be proxied"
+          presence: "optional"
+        linklocal_service_port:
+          type: "integer"
+          description: "Destination TCP port number of link local service"
+          presence: "true"
+    CommunityAttributes:
+      type: "object"
+      properties:
+        community_attribute:
+          $ref: "types.json#/definitions/CommunityAttribute"
+    ServiceTemplateInterfaceType:
+      type: "object"
+      properties:
+        static_route_enable:
+          type: "boolean"
+          description: "Static routes configured required on this interface of service instance (Only V1)"
+          presence: "optional"
+        shared_ip:
+          type: "boolean"
+          description: "Shared ip is required on this interface when service instance is scaled out (Only V1)"
+          presence: "optional"
+        service_interface_type:
+          presence: "true"
+          description: "Type of service interface supported by this template left, right or other."
+          $ref: "types.json#/definitions/ServiceInterfaceType"
+    AlarmSeverity:
+      minimum: 0
+      type: "integer"
+      maximum: 2
+    LoadbalancerMemberType:
+      type: "object"
+      properties:
+        status:
+          type: "string"
+          description: "Operational status of the member."
+          presence: "system-only"
+        status_description:
+          type: "string"
+          description: "Operational status description of the member."
+          presence: "system-only"
+        weight:
+          type: "integer"
+          description: "Weight for load balancing"
+          presence: "optional"
+        admin_state:
+          type: "boolean"
+          description: "Administrative up or down."
+          presence: "optional"
+        address:
+          presence: "required"
+          description: "Ip address of the member"
+          $ref: "types.json#/definitions/IpAddressType"
+        protocol_port:
+          type: "integer"
+          description: "Destination port for the application on the member."
+          presence: "optional"
+    MacAddressesType:
+      type: "object"
+      properties:
+        mac_address:
+          items:
+            type: "string"
+          type: "array"
+    AlarmAndList:
+      type: "object"
+      properties:
+        and_list:
+          items:
+            $ref: "types.json#/definitions/AlarmExpression"
+          type: "array"
+    ServiceVirtualizationType:
+      enum:
+        - "virtual-machine"
+        - "network-namespace"
+        - "vrouter-instance"
+        - "physical-device"
+      type: "string"
+    MplsExpType:
+      minimum: 0
+      type: "integer"
+      maximum: 7
+    SessionPersistenceType:
+      enum:
+        - "SOURCE_IP"
+        - "HTTP_COOKIE"
+        - "APP_COOKIE"
+      type: "string"
+    LoadbalancerPoolType:
+      type: "object"
+      properties:
+        status:
+          type: "string"
+          description: "Operating status for this loadbalancer pool."
+          presence: "system-only"
+        protocol:
+          presence: "required"
+          description: "IP protocol string like http, https or tcp."
+          $ref: "types.json#/definitions/LoadbalancerProtocolType"
+        subnet_id:
+          presence: "required"
+          description: "UUID of the subnet from where the members of the pool are reachable."
+          $ref: "types.json#/definitions/UuidStringType"
+        session_persistence:
+          presence: "optional"
+          description: "Method for persistence. HTTP_COOKIE, SOURCE_IP or APP_COOKIE."
+          $ref: "types.json#/definitions/SessionPersistenceType"
+        admin_state:
+          type: "boolean"
+          description: "Administrative up or down"
+          presence: "optional"
+        persistence_cookie_name:
+          type: "string"
+          description: "To Be Added"
+          presence: "optional"
+        status_description:
+          type: "string"
+          description: "Operating status description for this loadbalancer pool."
+          presence: "system-only"
+        loadbalancer_method:
+          presence: "optional"
+          description: "Load balancing method ROUND_ROBIN, LEAST_CONNECTIONS, or SOURCE_IP"
+          $ref: "types.json#/definitions/LoadbalancerMethodType"
+    EndOfRibTimeType:
+      minimum: 0
+      type: "integer"
+      maximum: 4095
+    VirtualRouterType:
+      enum:
+        - "embedded"
+        - "tor-agent"
+        - "tor-service-node"
+      type: "string"
+    FirewallSequence:
+      type: "object"
+      properties:
+        sequence:
+          type: "string"
+          presence: "true"
+    PolicyRuleType:
+      type: "object"
+      properties:
+        direction:
+          presence: "true"
+          $ref: "types.json#/definitions/DirectionType"
+        protocol:
+          type: "string"
+          description: "Layer 4 protocol in ip packet"
+          presence: "true"
+        dst_addresses:
+          items:
+            $ref: "types.json#/definitions/AddressType"
+          type: "array"
+          description: "Destination ip matching criteria"
+          presence: "true"
+        action_list:
+          presence: "true"
+          description: "Actions to be performed if packets match condition"
+          $ref: "types.json#/definitions/ActionListType"
+        created:
+          presence: "optional"
+          type: "string"
+          description: "timestamp when security group rule object gets created"
+          format: "date-time"
+        rule_uuid:
+          type: "string"
+          description: "Rule UUID is identifier used in flow records to identify rule"
+          presence: "optional"
+        dst_ports:
+          items:
+            $ref: "types.json#/definitions/PortType"
+          type: "array"
+          description: "Range of destination  port for layer 4 protocol"
+          presence: "true"
+        application:
+          items:
+            type: "string"
+          type: "array"
+          description: "Optionally application can be specified instead of protocol and port. not currently implemented"
+          presence: "optional"
+        last_modified:
+          presence: "optional"
+          type: "string"
+          description: "timestamp when security group rule object gets updated"
+          format: "date-time"
+        ethertype:
+          presence: "true"
+          $ref: "types.json#/definitions/EtherType"
+        src_addresses:
+          items:
+            $ref: "types.json#/definitions/AddressType"
+          type: "array"
+          description: "Source ip matching criteria"
+          presence: "true"
+        rule_sequence:
+          presence: "optional"
+          description: "Deprecated, Will be removed because rules themselves are already an ordered list"
+          $ref: "types.json#/definitions/SequenceType"
+        src_ports:
+          items:
+            $ref: "types.json#/definitions/PortType"
+          type: "array"
+          description: "Range of source port for layer 4 protocol"
+          presence: "true"
+    AddressType:
+      type: "object"
+      properties:
+        security_group:
+          type: "string"
+          description: "Any address that belongs to interface with this security-group"
+          presence: "exclusive"
+        subnet:
+          presence: "exclusive"
+          description: "Any address that belongs to this subnet"
+          $ref: "types.json#/definitions/SubnetType"
+        network_policy:
+          type: "string"
+          description: "Any address that belongs to virtual network which has this policy attached"
+          presence: "exclusive"
+        subnet_list:
+          items:
+            $ref: "types.json#/definitions/SubnetType"
+          type: "array"
+          description: "Any address that belongs to any one of subnet in this list"
+          presence: "exclusive"
+        virtual_network:
+          type: "string"
+          description: "Any address that belongs to this virtual network "
+          presence: "exclusive"
+    VirtualDnsRecordType:
+      type: "object"
+      properties:
+        record_name:
+          type: "string"
+          description: "DNS name to be resolved"
+          presence: "true"
+        record_class:
+          presence: "optional"
+          description: "DNS record class supported is IN"
+          $ref: "types.json#/definitions/DnsRecordClassType"
+        record_data:
+          type: "string"
+          description: "DNS record data is either ip address or string depending on type"
+          presence: "true"
+        record_type:
+          presence: "optional"
+          description: "DNS record type can be A, AAAA, CNAME, PTR, NS and MX"
+          $ref: "types.json#/definitions/DnsRecordTypeType"
+        record_ttl_seconds:
+          type: "integer"
+          description: "Time To Live for this DNS record"
+          presence: "optional"
+        record_mx_preference:
+          type: "integer"
+          presence: "optional"
+    GracefulRestartTimeType:
+      minimum: 0
+      type: "integer"
+      maximum: 4095
+    IsidType:
+      minimum: 1
+      type: "integer"
+      maximum: 16777215
+    ActionListType:
+      type: "object"
+      properties:
+        gateway_name:
+          type: "string"
+          description: "For internal use only"
+          presence: "optional"
+        log:
+          type: "boolean"
+          description: "Flow records for traffic matching this rule are sent at higher priority"
+          presence: "optional"
+        alert:
+          type: "boolean"
+          description: "For internal use only"
+          presence: "optional"
+        qos_action:
+          type: "string"
+          description: "FQN of Qos configuration object for QoS marking"
+          presence: "optional"
+        assign_routing_instance:
+          type: "string"
+          description: "For internal use only"
+          presence: "optional"
+        mirror_to:
+          presence: "optional"
+          description: "Mirror traffic matching this rule"
+          $ref: "types.json#/definitions/MirrorActionType"
+        simple_action:
+          presence: "true"
+          description: "Simple allow(pass) or deny action for traffic matching this rule"
+          $ref: "types.json#/definitions/SimpleActionType"
+        apply_service:
+          items:
+            type: "string"
+          type: "array"
+          description: "Ordered list of service instances in service chain applied to traffic matching the rule"
+          presence: "optional"
+    L4PortType:
+      minimum: -1
+      type: "integer"
+      maximum: 65535
+    AccessType:
+      minimum: 0
+      type: "integer"
+      maximum: 7
+    ForwardingModeType:
+      enum:
+        - "l2_l3"
+        - "l2"
+        - "l3"
+      type: "string"
+    AclRuleType:
+      type: "object"
+      properties:
+        rule_uuid:
+          type: "string"
+          description: "Rule UUID is identifier used in flow records to identify rule"
+          presence: "optional"
+        match_condition:
+          presence: "true"
+          description: "Match condition for packets"
+          $ref: "types.json#/definitions/MatchConditionType"
+        direction:
+          presence: "optional"
+          description: "Direction in the rule"
+          $ref: "types.json#/definitions/DirectionType"
+        action_list:
+          presence: "true"
+          description: "Actions to be performed if packets match condition"
+          $ref: "types.json#/definitions/ActionListType"
+    ControlTrafficDscpType:
+      type: "object"
+      properties:
+        control:
+          presence: "optional"
+          description: "DSCP value for control protocols traffic"
+          $ref: "types.json#/definitions/DscpValueType"
+        analytics:
+          presence: "optional"
+          description: "DSCP value for traffic towards analytics"
+          $ref: "types.json#/definitions/DscpValueType"
+        dns:
+          presence: "optional"
+          description: "DSCP value for DNS traffic"
+          $ref: "types.json#/definitions/DscpValueType"
+    DnsRecordClassType:
+      enum:
+        - "IN"
+      type: "string"
+    QosIdForwardingClassPair:
+      type: "object"
+      properties:
+        key:
+          type: "integer"
+          description: "QoS bit value (DSCP or Vlan priority or EXP bit value"
+        forwarding_class_id:
+          $ref: "types.json#/definitions/ForwardingClassId"
+    UuidType:
+      type: "object"
+      properties:
+        uuid_mslong:
+          type: "integer"
+        uuid_lslong:
+          type: "integer"
+    PortMap:
+      type: "object"
+      properties:
+        src_port:
+          type: "integer"
+        protocol:
+          type: "string"
+        dst_port:
+          type: "integer"
+    SimpleActionType:
+      enum:
+        - "deny"
+        - "pass"
+      type: "string"
+    ServiceConnectionType:
+      enum:
+        - "vpws-l2ckt"
+        - "vpws-l2vpn"
+        - "vpws-evpn"
+        - "fabric-interface"
+      type: "string"
+    VxlanNetworkIdentifierType:
+      minimum: 1
+      type: "integer"
+      maximum: 16777215
+    PortType:
+      type: "object"
+      properties:
+        end_port:
+          presence: "true"
+          $ref: "types.json#/definitions/L4PortType"
+        start_port:
+          presence: "true"
+          $ref: "types.json#/definitions/L4PortType"
+    FirewallServiceType:
+      type: "object"
+      properties:
+        protocol:
+          type: "string"
+          description: "Layer 4 protocol in ip packet"
+        dst_ports:
+          description: "Range of destination port for layer 4 protocol"
+          $ref: "types.json#/definitions/PortType"
+        src_ports:
+          description: "Range of source port for layer 4 protocol"
+          $ref: "types.json#/definitions/PortType"
+        protocol_id:
+          type: "integer"
+          description: "Layer 4 protocol id in ip packet"
+    SequenceType:
+      type: "object"
+      properties:
+        major:
+          type: "integer"
+          presence: "true"
+        minor:
+          type: "integer"
+          presence: "true"
+    UuidStringType:
+      type: "string"
+    MACAgingTime:
+      default: "300"
+      minimum: 0
+      type: "integer"
+      maximum: 86400
+    PermType:
+      type: "object"
+      properties:
+        owner:
+          type: "string"
+        owner_access:
+          $ref: "types.json#/definitions/AccessType"
+        other_access:
+          $ref: "types.json#/definitions/AccessType"
+        group:
+          type: "string"
+        group_access:
+          $ref: "types.json#/definitions/AccessType"
+    ProtocolType:
+      type: "object"
+      properties:
+        protocol:
+          type: "string"
+        port:
+          type: "integer"
+    PluginProperties:
+      type: "object"
+      properties:
+        plugin_property:
+          items:
+            $ref: "types.json#/definitions/PluginProperty"
+          type: "array"
+          description: "List of plugin specific properties (property, value)"
+          presence: "optional"
+    ServiceTemplateType:
+      type: "object"
+      properties:
+        availability_zone_enable:
+          type: "boolean"
+          description: "Enable availability zone for version 1 service instances"
+          presence: "optional"
+        instance_data:
+          type: "string"
+          description: "Opaque string (typically in json format) used to spawn a vrouter-instance."
+          presence: "optional"
+        ordered_interfaces:
+          type: "boolean"
+          description: "Deprecated"
+          presence: "optional"
+        service_virtualization_type:
+          presence: "optional"
+          description: "Service virtualization type decides how individual service instances are instantiated"
+          $ref: "types.json#/definitions/ServiceVirtualizationType"
+        interface_type:
+          items:
+            $ref: "types.json#/definitions/ServiceTemplateInterfaceType"
+          type: "array"
+          description: "List of interfaces which decided number of interfaces and type"
+          presence: "true"
+        image_name:
+          type: "string"
+          description: "Glance image name for the service virtual machine, Version 1 only"
+          presence: "optional"
+        service_mode:
+          presence: "true"
+          description: "Service instance mode decides how packets are forwarded across the service"
+          $ref: "types.json#/definitions/ServiceModeType"
+        version:
+          type: "integer"
+          presence: "optional"
+        service_type:
+          presence: "true"
+          description: "Service instance mode decides how routing happens across the service"
+          $ref: "types.json#/definitions/ServiceType"
+        flavor:
+          type: "string"
+          description: "Nova flavor used for service virtual machines, Version 1 only"
+          presence: "optional"
+        service_scaling:
+          type: "boolean"
+          description: "Enable scaling of service virtual machines, Version 1 only"
+          presence: "optional"
+        vrouter_instance_type:
+          presence: "optional"
+          description: "Mechanism used to spawn service instance, when vrouter is spawning instances.Allowed values libvirt-qemu, docker or netns"
+          $ref: "types.json#/definitions/VRouterInstanceType"
+    LoadbalancerType:
+      type: "object"
+      properties:
+        status:
+          type: "string"
+          description: "Operational status of the load balancer updated by system."
+          presence: "optional"
+        provisioning_status:
+          type: "string"
+          description: "Provisioning  status of the load balancer updated by system."
+          presence: "optional"
+        admin_state:
+          type: "boolean"
+          description: "Administrative up or down"
+          presence: "optional"
+        vip_address:
+          presence: "optional"
+          description: "Virtual ip for this LBaaS"
+          $ref: "types.json#/definitions/IpAddressType"
+        vip_subnet_id:
+          presence: "required"
+          description: "Subnet UUID of the subnet of VIP, representing virtual network."
+          $ref: "types.json#/definitions/UuidStringType"
+        operating_status:
+          type: "string"
+          description: "Operational status of the load balancer updated by system."
+          presence: "optional"
+    EncapsulationPrioritiesType:
+      type: "object"
+      properties:
+        encapsulation:
+          presence: "optional"
+          description: "Ordered list of encapsulation types to be used in priority"
+          $ref: "types.json#/definitions/EncapsulationType"
+    SubnetType:
+      type: "object"
+      properties:
+        ip_prefix:
+          type: "string"
+        ip_prefix_len:
+          type: "integer"
+    AlarmOrList:
+      type: "object"
+      properties:
+        or_list:
+          items:
+            $ref: "types.json#/definitions/AlarmAndList"
+          type: "array"
+    QuotaType:
+      type: "object"
+      properties:
+        virtual_router:
+          type: "integer"
+          description: "Maximum number of logical routers"
+          presence: "optional"
+        network_policy:
+          type: "integer"
+          description: "Maximum number of network policies"
+          presence: "optional"
+        loadbalancer_pool:
+          type: "integer"
+          description: "Maximum number of loadbalancer pools"
+          presence: "optional"
+        route_table:
+          type: "integer"
+          description: "Maximum number of route tables"
+          presence: "optional"
+        subnet:
+          type: "integer"
+          description: "Maximum number of subnets"
+          presence: "optional"
+        network_ipam:
+          type: "integer"
+          description: "Maximum number of network IPAMs"
+          presence: "optional"
+        virtual_DNS_record:
+          type: "integer"
+          description: "Maximum number of virtual DNS records"
+          presence: "optional"
+        logical_router:
+          type: "integer"
+          description: "Maximum number of logical routers"
+          presence: "optional"
+        security_group_rule:
+          type: "integer"
+          description: "Maximum number of security group rules"
+          presence: "optional"
+        virtual_DNS:
+          type: "integer"
+          description: "Maximum number of virtual DNS servers"
+          presence: "optional"
+        service_instance:
+          type: "integer"
+          description: "Maximum number of service instances"
+          presence: "optional"
+        service_template:
+          type: "integer"
+          description: "Maximum number of service templates"
+          presence: "optional"
+        bgp_router:
+          type: "integer"
+          description: "Maximum number of bgp routers"
+          presence: "optional"
+        floating_ip:
+          type: "integer"
+          description: "Maximum number of floating ips"
+          presence: "optional"
+        floating_ip_pool:
+          type: "integer"
+          description: "Maximum number of floating ip pools"
+          presence: "optional"
+        loadbalancer_member:
+          type: "integer"
+          description: "Maximum number of loadbalancer member"
+          presence: "optional"
+        access_control_list:
+          type: "integer"
+          description: "Maximum number of access control lists"
+          presence: "optional"
+        virtual_machine_interface:
+          type: "integer"
+          description: "Maximum number of virtual machine interfaces"
+          presence: "optional"
+        instance_ip:
+          type: "integer"
+          description: "Maximum number of instance ips"
+          presence: "optional"
+        global_vrouter_config:
+          type: "integer"
+          description: "Maximum number of global vrouter configs"
+          presence: "optional"
+        security_logging_object:
+          type: "integer"
+          description: "Maximum number of security logging objects"
+          presence: "optional"
+        loadbalancer_healthmonitor:
+          type: "integer"
+          description: "Maximum number of loadbalancer health monitors"
+          presence: "optional"
+        virtual_ip:
+          type: "integer"
+          description: "Maximum number of virtual ips"
+          presence: "optional"
+        defaults:
+          type: "integer"
+          description: "Need to clarify"
+          presence: "optional"
+        security_group:
+          type: "integer"
+          description: "Maximum number of security groups"
+          presence: "optional"
+        virtual_network:
+          type: "integer"
+          description: "Maximum number of virtual networks"
+          presence: "optional"
+    RouteTableType:
+      type: "object"
+      properties:
+        route:
+          items:
+            $ref: "types.json#/definitions/RouteType"
+          type: "array"
+          description: "List of ip routes with following fields."
+    RouteType:
+      type: "object"
+      properties:
+        prefix:
+          type: "string"
+          description: "Ip prefix/len format prefix"
+        next_hop:
+          type: "string"
+          description: "Ip address or service instance name."
+        community_attributes:
+          $ref: "types.json#/definitions/CommunityAttributes"
+        next_hop_type:
+          $ref: "types.json#/definitions/RouteNextHopType"
+    JunosServicePorts:
+      type: "object"
+      properties:
+        service_port:
+          items:
+            type: "string"
+          type: "array"
+    ServiceApplianceInterfaceType:
+      type: "object"
+      properties:
+        interface_type:
+          $ref: "types.json#/definitions/ServiceInterfaceType"
+    GracefulRestartParametersType:
+      type: "object"
+      properties:
+        enable:
+          type: "boolean"
+          description: "Enable/Disable knob for all GR parameters to take effect"
+        end_of_rib_timeout:
+          description: "Maximum time (in seconds) to wait for EndOfRib reception/transmission"
+          $ref: "types.json#/definitions/EndOfRibTimeType"
+        bgp_helper_enable:
+          type: "boolean"
+          description: "Enable GR Helper mode for BGP peers in contrail-control"
+        xmpp_helper_enable:
+          type: "boolean"
+          description: "Enable GR Helper mode for XMPP peers (agents) in contrail-control"
+        restart_time:
+          description: "Time (in seconds) taken by the restarting speaker to get back to stable state"
+          $ref: "types.json#/definitions/GracefulRestartTimeType"
+        long_lived_restart_time:
+          description: "Extended Time (in seconds) taken by the restarting speaker after restart-time to get back to stable state"
+          $ref: "types.json#/definitions/LongLivedGracefulRestartTimeType"
+    ServiceScaleOutType:
+      type: "object"
+      properties:
+        auto_scale:
+          type: "boolean"
+          description: "Automatically change the number of virtual machines. Not implemented"
+          presence: "true"
+        max_instances:
+          type: "integer"
+          description: "Maximum number of scale out factor(virtual machines). can be changed dynamically"
+          presence: "true"
+    AutonomousSystemType:
+      minimum: 1
+      type: "integer"
+      maximum: 65534
+    VxlanNetworkIdentifierModeType:
+      enum:
+        - "configured"
+        - "automatic"
+      type: "string"
+    AllowedAddressPair:
+      type: "object"
+      properties:
+        ip:
+          $ref: "types.json#/definitions/SubnetType"
+        mac:
+          type: "string"
+          presence: "optional"
+        address_mode:
+          presence: "optional"
+          description: "Address-mode active-backup is used for VRRP address.                           Address-mode active-active is used for ECMP."
+          $ref: "types.json#/definitions/AddressMode"
+    FirewallRuleDirectionType:
+      enum:
+        - "<"
+        - ">"
+        - "<>"
+      type: "string"
+    Dot1QTagType:
+      minimum: 0
+      type: "integer"
+      maximum: 4094
+    IdPermsType:
+      type: "object"
+      properties:
+        enable:
+          type: "boolean"
+          description: "Administratively Enable/Disable this object"
+          presence: "true"
+        description:
+          type: "string"
+          description: "User provided text"
+          presence: "optional"
+        created:
+          presence: "system-only"
+          type: "string"
+          description: "Time when this object was created"
+          format: "date-time"
+        creator:
+          type: "string"
+          description: "Id of tenant who created this object"
+          presence: "system-only"
+        user_visible:
+          type: "boolean"
+          description: "System created internal objects will have this flag set and will not be visible"
+          presence: "system-only"
+        last_modified:
+          presence: "system-only"
+          type: "string"
+          description: "Time when this object was created"
+          format: "date-time"
+        permissions:
+          presence: "optional"
+          description: "No longer used, will be removed"
+          $ref: "types.json#/definitions/PermType"
+    DhcpOptionType:
+      type: "object"
+      properties:
+        dhcp_option_value:
+          type: "string"
+          description: "Encoded DHCP option value (decimal)"
+          presence: "true"
+        dhcp_option_value_bytes:
+          type: "string"
+          description: "Value of the DHCP option to be copied byte by byte"
+          presence: "true"
+        dhcp_option_name:
+          type: "string"
+          description: "Name of the DHCP option"
+          presence: "true"
+    InterfaceMirrorType:
+      type: "object"
+      properties:
+        traffic_direction:
+          presence: "true"
+          description: "Specifies direction of traffic to mirror, Ingress, Egress or both"
+          $ref: "types.json#/definitions/TrafficDirectionType"
+        mirror_to:
+          presence: "true"
+          description: "Mirror destination configuration"
+          $ref: "types.json#/definitions/MirrorActionType"
+    BGPaaServiceParametersType:
+      type: "object"
+      properties:
+        port_start:
+          $ref: "types.json#/definitions/L4PortType"
+        port_end:
+          $ref: "types.json#/definitions/L4PortType"
+    ProviderDetails:
+      type: "object"
+      properties:
+        segmentation_id:
+          $ref: "types.json#/definitions/VlanIdType"
+        physical_network:
+          type: "string"
+    ShareType:
+      type: "object"
+      properties:
+        tenant_access:
+          presence: "true"
+          description: "Allowed permissions in sharing"
+          $ref: "types.json#/definitions/AccessType"
+        tenant:
+          type: "string"
+          description: "Name of tenant with whom the object is shared"
+          presence: "true"
+    EtherType:
+      enum:
+        - "IPv4"
+        - "IPv6"
+      type: "string"
+    UserDefinedLogStatList:
+      type: "object"
+      properties:
+        statlist:
+          items:
+            $ref: "types.json#/definitions/UserDefinedLogStat"
+          type: "array"
+    VRouterInstanceType:
+      enum:
+        - "libvirt-qemu"
+        - "docker"
+      type: "string"
+    EcmpHashingIncludeFields:
+      type: "object"
+      properties:
+        destination_ip:
+          type: "boolean"
+          description: "When false, do not use destination ip in the ECMP hash calculation"
+          presence: "optional"
+        ip_protocol:
+          type: "boolean"
+          description: "When false, do not use ip protocol in the ECMP hash calculation"
+          presence: "optional"
+        source_ip:
+          type: "boolean"
+          description: "When false, do not use source ip in the ECMP hash calculation"
+          presence: "optional"
+        hashing_configured:
+          type: "boolean"
+          description: "When True, Packet header fields used in calculating ECMP hash is decided by following flags"
+          presence: "optional"
+        source_port:
+          type: "boolean"
+          description: "When false, do not use source port in the ECMP hash calculation"
+          presence: "optional"
+        destination_port:
+          type: "boolean"
+          description: "When false, do not use destination port in the ECMP hash calculation"
+          presence: "optional"
+    AllowedAddressPairs:
+      type: "object"
+      properties:
+        allowed_address_pair:
+          items:
+            $ref: "types.json#/definitions/AllowedAddressPair"
+          type: "array"
+    KeyValuePairs:
+      type: "object"
+      properties:
+        key_value_pair:
+          items:
+            $ref: "types.json#/definitions/KeyValuePair"
+          type: "array"
+    LinklocalServicesTypes:
+      type: "object"
+      properties:
+        linklocal_service_entry:
+          items:
+            $ref: "types.json#/definitions/LinklocalServiceEntryType"
+          type: "array"
+          description: "List of link local services"
+          presence: "optional"
+    HealthCheckType:
+      enum:
+        - "link-local"
+        - "end-to-end"
+        - "segment"
+      type: "string"
+    PolicyBasedForwardingRuleType:
+      type: "object"
+      properties:
+        dst_mac:
+          type: "string"
+        protocol:
+          type: "string"
+        ipv6_service_chain_address:
+          $ref: "types.json#/definitions/IpAddressType"
+        direction:
+          $ref: "types.json#/definitions/TrafficDirectionType"
+        mpls_label:
+          type: "integer"
+        vlan_tag:
+          type: "integer"
+        src_mac:
+          type: "string"
+        service_chain_address:
+          type: "string"
+    ServiceInterfaceType:
+      type: "string"
+    UserCredentials:
+      type: "object"
+      properties:
+        username:
+          type: "string"
+        password:
+          type: "string"
+    RbacRuleType:
+      type: "object"
+      properties:
+        rule_object:
+          type: "string"
+          description: "Name of the REST API (object) for this rule, * represent all objects"
+          presence: "true"
+        rule_perms:
+          items:
+            $ref: "types.json#/definitions/RbacPermType"
+          type: "array"
+          description: "List of [(role, permissions),...]"
+          presence: "true"
+        rule_field:
+          type: "string"
+          description: "Name of the level one field (property) for this object, * represent all properties"
+          presence: "optional"
+    ServiceInterfaceTag:
+      type: "object"
+      properties:
+        interface_type:
+          $ref: "types.json#/definitions/ServiceInterfaceType"
+    EncapsulationType:
+      items:
+        type: "string"
+        enum:
+          - "MPLSoGRE"
+          - "MPLSoUDP"
+          - "VXLAN"
+      type: "array"
+    DscpValueType:
+      minimum: 0
+      type: "integer"
+      maximum: 63
+    RbacPermType:
+      type: "object"
+      properties:
+        role_crud:
+          type: "string"
+          description: "String CRUD representing permissions for C=create, R=read, U=update, D=delete."
+          presence: "true"
+        role_name:
+          type: "string"
+          description: "Name of the role"
+          presence: "true"
+    FirewallServiceGroupType:
+      type: "object"
+      properties:
+        firewall_service:
+          items:
+            $ref: "types.json#/definitions/FirewallServiceType"
+          type: "array"
+          presence: "true"
+    CommunityAttribute:
+      items:
+        type: "string"
+      type: "array"
+    RoutingPolicyServiceInstanceType:
+      type: "object"
+      properties:
+        right_sequence:
+          type: "string"
+        left_sequence:
+          type: "string"
+    IpamMethodType:
+      enum:
+        - "dhcp"
+        - "fixed"
+      type: "string"
+    U32BitHexInt:
+      type: "string"
+    AllocationPoolType:
+      type: "object"
+      properties:
+        vrouter_specific_pool:
+          type: "boolean"
+        start:
+          type: "string"
+        end:
+          type: "string"
+    VnSubnetsType:
+      type: "object"
+      properties:
+        ipam_subnets:
+          items:
+            $ref: "types.json#/definitions/IpamSubnetType"
+          type: "array"
+        host_routes:
+          presence: "optional"
+          description: "Common host routes to be sent via DHCP for VM(s) in all the subnets, Next hop for these routes is always default gateway"
+          $ref: "types.json#/definitions/RouteTableType"
+    FirewallRuleEndpointType:
+      type: "object"
+      properties:
+        address_group:
+          type: "string"
+          description: "Any workload with interface in this address-group"
+          presence: "exclusive"
+        subnet:
+          presence: "exclusive"
+          description: "Any workload that belongs to this subnet"
+          $ref: "types.json#/definitions/SubnetType"
+        tags:
+          items:
+            type: "string"
+          type: "array"
+          description: "Any workload with tags matching tags in this list"
+          presence: "exclusive"
+        tag_ids:
+          items:
+            type: "integer"
+          type: "array"
+          description: "Any workload with tags ids matching all the tags ids in this list"
+        virtual_network:
+          type: "string"
+          description: "Any workload that belongs to this virtual network "
+          presence: "exclusive"
+        any:
+          type: "boolean"
+          description: "Match any workload"
+          presence: "exclusive"
+    SecurityLoggingObjectRuleEntryType:
+      type: "object"
+      properties:
+        rule_uuid:
+          type: "string"
+          description: "Rule UUID of network policy or security-group. When this is absent it implies all rules of security-group or network-policy"
+          presence: "optional"
+        rate:
+          type: "integer"
+          description: "Rate at which sessions are logged. When rates are specified at multiple levels, the rate which specifies highest frequency is selected"
+          presence: "optional"
+    LoadbalancerProtocolType:
+      enum:
+        - "HTTP"
+        - "HTTPS"
+        - "TCP"
+        - "UDP"
+        - "TERMINATED_HTTPS"
+      type: "string"
+    AlarmOperation:
+      enum:
+        - "=="
+        - "!="
+        - "<"
+        - "<="
+        - ">"
+        - ">="
+        - "in"
+        - "not in"
+        - "range"
+        - "size=="
+        - "size!="
+      type: "string"
+    FloatingIpDnsNotation:
+      enum:
+        - "dashed-ip"
+        - "dashed-ip-tenant-name"
+        - "vm-name"
+        - "vm-name-tenant-name"
+      type: "string"
+    IpamSubnets:
+      type: "object"
+      properties:
+        subnets:
+          items:
+            $ref: "types.json#/definitions/IpamSubnetType"
+          type: "array"
+    RbacRuleEntriesType:
+      type: "object"
+      properties:
+        rbac_rule:
+          items:
+            $ref: "types.json#/definitions/RbacRuleType"
+          type: "array"
+    U16BitHexInt:
+      type: "string"
+    MemberType:
+      type: "object"
+      properties:
+        role:
+          type: "string"
+          description: "User role for the project"
+          presence: "true"
+

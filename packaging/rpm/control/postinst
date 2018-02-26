@@ -1,0 +1,75 @@
+#!/bin/sh
+
+set -e
+
+[ -f /etc/sysconfig/contrail ] && . /etc/sysconfig/contrail
+
+startCONTRAIL() {
+  if [ -x /bin/systemctl ] ; then
+    /bin/systemctl daemon-reload
+		/bin/systemctl start contrail.service
+	elif [ -x /etc/init.d/contrail ] ; then
+		/etc/init.d/contrail start
+	elif [ -x /etc/rc.d/init.d/contrail ] ; then
+		/etc/rc.d/init.d/contrail start
+	fi
+}
+
+stopCONTRAIL() {
+	if [ -x /bin/systemctl ] ; then
+		/bin/systemctl stop contrail.service > /dev/null 2>&1 || :
+	elif [ -x /etc/init.d/contrail ] ; then
+		/etc/init.d/contrail stop
+	elif [ -x /etc/rc.d/init.d/contrail ] ; then
+		/etc/rc.d/init.d/contrail stop
+	fi
+}
+
+
+# Initial installation: $1 == 1
+# Upgrade: $1 == 2, and configured to restart on upgrade
+if [ $1 -eq 1 ] ; then
+	[ -z "$CONTRAIL_USER" ] && CONTRAIL_USER="contrail"
+	[ -z "$CONTRAIL_GROUP" ] && CONTRAIL_GROUP="contrail"
+	if ! getent group "$CONTRAIL_GROUP" > /dev/null 2>&1 ; then
+    groupadd -r "$CONTRAIL_GROUP"
+	fi
+	if ! getent passwd "$CONTRAIL_USER" > /dev/null 2>&1 ; then
+    useradd -r -g contrail -d /usr/share/contrail -s /sbin/nologin \
+    -c "contrail user" contrail
+	fi
+
+  # copy user config files
+  if [ ! -f $CONF_FILE ]; then
+    cp /usr/share/contrail/apisrv.yaml $CONF_FILE
+  fi
+
+ 	# Set user permissions on /var/log/grafana, /var/lib/grafana
+	mkdir -p /var/log/contrail /var/lib/contrail
+	chown -R $CONTRAIL_USER:$CONTRAIL_GROUP /var/log/contrail /var/lib/contrail
+	chmod 755 /var/log/contrail /var/lib/contrail
+
+	# configuration files should not be modifiable by contrail user, as this can be a security issue
+	chown -Rh root:$CONTRAIL_GROUP /etc/contrail/*
+	chmod 755 /etc/contrail
+	find /etc/contrail -type f -exec chmod 640 {} ';'
+	find /etc/contrail -type d -exec chmod 755 {} ';'
+
+  if [ -x /bin/systemctl ] ; then
+    echo "### NOT starting on installation, please execute the following statements to configure contrail to start automatically using systemd"
+    echo " sudo /bin/systemctl daemon-reload"
+    echo " sudo /bin/systemctl enable contrail.service"
+    echo "### You can start contrail by executing"
+    echo " sudo /bin/systemctl start contrail.service"
+  elif [ -x /sbin/chkconfig ] ; then
+    echo "### NOT starting contrail by default on bootup, please execute"
+    echo " sudo /sbin/chkconfig --add contrail"
+    echo "### In order to start contrail, execute"
+    echo " sudo service contrail start"
+  fi
+elif [ $1 -ge 2 ] ; then
+  if [ "$RESTART_ON_UPGRADE" == "true" ]; then
+    stopCONTRAIL
+    startCONTRAIL
+  fi
+fi

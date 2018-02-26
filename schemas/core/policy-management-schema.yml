@@ -1,0 +1,14 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: {}
+  plural: "policy_managements"
+  id: "policy_management"
+  schema: 
+    required: []
+    type: "object"
+    properties: {}
+

@@ -1,0 +1,31 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    firewall_rule: 
+      operations: "CRUD"
+      $ref: "types.json#/definitions/FirewallSequence"
+      description: "Reference to firewall-rule attached to this firewall-policy"
+      presence: "optional"
+    security_logging_object: 
+      operations: "CRUD"
+      description: "Reference to security-logging-object attached to this firewall-policy"
+      presence: "optional"
+  parents: 
+    project: 
+      operations: "CRUD"
+      description: "Project level firewall-policy object consisting of one or more firewall rules"
+      presence: "optional"
+    policy_management: 
+      operations: "CRUD"
+      description: "firewall-policy object consisting of one or more firewall rules"
+      presence: "optional"
+  plural: "firewall_policys"
+  id: "firewall_policy"
+  schema: 
+    required: []
+    type: "object"
+    properties: {}
+

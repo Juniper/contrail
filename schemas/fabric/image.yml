@@ -1,0 +1,104 @@
+description: Image Management
+extends:
+- base
+id: os_image
+plural: os_images
+prefix: /openstack
+schema:
+  properties:
+    name:
+      description: Name of the image to be created/updated
+      nullable: false
+      type: string
+    owner:
+      description: An identifier for the owner of the image
+      type: string
+    id:
+      description: A unique, user-defined image UUID, in the format "nnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn", Where n is a hexadecimal digit from 0 to f, or F.
+      nullable: false
+      type: string
+    size:
+      description: The size of the image data, in bytes
+      type: integer
+    status:
+      description: The image status
+      type: string
+    location:
+      description: The URL to access the image file from the external store
+      nullable: false
+      type: string
+    file:
+      description: Abosolute path of file to be used for creating image
+      nullable: false
+      type: string
+    checksum:
+      description: Hash that is used over the image data
+      nullable: false
+      type: string
+    created_at:
+      description: The UTC date and time when the resource was created, ISO 8601 format
+      type: string
+    updated_at:
+      description: The UTC date and time when the resource was created, ISO 8601 format
+      type: string
+    container_format:
+      description:
+      nullable: false
+      type: string 
+      enum:
+      - aki
+      - bare
+      - ami
+      - ovf
+      - ova
+      - docker
+    disk_format:
+      description:
+      nullable: false
+      type: string
+      enum:
+      - aki
+      - raw
+      - ami
+      - ari
+      - vhd
+      - vhdx
+      - vmdk
+      - raw
+      - qcow2
+      - vdi
+      - ploop
+      - iso
+    protected:
+      description:
+      nullable: false
+      type: boolean
+    visibility:
+      description: Visibility for this image
+      nullable: false
+      type: string
+      enum:
+      - public
+      - private
+      - shared
+      - community
+    property:
+      description: Additional properties of the image (name=value pair)
+      nullable: false
+      type: string
+    min_disk:
+      description: Amount of disk space in GB that is required to boot the image
+      nullable: false
+      type: integer
+    min_ram:
+      description: Amount of RAM in MB that is required to boot the image
+      nullable: false
+      type: integer
+    tags:
+      description: List of tags for this image
+      type: string
+  required: []
+  type: object
+singulat: os_image
+title: Images for Virtual Machines and Baremetals
+type: "object"

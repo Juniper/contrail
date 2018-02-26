@@ -1,0 +1,9 @@
+- type: type
+  template_path: templates/type.tmpl
+  output_path: test_output/__resource___type.yml
+- type: all
+  template_path: templates/all.tmpl
+  output_path: test_output/all.yml
+- type: resource
+  template_path: templates/resource.tmpl
+  output_path: test_output/__resource___resource.yml

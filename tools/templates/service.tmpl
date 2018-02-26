@@ -1,0 +1,220 @@
+package services 
+
+import (
+    "context"
+    "net/http"
+    "database/sql"
+    "github.com/Juniper/contrail/pkg/generated/models"
+    "github.com/Juniper/contrail/pkg/generated/db"
+    "github.com/satori/go.uuid"
+    "github.com/labstack/echo"
+    "github.com/Juniper/contrail/pkg/common"
+
+	log "github.com/sirupsen/logrus"
+)
+
+//RESTCreate{{ schema.JSONSchema.GoName }} handle a Create REST service.
+func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
+    requestData := &models.Create{{ schema.JSONSchema.GoName }}Request{
+    }
+    if err := c.Bind(requestData); err != nil {
+        log.WithFields(log.Fields{
+            "err": err,
+            "resource": "{{ schema.ID }}",
+        }).Debug("bind failed on create")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+    ctx := c.Request().Context()
+    response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, requestData)
+    if err != nil {
+        return common.ToHTTPError(err)
+    } 
+    return c.JSON(http.StatusCreated, response)
+}
+
+//Create{{ schema.JSONSchema.GoName }} handle a Create API
+func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
+    ctx context.Context, 
+    request *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error) {
+    model := request.{{ schema.JSONSchema.GoName }}
+    if model.UUID == "" {
+        model.UUID = uuid.NewV4().String()
+    }
+    auth := common.GetAuthCTX(ctx)
+    if auth == nil {
+        return nil, common.ErrorUnauthenticated
+    }
+
+    if model.FQName == nil {
+        if model.DisplayName != "" {
+            model.FQName = []string{auth.DomainID(), auth.ProjectID(), model.DisplayName}
+        } else {
+            model.FQName = []string{auth.DomainID(), auth.ProjectID(), model.UUID}
+        }
+    }
+    model.Perms2 = &models.PermType2{}
+    model.Perms2.Owner = auth.ProjectID()
+    if err := common.DoInTransaction(
+        service.DB,
+        func (tx *sql.Tx) error {
+            return db.Create{{ schema.JSONSchema.GoName }}(ctx, tx, request)
+        }); err != nil {
+        log.WithFields(log.Fields{
+            "err": err,
+            "resource": "{{ schema.ID }}",
+        }).Debug("db create failed on create")
+       return nil, common.ErrorInternal 
+    }
+    return &models.Create{{ schema.JSONSchema.GoName }}Response{
+        {{ schema.JSONSchema.GoName }}: request.{{ schema.JSONSchema.GoName }},
+    }, nil
+}
+
+//RESTUpdate{{ schema.JSONSchema.GoName }} handles a REST Update request.
+func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
+    //id := c.Param("id")
+    request := &models.Update{{ schema.JSONSchema.GoName }}Request{
+    }
+    if err := c.Bind(request); err != nil {
+            log.WithFields(log.Fields{
+                "err": err,
+                "resource": "{{ schema.ID }}",
+            }).Debug("bind failed on update")
+            return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+    }
+    ctx := c.Request().Context()
+    response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, request)
+    if err != nil {
+        return common.ToHTTPError(err)
+    }
+    return c.JSON(http.StatusOK, response)
+}
+
+//Update{{ schema.JSONSchema.GoName }} handles a Update request.
+func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
+    ctx context.Context, 
+    request *models.Update{{ schema.JSONSchema.GoName }}Request) (*models.Update{{ schema.JSONSchema.GoName }}Response, error) {
+    model := request.{{ schema.JSONSchema.GoName }}
+    if model == nil {
+        return nil, common.ErrorBadRequest("Update body is empty")
+    }
+    if err := common.DoInTransaction(
+        service.DB,
+        func (tx *sql.Tx) error {
+            return db.Update{{ schema.JSONSchema.GoName }}(ctx, tx, request)
+        }); err != nil {
+        log.WithFields(log.Fields{
+            "err": err,
+            "resource": "{{ schema.ID }}",
+        }).Debug("db update failed")
+        return nil, common.ErrorInternal
+    }
+    return &models.Update{{ schema.JSONSchema.GoName }}Response{
+        {{ schema.JSONSchema.GoName }}: model,
+    }, nil
+}
+
+//RESTDelete{{ schema.JSONSchema.GoName }} delete a resource using REST service.
+func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.Context) error {
+    id := c.Param("id")
+    request := &models.Delete{{ schema.JSONSchema.GoName }}Request{
+        ID: id,
+    } 
+    ctx := c.Request().Context()
+    _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+    if err != nil {
+        return common.ToHTTPError(err)
+    }
+    return c.JSON(http.StatusNoContent, nil)
+}
+
+//Delete{{ schema.JSONSchema.GoName }} delete a resource.
+func (service *ContrailService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Delete{{ schema.JSONSchema.GoName }}Request) (*models.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+    if err := common.DoInTransaction(
+        service.DB,
+        func (tx *sql.Tx) error {
+            return db.Delete{{ schema.JSONSchema.GoName }}(ctx, tx, request)
+        }); err != nil {
+            log.WithField("err", err).Debug("error deleting a resource")
+        return nil, common.ErrorInternal
+    }
+    return &models.Delete{{ schema.JSONSchema.GoName }}Response{
+        ID: request.ID,
+    }, nil
+}
+
+//RESTGet{{ schema.JSONSchema.GoName }} a REST Get request.
+func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
+    id := c.Param("id")
+    request := &models.Get{{ schema.JSONSchema.GoName }}Request{
+        ID: id,
+    } 
+    ctx := c.Request().Context() 
+    response, err := service.Get{{ schema.JSONSchema.GoName }}(ctx, request)
+    if err != nil {
+        return common.ToHTTPError(err)
+    }
+    return c.JSON(http.StatusOK, response)
+}
+
+//Get{{ schema.JSONSchema.GoName }} a Get request.
+func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Get{{ schema.JSONSchema.GoName }}Request) (response *models.Get{{ schema.JSONSchema.GoName }}Response, err error) {
+    spec := &models.ListSpec{
+                Limit: 1,
+                Filters: []*models.Filter{
+                    &models.Filter{
+                        Key: "uuid",
+                        Values: []string{request.ID},
+                    },
+                },
+    }
+    listRequest := &models.List{{ schema.JSONSchema.GoName }}Request{
+        Spec: spec,
+    }
+    var result *models.List{{ schema.JSONSchema.GoName }}Response 
+    if err := common.DoInTransaction(
+        service.DB,
+        func (tx *sql.Tx) error {
+            result, err = db.List{{ schema.JSONSchema.GoName }}(ctx, tx, listRequest)
+            return err
+        }); err != nil {
+        return nil, common.ErrorInternal 
+    }
+    if len(result.{{ schema.JSONSchema.GoName }}s) == 0 {
+        return nil, common.ErrorNotFound
+    }
+    response = &models.Get{{ schema.JSONSchema.GoName }}Response{
+       {{ schema.JSONSchema.GoName }}: result.{{ schema.JSONSchema.GoName }}s[0],
+    }
+    return response, nil
+}
+
+//RESTList{{ schema.JSONSchema.GoName }} handles a List REST service Request.
+func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
+    var err error
+    spec := common.GetListSpec(c)
+    request := &models.List{{ schema.JSONSchema.GoName }}Request{
+        Spec: spec,
+    }
+    ctx := c.Request().Context()
+    response, err := service.List{{ schema.JSONSchema.GoName }}(ctx, request)
+    if err != nil {
+        return common.ToHTTPError(err)
+    }
+    return c.JSON(http.StatusOK, response)
+}
+
+//List{{ schema.JSONSchema.GoName }} handles a List service Request.
+func (service *ContrailService) List{{ schema.JSONSchema.GoName }}(
+    ctx context.Context, 
+    request *models.List{{ schema.JSONSchema.GoName }}Request) (response *models.List{{ schema.JSONSchema.GoName }}Response, err error) {
+    if err := common.DoInTransaction(
+        service.DB,
+        func (tx *sql.Tx) error {
+            response, err = db.List{{ schema.JSONSchema.GoName }}(ctx, tx, request)
+            return err
+        }); err != nil {
+        return nil, common.ErrorInternal
+    }
+    return response, nil
+}

@@ -1,0 +1,23 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    service_instance: 
+      operations: "CRUD"
+      $ref: "types.json#definitions/RoutingPolicyServiceInstanceType"
+      description: "Reference to routing policy attached to (service instance, interface)."
+      presence: "optional"
+  parents: 
+    project: 
+      operations: "CRUD"
+      description: "List of references of child routing policy objects. automatically maintained by system."
+      presence: "optional"
+  plural: "routing_policys"
+  id: "routing_policy"
+  schema: 
+    required: []
+    type: "object"
+    properties: {}
+

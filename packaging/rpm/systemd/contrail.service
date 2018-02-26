@@ -1,0 +1,23 @@
+[Unit]
+Description=CONTRAIL instance
+Documentation=https://github.com/Juniper/contrail/tree/master/doc
+Wants=network-online.target
+After=network-online.target
+After=mariadb.service mysql.service
+
+[Service]
+EnvironmentFile=/etc/sysconfig/contrail
+User=contrail
+Group=contrail
+Type=simple
+Restart=on-failure
+WorkingDirectory=/usr/share/contrail
+RuntimeDirectory=contrail
+RuntimeDirectoryMode=0750
+ExecStart=/usr/sbin/contrail server\
+    -c=${CONF_FILE}
+LimitNOFILE=10000
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target

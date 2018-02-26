@@ -1,0 +1,27 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    physical_router: 
+      operations: "CRUD"
+      description: "Links the service provider to peer routers."
+      presence: "optional"
+    peering_policy: 
+      operations: "CRUD"
+      description: "Links the service provider to a peering policy."
+      presence: "optional"
+  parents: {}
+  plural: "e2_service_providers"
+  id: "e2_service_provider"
+  schema: 
+    required: []
+    type: "object"
+    properties: 
+      e2_service_provider_promiscuous: 
+        operations: "CRUD"
+        type: "boolean"
+        description: "This service provider is connected to all other service providers."
+        presence: "optional"
+

@@ -1,0 +1,23 @@
+description: Kubernetes Node
+extends:
+- base
+- has_status
+id: kubernetes_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this kubernetes node."
+      presence: "optional"
+parent: contrail_cluster
+plural: kubernetes_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: kubernetes_node
+title: kubernetes Node
+type: ""

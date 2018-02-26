@@ -1,0 +1,24 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    discovery_service_assignment: 
+      operations: "CRUD"
+      description: "Discovery service rule for assigning subscriber to publisher. (set of subscriber) can be assigned to (set of publisher)."
+      presence: "optional"
+  plural: "dsa_rules"
+  id: "dsa_rule"
+  schema: 
+    required: 
+      - "dsa_rule_entry"
+    type: "object"
+    properties: 
+      dsa_rule_entry: 
+        operations: "CRUD"
+        presence: "required"
+        description: "rule entry defining publisher set and subscriber set."
+        $ref: "types.json#/definitions/DiscoveryServiceAssignmentType"
+

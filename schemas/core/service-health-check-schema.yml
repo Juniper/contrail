@@ -1,0 +1,30 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    service_instance: 
+      operations: "CRUD"
+      $ref: "types.json#definitions/ServiceInterfaceTag"
+      derived: true
+      description: "Reference to service instance using this service health check."
+      presence: "optional"
+  parents: 
+    project: 
+      operations: "CRUD"
+      description: "Service health check is a keepalive mechanism for the virtual machine interface. Liveliness of the interface is determined based on configuration in the service health check. It is mainly designed for service instance interfaces. However it will work with any interface which present on contrail vrouter."
+      presence: "optional"
+  plural: "service_health_checks"
+  id: "service_health_check"
+  schema: 
+    required: 
+      - "service_health_check_properties"
+    type: "object"
+    properties: 
+      service_health_check_properties: 
+        operations: "CRUD"
+        presence: "required"
+        description: "Service health check has following fields."
+        $ref: "types.json#/definitions/ServiceHealthCheckType"
+

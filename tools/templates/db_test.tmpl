@@ -1,0 +1,272 @@
+package db
+
+import (
+        "context" 
+        "fmt"
+        "time"
+        "testing"
+        "database/sql"
+
+        "github.com/Juniper/contrail/pkg/common"
+        "github.com/Juniper/contrail/pkg/generated/models"
+        "github.com/pkg/errors"
+        )
+
+//For skip import error.
+var _ = errors.New("")
+
+func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
+    // t.Parallel()
+    db := testDB
+    ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+    defer cancel()
+    
+    mutexMetadata := common.UseTable(db, "metadata")
+    mutexTable := common.UseTable(db, "{{ schema.ID }}")
+    // mutexProject := common.UseTable(db, "{{ schema.ID }}")
+    defer func(){
+        mutexTable.Unlock()
+        mutexMetadata.Unlock()
+        if p := recover(); p != nil {
+			panic(p)
+		}
+    }()
+    model := models.Make{{ schema.JSONSchema.GoName }}()
+    model.UUID = "{{ schema.ID }}_dummy_uuid"
+    model.FQName = []string{"default", "default-domain", "{{ schema.ID }}_dummy"}
+    model.Perms2.Owner = "admin"
+    var err error
+
+    // Create referred objects
+    {% for linkTo, reference in schema.References %}
+    var {{ reference.GoName }}createref []*models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
+    var {{ reference.GoName }}refModel *models.{{ reference.GoName }}
+    {{ reference.GoName }}refModel = models.Make{{ reference.GoName }}()
+	{{ reference.GoName }}refModel.UUID = "{{ schema.ID }}_{{ linkTo }}_ref_uuid"
+    {{ reference.GoName }}refModel.FQName = []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid"}
+    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return Create{{ reference.GoName }}(ctx, tx, &models.Create{{ reference.GoName }}Request{
+            {{ reference.GoName }}: {{ reference.GoName }}refModel,
+        })
+	})
+    {{ reference.GoName }}refModel.UUID = "{{ schema.ID }}_{{ linkTo }}_ref_uuid1"
+    {{ reference.GoName }}refModel.FQName = []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid1"}
+    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return Create{{ reference.GoName }}(ctx, tx, &models.Create{{ reference.GoName }}Request{
+            {{ reference.GoName }}: {{ reference.GoName }}refModel,
+        })
+	})
+    {{ reference.GoName }}refModel.UUID = "{{ schema.ID }}_{{ linkTo }}_ref_uuid2"
+    {{ reference.GoName }}refModel.FQName = []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid2"}
+    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return Create{{ reference.GoName }}(ctx, tx, &models.Create{{ reference.GoName }}Request{
+            {{ reference.GoName }}: {{ reference.GoName }}refModel,
+        })
+	})
+    if err != nil {
+        t.Fatal("ref create failed", err)
+    }
+    {{ reference.GoName }}createref = append({{ reference.GoName }}createref, &models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{UUID:"{{ schema.ID }}_{{ linkTo }}_ref_uuid", To: []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid"}})
+    {{ reference.GoName }}createref = append({{ reference.GoName }}createref, &models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{UUID:"{{ schema.ID }}_{{ linkTo }}_ref_uuid2", To: []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid2"}})
+    model.{{ reference.GoName }}Refs = {{ reference.GoName }}createref
+    {% endfor %}
+
+    //create project to which resource is shared
+    projectModel := models.MakeProject()
+	projectModel.UUID = "{{ schema.ID }}_admin_project_uuid"
+	projectModel.FQName = []string{"default-domain-test", "admin-test"}
+	projectModel.Perms2.Owner = "admin"
+    var createShare []*models.ShareType
+    createShare = append(createShare, &models.ShareType{Tenant:"default-domain-test:admin-test", TenantAccess:7})
+    model.Perms2.Share = createShare
+    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateProject(ctx, tx, &models.CreateProjectRequest{
+            Project: projectModel,
+        })
+	})
+    if err != nil {
+        t.Fatal("project create failed", err)
+    }
+
+//    //populate update map
+//    updateMap := map[string]interface{}{}
+//    {% for column in schema.Columns %}
+//    {% if column.Bind == "json" %}
+//    if "{{ column.Path }}" == ".Perms2.Share" {
+//        var share []interface{}
+//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
+//        common.SetValueByPath(updateMap, "{{ column.Path }}", ".", share)
+//    } else {
+//        common.SetValueByPath(updateMap, "{{ column.Path }}", ".", `{"test": "test"}`)
+//    }
+//    {% elif column.Bind == "int" %}
+//    common.SetValueByPath(updateMap, "{{ column.Path }}", ".", 1.0)
+//    {% elif column.Bind == "bool" %}
+//    common.SetValueByPath(updateMap, "{{ column.Path }}", ".", true)
+//    {% elif column.Bind == "string" %}
+//    common.SetValueByPath(updateMap, "{{ column.Path }}", ".", "test")
+//    {% else %}
+//    common.SetValueByPath(updateMap, "{{ column.Path }}", ".", "test")
+//    {% endif %}
+//    {% endfor %}
+//    common.SetValueByPath(updateMap, "uuid", ".", "{{ schema.ID }}_dummy_uuid")
+//    common.SetValueByPath(updateMap, "fq_name", ".", []string{"default", "default-domain", "access_control_list_dummy"})
+//    common.SetValueByPath(updateMap, "perms2.owner", ".", "admin")
+//
+//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
+//    {% for linkTo, reference in schema.References %}
+//    var {{ reference.GoName }}ref []interface{}
+//    {{ reference.GoName }}ref = append({{ reference.GoName }}ref, map[string]interface{}{"operation":"delete", "uuid":"{{ schema.ID }}_{{ linkTo }}_ref_uuid", "to": []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid"}})
+//    {{ reference.GoName }}ref = append({{ reference.GoName }}ref, map[string]interface{}{"operation":"add", "uuid":"{{ schema.ID }}_{{ linkTo }}_ref_uuid1", "to": []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid1"}})
+//    {% if reference.Columns %}
+//    {{ reference.GoName }}Attr := map[string]interface{}{}
+//    {% endif %}
+//    {% for column in reference.Columns %}
+//    {% if column.Bind == "json" %}
+//    common.SetValueByPath({{ reference.GoName }}Attr, "{{ column.Path }}", ".", map[string]string{"test": "test"})
+//    {% elif column.Bind == "int" %}
+//    common.SetValueByPath({{ reference.GoName }}Attr, "{{ column.Path }}", ".", 1.0)
+//    {% elif column.Bind == "bool" %}
+//    common.SetValueByPath({{ reference.GoName }}Attr, "{{ column.Path }}", ".", true)
+//    {% elif column.Bind == "string" %}
+//    common.SetValueByPath({{ reference.GoName }}Attr, "{{ column.Path }}", ".", "test")
+//    {% else %}
+//    common.SetValueByPath({{ reference.GoName }}Attr, "{{ column.Path }}", ".", "test")
+//    {% endif %}
+//    {% endfor %}
+//    {% if reference.Columns %}
+//    {{ reference.GoName }}ref = append({{ reference.GoName }}ref, map[string]interface{}{"operation":"update", "uuid":"{{ schema.ID }}_{{ linkTo }}_ref_uuid2", "to": []string{"test", "{{ schema.ID }}_{{ linkTo }}_ref_uuid2"}, "attr": {{ reference.GoName }}Attr})
+//    {% endif %}
+//    common.SetValueByPath(updateMap, "{{ reference.GoName }}Refs", ".", {{ reference.GoName }}ref)
+//    {% endfor %}
+//
+    err = common.DoInTransaction(db, func (tx *sql.Tx) error {
+        return Create{{ schema.JSONSchema.GoName }}(ctx, tx, 
+            &models.Create{{ schema.JSONSchema.GoName }}Request{
+                {{ schema.JSONSchema.GoName }}: model,
+            })
+    })
+    if err != nil {
+        t.Fatal("create failed", err)
+    }
+
+//    err = common.DoInTransaction(db, func (tx *sql.Tx) error {
+//        return Update{{ schema.JSONSchema.GoName }}(tx, model.UUID, updateMap)
+//    })
+//    if err != nil {
+//        t.Fatal("update failed", err)
+//    }
+
+    //Delete ref entries, referred objects
+    {% for linkTo, reference in schema.References %}
+    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+        stmt, err := tx.Prepare("delete from `ref_{{ schema.ID }}_{{ linkTo }}` where `from` = ? AND `to` = ?;")
+        if err != nil {
+            return errors.Wrap(err, "preparing {{ reference.GoName }}Refs delete statement failed")
+        }
+        _, err = stmt.Exec( "{{ schema.ID }}_dummy_uuid", "{{ schema.ID }}_{{ linkTo }}_ref_uuid" )
+        _, err = stmt.Exec( "{{ schema.ID }}_dummy_uuid", "{{ schema.ID }}_{{ linkTo }}_ref_uuid1" )
+        _, err = stmt.Exec( "{{ schema.ID }}_dummy_uuid", "{{ schema.ID }}_{{ linkTo }}_ref_uuid2" )
+        if err != nil {
+            return errors.Wrap(err, "{{ reference.GoName }}Refs delete failed")
+        }
+        return nil
+	})
+    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+    	return Delete{{ reference.GoName }}(ctx, tx, 
+            &models.Delete{{ reference.GoName }}Request{
+                ID: "{{ schema.ID }}_{{ linkTo }}_ref_uuid"})
+    })
+	if err != nil {
+		t.Fatal("delete ref {{ schema.ID }}_{{ linkTo }}_ref_uuid  failed", err)
+	}
+    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+    	return Delete{{ reference.GoName }}(ctx, tx, 
+            &models.Delete{{ reference.GoName }}Request{
+                ID: "{{ schema.ID }}_{{ linkTo }}_ref_uuid1"})
+    })
+	if err != nil {
+		t.Fatal("delete ref {{ schema.ID }}_{{ linkTo }}_ref_uuid1  failed", err)
+	}
+    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+    	return Delete{{ reference.GoName }}(
+            ctx, 
+            tx, 
+            &models.Delete{{ reference.GoName }}Request{
+                ID: "{{ schema.ID }}_{{ linkTo }}_ref_uuid2",
+            })
+    })
+	if err != nil {
+		t.Fatal("delete ref {{ schema.ID }}_{{ linkTo }}_ref_uuid2 failed", err)
+	}
+    {% endfor %}
+
+    //Delete the project created for sharing
+    err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteProject(ctx, tx, &models.DeleteProjectRequest{
+            ID: projectModel.UUID})
+	})
+	if err != nil {
+		t.Fatal("delete project failed", err)
+	}
+
+    err = common.DoInTransaction(db, func (tx *sql.Tx) error {
+        response, err := List{{ schema.JSONSchema.GoName }}(ctx, tx, &models.List{{ schema.JSONSchema.GoName }}Request{
+            Spec: &models.ListSpec{Limit: 1}})
+        if err != nil {
+            return err
+        }
+        if len(response.{{ schema.JSONSchema.GoName }}s) != 1 {
+            return fmt.Errorf("expected one element")
+        }
+        return nil
+    })
+    if err != nil {
+        t.Fatal("list failed", err)
+    }
+    
+    ctxDemo := context.WithValue(ctx, "auth", common.NewAuthContext("default", "demo", "demo", []string{}))
+    err = common.DoInTransaction(db, func (tx *sql.Tx) error {
+        return Delete{{ schema.JSONSchema.GoName }}(ctxDemo, tx, 
+            &models.Delete{{ schema.JSONSchema.GoName }}Request{
+                ID: model.UUID}, 
+        )
+    })
+    if err == nil {
+        t.Fatal("auth failed")
+    }
+
+    err = common.DoInTransaction(db, func (tx *sql.Tx) error {
+        return Delete{{ schema.JSONSchema.GoName }}(ctx, tx, 
+            &models.Delete{{ schema.JSONSchema.GoName }}Request{
+                ID: model.UUID})
+    })
+    if err != nil {
+        t.Fatal("delete failed", err)
+    }
+
+    err = common.DoInTransaction(db, func (tx *sql.Tx) error {
+        return Create{{ schema.JSONSchema.GoName }}(ctx, tx, 
+            &models.Create{{ schema.JSONSchema.GoName }}Request{
+                {{ schema.JSONSchema.GoName }}: model})
+    })
+    if err == nil {
+        t.Fatal("Raise Error On Duplicate Create failed", err)
+    }
+
+    err = common.DoInTransaction(db, func (tx *sql.Tx) error {
+        response, err := List{{ schema.JSONSchema.GoName }}(ctx, tx, &models.List{{ schema.JSONSchema.GoName }}Request{
+            Spec: &models.ListSpec{Limit: 1}})
+        if err != nil {
+            return err
+        }
+        if len(response.{{ schema.JSONSchema.GoName }}s) != 0 {
+            return fmt.Errorf("expected no element")
+        }
+        return nil
+    })
+    if err != nil {
+        t.Fatal("list failed", err)
+    }
+    return
+}

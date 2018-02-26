@@ -1,0 +1,24 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    domain: 
+      operations: "CRUD"
+      description: "Virtual DNS server is DNS as service for tenants. It is inbound DNS service for virtual machines in this project. DNS requests by end points inside this project/IPAM are served by this DNS server rules."
+      presence: "optional"
+  plural: "virtual_DNSs"
+  id: "virtual_DNS"
+  schema: 
+    required: 
+      - "virtual_DNS_data"
+    type: "object"
+    properties: 
+      virtual_DNS_data: 
+        operations: "CRUD"
+        presence: "required"
+        description: "Virtual DNS data has configuration for virtual DNS like domain, dynamic records etc."
+        $ref: "types.json#/definitions/VirtualDnsType"
+

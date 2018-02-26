@@ -1,0 +1,37 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    project: 
+      operations: "CRUD"
+      description: "Reference to project from which this alias ip was allocated."
+      presence: "required"
+    virtual_machine_interface: 
+      operations: "CRUD"
+      description: "Reference to virtual machine interface to which this alias ip is attached."
+      presence: "optional"
+  parents: 
+    alias_ip_pool: 
+      operations: "CRUD"
+      description: "alias ip is a ip that can be assigned to virtual-machine-interface(VMI), By doing so VMI can now be part of the alias ip network. packets originating with alias-ip as the source-ip belongs to alias-ip-network"
+      presence: "optional"
+  plural: "alias_ips"
+  id: "alias_ip"
+  schema: 
+    required: 
+      - "alias_ip_address"
+    type: "object"
+    properties: 
+      alias_ip_address: 
+        operations: "CR"
+        presence: "required"
+        description: "Alias ip address."
+        $ref: "types.json#/definitions/IpAddressType"
+      alias_ip_address_family: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Ip address family of the alias ip, IpV4 or IpV6"
+        $ref: "types.json#/definitions/IpAddressFamilyType"
+

@@ -1,0 +1,275 @@
+description: Location
+extends:
+- base
+- has_status
+id: location 
+metadata:
+parent: ""
+plural: locations 
+prefix: /
+schema:
+  properties:
+    type:
+      default: private
+      description: Type of location
+      enum:
+      - private
+      - aws
+      - gcp
+      - openstack
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Location Type
+      type: string
+      view:
+      - create
+      - detail
+    private_dns_servers:
+      default: 8.8.8.8
+      description: List of DNS servers
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: DNS Servers
+      type: string
+      view:
+      - create
+      - detail
+    private_ntp_hosts:
+      default: ""
+      description: List of NTP sources
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: NTP Hosts
+      type: string
+      view:
+      - create
+      - detail
+    private_ospd_package_url:
+      default: ""
+      description: Location of Contrail Networking Packages
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Location of OSPD Contrail Networking Packages
+      type: string
+      view:
+      - detail
+    private_ospd_user_name:
+      default: stack
+      description: OSPD Non-Root User Account
+      nullable: false
+      permission:
+      - create
+      sql: ""
+      title: OSPD User Name
+      type: string
+      view:
+      - create
+      - detail
+    private_ospd_user_password:
+      default: ""
+      description: OSPD Passowrd for account
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: OSPD User Passowrd
+      type: string
+      view:
+      - create
+      - detail
+    private_ospd_vm_disk_gb:
+      default: "100"
+      description: disk spae to assign to RH OSPD vm
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: OSPD Disk Size in gigabytes
+      type: string
+      view:
+      - detail
+    private_ospd_vm_name:
+      default: undercloud
+      description: Name of RH OSPD VM
+      nullable: false
+      permission:
+      - create
+      sql: ""
+      title: OSPD Virtual Machine Name
+      type: string
+      view:
+      - detail
+    private_ospd_vm_ram_mb:
+      default: "24576"
+      description: ram to assign to RH OSPD vm
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: OSPD RAM in megabyts
+      type: string
+      view:
+      - detail
+    private_ospd_vm_vcpus:
+      default: "8"
+      description: vcpus to assign to RH OSPD vm
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: OSPD vCPUs
+      type: string
+      view:
+      - detail
+    private_redhat_pool_id:
+      default: ""
+      description: Repo Pool ID
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Redhat Pool ID
+      type: string
+      view:
+      - create
+      - detail
+    private_redhat_subscription_key:
+      default: ""
+      description: Subscription Activation Key
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Redhat Subscription Acctivation Key
+      type: string
+      view:
+      - create
+      - detail
+    private_redhat_subscription_pasword:
+      default: ""
+      description: Password for subscription account
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Redhat Subscription Password
+      type: string
+      view:
+      - create
+      - detail
+    private_redhat_subscription_user:
+      default: ""
+      description: User name for RedHat subscription account
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Redhat Subscription User
+      type: string
+      view:
+      - create
+      - detail
+    gcp_account_info:
+      default: ""
+      description: copy and paste contents of account.json
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Account info
+      type: string
+    gcp_asn:
+      default: 65001
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: int
+      title: ASN
+      type: integer
+    gcp_region:
+      default: us-west1
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Region
+      type: string
+    gcp_subnet:
+      default: 10.1.0.0/16
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Subnet
+      type: string
+    aws_access_key:
+      default: ""
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Access Key
+      type: string
+    aws_region:
+      default: us-west-1
+      description: ""
+      nullable: false
+      permission:
+      - create
+      sql: ""
+      title: Region
+      type: string
+    aws_secret_key:
+      default: ""
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Secret Key
+      type: string
+    aws_subnet:
+      default: 10.0.0.0/16
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Subnet
+      type: string
+  required: []
+  type: object
+singular: location
+title: Location
+type: ""

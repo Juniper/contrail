@@ -1,0 +1,75 @@
+package services
+
+import (
+    "net/http"
+    "database/sql"
+    "github.com/Juniper/contrail/pkg/generated/models"
+    "github.com/labstack/echo"
+    "github.com/Juniper/contrail/pkg/common"
+
+	log "github.com/sirupsen/logrus"
+)
+
+
+type ContrailService struct {
+    DB *sql.DB
+}
+
+//SetDB sets db object
+func (service *ContrailService) SetDB(db *sql.DB)  {
+    service.DB = db
+}
+
+type RESTResource struct {
+    Kind string `json:"kind"`
+    Data interface{} `json:"data"`
+} 
+
+type RESTSyncRequest struct {
+    Resources []*RESTResource `json:"resources"`
+}
+
+//RESTSync handle a bluk Create REST service.
+func (service *ContrailService) RESTSync(c echo.Context) error {
+    requestData := &RESTSyncRequest{}
+    if err := c.Bind(requestData); err != nil {
+        log.WithFields(log.Fields{
+            "err": err,
+            "resource": "{{ schema.ID }}",
+        }).Debug("bind failed on create")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+    ctx := c.Request().Context()
+    responses := []interface{}{}
+    for _, resource := range requestData.Resources {
+        switch(resource.Kind) {
+        {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+        case "{{ schema.ID }}":
+            request := &models.Create{{ schema.JSONSchema.GoName }}Request{
+                {{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(resource.Data),
+            }
+            response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, request)
+            if err != nil {
+                return common.ToHTTPError(err)
+            } 
+            responses = append(responses, &RESTResource{
+                Kind: resource.Kind,
+                Data: response.{{ schema.JSONSchema.GoName }},
+            })
+        {% endif%}{% endfor %}
+        }
+    }
+    return c.JSON(http.StatusCreated, responses)
+}
+
+//RegisterRESTAPI register REST API service for path.
+func (service *ContrailService) RegisterRESTAPI(e *echo.Echo) {
+ {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+   e.POST("{{ schema.Prefix }}{{ schema.PluralPath }}", service.RESTCreate{{ schema.JSONSchema.GoName }})
+   e.GET("{{ schema.Prefix }}{{ schema.PluralPath }}", service.RESTList{{ schema.JSONSchema.GoName }})
+   e.PUT("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTUpdate{{ schema.JSONSchema.GoName }})
+   e.GET("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTGet{{ schema.JSONSchema.GoName }})
+   e.DELETE("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTDelete{{ schema.JSONSchema.GoName }})
+{% endif%}{% endfor %}   
+  e.POST("sync", service.RESTSync)
+}

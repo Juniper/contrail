@@ -1,0 +1,30 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    service_object: 
+      operations: "CRUD"
+      description: "Links the service-connection-module to a service object."
+      presence: "optional"
+  parents: {}
+  plural: "service_connection_modules"
+  id: "service_connection_module"
+  schema: 
+    required: 
+      - "e2_service"
+      - "service_type"
+    type: "object"
+    properties: 
+      service_type: 
+        operations: "CRUD"
+        presence: "required"
+        description: "Type of service assigned for this object"
+        $ref: "types.json#/definitions/ServiceConnectionType"
+      e2_service: 
+        operations: "CRUD"
+        presence: "required"
+        description: "E2 service type."
+        $ref: "types.json#/definitions/E2servicetype"
+

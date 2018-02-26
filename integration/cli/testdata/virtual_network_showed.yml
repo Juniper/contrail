@@ -1,0 +1,19 @@
+kind: virtual_network
+data:
+  virtual-network:
+    annotations: {}
+    ecmp_hashing_include_fields: {}
+    export_route_target_list: {}
+    fq_name:
+    - vn-blue
+    id_perms:
+      permissions: {}
+    import_route_target_list: {}
+    mac_limit_control: {}
+    mac_move_control: {}
+    perms2:
+      owner: admin
+    provider_properties: {}
+    route_target_list: {}
+    uuid: first-uuid
+    virtual_network_properties: {}

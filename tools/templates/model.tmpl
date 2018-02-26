@@ -1,0 +1,85 @@
+package models
+
+import (
+    "github.com/Juniper/contrail/pkg/schema"
+)
+
+//To skip import error.
+var _ = schema.Version
+
+{% if type.Type == "object" %}
+// Make{{ name }} makes {{ name }}
+func Make{{ name }}() *{{name}}{
+    return &{{name}}{
+    //TODO(nati): Apply default
+    {% for property in type.OrderedProperties %}{% if property.GoType == "string" %}{{ property.GoName }}: "",
+        {% elif property.GoType == "[]string" %}{{ property.GoName }}: []string{},
+        {% elif property.GoType == "[]interface" %}{{ property.GoName }}: []interface{},
+        {% elif property.GoType == "map[string]string" %}{{ property.GoName }}: map[string]string{},
+        {% elif property.GoType == "map[string]interface{}" %}{{ property.GoName }}: map[string]interface{}{},
+        {% elif property.GoType == "bool" %}{{ property.GoName }}: false,
+        {% elif property.GoType == "int64" %}{{ property.GoName }}: 0,
+        {% elif property.GoType == "float" %}{{ property.GoName }}: 0,
+        {% elif property.Type == "array"%}
+            {% if property.Items.Type == "string" %}
+                {{ property.GoName }}: []string{},
+            {% elif property.Items.Type == "integer"%}
+                {{ property.GoName }}: []int64{},
+            {% elif property.Items.GoType %}
+                {{ property.GoName }}:  Make{{ property.Items.GoType }}Slice(),
+            {% endif %}
+        {% else %}{{ property.GoName }}: Make{{ property.GoType }}(),
+        {% endif %}{% endfor %}
+    }
+}
+
+// Make{{ name }} makes {{ name }}
+func InterfaceTo{{ name }}(i interface{}) *{{name}}{
+    m, ok := i.(map[string]interface{})
+    _ = m
+    if !ok {
+        return nil 
+    } 
+    return &{{name}}{
+    //TODO(nati): Apply default
+    {% for property in type.OrderedProperties %}{% if property.GoType == "string" %}{{ property.GoName }}: schema.InterfaceToString(m["{{ property.ID }}"]),
+        {% elif property.GoType == "[]string" %}{{ property.GoName }}: schema.InterfaceToStringList(m["{{ property.ID }}"]),
+        {% elif property.GoType == "[]interface" %}{{ property.GoName }}: schema.InterfaceToStringList(m["{{ property.ID }}"]),
+        {% elif property.GoType == "map[string]string" %}{{ property.GoName }}: schema.InterfaceToStringMap(m["{{ property.ID }}"]),
+        {% elif property.GoType == "map[string]interface{}" %}{{ property.GoName }}: schema.InterfaceToInterfaceMap(m["{{ property.ID }}"]),
+        {% elif property.GoType == "bool" %}{{ property.GoName }}: schema.InterfaceToBool(m["{{ property.ID }}"]),
+        {% elif property.GoType == "int64" %}{{ property.GoName }}: schema.InterfaceToInt64(m["{{ property.ID }}"]),
+        {% elif property.GoType == "float" %}{{ property.GoName }}: schema.InterfaceToFloat(m["{{ property.ID }}"]),,
+        {% elif property.Type == "array"%}
+            {% if property.Items.Type == "string" %}
+                {{ property.GoName }}: schema.InterfaceToStringList(m["{{ property.ID }}"]),
+            {% elif property.Items.Type == "integer"%}
+                {{ property.GoName }}: schema.InterfaceToInt64List(m["{{ property.ID }}"]),
+            {% elif property.Items.GoType %}
+                {{ property.GoName }}:  InterfaceTo{{ property.Items.GoType }}Slice(m["{{ property.ID }}"]),
+            {% endif %}
+        {% else %}{{ property.GoName }}: InterfaceTo{{ property.GoType }}(m["{{ property.ID }}"]),
+        {% endif %}{% endfor %}
+    }
+}
+
+// Make{{ name }}Slice() makes a slice of {{ name }}
+func Make{{ name }}Slice() []{% if type.Properties %}*{% endif %}{{ name }} {
+    return []{% if type.Properties %}*{% endif %}{{ name }}{}
+}
+
+// InterfaceTo{{ name }}Slice() makes a slice of {{ name }}
+func InterfaceTo{{ name }}Slice(i interface{}) []{% if type.Properties %}*{% endif %}{{ name }} {
+    list := schema.InterfaceToInterfaceList(i)
+    if list == nil {
+        return nil
+    }
+    result := []{% if type.Properties %}*{% endif %}{{ name }}{}
+    for _, item := range list {
+        result = append(result, InterfaceTo{{ name }}(item) )
+    }
+    return result
+}
+
+{% endif %}
+

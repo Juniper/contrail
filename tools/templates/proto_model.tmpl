@@ -1,0 +1,114 @@
+syntax = "proto3";
+package github.com.Juniper.contrail.pkg.generated.models;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "google/protobuf/field_mask.proto";
+
+option (gogoproto.gostring_all) = true;
+option (gogoproto.equal_all) = true;
+option (gogoproto.verbose_equal_all) = true;
+option (gogoproto.goproto_stringer_all) = false;
+option (gogoproto.stringer_all) =  true;
+option (gogoproto.populate_all) = true;
+option (gogoproto.benchgen_all) = true;
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.protosizer_all) = false;
+
+option go_package = "models";
+
+message ListSpec {
+    repeated Filter filters = 1 [(gogoproto.customname) = "Filters"];
+	int64 limit = 2 [(gogoproto.customname) = "Limit", (gogoproto.casttype) = "int"];
+	int64 offset = 3 [(gogoproto.customname) = "Offset", (gogoproto.casttype) = "int"];
+    bool detail = 4 [(gogoproto.customname) = "Detail"];
+    bool count = 5 [(gogoproto.customname) = "Count"];
+    bool shared = 6 [(gogoproto.customname) = "Shared"];
+    bool exclude_hrefs = 7 [(gogoproto.customname) = "ExcludeHrefs"];
+    repeated string parent_fq_name = 8 [(gogoproto.customname) = "ParentFQName"];
+    string parent_type = 9  [(gogoproto.customname) = "ParentType"];
+    repeated string parent_uuids = 10 [(gogoproto.customname) = "ParentUUIDs"];
+    repeated string backref_uuids = 11 [(gogoproto.customname) = "BackRefUUIDs"];
+    repeated string object_uuids = 12 [(gogoproto.customname) = "ObjectUUIDs"];
+    repeated string fields = 13 [(gogoproto.customname) = "Fields"];
+}
+
+message Filter {
+    string key = 1 [(gogoproto.customname) = "Key"];
+    repeated string values = 2 [(gogoproto.customname) = "Values"];
+}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+message {{ schema.JSONSchema.GoName }} {
+{% for property in schema.JSONSchema.OrderedProperties %}
+    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}"];{% endfor %} 
+{% for linkTo, reference in schema.References %}
+    repeated {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ linkTo }}_refs = {{ reference.Index }} [(gogoproto.customname) = "{{ reference.GoName }}Refs"];{% endfor %}
+{% for backref in schema.Children %}
+    {% set child = backref.LinkTo %}
+    repeated {{ child.JSONSchema.GoName }} {{ child.Plural }} = {{ backref.Index }} [(gogoproto.customname) = "{{ child.JSONSchema.GoName }}s"];{% endfor %}
+}
+
+{% for linkTo, reference in schema.References %}
+message {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
+    string uuid = 1 [(gogoproto.customname) = "UUID"];
+    repeated string to = 2 [(gogoproto.customname) = "To"];
+    {% if reference.RefType %}
+    {{ reference.RefType }} attr = 3 [(gogoproto.customname) = "Attr"];
+    {% endif %}
+}
+{% endfor %}
+
+message Create{{ schema.JSONSchema.GoName }}Request {
+    {{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}",(gogoproto.jsontag) = "{{ schema.Path }}"];
+}
+
+message Create{{ schema.JSONSchema.GoName }}Response {
+    {{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}" ,(gogoproto.jsontag) = "{{ schema.Path }}"];
+}
+
+message Update{{ schema.JSONSchema.GoName }}Request {
+    {{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}",(gogoproto.jsontag) = "{{ schema.Path }}"];
+    google.protobuf.FieldMask field_mask = 2 [(gogoproto.nullable) = false];
+}
+
+message Update{{ schema.JSONSchema.GoName }}Response {
+    {{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}",(gogoproto.jsontag) = "{{ schema.Path }}"];
+}
+
+message Delete{{ schema.JSONSchema.GoName }}Request {
+    string id = 1 [(gogoproto.customname) = "ID"];
+}
+
+message Delete{{ schema.JSONSchema.GoName }}Response {
+    string id = 1 [(gogoproto.customname) = "ID"];
+}
+
+message List{{ schema.JSONSchema.GoName }}Request {
+    ListSpec spec = 1 [(gogoproto.customname) = "Spec"];
+}
+
+message List{{ schema.JSONSchema.GoName }}Response {
+    repeated {{ schema.JSONSchema.GoName }} {{ schema.Plural }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}s", (gogoproto.jsontag) = "{{ schema.PluralPath }}"];
+}
+
+message Get{{ schema.JSONSchema.GoName }}Request {
+    string id = 1 [(gogoproto.customname) = "ID"];
+}
+
+message Get{{ schema.JSONSchema.GoName }}Response {
+    {{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}", (gogoproto.jsontag) = "{{ schema.Path }}"];
+}
+
+{% endif %}{% endfor %}
+
+{% for type, definition in types %}
+{% if definition.Type == "object" %}
+message {{ type }} {
+{% for property in definition.OrderedProperties %}
+    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}"];{% endfor %} 
+}
+{% endif %}
+{% endfor %}

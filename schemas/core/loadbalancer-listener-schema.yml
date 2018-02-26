@@ -1,0 +1,27 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    loadbalancer: 
+      operations: "CRUD"
+      description: ""
+      presence: "optional"
+  parents: 
+    project: 
+      operations: "CRUD"
+      description: "Listener represents the application(protocol, port) to be load balanced."
+      presence: "optional"
+  plural: "loadbalancer_listeners"
+  id: "loadbalancer_listener"
+  schema: 
+    required: []
+    type: "object"
+    properties: 
+      loadbalancer_listener_properties: 
+        operations: "CRUD"
+        presence: "optional"
+        description: ""
+        $ref: "types.json#/definitions/LoadbalancerListenerType"
+

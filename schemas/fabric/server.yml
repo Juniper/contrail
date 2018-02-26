@@ -1,0 +1,67 @@
+description: Virtual and Baremetal Instances
+extends:
+- base
+id: server
+plural: servers
+prefix: /openserver
+schema:
+  properties:
+    created:
+      description: The date and time when the resource was created. The date and time stamp format is ISO 8601
+      type: string
+    hostId:
+      description: An ID string representing the host
+      type: string
+    id:
+      description: The UUID of the server
+      type: string
+    name:
+      description: The UUID of the server
+      type: string
+    image:
+      presence: "optional"
+      description: The UUID and links for the image for your server instance
+      $ref: "openstack_types.json#/definitions/OpenStackImageProperty"
+    flavor:
+      presence: "optional"
+      description: The UUID and links for the flavor for your server instance
+      $ref: "openstack_types.json#/definitions/OpenStackFlavorProperty"
+    addresses:
+      presence: "optional"
+      description: The addresses for the server
+      $ref: "openstack_types.json#/definitions/OpenStackAddress"
+    accessIPv4:
+      description: IPv4 address that should be used to access this server
+      type: string
+    accessIPv6:
+      description: IPv6 address that should be used to access this server
+      type: string
+    config_drive:
+      description: Indicates whether or not a config drive was used for this server
+      type: boolean
+    progress:
+      description: A percentage value of the build progress
+      type: integer
+    status:
+      description: The server status
+      type: string
+    host_status:
+      description: The host status
+      type: string
+    tenant_id:
+      description: The UUID of the tenant in a multi-tenancy cloud
+      type: string
+    updated:
+      description: The date and time when the resource was updated. The date and time stamp format is ISO 8601
+      type: string
+    user_id:
+      description: The user ID of the user who owns the server
+      type: integer
+    locked:
+      description: True if the instance is locked otherwise False
+      type: boolean
+  required: [""]
+  type: object
+singular: server
+title: Virtual and Baremetal Instances
+type: "object" 

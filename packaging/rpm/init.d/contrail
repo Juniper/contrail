@@ -1,0 +1,155 @@
+#! /usr/bin/env bash
+
+# chkconfig: 2345 80 05
+# description: CONTRAIL Backend
+# processname: contrail
+# config: /etc/contrail/apisrv.yaml
+# pidfile: /var/run/contrail.pid
+
+### BEGIN INIT INFO
+# Provides:          contrail
+# Required-Start:    $all
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start contrail at boot time
+### END INIT INFO
+
+#  tested on
+#  1. New lsb that define start-stop-daemon
+#  3. Centos with initscripts package installed
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+NAME=contrail
+DESC="CONTRAIL backend"
+
+CONTRAIL_USER=contrail
+CONTRAIL_GROUP=contrail
+CONTRAIL_HOME=/usr/share/contrail
+CONF_DIR=/etc/contrail
+WORK_DIR=$CONTRAIL_HOME
+DATA_DIR=/var/lib/contrail
+LOG_DIR=/var/log/contrail
+CONF_FILE=$CONF_DIR/apisrv.yml
+MAX_OPEN_FILES=10000
+PID_FILE=/var/run/$NAME.pid
+DAEMON=/usr/sbin/$NAME
+
+if [ ! -x $DAEMON ]; then
+  echo "Program not installed or not executable"
+  exit 5
+fi
+
+#
+# init.d / servicectl compatibility (openSUSE)
+#
+if [ -f /etc/rc.status ]; then
+    . /etc/rc.status
+    rc_reset
+fi
+
+#
+# Source function library.
+#
+if [ -f /etc/rc.d/init.d/functions ]; then
+    . /etc/rc.d/init.d/functions
+fi
+
+# overwrite settings from default file
+[ -e /etc/sysconfig/$NAME ] && . /etc/sysconfig/$NAME
+
+DAEMON_OPTS="-c ${CONF_FILE} server"
+
+function isRunning() {
+  status -p $PID_FILE $NAME > /dev/null 2>&1
+}
+
+function checkUser() {
+  if [ `id -u` -ne 0 ]; then
+    echo "You need root privileges to run this script"
+    exit 4
+  fi
+}
+
+case "$1" in
+  start)
+    checkUser
+    isRunning
+    if [ $? -eq 0 ]; then
+      echo "Already running."
+      exit 0
+    fi
+
+    # Prepare environment
+    mkdir -p "$LOG_DIR" "$DATA_DIR" && chown "$CONTRAIL_USER":"$CONTRAIL_GROUP" "$LOG_DIR" "$DATA_DIR"
+    touch "$PID_FILE" && chown "$CONTRAIL_USER":"$CONTRAIL_GROUP" "$PID_FILE"
+
+    if [ -n "$MAX_OPEN_FILES" ]; then
+      ulimit -n $MAX_OPEN_FILES
+    fi
+
+    # Start Daemon
+    cd $CONTRAIL_HOME
+    action $"Starting $DESC: ..." su -s /bin/sh -c "nohup ${DAEMON} ${DAEMON_OPTS} >> /dev/null 3>&1 &" $CONTRAIL_USER 2> /dev/null
+    return=$?
+    if [ $return -eq 0 ]
+    then
+      sleep 1
+      # check if pid file has been written two
+      if ! [[ -s $PID_FILE ]]; then
+        echo "FAILED"
+        exit 1
+      fi
+      i=0
+      timeout=10
+      # Wait for the process to be properly started before exiting
+      until { cat "$PID_FILE" | xargs kill -0; } >/dev/null 2>&1
+      do
+        sleep 1
+        i=$(($i + 1))
+        if [ $i -gt $timeout ]; then
+          echo "FAILED"
+          exit 1
+        fi
+      done
+    fi
+
+    exit $return
+    ;;
+  stop)
+    checkUser
+    echo -n "Stopping $DESC: ..."
+
+    if [ -f "$PID_FILE" ]; then
+      killproc -p $PID_FILE -d 20 $NAME
+      if [ $? -eq 1 ]; then
+        echo  "$DESC is not running but pid file exists, cleaning up"
+      elif [ $? -eq 3 ]; then
+        PID="`cat $PID_FILE`"
+        echo  "Failed to stop $DESC (pid $PID)"
+        exit 1
+      fi
+      rm -f "$PID_FILE"
+      echo  ""
+      exit 0
+    else
+      echo  "(not running)"
+    fi
+    exit 0
+    ;;
+  status)
+    status -p $PID_FILE $NAME
+    exit $?
+    ;;
+  restart|force-reload)
+    if [ -f "$PID_FILE" ]; then
+      $0 stop
+      sleep 1
+    fi
+    $0 start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|force-reload|status}"
+    exit 3
+    ;;
+esac

@@ -1,0 +1,1 @@
+SELECT "videos".* FROM "videos" INNER JOIN (select id from users where deleted = $1) u on u.id = videos.user_id WHERE (videos.deleted = $2);

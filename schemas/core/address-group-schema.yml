@@ -1,0 +1,28 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    project: 
+      operations: "CRUD"
+      description: "Project level address Group object"
+      presence: "optional"
+    policy_management: 
+      operations: "CRUD"
+      description: "Address Group object"
+      presence: "optional"
+  plural: "address_groups"
+  id: "address_group"
+  schema: 
+    required: []
+    type: "object"
+    properties: 
+      address_group_prefix: 
+        operations: "CRUD"
+        collectionType: "list"
+        presence: "optional"
+        description: "List of IP prefix"
+        $ref: "types.json#/definitions/SubnetListType"
+

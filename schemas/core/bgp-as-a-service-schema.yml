@@ -1,0 +1,60 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    virtual_machine_interface: 
+      operations: "CRUD"
+      description: "Reference to VMI on which BGPaaS BGP peering will happen."
+      presence: "required"
+    service_health_check: 
+      operations: "CRUD"
+      description: "Reference to health check object attached to BGPaaS object, used to enable BFD health check over active BGPaaS VMI."
+      presence: "optional"
+  parents: 
+    project: 
+      operations: "CRUD"
+      description: "BGP as service object represents BGP peer in the virtual network that can participate in dynamic routing with implicit default gateway of the virtual network."
+      presence: "optional"
+  plural: "bgp_as_a_services"
+  id: "bgp_as_a_service"
+  schema: 
+    required: 
+      - "autonomous_system"
+      - "bgpaas_ip_address"
+      - "bgpaas_session_attributes"
+    type: "object"
+    properties: 
+      bgpaas_shared: 
+        default: false
+        operations: "CRUD"
+        type: "boolean"
+        description: "True if only one BGP router needs to be created. Otherwise, one BGP router is created for each VMI"
+        presence: "optional"
+      bgpaas_session_attributes: 
+        operations: "CRUD"
+        type: "string"
+        description: "BGP peering session attributes."
+        presence: "required"
+      bgpaas_suppress_route_advertisement: 
+        operations: "CRUD"
+        type: "boolean"
+        description: "True when server should not advertise any routes to the client i.e. the client has static routes (typically a default) configured."
+        presence: "optional"
+      bgpaas_ipv4_mapped_ipv6_nexthop: 
+        operations: "CRUD"
+        type: "boolean"
+        description: "True when client bgp implementation expects to receive a ipv4-mapped ipv6 address (as opposed to regular ipv6 address) as the bgp nexthop for ipv6 routes."
+        presence: "optional"
+      bgpaas_ip_address: 
+        operations: "CRUD"
+        presence: "required"
+        description: "Ip address of the BGP peer."
+        $ref: "types.json#/definitions/IpAddressType"
+      autonomous_system: 
+        operations: "CRUD"
+        presence: "required"
+        description: "16 bit BGP Autonomous System number for the cluster."
+        $ref: "types.json#/definitions/AutonomousSystemType"
+
