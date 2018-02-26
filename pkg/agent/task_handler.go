@@ -113,7 +113,7 @@ func saveHandler(handler handler, task *task, context map[string]interface{}) (i
 	resourceMap, _ := resource.(map[string]interface{})
 	outputData := map[string]interface{}{
 		resourceMap["schema_id"].(string): map[string]interface{}{
-			resourceMap["id"].(string): resourceMap,
+			resourceMap["uuid"].(string): resourceMap,
 		},
 	}
 	if format == "json" {
