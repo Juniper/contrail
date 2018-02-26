@@ -16,6 +16,18 @@ In addition, the following APIs are also available:
 - Convert UUID to FQ name
 - Add/Delete/Update a reference between two objects
 
+# OpenAPI
+
+We have OpenAPI version 2.0 definitions in public directory.
+You can also take a look detail REST API spec using OpenAPI document generator.
+
+Example.
+
+```
+npm install -g spectacle-docs
+spectacle -d public/openapi.json
+```
+
 # Creating a resource
 
 To create a resource, a POST has to be issued on the collection URL. So for a resource of type example-resource,

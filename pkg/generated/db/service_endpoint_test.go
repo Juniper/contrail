@@ -305,47 +305,6 @@ func TestServiceEndpoint(t *testing.T) {
 	//Delete ref entries, referred objects
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_service_endpoint_service_object` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing ServiceObjectRefs delete statement failed")
-		}
-		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_object_ref_uuid")
-		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_object_ref_uuid1")
-		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_object_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "ServiceObjectRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceObject(ctx, tx,
-			&models.DeleteServiceObjectRequest{
-				ID: "service_endpoint_service_object_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref service_endpoint_service_object_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceObject(ctx, tx,
-			&models.DeleteServiceObjectRequest{
-				ID: "service_endpoint_service_object_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref service_endpoint_service_object_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceObject(
-			ctx,
-			tx,
-			&models.DeleteServiceObjectRequest{
-				ID: "service_endpoint_service_object_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref service_endpoint_service_object_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		stmt, err := tx.Prepare("delete from `ref_service_endpoint_service_connection_module` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing ServiceConnectionModuleRefs delete statement failed")
@@ -425,6 +384,47 @@ func TestServiceEndpoint(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("delete ref service_endpoint_physical_router_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_service_endpoint_service_object` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing ServiceObjectRefs delete statement failed")
+		}
+		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_object_ref_uuid")
+		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_object_ref_uuid1")
+		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_object_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "ServiceObjectRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteServiceObject(ctx, tx,
+			&models.DeleteServiceObjectRequest{
+				ID: "service_endpoint_service_object_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref service_endpoint_service_object_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteServiceObject(ctx, tx,
+			&models.DeleteServiceObjectRequest{
+				ID: "service_endpoint_service_object_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref service_endpoint_service_object_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteServiceObject(
+			ctx,
+			tx,
+			&models.DeleteServiceObjectRequest{
+				ID: "service_endpoint_service_object_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref service_endpoint_service_object_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

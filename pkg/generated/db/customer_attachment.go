@@ -106,19 +106,6 @@ func CreateCustomerAttachment(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertCustomerAttachmentVirtualMachineInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
-	}
-	defer stmtVirtualMachineInterfaceRef.Close()
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
 	stmtFloatingIPRef, err := tx.Prepare(insertCustomerAttachmentFloatingIPQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing FloatingIPRefs create statement failed")
@@ -129,6 +116,19 @@ func CreateCustomerAttachment(
 		_, err = stmtFloatingIPRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "FloatingIPRefs create failed")
+		}
+	}
+
+	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertCustomerAttachmentVirtualMachineInterfaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
+	}
+	defer stmtVirtualMachineInterfaceRef.Close()
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
 	}
 

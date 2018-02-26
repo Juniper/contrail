@@ -160,8 +160,9 @@ type Reference struct {
 
 //BackReference for representing backward references.
 type BackReference struct {
-	Index  int     `yaml:"-" json:"-"`
-	LinkTo *Schema `yaml:"-" json:"-"`
+	Index       int     `yaml:"-" json:"-"`
+	Description string  `yaml:"description" json:"description,omitempty"`
+	LinkTo      *Schema `yaml:"-" json:"-"`
 }
 
 func parseRef(ref string) (string, string) {
@@ -181,20 +182,21 @@ func (s *JSONSchema) getRefType() string {
 //Copy copies a json schema
 func (s *JSONSchema) Copy() *JSONSchema {
 	copied := &JSONSchema{
-		ID:         s.ID,
-		Title:      s.Title,
-		SQL:        s.SQL,
-		Default:    s.Default,
-		Enum:       s.Enum,
-		Minimum:    s.Minimum,
-		Maximum:    s.Maximum,
-		Ref:        s.Ref,
-		Permission: s.Permission,
-		Operation:  s.Operation,
-		Type:       s.Type,
-		Presence:   s.Presence,
-		Required:   s.Required,
-		Properties: map[string]*JSONSchema{},
+		ID:          s.ID,
+		Title:       s.Title,
+		SQL:         s.SQL,
+		Default:     s.Default,
+		Enum:        s.Enum,
+		Minimum:     s.Minimum,
+		Maximum:     s.Maximum,
+		Ref:         s.Ref,
+		Permission:  s.Permission,
+		Operation:   s.Operation,
+		Type:        s.Type,
+		Presence:    s.Presence,
+		Required:    s.Required,
+		Description: s.Description,
+		Properties:  map[string]*JSONSchema{},
 	}
 	for name, property := range s.Properties {
 		copied.Properties[name] = property.Copy()
@@ -552,7 +554,7 @@ func (api *API) resolveAllRelation() error {
 			if parentSchema == nil {
 				return fmt.Errorf("Parent schema %s not found", linkTo)
 			}
-			parentSchema.Children = append(parentSchema.Children, &BackReference{LinkTo: s})
+			parentSchema.Children = append(parentSchema.Children, &BackReference{LinkTo: s, Description: reference.Description})
 		}
 	}
 	return nil

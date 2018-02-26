@@ -39,37 +39,6 @@ func TestSecurityLoggingObject(t *testing.T) {
 
 	// Create referred objects
 
-	var NetworkPolicycreateref []*models.SecurityLoggingObjectNetworkPolicyRef
-	var NetworkPolicyrefModel *models.NetworkPolicy
-	NetworkPolicyrefModel = models.MakeNetworkPolicy()
-	NetworkPolicyrefModel.UUID = "security_logging_object_network_policy_ref_uuid"
-	NetworkPolicyrefModel.FQName = []string{"test", "security_logging_object_network_policy_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNetworkPolicy(ctx, tx, &models.CreateNetworkPolicyRequest{
-			NetworkPolicy: NetworkPolicyrefModel,
-		})
-	})
-	NetworkPolicyrefModel.UUID = "security_logging_object_network_policy_ref_uuid1"
-	NetworkPolicyrefModel.FQName = []string{"test", "security_logging_object_network_policy_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNetworkPolicy(ctx, tx, &models.CreateNetworkPolicyRequest{
-			NetworkPolicy: NetworkPolicyrefModel,
-		})
-	})
-	NetworkPolicyrefModel.UUID = "security_logging_object_network_policy_ref_uuid2"
-	NetworkPolicyrefModel.FQName = []string{"test", "security_logging_object_network_policy_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNetworkPolicy(ctx, tx, &models.CreateNetworkPolicyRequest{
-			NetworkPolicy: NetworkPolicyrefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	NetworkPolicycreateref = append(NetworkPolicycreateref, &models.SecurityLoggingObjectNetworkPolicyRef{UUID: "security_logging_object_network_policy_ref_uuid", To: []string{"test", "security_logging_object_network_policy_ref_uuid"}})
-	NetworkPolicycreateref = append(NetworkPolicycreateref, &models.SecurityLoggingObjectNetworkPolicyRef{UUID: "security_logging_object_network_policy_ref_uuid2", To: []string{"test", "security_logging_object_network_policy_ref_uuid2"}})
-	model.NetworkPolicyRefs = NetworkPolicycreateref
-
 	var SecurityGroupcreateref []*models.SecurityLoggingObjectSecurityGroupRef
 	var SecurityGrouprefModel *models.SecurityGroup
 	SecurityGrouprefModel = models.MakeSecurityGroup()
@@ -100,6 +69,37 @@ func TestSecurityLoggingObject(t *testing.T) {
 	SecurityGroupcreateref = append(SecurityGroupcreateref, &models.SecurityLoggingObjectSecurityGroupRef{UUID: "security_logging_object_security_group_ref_uuid", To: []string{"test", "security_logging_object_security_group_ref_uuid"}})
 	SecurityGroupcreateref = append(SecurityGroupcreateref, &models.SecurityLoggingObjectSecurityGroupRef{UUID: "security_logging_object_security_group_ref_uuid2", To: []string{"test", "security_logging_object_security_group_ref_uuid2"}})
 	model.SecurityGroupRefs = SecurityGroupcreateref
+
+	var NetworkPolicycreateref []*models.SecurityLoggingObjectNetworkPolicyRef
+	var NetworkPolicyrefModel *models.NetworkPolicy
+	NetworkPolicyrefModel = models.MakeNetworkPolicy()
+	NetworkPolicyrefModel.UUID = "security_logging_object_network_policy_ref_uuid"
+	NetworkPolicyrefModel.FQName = []string{"test", "security_logging_object_network_policy_ref_uuid"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateNetworkPolicy(ctx, tx, &models.CreateNetworkPolicyRequest{
+			NetworkPolicy: NetworkPolicyrefModel,
+		})
+	})
+	NetworkPolicyrefModel.UUID = "security_logging_object_network_policy_ref_uuid1"
+	NetworkPolicyrefModel.FQName = []string{"test", "security_logging_object_network_policy_ref_uuid1"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateNetworkPolicy(ctx, tx, &models.CreateNetworkPolicyRequest{
+			NetworkPolicy: NetworkPolicyrefModel,
+		})
+	})
+	NetworkPolicyrefModel.UUID = "security_logging_object_network_policy_ref_uuid2"
+	NetworkPolicyrefModel.FQName = []string{"test", "security_logging_object_network_policy_ref_uuid2"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateNetworkPolicy(ctx, tx, &models.CreateNetworkPolicyRequest{
+			NetworkPolicy: NetworkPolicyrefModel,
+		})
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	NetworkPolicycreateref = append(NetworkPolicycreateref, &models.SecurityLoggingObjectNetworkPolicyRef{UUID: "security_logging_object_network_policy_ref_uuid", To: []string{"test", "security_logging_object_network_policy_ref_uuid"}})
+	NetworkPolicycreateref = append(NetworkPolicycreateref, &models.SecurityLoggingObjectNetworkPolicyRef{UUID: "security_logging_object_network_policy_ref_uuid2", To: []string{"test", "security_logging_object_network_policy_ref_uuid2"}})
+	model.NetworkPolicyRefs = NetworkPolicycreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()

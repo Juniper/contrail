@@ -61,14 +61,14 @@ var FirewallPolicyBackRefFields = map[string][]string{}
 // FirewallPolicyParentTypes is possible parents for FirewallPolicy
 var FirewallPolicyParents = []string{
 
-	"project",
-
 	"policy_management",
+
+	"project",
 }
 
-const insertFirewallPolicySecurityLoggingObjectQuery = "insert into `ref_firewall_policy_security_logging_object` (`from`, `to` ) values (?, ?);"
-
 const insertFirewallPolicyFirewallRuleQuery = "insert into `ref_firewall_policy_firewall_rule` (`from`, `to` ,`sequence`) values (?, ?,?);"
+
+const insertFirewallPolicySecurityLoggingObjectQuery = "insert into `ref_firewall_policy_security_logging_object` (`from`, `to` ) values (?, ?);"
 
 // CreateFirewallPolicy inserts FirewallPolicy to DB
 func CreateFirewallPolicy(

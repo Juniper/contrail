@@ -25,11 +25,11 @@ jobs:
         name: Reset database
         command: ./tools/reset_db.sh
     - run:
-        name: Run Test
+        name: Run Tesc
         command: make test
-    - run:
-        name: coverall
-        command: /go/bin/goveralls -coverprofile=profile.cov -service=circle-ci -repotoken=$COVERALLS_TOKEN
+    # - run:
+    #     name: coverall
+    #     command: /go/bin/goveralls -coverprofile=profile.cov -service=circle-ci -repotoken=$COVERALLS_TOKEN
   deploy-job:
     docker:
       - image: circleci/golang:1.9

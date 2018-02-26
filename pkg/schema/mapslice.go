@@ -80,6 +80,7 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 		Operation:       s.getString("operation"),
 		Type:            s.getString("type"),
 		Presence:        s.getString("presence"),
+		Description:     s.getString("description"),
 		Properties:      map[string]*JSONSchema{},
 		PropertiesOrder: properties.keys(),
 	}

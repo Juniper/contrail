@@ -63,14 +63,14 @@ var SecurityLoggingObjectBackRefFields = map[string][]string{}
 // SecurityLoggingObjectParentTypes is possible parents for SecurityLoggingObject
 var SecurityLoggingObjectParents = []string{
 
-	"project",
-
 	"global_vrouter_config",
+
+	"project",
 }
 
-const insertSecurityLoggingObjectNetworkPolicyQuery = "insert into `ref_security_logging_object_network_policy` (`from`, `to` ,`rule`) values (?, ?,?);"
-
 const insertSecurityLoggingObjectSecurityGroupQuery = "insert into `ref_security_logging_object_security_group` (`from`, `to` ,`rule`) values (?, ?,?);"
+
+const insertSecurityLoggingObjectNetworkPolicyQuery = "insert into `ref_security_logging_object_network_policy` (`from`, `to` ,`rule`) values (?, ?,?);"
 
 // CreateSecurityLoggingObject inserts SecurityLoggingObject to DB
 func CreateSecurityLoggingObject(
@@ -115,23 +115,6 @@ func CreateSecurityLoggingObject(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtNetworkPolicyRef, err := tx.Prepare(insertSecurityLoggingObjectNetworkPolicyQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing NetworkPolicyRefs create statement failed")
-	}
-	defer stmtNetworkPolicyRef.Close()
-	for _, ref := range model.NetworkPolicyRefs {
-
-		if ref.Attr == nil {
-			ref.Attr = &models.SecurityLoggingObjectRuleListType{}
-		}
-
-		_, err = stmtNetworkPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetRule()))
-		if err != nil {
-			return errors.Wrap(err, "NetworkPolicyRefs create failed")
-		}
-	}
-
 	stmtSecurityGroupRef, err := tx.Prepare(insertSecurityLoggingObjectSecurityGroupQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing SecurityGroupRefs create statement failed")
@@ -146,6 +129,23 @@ func CreateSecurityLoggingObject(
 		_, err = stmtSecurityGroupRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetRule()))
 		if err != nil {
 			return errors.Wrap(err, "SecurityGroupRefs create failed")
+		}
+	}
+
+	stmtNetworkPolicyRef, err := tx.Prepare(insertSecurityLoggingObjectNetworkPolicyQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing NetworkPolicyRefs create statement failed")
+	}
+	defer stmtNetworkPolicyRef.Close()
+	for _, ref := range model.NetworkPolicyRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = &models.SecurityLoggingObjectRuleListType{}
+		}
+
+		_, err = stmtNetworkPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetRule()))
+		if err != nil {
+			return errors.Wrap(err, "NetworkPolicyRefs create failed")
 		}
 	}
 

@@ -274,47 +274,6 @@ func TestFirewallPolicy(t *testing.T) {
 	//Delete ref entries, referred objects
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_firewall_policy_security_logging_object` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing SecurityLoggingObjectRefs delete statement failed")
-		}
-		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_security_logging_object_ref_uuid")
-		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_security_logging_object_ref_uuid1")
-		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_security_logging_object_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "SecurityLoggingObjectRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteSecurityLoggingObject(ctx, tx,
-			&models.DeleteSecurityLoggingObjectRequest{
-				ID: "firewall_policy_security_logging_object_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref firewall_policy_security_logging_object_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteSecurityLoggingObject(ctx, tx,
-			&models.DeleteSecurityLoggingObjectRequest{
-				ID: "firewall_policy_security_logging_object_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref firewall_policy_security_logging_object_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteSecurityLoggingObject(
-			ctx,
-			tx,
-			&models.DeleteSecurityLoggingObjectRequest{
-				ID: "firewall_policy_security_logging_object_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref firewall_policy_security_logging_object_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		stmt, err := tx.Prepare("delete from `ref_firewall_policy_firewall_rule` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing FirewallRuleRefs delete statement failed")
@@ -353,6 +312,47 @@ func TestFirewallPolicy(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("delete ref firewall_policy_firewall_rule_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_firewall_policy_security_logging_object` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing SecurityLoggingObjectRefs delete statement failed")
+		}
+		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_security_logging_object_ref_uuid")
+		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_security_logging_object_ref_uuid1")
+		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_security_logging_object_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "SecurityLoggingObjectRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteSecurityLoggingObject(ctx, tx,
+			&models.DeleteSecurityLoggingObjectRequest{
+				ID: "firewall_policy_security_logging_object_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref firewall_policy_security_logging_object_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteSecurityLoggingObject(ctx, tx,
+			&models.DeleteSecurityLoggingObjectRequest{
+				ID: "firewall_policy_security_logging_object_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref firewall_policy_security_logging_object_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteSecurityLoggingObject(
+			ctx,
+			tx,
+			&models.DeleteSecurityLoggingObjectRequest{
+				ID: "firewall_policy_security_logging_object_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref firewall_policy_security_logging_object_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

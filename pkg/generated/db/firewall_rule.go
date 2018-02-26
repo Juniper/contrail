@@ -87,6 +87,11 @@ var FirewallRuleFields = []string{
 // FirewallRuleRefFields is db reference fields for FirewallRule
 var FirewallRuleRefFields = map[string][]string{
 
+	"virtual_network": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"service_group": []string{
 	// <schema.Schema Value>
 
@@ -101,11 +106,6 @@ var FirewallRuleRefFields = map[string][]string{
 	// <schema.Schema Value>
 
 	},
-
-	"virtual_network": []string{
-	// <schema.Schema Value>
-
-	},
 }
 
 // FirewallRuleBackRefFields is db back reference fields for FirewallRule
@@ -114,18 +114,18 @@ var FirewallRuleBackRefFields = map[string][]string{}
 // FirewallRuleParentTypes is possible parents for FirewallRule
 var FirewallRuleParents = []string{
 
-	"policy_management",
-
 	"project",
+
+	"policy_management",
 }
+
+const insertFirewallRuleVirtualNetworkQuery = "insert into `ref_firewall_rule_virtual_network` (`from`, `to` ) values (?, ?);"
 
 const insertFirewallRuleServiceGroupQuery = "insert into `ref_firewall_rule_service_group` (`from`, `to` ) values (?, ?);"
 
 const insertFirewallRuleAddressGroupQuery = "insert into `ref_firewall_rule_address_group` (`from`, `to` ) values (?, ?);"
 
 const insertFirewallRuleSecurityLoggingObjectQuery = "insert into `ref_firewall_rule_security_logging_object` (`from`, `to` ) values (?, ?);"
-
-const insertFirewallRuleVirtualNetworkQuery = "insert into `ref_firewall_rule_virtual_network` (`from`, `to` ) values (?, ?);"
 
 // CreateFirewallRule inserts FirewallRule to DB
 func CreateFirewallRule(
@@ -669,46 +669,6 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	}
 
-	if value, ok := values["ref_service_group"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.FirewallRuleServiceGroupRef{}
-			referenceModel.UUID = uuid
-			m.ServiceGroupRefs = append(m.ServiceGroupRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_address_group"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.FirewallRuleAddressGroupRef{}
-			referenceModel.UUID = uuid
-			m.AddressGroupRefs = append(m.AddressGroupRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_security_logging_object"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -745,6 +705,46 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 			referenceModel := &models.FirewallRuleVirtualNetworkRef{}
 			referenceModel.UUID = uuid
 			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_service_group"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.FirewallRuleServiceGroupRef{}
+			referenceModel.UUID = uuid
+			m.ServiceGroupRefs = append(m.ServiceGroupRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_address_group"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.FirewallRuleAddressGroupRef{}
+			referenceModel.UUID = uuid
+			m.AddressGroupRefs = append(m.AddressGroupRefs, referenceModel)
 
 		}
 	}

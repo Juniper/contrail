@@ -113,19 +113,6 @@ func CreateApplicationPolicySet(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtGlobalVrouterConfigRef, err := tx.Prepare(insertApplicationPolicySetGlobalVrouterConfigQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing GlobalVrouterConfigRefs create statement failed")
-	}
-	defer stmtGlobalVrouterConfigRef.Close()
-	for _, ref := range model.GlobalVrouterConfigRefs {
-
-		_, err = stmtGlobalVrouterConfigRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "GlobalVrouterConfigRefs create failed")
-		}
-	}
-
 	stmtFirewallPolicyRef, err := tx.Prepare(insertApplicationPolicySetFirewallPolicyQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing FirewallPolicyRefs create statement failed")
@@ -140,6 +127,19 @@ func CreateApplicationPolicySet(
 		_, err = stmtFirewallPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.GetSequence()))
 		if err != nil {
 			return errors.Wrap(err, "FirewallPolicyRefs create failed")
+		}
+	}
+
+	stmtGlobalVrouterConfigRef, err := tx.Prepare(insertApplicationPolicySetGlobalVrouterConfigQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing GlobalVrouterConfigRefs create statement failed")
+	}
+	defer stmtGlobalVrouterConfigRef.Close()
+	for _, ref := range model.GlobalVrouterConfigRefs {
+
+		_, err = stmtGlobalVrouterConfigRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "GlobalVrouterConfigRefs create failed")
 		}
 	}
 

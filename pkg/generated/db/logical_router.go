@@ -46,11 +46,6 @@ var LogicalRouterFields = []string{
 // LogicalRouterRefFields is db reference fields for LogicalRouter
 var LogicalRouterRefFields = map[string][]string{
 
-	"route_target": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
@@ -77,6 +72,11 @@ var LogicalRouterRefFields = map[string][]string{
 	},
 
 	"bgpvpn": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"route_target": []string{
 	// <schema.Schema Value>
 
 	},

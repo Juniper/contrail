@@ -79,26 +79,6 @@ var VirtualNetworkFields = []string{
 // VirtualNetworkRefFields is db reference fields for VirtualNetwork
 var VirtualNetworkRefFields = map[string][]string{
 
-	"security_logging_object": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"network_policy": []string{
-		// <schema.Schema Value>
-		"start_time",
-		"off_interval",
-		"on_interval",
-		"end_time",
-		"major",
-		"minor",
-	},
-
-	"qos_config": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"route_table": []string{
 	// <schema.Schema Value>
 
@@ -118,6 +98,26 @@ var VirtualNetworkRefFields = map[string][]string{
 		// <schema.Schema Value>
 		"ipam_subnets",
 		"route",
+	},
+
+	"security_logging_object": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"network_policy": []string{
+		// <schema.Schema Value>
+		"start_time",
+		"off_interval",
+		"on_interval",
+		"end_time",
+		"minor",
+		"major",
+	},
+
+	"qos_config": []string{
+	// <schema.Schema Value>
+
 	},
 }
 
@@ -263,6 +263,8 @@ var VirtualNetworkParents = []string{
 	"project",
 }
 
+const insertVirtualNetworkQosConfigQuery = "insert into `ref_virtual_network_qos_config` (`from`, `to` ) values (?, ?);"
+
 const insertVirtualNetworkRouteTableQuery = "insert into `ref_virtual_network_route_table` (`from`, `to` ) values (?, ?);"
 
 const insertVirtualNetworkVirtualNetworkQuery = "insert into `ref_virtual_network_virtual_network` (`from`, `to` ) values (?, ?);"
@@ -273,9 +275,7 @@ const insertVirtualNetworkNetworkIpamQuery = "insert into `ref_virtual_network_n
 
 const insertVirtualNetworkSecurityLoggingObjectQuery = "insert into `ref_virtual_network_security_logging_object` (`from`, `to` ) values (?, ?);"
 
-const insertVirtualNetworkNetworkPolicyQuery = "insert into `ref_virtual_network_network_policy` (`from`, `to` ,`start_time`,`off_interval`,`on_interval`,`end_time`,`major`,`minor`) values (?, ?,?,?,?,?,?,?);"
-
-const insertVirtualNetworkQosConfigQuery = "insert into `ref_virtual_network_qos_config` (`from`, `to` ) values (?, ?);"
+const insertVirtualNetworkNetworkPolicyQuery = "insert into `ref_virtual_network_network_policy` (`from`, `to` ,`start_time`,`off_interval`,`on_interval`,`end_time`,`minor`,`major`) values (?, ?,?,?,?,?,?,?);"
 
 // CreateVirtualNetwork inserts VirtualNetwork to DB
 func CreateVirtualNetwork(
@@ -368,8 +368,8 @@ func CreateVirtualNetwork(
 			string(ref.Attr.GetTimer().GetOffInterval()),
 			string(ref.Attr.GetTimer().GetOnInterval()),
 			string(ref.Attr.GetTimer().GetEndTime()),
-			int(ref.Attr.GetSequence().GetMajor()),
-			int(ref.Attr.GetSequence().GetMinor()))
+			int(ref.Attr.GetSequence().GetMinor()),
+			int(ref.Attr.GetSequence().GetMajor()))
 		if err != nil {
 			return errors.Wrap(err, "NetworkPolicyRefs create failed")
 		}
@@ -816,6 +816,69 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 	}
 
+	if value, ok := values["ref_network_policy"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkNetworkPolicyRef{}
+			referenceModel.UUID = uuid
+			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
+
+			attr := models.MakeVirtualNetworkPolicyType()
+			referenceModel.Attr = attr
+
+		}
+	}
+
+	if value, ok := values["ref_qos_config"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkQosConfigRef{}
+			referenceModel.UUID = uuid
+			m.QosConfigRefs = append(m.QosConfigRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_route_table"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkRouteTableRef{}
+			referenceModel.UUID = uuid
+			m.RouteTableRefs = append(m.RouteTableRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_virtual_network"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -895,69 +958,6 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 			referenceModel := &models.VirtualNetworkSecurityLoggingObjectRef{}
 			referenceModel.UUID = uuid
 			m.SecurityLoggingObjectRefs = append(m.SecurityLoggingObjectRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_network_policy"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkNetworkPolicyRef{}
-			referenceModel.UUID = uuid
-			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
-
-			attr := models.MakeVirtualNetworkPolicyType()
-			referenceModel.Attr = attr
-
-		}
-	}
-
-	if value, ok := values["ref_qos_config"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkQosConfigRef{}
-			referenceModel.UUID = uuid
-			m.QosConfigRefs = append(m.QosConfigRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_route_table"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkRouteTableRef{}
-			referenceModel.UUID = uuid
-			m.RouteTableRefs = append(m.RouteTableRefs, referenceModel)
 
 		}
 	}

@@ -39,37 +39,6 @@ func TestVirtualRouter(t *testing.T) {
 
 	// Create referred objects
 
-	var VirtualMachinecreateref []*models.VirtualRouterVirtualMachineRef
-	var VirtualMachinerefModel *models.VirtualMachine
-	VirtualMachinerefModel = models.MakeVirtualMachine()
-	VirtualMachinerefModel.UUID = "virtual_router_virtual_machine_ref_uuid"
-	VirtualMachinerefModel.FQName = []string{"test", "virtual_router_virtual_machine_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualMachine(ctx, tx, &models.CreateVirtualMachineRequest{
-			VirtualMachine: VirtualMachinerefModel,
-		})
-	})
-	VirtualMachinerefModel.UUID = "virtual_router_virtual_machine_ref_uuid1"
-	VirtualMachinerefModel.FQName = []string{"test", "virtual_router_virtual_machine_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualMachine(ctx, tx, &models.CreateVirtualMachineRequest{
-			VirtualMachine: VirtualMachinerefModel,
-		})
-	})
-	VirtualMachinerefModel.UUID = "virtual_router_virtual_machine_ref_uuid2"
-	VirtualMachinerefModel.FQName = []string{"test", "virtual_router_virtual_machine_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualMachine(ctx, tx, &models.CreateVirtualMachineRequest{
-			VirtualMachine: VirtualMachinerefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	VirtualMachinecreateref = append(VirtualMachinecreateref, &models.VirtualRouterVirtualMachineRef{UUID: "virtual_router_virtual_machine_ref_uuid", To: []string{"test", "virtual_router_virtual_machine_ref_uuid"}})
-	VirtualMachinecreateref = append(VirtualMachinecreateref, &models.VirtualRouterVirtualMachineRef{UUID: "virtual_router_virtual_machine_ref_uuid2", To: []string{"test", "virtual_router_virtual_machine_ref_uuid2"}})
-	model.VirtualMachineRefs = VirtualMachinecreateref
-
 	var NetworkIpamcreateref []*models.VirtualRouterNetworkIpamRef
 	var NetworkIpamrefModel *models.NetworkIpam
 	NetworkIpamrefModel = models.MakeNetworkIpam()
@@ -100,6 +69,37 @@ func TestVirtualRouter(t *testing.T) {
 	NetworkIpamcreateref = append(NetworkIpamcreateref, &models.VirtualRouterNetworkIpamRef{UUID: "virtual_router_network_ipam_ref_uuid", To: []string{"test", "virtual_router_network_ipam_ref_uuid"}})
 	NetworkIpamcreateref = append(NetworkIpamcreateref, &models.VirtualRouterNetworkIpamRef{UUID: "virtual_router_network_ipam_ref_uuid2", To: []string{"test", "virtual_router_network_ipam_ref_uuid2"}})
 	model.NetworkIpamRefs = NetworkIpamcreateref
+
+	var VirtualMachinecreateref []*models.VirtualRouterVirtualMachineRef
+	var VirtualMachinerefModel *models.VirtualMachine
+	VirtualMachinerefModel = models.MakeVirtualMachine()
+	VirtualMachinerefModel.UUID = "virtual_router_virtual_machine_ref_uuid"
+	VirtualMachinerefModel.FQName = []string{"test", "virtual_router_virtual_machine_ref_uuid"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateVirtualMachine(ctx, tx, &models.CreateVirtualMachineRequest{
+			VirtualMachine: VirtualMachinerefModel,
+		})
+	})
+	VirtualMachinerefModel.UUID = "virtual_router_virtual_machine_ref_uuid1"
+	VirtualMachinerefModel.FQName = []string{"test", "virtual_router_virtual_machine_ref_uuid1"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateVirtualMachine(ctx, tx, &models.CreateVirtualMachineRequest{
+			VirtualMachine: VirtualMachinerefModel,
+		})
+	})
+	VirtualMachinerefModel.UUID = "virtual_router_virtual_machine_ref_uuid2"
+	VirtualMachinerefModel.FQName = []string{"test", "virtual_router_virtual_machine_ref_uuid2"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateVirtualMachine(ctx, tx, &models.CreateVirtualMachineRequest{
+			VirtualMachine: VirtualMachinerefModel,
+		})
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	VirtualMachinecreateref = append(VirtualMachinecreateref, &models.VirtualRouterVirtualMachineRef{UUID: "virtual_router_virtual_machine_ref_uuid", To: []string{"test", "virtual_router_virtual_machine_ref_uuid"}})
+	VirtualMachinecreateref = append(VirtualMachinecreateref, &models.VirtualRouterVirtualMachineRef{UUID: "virtual_router_virtual_machine_ref_uuid2", To: []string{"test", "virtual_router_virtual_machine_ref_uuid2"}})
+	model.VirtualMachineRefs = VirtualMachinecreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
