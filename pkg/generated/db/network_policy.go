@@ -55,10 +55,10 @@ var NetworkPolicyParents = []string{
 }
 
 // CreateNetworkPolicy inserts NetworkPolicy to DB
-func CreateNetworkPolicy(
+func (db *DB) createNetworkPolicy(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateNetworkPolicyRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.NetworkPolicy
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertNetworkPolicyQuery)
@@ -254,8 +254,9 @@ func scanNetworkPolicy(values map[string]interface{}) (*models.NetworkPolicy, er
 }
 
 // ListNetworkPolicy lists NetworkPolicy with list spec.
-func ListNetworkPolicy(ctx context.Context, tx *sql.Tx, request *models.ListNetworkPolicyRequest) (response *models.ListNetworkPolicyResponse, err error) {
+func (db *DB) listNetworkPolicy(ctx context.Context, request *models.ListNetworkPolicyRequest) (response *models.ListNetworkPolicyResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -317,9 +318,8 @@ func ListNetworkPolicy(ctx context.Context, tx *sql.Tx, request *models.ListNetw
 }
 
 // UpdateNetworkPolicy updates a resource
-func UpdateNetworkPolicy(
+func (db *DB) updateNetworkPolicy(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateNetworkPolicyRequest,
 ) error {
 	//TODO
@@ -327,15 +327,15 @@ func UpdateNetworkPolicy(
 }
 
 // DeleteNetworkPolicy deletes a resource
-func DeleteNetworkPolicy(
+func (db *DB) deleteNetworkPolicy(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteNetworkPolicyRequest) error {
 	deleteQuery := deleteNetworkPolicyQuery
 	selectQuery := "select count(uuid) from network_policy where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -370,4 +370,119 @@ func DeleteNetworkPolicy(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateNetworkPolicy handle a Create API
+func (db *DB) CreateNetworkPolicy(
+	ctx context.Context,
+	request *models.CreateNetworkPolicyRequest) (*models.CreateNetworkPolicyResponse, error) {
+	model := request.NetworkPolicy
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createNetworkPolicy(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "network_policy",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateNetworkPolicyResponse{
+		NetworkPolicy: request.NetworkPolicy,
+	}, nil
+}
+
+//UpdateNetworkPolicy handles a Update request.
+func (db *DB) UpdateNetworkPolicy(
+	ctx context.Context,
+	request *models.UpdateNetworkPolicyRequest) (*models.UpdateNetworkPolicyResponse, error) {
+	model := request.NetworkPolicy
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateNetworkPolicy(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "network_policy",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateNetworkPolicyResponse{
+		NetworkPolicy: model,
+	}, nil
+}
+
+//DeleteNetworkPolicy delete a resource.
+func (db *DB) DeleteNetworkPolicy(ctx context.Context, request *models.DeleteNetworkPolicyRequest) (*models.DeleteNetworkPolicyResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteNetworkPolicy(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteNetworkPolicyResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetNetworkPolicy a Get request.
+func (db *DB) GetNetworkPolicy(ctx context.Context, request *models.GetNetworkPolicyRequest) (response *models.GetNetworkPolicyResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListNetworkPolicyRequest{
+		Spec: spec,
+	}
+	var result *models.ListNetworkPolicyResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listNetworkPolicy(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.NetworkPolicys) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetNetworkPolicyResponse{
+		NetworkPolicy: result.NetworkPolicys[0],
+	}
+	return response, nil
+}
+
+//ListNetworkPolicy handles a List service Request.
+func (db *DB) ListNetworkPolicy(
+	ctx context.Context,
+	request *models.ListNetworkPolicyRequest) (response *models.ListNetworkPolicyResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listNetworkPolicy(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

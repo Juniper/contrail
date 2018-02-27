@@ -54,11 +54,6 @@ var InstanceIPFields = []string{
 // InstanceIPRefFields is db reference fields for InstanceIP
 var InstanceIPRefFields = map[string][]string{
 
-	"virtual_machine_interface": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"physical_router": []string{
 	// <schema.Schema Value>
 
@@ -75,6 +70,11 @@ var InstanceIPRefFields = map[string][]string{
 	},
 
 	"virtual_network": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
 	},
@@ -118,21 +118,21 @@ var InstanceIPBackRefFields = map[string][]string{
 // InstanceIPParentTypes is possible parents for InstanceIP
 var InstanceIPParents = []string{}
 
+const insertInstanceIPPhysicalRouterQuery = "insert into `ref_instance_ip_physical_router` (`from`, `to` ) values (?, ?);"
+
+const insertInstanceIPVirtualRouterQuery = "insert into `ref_instance_ip_virtual_router` (`from`, `to` ) values (?, ?);"
+
 const insertInstanceIPNetworkIpamQuery = "insert into `ref_instance_ip_network_ipam` (`from`, `to` ) values (?, ?);"
 
 const insertInstanceIPVirtualNetworkQuery = "insert into `ref_instance_ip_virtual_network` (`from`, `to` ) values (?, ?);"
 
 const insertInstanceIPVirtualMachineInterfaceQuery = "insert into `ref_instance_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
-const insertInstanceIPPhysicalRouterQuery = "insert into `ref_instance_ip_physical_router` (`from`, `to` ) values (?, ?);"
-
-const insertInstanceIPVirtualRouterQuery = "insert into `ref_instance_ip_virtual_router` (`from`, `to` ) values (?, ?);"
-
 // CreateInstanceIP inserts InstanceIP to DB
-func CreateInstanceIP(
+func (db *DB) createInstanceIP(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateInstanceIPRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.InstanceIP
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertInstanceIPQuery)
@@ -743,8 +743,9 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 }
 
 // ListInstanceIP lists InstanceIP with list spec.
-func ListInstanceIP(ctx context.Context, tx *sql.Tx, request *models.ListInstanceIPRequest) (response *models.ListInstanceIPResponse, err error) {
+func (db *DB) listInstanceIP(ctx context.Context, request *models.ListInstanceIPRequest) (response *models.ListInstanceIPResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -806,9 +807,8 @@ func ListInstanceIP(ctx context.Context, tx *sql.Tx, request *models.ListInstanc
 }
 
 // UpdateInstanceIP updates a resource
-func UpdateInstanceIP(
+func (db *DB) updateInstanceIP(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateInstanceIPRequest,
 ) error {
 	//TODO
@@ -816,15 +816,15 @@ func UpdateInstanceIP(
 }
 
 // DeleteInstanceIP deletes a resource
-func DeleteInstanceIP(
+func (db *DB) deleteInstanceIP(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteInstanceIPRequest) error {
 	deleteQuery := deleteInstanceIPQuery
 	selectQuery := "select count(uuid) from instance_ip where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -859,4 +859,119 @@ func DeleteInstanceIP(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateInstanceIP handle a Create API
+func (db *DB) CreateInstanceIP(
+	ctx context.Context,
+	request *models.CreateInstanceIPRequest) (*models.CreateInstanceIPResponse, error) {
+	model := request.InstanceIP
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createInstanceIP(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "instance_ip",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateInstanceIPResponse{
+		InstanceIP: request.InstanceIP,
+	}, nil
+}
+
+//UpdateInstanceIP handles a Update request.
+func (db *DB) UpdateInstanceIP(
+	ctx context.Context,
+	request *models.UpdateInstanceIPRequest) (*models.UpdateInstanceIPResponse, error) {
+	model := request.InstanceIP
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateInstanceIP(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "instance_ip",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateInstanceIPResponse{
+		InstanceIP: model,
+	}, nil
+}
+
+//DeleteInstanceIP delete a resource.
+func (db *DB) DeleteInstanceIP(ctx context.Context, request *models.DeleteInstanceIPRequest) (*models.DeleteInstanceIPResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteInstanceIP(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteInstanceIPResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetInstanceIP a Get request.
+func (db *DB) GetInstanceIP(ctx context.Context, request *models.GetInstanceIPRequest) (response *models.GetInstanceIPResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListInstanceIPRequest{
+		Spec: spec,
+	}
+	var result *models.ListInstanceIPResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listInstanceIP(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.InstanceIPs) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetInstanceIPResponse{
+		InstanceIP: result.InstanceIPs[0],
+	}
+	return response, nil
+}
+
+//ListInstanceIP handles a List service Request.
+func (db *DB) ListInstanceIP(
+	ctx context.Context,
+	request *models.ListInstanceIPRequest) (response *models.ListInstanceIPResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listInstanceIP(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateKubernetesNode(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateKubernetesNode(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "kubernetes_node",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateKubernetesNodeResponse{
-		KubernetesNode: request.KubernetesNode,
-	}, nil
+
+	return service.Next().CreateKubernetesNode(ctx, request)
 }
 
 //RESTUpdateKubernetesNode handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateKubernetesNode(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateKubernetesNode(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "kubernetes_node",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateKubernetesNodeResponse{
-		KubernetesNode: model,
-	}, nil
+	return service.Next().UpdateKubernetesNode(ctx, request)
 }
 
 //RESTDeleteKubernetesNode delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteKubernetesNode(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteKubernetesNode delete a resource.
-func (service *ContrailService) DeleteKubernetesNode(ctx context.Context, request *models.DeleteKubernetesNodeRequest) (*models.DeleteKubernetesNodeResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteKubernetesNode(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteKubernetesNodeResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetKubernetesNode a REST Get request.
 func (service *ContrailService) RESTGetKubernetesNode(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetKubernetesNode(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetKubernetesNode a Get request.
-func (service *ContrailService) GetKubernetesNode(ctx context.Context, request *models.GetKubernetesNodeRequest) (response *models.GetKubernetesNodeResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListKubernetesNodeRequest{
-		Spec: spec,
-	}
-	var result *models.ListKubernetesNodeResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListKubernetesNode(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.KubernetesNodes) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetKubernetesNodeResponse{
-		KubernetesNode: result.KubernetesNodes[0],
-	}
-	return response, nil
 }
 
 //RESTListKubernetesNode handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListKubernetesNode(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListKubernetesNode handles a List service Request.
-func (service *ContrailService) ListKubernetesNode(
-	ctx context.Context,
-	request *models.ListKubernetesNodeRequest) (response *models.ListKubernetesNodeResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListKubernetesNode(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

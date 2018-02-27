@@ -85,10 +85,10 @@ var SecurityGroupParents = []string{
 }
 
 // CreateSecurityGroup inserts SecurityGroup to DB
-func CreateSecurityGroup(
+func (db *DB) createSecurityGroup(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateSecurityGroupRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.SecurityGroup
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertSecurityGroupQuery)
@@ -461,8 +461,9 @@ func scanSecurityGroup(values map[string]interface{}) (*models.SecurityGroup, er
 }
 
 // ListSecurityGroup lists SecurityGroup with list spec.
-func ListSecurityGroup(ctx context.Context, tx *sql.Tx, request *models.ListSecurityGroupRequest) (response *models.ListSecurityGroupResponse, err error) {
+func (db *DB) listSecurityGroup(ctx context.Context, request *models.ListSecurityGroupRequest) (response *models.ListSecurityGroupResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -524,9 +525,8 @@ func ListSecurityGroup(ctx context.Context, tx *sql.Tx, request *models.ListSecu
 }
 
 // UpdateSecurityGroup updates a resource
-func UpdateSecurityGroup(
+func (db *DB) updateSecurityGroup(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateSecurityGroupRequest,
 ) error {
 	//TODO
@@ -534,15 +534,15 @@ func UpdateSecurityGroup(
 }
 
 // DeleteSecurityGroup deletes a resource
-func DeleteSecurityGroup(
+func (db *DB) deleteSecurityGroup(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteSecurityGroupRequest) error {
 	deleteQuery := deleteSecurityGroupQuery
 	selectQuery := "select count(uuid) from security_group where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -577,4 +577,119 @@ func DeleteSecurityGroup(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateSecurityGroup handle a Create API
+func (db *DB) CreateSecurityGroup(
+	ctx context.Context,
+	request *models.CreateSecurityGroupRequest) (*models.CreateSecurityGroupResponse, error) {
+	model := request.SecurityGroup
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createSecurityGroup(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "security_group",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateSecurityGroupResponse{
+		SecurityGroup: request.SecurityGroup,
+	}, nil
+}
+
+//UpdateSecurityGroup handles a Update request.
+func (db *DB) UpdateSecurityGroup(
+	ctx context.Context,
+	request *models.UpdateSecurityGroupRequest) (*models.UpdateSecurityGroupResponse, error) {
+	model := request.SecurityGroup
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateSecurityGroup(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "security_group",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateSecurityGroupResponse{
+		SecurityGroup: model,
+	}, nil
+}
+
+//DeleteSecurityGroup delete a resource.
+func (db *DB) DeleteSecurityGroup(ctx context.Context, request *models.DeleteSecurityGroupRequest) (*models.DeleteSecurityGroupResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteSecurityGroup(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteSecurityGroupResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetSecurityGroup a Get request.
+func (db *DB) GetSecurityGroup(ctx context.Context, request *models.GetSecurityGroupRequest) (response *models.GetSecurityGroupResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListSecurityGroupRequest{
+		Spec: spec,
+	}
+	var result *models.ListSecurityGroupResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listSecurityGroup(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.SecurityGroups) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetSecurityGroupResponse{
+		SecurityGroup: result.SecurityGroups[0],
+	}
+	return response, nil
+}
+
+//ListSecurityGroup handles a List service Request.
+func (db *DB) ListSecurityGroup(
+	ctx context.Context,
+	request *models.ListSecurityGroupRequest) (response *models.ListSecurityGroupResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listSecurityGroup(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

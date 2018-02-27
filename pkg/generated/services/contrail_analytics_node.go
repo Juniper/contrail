@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateContrailAnalyticsNode(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateContrailAnalyticsNode(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "contrail_analytics_node",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateContrailAnalyticsNodeResponse{
-		ContrailAnalyticsNode: request.ContrailAnalyticsNode,
-	}, nil
+
+	return service.Next().CreateContrailAnalyticsNode(ctx, request)
 }
 
 //RESTUpdateContrailAnalyticsNode handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateContrailAnalyticsNode(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateContrailAnalyticsNode(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "contrail_analytics_node",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateContrailAnalyticsNodeResponse{
-		ContrailAnalyticsNode: model,
-	}, nil
+	return service.Next().UpdateContrailAnalyticsNode(ctx, request)
 }
 
 //RESTDeleteContrailAnalyticsNode delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteContrailAnalyticsNode(c echo.Context) 
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteContrailAnalyticsNode delete a resource.
-func (service *ContrailService) DeleteContrailAnalyticsNode(ctx context.Context, request *models.DeleteContrailAnalyticsNodeRequest) (*models.DeleteContrailAnalyticsNodeResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteContrailAnalyticsNode(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteContrailAnalyticsNodeResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetContrailAnalyticsNode a REST Get request.
 func (service *ContrailService) RESTGetContrailAnalyticsNode(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetContrailAnalyticsNode(c echo.Context) err
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetContrailAnalyticsNode a Get request.
-func (service *ContrailService) GetContrailAnalyticsNode(ctx context.Context, request *models.GetContrailAnalyticsNodeRequest) (response *models.GetContrailAnalyticsNodeResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListContrailAnalyticsNodeRequest{
-		Spec: spec,
-	}
-	var result *models.ListContrailAnalyticsNodeResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListContrailAnalyticsNode(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.ContrailAnalyticsNodes) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetContrailAnalyticsNodeResponse{
-		ContrailAnalyticsNode: result.ContrailAnalyticsNodes[0],
-	}
-	return response, nil
 }
 
 //RESTListContrailAnalyticsNode handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListContrailAnalyticsNode(c echo.Context) er
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListContrailAnalyticsNode handles a List service Request.
-func (service *ContrailService) ListContrailAnalyticsNode(
-	ctx context.Context,
-	request *models.ListContrailAnalyticsNodeRequest) (response *models.ListContrailAnalyticsNodeResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListContrailAnalyticsNode(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

@@ -78,32 +78,7 @@ var VirtualMachineInterfaceFields = []string{
 // VirtualMachineInterfaceRefFields is db reference fields for VirtualMachineInterface
 var VirtualMachineInterfaceRefFields = map[string][]string{
 
-	"virtual_machine": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"physical_interface": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"service_health_check": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"security_group": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"virtual_network": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"virtual_machine_interface": []string{
+	"security_logging_object": []string{
 	// <schema.Schema Value>
 
 	},
@@ -118,34 +93,27 @@ var VirtualMachineInterfaceRefFields = map[string][]string{
 
 	},
 
+	"physical_interface": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"virtual_machine_interface": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"service_health_check": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"service_endpoint": []string{
 	// <schema.Schema Value>
 
 	},
 
-	"security_logging_object": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"bridge_domain": []string{
-		// <schema.Schema Value>
-		"vlan_tag",
-	},
-
-	"routing_instance": []string{
-		// <schema.Schema Value>
-		"service_chain_address",
-		"dst_mac",
-		"protocol",
-		"ipv6_service_chain_address",
-		"direction",
-		"mpls_label",
-		"vlan_tag",
-		"src_mac",
-	},
-
-	"qos_config": []string{
+	"virtual_machine": []string{
 	// <schema.Schema Value>
 
 	},
@@ -153,6 +121,38 @@ var VirtualMachineInterfaceRefFields = map[string][]string{
 	"bgp_router": []string{
 	// <schema.Schema Value>
 
+	},
+
+	"routing_instance": []string{
+		// <schema.Schema Value>
+		"vlan_tag",
+		"src_mac",
+		"service_chain_address",
+		"dst_mac",
+		"protocol",
+		"ipv6_service_chain_address",
+		"direction",
+		"mpls_label",
+	},
+
+	"qos_config": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"security_group": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"virtual_network": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"bridge_domain": []string{
+		// <schema.Schema Value>
+		"vlan_tag",
 	},
 }
 
@@ -162,14 +162,12 @@ var VirtualMachineInterfaceBackRefFields = map[string][]string{}
 // VirtualMachineInterfaceParentTypes is possible parents for VirtualMachineInterface
 var VirtualMachineInterfaceParents = []string{
 
-	"virtual_router",
-
 	"project",
 
 	"virtual_machine",
-}
 
-const insertVirtualMachineInterfaceServiceEndpointQuery = "insert into `ref_virtual_machine_interface_service_endpoint` (`from`, `to` ) values (?, ?);"
+	"virtual_router",
+}
 
 const insertVirtualMachineInterfaceSecurityLoggingObjectQuery = "insert into `ref_virtual_machine_interface_security_logging_object` (`from`, `to` ) values (?, ?);"
 
@@ -177,31 +175,33 @@ const insertVirtualMachineInterfaceInterfaceRouteTableQuery = "insert into `ref_
 
 const insertVirtualMachineInterfacePortTupleQuery = "insert into `ref_virtual_machine_interface_port_tuple` (`from`, `to` ) values (?, ?);"
 
-const insertVirtualMachineInterfaceBridgeDomainQuery = "insert into `ref_virtual_machine_interface_bridge_domain` (`from`, `to` ,`vlan_tag`) values (?, ?,?);"
+const insertVirtualMachineInterfacePhysicalInterfaceQuery = "insert into `ref_virtual_machine_interface_physical_interface` (`from`, `to` ) values (?, ?);"
+
+const insertVirtualMachineInterfaceVirtualMachineInterfaceQuery = "insert into `ref_virtual_machine_interface_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
+
+const insertVirtualMachineInterfaceServiceHealthCheckQuery = "insert into `ref_virtual_machine_interface_service_health_check` (`from`, `to` ) values (?, ?);"
+
+const insertVirtualMachineInterfaceServiceEndpointQuery = "insert into `ref_virtual_machine_interface_service_endpoint` (`from`, `to` ) values (?, ?);"
+
+const insertVirtualMachineInterfaceVirtualMachineQuery = "insert into `ref_virtual_machine_interface_virtual_machine` (`from`, `to` ) values (?, ?);"
 
 const insertVirtualMachineInterfaceBGPRouterQuery = "insert into `ref_virtual_machine_interface_bgp_router` (`from`, `to` ) values (?, ?);"
 
-const insertVirtualMachineInterfaceRoutingInstanceQuery = "insert into `ref_virtual_machine_interface_routing_instance` (`from`, `to` ,`service_chain_address`,`dst_mac`,`protocol`,`ipv6_service_chain_address`,`direction`,`mpls_label`,`vlan_tag`,`src_mac`) values (?, ?,?,?,?,?,?,?,?,?);"
+const insertVirtualMachineInterfaceRoutingInstanceQuery = "insert into `ref_virtual_machine_interface_routing_instance` (`from`, `to` ,`vlan_tag`,`src_mac`,`service_chain_address`,`dst_mac`,`protocol`,`ipv6_service_chain_address`,`direction`,`mpls_label`) values (?, ?,?,?,?,?,?,?,?,?);"
 
 const insertVirtualMachineInterfaceQosConfigQuery = "insert into `ref_virtual_machine_interface_qos_config` (`from`, `to` ) values (?, ?);"
-
-const insertVirtualMachineInterfaceServiceHealthCheckQuery = "insert into `ref_virtual_machine_interface_service_health_check` (`from`, `to` ) values (?, ?);"
 
 const insertVirtualMachineInterfaceSecurityGroupQuery = "insert into `ref_virtual_machine_interface_security_group` (`from`, `to` ) values (?, ?);"
 
 const insertVirtualMachineInterfaceVirtualNetworkQuery = "insert into `ref_virtual_machine_interface_virtual_network` (`from`, `to` ) values (?, ?);"
 
-const insertVirtualMachineInterfaceVirtualMachineInterfaceQuery = "insert into `ref_virtual_machine_interface_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
-
-const insertVirtualMachineInterfaceVirtualMachineQuery = "insert into `ref_virtual_machine_interface_virtual_machine` (`from`, `to` ) values (?, ?);"
-
-const insertVirtualMachineInterfacePhysicalInterfaceQuery = "insert into `ref_virtual_machine_interface_physical_interface` (`from`, `to` ) values (?, ?);"
+const insertVirtualMachineInterfaceBridgeDomainQuery = "insert into `ref_virtual_machine_interface_bridge_domain` (`from`, `to` ,`vlan_tag`) values (?, ?,?);"
 
 // CreateVirtualMachineInterface inserts VirtualMachineInterface to DB
-func CreateVirtualMachineInterface(
+func (db *DB) createVirtualMachineInterface(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateVirtualMachineInterfaceRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.VirtualMachineInterface
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertVirtualMachineInterfaceQuery)
@@ -272,96 +272,16 @@ func CreateVirtualMachineInterface(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtBridgeDomainRef, err := tx.Prepare(insertVirtualMachineInterfaceBridgeDomainQuery)
+	stmtPortTupleRef, err := tx.Prepare(insertVirtualMachineInterfacePortTupleQuery)
 	if err != nil {
-		return errors.Wrap(err, "preparing BridgeDomainRefs create statement failed")
+		return errors.Wrap(err, "preparing PortTupleRefs create statement failed")
 	}
-	defer stmtBridgeDomainRef.Close()
-	for _, ref := range model.BridgeDomainRefs {
+	defer stmtPortTupleRef.Close()
+	for _, ref := range model.PortTupleRefs {
 
-		if ref.Attr == nil {
-			ref.Attr = &models.BridgeDomainMembershipType{}
-		}
-
-		_, err = stmtBridgeDomainRef.ExecContext(ctx, model.UUID, ref.UUID, int(ref.Attr.GetVlanTag()))
+		_, err = stmtPortTupleRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
-			return errors.Wrap(err, "BridgeDomainRefs create failed")
-		}
-	}
-
-	stmtBGPRouterRef, err := tx.Prepare(insertVirtualMachineInterfaceBGPRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing BGPRouterRefs create statement failed")
-	}
-	defer stmtBGPRouterRef.Close()
-	for _, ref := range model.BGPRouterRefs {
-
-		_, err = stmtBGPRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "BGPRouterRefs create failed")
-		}
-	}
-
-	stmtRoutingInstanceRef, err := tx.Prepare(insertVirtualMachineInterfaceRoutingInstanceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing RoutingInstanceRefs create statement failed")
-	}
-	defer stmtRoutingInstanceRef.Close()
-	for _, ref := range model.RoutingInstanceRefs {
-
-		if ref.Attr == nil {
-			ref.Attr = &models.PolicyBasedForwardingRuleType{}
-		}
-
-		_, err = stmtRoutingInstanceRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.GetServiceChainAddress()),
-			string(ref.Attr.GetDSTMac()),
-			string(ref.Attr.GetProtocol()),
-			string(ref.Attr.GetIpv6ServiceChainAddress()),
-			string(ref.Attr.GetDirection()),
-			int(ref.Attr.GetMPLSLabel()),
-			int(ref.Attr.GetVlanTag()),
-			string(ref.Attr.GetSRCMac()))
-		if err != nil {
-			return errors.Wrap(err, "RoutingInstanceRefs create failed")
-		}
-	}
-
-	stmtQosConfigRef, err := tx.Prepare(insertVirtualMachineInterfaceQosConfigQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing QosConfigRefs create statement failed")
-	}
-	defer stmtQosConfigRef.Close()
-	for _, ref := range model.QosConfigRefs {
-
-		_, err = stmtQosConfigRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "QosConfigRefs create failed")
-		}
-	}
-
-	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertVirtualMachineInterfaceVirtualMachineInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
-	}
-	defer stmtVirtualMachineInterfaceRef.Close()
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
-	stmtVirtualMachineRef, err := tx.Prepare(insertVirtualMachineInterfaceVirtualMachineQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineRefs create statement failed")
-	}
-	defer stmtVirtualMachineRef.Close()
-	for _, ref := range model.VirtualMachineRefs {
-
-		_, err = stmtVirtualMachineRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineRefs create failed")
+			return errors.Wrap(err, "PortTupleRefs create failed")
 		}
 	}
 
@@ -375,45 +295,6 @@ func CreateVirtualMachineInterface(
 		_, err = stmtPhysicalInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PhysicalInterfaceRefs create failed")
-		}
-	}
-
-	stmtServiceHealthCheckRef, err := tx.Prepare(insertVirtualMachineInterfaceServiceHealthCheckQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceHealthCheckRefs create statement failed")
-	}
-	defer stmtServiceHealthCheckRef.Close()
-	for _, ref := range model.ServiceHealthCheckRefs {
-
-		_, err = stmtServiceHealthCheckRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceHealthCheckRefs create failed")
-		}
-	}
-
-	stmtSecurityGroupRef, err := tx.Prepare(insertVirtualMachineInterfaceSecurityGroupQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing SecurityGroupRefs create statement failed")
-	}
-	defer stmtSecurityGroupRef.Close()
-	for _, ref := range model.SecurityGroupRefs {
-
-		_, err = stmtSecurityGroupRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "SecurityGroupRefs create failed")
-		}
-	}
-
-	stmtVirtualNetworkRef, err := tx.Prepare(insertVirtualMachineInterfaceVirtualNetworkQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
-	}
-	defer stmtVirtualNetworkRef.Close()
-	for _, ref := range model.VirtualNetworkRefs {
-
-		_, err = stmtVirtualNetworkRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs create failed")
 		}
 	}
 
@@ -443,19 +324,6 @@ func CreateVirtualMachineInterface(
 		}
 	}
 
-	stmtPortTupleRef, err := tx.Prepare(insertVirtualMachineInterfacePortTupleQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing PortTupleRefs create statement failed")
-	}
-	defer stmtPortTupleRef.Close()
-	for _, ref := range model.PortTupleRefs {
-
-		_, err = stmtPortTupleRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "PortTupleRefs create failed")
-		}
-	}
-
 	stmtServiceEndpointRef, err := tx.Prepare(insertVirtualMachineInterfaceServiceEndpointQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ServiceEndpointRefs create statement failed")
@@ -466,6 +334,138 @@ func CreateVirtualMachineInterface(
 		_, err = stmtServiceEndpointRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceEndpointRefs create failed")
+		}
+	}
+
+	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertVirtualMachineInterfaceVirtualMachineInterfaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
+	}
+	defer stmtVirtualMachineInterfaceRef.Close()
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
+	}
+
+	stmtServiceHealthCheckRef, err := tx.Prepare(insertVirtualMachineInterfaceServiceHealthCheckQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceHealthCheckRefs create statement failed")
+	}
+	defer stmtServiceHealthCheckRef.Close()
+	for _, ref := range model.ServiceHealthCheckRefs {
+
+		_, err = stmtServiceHealthCheckRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceHealthCheckRefs create failed")
+		}
+	}
+
+	stmtRoutingInstanceRef, err := tx.Prepare(insertVirtualMachineInterfaceRoutingInstanceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing RoutingInstanceRefs create statement failed")
+	}
+	defer stmtRoutingInstanceRef.Close()
+	for _, ref := range model.RoutingInstanceRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = &models.PolicyBasedForwardingRuleType{}
+		}
+
+		_, err = stmtRoutingInstanceRef.ExecContext(ctx, model.UUID, ref.UUID, int(ref.Attr.GetVlanTag()),
+			string(ref.Attr.GetSRCMac()),
+			string(ref.Attr.GetServiceChainAddress()),
+			string(ref.Attr.GetDSTMac()),
+			string(ref.Attr.GetProtocol()),
+			string(ref.Attr.GetIpv6ServiceChainAddress()),
+			string(ref.Attr.GetDirection()),
+			int(ref.Attr.GetMPLSLabel()))
+		if err != nil {
+			return errors.Wrap(err, "RoutingInstanceRefs create failed")
+		}
+	}
+
+	stmtVirtualMachineRef, err := tx.Prepare(insertVirtualMachineInterfaceVirtualMachineQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineRefs create statement failed")
+	}
+	defer stmtVirtualMachineRef.Close()
+	for _, ref := range model.VirtualMachineRefs {
+
+		_, err = stmtVirtualMachineRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineRefs create failed")
+		}
+	}
+
+	stmtBGPRouterRef, err := tx.Prepare(insertVirtualMachineInterfaceBGPRouterQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing BGPRouterRefs create statement failed")
+	}
+	defer stmtBGPRouterRef.Close()
+	for _, ref := range model.BGPRouterRefs {
+
+		_, err = stmtBGPRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "BGPRouterRefs create failed")
+		}
+	}
+
+	stmtVirtualNetworkRef, err := tx.Prepare(insertVirtualMachineInterfaceVirtualNetworkQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
+	}
+	defer stmtVirtualNetworkRef.Close()
+	for _, ref := range model.VirtualNetworkRefs {
+
+		_, err = stmtVirtualNetworkRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs create failed")
+		}
+	}
+
+	stmtBridgeDomainRef, err := tx.Prepare(insertVirtualMachineInterfaceBridgeDomainQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing BridgeDomainRefs create statement failed")
+	}
+	defer stmtBridgeDomainRef.Close()
+	for _, ref := range model.BridgeDomainRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = &models.BridgeDomainMembershipType{}
+		}
+
+		_, err = stmtBridgeDomainRef.ExecContext(ctx, model.UUID, ref.UUID, int(ref.Attr.GetVlanTag()))
+		if err != nil {
+			return errors.Wrap(err, "BridgeDomainRefs create failed")
+		}
+	}
+
+	stmtQosConfigRef, err := tx.Prepare(insertVirtualMachineInterfaceQosConfigQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing QosConfigRefs create statement failed")
+	}
+	defer stmtQosConfigRef.Close()
+	for _, ref := range model.QosConfigRefs {
+
+		_, err = stmtQosConfigRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "QosConfigRefs create failed")
+		}
+	}
+
+	stmtSecurityGroupRef, err := tx.Prepare(insertVirtualMachineInterfaceSecurityGroupQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing SecurityGroupRefs create statement failed")
+	}
+	defer stmtSecurityGroupRef.Close()
+	for _, ref := range model.SecurityGroupRefs {
+
+		_, err = stmtSecurityGroupRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "SecurityGroupRefs create failed")
 		}
 	}
 
@@ -821,7 +821,7 @@ func scanVirtualMachineInterface(values map[string]interface{}) (*models.Virtual
 
 	}
 
-	if value, ok := values["ref_virtual_machine_interface"]; ok {
+	if value, ok := values["ref_port_tuple"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
@@ -834,29 +834,9 @@ func scanVirtualMachineInterface(values map[string]interface{}) (*models.Virtual
 			if uuid == "" {
 				continue
 			}
-			referenceModel := &models.VirtualMachineInterfaceVirtualMachineInterfaceRef{}
+			referenceModel := &models.VirtualMachineInterfacePortTupleRef{}
 			referenceModel.UUID = uuid
-			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_virtual_machine"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualMachineInterfaceVirtualMachineRef{}
-			referenceModel.UUID = uuid
-			m.VirtualMachineRefs = append(m.VirtualMachineRefs, referenceModel)
+			m.PortTupleRefs = append(m.PortTupleRefs, referenceModel)
 
 		}
 	}
@@ -877,66 +857,6 @@ func scanVirtualMachineInterface(values map[string]interface{}) (*models.Virtual
 			referenceModel := &models.VirtualMachineInterfacePhysicalInterfaceRef{}
 			referenceModel.UUID = uuid
 			m.PhysicalInterfaceRefs = append(m.PhysicalInterfaceRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_service_health_check"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualMachineInterfaceServiceHealthCheckRef{}
-			referenceModel.UUID = uuid
-			m.ServiceHealthCheckRefs = append(m.ServiceHealthCheckRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_security_group"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualMachineInterfaceSecurityGroupRef{}
-			referenceModel.UUID = uuid
-			m.SecurityGroupRefs = append(m.SecurityGroupRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_virtual_network"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualMachineInterfaceVirtualNetworkRef{}
-			referenceModel.UUID = uuid
-			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
 
 		}
 	}
@@ -981,26 +901,6 @@ func scanVirtualMachineInterface(values map[string]interface{}) (*models.Virtual
 		}
 	}
 
-	if value, ok := values["ref_port_tuple"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualMachineInterfacePortTupleRef{}
-			referenceModel.UUID = uuid
-			m.PortTupleRefs = append(m.PortTupleRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_service_endpoint"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -1021,7 +921,7 @@ func scanVirtualMachineInterface(values map[string]interface{}) (*models.Virtual
 		}
 	}
 
-	if value, ok := values["ref_bridge_domain"]; ok {
+	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
@@ -1034,17 +934,14 @@ func scanVirtualMachineInterface(values map[string]interface{}) (*models.Virtual
 			if uuid == "" {
 				continue
 			}
-			referenceModel := &models.VirtualMachineInterfaceBridgeDomainRef{}
+			referenceModel := &models.VirtualMachineInterfaceVirtualMachineInterfaceRef{}
 			referenceModel.UUID = uuid
-			m.BridgeDomainRefs = append(m.BridgeDomainRefs, referenceModel)
-
-			attr := models.MakeBridgeDomainMembershipType()
-			referenceModel.Attr = attr
+			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
 
 		}
 	}
 
-	if value, ok := values["ref_bgp_router"]; ok {
+	if value, ok := values["ref_service_health_check"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
 		json.Unmarshal([]byte("["+stringValue+"]"), &references)
@@ -1057,9 +954,9 @@ func scanVirtualMachineInterface(values map[string]interface{}) (*models.Virtual
 			if uuid == "" {
 				continue
 			}
-			referenceModel := &models.VirtualMachineInterfaceBGPRouterRef{}
+			referenceModel := &models.VirtualMachineInterfaceServiceHealthCheckRef{}
 			referenceModel.UUID = uuid
-			m.BGPRouterRefs = append(m.BGPRouterRefs, referenceModel)
+			m.ServiceHealthCheckRefs = append(m.ServiceHealthCheckRefs, referenceModel)
 
 		}
 	}
@@ -1087,6 +984,89 @@ func scanVirtualMachineInterface(values map[string]interface{}) (*models.Virtual
 		}
 	}
 
+	if value, ok := values["ref_virtual_machine"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualMachineInterfaceVirtualMachineRef{}
+			referenceModel.UUID = uuid
+			m.VirtualMachineRefs = append(m.VirtualMachineRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_bgp_router"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualMachineInterfaceBGPRouterRef{}
+			referenceModel.UUID = uuid
+			m.BGPRouterRefs = append(m.BGPRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_network"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualMachineInterfaceVirtualNetworkRef{}
+			referenceModel.UUID = uuid
+			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_bridge_domain"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualMachineInterfaceBridgeDomainRef{}
+			referenceModel.UUID = uuid
+			m.BridgeDomainRefs = append(m.BridgeDomainRefs, referenceModel)
+
+			attr := models.MakeBridgeDomainMembershipType()
+			referenceModel.Attr = attr
+
+		}
+	}
+
 	if value, ok := values["ref_qos_config"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -1107,12 +1087,33 @@ func scanVirtualMachineInterface(values map[string]interface{}) (*models.Virtual
 		}
 	}
 
+	if value, ok := values["ref_security_group"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualMachineInterfaceSecurityGroupRef{}
+			referenceModel.UUID = uuid
+			m.SecurityGroupRefs = append(m.SecurityGroupRefs, referenceModel)
+
+		}
+	}
+
 	return m, nil
 }
 
 // ListVirtualMachineInterface lists VirtualMachineInterface with list spec.
-func ListVirtualMachineInterface(ctx context.Context, tx *sql.Tx, request *models.ListVirtualMachineInterfaceRequest) (response *models.ListVirtualMachineInterfaceResponse, err error) {
+func (db *DB) listVirtualMachineInterface(ctx context.Context, request *models.ListVirtualMachineInterfaceRequest) (response *models.ListVirtualMachineInterfaceResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -1174,9 +1175,8 @@ func ListVirtualMachineInterface(ctx context.Context, tx *sql.Tx, request *model
 }
 
 // UpdateVirtualMachineInterface updates a resource
-func UpdateVirtualMachineInterface(
+func (db *DB) updateVirtualMachineInterface(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateVirtualMachineInterfaceRequest,
 ) error {
 	//TODO
@@ -1184,15 +1184,15 @@ func UpdateVirtualMachineInterface(
 }
 
 // DeleteVirtualMachineInterface deletes a resource
-func DeleteVirtualMachineInterface(
+func (db *DB) deleteVirtualMachineInterface(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteVirtualMachineInterfaceRequest) error {
 	deleteQuery := deleteVirtualMachineInterfaceQuery
 	selectQuery := "select count(uuid) from virtual_machine_interface where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -1227,4 +1227,119 @@ func DeleteVirtualMachineInterface(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateVirtualMachineInterface handle a Create API
+func (db *DB) CreateVirtualMachineInterface(
+	ctx context.Context,
+	request *models.CreateVirtualMachineInterfaceRequest) (*models.CreateVirtualMachineInterfaceResponse, error) {
+	model := request.VirtualMachineInterface
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createVirtualMachineInterface(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "virtual_machine_interface",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateVirtualMachineInterfaceResponse{
+		VirtualMachineInterface: request.VirtualMachineInterface,
+	}, nil
+}
+
+//UpdateVirtualMachineInterface handles a Update request.
+func (db *DB) UpdateVirtualMachineInterface(
+	ctx context.Context,
+	request *models.UpdateVirtualMachineInterfaceRequest) (*models.UpdateVirtualMachineInterfaceResponse, error) {
+	model := request.VirtualMachineInterface
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateVirtualMachineInterface(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "virtual_machine_interface",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateVirtualMachineInterfaceResponse{
+		VirtualMachineInterface: model,
+	}, nil
+}
+
+//DeleteVirtualMachineInterface delete a resource.
+func (db *DB) DeleteVirtualMachineInterface(ctx context.Context, request *models.DeleteVirtualMachineInterfaceRequest) (*models.DeleteVirtualMachineInterfaceResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteVirtualMachineInterface(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteVirtualMachineInterfaceResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetVirtualMachineInterface a Get request.
+func (db *DB) GetVirtualMachineInterface(ctx context.Context, request *models.GetVirtualMachineInterfaceRequest) (response *models.GetVirtualMachineInterfaceResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListVirtualMachineInterfaceRequest{
+		Spec: spec,
+	}
+	var result *models.ListVirtualMachineInterfaceResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listVirtualMachineInterface(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.VirtualMachineInterfaces) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetVirtualMachineInterfaceResponse{
+		VirtualMachineInterface: result.VirtualMachineInterfaces[0],
+	}
+	return response, nil
+}
+
+//ListVirtualMachineInterface handles a List service Request.
+func (db *DB) ListVirtualMachineInterface(
+	ctx context.Context,
+	request *models.ListVirtualMachineInterfaceRequest) (response *models.ListVirtualMachineInterfaceResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listVirtualMachineInterface(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

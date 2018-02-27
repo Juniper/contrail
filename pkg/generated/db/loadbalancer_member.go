@@ -60,10 +60,10 @@ var LoadbalancerMemberParents = []string{
 }
 
 // CreateLoadbalancerMember inserts LoadbalancerMember to DB
-func CreateLoadbalancerMember(
+func (db *DB) createLoadbalancerMember(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateLoadbalancerMemberRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.LoadbalancerMember
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertLoadbalancerMemberQuery)
@@ -294,8 +294,9 @@ func scanLoadbalancerMember(values map[string]interface{}) (*models.Loadbalancer
 }
 
 // ListLoadbalancerMember lists LoadbalancerMember with list spec.
-func ListLoadbalancerMember(ctx context.Context, tx *sql.Tx, request *models.ListLoadbalancerMemberRequest) (response *models.ListLoadbalancerMemberResponse, err error) {
+func (db *DB) listLoadbalancerMember(ctx context.Context, request *models.ListLoadbalancerMemberRequest) (response *models.ListLoadbalancerMemberResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -357,9 +358,8 @@ func ListLoadbalancerMember(ctx context.Context, tx *sql.Tx, request *models.Lis
 }
 
 // UpdateLoadbalancerMember updates a resource
-func UpdateLoadbalancerMember(
+func (db *DB) updateLoadbalancerMember(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateLoadbalancerMemberRequest,
 ) error {
 	//TODO
@@ -367,15 +367,15 @@ func UpdateLoadbalancerMember(
 }
 
 // DeleteLoadbalancerMember deletes a resource
-func DeleteLoadbalancerMember(
+func (db *DB) deleteLoadbalancerMember(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteLoadbalancerMemberRequest) error {
 	deleteQuery := deleteLoadbalancerMemberQuery
 	selectQuery := "select count(uuid) from loadbalancer_member where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -410,4 +410,119 @@ func DeleteLoadbalancerMember(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateLoadbalancerMember handle a Create API
+func (db *DB) CreateLoadbalancerMember(
+	ctx context.Context,
+	request *models.CreateLoadbalancerMemberRequest) (*models.CreateLoadbalancerMemberResponse, error) {
+	model := request.LoadbalancerMember
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createLoadbalancerMember(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "loadbalancer_member",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateLoadbalancerMemberResponse{
+		LoadbalancerMember: request.LoadbalancerMember,
+	}, nil
+}
+
+//UpdateLoadbalancerMember handles a Update request.
+func (db *DB) UpdateLoadbalancerMember(
+	ctx context.Context,
+	request *models.UpdateLoadbalancerMemberRequest) (*models.UpdateLoadbalancerMemberResponse, error) {
+	model := request.LoadbalancerMember
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateLoadbalancerMember(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "loadbalancer_member",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateLoadbalancerMemberResponse{
+		LoadbalancerMember: model,
+	}, nil
+}
+
+//DeleteLoadbalancerMember delete a resource.
+func (db *DB) DeleteLoadbalancerMember(ctx context.Context, request *models.DeleteLoadbalancerMemberRequest) (*models.DeleteLoadbalancerMemberResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteLoadbalancerMember(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteLoadbalancerMemberResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetLoadbalancerMember a Get request.
+func (db *DB) GetLoadbalancerMember(ctx context.Context, request *models.GetLoadbalancerMemberRequest) (response *models.GetLoadbalancerMemberResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListLoadbalancerMemberRequest{
+		Spec: spec,
+	}
+	var result *models.ListLoadbalancerMemberResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listLoadbalancerMember(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.LoadbalancerMembers) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetLoadbalancerMemberResponse{
+		LoadbalancerMember: result.LoadbalancerMembers[0],
+	}
+	return response, nil
+}
+
+//ListLoadbalancerMember handles a List service Request.
+func (db *DB) ListLoadbalancerMember(
+	ctx context.Context,
+	request *models.ListLoadbalancerMemberRequest) (response *models.ListLoadbalancerMemberResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listLoadbalancerMember(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

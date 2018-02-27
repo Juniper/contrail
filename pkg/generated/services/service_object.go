@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateServiceObject(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateServiceObject(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "service_object",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateServiceObjectResponse{
-		ServiceObject: request.ServiceObject,
-	}, nil
+
+	return service.Next().CreateServiceObject(ctx, request)
 }
 
 //RESTUpdateServiceObject handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateServiceObject(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateServiceObject(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "service_object",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateServiceObjectResponse{
-		ServiceObject: model,
-	}, nil
+	return service.Next().UpdateServiceObject(ctx, request)
 }
 
 //RESTDeleteServiceObject delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteServiceObject(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteServiceObject delete a resource.
-func (service *ContrailService) DeleteServiceObject(ctx context.Context, request *models.DeleteServiceObjectRequest) (*models.DeleteServiceObjectResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteServiceObject(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteServiceObjectResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetServiceObject a REST Get request.
 func (service *ContrailService) RESTGetServiceObject(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetServiceObject(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetServiceObject a Get request.
-func (service *ContrailService) GetServiceObject(ctx context.Context, request *models.GetServiceObjectRequest) (response *models.GetServiceObjectResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListServiceObjectRequest{
-		Spec: spec,
-	}
-	var result *models.ListServiceObjectResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListServiceObject(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.ServiceObjects) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetServiceObjectResponse{
-		ServiceObject: result.ServiceObjects[0],
-	}
-	return response, nil
 }
 
 //RESTListServiceObject handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListServiceObject(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListServiceObject handles a List service Request.
-func (service *ContrailService) ListServiceObject(
-	ctx context.Context,
-	request *models.ListServiceObjectRequest) (response *models.ListServiceObjectResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListServiceObject(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

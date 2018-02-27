@@ -58,10 +58,10 @@ var BGPVPNParents = []string{
 }
 
 // CreateBGPVPN inserts BGPVPN to DB
-func CreateBGPVPN(
+func (db *DB) createBGPVPN(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateBGPVPNRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.BGPVPN
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertBGPVPNQuery)
@@ -278,8 +278,9 @@ func scanBGPVPN(values map[string]interface{}) (*models.BGPVPN, error) {
 }
 
 // ListBGPVPN lists BGPVPN with list spec.
-func ListBGPVPN(ctx context.Context, tx *sql.Tx, request *models.ListBGPVPNRequest) (response *models.ListBGPVPNResponse, err error) {
+func (db *DB) listBGPVPN(ctx context.Context, request *models.ListBGPVPNRequest) (response *models.ListBGPVPNResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -341,9 +342,8 @@ func ListBGPVPN(ctx context.Context, tx *sql.Tx, request *models.ListBGPVPNReque
 }
 
 // UpdateBGPVPN updates a resource
-func UpdateBGPVPN(
+func (db *DB) updateBGPVPN(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateBGPVPNRequest,
 ) error {
 	//TODO
@@ -351,15 +351,15 @@ func UpdateBGPVPN(
 }
 
 // DeleteBGPVPN deletes a resource
-func DeleteBGPVPN(
+func (db *DB) deleteBGPVPN(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteBGPVPNRequest) error {
 	deleteQuery := deleteBGPVPNQuery
 	selectQuery := "select count(uuid) from bgpvpn where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -394,4 +394,119 @@ func DeleteBGPVPN(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateBGPVPN handle a Create API
+func (db *DB) CreateBGPVPN(
+	ctx context.Context,
+	request *models.CreateBGPVPNRequest) (*models.CreateBGPVPNResponse, error) {
+	model := request.BGPVPN
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createBGPVPN(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "bgpvpn",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateBGPVPNResponse{
+		BGPVPN: request.BGPVPN,
+	}, nil
+}
+
+//UpdateBGPVPN handles a Update request.
+func (db *DB) UpdateBGPVPN(
+	ctx context.Context,
+	request *models.UpdateBGPVPNRequest) (*models.UpdateBGPVPNResponse, error) {
+	model := request.BGPVPN
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateBGPVPN(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "bgpvpn",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateBGPVPNResponse{
+		BGPVPN: model,
+	}, nil
+}
+
+//DeleteBGPVPN delete a resource.
+func (db *DB) DeleteBGPVPN(ctx context.Context, request *models.DeleteBGPVPNRequest) (*models.DeleteBGPVPNResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteBGPVPN(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteBGPVPNResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetBGPVPN a Get request.
+func (db *DB) GetBGPVPN(ctx context.Context, request *models.GetBGPVPNRequest) (response *models.GetBGPVPNResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListBGPVPNRequest{
+		Spec: spec,
+	}
+	var result *models.ListBGPVPNResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listBGPVPN(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.BGPVPNs) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetBGPVPNResponse{
+		BGPVPN: result.BGPVPNs[0],
+	}
+	return response, nil
+}
+
+//ListBGPVPN handles a List service Request.
+func (db *DB) ListBGPVPN(
+	ctx context.Context,
+	request *models.ListBGPVPNRequest) (response *models.ListBGPVPNResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listBGPVPN(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

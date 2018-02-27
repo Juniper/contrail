@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateContrailConfigNode(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateContrailConfigNode(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "contrail_config_node",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateContrailConfigNodeResponse{
-		ContrailConfigNode: request.ContrailConfigNode,
-	}, nil
+
+	return service.Next().CreateContrailConfigNode(ctx, request)
 }
 
 //RESTUpdateContrailConfigNode handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateContrailConfigNode(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateContrailConfigNode(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "contrail_config_node",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateContrailConfigNodeResponse{
-		ContrailConfigNode: model,
-	}, nil
+	return service.Next().UpdateContrailConfigNode(ctx, request)
 }
 
 //RESTDeleteContrailConfigNode delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteContrailConfigNode(c echo.Context) err
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteContrailConfigNode delete a resource.
-func (service *ContrailService) DeleteContrailConfigNode(ctx context.Context, request *models.DeleteContrailConfigNodeRequest) (*models.DeleteContrailConfigNodeResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteContrailConfigNode(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteContrailConfigNodeResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetContrailConfigNode a REST Get request.
 func (service *ContrailService) RESTGetContrailConfigNode(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetContrailConfigNode(c echo.Context) error 
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetContrailConfigNode a Get request.
-func (service *ContrailService) GetContrailConfigNode(ctx context.Context, request *models.GetContrailConfigNodeRequest) (response *models.GetContrailConfigNodeResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListContrailConfigNodeRequest{
-		Spec: spec,
-	}
-	var result *models.ListContrailConfigNodeResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListContrailConfigNode(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.ContrailConfigNodes) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetContrailConfigNodeResponse{
-		ContrailConfigNode: result.ContrailConfigNodes[0],
-	}
-	return response, nil
 }
 
 //RESTListContrailConfigNode handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListContrailConfigNode(c echo.Context) error
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListContrailConfigNode handles a List service Request.
-func (service *ContrailService) ListContrailConfigNode(
-	ctx context.Context,
-	request *models.ListContrailConfigNodeRequest) (response *models.ListContrailConfigNodeResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListContrailConfigNode(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

@@ -87,10 +87,10 @@ var FloatingIPPoolParents = []string{
 }
 
 // CreateFloatingIPPool inserts FloatingIPPool to DB
-func CreateFloatingIPPool(
+func (db *DB) createFloatingIPPool(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateFloatingIPPoolRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.FloatingIPPool
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertFloatingIPPoolQuery)
@@ -473,8 +473,9 @@ func scanFloatingIPPool(values map[string]interface{}) (*models.FloatingIPPool, 
 }
 
 // ListFloatingIPPool lists FloatingIPPool with list spec.
-func ListFloatingIPPool(ctx context.Context, tx *sql.Tx, request *models.ListFloatingIPPoolRequest) (response *models.ListFloatingIPPoolResponse, err error) {
+func (db *DB) listFloatingIPPool(ctx context.Context, request *models.ListFloatingIPPoolRequest) (response *models.ListFloatingIPPoolResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -536,9 +537,8 @@ func ListFloatingIPPool(ctx context.Context, tx *sql.Tx, request *models.ListFlo
 }
 
 // UpdateFloatingIPPool updates a resource
-func UpdateFloatingIPPool(
+func (db *DB) updateFloatingIPPool(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateFloatingIPPoolRequest,
 ) error {
 	//TODO
@@ -546,15 +546,15 @@ func UpdateFloatingIPPool(
 }
 
 // DeleteFloatingIPPool deletes a resource
-func DeleteFloatingIPPool(
+func (db *DB) deleteFloatingIPPool(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteFloatingIPPoolRequest) error {
 	deleteQuery := deleteFloatingIPPoolQuery
 	selectQuery := "select count(uuid) from floating_ip_pool where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -589,4 +589,119 @@ func DeleteFloatingIPPool(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateFloatingIPPool handle a Create API
+func (db *DB) CreateFloatingIPPool(
+	ctx context.Context,
+	request *models.CreateFloatingIPPoolRequest) (*models.CreateFloatingIPPoolResponse, error) {
+	model := request.FloatingIPPool
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createFloatingIPPool(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "floating_ip_pool",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateFloatingIPPoolResponse{
+		FloatingIPPool: request.FloatingIPPool,
+	}, nil
+}
+
+//UpdateFloatingIPPool handles a Update request.
+func (db *DB) UpdateFloatingIPPool(
+	ctx context.Context,
+	request *models.UpdateFloatingIPPoolRequest) (*models.UpdateFloatingIPPoolResponse, error) {
+	model := request.FloatingIPPool
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateFloatingIPPool(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "floating_ip_pool",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateFloatingIPPoolResponse{
+		FloatingIPPool: model,
+	}, nil
+}
+
+//DeleteFloatingIPPool delete a resource.
+func (db *DB) DeleteFloatingIPPool(ctx context.Context, request *models.DeleteFloatingIPPoolRequest) (*models.DeleteFloatingIPPoolResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteFloatingIPPool(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteFloatingIPPoolResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetFloatingIPPool a Get request.
+func (db *DB) GetFloatingIPPool(ctx context.Context, request *models.GetFloatingIPPoolRequest) (response *models.GetFloatingIPPoolResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListFloatingIPPoolRequest{
+		Spec: spec,
+	}
+	var result *models.ListFloatingIPPoolResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listFloatingIPPool(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.FloatingIPPools) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetFloatingIPPoolResponse{
+		FloatingIPPool: result.FloatingIPPools[0],
+	}
+	return response, nil
+}
+
+//ListFloatingIPPool handles a List service Request.
+func (db *DB) ListFloatingIPPool(
+	ctx context.Context,
+	request *models.ListFloatingIPPoolRequest) (response *models.ListFloatingIPPoolResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listFloatingIPPool(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

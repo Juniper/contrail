@@ -57,10 +57,10 @@ var AddressGroupParents = []string{
 }
 
 // CreateAddressGroup inserts AddressGroup to DB
-func CreateAddressGroup(
+func (db *DB) createAddressGroup(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateAddressGroupRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.AddressGroup
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertAddressGroupQuery)
@@ -256,8 +256,9 @@ func scanAddressGroup(values map[string]interface{}) (*models.AddressGroup, erro
 }
 
 // ListAddressGroup lists AddressGroup with list spec.
-func ListAddressGroup(ctx context.Context, tx *sql.Tx, request *models.ListAddressGroupRequest) (response *models.ListAddressGroupResponse, err error) {
+func (db *DB) listAddressGroup(ctx context.Context, request *models.ListAddressGroupRequest) (response *models.ListAddressGroupResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -319,9 +320,8 @@ func ListAddressGroup(ctx context.Context, tx *sql.Tx, request *models.ListAddre
 }
 
 // UpdateAddressGroup updates a resource
-func UpdateAddressGroup(
+func (db *DB) updateAddressGroup(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateAddressGroupRequest,
 ) error {
 	//TODO
@@ -329,15 +329,15 @@ func UpdateAddressGroup(
 }
 
 // DeleteAddressGroup deletes a resource
-func DeleteAddressGroup(
+func (db *DB) deleteAddressGroup(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteAddressGroupRequest) error {
 	deleteQuery := deleteAddressGroupQuery
 	selectQuery := "select count(uuid) from address_group where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -372,4 +372,119 @@ func DeleteAddressGroup(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateAddressGroup handle a Create API
+func (db *DB) CreateAddressGroup(
+	ctx context.Context,
+	request *models.CreateAddressGroupRequest) (*models.CreateAddressGroupResponse, error) {
+	model := request.AddressGroup
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createAddressGroup(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "address_group",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateAddressGroupResponse{
+		AddressGroup: request.AddressGroup,
+	}, nil
+}
+
+//UpdateAddressGroup handles a Update request.
+func (db *DB) UpdateAddressGroup(
+	ctx context.Context,
+	request *models.UpdateAddressGroupRequest) (*models.UpdateAddressGroupResponse, error) {
+	model := request.AddressGroup
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateAddressGroup(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "address_group",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateAddressGroupResponse{
+		AddressGroup: model,
+	}, nil
+}
+
+//DeleteAddressGroup delete a resource.
+func (db *DB) DeleteAddressGroup(ctx context.Context, request *models.DeleteAddressGroupRequest) (*models.DeleteAddressGroupResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteAddressGroup(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteAddressGroupResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetAddressGroup a Get request.
+func (db *DB) GetAddressGroup(ctx context.Context, request *models.GetAddressGroupRequest) (response *models.GetAddressGroupResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListAddressGroupRequest{
+		Spec: spec,
+	}
+	var result *models.ListAddressGroupResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listAddressGroup(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.AddressGroups) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetAddressGroupResponse{
+		AddressGroup: result.AddressGroups[0],
+	}
+	return response, nil
+}
+
+//ListAddressGroup handles a List service Request.
+func (db *DB) ListAddressGroup(
+	ctx context.Context,
+	request *models.ListAddressGroupRequest) (response *models.ListAddressGroupResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listAddressGroup(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

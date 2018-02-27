@@ -60,10 +60,10 @@ var VirtualDNSRecordParents = []string{
 }
 
 // CreateVirtualDNSRecord inserts VirtualDNSRecord to DB
-func CreateVirtualDNSRecord(
+func (db *DB) createVirtualDNSRecord(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateVirtualDNSRecordRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.VirtualDNSRecord
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertVirtualDNSRecordQuery)
@@ -294,8 +294,9 @@ func scanVirtualDNSRecord(values map[string]interface{}) (*models.VirtualDNSReco
 }
 
 // ListVirtualDNSRecord lists VirtualDNSRecord with list spec.
-func ListVirtualDNSRecord(ctx context.Context, tx *sql.Tx, request *models.ListVirtualDNSRecordRequest) (response *models.ListVirtualDNSRecordResponse, err error) {
+func (db *DB) listVirtualDNSRecord(ctx context.Context, request *models.ListVirtualDNSRecordRequest) (response *models.ListVirtualDNSRecordResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -357,9 +358,8 @@ func ListVirtualDNSRecord(ctx context.Context, tx *sql.Tx, request *models.ListV
 }
 
 // UpdateVirtualDNSRecord updates a resource
-func UpdateVirtualDNSRecord(
+func (db *DB) updateVirtualDNSRecord(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateVirtualDNSRecordRequest,
 ) error {
 	//TODO
@@ -367,15 +367,15 @@ func UpdateVirtualDNSRecord(
 }
 
 // DeleteVirtualDNSRecord deletes a resource
-func DeleteVirtualDNSRecord(
+func (db *DB) deleteVirtualDNSRecord(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteVirtualDNSRecordRequest) error {
 	deleteQuery := deleteVirtualDNSRecordQuery
 	selectQuery := "select count(uuid) from virtual_DNS_record where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -410,4 +410,119 @@ func DeleteVirtualDNSRecord(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateVirtualDNSRecord handle a Create API
+func (db *DB) CreateVirtualDNSRecord(
+	ctx context.Context,
+	request *models.CreateVirtualDNSRecordRequest) (*models.CreateVirtualDNSRecordResponse, error) {
+	model := request.VirtualDNSRecord
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createVirtualDNSRecord(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "virtual_DNS_record",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateVirtualDNSRecordResponse{
+		VirtualDNSRecord: request.VirtualDNSRecord,
+	}, nil
+}
+
+//UpdateVirtualDNSRecord handles a Update request.
+func (db *DB) UpdateVirtualDNSRecord(
+	ctx context.Context,
+	request *models.UpdateVirtualDNSRecordRequest) (*models.UpdateVirtualDNSRecordResponse, error) {
+	model := request.VirtualDNSRecord
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateVirtualDNSRecord(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "virtual_DNS_record",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateVirtualDNSRecordResponse{
+		VirtualDNSRecord: model,
+	}, nil
+}
+
+//DeleteVirtualDNSRecord delete a resource.
+func (db *DB) DeleteVirtualDNSRecord(ctx context.Context, request *models.DeleteVirtualDNSRecordRequest) (*models.DeleteVirtualDNSRecordResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteVirtualDNSRecord(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteVirtualDNSRecordResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetVirtualDNSRecord a Get request.
+func (db *DB) GetVirtualDNSRecord(ctx context.Context, request *models.GetVirtualDNSRecordRequest) (response *models.GetVirtualDNSRecordResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListVirtualDNSRecordRequest{
+		Spec: spec,
+	}
+	var result *models.ListVirtualDNSRecordResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listVirtualDNSRecord(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.VirtualDNSRecords) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetVirtualDNSRecordResponse{
+		VirtualDNSRecord: result.VirtualDNSRecords[0],
+	}
+	return response, nil
+}
+
+//ListVirtualDNSRecord handles a List service Request.
+func (db *DB) ListVirtualDNSRecord(
+	ctx context.Context,
+	request *models.ListVirtualDNSRecordRequest) (response *models.ListVirtualDNSRecordResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listVirtualDNSRecord(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

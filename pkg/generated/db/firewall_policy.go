@@ -44,14 +44,14 @@ var FirewallPolicyFields = []string{
 // FirewallPolicyRefFields is db reference fields for FirewallPolicy
 var FirewallPolicyRefFields = map[string][]string{
 
-	"security_logging_object": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"firewall_rule": []string{
 		// <schema.Schema Value>
 		"sequence",
+	},
+
+	"security_logging_object": []string{
+	// <schema.Schema Value>
+
 	},
 }
 
@@ -66,15 +66,15 @@ var FirewallPolicyParents = []string{
 	"policy_management",
 }
 
-const insertFirewallPolicyFirewallRuleQuery = "insert into `ref_firewall_policy_firewall_rule` (`from`, `to` ,`sequence`) values (?, ?,?);"
-
 const insertFirewallPolicySecurityLoggingObjectQuery = "insert into `ref_firewall_policy_security_logging_object` (`from`, `to` ) values (?, ?);"
 
+const insertFirewallPolicyFirewallRuleQuery = "insert into `ref_firewall_policy_firewall_rule` (`from`, `to` ,`sequence`) values (?, ?,?);"
+
 // CreateFirewallPolicy inserts FirewallPolicy to DB
-func CreateFirewallPolicy(
+func (db *DB) createFirewallPolicy(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateFirewallPolicyRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.FirewallPolicy
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertFirewallPolicyQuery)
@@ -336,8 +336,9 @@ func scanFirewallPolicy(values map[string]interface{}) (*models.FirewallPolicy, 
 }
 
 // ListFirewallPolicy lists FirewallPolicy with list spec.
-func ListFirewallPolicy(ctx context.Context, tx *sql.Tx, request *models.ListFirewallPolicyRequest) (response *models.ListFirewallPolicyResponse, err error) {
+func (db *DB) listFirewallPolicy(ctx context.Context, request *models.ListFirewallPolicyRequest) (response *models.ListFirewallPolicyResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -399,9 +400,8 @@ func ListFirewallPolicy(ctx context.Context, tx *sql.Tx, request *models.ListFir
 }
 
 // UpdateFirewallPolicy updates a resource
-func UpdateFirewallPolicy(
+func (db *DB) updateFirewallPolicy(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateFirewallPolicyRequest,
 ) error {
 	//TODO
@@ -409,15 +409,15 @@ func UpdateFirewallPolicy(
 }
 
 // DeleteFirewallPolicy deletes a resource
-func DeleteFirewallPolicy(
+func (db *DB) deleteFirewallPolicy(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteFirewallPolicyRequest) error {
 	deleteQuery := deleteFirewallPolicyQuery
 	selectQuery := "select count(uuid) from firewall_policy where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -452,4 +452,119 @@ func DeleteFirewallPolicy(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateFirewallPolicy handle a Create API
+func (db *DB) CreateFirewallPolicy(
+	ctx context.Context,
+	request *models.CreateFirewallPolicyRequest) (*models.CreateFirewallPolicyResponse, error) {
+	model := request.FirewallPolicy
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createFirewallPolicy(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "firewall_policy",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateFirewallPolicyResponse{
+		FirewallPolicy: request.FirewallPolicy,
+	}, nil
+}
+
+//UpdateFirewallPolicy handles a Update request.
+func (db *DB) UpdateFirewallPolicy(
+	ctx context.Context,
+	request *models.UpdateFirewallPolicyRequest) (*models.UpdateFirewallPolicyResponse, error) {
+	model := request.FirewallPolicy
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateFirewallPolicy(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "firewall_policy",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateFirewallPolicyResponse{
+		FirewallPolicy: model,
+	}, nil
+}
+
+//DeleteFirewallPolicy delete a resource.
+func (db *DB) DeleteFirewallPolicy(ctx context.Context, request *models.DeleteFirewallPolicyRequest) (*models.DeleteFirewallPolicyResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteFirewallPolicy(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteFirewallPolicyResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetFirewallPolicy a Get request.
+func (db *DB) GetFirewallPolicy(ctx context.Context, request *models.GetFirewallPolicyRequest) (response *models.GetFirewallPolicyResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListFirewallPolicyRequest{
+		Spec: spec,
+	}
+	var result *models.ListFirewallPolicyResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listFirewallPolicy(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.FirewallPolicys) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetFirewallPolicyResponse{
+		FirewallPolicy: result.FirewallPolicys[0],
+	}
+	return response, nil
+}
+
+//ListFirewallPolicy handles a List service Request.
+func (db *DB) ListFirewallPolicy(
+	ctx context.Context,
+	request *models.ListFirewallPolicyRequest) (response *models.ListFirewallPolicyResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listFirewallPolicy(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

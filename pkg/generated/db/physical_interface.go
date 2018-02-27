@@ -90,10 +90,10 @@ var PhysicalInterfaceParents = []string{
 const insertPhysicalInterfacePhysicalInterfaceQuery = "insert into `ref_physical_interface_physical_interface` (`from`, `to` ) values (?, ?);"
 
 // CreatePhysicalInterface inserts PhysicalInterface to DB
-func CreatePhysicalInterface(
+func (db *DB) createPhysicalInterface(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreatePhysicalInterfaceRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.PhysicalInterface
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertPhysicalInterfaceQuery)
@@ -479,8 +479,9 @@ func scanPhysicalInterface(values map[string]interface{}) (*models.PhysicalInter
 }
 
 // ListPhysicalInterface lists PhysicalInterface with list spec.
-func ListPhysicalInterface(ctx context.Context, tx *sql.Tx, request *models.ListPhysicalInterfaceRequest) (response *models.ListPhysicalInterfaceResponse, err error) {
+func (db *DB) listPhysicalInterface(ctx context.Context, request *models.ListPhysicalInterfaceRequest) (response *models.ListPhysicalInterfaceResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -542,9 +543,8 @@ func ListPhysicalInterface(ctx context.Context, tx *sql.Tx, request *models.List
 }
 
 // UpdatePhysicalInterface updates a resource
-func UpdatePhysicalInterface(
+func (db *DB) updatePhysicalInterface(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdatePhysicalInterfaceRequest,
 ) error {
 	//TODO
@@ -552,15 +552,15 @@ func UpdatePhysicalInterface(
 }
 
 // DeletePhysicalInterface deletes a resource
-func DeletePhysicalInterface(
+func (db *DB) deletePhysicalInterface(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeletePhysicalInterfaceRequest) error {
 	deleteQuery := deletePhysicalInterfaceQuery
 	selectQuery := "select count(uuid) from physical_interface where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -595,4 +595,119 @@ func DeletePhysicalInterface(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreatePhysicalInterface handle a Create API
+func (db *DB) CreatePhysicalInterface(
+	ctx context.Context,
+	request *models.CreatePhysicalInterfaceRequest) (*models.CreatePhysicalInterfaceResponse, error) {
+	model := request.PhysicalInterface
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createPhysicalInterface(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "physical_interface",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreatePhysicalInterfaceResponse{
+		PhysicalInterface: request.PhysicalInterface,
+	}, nil
+}
+
+//UpdatePhysicalInterface handles a Update request.
+func (db *DB) UpdatePhysicalInterface(
+	ctx context.Context,
+	request *models.UpdatePhysicalInterfaceRequest) (*models.UpdatePhysicalInterfaceResponse, error) {
+	model := request.PhysicalInterface
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updatePhysicalInterface(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "physical_interface",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdatePhysicalInterfaceResponse{
+		PhysicalInterface: model,
+	}, nil
+}
+
+//DeletePhysicalInterface delete a resource.
+func (db *DB) DeletePhysicalInterface(ctx context.Context, request *models.DeletePhysicalInterfaceRequest) (*models.DeletePhysicalInterfaceResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deletePhysicalInterface(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeletePhysicalInterfaceResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetPhysicalInterface a Get request.
+func (db *DB) GetPhysicalInterface(ctx context.Context, request *models.GetPhysicalInterfaceRequest) (response *models.GetPhysicalInterfaceResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListPhysicalInterfaceRequest{
+		Spec: spec,
+	}
+	var result *models.ListPhysicalInterfaceResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listPhysicalInterface(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.PhysicalInterfaces) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetPhysicalInterfaceResponse{
+		PhysicalInterface: result.PhysicalInterfaces[0],
+	}
+	return response, nil
+}
+
+//ListPhysicalInterface handles a List service Request.
+func (db *DB) ListPhysicalInterface(
+	ctx context.Context,
+	request *models.ListPhysicalInterfaceRequest) (response *models.ListPhysicalInterfaceResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listPhysicalInterface(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

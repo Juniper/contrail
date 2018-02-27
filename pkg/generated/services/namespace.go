@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateNamespace(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateNamespace(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "namespace",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateNamespaceResponse{
-		Namespace: request.Namespace,
-	}, nil
+
+	return service.Next().CreateNamespace(ctx, request)
 }
 
 //RESTUpdateNamespace handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateNamespace(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateNamespace(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "namespace",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateNamespaceResponse{
-		Namespace: model,
-	}, nil
+	return service.Next().UpdateNamespace(ctx, request)
 }
 
 //RESTDeleteNamespace delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteNamespace(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteNamespace delete a resource.
-func (service *ContrailService) DeleteNamespace(ctx context.Context, request *models.DeleteNamespaceRequest) (*models.DeleteNamespaceResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteNamespace(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteNamespaceResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetNamespace a REST Get request.
 func (service *ContrailService) RESTGetNamespace(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetNamespace(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetNamespace a Get request.
-func (service *ContrailService) GetNamespace(ctx context.Context, request *models.GetNamespaceRequest) (response *models.GetNamespaceResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListNamespaceRequest{
-		Spec: spec,
-	}
-	var result *models.ListNamespaceResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListNamespace(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.Namespaces) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetNamespaceResponse{
-		Namespace: result.Namespaces[0],
-	}
-	return response, nil
 }
 
 //RESTListNamespace handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListNamespace(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListNamespace handles a List service Request.
-func (service *ContrailService) ListNamespace(
-	ctx context.Context,
-	request *models.ListNamespaceRequest) (response *models.ListNamespaceResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListNamespace(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

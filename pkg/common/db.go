@@ -2,6 +2,7 @@ package common
 
 import (
 	"bytes"
+	"context"
 	"database/sql"
 	"fmt"
 	"strings"
@@ -12,6 +13,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
+
+//Transaction is a context key for tx object.
+var Transaction interface{} = "transaction"
 
 const (
 	retryDB     = 10
@@ -50,9 +54,21 @@ func (qb *ListQueryBuilder) Init() {
 //Columns represents column index.
 type Columns map[string]int
 
+//GetTransaction get a transaction from context.
+func GetTransaction(ctx context.Context) *sql.Tx {
+	iTx := ctx.Value(Transaction)
+	tx, _ := iTx.(*sql.Tx)
+	return tx
+}
+
 //DoInTransaction run a function inside of DB transaction
-func DoInTransaction(db *sql.DB, do func(tx *sql.Tx) error) error {
-	tx, err := db.Begin()
+func DoInTransaction(ctx context.Context, db *sql.DB, do func(context.Context) error) error {
+	var err error
+	tx := GetTransaction(ctx)
+	if tx != nil {
+		return do(ctx)
+	}
+	tx, err = db.Begin()
 	if err != nil {
 		return errors.Wrap(err, "failed to start transaction")
 	}
@@ -67,8 +83,8 @@ func DoInTransaction(db *sql.DB, do func(tx *sql.Tx) error) error {
 			tx.Commit()
 		}
 	}()
-	err = do(tx)
-	return err
+	newCTX := context.WithValue(ctx, Transaction, tx)
+	return do(newCTX)
 }
 
 func (qb *ListQueryBuilder) buildFilterParts(column string, filterValues []string) string {

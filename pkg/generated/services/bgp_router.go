@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateBGPRouter(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateBGPRouter(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "bgp_router",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateBGPRouterResponse{
-		BGPRouter: request.BGPRouter,
-	}, nil
+
+	return service.Next().CreateBGPRouter(ctx, request)
 }
 
 //RESTUpdateBGPRouter handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateBGPRouter(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateBGPRouter(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "bgp_router",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateBGPRouterResponse{
-		BGPRouter: model,
-	}, nil
+	return service.Next().UpdateBGPRouter(ctx, request)
 }
 
 //RESTDeleteBGPRouter delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteBGPRouter(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteBGPRouter delete a resource.
-func (service *ContrailService) DeleteBGPRouter(ctx context.Context, request *models.DeleteBGPRouterRequest) (*models.DeleteBGPRouterResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteBGPRouter(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteBGPRouterResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetBGPRouter a REST Get request.
 func (service *ContrailService) RESTGetBGPRouter(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetBGPRouter(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetBGPRouter a Get request.
-func (service *ContrailService) GetBGPRouter(ctx context.Context, request *models.GetBGPRouterRequest) (response *models.GetBGPRouterResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListBGPRouterRequest{
-		Spec: spec,
-	}
-	var result *models.ListBGPRouterResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListBGPRouter(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.BGPRouters) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetBGPRouterResponse{
-		BGPRouter: result.BGPRouters[0],
-	}
-	return response, nil
 }
 
 //RESTListBGPRouter handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListBGPRouter(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListBGPRouter handles a List service Request.
-func (service *ContrailService) ListBGPRouter(
-	ctx context.Context,
-	request *models.ListBGPRouterRequest) (response *models.ListBGPRouterResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListBGPRouter(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

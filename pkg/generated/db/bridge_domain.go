@@ -62,10 +62,10 @@ var BridgeDomainParents = []string{
 }
 
 // CreateBridgeDomain inserts BridgeDomain to DB
-func CreateBridgeDomain(
+func (db *DB) createBridgeDomain(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateBridgeDomainRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.BridgeDomain
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertBridgeDomainQuery)
@@ -310,8 +310,9 @@ func scanBridgeDomain(values map[string]interface{}) (*models.BridgeDomain, erro
 }
 
 // ListBridgeDomain lists BridgeDomain with list spec.
-func ListBridgeDomain(ctx context.Context, tx *sql.Tx, request *models.ListBridgeDomainRequest) (response *models.ListBridgeDomainResponse, err error) {
+func (db *DB) listBridgeDomain(ctx context.Context, request *models.ListBridgeDomainRequest) (response *models.ListBridgeDomainResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -373,9 +374,8 @@ func ListBridgeDomain(ctx context.Context, tx *sql.Tx, request *models.ListBridg
 }
 
 // UpdateBridgeDomain updates a resource
-func UpdateBridgeDomain(
+func (db *DB) updateBridgeDomain(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateBridgeDomainRequest,
 ) error {
 	//TODO
@@ -383,15 +383,15 @@ func UpdateBridgeDomain(
 }
 
 // DeleteBridgeDomain deletes a resource
-func DeleteBridgeDomain(
+func (db *DB) deleteBridgeDomain(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteBridgeDomainRequest) error {
 	deleteQuery := deleteBridgeDomainQuery
 	selectQuery := "select count(uuid) from bridge_domain where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -426,4 +426,119 @@ func DeleteBridgeDomain(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateBridgeDomain handle a Create API
+func (db *DB) CreateBridgeDomain(
+	ctx context.Context,
+	request *models.CreateBridgeDomainRequest) (*models.CreateBridgeDomainResponse, error) {
+	model := request.BridgeDomain
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createBridgeDomain(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "bridge_domain",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateBridgeDomainResponse{
+		BridgeDomain: request.BridgeDomain,
+	}, nil
+}
+
+//UpdateBridgeDomain handles a Update request.
+func (db *DB) UpdateBridgeDomain(
+	ctx context.Context,
+	request *models.UpdateBridgeDomainRequest) (*models.UpdateBridgeDomainResponse, error) {
+	model := request.BridgeDomain
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateBridgeDomain(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "bridge_domain",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateBridgeDomainResponse{
+		BridgeDomain: model,
+	}, nil
+}
+
+//DeleteBridgeDomain delete a resource.
+func (db *DB) DeleteBridgeDomain(ctx context.Context, request *models.DeleteBridgeDomainRequest) (*models.DeleteBridgeDomainResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteBridgeDomain(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteBridgeDomainResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetBridgeDomain a Get request.
+func (db *DB) GetBridgeDomain(ctx context.Context, request *models.GetBridgeDomainRequest) (response *models.GetBridgeDomainResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListBridgeDomainRequest{
+		Spec: spec,
+	}
+	var result *models.ListBridgeDomainResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listBridgeDomain(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.BridgeDomains) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetBridgeDomainResponse{
+		BridgeDomain: result.BridgeDomains[0],
+	}
+	return response, nil
+}
+
+//ListBridgeDomain handles a List service Request.
+func (db *DB) ListBridgeDomain(
+	ctx context.Context,
+	request *models.ListBridgeDomainRequest) (response *models.ListBridgeDomainResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listBridgeDomain(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

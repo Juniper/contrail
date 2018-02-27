@@ -52,10 +52,10 @@ var DashboardBackRefFields = map[string][]string{}
 var DashboardParents = []string{}
 
 // CreateDashboard inserts Dashboard to DB
-func CreateDashboard(
+func (db *DB) createDashboard(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateDashboardRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.Dashboard
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertDashboardQuery)
@@ -251,8 +251,9 @@ func scanDashboard(values map[string]interface{}) (*models.Dashboard, error) {
 }
 
 // ListDashboard lists Dashboard with list spec.
-func ListDashboard(ctx context.Context, tx *sql.Tx, request *models.ListDashboardRequest) (response *models.ListDashboardResponse, err error) {
+func (db *DB) listDashboard(ctx context.Context, request *models.ListDashboardRequest) (response *models.ListDashboardResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -314,9 +315,8 @@ func ListDashboard(ctx context.Context, tx *sql.Tx, request *models.ListDashboar
 }
 
 // UpdateDashboard updates a resource
-func UpdateDashboard(
+func (db *DB) updateDashboard(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateDashboardRequest,
 ) error {
 	//TODO
@@ -324,15 +324,15 @@ func UpdateDashboard(
 }
 
 // DeleteDashboard deletes a resource
-func DeleteDashboard(
+func (db *DB) deleteDashboard(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteDashboardRequest) error {
 	deleteQuery := deleteDashboardQuery
 	selectQuery := "select count(uuid) from dashboard where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -367,4 +367,119 @@ func DeleteDashboard(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateDashboard handle a Create API
+func (db *DB) CreateDashboard(
+	ctx context.Context,
+	request *models.CreateDashboardRequest) (*models.CreateDashboardResponse, error) {
+	model := request.Dashboard
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createDashboard(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "dashboard",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateDashboardResponse{
+		Dashboard: request.Dashboard,
+	}, nil
+}
+
+//UpdateDashboard handles a Update request.
+func (db *DB) UpdateDashboard(
+	ctx context.Context,
+	request *models.UpdateDashboardRequest) (*models.UpdateDashboardResponse, error) {
+	model := request.Dashboard
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateDashboard(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "dashboard",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateDashboardResponse{
+		Dashboard: model,
+	}, nil
+}
+
+//DeleteDashboard delete a resource.
+func (db *DB) DeleteDashboard(ctx context.Context, request *models.DeleteDashboardRequest) (*models.DeleteDashboardResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteDashboard(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteDashboardResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetDashboard a Get request.
+func (db *DB) GetDashboard(ctx context.Context, request *models.GetDashboardRequest) (response *models.GetDashboardResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListDashboardRequest{
+		Spec: spec,
+	}
+	var result *models.ListDashboardResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listDashboard(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.Dashboards) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetDashboardResponse{
+		Dashboard: result.Dashboards[0],
+	}
+	return response, nil
+}
+
+//ListDashboard handles a List service Request.
+func (db *DB) ListDashboard(
+	ctx context.Context,
+	request *models.ListDashboardRequest) (response *models.ListDashboardResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listDashboard(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateLoadbalancerPool(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateLoadbalancerPool(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "loadbalancer_pool",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateLoadbalancerPoolResponse{
-		LoadbalancerPool: request.LoadbalancerPool,
-	}, nil
+
+	return service.Next().CreateLoadbalancerPool(ctx, request)
 }
 
 //RESTUpdateLoadbalancerPool handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateLoadbalancerPool(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateLoadbalancerPool(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "loadbalancer_pool",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateLoadbalancerPoolResponse{
-		LoadbalancerPool: model,
-	}, nil
+	return service.Next().UpdateLoadbalancerPool(ctx, request)
 }
 
 //RESTDeleteLoadbalancerPool delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteLoadbalancerPool(c echo.Context) error
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteLoadbalancerPool delete a resource.
-func (service *ContrailService) DeleteLoadbalancerPool(ctx context.Context, request *models.DeleteLoadbalancerPoolRequest) (*models.DeleteLoadbalancerPoolResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteLoadbalancerPool(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteLoadbalancerPoolResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetLoadbalancerPool a REST Get request.
 func (service *ContrailService) RESTGetLoadbalancerPool(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetLoadbalancerPool(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetLoadbalancerPool a Get request.
-func (service *ContrailService) GetLoadbalancerPool(ctx context.Context, request *models.GetLoadbalancerPoolRequest) (response *models.GetLoadbalancerPoolResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListLoadbalancerPoolRequest{
-		Spec: spec,
-	}
-	var result *models.ListLoadbalancerPoolResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListLoadbalancerPool(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.LoadbalancerPools) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetLoadbalancerPoolResponse{
-		LoadbalancerPool: result.LoadbalancerPools[0],
-	}
-	return response, nil
 }
 
 //RESTListLoadbalancerPool handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListLoadbalancerPool(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListLoadbalancerPool handles a List service Request.
-func (service *ContrailService) ListLoadbalancerPool(
-	ctx context.Context,
-	request *models.ListLoadbalancerPoolRequest) (response *models.ListLoadbalancerPoolResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListLoadbalancerPool(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateAccessControlList(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateAccessControlList(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "access_control_list",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateAccessControlListResponse{
-		AccessControlList: request.AccessControlList,
-	}, nil
+
+	return service.Next().CreateAccessControlList(ctx, request)
 }
 
 //RESTUpdateAccessControlList handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateAccessControlList(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateAccessControlList(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "access_control_list",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateAccessControlListResponse{
-		AccessControlList: model,
-	}, nil
+	return service.Next().UpdateAccessControlList(ctx, request)
 }
 
 //RESTDeleteAccessControlList delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteAccessControlList(c echo.Context) erro
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteAccessControlList delete a resource.
-func (service *ContrailService) DeleteAccessControlList(ctx context.Context, request *models.DeleteAccessControlListRequest) (*models.DeleteAccessControlListResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteAccessControlList(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteAccessControlListResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetAccessControlList a REST Get request.
 func (service *ContrailService) RESTGetAccessControlList(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetAccessControlList(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetAccessControlList a Get request.
-func (service *ContrailService) GetAccessControlList(ctx context.Context, request *models.GetAccessControlListRequest) (response *models.GetAccessControlListResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListAccessControlListRequest{
-		Spec: spec,
-	}
-	var result *models.ListAccessControlListResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListAccessControlList(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.AccessControlLists) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetAccessControlListResponse{
-		AccessControlList: result.AccessControlLists[0],
-	}
-	return response, nil
 }
 
 //RESTListAccessControlList handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListAccessControlList(c echo.Context) error 
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListAccessControlList handles a List service Request.
-func (service *ContrailService) ListAccessControlList(
-	ctx context.Context,
-	request *models.ListAccessControlListRequest) (response *models.ListAccessControlListResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListAccessControlList(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

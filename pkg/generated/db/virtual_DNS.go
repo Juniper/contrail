@@ -93,10 +93,10 @@ var VirtualDNSParents = []string{
 }
 
 // CreateVirtualDNS inserts VirtualDNS to DB
-func CreateVirtualDNS(
+func (db *DB) createVirtualDNS(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateVirtualDNSRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.VirtualDNS
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertVirtualDNSQuery)
@@ -522,8 +522,9 @@ func scanVirtualDNS(values map[string]interface{}) (*models.VirtualDNS, error) {
 }
 
 // ListVirtualDNS lists VirtualDNS with list spec.
-func ListVirtualDNS(ctx context.Context, tx *sql.Tx, request *models.ListVirtualDNSRequest) (response *models.ListVirtualDNSResponse, err error) {
+func (db *DB) listVirtualDNS(ctx context.Context, request *models.ListVirtualDNSRequest) (response *models.ListVirtualDNSResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -585,9 +586,8 @@ func ListVirtualDNS(ctx context.Context, tx *sql.Tx, request *models.ListVirtual
 }
 
 // UpdateVirtualDNS updates a resource
-func UpdateVirtualDNS(
+func (db *DB) updateVirtualDNS(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateVirtualDNSRequest,
 ) error {
 	//TODO
@@ -595,15 +595,15 @@ func UpdateVirtualDNS(
 }
 
 // DeleteVirtualDNS deletes a resource
-func DeleteVirtualDNS(
+func (db *DB) deleteVirtualDNS(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteVirtualDNSRequest) error {
 	deleteQuery := deleteVirtualDNSQuery
 	selectQuery := "select count(uuid) from virtual_DNS where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -638,4 +638,119 @@ func DeleteVirtualDNS(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateVirtualDNS handle a Create API
+func (db *DB) CreateVirtualDNS(
+	ctx context.Context,
+	request *models.CreateVirtualDNSRequest) (*models.CreateVirtualDNSResponse, error) {
+	model := request.VirtualDNS
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createVirtualDNS(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "virtual_DNS",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateVirtualDNSResponse{
+		VirtualDNS: request.VirtualDNS,
+	}, nil
+}
+
+//UpdateVirtualDNS handles a Update request.
+func (db *DB) UpdateVirtualDNS(
+	ctx context.Context,
+	request *models.UpdateVirtualDNSRequest) (*models.UpdateVirtualDNSResponse, error) {
+	model := request.VirtualDNS
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateVirtualDNS(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "virtual_DNS",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateVirtualDNSResponse{
+		VirtualDNS: model,
+	}, nil
+}
+
+//DeleteVirtualDNS delete a resource.
+func (db *DB) DeleteVirtualDNS(ctx context.Context, request *models.DeleteVirtualDNSRequest) (*models.DeleteVirtualDNSResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteVirtualDNS(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteVirtualDNSResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetVirtualDNS a Get request.
+func (db *DB) GetVirtualDNS(ctx context.Context, request *models.GetVirtualDNSRequest) (response *models.GetVirtualDNSResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListVirtualDNSRequest{
+		Spec: spec,
+	}
+	var result *models.ListVirtualDNSResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listVirtualDNS(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.VirtualDNSs) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetVirtualDNSResponse{
+		VirtualDNS: result.VirtualDNSs[0],
+	}
+	return response, nil
+}
+
+//ListVirtualDNS handles a List service Request.
+func (db *DB) ListVirtualDNS(
+	ctx context.Context,
+	request *models.ListVirtualDNSRequest) (response *models.ListVirtualDNSResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listVirtualDNS(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

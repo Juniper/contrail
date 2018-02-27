@@ -59,10 +59,10 @@ var BaremetalPortBackRefFields = map[string][]string{}
 var BaremetalPortParents = []string{}
 
 // CreateBaremetalPort inserts BaremetalPort to DB
-func CreateBaremetalPort(
+func (db *DB) createBaremetalPort(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateBaremetalPortRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.BaremetalPort
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertBaremetalPortQuery)
@@ -307,8 +307,9 @@ func scanBaremetalPort(values map[string]interface{}) (*models.BaremetalPort, er
 }
 
 // ListBaremetalPort lists BaremetalPort with list spec.
-func ListBaremetalPort(ctx context.Context, tx *sql.Tx, request *models.ListBaremetalPortRequest) (response *models.ListBaremetalPortResponse, err error) {
+func (db *DB) listBaremetalPort(ctx context.Context, request *models.ListBaremetalPortRequest) (response *models.ListBaremetalPortResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -370,9 +371,8 @@ func ListBaremetalPort(ctx context.Context, tx *sql.Tx, request *models.ListBare
 }
 
 // UpdateBaremetalPort updates a resource
-func UpdateBaremetalPort(
+func (db *DB) updateBaremetalPort(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateBaremetalPortRequest,
 ) error {
 	//TODO
@@ -380,15 +380,15 @@ func UpdateBaremetalPort(
 }
 
 // DeleteBaremetalPort deletes a resource
-func DeleteBaremetalPort(
+func (db *DB) deleteBaremetalPort(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteBaremetalPortRequest) error {
 	deleteQuery := deleteBaremetalPortQuery
 	selectQuery := "select count(uuid) from baremetal_port where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -423,4 +423,119 @@ func DeleteBaremetalPort(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateBaremetalPort handle a Create API
+func (db *DB) CreateBaremetalPort(
+	ctx context.Context,
+	request *models.CreateBaremetalPortRequest) (*models.CreateBaremetalPortResponse, error) {
+	model := request.BaremetalPort
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createBaremetalPort(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "baremetal_port",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateBaremetalPortResponse{
+		BaremetalPort: request.BaremetalPort,
+	}, nil
+}
+
+//UpdateBaremetalPort handles a Update request.
+func (db *DB) UpdateBaremetalPort(
+	ctx context.Context,
+	request *models.UpdateBaremetalPortRequest) (*models.UpdateBaremetalPortResponse, error) {
+	model := request.BaremetalPort
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateBaremetalPort(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "baremetal_port",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateBaremetalPortResponse{
+		BaremetalPort: model,
+	}, nil
+}
+
+//DeleteBaremetalPort delete a resource.
+func (db *DB) DeleteBaremetalPort(ctx context.Context, request *models.DeleteBaremetalPortRequest) (*models.DeleteBaremetalPortResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteBaremetalPort(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteBaremetalPortResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetBaremetalPort a Get request.
+func (db *DB) GetBaremetalPort(ctx context.Context, request *models.GetBaremetalPortRequest) (response *models.GetBaremetalPortResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListBaremetalPortRequest{
+		Spec: spec,
+	}
+	var result *models.ListBaremetalPortResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listBaremetalPort(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.BaremetalPorts) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetBaremetalPortResponse{
+		BaremetalPort: result.BaremetalPorts[0],
+	}
+	return response, nil
+}
+
+//ListBaremetalPort handles a List service Request.
+func (db *DB) ListBaremetalPort(
+	ctx context.Context,
+	request *models.ListBaremetalPortRequest) (response *models.ListBaremetalPortResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listBaremetalPort(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateBridgeDomain(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateBridgeDomain(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "bridge_domain",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateBridgeDomainResponse{
-		BridgeDomain: request.BridgeDomain,
-	}, nil
+
+	return service.Next().CreateBridgeDomain(ctx, request)
 }
 
 //RESTUpdateBridgeDomain handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateBridgeDomain(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateBridgeDomain(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "bridge_domain",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateBridgeDomainResponse{
-		BridgeDomain: model,
-	}, nil
+	return service.Next().UpdateBridgeDomain(ctx, request)
 }
 
 //RESTDeleteBridgeDomain delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteBridgeDomain(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteBridgeDomain delete a resource.
-func (service *ContrailService) DeleteBridgeDomain(ctx context.Context, request *models.DeleteBridgeDomainRequest) (*models.DeleteBridgeDomainResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteBridgeDomain(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteBridgeDomainResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetBridgeDomain a REST Get request.
 func (service *ContrailService) RESTGetBridgeDomain(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetBridgeDomain(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetBridgeDomain a Get request.
-func (service *ContrailService) GetBridgeDomain(ctx context.Context, request *models.GetBridgeDomainRequest) (response *models.GetBridgeDomainResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListBridgeDomainRequest{
-		Spec: spec,
-	}
-	var result *models.ListBridgeDomainResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListBridgeDomain(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.BridgeDomains) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetBridgeDomainResponse{
-		BridgeDomain: result.BridgeDomains[0],
-	}
-	return response, nil
 }
 
 //RESTListBridgeDomain handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListBridgeDomain(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListBridgeDomain handles a List service Request.
-func (service *ContrailService) ListBridgeDomain(
-	ctx context.Context,
-	request *models.ListBridgeDomainRequest) (response *models.ListBridgeDomainResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListBridgeDomain(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

@@ -59,10 +59,10 @@ var APIAccessListParents = []string{
 }
 
 // CreateAPIAccessList inserts APIAccessList to DB
-func CreateAPIAccessList(
+func (db *DB) createAPIAccessList(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateAPIAccessListRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.APIAccessList
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertAPIAccessListQuery)
@@ -258,8 +258,9 @@ func scanAPIAccessList(values map[string]interface{}) (*models.APIAccessList, er
 }
 
 // ListAPIAccessList lists APIAccessList with list spec.
-func ListAPIAccessList(ctx context.Context, tx *sql.Tx, request *models.ListAPIAccessListRequest) (response *models.ListAPIAccessListResponse, err error) {
+func (db *DB) listAPIAccessList(ctx context.Context, request *models.ListAPIAccessListRequest) (response *models.ListAPIAccessListResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -321,9 +322,8 @@ func ListAPIAccessList(ctx context.Context, tx *sql.Tx, request *models.ListAPIA
 }
 
 // UpdateAPIAccessList updates a resource
-func UpdateAPIAccessList(
+func (db *DB) updateAPIAccessList(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateAPIAccessListRequest,
 ) error {
 	//TODO
@@ -331,15 +331,15 @@ func UpdateAPIAccessList(
 }
 
 // DeleteAPIAccessList deletes a resource
-func DeleteAPIAccessList(
+func (db *DB) deleteAPIAccessList(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteAPIAccessListRequest) error {
 	deleteQuery := deleteAPIAccessListQuery
 	selectQuery := "select count(uuid) from api_access_list where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -374,4 +374,119 @@ func DeleteAPIAccessList(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateAPIAccessList handle a Create API
+func (db *DB) CreateAPIAccessList(
+	ctx context.Context,
+	request *models.CreateAPIAccessListRequest) (*models.CreateAPIAccessListResponse, error) {
+	model := request.APIAccessList
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createAPIAccessList(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "api_access_list",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateAPIAccessListResponse{
+		APIAccessList: request.APIAccessList,
+	}, nil
+}
+
+//UpdateAPIAccessList handles a Update request.
+func (db *DB) UpdateAPIAccessList(
+	ctx context.Context,
+	request *models.UpdateAPIAccessListRequest) (*models.UpdateAPIAccessListResponse, error) {
+	model := request.APIAccessList
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateAPIAccessList(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "api_access_list",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateAPIAccessListResponse{
+		APIAccessList: model,
+	}, nil
+}
+
+//DeleteAPIAccessList delete a resource.
+func (db *DB) DeleteAPIAccessList(ctx context.Context, request *models.DeleteAPIAccessListRequest) (*models.DeleteAPIAccessListResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteAPIAccessList(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteAPIAccessListResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetAPIAccessList a Get request.
+func (db *DB) GetAPIAccessList(ctx context.Context, request *models.GetAPIAccessListRequest) (response *models.GetAPIAccessListResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListAPIAccessListRequest{
+		Spec: spec,
+	}
+	var result *models.ListAPIAccessListResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listAPIAccessList(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.APIAccessLists) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetAPIAccessListResponse{
+		APIAccessList: result.APIAccessLists[0],
+	}
+	return response, nil
+}
+
+//ListAPIAccessList handles a List service Request.
+func (db *DB) ListAPIAccessList(
+	ctx context.Context,
+	request *models.ListAPIAccessListRequest) (response *models.ListAPIAccessListResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listAPIAccessList(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

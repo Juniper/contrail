@@ -66,10 +66,10 @@ const insertCustomerAttachmentVirtualMachineInterfaceQuery = "insert into `ref_c
 const insertCustomerAttachmentFloatingIPQuery = "insert into `ref_customer_attachment_floating_ip` (`from`, `to` ) values (?, ?);"
 
 // CreateCustomerAttachment inserts CustomerAttachment to DB
-func CreateCustomerAttachment(
+func (db *DB) createCustomerAttachment(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateCustomerAttachmentRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.CustomerAttachment
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertCustomerAttachmentQuery)
@@ -324,8 +324,9 @@ func scanCustomerAttachment(values map[string]interface{}) (*models.CustomerAtta
 }
 
 // ListCustomerAttachment lists CustomerAttachment with list spec.
-func ListCustomerAttachment(ctx context.Context, tx *sql.Tx, request *models.ListCustomerAttachmentRequest) (response *models.ListCustomerAttachmentResponse, err error) {
+func (db *DB) listCustomerAttachment(ctx context.Context, request *models.ListCustomerAttachmentRequest) (response *models.ListCustomerAttachmentResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -387,9 +388,8 @@ func ListCustomerAttachment(ctx context.Context, tx *sql.Tx, request *models.Lis
 }
 
 // UpdateCustomerAttachment updates a resource
-func UpdateCustomerAttachment(
+func (db *DB) updateCustomerAttachment(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateCustomerAttachmentRequest,
 ) error {
 	//TODO
@@ -397,15 +397,15 @@ func UpdateCustomerAttachment(
 }
 
 // DeleteCustomerAttachment deletes a resource
-func DeleteCustomerAttachment(
+func (db *DB) deleteCustomerAttachment(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteCustomerAttachmentRequest) error {
 	deleteQuery := deleteCustomerAttachmentQuery
 	selectQuery := "select count(uuid) from customer_attachment where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -440,4 +440,119 @@ func DeleteCustomerAttachment(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateCustomerAttachment handle a Create API
+func (db *DB) CreateCustomerAttachment(
+	ctx context.Context,
+	request *models.CreateCustomerAttachmentRequest) (*models.CreateCustomerAttachmentResponse, error) {
+	model := request.CustomerAttachment
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createCustomerAttachment(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "customer_attachment",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateCustomerAttachmentResponse{
+		CustomerAttachment: request.CustomerAttachment,
+	}, nil
+}
+
+//UpdateCustomerAttachment handles a Update request.
+func (db *DB) UpdateCustomerAttachment(
+	ctx context.Context,
+	request *models.UpdateCustomerAttachmentRequest) (*models.UpdateCustomerAttachmentResponse, error) {
+	model := request.CustomerAttachment
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateCustomerAttachment(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "customer_attachment",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateCustomerAttachmentResponse{
+		CustomerAttachment: model,
+	}, nil
+}
+
+//DeleteCustomerAttachment delete a resource.
+func (db *DB) DeleteCustomerAttachment(ctx context.Context, request *models.DeleteCustomerAttachmentRequest) (*models.DeleteCustomerAttachmentResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteCustomerAttachment(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteCustomerAttachmentResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetCustomerAttachment a Get request.
+func (db *DB) GetCustomerAttachment(ctx context.Context, request *models.GetCustomerAttachmentRequest) (response *models.GetCustomerAttachmentResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListCustomerAttachmentRequest{
+		Spec: spec,
+	}
+	var result *models.ListCustomerAttachmentResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listCustomerAttachment(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.CustomerAttachments) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetCustomerAttachmentResponse{
+		CustomerAttachment: result.CustomerAttachments[0],
+	}
+	return response, nil
+}
+
+//ListCustomerAttachment handles a List service Request.
+func (db *DB) ListCustomerAttachment(
+	ctx context.Context,
+	request *models.ListCustomerAttachmentRequest) (response *models.ListCustomerAttachmentResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listCustomerAttachment(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

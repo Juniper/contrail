@@ -70,15 +70,15 @@ var BGPAsAServiceParents = []string{
 	"project",
 }
 
-const insertBGPAsAServiceServiceHealthCheckQuery = "insert into `ref_bgp_as_a_service_service_health_check` (`from`, `to` ) values (?, ?);"
-
 const insertBGPAsAServiceVirtualMachineInterfaceQuery = "insert into `ref_bgp_as_a_service_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
+const insertBGPAsAServiceServiceHealthCheckQuery = "insert into `ref_bgp_as_a_service_service_health_check` (`from`, `to` ) values (?, ?);"
+
 // CreateBGPAsAService inserts BGPAsAService to DB
-func CreateBGPAsAService(
+func (db *DB) createBGPAsAService(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateBGPAsAServiceRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.BGPAsAService
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertBGPAsAServiceQuery)
@@ -121,19 +121,6 @@ func CreateBGPAsAService(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertBGPAsAServiceVirtualMachineInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
-	}
-	defer stmtVirtualMachineInterfaceRef.Close()
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
 	stmtServiceHealthCheckRef, err := tx.Prepare(insertBGPAsAServiceServiceHealthCheckQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ServiceHealthCheckRefs create statement failed")
@@ -144,6 +131,19 @@ func CreateBGPAsAService(
 		_, err = stmtServiceHealthCheckRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceHealthCheckRefs create failed")
+		}
+	}
+
+	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertBGPAsAServiceVirtualMachineInterfaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
+	}
+	defer stmtVirtualMachineInterfaceRef.Close()
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
 	}
 
@@ -375,8 +375,9 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 }
 
 // ListBGPAsAService lists BGPAsAService with list spec.
-func ListBGPAsAService(ctx context.Context, tx *sql.Tx, request *models.ListBGPAsAServiceRequest) (response *models.ListBGPAsAServiceResponse, err error) {
+func (db *DB) listBGPAsAService(ctx context.Context, request *models.ListBGPAsAServiceRequest) (response *models.ListBGPAsAServiceResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -438,9 +439,8 @@ func ListBGPAsAService(ctx context.Context, tx *sql.Tx, request *models.ListBGPA
 }
 
 // UpdateBGPAsAService updates a resource
-func UpdateBGPAsAService(
+func (db *DB) updateBGPAsAService(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateBGPAsAServiceRequest,
 ) error {
 	//TODO
@@ -448,15 +448,15 @@ func UpdateBGPAsAService(
 }
 
 // DeleteBGPAsAService deletes a resource
-func DeleteBGPAsAService(
+func (db *DB) deleteBGPAsAService(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteBGPAsAServiceRequest) error {
 	deleteQuery := deleteBGPAsAServiceQuery
 	selectQuery := "select count(uuid) from bgp_as_a_service where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -491,4 +491,119 @@ func DeleteBGPAsAService(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateBGPAsAService handle a Create API
+func (db *DB) CreateBGPAsAService(
+	ctx context.Context,
+	request *models.CreateBGPAsAServiceRequest) (*models.CreateBGPAsAServiceResponse, error) {
+	model := request.BGPAsAService
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createBGPAsAService(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "bgp_as_a_service",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateBGPAsAServiceResponse{
+		BGPAsAService: request.BGPAsAService,
+	}, nil
+}
+
+//UpdateBGPAsAService handles a Update request.
+func (db *DB) UpdateBGPAsAService(
+	ctx context.Context,
+	request *models.UpdateBGPAsAServiceRequest) (*models.UpdateBGPAsAServiceResponse, error) {
+	model := request.BGPAsAService
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateBGPAsAService(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "bgp_as_a_service",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateBGPAsAServiceResponse{
+		BGPAsAService: model,
+	}, nil
+}
+
+//DeleteBGPAsAService delete a resource.
+func (db *DB) DeleteBGPAsAService(ctx context.Context, request *models.DeleteBGPAsAServiceRequest) (*models.DeleteBGPAsAServiceResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteBGPAsAService(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteBGPAsAServiceResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetBGPAsAService a Get request.
+func (db *DB) GetBGPAsAService(ctx context.Context, request *models.GetBGPAsAServiceRequest) (response *models.GetBGPAsAServiceResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListBGPAsAServiceRequest{
+		Spec: spec,
+	}
+	var result *models.ListBGPAsAServiceResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listBGPAsAService(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.BGPAsAServices) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetBGPAsAServiceResponse{
+		BGPAsAService: result.BGPAsAServices[0],
+	}
+	return response, nil
+}
+
+//ListBGPAsAService handles a List service Request.
+func (db *DB) ListBGPAsAService(
+	ctx context.Context,
+	request *models.ListBGPAsAServiceRequest) (response *models.ListBGPAsAServiceResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listBGPAsAService(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

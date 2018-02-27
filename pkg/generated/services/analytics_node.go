@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateAnalyticsNode(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateAnalyticsNode(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "analytics_node",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateAnalyticsNodeResponse{
-		AnalyticsNode: request.AnalyticsNode,
-	}, nil
+
+	return service.Next().CreateAnalyticsNode(ctx, request)
 }
 
 //RESTUpdateAnalyticsNode handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateAnalyticsNode(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateAnalyticsNode(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "analytics_node",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateAnalyticsNodeResponse{
-		AnalyticsNode: model,
-	}, nil
+	return service.Next().UpdateAnalyticsNode(ctx, request)
 }
 
 //RESTDeleteAnalyticsNode delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteAnalyticsNode(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteAnalyticsNode delete a resource.
-func (service *ContrailService) DeleteAnalyticsNode(ctx context.Context, request *models.DeleteAnalyticsNodeRequest) (*models.DeleteAnalyticsNodeResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteAnalyticsNode(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteAnalyticsNodeResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetAnalyticsNode a REST Get request.
 func (service *ContrailService) RESTGetAnalyticsNode(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetAnalyticsNode(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetAnalyticsNode a Get request.
-func (service *ContrailService) GetAnalyticsNode(ctx context.Context, request *models.GetAnalyticsNodeRequest) (response *models.GetAnalyticsNodeResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListAnalyticsNodeRequest{
-		Spec: spec,
-	}
-	var result *models.ListAnalyticsNodeResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListAnalyticsNode(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.AnalyticsNodes) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetAnalyticsNodeResponse{
-		AnalyticsNode: result.AnalyticsNodes[0],
-	}
-	return response, nil
 }
 
 //RESTListAnalyticsNode handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListAnalyticsNode(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListAnalyticsNode handles a List service Request.
-func (service *ContrailService) ListAnalyticsNode(
-	ctx context.Context,
-	request *models.ListAnalyticsNodeRequest) (response *models.ListAnalyticsNodeResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListAnalyticsNode(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

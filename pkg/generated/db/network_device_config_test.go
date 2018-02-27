@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,13 +15,15 @@ var _ = errors.New("")
 
 func TestNetworkDeviceConfig(t *testing.T) {
 	// t.Parallel()
-	db := testDB
+	db := &DB{
+		DB: testDB,
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db, "metadata")
-	mutexTable := common.UseTable(db, "network_device_config")
-	// mutexProject := common.UseTable(db, "network_device_config")
+	mutexMetadata := common.UseTable(db.DB, "metadata")
+	mutexTable := common.UseTable(db.DB, "network_device_config")
+	// mutexProject := common.UseTable(db.DB, "network_device_config")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -44,24 +44,18 @@ func TestNetworkDeviceConfig(t *testing.T) {
 	PhysicalRouterrefModel = models.MakePhysicalRouter()
 	PhysicalRouterrefModel.UUID = "network_device_config_physical_router_ref_uuid"
 	PhysicalRouterrefModel.FQName = []string{"test", "network_device_config_physical_router_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreatePhysicalRouter(ctx, tx, &models.CreatePhysicalRouterRequest{
-			PhysicalRouter: PhysicalRouterrefModel,
-		})
+	_, err = db.CreatePhysicalRouter(ctx, &models.CreatePhysicalRouterRequest{
+		PhysicalRouter: PhysicalRouterrefModel,
 	})
 	PhysicalRouterrefModel.UUID = "network_device_config_physical_router_ref_uuid1"
 	PhysicalRouterrefModel.FQName = []string{"test", "network_device_config_physical_router_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreatePhysicalRouter(ctx, tx, &models.CreatePhysicalRouterRequest{
-			PhysicalRouter: PhysicalRouterrefModel,
-		})
+	_, err = db.CreatePhysicalRouter(ctx, &models.CreatePhysicalRouterRequest{
+		PhysicalRouter: PhysicalRouterrefModel,
 	})
 	PhysicalRouterrefModel.UUID = "network_device_config_physical_router_ref_uuid2"
 	PhysicalRouterrefModel.FQName = []string{"test", "network_device_config_physical_router_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreatePhysicalRouter(ctx, tx, &models.CreatePhysicalRouterRequest{
-			PhysicalRouter: PhysicalRouterrefModel,
-		})
+	_, err = db.CreatePhysicalRouter(ctx, &models.CreatePhysicalRouterRequest{
+		PhysicalRouter: PhysicalRouterrefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
@@ -78,10 +72,9 @@ func TestNetworkDeviceConfig(t *testing.T) {
 	var createShare []*models.ShareType
 	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
 	model.Perms2.Share = createShare
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx, &models.CreateProjectRequest{
-			Project: projectModel,
-		})
+
+	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
+		Project: projectModel,
 	})
 	if err != nil {
 		t.Fatal("project create failed", err)
@@ -207,12 +200,11 @@ func TestNetworkDeviceConfig(t *testing.T) {
 	//    common.SetValueByPath(updateMap, "PhysicalRouterRefs", ".", PhysicalRouterref)
 	//
 	//
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNetworkDeviceConfig(ctx, tx,
-			&models.CreateNetworkDeviceConfigRequest{
-				NetworkDeviceConfig: model,
-			})
-	})
+	_, err = db.CreateNetworkDeviceConfig(ctx,
+		&models.CreateNetworkDeviceConfigRequest{
+			NetworkDeviceConfig: model,
+		})
+
 	if err != nil {
 		t.Fatal("create failed", err)
 	}
@@ -226,7 +218,8 @@ func TestNetworkDeviceConfig(t *testing.T) {
 
 	//Delete ref entries, referred objects
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_network_device_config_physical_router` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing PhysicalRouterRefs delete statement failed")
@@ -239,100 +232,73 @@ func TestNetworkDeviceConfig(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeletePhysicalRouter(ctx, tx,
-			&models.DeletePhysicalRouterRequest{
-				ID: "network_device_config_physical_router_ref_uuid"})
-	})
+	_, err = db.DeletePhysicalRouter(ctx,
+		&models.DeletePhysicalRouterRequest{
+			ID: "network_device_config_physical_router_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref network_device_config_physical_router_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeletePhysicalRouter(ctx, tx,
-			&models.DeletePhysicalRouterRequest{
-				ID: "network_device_config_physical_router_ref_uuid1"})
-	})
+	_, err = db.DeletePhysicalRouter(ctx,
+		&models.DeletePhysicalRouterRequest{
+			ID: "network_device_config_physical_router_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref network_device_config_physical_router_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeletePhysicalRouter(
-			ctx,
-			tx,
-			&models.DeletePhysicalRouterRequest{
-				ID: "network_device_config_physical_router_ref_uuid2",
-			})
-	})
+	_, err = db.DeletePhysicalRouter(
+		ctx,
+		&models.DeletePhysicalRouterRequest{
+			ID: "network_device_config_physical_router_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref network_device_config_physical_router_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteProject(ctx, tx, &models.DeleteProjectRequest{
-			ID: projectModel.UUID})
-	})
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
 	if err != nil {
 		t.Fatal("delete project failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListNetworkDeviceConfig(ctx, tx, &models.ListNetworkDeviceConfigRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.NetworkDeviceConfigs) != 1 {
-			return fmt.Errorf("expected one element")
-		}
-		return nil
-	})
+	response, err := db.ListNetworkDeviceConfig(ctx, &models.ListNetworkDeviceConfigRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
+	if len(response.NetworkDeviceConfigs) != 1 {
+		t.Fatal("expected one element", err)
+	}
 
 	ctxDemo := context.WithValue(ctx, "auth", common.NewAuthContext("default", "demo", "demo", []string{}))
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteNetworkDeviceConfig(ctxDemo, tx,
-			&models.DeleteNetworkDeviceConfigRequest{
-				ID: model.UUID},
-		)
-	})
+	_, err = db.DeleteNetworkDeviceConfig(ctxDemo,
+		&models.DeleteNetworkDeviceConfigRequest{
+			ID: model.UUID},
+	)
 	if err == nil {
 		t.Fatal("auth failed")
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteNetworkDeviceConfig(ctx, tx,
-			&models.DeleteNetworkDeviceConfigRequest{
-				ID: model.UUID})
-	})
-	if err != nil {
-		t.Fatal("delete failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNetworkDeviceConfig(ctx, tx,
-			&models.CreateNetworkDeviceConfigRequest{
-				NetworkDeviceConfig: model})
-	})
+	_, err = db.CreateNetworkDeviceConfig(ctx,
+		&models.CreateNetworkDeviceConfigRequest{
+			NetworkDeviceConfig: model})
 	if err == nil {
 		t.Fatal("Raise Error On Duplicate Create failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListNetworkDeviceConfig(ctx, tx, &models.ListNetworkDeviceConfigRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.NetworkDeviceConfigs) != 0 {
-			return fmt.Errorf("expected no element")
-		}
-		return nil
-	})
+	_, err = db.DeleteNetworkDeviceConfig(ctx,
+		&models.DeleteNetworkDeviceConfigRequest{
+			ID: model.UUID})
+	if err != nil {
+		t.Fatal("delete failed", err)
+	}
+
+	response, err = db.ListNetworkDeviceConfig(ctx, &models.ListNetworkDeviceConfigRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+	if len(response.NetworkDeviceConfigs) != 0 {
+		t.Fatal("expected no element", err)
 	}
 	return
 }

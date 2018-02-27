@@ -69,10 +69,10 @@ var OsImageBackRefFields = map[string][]string{}
 var OsImageParents = []string{}
 
 // CreateOsImage inserts OsImage to DB
-func CreateOsImage(
+func (db *DB) createOsImage(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateOsImageRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.OsImage
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertOsImageQuery)
@@ -387,8 +387,9 @@ func scanOsImage(values map[string]interface{}) (*models.OsImage, error) {
 }
 
 // ListOsImage lists OsImage with list spec.
-func ListOsImage(ctx context.Context, tx *sql.Tx, request *models.ListOsImageRequest) (response *models.ListOsImageResponse, err error) {
+func (db *DB) listOsImage(ctx context.Context, request *models.ListOsImageRequest) (response *models.ListOsImageResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -450,9 +451,8 @@ func ListOsImage(ctx context.Context, tx *sql.Tx, request *models.ListOsImageReq
 }
 
 // UpdateOsImage updates a resource
-func UpdateOsImage(
+func (db *DB) updateOsImage(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateOsImageRequest,
 ) error {
 	//TODO
@@ -460,15 +460,15 @@ func UpdateOsImage(
 }
 
 // DeleteOsImage deletes a resource
-func DeleteOsImage(
+func (db *DB) deleteOsImage(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteOsImageRequest) error {
 	deleteQuery := deleteOsImageQuery
 	selectQuery := "select count(uuid) from os_image where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -503,4 +503,119 @@ func DeleteOsImage(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateOsImage handle a Create API
+func (db *DB) CreateOsImage(
+	ctx context.Context,
+	request *models.CreateOsImageRequest) (*models.CreateOsImageResponse, error) {
+	model := request.OsImage
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createOsImage(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "os_image",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateOsImageResponse{
+		OsImage: request.OsImage,
+	}, nil
+}
+
+//UpdateOsImage handles a Update request.
+func (db *DB) UpdateOsImage(
+	ctx context.Context,
+	request *models.UpdateOsImageRequest) (*models.UpdateOsImageResponse, error) {
+	model := request.OsImage
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateOsImage(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "os_image",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateOsImageResponse{
+		OsImage: model,
+	}, nil
+}
+
+//DeleteOsImage delete a resource.
+func (db *DB) DeleteOsImage(ctx context.Context, request *models.DeleteOsImageRequest) (*models.DeleteOsImageResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteOsImage(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteOsImageResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetOsImage a Get request.
+func (db *DB) GetOsImage(ctx context.Context, request *models.GetOsImageRequest) (response *models.GetOsImageResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListOsImageRequest{
+		Spec: spec,
+	}
+	var result *models.ListOsImageResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listOsImage(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.OsImages) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetOsImageResponse{
+		OsImage: result.OsImages[0],
+	}
+	return response, nil
+}
+
+//ListOsImage handles a List service Request.
+func (db *DB) ListOsImage(
+	ctx context.Context,
+	request *models.ListOsImageRequest) (response *models.ListOsImageResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listOsImage(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

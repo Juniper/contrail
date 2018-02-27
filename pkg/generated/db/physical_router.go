@@ -163,10 +163,10 @@ const insertPhysicalRouterBGPRouterQuery = "insert into `ref_physical_router_bgp
 const insertPhysicalRouterVirtualRouterQuery = "insert into `ref_physical_router_virtual_router` (`from`, `to` ) values (?, ?);"
 
 // CreatePhysicalRouter inserts PhysicalRouter to DB
-func CreatePhysicalRouter(
+func (db *DB) createPhysicalRouter(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreatePhysicalRouterRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.PhysicalRouter
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertPhysicalRouterQuery)
@@ -993,8 +993,9 @@ func scanPhysicalRouter(values map[string]interface{}) (*models.PhysicalRouter, 
 }
 
 // ListPhysicalRouter lists PhysicalRouter with list spec.
-func ListPhysicalRouter(ctx context.Context, tx *sql.Tx, request *models.ListPhysicalRouterRequest) (response *models.ListPhysicalRouterResponse, err error) {
+func (db *DB) listPhysicalRouter(ctx context.Context, request *models.ListPhysicalRouterRequest) (response *models.ListPhysicalRouterResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -1056,9 +1057,8 @@ func ListPhysicalRouter(ctx context.Context, tx *sql.Tx, request *models.ListPhy
 }
 
 // UpdatePhysicalRouter updates a resource
-func UpdatePhysicalRouter(
+func (db *DB) updatePhysicalRouter(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdatePhysicalRouterRequest,
 ) error {
 	//TODO
@@ -1066,15 +1066,15 @@ func UpdatePhysicalRouter(
 }
 
 // DeletePhysicalRouter deletes a resource
-func DeletePhysicalRouter(
+func (db *DB) deletePhysicalRouter(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeletePhysicalRouterRequest) error {
 	deleteQuery := deletePhysicalRouterQuery
 	selectQuery := "select count(uuid) from physical_router where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -1109,4 +1109,119 @@ func DeletePhysicalRouter(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreatePhysicalRouter handle a Create API
+func (db *DB) CreatePhysicalRouter(
+	ctx context.Context,
+	request *models.CreatePhysicalRouterRequest) (*models.CreatePhysicalRouterResponse, error) {
+	model := request.PhysicalRouter
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createPhysicalRouter(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "physical_router",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreatePhysicalRouterResponse{
+		PhysicalRouter: request.PhysicalRouter,
+	}, nil
+}
+
+//UpdatePhysicalRouter handles a Update request.
+func (db *DB) UpdatePhysicalRouter(
+	ctx context.Context,
+	request *models.UpdatePhysicalRouterRequest) (*models.UpdatePhysicalRouterResponse, error) {
+	model := request.PhysicalRouter
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updatePhysicalRouter(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "physical_router",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdatePhysicalRouterResponse{
+		PhysicalRouter: model,
+	}, nil
+}
+
+//DeletePhysicalRouter delete a resource.
+func (db *DB) DeletePhysicalRouter(ctx context.Context, request *models.DeletePhysicalRouterRequest) (*models.DeletePhysicalRouterResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deletePhysicalRouter(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeletePhysicalRouterResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetPhysicalRouter a Get request.
+func (db *DB) GetPhysicalRouter(ctx context.Context, request *models.GetPhysicalRouterRequest) (response *models.GetPhysicalRouterResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListPhysicalRouterRequest{
+		Spec: spec,
+	}
+	var result *models.ListPhysicalRouterResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listPhysicalRouter(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.PhysicalRouters) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetPhysicalRouterResponse{
+		PhysicalRouter: result.PhysicalRouters[0],
+	}
+	return response, nil
+}
+
+//ListPhysicalRouter handles a List service Request.
+func (db *DB) ListPhysicalRouter(
+	ctx context.Context,
+	request *models.ListPhysicalRouterRequest) (response *models.ListPhysicalRouterResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listPhysicalRouter(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

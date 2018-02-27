@@ -118,10 +118,10 @@ var VirtualMachineParents = []string{}
 const insertVirtualMachineServiceInstanceQuery = "insert into `ref_virtual_machine_service_instance` (`from`, `to` ) values (?, ?);"
 
 // CreateVirtualMachine inserts VirtualMachine to DB
-func CreateVirtualMachine(
+func (db *DB) createVirtualMachine(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateVirtualMachineRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.VirtualMachine
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertVirtualMachineQuery)
@@ -692,8 +692,9 @@ func scanVirtualMachine(values map[string]interface{}) (*models.VirtualMachine, 
 }
 
 // ListVirtualMachine lists VirtualMachine with list spec.
-func ListVirtualMachine(ctx context.Context, tx *sql.Tx, request *models.ListVirtualMachineRequest) (response *models.ListVirtualMachineResponse, err error) {
+func (db *DB) listVirtualMachine(ctx context.Context, request *models.ListVirtualMachineRequest) (response *models.ListVirtualMachineResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -755,9 +756,8 @@ func ListVirtualMachine(ctx context.Context, tx *sql.Tx, request *models.ListVir
 }
 
 // UpdateVirtualMachine updates a resource
-func UpdateVirtualMachine(
+func (db *DB) updateVirtualMachine(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateVirtualMachineRequest,
 ) error {
 	//TODO
@@ -765,15 +765,15 @@ func UpdateVirtualMachine(
 }
 
 // DeleteVirtualMachine deletes a resource
-func DeleteVirtualMachine(
+func (db *DB) deleteVirtualMachine(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteVirtualMachineRequest) error {
 	deleteQuery := deleteVirtualMachineQuery
 	selectQuery := "select count(uuid) from virtual_machine where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -808,4 +808,119 @@ func DeleteVirtualMachine(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateVirtualMachine handle a Create API
+func (db *DB) CreateVirtualMachine(
+	ctx context.Context,
+	request *models.CreateVirtualMachineRequest) (*models.CreateVirtualMachineResponse, error) {
+	model := request.VirtualMachine
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createVirtualMachine(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "virtual_machine",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateVirtualMachineResponse{
+		VirtualMachine: request.VirtualMachine,
+	}, nil
+}
+
+//UpdateVirtualMachine handles a Update request.
+func (db *DB) UpdateVirtualMachine(
+	ctx context.Context,
+	request *models.UpdateVirtualMachineRequest) (*models.UpdateVirtualMachineResponse, error) {
+	model := request.VirtualMachine
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateVirtualMachine(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "virtual_machine",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateVirtualMachineResponse{
+		VirtualMachine: model,
+	}, nil
+}
+
+//DeleteVirtualMachine delete a resource.
+func (db *DB) DeleteVirtualMachine(ctx context.Context, request *models.DeleteVirtualMachineRequest) (*models.DeleteVirtualMachineResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteVirtualMachine(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteVirtualMachineResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetVirtualMachine a Get request.
+func (db *DB) GetVirtualMachine(ctx context.Context, request *models.GetVirtualMachineRequest) (response *models.GetVirtualMachineResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListVirtualMachineRequest{
+		Spec: spec,
+	}
+	var result *models.ListVirtualMachineResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listVirtualMachine(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.VirtualMachines) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetVirtualMachineResponse{
+		VirtualMachine: result.VirtualMachines[0],
+	}
+	return response, nil
+}
+
+//ListVirtualMachine handles a List service Request.
+func (db *DB) ListVirtualMachine(
+	ctx context.Context,
+	request *models.ListVirtualMachineRequest) (response *models.ListVirtualMachineResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listVirtualMachine(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

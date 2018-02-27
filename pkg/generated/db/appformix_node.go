@@ -67,10 +67,10 @@ var AppformixNodeParents = []string{
 const insertAppformixNodeNodeQuery = "insert into `ref_appformix_node_node` (`from`, `to` ) values (?, ?);"
 
 // CreateAppformixNode inserts AppformixNode to DB
-func CreateAppformixNode(
+func (db *DB) createAppformixNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateAppformixNodeRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.AppformixNode
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertAppformixNodeQuery)
@@ -327,8 +327,9 @@ func scanAppformixNode(values map[string]interface{}) (*models.AppformixNode, er
 }
 
 // ListAppformixNode lists AppformixNode with list spec.
-func ListAppformixNode(ctx context.Context, tx *sql.Tx, request *models.ListAppformixNodeRequest) (response *models.ListAppformixNodeResponse, err error) {
+func (db *DB) listAppformixNode(ctx context.Context, request *models.ListAppformixNodeRequest) (response *models.ListAppformixNodeResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -390,9 +391,8 @@ func ListAppformixNode(ctx context.Context, tx *sql.Tx, request *models.ListAppf
 }
 
 // UpdateAppformixNode updates a resource
-func UpdateAppformixNode(
+func (db *DB) updateAppformixNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateAppformixNodeRequest,
 ) error {
 	//TODO
@@ -400,15 +400,15 @@ func UpdateAppformixNode(
 }
 
 // DeleteAppformixNode deletes a resource
-func DeleteAppformixNode(
+func (db *DB) deleteAppformixNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteAppformixNodeRequest) error {
 	deleteQuery := deleteAppformixNodeQuery
 	selectQuery := "select count(uuid) from appformix_node where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -443,4 +443,119 @@ func DeleteAppformixNode(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateAppformixNode handle a Create API
+func (db *DB) CreateAppformixNode(
+	ctx context.Context,
+	request *models.CreateAppformixNodeRequest) (*models.CreateAppformixNodeResponse, error) {
+	model := request.AppformixNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createAppformixNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "appformix_node",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateAppformixNodeResponse{
+		AppformixNode: request.AppformixNode,
+	}, nil
+}
+
+//UpdateAppformixNode handles a Update request.
+func (db *DB) UpdateAppformixNode(
+	ctx context.Context,
+	request *models.UpdateAppformixNodeRequest) (*models.UpdateAppformixNodeResponse, error) {
+	model := request.AppformixNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateAppformixNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "appformix_node",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateAppformixNodeResponse{
+		AppformixNode: model,
+	}, nil
+}
+
+//DeleteAppformixNode delete a resource.
+func (db *DB) DeleteAppformixNode(ctx context.Context, request *models.DeleteAppformixNodeRequest) (*models.DeleteAppformixNodeResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteAppformixNode(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteAppformixNodeResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetAppformixNode a Get request.
+func (db *DB) GetAppformixNode(ctx context.Context, request *models.GetAppformixNodeRequest) (response *models.GetAppformixNodeResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListAppformixNodeRequest{
+		Spec: spec,
+	}
+	var result *models.ListAppformixNodeResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listAppformixNode(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.AppformixNodes) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetAppformixNodeResponse{
+		AppformixNode: result.AppformixNodes[0],
+	}
+	return response, nil
+}
+
+//ListAppformixNode handles a List service Request.
+func (db *DB) ListAppformixNode(
+	ctx context.Context,
+	request *models.ListAppformixNodeRequest) (response *models.ListAppformixNodeResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listAppformixNode(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

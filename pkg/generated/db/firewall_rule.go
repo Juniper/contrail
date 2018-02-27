@@ -87,22 +87,22 @@ var FirewallRuleFields = []string{
 // FirewallRuleRefFields is db reference fields for FirewallRule
 var FirewallRuleRefFields = map[string][]string{
 
-	"security_logging_object": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"virtual_network": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"service_group": []string{
 	// <schema.Schema Value>
 
 	},
 
 	"address_group": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"security_logging_object": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"virtual_network": []string{
 	// <schema.Schema Value>
 
 	},
@@ -128,10 +128,10 @@ const insertFirewallRuleSecurityLoggingObjectQuery = "insert into `ref_firewall_
 const insertFirewallRuleVirtualNetworkQuery = "insert into `ref_firewall_rule_virtual_network` (`from`, `to` ) values (?, ?);"
 
 // CreateFirewallRule inserts FirewallRule to DB
-func CreateFirewallRule(
+func (db *DB) createFirewallRule(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateFirewallRuleRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.FirewallRule
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertFirewallRuleQuery)
@@ -753,8 +753,9 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 }
 
 // ListFirewallRule lists FirewallRule with list spec.
-func ListFirewallRule(ctx context.Context, tx *sql.Tx, request *models.ListFirewallRuleRequest) (response *models.ListFirewallRuleResponse, err error) {
+func (db *DB) listFirewallRule(ctx context.Context, request *models.ListFirewallRuleRequest) (response *models.ListFirewallRuleResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -816,9 +817,8 @@ func ListFirewallRule(ctx context.Context, tx *sql.Tx, request *models.ListFirew
 }
 
 // UpdateFirewallRule updates a resource
-func UpdateFirewallRule(
+func (db *DB) updateFirewallRule(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateFirewallRuleRequest,
 ) error {
 	//TODO
@@ -826,15 +826,15 @@ func UpdateFirewallRule(
 }
 
 // DeleteFirewallRule deletes a resource
-func DeleteFirewallRule(
+func (db *DB) deleteFirewallRule(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteFirewallRuleRequest) error {
 	deleteQuery := deleteFirewallRuleQuery
 	selectQuery := "select count(uuid) from firewall_rule where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -869,4 +869,119 @@ func DeleteFirewallRule(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateFirewallRule handle a Create API
+func (db *DB) CreateFirewallRule(
+	ctx context.Context,
+	request *models.CreateFirewallRuleRequest) (*models.CreateFirewallRuleResponse, error) {
+	model := request.FirewallRule
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createFirewallRule(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "firewall_rule",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateFirewallRuleResponse{
+		FirewallRule: request.FirewallRule,
+	}, nil
+}
+
+//UpdateFirewallRule handles a Update request.
+func (db *DB) UpdateFirewallRule(
+	ctx context.Context,
+	request *models.UpdateFirewallRuleRequest) (*models.UpdateFirewallRuleResponse, error) {
+	model := request.FirewallRule
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateFirewallRule(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "firewall_rule",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateFirewallRuleResponse{
+		FirewallRule: model,
+	}, nil
+}
+
+//DeleteFirewallRule delete a resource.
+func (db *DB) DeleteFirewallRule(ctx context.Context, request *models.DeleteFirewallRuleRequest) (*models.DeleteFirewallRuleResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteFirewallRule(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteFirewallRuleResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetFirewallRule a Get request.
+func (db *DB) GetFirewallRule(ctx context.Context, request *models.GetFirewallRuleRequest) (response *models.GetFirewallRuleResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListFirewallRuleRequest{
+		Spec: spec,
+	}
+	var result *models.ListFirewallRuleResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listFirewallRule(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.FirewallRules) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetFirewallRuleResponse{
+		FirewallRule: result.FirewallRules[0],
+	}
+	return response, nil
+}
+
+//ListFirewallRule handles a List service Request.
+func (db *DB) ListFirewallRule(
+	ctx context.Context,
+	request *models.ListFirewallRuleRequest) (response *models.ListFirewallRuleResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listFirewallRule(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

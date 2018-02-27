@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,13 +15,15 @@ var _ = errors.New("")
 
 func TestProject(t *testing.T) {
 	// t.Parallel()
-	db := testDB
+	db := &DB{
+		DB: testDB,
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db, "metadata")
-	mutexTable := common.UseTable(db, "project")
-	// mutexProject := common.UseTable(db, "project")
+	mutexMetadata := common.UseTable(db.DB, "metadata")
+	mutexTable := common.UseTable(db.DB, "project")
+	// mutexProject := common.UseTable(db.DB, "project")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -39,91 +39,23 @@ func TestProject(t *testing.T) {
 
 	// Create referred objects
 
-	var ApplicationPolicySetcreateref []*models.ProjectApplicationPolicySetRef
-	var ApplicationPolicySetrefModel *models.ApplicationPolicySet
-	ApplicationPolicySetrefModel = models.MakeApplicationPolicySet()
-	ApplicationPolicySetrefModel.UUID = "project_application_policy_set_ref_uuid"
-	ApplicationPolicySetrefModel.FQName = []string{"test", "project_application_policy_set_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateApplicationPolicySet(ctx, tx, &models.CreateApplicationPolicySetRequest{
-			ApplicationPolicySet: ApplicationPolicySetrefModel,
-		})
-	})
-	ApplicationPolicySetrefModel.UUID = "project_application_policy_set_ref_uuid1"
-	ApplicationPolicySetrefModel.FQName = []string{"test", "project_application_policy_set_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateApplicationPolicySet(ctx, tx, &models.CreateApplicationPolicySetRequest{
-			ApplicationPolicySet: ApplicationPolicySetrefModel,
-		})
-	})
-	ApplicationPolicySetrefModel.UUID = "project_application_policy_set_ref_uuid2"
-	ApplicationPolicySetrefModel.FQName = []string{"test", "project_application_policy_set_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateApplicationPolicySet(ctx, tx, &models.CreateApplicationPolicySetRequest{
-			ApplicationPolicySet: ApplicationPolicySetrefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	ApplicationPolicySetcreateref = append(ApplicationPolicySetcreateref, &models.ProjectApplicationPolicySetRef{UUID: "project_application_policy_set_ref_uuid", To: []string{"test", "project_application_policy_set_ref_uuid"}})
-	ApplicationPolicySetcreateref = append(ApplicationPolicySetcreateref, &models.ProjectApplicationPolicySetRef{UUID: "project_application_policy_set_ref_uuid2", To: []string{"test", "project_application_policy_set_ref_uuid2"}})
-	model.ApplicationPolicySetRefs = ApplicationPolicySetcreateref
-
-	var FloatingIPPoolcreateref []*models.ProjectFloatingIPPoolRef
-	var FloatingIPPoolrefModel *models.FloatingIPPool
-	FloatingIPPoolrefModel = models.MakeFloatingIPPool()
-	FloatingIPPoolrefModel.UUID = "project_floating_ip_pool_ref_uuid"
-	FloatingIPPoolrefModel.FQName = []string{"test", "project_floating_ip_pool_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateFloatingIPPool(ctx, tx, &models.CreateFloatingIPPoolRequest{
-			FloatingIPPool: FloatingIPPoolrefModel,
-		})
-	})
-	FloatingIPPoolrefModel.UUID = "project_floating_ip_pool_ref_uuid1"
-	FloatingIPPoolrefModel.FQName = []string{"test", "project_floating_ip_pool_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateFloatingIPPool(ctx, tx, &models.CreateFloatingIPPoolRequest{
-			FloatingIPPool: FloatingIPPoolrefModel,
-		})
-	})
-	FloatingIPPoolrefModel.UUID = "project_floating_ip_pool_ref_uuid2"
-	FloatingIPPoolrefModel.FQName = []string{"test", "project_floating_ip_pool_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateFloatingIPPool(ctx, tx, &models.CreateFloatingIPPoolRequest{
-			FloatingIPPool: FloatingIPPoolrefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	FloatingIPPoolcreateref = append(FloatingIPPoolcreateref, &models.ProjectFloatingIPPoolRef{UUID: "project_floating_ip_pool_ref_uuid", To: []string{"test", "project_floating_ip_pool_ref_uuid"}})
-	FloatingIPPoolcreateref = append(FloatingIPPoolcreateref, &models.ProjectFloatingIPPoolRef{UUID: "project_floating_ip_pool_ref_uuid2", To: []string{"test", "project_floating_ip_pool_ref_uuid2"}})
-	model.FloatingIPPoolRefs = FloatingIPPoolcreateref
-
 	var AliasIPPoolcreateref []*models.ProjectAliasIPPoolRef
 	var AliasIPPoolrefModel *models.AliasIPPool
 	AliasIPPoolrefModel = models.MakeAliasIPPool()
 	AliasIPPoolrefModel.UUID = "project_alias_ip_pool_ref_uuid"
 	AliasIPPoolrefModel.FQName = []string{"test", "project_alias_ip_pool_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateAliasIPPool(ctx, tx, &models.CreateAliasIPPoolRequest{
-			AliasIPPool: AliasIPPoolrefModel,
-		})
+	_, err = db.CreateAliasIPPool(ctx, &models.CreateAliasIPPoolRequest{
+		AliasIPPool: AliasIPPoolrefModel,
 	})
 	AliasIPPoolrefModel.UUID = "project_alias_ip_pool_ref_uuid1"
 	AliasIPPoolrefModel.FQName = []string{"test", "project_alias_ip_pool_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateAliasIPPool(ctx, tx, &models.CreateAliasIPPoolRequest{
-			AliasIPPool: AliasIPPoolrefModel,
-		})
+	_, err = db.CreateAliasIPPool(ctx, &models.CreateAliasIPPoolRequest{
+		AliasIPPool: AliasIPPoolrefModel,
 	})
 	AliasIPPoolrefModel.UUID = "project_alias_ip_pool_ref_uuid2"
 	AliasIPPoolrefModel.FQName = []string{"test", "project_alias_ip_pool_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateAliasIPPool(ctx, tx, &models.CreateAliasIPPoolRequest{
-			AliasIPPool: AliasIPPoolrefModel,
-		})
+	_, err = db.CreateAliasIPPool(ctx, &models.CreateAliasIPPoolRequest{
+		AliasIPPool: AliasIPPoolrefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
@@ -137,24 +69,18 @@ func TestProject(t *testing.T) {
 	NamespacerefModel = models.MakeNamespace()
 	NamespacerefModel.UUID = "project_namespace_ref_uuid"
 	NamespacerefModel.FQName = []string{"test", "project_namespace_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNamespace(ctx, tx, &models.CreateNamespaceRequest{
-			Namespace: NamespacerefModel,
-		})
+	_, err = db.CreateNamespace(ctx, &models.CreateNamespaceRequest{
+		Namespace: NamespacerefModel,
 	})
 	NamespacerefModel.UUID = "project_namespace_ref_uuid1"
 	NamespacerefModel.FQName = []string{"test", "project_namespace_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNamespace(ctx, tx, &models.CreateNamespaceRequest{
-			Namespace: NamespacerefModel,
-		})
+	_, err = db.CreateNamespace(ctx, &models.CreateNamespaceRequest{
+		Namespace: NamespacerefModel,
 	})
 	NamespacerefModel.UUID = "project_namespace_ref_uuid2"
 	NamespacerefModel.FQName = []string{"test", "project_namespace_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNamespace(ctx, tx, &models.CreateNamespaceRequest{
-			Namespace: NamespacerefModel,
-		})
+	_, err = db.CreateNamespace(ctx, &models.CreateNamespaceRequest{
+		Namespace: NamespacerefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
@@ -162,6 +88,56 @@ func TestProject(t *testing.T) {
 	Namespacecreateref = append(Namespacecreateref, &models.ProjectNamespaceRef{UUID: "project_namespace_ref_uuid", To: []string{"test", "project_namespace_ref_uuid"}})
 	Namespacecreateref = append(Namespacecreateref, &models.ProjectNamespaceRef{UUID: "project_namespace_ref_uuid2", To: []string{"test", "project_namespace_ref_uuid2"}})
 	model.NamespaceRefs = Namespacecreateref
+
+	var ApplicationPolicySetcreateref []*models.ProjectApplicationPolicySetRef
+	var ApplicationPolicySetrefModel *models.ApplicationPolicySet
+	ApplicationPolicySetrefModel = models.MakeApplicationPolicySet()
+	ApplicationPolicySetrefModel.UUID = "project_application_policy_set_ref_uuid"
+	ApplicationPolicySetrefModel.FQName = []string{"test", "project_application_policy_set_ref_uuid"}
+	_, err = db.CreateApplicationPolicySet(ctx, &models.CreateApplicationPolicySetRequest{
+		ApplicationPolicySet: ApplicationPolicySetrefModel,
+	})
+	ApplicationPolicySetrefModel.UUID = "project_application_policy_set_ref_uuid1"
+	ApplicationPolicySetrefModel.FQName = []string{"test", "project_application_policy_set_ref_uuid1"}
+	_, err = db.CreateApplicationPolicySet(ctx, &models.CreateApplicationPolicySetRequest{
+		ApplicationPolicySet: ApplicationPolicySetrefModel,
+	})
+	ApplicationPolicySetrefModel.UUID = "project_application_policy_set_ref_uuid2"
+	ApplicationPolicySetrefModel.FQName = []string{"test", "project_application_policy_set_ref_uuid2"}
+	_, err = db.CreateApplicationPolicySet(ctx, &models.CreateApplicationPolicySetRequest{
+		ApplicationPolicySet: ApplicationPolicySetrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	ApplicationPolicySetcreateref = append(ApplicationPolicySetcreateref, &models.ProjectApplicationPolicySetRef{UUID: "project_application_policy_set_ref_uuid", To: []string{"test", "project_application_policy_set_ref_uuid"}})
+	ApplicationPolicySetcreateref = append(ApplicationPolicySetcreateref, &models.ProjectApplicationPolicySetRef{UUID: "project_application_policy_set_ref_uuid2", To: []string{"test", "project_application_policy_set_ref_uuid2"}})
+	model.ApplicationPolicySetRefs = ApplicationPolicySetcreateref
+
+	var FloatingIPPoolcreateref []*models.ProjectFloatingIPPoolRef
+	var FloatingIPPoolrefModel *models.FloatingIPPool
+	FloatingIPPoolrefModel = models.MakeFloatingIPPool()
+	FloatingIPPoolrefModel.UUID = "project_floating_ip_pool_ref_uuid"
+	FloatingIPPoolrefModel.FQName = []string{"test", "project_floating_ip_pool_ref_uuid"}
+	_, err = db.CreateFloatingIPPool(ctx, &models.CreateFloatingIPPoolRequest{
+		FloatingIPPool: FloatingIPPoolrefModel,
+	})
+	FloatingIPPoolrefModel.UUID = "project_floating_ip_pool_ref_uuid1"
+	FloatingIPPoolrefModel.FQName = []string{"test", "project_floating_ip_pool_ref_uuid1"}
+	_, err = db.CreateFloatingIPPool(ctx, &models.CreateFloatingIPPoolRequest{
+		FloatingIPPool: FloatingIPPoolrefModel,
+	})
+	FloatingIPPoolrefModel.UUID = "project_floating_ip_pool_ref_uuid2"
+	FloatingIPPoolrefModel.FQName = []string{"test", "project_floating_ip_pool_ref_uuid2"}
+	_, err = db.CreateFloatingIPPool(ctx, &models.CreateFloatingIPPoolRequest{
+		FloatingIPPool: FloatingIPPoolrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	FloatingIPPoolcreateref = append(FloatingIPPoolcreateref, &models.ProjectFloatingIPPoolRef{UUID: "project_floating_ip_pool_ref_uuid", To: []string{"test", "project_floating_ip_pool_ref_uuid"}})
+	FloatingIPPoolcreateref = append(FloatingIPPoolcreateref, &models.ProjectFloatingIPPoolRef{UUID: "project_floating_ip_pool_ref_uuid2", To: []string{"test", "project_floating_ip_pool_ref_uuid2"}})
+	model.FloatingIPPoolRefs = FloatingIPPoolcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -171,10 +147,9 @@ func TestProject(t *testing.T) {
 	var createShare []*models.ShareType
 	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
 	model.Perms2.Share = createShare
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx, &models.CreateProjectRequest{
-			Project: projectModel,
-		})
+
+	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
+		Project: projectModel,
 	})
 	if err != nil {
 		t.Fatal("project create failed", err)
@@ -403,6 +378,14 @@ func TestProject(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
+	//    var AliasIPPoolref []interface{}
+	//    AliasIPPoolref = append(AliasIPPoolref, map[string]interface{}{"operation":"delete", "uuid":"project_alias_ip_pool_ref_uuid", "to": []string{"test", "project_alias_ip_pool_ref_uuid"}})
+	//    AliasIPPoolref = append(AliasIPPoolref, map[string]interface{}{"operation":"add", "uuid":"project_alias_ip_pool_ref_uuid1", "to": []string{"test", "project_alias_ip_pool_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "AliasIPPoolRefs", ".", AliasIPPoolref)
+	//
 	//    var Namespaceref []interface{}
 	//    Namespaceref = append(Namespaceref, map[string]interface{}{"operation":"delete", "uuid":"project_namespace_ref_uuid", "to": []string{"test", "project_namespace_ref_uuid"}})
 	//    Namespaceref = append(Namespaceref, map[string]interface{}{"operation":"add", "uuid":"project_namespace_ref_uuid1", "to": []string{"test", "project_namespace_ref_uuid1"}})
@@ -439,21 +422,12 @@ func TestProject(t *testing.T) {
 	//
 	//    common.SetValueByPath(updateMap, "FloatingIPPoolRefs", ".", FloatingIPPoolref)
 	//
-	//    var AliasIPPoolref []interface{}
-	//    AliasIPPoolref = append(AliasIPPoolref, map[string]interface{}{"operation":"delete", "uuid":"project_alias_ip_pool_ref_uuid", "to": []string{"test", "project_alias_ip_pool_ref_uuid"}})
-	//    AliasIPPoolref = append(AliasIPPoolref, map[string]interface{}{"operation":"add", "uuid":"project_alias_ip_pool_ref_uuid1", "to": []string{"test", "project_alias_ip_pool_ref_uuid1"}})
 	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "AliasIPPoolRefs", ".", AliasIPPoolref)
-	//
-	//
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx,
-			&models.CreateProjectRequest{
-				Project: model,
-			})
-	})
+	_, err = db.CreateProject(ctx,
+		&models.CreateProjectRequest{
+			Project: model,
+		})
+
 	if err != nil {
 		t.Fatal("create failed", err)
 	}
@@ -467,48 +441,8 @@ func TestProject(t *testing.T) {
 
 	//Delete ref entries, referred objects
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_project_namespace` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing NamespaceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("project_dummy_uuid", "project_namespace_ref_uuid")
-		_, err = stmt.Exec("project_dummy_uuid", "project_namespace_ref_uuid1")
-		_, err = stmt.Exec("project_dummy_uuid", "project_namespace_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "NamespaceRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteNamespace(ctx, tx,
-			&models.DeleteNamespaceRequest{
-				ID: "project_namespace_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref project_namespace_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteNamespace(ctx, tx,
-			&models.DeleteNamespaceRequest{
-				ID: "project_namespace_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref project_namespace_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteNamespace(
-			ctx,
-			tx,
-			&models.DeleteNamespaceRequest{
-				ID: "project_namespace_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref project_namespace_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_project_application_policy_set` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing ApplicationPolicySetRefs delete statement failed")
@@ -521,35 +455,29 @@ func TestProject(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteApplicationPolicySet(ctx, tx,
-			&models.DeleteApplicationPolicySetRequest{
-				ID: "project_application_policy_set_ref_uuid"})
-	})
+	_, err = db.DeleteApplicationPolicySet(ctx,
+		&models.DeleteApplicationPolicySetRequest{
+			ID: "project_application_policy_set_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref project_application_policy_set_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteApplicationPolicySet(ctx, tx,
-			&models.DeleteApplicationPolicySetRequest{
-				ID: "project_application_policy_set_ref_uuid1"})
-	})
+	_, err = db.DeleteApplicationPolicySet(ctx,
+		&models.DeleteApplicationPolicySetRequest{
+			ID: "project_application_policy_set_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref project_application_policy_set_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteApplicationPolicySet(
-			ctx,
-			tx,
-			&models.DeleteApplicationPolicySetRequest{
-				ID: "project_application_policy_set_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteApplicationPolicySet(
+		ctx,
+		&models.DeleteApplicationPolicySetRequest{
+			ID: "project_application_policy_set_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref project_application_policy_set_ref_uuid2 failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_project_floating_ip_pool` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing FloatingIPPoolRefs delete statement failed")
@@ -562,35 +490,29 @@ func TestProject(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteFloatingIPPool(ctx, tx,
-			&models.DeleteFloatingIPPoolRequest{
-				ID: "project_floating_ip_pool_ref_uuid"})
-	})
+	_, err = db.DeleteFloatingIPPool(ctx,
+		&models.DeleteFloatingIPPoolRequest{
+			ID: "project_floating_ip_pool_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref project_floating_ip_pool_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteFloatingIPPool(ctx, tx,
-			&models.DeleteFloatingIPPoolRequest{
-				ID: "project_floating_ip_pool_ref_uuid1"})
-	})
+	_, err = db.DeleteFloatingIPPool(ctx,
+		&models.DeleteFloatingIPPoolRequest{
+			ID: "project_floating_ip_pool_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref project_floating_ip_pool_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteFloatingIPPool(
-			ctx,
-			tx,
-			&models.DeleteFloatingIPPoolRequest{
-				ID: "project_floating_ip_pool_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteFloatingIPPool(
+		ctx,
+		&models.DeleteFloatingIPPoolRequest{
+			ID: "project_floating_ip_pool_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref project_floating_ip_pool_ref_uuid2 failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_project_alias_ip_pool` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing AliasIPPoolRefs delete statement failed")
@@ -603,100 +525,108 @@ func TestProject(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteAliasIPPool(ctx, tx,
-			&models.DeleteAliasIPPoolRequest{
-				ID: "project_alias_ip_pool_ref_uuid"})
-	})
+	_, err = db.DeleteAliasIPPool(ctx,
+		&models.DeleteAliasIPPoolRequest{
+			ID: "project_alias_ip_pool_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref project_alias_ip_pool_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteAliasIPPool(ctx, tx,
-			&models.DeleteAliasIPPoolRequest{
-				ID: "project_alias_ip_pool_ref_uuid1"})
-	})
+	_, err = db.DeleteAliasIPPool(ctx,
+		&models.DeleteAliasIPPoolRequest{
+			ID: "project_alias_ip_pool_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref project_alias_ip_pool_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteAliasIPPool(
-			ctx,
-			tx,
-			&models.DeleteAliasIPPoolRequest{
-				ID: "project_alias_ip_pool_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteAliasIPPool(
+		ctx,
+		&models.DeleteAliasIPPoolRequest{
+			ID: "project_alias_ip_pool_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref project_alias_ip_pool_ref_uuid2 failed", err)
 	}
 
-	//Delete the project created for sharing
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteProject(ctx, tx, &models.DeleteProjectRequest{
-			ID: projectModel.UUID})
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_project_namespace` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing NamespaceRefs delete statement failed")
+		}
+		_, err = stmt.Exec("project_dummy_uuid", "project_namespace_ref_uuid")
+		_, err = stmt.Exec("project_dummy_uuid", "project_namespace_ref_uuid1")
+		_, err = stmt.Exec("project_dummy_uuid", "project_namespace_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "NamespaceRefs delete failed")
+		}
+		return nil
 	})
+	_, err = db.DeleteNamespace(ctx,
+		&models.DeleteNamespaceRequest{
+			ID: "project_namespace_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref project_namespace_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteNamespace(ctx,
+		&models.DeleteNamespaceRequest{
+			ID: "project_namespace_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref project_namespace_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteNamespace(
+		ctx,
+		&models.DeleteNamespaceRequest{
+			ID: "project_namespace_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref project_namespace_ref_uuid2 failed", err)
+	}
+
+	//Delete the project created for sharing
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
 	if err != nil {
 		t.Fatal("delete project failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListProject(ctx, tx, &models.ListProjectRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.Projects) != 1 {
-			return fmt.Errorf("expected one element")
-		}
-		return nil
-	})
+	response, err := db.ListProject(ctx, &models.ListProjectRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
+	if len(response.Projects) != 1 {
+		t.Fatal("expected one element", err)
+	}
 
 	ctxDemo := context.WithValue(ctx, "auth", common.NewAuthContext("default", "demo", "demo", []string{}))
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteProject(ctxDemo, tx,
-			&models.DeleteProjectRequest{
-				ID: model.UUID},
-		)
-	})
+	_, err = db.DeleteProject(ctxDemo,
+		&models.DeleteProjectRequest{
+			ID: model.UUID},
+	)
 	if err == nil {
 		t.Fatal("auth failed")
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteProject(ctx, tx,
-			&models.DeleteProjectRequest{
-				ID: model.UUID})
-	})
-	if err != nil {
-		t.Fatal("delete failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx,
-			&models.CreateProjectRequest{
-				Project: model})
-	})
+	_, err = db.CreateProject(ctx,
+		&models.CreateProjectRequest{
+			Project: model})
 	if err == nil {
 		t.Fatal("Raise Error On Duplicate Create failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListProject(ctx, tx, &models.ListProjectRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.Projects) != 0 {
-			return fmt.Errorf("expected no element")
-		}
-		return nil
-	})
+	_, err = db.DeleteProject(ctx,
+		&models.DeleteProjectRequest{
+			ID: model.UUID})
+	if err != nil {
+		t.Fatal("delete failed", err)
+	}
+
+	response, err = db.ListProject(ctx, &models.ListProjectRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+	if len(response.Projects) != 0 {
+		t.Fatal("expected no element", err)
 	}
 	return
 }

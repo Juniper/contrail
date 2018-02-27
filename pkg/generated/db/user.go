@@ -55,10 +55,10 @@ var UserParents = []string{
 }
 
 // CreateUser inserts User to DB
-func CreateUser(
+func (db *DB) createUser(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateUserRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.User
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertUserQuery)
@@ -254,8 +254,9 @@ func scanUser(values map[string]interface{}) (*models.User, error) {
 }
 
 // ListUser lists User with list spec.
-func ListUser(ctx context.Context, tx *sql.Tx, request *models.ListUserRequest) (response *models.ListUserResponse, err error) {
+func (db *DB) listUser(ctx context.Context, request *models.ListUserRequest) (response *models.ListUserResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -317,9 +318,8 @@ func ListUser(ctx context.Context, tx *sql.Tx, request *models.ListUserRequest) 
 }
 
 // UpdateUser updates a resource
-func UpdateUser(
+func (db *DB) updateUser(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateUserRequest,
 ) error {
 	//TODO
@@ -327,15 +327,15 @@ func UpdateUser(
 }
 
 // DeleteUser deletes a resource
-func DeleteUser(
+func (db *DB) deleteUser(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteUserRequest) error {
 	deleteQuery := deleteUserQuery
 	selectQuery := "select count(uuid) from user where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -370,4 +370,119 @@ func DeleteUser(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateUser handle a Create API
+func (db *DB) CreateUser(
+	ctx context.Context,
+	request *models.CreateUserRequest) (*models.CreateUserResponse, error) {
+	model := request.User
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createUser(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "user",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateUserResponse{
+		User: request.User,
+	}, nil
+}
+
+//UpdateUser handles a Update request.
+func (db *DB) UpdateUser(
+	ctx context.Context,
+	request *models.UpdateUserRequest) (*models.UpdateUserResponse, error) {
+	model := request.User
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateUser(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "user",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateUserResponse{
+		User: model,
+	}, nil
+}
+
+//DeleteUser delete a resource.
+func (db *DB) DeleteUser(ctx context.Context, request *models.DeleteUserRequest) (*models.DeleteUserResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteUser(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteUserResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetUser a Get request.
+func (db *DB) GetUser(ctx context.Context, request *models.GetUserRequest) (response *models.GetUserResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListUserRequest{
+		Spec: spec,
+	}
+	var result *models.ListUserResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listUser(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.Users) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetUserResponse{
+		User: result.Users[0],
+	}
+	return response, nil
+}
+
+//ListUser handles a List service Request.
+func (db *DB) ListUser(
+	ctx context.Context,
+	request *models.ListUserRequest) (response *models.ListUserResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listUser(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

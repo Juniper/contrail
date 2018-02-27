@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateAliasIPPool(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateAliasIPPool(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "alias_ip_pool",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateAliasIPPoolResponse{
-		AliasIPPool: request.AliasIPPool,
-	}, nil
+
+	return service.Next().CreateAliasIPPool(ctx, request)
 }
 
 //RESTUpdateAliasIPPool handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateAliasIPPool(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateAliasIPPool(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "alias_ip_pool",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateAliasIPPoolResponse{
-		AliasIPPool: model,
-	}, nil
+	return service.Next().UpdateAliasIPPool(ctx, request)
 }
 
 //RESTDeleteAliasIPPool delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteAliasIPPool(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteAliasIPPool delete a resource.
-func (service *ContrailService) DeleteAliasIPPool(ctx context.Context, request *models.DeleteAliasIPPoolRequest) (*models.DeleteAliasIPPoolResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteAliasIPPool(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteAliasIPPoolResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetAliasIPPool a REST Get request.
 func (service *ContrailService) RESTGetAliasIPPool(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetAliasIPPool(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetAliasIPPool a Get request.
-func (service *ContrailService) GetAliasIPPool(ctx context.Context, request *models.GetAliasIPPoolRequest) (response *models.GetAliasIPPoolResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListAliasIPPoolRequest{
-		Spec: spec,
-	}
-	var result *models.ListAliasIPPoolResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListAliasIPPool(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.AliasIPPools) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetAliasIPPoolResponse{
-		AliasIPPool: result.AliasIPPools[0],
-	}
-	return response, nil
 }
 
 //RESTListAliasIPPool handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListAliasIPPool(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListAliasIPPool handles a List service Request.
-func (service *ContrailService) ListAliasIPPool(
-	ctx context.Context,
-	request *models.ListAliasIPPoolRequest) (response *models.ListAliasIPPoolResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListAliasIPPool(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

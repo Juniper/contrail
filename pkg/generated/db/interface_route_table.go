@@ -63,10 +63,10 @@ var InterfaceRouteTableParents = []string{
 const insertInterfaceRouteTableServiceInstanceQuery = "insert into `ref_interface_route_table_service_instance` (`from`, `to` ,`interface_type`) values (?, ?,?);"
 
 // CreateInterfaceRouteTable inserts InterfaceRouteTable to DB
-func CreateInterfaceRouteTable(
+func (db *DB) createInterfaceRouteTable(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateInterfaceRouteTableRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.InterfaceRouteTable
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertInterfaceRouteTableQuery)
@@ -302,8 +302,9 @@ func scanInterfaceRouteTable(values map[string]interface{}) (*models.InterfaceRo
 }
 
 // ListInterfaceRouteTable lists InterfaceRouteTable with list spec.
-func ListInterfaceRouteTable(ctx context.Context, tx *sql.Tx, request *models.ListInterfaceRouteTableRequest) (response *models.ListInterfaceRouteTableResponse, err error) {
+func (db *DB) listInterfaceRouteTable(ctx context.Context, request *models.ListInterfaceRouteTableRequest) (response *models.ListInterfaceRouteTableResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -365,9 +366,8 @@ func ListInterfaceRouteTable(ctx context.Context, tx *sql.Tx, request *models.Li
 }
 
 // UpdateInterfaceRouteTable updates a resource
-func UpdateInterfaceRouteTable(
+func (db *DB) updateInterfaceRouteTable(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateInterfaceRouteTableRequest,
 ) error {
 	//TODO
@@ -375,15 +375,15 @@ func UpdateInterfaceRouteTable(
 }
 
 // DeleteInterfaceRouteTable deletes a resource
-func DeleteInterfaceRouteTable(
+func (db *DB) deleteInterfaceRouteTable(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteInterfaceRouteTableRequest) error {
 	deleteQuery := deleteInterfaceRouteTableQuery
 	selectQuery := "select count(uuid) from interface_route_table where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -418,4 +418,119 @@ func DeleteInterfaceRouteTable(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateInterfaceRouteTable handle a Create API
+func (db *DB) CreateInterfaceRouteTable(
+	ctx context.Context,
+	request *models.CreateInterfaceRouteTableRequest) (*models.CreateInterfaceRouteTableResponse, error) {
+	model := request.InterfaceRouteTable
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createInterfaceRouteTable(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "interface_route_table",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateInterfaceRouteTableResponse{
+		InterfaceRouteTable: request.InterfaceRouteTable,
+	}, nil
+}
+
+//UpdateInterfaceRouteTable handles a Update request.
+func (db *DB) UpdateInterfaceRouteTable(
+	ctx context.Context,
+	request *models.UpdateInterfaceRouteTableRequest) (*models.UpdateInterfaceRouteTableResponse, error) {
+	model := request.InterfaceRouteTable
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateInterfaceRouteTable(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "interface_route_table",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateInterfaceRouteTableResponse{
+		InterfaceRouteTable: model,
+	}, nil
+}
+
+//DeleteInterfaceRouteTable delete a resource.
+func (db *DB) DeleteInterfaceRouteTable(ctx context.Context, request *models.DeleteInterfaceRouteTableRequest) (*models.DeleteInterfaceRouteTableResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteInterfaceRouteTable(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteInterfaceRouteTableResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetInterfaceRouteTable a Get request.
+func (db *DB) GetInterfaceRouteTable(ctx context.Context, request *models.GetInterfaceRouteTableRequest) (response *models.GetInterfaceRouteTableResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListInterfaceRouteTableRequest{
+		Spec: spec,
+	}
+	var result *models.ListInterfaceRouteTableResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listInterfaceRouteTable(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.InterfaceRouteTables) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetInterfaceRouteTableResponse{
+		InterfaceRouteTable: result.InterfaceRouteTables[0],
+	}
+	return response, nil
+}
+
+//ListInterfaceRouteTable handles a List service Request.
+func (db *DB) ListInterfaceRouteTable(
+	ctx context.Context,
+	request *models.ListInterfaceRouteTableRequest) (response *models.ListInterfaceRouteTableResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listInterfaceRouteTable(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

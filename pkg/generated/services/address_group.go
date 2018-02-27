@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateAddressGroup(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateAddressGroup(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "address_group",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateAddressGroupResponse{
-		AddressGroup: request.AddressGroup,
-	}, nil
+
+	return service.Next().CreateAddressGroup(ctx, request)
 }
 
 //RESTUpdateAddressGroup handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateAddressGroup(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateAddressGroup(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "address_group",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateAddressGroupResponse{
-		AddressGroup: model,
-	}, nil
+	return service.Next().UpdateAddressGroup(ctx, request)
 }
 
 //RESTDeleteAddressGroup delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteAddressGroup(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteAddressGroup delete a resource.
-func (service *ContrailService) DeleteAddressGroup(ctx context.Context, request *models.DeleteAddressGroupRequest) (*models.DeleteAddressGroupResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteAddressGroup(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteAddressGroupResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetAddressGroup a REST Get request.
 func (service *ContrailService) RESTGetAddressGroup(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetAddressGroup(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetAddressGroup a Get request.
-func (service *ContrailService) GetAddressGroup(ctx context.Context, request *models.GetAddressGroupRequest) (response *models.GetAddressGroupResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListAddressGroupRequest{
-		Spec: spec,
-	}
-	var result *models.ListAddressGroupResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListAddressGroup(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.AddressGroups) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetAddressGroupResponse{
-		AddressGroup: result.AddressGroups[0],
-	}
-	return response, nil
 }
 
 //RESTListAddressGroup handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListAddressGroup(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListAddressGroup handles a List service Request.
-func (service *ContrailService) ListAddressGroup(
-	ctx context.Context,
-	request *models.ListAddressGroupRequest) (response *models.ListAddressGroupResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListAddressGroup(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

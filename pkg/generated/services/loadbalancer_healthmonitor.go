@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateLoadbalancerHealthmonitor(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateLoadbalancerHealthmonitor(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "loadbalancer_healthmonitor",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateLoadbalancerHealthmonitorResponse{
-		LoadbalancerHealthmonitor: request.LoadbalancerHealthmonitor,
-	}, nil
+
+	return service.Next().CreateLoadbalancerHealthmonitor(ctx, request)
 }
 
 //RESTUpdateLoadbalancerHealthmonitor handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateLoadbalancerHealthmonitor(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateLoadbalancerHealthmonitor(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "loadbalancer_healthmonitor",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateLoadbalancerHealthmonitorResponse{
-		LoadbalancerHealthmonitor: model,
-	}, nil
+	return service.Next().UpdateLoadbalancerHealthmonitor(ctx, request)
 }
 
 //RESTDeleteLoadbalancerHealthmonitor delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteLoadbalancerHealthmonitor(c echo.Conte
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteLoadbalancerHealthmonitor delete a resource.
-func (service *ContrailService) DeleteLoadbalancerHealthmonitor(ctx context.Context, request *models.DeleteLoadbalancerHealthmonitorRequest) (*models.DeleteLoadbalancerHealthmonitorResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteLoadbalancerHealthmonitor(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteLoadbalancerHealthmonitorResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetLoadbalancerHealthmonitor a REST Get request.
 func (service *ContrailService) RESTGetLoadbalancerHealthmonitor(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetLoadbalancerHealthmonitor(c echo.Context)
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetLoadbalancerHealthmonitor a Get request.
-func (service *ContrailService) GetLoadbalancerHealthmonitor(ctx context.Context, request *models.GetLoadbalancerHealthmonitorRequest) (response *models.GetLoadbalancerHealthmonitorResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListLoadbalancerHealthmonitorRequest{
-		Spec: spec,
-	}
-	var result *models.ListLoadbalancerHealthmonitorResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListLoadbalancerHealthmonitor(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.LoadbalancerHealthmonitors) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetLoadbalancerHealthmonitorResponse{
-		LoadbalancerHealthmonitor: result.LoadbalancerHealthmonitors[0],
-	}
-	return response, nil
 }
 
 //RESTListLoadbalancerHealthmonitor handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListLoadbalancerHealthmonitor(c echo.Context
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListLoadbalancerHealthmonitor handles a List service Request.
-func (service *ContrailService) ListLoadbalancerHealthmonitor(
-	ctx context.Context,
-	request *models.ListLoadbalancerHealthmonitorRequest) (response *models.ListLoadbalancerHealthmonitorResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListLoadbalancerHealthmonitor(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

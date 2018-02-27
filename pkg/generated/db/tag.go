@@ -67,10 +67,10 @@ var TagParents = []string{
 const insertTagTagTypeQuery = "insert into `ref_tag_tag_type` (`from`, `to` ) values (?, ?);"
 
 // CreateTag inserts Tag to DB
-func CreateTag(
+func (db *DB) createTag(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateTagRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.Tag
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertTagQuery)
@@ -313,8 +313,9 @@ func scanTag(values map[string]interface{}) (*models.Tag, error) {
 }
 
 // ListTag lists Tag with list spec.
-func ListTag(ctx context.Context, tx *sql.Tx, request *models.ListTagRequest) (response *models.ListTagResponse, err error) {
+func (db *DB) listTag(ctx context.Context, request *models.ListTagRequest) (response *models.ListTagResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -376,9 +377,8 @@ func ListTag(ctx context.Context, tx *sql.Tx, request *models.ListTagRequest) (r
 }
 
 // UpdateTag updates a resource
-func UpdateTag(
+func (db *DB) updateTag(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateTagRequest,
 ) error {
 	//TODO
@@ -386,15 +386,15 @@ func UpdateTag(
 }
 
 // DeleteTag deletes a resource
-func DeleteTag(
+func (db *DB) deleteTag(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteTagRequest) error {
 	deleteQuery := deleteTagQuery
 	selectQuery := "select count(uuid) from tag where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -429,4 +429,119 @@ func DeleteTag(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateTag handle a Create API
+func (db *DB) CreateTag(
+	ctx context.Context,
+	request *models.CreateTagRequest) (*models.CreateTagResponse, error) {
+	model := request.Tag
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createTag(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "tag",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateTagResponse{
+		Tag: request.Tag,
+	}, nil
+}
+
+//UpdateTag handles a Update request.
+func (db *DB) UpdateTag(
+	ctx context.Context,
+	request *models.UpdateTagRequest) (*models.UpdateTagResponse, error) {
+	model := request.Tag
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateTag(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "tag",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateTagResponse{
+		Tag: model,
+	}, nil
+}
+
+//DeleteTag delete a resource.
+func (db *DB) DeleteTag(ctx context.Context, request *models.DeleteTagRequest) (*models.DeleteTagResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteTag(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteTagResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetTag a Get request.
+func (db *DB) GetTag(ctx context.Context, request *models.GetTagRequest) (response *models.GetTagResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListTagRequest{
+		Spec: spec,
+	}
+	var result *models.ListTagResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listTag(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.Tags) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetTagResponse{
+		Tag: result.Tags[0],
+	}
+	return response, nil
+}
+
+//ListTag handles a List service Request.
+func (db *DB) ListTag(
+	ctx context.Context,
+	request *models.ListTagRequest) (response *models.ListTagResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listTag(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

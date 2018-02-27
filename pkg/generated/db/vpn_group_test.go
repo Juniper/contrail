@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,13 +15,15 @@ var _ = errors.New("")
 
 func TestVPNGroup(t *testing.T) {
 	// t.Parallel()
-	db := testDB
+	db := &DB{
+		DB: testDB,
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db, "metadata")
-	mutexTable := common.UseTable(db, "vpn_group")
-	// mutexProject := common.UseTable(db, "vpn_group")
+	mutexMetadata := common.UseTable(db.DB, "metadata")
+	mutexTable := common.UseTable(db.DB, "vpn_group")
+	// mutexProject := common.UseTable(db.DB, "vpn_group")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -44,24 +44,18 @@ func TestVPNGroup(t *testing.T) {
 	LocationrefModel = models.MakeLocation()
 	LocationrefModel.UUID = "vpn_group_location_ref_uuid"
 	LocationrefModel.FQName = []string{"test", "vpn_group_location_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateLocation(ctx, tx, &models.CreateLocationRequest{
-			Location: LocationrefModel,
-		})
+	_, err = db.CreateLocation(ctx, &models.CreateLocationRequest{
+		Location: LocationrefModel,
 	})
 	LocationrefModel.UUID = "vpn_group_location_ref_uuid1"
 	LocationrefModel.FQName = []string{"test", "vpn_group_location_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateLocation(ctx, tx, &models.CreateLocationRequest{
-			Location: LocationrefModel,
-		})
+	_, err = db.CreateLocation(ctx, &models.CreateLocationRequest{
+		Location: LocationrefModel,
 	})
 	LocationrefModel.UUID = "vpn_group_location_ref_uuid2"
 	LocationrefModel.FQName = []string{"test", "vpn_group_location_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateLocation(ctx, tx, &models.CreateLocationRequest{
-			Location: LocationrefModel,
-		})
+	_, err = db.CreateLocation(ctx, &models.CreateLocationRequest{
+		Location: LocationrefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
@@ -78,10 +72,9 @@ func TestVPNGroup(t *testing.T) {
 	var createShare []*models.ShareType
 	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
 	model.Perms2.Share = createShare
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx, &models.CreateProjectRequest{
-			Project: projectModel,
-		})
+
+	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
+		Project: projectModel,
 	})
 	if err != nil {
 		t.Fatal("project create failed", err)
@@ -231,12 +224,11 @@ func TestVPNGroup(t *testing.T) {
 	//    common.SetValueByPath(updateMap, "LocationRefs", ".", Locationref)
 	//
 	//
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVPNGroup(ctx, tx,
-			&models.CreateVPNGroupRequest{
-				VPNGroup: model,
-			})
-	})
+	_, err = db.CreateVPNGroup(ctx,
+		&models.CreateVPNGroupRequest{
+			VPNGroup: model,
+		})
+
 	if err != nil {
 		t.Fatal("create failed", err)
 	}
@@ -250,7 +242,8 @@ func TestVPNGroup(t *testing.T) {
 
 	//Delete ref entries, referred objects
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_vpn_group_location` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing LocationRefs delete statement failed")
@@ -263,100 +256,73 @@ func TestVPNGroup(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteLocation(ctx, tx,
-			&models.DeleteLocationRequest{
-				ID: "vpn_group_location_ref_uuid"})
-	})
+	_, err = db.DeleteLocation(ctx,
+		&models.DeleteLocationRequest{
+			ID: "vpn_group_location_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref vpn_group_location_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteLocation(ctx, tx,
-			&models.DeleteLocationRequest{
-				ID: "vpn_group_location_ref_uuid1"})
-	})
+	_, err = db.DeleteLocation(ctx,
+		&models.DeleteLocationRequest{
+			ID: "vpn_group_location_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref vpn_group_location_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteLocation(
-			ctx,
-			tx,
-			&models.DeleteLocationRequest{
-				ID: "vpn_group_location_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteLocation(
+		ctx,
+		&models.DeleteLocationRequest{
+			ID: "vpn_group_location_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref vpn_group_location_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteProject(ctx, tx, &models.DeleteProjectRequest{
-			ID: projectModel.UUID})
-	})
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
 	if err != nil {
 		t.Fatal("delete project failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListVPNGroup(ctx, tx, &models.ListVPNGroupRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.VPNGroups) != 1 {
-			return fmt.Errorf("expected one element")
-		}
-		return nil
-	})
+	response, err := db.ListVPNGroup(ctx, &models.ListVPNGroupRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
+	if len(response.VPNGroups) != 1 {
+		t.Fatal("expected one element", err)
+	}
 
 	ctxDemo := context.WithValue(ctx, "auth", common.NewAuthContext("default", "demo", "demo", []string{}))
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVPNGroup(ctxDemo, tx,
-			&models.DeleteVPNGroupRequest{
-				ID: model.UUID},
-		)
-	})
+	_, err = db.DeleteVPNGroup(ctxDemo,
+		&models.DeleteVPNGroupRequest{
+			ID: model.UUID},
+	)
 	if err == nil {
 		t.Fatal("auth failed")
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVPNGroup(ctx, tx,
-			&models.DeleteVPNGroupRequest{
-				ID: model.UUID})
-	})
-	if err != nil {
-		t.Fatal("delete failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVPNGroup(ctx, tx,
-			&models.CreateVPNGroupRequest{
-				VPNGroup: model})
-	})
+	_, err = db.CreateVPNGroup(ctx,
+		&models.CreateVPNGroupRequest{
+			VPNGroup: model})
 	if err == nil {
 		t.Fatal("Raise Error On Duplicate Create failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListVPNGroup(ctx, tx, &models.ListVPNGroupRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.VPNGroups) != 0 {
-			return fmt.Errorf("expected no element")
-		}
-		return nil
-	})
+	_, err = db.DeleteVPNGroup(ctx,
+		&models.DeleteVPNGroupRequest{
+			ID: model.UUID})
+	if err != nil {
+		t.Fatal("delete failed", err)
+	}
+
+	response, err = db.ListVPNGroup(ctx, &models.ListVPNGroupRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+	if len(response.VPNGroups) != 0 {
+		t.Fatal("expected no element", err)
 	}
 	return
 }

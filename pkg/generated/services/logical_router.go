@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateLogicalRouter(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateLogicalRouter(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "logical_router",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateLogicalRouterResponse{
-		LogicalRouter: request.LogicalRouter,
-	}, nil
+
+	return service.Next().CreateLogicalRouter(ctx, request)
 }
 
 //RESTUpdateLogicalRouter handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateLogicalRouter(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateLogicalRouter(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "logical_router",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateLogicalRouterResponse{
-		LogicalRouter: model,
-	}, nil
+	return service.Next().UpdateLogicalRouter(ctx, request)
 }
 
 //RESTDeleteLogicalRouter delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteLogicalRouter(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteLogicalRouter delete a resource.
-func (service *ContrailService) DeleteLogicalRouter(ctx context.Context, request *models.DeleteLogicalRouterRequest) (*models.DeleteLogicalRouterResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteLogicalRouter(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteLogicalRouterResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetLogicalRouter a REST Get request.
 func (service *ContrailService) RESTGetLogicalRouter(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetLogicalRouter(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetLogicalRouter a Get request.
-func (service *ContrailService) GetLogicalRouter(ctx context.Context, request *models.GetLogicalRouterRequest) (response *models.GetLogicalRouterResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListLogicalRouterRequest{
-		Spec: spec,
-	}
-	var result *models.ListLogicalRouterResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListLogicalRouter(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.LogicalRouters) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetLogicalRouterResponse{
-		LogicalRouter: result.LogicalRouters[0],
-	}
-	return response, nil
 }
 
 //RESTListLogicalRouter handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListLogicalRouter(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListLogicalRouter handles a List service Request.
-func (service *ContrailService) ListLogicalRouter(
-	ctx context.Context,
-	request *models.ListLogicalRouterRequest) (response *models.ListLogicalRouterResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListLogicalRouter(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

@@ -71,10 +71,10 @@ var ContrailVrouterNodeParents = []string{
 const insertContrailVrouterNodeNodeQuery = "insert into `ref_contrail_vrouter_node_node` (`from`, `to` ) values (?, ?);"
 
 // CreateContrailVrouterNode inserts ContrailVrouterNode to DB
-func CreateContrailVrouterNode(
+func (db *DB) createContrailVrouterNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateContrailVrouterNodeRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ContrailVrouterNode
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertContrailVrouterNodeQuery)
@@ -359,8 +359,9 @@ func scanContrailVrouterNode(values map[string]interface{}) (*models.ContrailVro
 }
 
 // ListContrailVrouterNode lists ContrailVrouterNode with list spec.
-func ListContrailVrouterNode(ctx context.Context, tx *sql.Tx, request *models.ListContrailVrouterNodeRequest) (response *models.ListContrailVrouterNodeResponse, err error) {
+func (db *DB) listContrailVrouterNode(ctx context.Context, request *models.ListContrailVrouterNodeRequest) (response *models.ListContrailVrouterNodeResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -422,9 +423,8 @@ func ListContrailVrouterNode(ctx context.Context, tx *sql.Tx, request *models.Li
 }
 
 // UpdateContrailVrouterNode updates a resource
-func UpdateContrailVrouterNode(
+func (db *DB) updateContrailVrouterNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateContrailVrouterNodeRequest,
 ) error {
 	//TODO
@@ -432,15 +432,15 @@ func UpdateContrailVrouterNode(
 }
 
 // DeleteContrailVrouterNode deletes a resource
-func DeleteContrailVrouterNode(
+func (db *DB) deleteContrailVrouterNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteContrailVrouterNodeRequest) error {
 	deleteQuery := deleteContrailVrouterNodeQuery
 	selectQuery := "select count(uuid) from contrail_vrouter_node where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -475,4 +475,119 @@ func DeleteContrailVrouterNode(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateContrailVrouterNode handle a Create API
+func (db *DB) CreateContrailVrouterNode(
+	ctx context.Context,
+	request *models.CreateContrailVrouterNodeRequest) (*models.CreateContrailVrouterNodeResponse, error) {
+	model := request.ContrailVrouterNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createContrailVrouterNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "contrail_vrouter_node",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateContrailVrouterNodeResponse{
+		ContrailVrouterNode: request.ContrailVrouterNode,
+	}, nil
+}
+
+//UpdateContrailVrouterNode handles a Update request.
+func (db *DB) UpdateContrailVrouterNode(
+	ctx context.Context,
+	request *models.UpdateContrailVrouterNodeRequest) (*models.UpdateContrailVrouterNodeResponse, error) {
+	model := request.ContrailVrouterNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateContrailVrouterNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "contrail_vrouter_node",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateContrailVrouterNodeResponse{
+		ContrailVrouterNode: model,
+	}, nil
+}
+
+//DeleteContrailVrouterNode delete a resource.
+func (db *DB) DeleteContrailVrouterNode(ctx context.Context, request *models.DeleteContrailVrouterNodeRequest) (*models.DeleteContrailVrouterNodeResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteContrailVrouterNode(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteContrailVrouterNodeResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetContrailVrouterNode a Get request.
+func (db *DB) GetContrailVrouterNode(ctx context.Context, request *models.GetContrailVrouterNodeRequest) (response *models.GetContrailVrouterNodeResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListContrailVrouterNodeRequest{
+		Spec: spec,
+	}
+	var result *models.ListContrailVrouterNodeResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listContrailVrouterNode(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ContrailVrouterNodes) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetContrailVrouterNodeResponse{
+		ContrailVrouterNode: result.ContrailVrouterNodes[0],
+	}
+	return response, nil
+}
+
+//ListContrailVrouterNode handles a List service Request.
+func (db *DB) ListContrailVrouterNode(
+	ctx context.Context,
+	request *models.ListContrailVrouterNodeRequest) (response *models.ListContrailVrouterNodeResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listContrailVrouterNode(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

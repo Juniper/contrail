@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,13 +15,15 @@ var _ = errors.New("")
 
 func TestVirtualRouter(t *testing.T) {
 	// t.Parallel()
-	db := testDB
+	db := &DB{
+		DB: testDB,
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db, "metadata")
-	mutexTable := common.UseTable(db, "virtual_router")
-	// mutexProject := common.UseTable(db, "virtual_router")
+	mutexMetadata := common.UseTable(db.DB, "metadata")
+	mutexTable := common.UseTable(db.DB, "virtual_router")
+	// mutexProject := common.UseTable(db.DB, "virtual_router")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -44,24 +44,18 @@ func TestVirtualRouter(t *testing.T) {
 	NetworkIpamrefModel = models.MakeNetworkIpam()
 	NetworkIpamrefModel.UUID = "virtual_router_network_ipam_ref_uuid"
 	NetworkIpamrefModel.FQName = []string{"test", "virtual_router_network_ipam_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNetworkIpam(ctx, tx, &models.CreateNetworkIpamRequest{
-			NetworkIpam: NetworkIpamrefModel,
-		})
+	_, err = db.CreateNetworkIpam(ctx, &models.CreateNetworkIpamRequest{
+		NetworkIpam: NetworkIpamrefModel,
 	})
 	NetworkIpamrefModel.UUID = "virtual_router_network_ipam_ref_uuid1"
 	NetworkIpamrefModel.FQName = []string{"test", "virtual_router_network_ipam_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNetworkIpam(ctx, tx, &models.CreateNetworkIpamRequest{
-			NetworkIpam: NetworkIpamrefModel,
-		})
+	_, err = db.CreateNetworkIpam(ctx, &models.CreateNetworkIpamRequest{
+		NetworkIpam: NetworkIpamrefModel,
 	})
 	NetworkIpamrefModel.UUID = "virtual_router_network_ipam_ref_uuid2"
 	NetworkIpamrefModel.FQName = []string{"test", "virtual_router_network_ipam_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNetworkIpam(ctx, tx, &models.CreateNetworkIpamRequest{
-			NetworkIpam: NetworkIpamrefModel,
-		})
+	_, err = db.CreateNetworkIpam(ctx, &models.CreateNetworkIpamRequest{
+		NetworkIpam: NetworkIpamrefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
@@ -75,24 +69,18 @@ func TestVirtualRouter(t *testing.T) {
 	VirtualMachinerefModel = models.MakeVirtualMachine()
 	VirtualMachinerefModel.UUID = "virtual_router_virtual_machine_ref_uuid"
 	VirtualMachinerefModel.FQName = []string{"test", "virtual_router_virtual_machine_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualMachine(ctx, tx, &models.CreateVirtualMachineRequest{
-			VirtualMachine: VirtualMachinerefModel,
-		})
+	_, err = db.CreateVirtualMachine(ctx, &models.CreateVirtualMachineRequest{
+		VirtualMachine: VirtualMachinerefModel,
 	})
 	VirtualMachinerefModel.UUID = "virtual_router_virtual_machine_ref_uuid1"
 	VirtualMachinerefModel.FQName = []string{"test", "virtual_router_virtual_machine_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualMachine(ctx, tx, &models.CreateVirtualMachineRequest{
-			VirtualMachine: VirtualMachinerefModel,
-		})
+	_, err = db.CreateVirtualMachine(ctx, &models.CreateVirtualMachineRequest{
+		VirtualMachine: VirtualMachinerefModel,
 	})
 	VirtualMachinerefModel.UUID = "virtual_router_virtual_machine_ref_uuid2"
 	VirtualMachinerefModel.FQName = []string{"test", "virtual_router_virtual_machine_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualMachine(ctx, tx, &models.CreateVirtualMachineRequest{
-			VirtualMachine: VirtualMachinerefModel,
-		})
+	_, err = db.CreateVirtualMachine(ctx, &models.CreateVirtualMachineRequest{
+		VirtualMachine: VirtualMachinerefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
@@ -109,10 +97,9 @@ func TestVirtualRouter(t *testing.T) {
 	var createShare []*models.ShareType
 	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
 	model.Perms2.Share = createShare
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx, &models.CreateProjectRequest{
-			Project: projectModel,
-		})
+
+	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
+		Project: projectModel,
 	})
 	if err != nil {
 		t.Fatal("project create failed", err)
@@ -241,14 +228,6 @@ func TestVirtualRouter(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var VirtualMachineref []interface{}
-	//    VirtualMachineref = append(VirtualMachineref, map[string]interface{}{"operation":"delete", "uuid":"virtual_router_virtual_machine_ref_uuid", "to": []string{"test", "virtual_router_virtual_machine_ref_uuid"}})
-	//    VirtualMachineref = append(VirtualMachineref, map[string]interface{}{"operation":"add", "uuid":"virtual_router_virtual_machine_ref_uuid1", "to": []string{"test", "virtual_router_virtual_machine_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualMachineRefs", ".", VirtualMachineref)
-	//
 	//    var NetworkIpamref []interface{}
 	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"delete", "uuid":"virtual_router_network_ipam_ref_uuid", "to": []string{"test", "virtual_router_network_ipam_ref_uuid"}})
 	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"add", "uuid":"virtual_router_network_ipam_ref_uuid1", "to": []string{"test", "virtual_router_network_ipam_ref_uuid1"}})
@@ -269,13 +248,20 @@ func TestVirtualRouter(t *testing.T) {
 	//
 	//    common.SetValueByPath(updateMap, "NetworkIpamRefs", ".", NetworkIpamref)
 	//
+	//    var VirtualMachineref []interface{}
+	//    VirtualMachineref = append(VirtualMachineref, map[string]interface{}{"operation":"delete", "uuid":"virtual_router_virtual_machine_ref_uuid", "to": []string{"test", "virtual_router_virtual_machine_ref_uuid"}})
+	//    VirtualMachineref = append(VirtualMachineref, map[string]interface{}{"operation":"add", "uuid":"virtual_router_virtual_machine_ref_uuid1", "to": []string{"test", "virtual_router_virtual_machine_ref_uuid1"}})
 	//
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualRouter(ctx, tx,
-			&models.CreateVirtualRouterRequest{
-				VirtualRouter: model,
-			})
-	})
+	//
+	//
+	//    common.SetValueByPath(updateMap, "VirtualMachineRefs", ".", VirtualMachineref)
+	//
+	//
+	_, err = db.CreateVirtualRouter(ctx,
+		&models.CreateVirtualRouterRequest{
+			VirtualRouter: model,
+		})
+
 	if err != nil {
 		t.Fatal("create failed", err)
 	}
@@ -289,7 +275,8 @@ func TestVirtualRouter(t *testing.T) {
 
 	//Delete ref entries, referred objects
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_virtual_router_network_ipam` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing NetworkIpamRefs delete statement failed")
@@ -302,35 +289,29 @@ func TestVirtualRouter(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteNetworkIpam(ctx, tx,
-			&models.DeleteNetworkIpamRequest{
-				ID: "virtual_router_network_ipam_ref_uuid"})
-	})
+	_, err = db.DeleteNetworkIpam(ctx,
+		&models.DeleteNetworkIpamRequest{
+			ID: "virtual_router_network_ipam_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref virtual_router_network_ipam_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteNetworkIpam(ctx, tx,
-			&models.DeleteNetworkIpamRequest{
-				ID: "virtual_router_network_ipam_ref_uuid1"})
-	})
+	_, err = db.DeleteNetworkIpam(ctx,
+		&models.DeleteNetworkIpamRequest{
+			ID: "virtual_router_network_ipam_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref virtual_router_network_ipam_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteNetworkIpam(
-			ctx,
-			tx,
-			&models.DeleteNetworkIpamRequest{
-				ID: "virtual_router_network_ipam_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteNetworkIpam(
+		ctx,
+		&models.DeleteNetworkIpamRequest{
+			ID: "virtual_router_network_ipam_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref virtual_router_network_ipam_ref_uuid2 failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_virtual_router_virtual_machine` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing VirtualMachineRefs delete statement failed")
@@ -343,100 +324,73 @@ func TestVirtualRouter(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualMachine(ctx, tx,
-			&models.DeleteVirtualMachineRequest{
-				ID: "virtual_router_virtual_machine_ref_uuid"})
-	})
+	_, err = db.DeleteVirtualMachine(ctx,
+		&models.DeleteVirtualMachineRequest{
+			ID: "virtual_router_virtual_machine_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref virtual_router_virtual_machine_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualMachine(ctx, tx,
-			&models.DeleteVirtualMachineRequest{
-				ID: "virtual_router_virtual_machine_ref_uuid1"})
-	})
+	_, err = db.DeleteVirtualMachine(ctx,
+		&models.DeleteVirtualMachineRequest{
+			ID: "virtual_router_virtual_machine_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref virtual_router_virtual_machine_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualMachine(
-			ctx,
-			tx,
-			&models.DeleteVirtualMachineRequest{
-				ID: "virtual_router_virtual_machine_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteVirtualMachine(
+		ctx,
+		&models.DeleteVirtualMachineRequest{
+			ID: "virtual_router_virtual_machine_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref virtual_router_virtual_machine_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteProject(ctx, tx, &models.DeleteProjectRequest{
-			ID: projectModel.UUID})
-	})
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
 	if err != nil {
 		t.Fatal("delete project failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListVirtualRouter(ctx, tx, &models.ListVirtualRouterRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.VirtualRouters) != 1 {
-			return fmt.Errorf("expected one element")
-		}
-		return nil
-	})
+	response, err := db.ListVirtualRouter(ctx, &models.ListVirtualRouterRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
+	if len(response.VirtualRouters) != 1 {
+		t.Fatal("expected one element", err)
+	}
 
 	ctxDemo := context.WithValue(ctx, "auth", common.NewAuthContext("default", "demo", "demo", []string{}))
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualRouter(ctxDemo, tx,
-			&models.DeleteVirtualRouterRequest{
-				ID: model.UUID},
-		)
-	})
+	_, err = db.DeleteVirtualRouter(ctxDemo,
+		&models.DeleteVirtualRouterRequest{
+			ID: model.UUID},
+	)
 	if err == nil {
 		t.Fatal("auth failed")
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualRouter(ctx, tx,
-			&models.DeleteVirtualRouterRequest{
-				ID: model.UUID})
-	})
-	if err != nil {
-		t.Fatal("delete failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualRouter(ctx, tx,
-			&models.CreateVirtualRouterRequest{
-				VirtualRouter: model})
-	})
+	_, err = db.CreateVirtualRouter(ctx,
+		&models.CreateVirtualRouterRequest{
+			VirtualRouter: model})
 	if err == nil {
 		t.Fatal("Raise Error On Duplicate Create failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListVirtualRouter(ctx, tx, &models.ListVirtualRouterRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.VirtualRouters) != 0 {
-			return fmt.Errorf("expected no element")
-		}
-		return nil
-	})
+	_, err = db.DeleteVirtualRouter(ctx,
+		&models.DeleteVirtualRouterRequest{
+			ID: model.UUID})
+	if err != nil {
+		t.Fatal("delete failed", err)
+	}
+
+	response, err = db.ListVirtualRouter(ctx, &models.ListVirtualRouterRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+	if len(response.VirtualRouters) != 0 {
+		t.Fatal("expected no element", err)
 	}
 	return
 }

@@ -67,10 +67,10 @@ var KubernetesMasterNodeParents = []string{
 const insertKubernetesMasterNodeNodeQuery = "insert into `ref_kubernetes_master_node_node` (`from`, `to` ) values (?, ?);"
 
 // CreateKubernetesMasterNode inserts KubernetesMasterNode to DB
-func CreateKubernetesMasterNode(
+func (db *DB) createKubernetesMasterNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateKubernetesMasterNodeRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.KubernetesMasterNode
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertKubernetesMasterNodeQuery)
@@ -327,8 +327,9 @@ func scanKubernetesMasterNode(values map[string]interface{}) (*models.Kubernetes
 }
 
 // ListKubernetesMasterNode lists KubernetesMasterNode with list spec.
-func ListKubernetesMasterNode(ctx context.Context, tx *sql.Tx, request *models.ListKubernetesMasterNodeRequest) (response *models.ListKubernetesMasterNodeResponse, err error) {
+func (db *DB) listKubernetesMasterNode(ctx context.Context, request *models.ListKubernetesMasterNodeRequest) (response *models.ListKubernetesMasterNodeResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -390,9 +391,8 @@ func ListKubernetesMasterNode(ctx context.Context, tx *sql.Tx, request *models.L
 }
 
 // UpdateKubernetesMasterNode updates a resource
-func UpdateKubernetesMasterNode(
+func (db *DB) updateKubernetesMasterNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateKubernetesMasterNodeRequest,
 ) error {
 	//TODO
@@ -400,15 +400,15 @@ func UpdateKubernetesMasterNode(
 }
 
 // DeleteKubernetesMasterNode deletes a resource
-func DeleteKubernetesMasterNode(
+func (db *DB) deleteKubernetesMasterNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteKubernetesMasterNodeRequest) error {
 	deleteQuery := deleteKubernetesMasterNodeQuery
 	selectQuery := "select count(uuid) from kubernetes_master_node where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -443,4 +443,119 @@ func DeleteKubernetesMasterNode(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateKubernetesMasterNode handle a Create API
+func (db *DB) CreateKubernetesMasterNode(
+	ctx context.Context,
+	request *models.CreateKubernetesMasterNodeRequest) (*models.CreateKubernetesMasterNodeResponse, error) {
+	model := request.KubernetesMasterNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createKubernetesMasterNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "kubernetes_master_node",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateKubernetesMasterNodeResponse{
+		KubernetesMasterNode: request.KubernetesMasterNode,
+	}, nil
+}
+
+//UpdateKubernetesMasterNode handles a Update request.
+func (db *DB) UpdateKubernetesMasterNode(
+	ctx context.Context,
+	request *models.UpdateKubernetesMasterNodeRequest) (*models.UpdateKubernetesMasterNodeResponse, error) {
+	model := request.KubernetesMasterNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateKubernetesMasterNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "kubernetes_master_node",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateKubernetesMasterNodeResponse{
+		KubernetesMasterNode: model,
+	}, nil
+}
+
+//DeleteKubernetesMasterNode delete a resource.
+func (db *DB) DeleteKubernetesMasterNode(ctx context.Context, request *models.DeleteKubernetesMasterNodeRequest) (*models.DeleteKubernetesMasterNodeResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteKubernetesMasterNode(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteKubernetesMasterNodeResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetKubernetesMasterNode a Get request.
+func (db *DB) GetKubernetesMasterNode(ctx context.Context, request *models.GetKubernetesMasterNodeRequest) (response *models.GetKubernetesMasterNodeResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListKubernetesMasterNodeRequest{
+		Spec: spec,
+	}
+	var result *models.ListKubernetesMasterNodeResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listKubernetesMasterNode(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.KubernetesMasterNodes) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetKubernetesMasterNodeResponse{
+		KubernetesMasterNode: result.KubernetesMasterNodes[0],
+	}
+	return response, nil
+}
+
+//ListKubernetesMasterNode handles a List service Request.
+func (db *DB) ListKubernetesMasterNode(
+	ctx context.Context,
+	request *models.ListKubernetesMasterNodeRequest) (response *models.ListKubernetesMasterNodeResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listKubernetesMasterNode(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

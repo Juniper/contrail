@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateInterfaceRouteTable(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateInterfaceRouteTable(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "interface_route_table",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateInterfaceRouteTableResponse{
-		InterfaceRouteTable: request.InterfaceRouteTable,
-	}, nil
+
+	return service.Next().CreateInterfaceRouteTable(ctx, request)
 }
 
 //RESTUpdateInterfaceRouteTable handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateInterfaceRouteTable(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateInterfaceRouteTable(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "interface_route_table",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateInterfaceRouteTableResponse{
-		InterfaceRouteTable: model,
-	}, nil
+	return service.Next().UpdateInterfaceRouteTable(ctx, request)
 }
 
 //RESTDeleteInterfaceRouteTable delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteInterfaceRouteTable(c echo.Context) er
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteInterfaceRouteTable delete a resource.
-func (service *ContrailService) DeleteInterfaceRouteTable(ctx context.Context, request *models.DeleteInterfaceRouteTableRequest) (*models.DeleteInterfaceRouteTableResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteInterfaceRouteTable(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteInterfaceRouteTableResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetInterfaceRouteTable a REST Get request.
 func (service *ContrailService) RESTGetInterfaceRouteTable(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetInterfaceRouteTable(c echo.Context) error
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetInterfaceRouteTable a Get request.
-func (service *ContrailService) GetInterfaceRouteTable(ctx context.Context, request *models.GetInterfaceRouteTableRequest) (response *models.GetInterfaceRouteTableResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListInterfaceRouteTableRequest{
-		Spec: spec,
-	}
-	var result *models.ListInterfaceRouteTableResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListInterfaceRouteTable(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.InterfaceRouteTables) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetInterfaceRouteTableResponse{
-		InterfaceRouteTable: result.InterfaceRouteTables[0],
-	}
-	return response, nil
 }
 
 //RESTListInterfaceRouteTable handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListInterfaceRouteTable(c echo.Context) erro
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListInterfaceRouteTable handles a List service Request.
-func (service *ContrailService) ListInterfaceRouteTable(
-	ctx context.Context,
-	request *models.ListInterfaceRouteTableRequest) (response *models.ListInterfaceRouteTableResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListInterfaceRouteTable(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

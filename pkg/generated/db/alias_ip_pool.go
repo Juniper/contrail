@@ -81,10 +81,10 @@ var AliasIPPoolParents = []string{
 }
 
 // CreateAliasIPPool inserts AliasIPPool to DB
-func CreateAliasIPPool(
+func (db *DB) createAliasIPPool(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateAliasIPPoolRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.AliasIPPool
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertAliasIPPoolQuery)
@@ -430,8 +430,9 @@ func scanAliasIPPool(values map[string]interface{}) (*models.AliasIPPool, error)
 }
 
 // ListAliasIPPool lists AliasIPPool with list spec.
-func ListAliasIPPool(ctx context.Context, tx *sql.Tx, request *models.ListAliasIPPoolRequest) (response *models.ListAliasIPPoolResponse, err error) {
+func (db *DB) listAliasIPPool(ctx context.Context, request *models.ListAliasIPPoolRequest) (response *models.ListAliasIPPoolResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -493,9 +494,8 @@ func ListAliasIPPool(ctx context.Context, tx *sql.Tx, request *models.ListAliasI
 }
 
 // UpdateAliasIPPool updates a resource
-func UpdateAliasIPPool(
+func (db *DB) updateAliasIPPool(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateAliasIPPoolRequest,
 ) error {
 	//TODO
@@ -503,15 +503,15 @@ func UpdateAliasIPPool(
 }
 
 // DeleteAliasIPPool deletes a resource
-func DeleteAliasIPPool(
+func (db *DB) deleteAliasIPPool(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteAliasIPPoolRequest) error {
 	deleteQuery := deleteAliasIPPoolQuery
 	selectQuery := "select count(uuid) from alias_ip_pool where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -546,4 +546,119 @@ func DeleteAliasIPPool(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateAliasIPPool handle a Create API
+func (db *DB) CreateAliasIPPool(
+	ctx context.Context,
+	request *models.CreateAliasIPPoolRequest) (*models.CreateAliasIPPoolResponse, error) {
+	model := request.AliasIPPool
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createAliasIPPool(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "alias_ip_pool",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateAliasIPPoolResponse{
+		AliasIPPool: request.AliasIPPool,
+	}, nil
+}
+
+//UpdateAliasIPPool handles a Update request.
+func (db *DB) UpdateAliasIPPool(
+	ctx context.Context,
+	request *models.UpdateAliasIPPoolRequest) (*models.UpdateAliasIPPoolResponse, error) {
+	model := request.AliasIPPool
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateAliasIPPool(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "alias_ip_pool",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateAliasIPPoolResponse{
+		AliasIPPool: model,
+	}, nil
+}
+
+//DeleteAliasIPPool delete a resource.
+func (db *DB) DeleteAliasIPPool(ctx context.Context, request *models.DeleteAliasIPPoolRequest) (*models.DeleteAliasIPPoolResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteAliasIPPool(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteAliasIPPoolResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetAliasIPPool a Get request.
+func (db *DB) GetAliasIPPool(ctx context.Context, request *models.GetAliasIPPoolRequest) (response *models.GetAliasIPPoolResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListAliasIPPoolRequest{
+		Spec: spec,
+	}
+	var result *models.ListAliasIPPoolResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listAliasIPPool(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.AliasIPPools) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetAliasIPPoolResponse{
+		AliasIPPool: result.AliasIPPools[0],
+	}
+	return response, nil
+}
+
+//ListAliasIPPool handles a List service Request.
+func (db *DB) ListAliasIPPool(
+	ctx context.Context,
+	request *models.ListAliasIPPoolRequest) (response *models.ListAliasIPPoolResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listAliasIPPool(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

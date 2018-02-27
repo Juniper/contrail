@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,13 +15,15 @@ var _ = errors.New("")
 
 func TestForwardingClass(t *testing.T) {
 	// t.Parallel()
-	db := testDB
+	db := &DB{
+		DB: testDB,
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db, "metadata")
-	mutexTable := common.UseTable(db, "forwarding_class")
-	// mutexProject := common.UseTable(db, "forwarding_class")
+	mutexMetadata := common.UseTable(db.DB, "metadata")
+	mutexTable := common.UseTable(db.DB, "forwarding_class")
+	// mutexProject := common.UseTable(db.DB, "forwarding_class")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -44,24 +44,18 @@ func TestForwardingClass(t *testing.T) {
 	QosQueuerefModel = models.MakeQosQueue()
 	QosQueuerefModel.UUID = "forwarding_class_qos_queue_ref_uuid"
 	QosQueuerefModel.FQName = []string{"test", "forwarding_class_qos_queue_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateQosQueue(ctx, tx, &models.CreateQosQueueRequest{
-			QosQueue: QosQueuerefModel,
-		})
+	_, err = db.CreateQosQueue(ctx, &models.CreateQosQueueRequest{
+		QosQueue: QosQueuerefModel,
 	})
 	QosQueuerefModel.UUID = "forwarding_class_qos_queue_ref_uuid1"
 	QosQueuerefModel.FQName = []string{"test", "forwarding_class_qos_queue_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateQosQueue(ctx, tx, &models.CreateQosQueueRequest{
-			QosQueue: QosQueuerefModel,
-		})
+	_, err = db.CreateQosQueue(ctx, &models.CreateQosQueueRequest{
+		QosQueue: QosQueuerefModel,
 	})
 	QosQueuerefModel.UUID = "forwarding_class_qos_queue_ref_uuid2"
 	QosQueuerefModel.FQName = []string{"test", "forwarding_class_qos_queue_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateQosQueue(ctx, tx, &models.CreateQosQueueRequest{
-			QosQueue: QosQueuerefModel,
-		})
+	_, err = db.CreateQosQueue(ctx, &models.CreateQosQueueRequest{
+		QosQueue: QosQueuerefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
@@ -78,10 +72,9 @@ func TestForwardingClass(t *testing.T) {
 	var createShare []*models.ShareType
 	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
 	model.Perms2.Share = createShare
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx, &models.CreateProjectRequest{
-			Project: projectModel,
-		})
+
+	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
+		Project: projectModel,
 	})
 	if err != nil {
 		t.Fatal("project create failed", err)
@@ -223,12 +216,11 @@ func TestForwardingClass(t *testing.T) {
 	//    common.SetValueByPath(updateMap, "QosQueueRefs", ".", QosQueueref)
 	//
 	//
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateForwardingClass(ctx, tx,
-			&models.CreateForwardingClassRequest{
-				ForwardingClass: model,
-			})
-	})
+	_, err = db.CreateForwardingClass(ctx,
+		&models.CreateForwardingClassRequest{
+			ForwardingClass: model,
+		})
+
 	if err != nil {
 		t.Fatal("create failed", err)
 	}
@@ -242,7 +234,8 @@ func TestForwardingClass(t *testing.T) {
 
 	//Delete ref entries, referred objects
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_forwarding_class_qos_queue` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing QosQueueRefs delete statement failed")
@@ -255,100 +248,73 @@ func TestForwardingClass(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteQosQueue(ctx, tx,
-			&models.DeleteQosQueueRequest{
-				ID: "forwarding_class_qos_queue_ref_uuid"})
-	})
+	_, err = db.DeleteQosQueue(ctx,
+		&models.DeleteQosQueueRequest{
+			ID: "forwarding_class_qos_queue_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref forwarding_class_qos_queue_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteQosQueue(ctx, tx,
-			&models.DeleteQosQueueRequest{
-				ID: "forwarding_class_qos_queue_ref_uuid1"})
-	})
+	_, err = db.DeleteQosQueue(ctx,
+		&models.DeleteQosQueueRequest{
+			ID: "forwarding_class_qos_queue_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref forwarding_class_qos_queue_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteQosQueue(
-			ctx,
-			tx,
-			&models.DeleteQosQueueRequest{
-				ID: "forwarding_class_qos_queue_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteQosQueue(
+		ctx,
+		&models.DeleteQosQueueRequest{
+			ID: "forwarding_class_qos_queue_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref forwarding_class_qos_queue_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteProject(ctx, tx, &models.DeleteProjectRequest{
-			ID: projectModel.UUID})
-	})
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
 	if err != nil {
 		t.Fatal("delete project failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListForwardingClass(ctx, tx, &models.ListForwardingClassRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.ForwardingClasss) != 1 {
-			return fmt.Errorf("expected one element")
-		}
-		return nil
-	})
+	response, err := db.ListForwardingClass(ctx, &models.ListForwardingClassRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
+	if len(response.ForwardingClasss) != 1 {
+		t.Fatal("expected one element", err)
+	}
 
 	ctxDemo := context.WithValue(ctx, "auth", common.NewAuthContext("default", "demo", "demo", []string{}))
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteForwardingClass(ctxDemo, tx,
-			&models.DeleteForwardingClassRequest{
-				ID: model.UUID},
-		)
-	})
+	_, err = db.DeleteForwardingClass(ctxDemo,
+		&models.DeleteForwardingClassRequest{
+			ID: model.UUID},
+	)
 	if err == nil {
 		t.Fatal("auth failed")
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteForwardingClass(ctx, tx,
-			&models.DeleteForwardingClassRequest{
-				ID: model.UUID})
-	})
-	if err != nil {
-		t.Fatal("delete failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateForwardingClass(ctx, tx,
-			&models.CreateForwardingClassRequest{
-				ForwardingClass: model})
-	})
+	_, err = db.CreateForwardingClass(ctx,
+		&models.CreateForwardingClassRequest{
+			ForwardingClass: model})
 	if err == nil {
 		t.Fatal("Raise Error On Duplicate Create failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListForwardingClass(ctx, tx, &models.ListForwardingClassRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.ForwardingClasss) != 0 {
-			return fmt.Errorf("expected no element")
-		}
-		return nil
-	})
+	_, err = db.DeleteForwardingClass(ctx,
+		&models.DeleteForwardingClassRequest{
+			ID: model.UUID})
+	if err != nil {
+		t.Fatal("delete failed", err)
+	}
+
+	response, err = db.ListForwardingClass(ctx, &models.ListForwardingClassRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+	if len(response.ForwardingClasss) != 0 {
+		t.Fatal("expected no element", err)
 	}
 	return
 }

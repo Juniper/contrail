@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateDsaRule(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateDsaRule(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "dsa_rule",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateDsaRuleResponse{
-		DsaRule: request.DsaRule,
-	}, nil
+
+	return service.Next().CreateDsaRule(ctx, request)
 }
 
 //RESTUpdateDsaRule handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateDsaRule(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateDsaRule(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "dsa_rule",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateDsaRuleResponse{
-		DsaRule: model,
-	}, nil
+	return service.Next().UpdateDsaRule(ctx, request)
 }
 
 //RESTDeleteDsaRule delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteDsaRule(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteDsaRule delete a resource.
-func (service *ContrailService) DeleteDsaRule(ctx context.Context, request *models.DeleteDsaRuleRequest) (*models.DeleteDsaRuleResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteDsaRule(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteDsaRuleResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetDsaRule a REST Get request.
 func (service *ContrailService) RESTGetDsaRule(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetDsaRule(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetDsaRule a Get request.
-func (service *ContrailService) GetDsaRule(ctx context.Context, request *models.GetDsaRuleRequest) (response *models.GetDsaRuleResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListDsaRuleRequest{
-		Spec: spec,
-	}
-	var result *models.ListDsaRuleResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListDsaRule(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.DsaRules) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetDsaRuleResponse{
-		DsaRule: result.DsaRules[0],
-	}
-	return response, nil
 }
 
 //RESTListDsaRule handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListDsaRule(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListDsaRule handles a List service Request.
-func (service *ContrailService) ListDsaRule(
-	ctx context.Context,
-	request *models.ListDsaRuleRequest) (response *models.ListDsaRuleResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListDsaRule(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

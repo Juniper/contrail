@@ -46,6 +46,16 @@ var LogicalRouterFields = []string{
 // LogicalRouterRefFields is db reference fields for LogicalRouter
 var LogicalRouterRefFields = map[string][]string{
 
+	"virtual_machine_interface": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"service_instance": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"route_table": []string{
 	// <schema.Schema Value>
 
@@ -70,16 +80,6 @@ var LogicalRouterRefFields = map[string][]string{
 	// <schema.Schema Value>
 
 	},
-
-	"virtual_machine_interface": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"service_instance": []string{
-	// <schema.Schema Value>
-
-	},
 }
 
 // LogicalRouterBackRefFields is db back reference fields for LogicalRouter
@@ -91,6 +91,12 @@ var LogicalRouterParents = []string{
 	"project",
 }
 
+const insertLogicalRouterServiceInstanceQuery = "insert into `ref_logical_router_service_instance` (`from`, `to` ) values (?, ?);"
+
+const insertLogicalRouterRouteTableQuery = "insert into `ref_logical_router_route_table` (`from`, `to` ) values (?, ?);"
+
+const insertLogicalRouterVirtualNetworkQuery = "insert into `ref_logical_router_virtual_network` (`from`, `to` ) values (?, ?);"
+
 const insertLogicalRouterPhysicalRouterQuery = "insert into `ref_logical_router_physical_router` (`from`, `to` ) values (?, ?);"
 
 const insertLogicalRouterBGPVPNQuery = "insert into `ref_logical_router_bgpvpn` (`from`, `to` ) values (?, ?);"
@@ -99,17 +105,11 @@ const insertLogicalRouterRouteTargetQuery = "insert into `ref_logical_router_rou
 
 const insertLogicalRouterVirtualMachineInterfaceQuery = "insert into `ref_logical_router_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
-const insertLogicalRouterServiceInstanceQuery = "insert into `ref_logical_router_service_instance` (`from`, `to` ) values (?, ?);"
-
-const insertLogicalRouterRouteTableQuery = "insert into `ref_logical_router_route_table` (`from`, `to` ) values (?, ?);"
-
-const insertLogicalRouterVirtualNetworkQuery = "insert into `ref_logical_router_virtual_network` (`from`, `to` ) values (?, ?);"
-
 // CreateLogicalRouter inserts LogicalRouter to DB
-func CreateLogicalRouter(
+func (db *DB) createLogicalRouter(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateLogicalRouterRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.LogicalRouter
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertLogicalRouterQuery)
@@ -399,26 +399,6 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 
 	}
 
-	if value, ok := values["ref_bgpvpn"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LogicalRouterBGPVPNRef{}
-			referenceModel.UUID = uuid
-			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_route_target"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -539,12 +519,33 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 		}
 	}
 
+	if value, ok := values["ref_bgpvpn"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterBGPVPNRef{}
+			referenceModel.UUID = uuid
+			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
+
+		}
+	}
+
 	return m, nil
 }
 
 // ListLogicalRouter lists LogicalRouter with list spec.
-func ListLogicalRouter(ctx context.Context, tx *sql.Tx, request *models.ListLogicalRouterRequest) (response *models.ListLogicalRouterResponse, err error) {
+func (db *DB) listLogicalRouter(ctx context.Context, request *models.ListLogicalRouterRequest) (response *models.ListLogicalRouterResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -606,9 +607,8 @@ func ListLogicalRouter(ctx context.Context, tx *sql.Tx, request *models.ListLogi
 }
 
 // UpdateLogicalRouter updates a resource
-func UpdateLogicalRouter(
+func (db *DB) updateLogicalRouter(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateLogicalRouterRequest,
 ) error {
 	//TODO
@@ -616,15 +616,15 @@ func UpdateLogicalRouter(
 }
 
 // DeleteLogicalRouter deletes a resource
-func DeleteLogicalRouter(
+func (db *DB) deleteLogicalRouter(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteLogicalRouterRequest) error {
 	deleteQuery := deleteLogicalRouterQuery
 	selectQuery := "select count(uuid) from logical_router where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -659,4 +659,119 @@ func DeleteLogicalRouter(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateLogicalRouter handle a Create API
+func (db *DB) CreateLogicalRouter(
+	ctx context.Context,
+	request *models.CreateLogicalRouterRequest) (*models.CreateLogicalRouterResponse, error) {
+	model := request.LogicalRouter
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createLogicalRouter(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "logical_router",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateLogicalRouterResponse{
+		LogicalRouter: request.LogicalRouter,
+	}, nil
+}
+
+//UpdateLogicalRouter handles a Update request.
+func (db *DB) UpdateLogicalRouter(
+	ctx context.Context,
+	request *models.UpdateLogicalRouterRequest) (*models.UpdateLogicalRouterResponse, error) {
+	model := request.LogicalRouter
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateLogicalRouter(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "logical_router",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateLogicalRouterResponse{
+		LogicalRouter: model,
+	}, nil
+}
+
+//DeleteLogicalRouter delete a resource.
+func (db *DB) DeleteLogicalRouter(ctx context.Context, request *models.DeleteLogicalRouterRequest) (*models.DeleteLogicalRouterResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteLogicalRouter(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteLogicalRouterResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetLogicalRouter a Get request.
+func (db *DB) GetLogicalRouter(ctx context.Context, request *models.GetLogicalRouterRequest) (response *models.GetLogicalRouterResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListLogicalRouterRequest{
+		Spec: spec,
+	}
+	var result *models.ListLogicalRouterResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listLogicalRouter(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.LogicalRouters) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetLogicalRouterResponse{
+		LogicalRouter: result.LogicalRouters[0],
+	}
+	return response, nil
+}
+
+//ListLogicalRouter handles a List service Request.
+func (db *DB) ListLogicalRouter(
+	ctx context.Context,
+	request *models.ListLogicalRouterRequest) (response *models.ListLogicalRouterResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listLogicalRouter(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

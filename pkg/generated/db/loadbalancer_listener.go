@@ -68,10 +68,10 @@ var LoadbalancerListenerParents = []string{
 const insertLoadbalancerListenerLoadbalancerQuery = "insert into `ref_loadbalancer_listener_loadbalancer` (`from`, `to` ) values (?, ?);"
 
 // CreateLoadbalancerListener inserts LoadbalancerListener to DB
-func CreateLoadbalancerListener(
+func (db *DB) createLoadbalancerListener(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateLoadbalancerListenerRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.LoadbalancerListener
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertLoadbalancerListenerQuery)
@@ -335,8 +335,9 @@ func scanLoadbalancerListener(values map[string]interface{}) (*models.Loadbalanc
 }
 
 // ListLoadbalancerListener lists LoadbalancerListener with list spec.
-func ListLoadbalancerListener(ctx context.Context, tx *sql.Tx, request *models.ListLoadbalancerListenerRequest) (response *models.ListLoadbalancerListenerResponse, err error) {
+func (db *DB) listLoadbalancerListener(ctx context.Context, request *models.ListLoadbalancerListenerRequest) (response *models.ListLoadbalancerListenerResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -398,9 +399,8 @@ func ListLoadbalancerListener(ctx context.Context, tx *sql.Tx, request *models.L
 }
 
 // UpdateLoadbalancerListener updates a resource
-func UpdateLoadbalancerListener(
+func (db *DB) updateLoadbalancerListener(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateLoadbalancerListenerRequest,
 ) error {
 	//TODO
@@ -408,15 +408,15 @@ func UpdateLoadbalancerListener(
 }
 
 // DeleteLoadbalancerListener deletes a resource
-func DeleteLoadbalancerListener(
+func (db *DB) deleteLoadbalancerListener(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteLoadbalancerListenerRequest) error {
 	deleteQuery := deleteLoadbalancerListenerQuery
 	selectQuery := "select count(uuid) from loadbalancer_listener where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -451,4 +451,119 @@ func DeleteLoadbalancerListener(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateLoadbalancerListener handle a Create API
+func (db *DB) CreateLoadbalancerListener(
+	ctx context.Context,
+	request *models.CreateLoadbalancerListenerRequest) (*models.CreateLoadbalancerListenerResponse, error) {
+	model := request.LoadbalancerListener
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createLoadbalancerListener(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "loadbalancer_listener",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateLoadbalancerListenerResponse{
+		LoadbalancerListener: request.LoadbalancerListener,
+	}, nil
+}
+
+//UpdateLoadbalancerListener handles a Update request.
+func (db *DB) UpdateLoadbalancerListener(
+	ctx context.Context,
+	request *models.UpdateLoadbalancerListenerRequest) (*models.UpdateLoadbalancerListenerResponse, error) {
+	model := request.LoadbalancerListener
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateLoadbalancerListener(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "loadbalancer_listener",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateLoadbalancerListenerResponse{
+		LoadbalancerListener: model,
+	}, nil
+}
+
+//DeleteLoadbalancerListener delete a resource.
+func (db *DB) DeleteLoadbalancerListener(ctx context.Context, request *models.DeleteLoadbalancerListenerRequest) (*models.DeleteLoadbalancerListenerResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteLoadbalancerListener(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteLoadbalancerListenerResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetLoadbalancerListener a Get request.
+func (db *DB) GetLoadbalancerListener(ctx context.Context, request *models.GetLoadbalancerListenerRequest) (response *models.GetLoadbalancerListenerResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListLoadbalancerListenerRequest{
+		Spec: spec,
+	}
+	var result *models.ListLoadbalancerListenerResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listLoadbalancerListener(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.LoadbalancerListeners) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetLoadbalancerListenerResponse{
+		LoadbalancerListener: result.LoadbalancerListeners[0],
+	}
+	return response, nil
+}
+
+//ListLoadbalancerListener handles a List service Request.
+func (db *DB) ListLoadbalancerListener(
+	ctx context.Context,
+	request *models.ListLoadbalancerListenerRequest) (response *models.ListLoadbalancerListenerResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listLoadbalancerListener(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

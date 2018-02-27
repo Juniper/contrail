@@ -66,10 +66,10 @@ var LogicalInterfaceParents = []string{
 const insertLogicalInterfaceVirtualMachineInterfaceQuery = "insert into `ref_logical_interface_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateLogicalInterface inserts LogicalInterface to DB
-func CreateLogicalInterface(
+func (db *DB) createLogicalInterface(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateLogicalInterfaceRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.LogicalInterface
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertLogicalInterfaceQuery)
@@ -305,8 +305,9 @@ func scanLogicalInterface(values map[string]interface{}) (*models.LogicalInterfa
 }
 
 // ListLogicalInterface lists LogicalInterface with list spec.
-func ListLogicalInterface(ctx context.Context, tx *sql.Tx, request *models.ListLogicalInterfaceRequest) (response *models.ListLogicalInterfaceResponse, err error) {
+func (db *DB) listLogicalInterface(ctx context.Context, request *models.ListLogicalInterfaceRequest) (response *models.ListLogicalInterfaceResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -368,9 +369,8 @@ func ListLogicalInterface(ctx context.Context, tx *sql.Tx, request *models.ListL
 }
 
 // UpdateLogicalInterface updates a resource
-func UpdateLogicalInterface(
+func (db *DB) updateLogicalInterface(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateLogicalInterfaceRequest,
 ) error {
 	//TODO
@@ -378,15 +378,15 @@ func UpdateLogicalInterface(
 }
 
 // DeleteLogicalInterface deletes a resource
-func DeleteLogicalInterface(
+func (db *DB) deleteLogicalInterface(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteLogicalInterfaceRequest) error {
 	deleteQuery := deleteLogicalInterfaceQuery
 	selectQuery := "select count(uuid) from logical_interface where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -421,4 +421,119 @@ func DeleteLogicalInterface(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateLogicalInterface handle a Create API
+func (db *DB) CreateLogicalInterface(
+	ctx context.Context,
+	request *models.CreateLogicalInterfaceRequest) (*models.CreateLogicalInterfaceResponse, error) {
+	model := request.LogicalInterface
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createLogicalInterface(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "logical_interface",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateLogicalInterfaceResponse{
+		LogicalInterface: request.LogicalInterface,
+	}, nil
+}
+
+//UpdateLogicalInterface handles a Update request.
+func (db *DB) UpdateLogicalInterface(
+	ctx context.Context,
+	request *models.UpdateLogicalInterfaceRequest) (*models.UpdateLogicalInterfaceResponse, error) {
+	model := request.LogicalInterface
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateLogicalInterface(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "logical_interface",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateLogicalInterfaceResponse{
+		LogicalInterface: model,
+	}, nil
+}
+
+//DeleteLogicalInterface delete a resource.
+func (db *DB) DeleteLogicalInterface(ctx context.Context, request *models.DeleteLogicalInterfaceRequest) (*models.DeleteLogicalInterfaceResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteLogicalInterface(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteLogicalInterfaceResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetLogicalInterface a Get request.
+func (db *DB) GetLogicalInterface(ctx context.Context, request *models.GetLogicalInterfaceRequest) (response *models.GetLogicalInterfaceResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListLogicalInterfaceRequest{
+		Spec: spec,
+	}
+	var result *models.ListLogicalInterfaceResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listLogicalInterface(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.LogicalInterfaces) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetLogicalInterfaceResponse{
+		LogicalInterface: result.LogicalInterfaces[0],
+	}
+	return response, nil
+}
+
+//ListLogicalInterface handles a List service Request.
+func (db *DB) ListLogicalInterface(
+	ctx context.Context,
+	request *models.ListLogicalInterfaceRequest) (response *models.ListLogicalInterfaceResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listLogicalInterface(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

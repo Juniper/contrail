@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,13 +15,15 @@ var _ = errors.New("")
 
 func TestApplicationPolicySet(t *testing.T) {
 	// t.Parallel()
-	db := testDB
+	db := &DB{
+		DB: testDB,
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db, "metadata")
-	mutexTable := common.UseTable(db, "application_policy_set")
-	// mutexProject := common.UseTable(db, "application_policy_set")
+	mutexMetadata := common.UseTable(db.DB, "metadata")
+	mutexTable := common.UseTable(db.DB, "application_policy_set")
+	// mutexProject := common.UseTable(db.DB, "application_policy_set")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -44,24 +44,18 @@ func TestApplicationPolicySet(t *testing.T) {
 	FirewallPolicyrefModel = models.MakeFirewallPolicy()
 	FirewallPolicyrefModel.UUID = "application_policy_set_firewall_policy_ref_uuid"
 	FirewallPolicyrefModel.FQName = []string{"test", "application_policy_set_firewall_policy_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateFirewallPolicy(ctx, tx, &models.CreateFirewallPolicyRequest{
-			FirewallPolicy: FirewallPolicyrefModel,
-		})
+	_, err = db.CreateFirewallPolicy(ctx, &models.CreateFirewallPolicyRequest{
+		FirewallPolicy: FirewallPolicyrefModel,
 	})
 	FirewallPolicyrefModel.UUID = "application_policy_set_firewall_policy_ref_uuid1"
 	FirewallPolicyrefModel.FQName = []string{"test", "application_policy_set_firewall_policy_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateFirewallPolicy(ctx, tx, &models.CreateFirewallPolicyRequest{
-			FirewallPolicy: FirewallPolicyrefModel,
-		})
+	_, err = db.CreateFirewallPolicy(ctx, &models.CreateFirewallPolicyRequest{
+		FirewallPolicy: FirewallPolicyrefModel,
 	})
 	FirewallPolicyrefModel.UUID = "application_policy_set_firewall_policy_ref_uuid2"
 	FirewallPolicyrefModel.FQName = []string{"test", "application_policy_set_firewall_policy_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateFirewallPolicy(ctx, tx, &models.CreateFirewallPolicyRequest{
-			FirewallPolicy: FirewallPolicyrefModel,
-		})
+	_, err = db.CreateFirewallPolicy(ctx, &models.CreateFirewallPolicyRequest{
+		FirewallPolicy: FirewallPolicyrefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
@@ -75,24 +69,18 @@ func TestApplicationPolicySet(t *testing.T) {
 	GlobalVrouterConfigrefModel = models.MakeGlobalVrouterConfig()
 	GlobalVrouterConfigrefModel.UUID = "application_policy_set_global_vrouter_config_ref_uuid"
 	GlobalVrouterConfigrefModel.FQName = []string{"test", "application_policy_set_global_vrouter_config_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateGlobalVrouterConfig(ctx, tx, &models.CreateGlobalVrouterConfigRequest{
-			GlobalVrouterConfig: GlobalVrouterConfigrefModel,
-		})
+	_, err = db.CreateGlobalVrouterConfig(ctx, &models.CreateGlobalVrouterConfigRequest{
+		GlobalVrouterConfig: GlobalVrouterConfigrefModel,
 	})
 	GlobalVrouterConfigrefModel.UUID = "application_policy_set_global_vrouter_config_ref_uuid1"
 	GlobalVrouterConfigrefModel.FQName = []string{"test", "application_policy_set_global_vrouter_config_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateGlobalVrouterConfig(ctx, tx, &models.CreateGlobalVrouterConfigRequest{
-			GlobalVrouterConfig: GlobalVrouterConfigrefModel,
-		})
+	_, err = db.CreateGlobalVrouterConfig(ctx, &models.CreateGlobalVrouterConfigRequest{
+		GlobalVrouterConfig: GlobalVrouterConfigrefModel,
 	})
 	GlobalVrouterConfigrefModel.UUID = "application_policy_set_global_vrouter_config_ref_uuid2"
 	GlobalVrouterConfigrefModel.FQName = []string{"test", "application_policy_set_global_vrouter_config_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateGlobalVrouterConfig(ctx, tx, &models.CreateGlobalVrouterConfigRequest{
-			GlobalVrouterConfig: GlobalVrouterConfigrefModel,
-		})
+	_, err = db.CreateGlobalVrouterConfig(ctx, &models.CreateGlobalVrouterConfigRequest{
+		GlobalVrouterConfig: GlobalVrouterConfigrefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
@@ -109,10 +97,9 @@ func TestApplicationPolicySet(t *testing.T) {
 	var createShare []*models.ShareType
 	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
 	model.Perms2.Share = createShare
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx, &models.CreateProjectRequest{
-			Project: projectModel,
-		})
+
+	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
+		Project: projectModel,
 	})
 	if err != nil {
 		t.Fatal("project create failed", err)
@@ -258,12 +245,11 @@ func TestApplicationPolicySet(t *testing.T) {
 	//    common.SetValueByPath(updateMap, "GlobalVrouterConfigRefs", ".", GlobalVrouterConfigref)
 	//
 	//
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateApplicationPolicySet(ctx, tx,
-			&models.CreateApplicationPolicySetRequest{
-				ApplicationPolicySet: model,
-			})
-	})
+	_, err = db.CreateApplicationPolicySet(ctx,
+		&models.CreateApplicationPolicySetRequest{
+			ApplicationPolicySet: model,
+		})
+
 	if err != nil {
 		t.Fatal("create failed", err)
 	}
@@ -277,7 +263,8 @@ func TestApplicationPolicySet(t *testing.T) {
 
 	//Delete ref entries, referred objects
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_application_policy_set_firewall_policy` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing FirewallPolicyRefs delete statement failed")
@@ -290,35 +277,29 @@ func TestApplicationPolicySet(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteFirewallPolicy(ctx, tx,
-			&models.DeleteFirewallPolicyRequest{
-				ID: "application_policy_set_firewall_policy_ref_uuid"})
-	})
+	_, err = db.DeleteFirewallPolicy(ctx,
+		&models.DeleteFirewallPolicyRequest{
+			ID: "application_policy_set_firewall_policy_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref application_policy_set_firewall_policy_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteFirewallPolicy(ctx, tx,
-			&models.DeleteFirewallPolicyRequest{
-				ID: "application_policy_set_firewall_policy_ref_uuid1"})
-	})
+	_, err = db.DeleteFirewallPolicy(ctx,
+		&models.DeleteFirewallPolicyRequest{
+			ID: "application_policy_set_firewall_policy_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref application_policy_set_firewall_policy_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteFirewallPolicy(
-			ctx,
-			tx,
-			&models.DeleteFirewallPolicyRequest{
-				ID: "application_policy_set_firewall_policy_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteFirewallPolicy(
+		ctx,
+		&models.DeleteFirewallPolicyRequest{
+			ID: "application_policy_set_firewall_policy_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref application_policy_set_firewall_policy_ref_uuid2 failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_application_policy_set_global_vrouter_config` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing GlobalVrouterConfigRefs delete statement failed")
@@ -331,100 +312,73 @@ func TestApplicationPolicySet(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteGlobalVrouterConfig(ctx, tx,
-			&models.DeleteGlobalVrouterConfigRequest{
-				ID: "application_policy_set_global_vrouter_config_ref_uuid"})
-	})
+	_, err = db.DeleteGlobalVrouterConfig(ctx,
+		&models.DeleteGlobalVrouterConfigRequest{
+			ID: "application_policy_set_global_vrouter_config_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref application_policy_set_global_vrouter_config_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteGlobalVrouterConfig(ctx, tx,
-			&models.DeleteGlobalVrouterConfigRequest{
-				ID: "application_policy_set_global_vrouter_config_ref_uuid1"})
-	})
+	_, err = db.DeleteGlobalVrouterConfig(ctx,
+		&models.DeleteGlobalVrouterConfigRequest{
+			ID: "application_policy_set_global_vrouter_config_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref application_policy_set_global_vrouter_config_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteGlobalVrouterConfig(
-			ctx,
-			tx,
-			&models.DeleteGlobalVrouterConfigRequest{
-				ID: "application_policy_set_global_vrouter_config_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteGlobalVrouterConfig(
+		ctx,
+		&models.DeleteGlobalVrouterConfigRequest{
+			ID: "application_policy_set_global_vrouter_config_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref application_policy_set_global_vrouter_config_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteProject(ctx, tx, &models.DeleteProjectRequest{
-			ID: projectModel.UUID})
-	})
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
 	if err != nil {
 		t.Fatal("delete project failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListApplicationPolicySet(ctx, tx, &models.ListApplicationPolicySetRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.ApplicationPolicySets) != 1 {
-			return fmt.Errorf("expected one element")
-		}
-		return nil
-	})
+	response, err := db.ListApplicationPolicySet(ctx, &models.ListApplicationPolicySetRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
+	if len(response.ApplicationPolicySets) != 1 {
+		t.Fatal("expected one element", err)
+	}
 
 	ctxDemo := context.WithValue(ctx, "auth", common.NewAuthContext("default", "demo", "demo", []string{}))
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteApplicationPolicySet(ctxDemo, tx,
-			&models.DeleteApplicationPolicySetRequest{
-				ID: model.UUID},
-		)
-	})
+	_, err = db.DeleteApplicationPolicySet(ctxDemo,
+		&models.DeleteApplicationPolicySetRequest{
+			ID: model.UUID},
+	)
 	if err == nil {
 		t.Fatal("auth failed")
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteApplicationPolicySet(ctx, tx,
-			&models.DeleteApplicationPolicySetRequest{
-				ID: model.UUID})
-	})
-	if err != nil {
-		t.Fatal("delete failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateApplicationPolicySet(ctx, tx,
-			&models.CreateApplicationPolicySetRequest{
-				ApplicationPolicySet: model})
-	})
+	_, err = db.CreateApplicationPolicySet(ctx,
+		&models.CreateApplicationPolicySetRequest{
+			ApplicationPolicySet: model})
 	if err == nil {
 		t.Fatal("Raise Error On Duplicate Create failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListApplicationPolicySet(ctx, tx, &models.ListApplicationPolicySetRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.ApplicationPolicySets) != 0 {
-			return fmt.Errorf("expected no element")
-		}
-		return nil
-	})
+	_, err = db.DeleteApplicationPolicySet(ctx,
+		&models.DeleteApplicationPolicySetRequest{
+			ID: model.UUID})
+	if err != nil {
+		t.Fatal("delete failed", err)
+	}
+
+	response, err = db.ListApplicationPolicySet(ctx, &models.ListApplicationPolicySetRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+	if len(response.ApplicationPolicySets) != 0 {
+		t.Fatal("expected no element", err)
 	}
 	return
 }

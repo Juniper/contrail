@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateContrailStorageNode(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateContrailStorageNode(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "contrail_storage_node",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateContrailStorageNodeResponse{
-		ContrailStorageNode: request.ContrailStorageNode,
-	}, nil
+
+	return service.Next().CreateContrailStorageNode(ctx, request)
 }
 
 //RESTUpdateContrailStorageNode handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateContrailStorageNode(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateContrailStorageNode(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "contrail_storage_node",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateContrailStorageNodeResponse{
-		ContrailStorageNode: model,
-	}, nil
+	return service.Next().UpdateContrailStorageNode(ctx, request)
 }
 
 //RESTDeleteContrailStorageNode delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteContrailStorageNode(c echo.Context) er
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteContrailStorageNode delete a resource.
-func (service *ContrailService) DeleteContrailStorageNode(ctx context.Context, request *models.DeleteContrailStorageNodeRequest) (*models.DeleteContrailStorageNodeResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteContrailStorageNode(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteContrailStorageNodeResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetContrailStorageNode a REST Get request.
 func (service *ContrailService) RESTGetContrailStorageNode(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetContrailStorageNode(c echo.Context) error
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetContrailStorageNode a Get request.
-func (service *ContrailService) GetContrailStorageNode(ctx context.Context, request *models.GetContrailStorageNodeRequest) (response *models.GetContrailStorageNodeResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListContrailStorageNodeRequest{
-		Spec: spec,
-	}
-	var result *models.ListContrailStorageNodeResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListContrailStorageNode(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.ContrailStorageNodes) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetContrailStorageNodeResponse{
-		ContrailStorageNode: result.ContrailStorageNodes[0],
-	}
-	return response, nil
 }
 
 //RESTListContrailStorageNode handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListContrailStorageNode(c echo.Context) erro
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListContrailStorageNode handles a List service Request.
-func (service *ContrailService) ListContrailStorageNode(
-	ctx context.Context,
-	request *models.ListContrailStorageNodeRequest) (response *models.ListContrailStorageNodeResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListContrailStorageNode(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

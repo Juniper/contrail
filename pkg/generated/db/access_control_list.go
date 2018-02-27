@@ -59,10 +59,10 @@ var AccessControlListParents = []string{
 }
 
 // CreateAccessControlList inserts AccessControlList to DB
-func CreateAccessControlList(
+func (db *DB) createAccessControlList(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateAccessControlListRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.AccessControlList
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertAccessControlListQuery)
@@ -272,8 +272,9 @@ func scanAccessControlList(values map[string]interface{}) (*models.AccessControl
 }
 
 // ListAccessControlList lists AccessControlList with list spec.
-func ListAccessControlList(ctx context.Context, tx *sql.Tx, request *models.ListAccessControlListRequest) (response *models.ListAccessControlListResponse, err error) {
+func (db *DB) listAccessControlList(ctx context.Context, request *models.ListAccessControlListRequest) (response *models.ListAccessControlListResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -335,9 +336,8 @@ func ListAccessControlList(ctx context.Context, tx *sql.Tx, request *models.List
 }
 
 // UpdateAccessControlList updates a resource
-func UpdateAccessControlList(
+func (db *DB) updateAccessControlList(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateAccessControlListRequest,
 ) error {
 	//TODO
@@ -345,15 +345,15 @@ func UpdateAccessControlList(
 }
 
 // DeleteAccessControlList deletes a resource
-func DeleteAccessControlList(
+func (db *DB) deleteAccessControlList(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteAccessControlListRequest) error {
 	deleteQuery := deleteAccessControlListQuery
 	selectQuery := "select count(uuid) from access_control_list where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -388,4 +388,119 @@ func DeleteAccessControlList(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateAccessControlList handle a Create API
+func (db *DB) CreateAccessControlList(
+	ctx context.Context,
+	request *models.CreateAccessControlListRequest) (*models.CreateAccessControlListResponse, error) {
+	model := request.AccessControlList
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createAccessControlList(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "access_control_list",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateAccessControlListResponse{
+		AccessControlList: request.AccessControlList,
+	}, nil
+}
+
+//UpdateAccessControlList handles a Update request.
+func (db *DB) UpdateAccessControlList(
+	ctx context.Context,
+	request *models.UpdateAccessControlListRequest) (*models.UpdateAccessControlListResponse, error) {
+	model := request.AccessControlList
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateAccessControlList(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "access_control_list",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateAccessControlListResponse{
+		AccessControlList: model,
+	}, nil
+}
+
+//DeleteAccessControlList delete a resource.
+func (db *DB) DeleteAccessControlList(ctx context.Context, request *models.DeleteAccessControlListRequest) (*models.DeleteAccessControlListResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteAccessControlList(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteAccessControlListResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetAccessControlList a Get request.
+func (db *DB) GetAccessControlList(ctx context.Context, request *models.GetAccessControlListRequest) (response *models.GetAccessControlListResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListAccessControlListRequest{
+		Spec: spec,
+	}
+	var result *models.ListAccessControlListResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listAccessControlList(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.AccessControlLists) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetAccessControlListResponse{
+		AccessControlList: result.AccessControlLists[0],
+	}
+	return response, nil
+}
+
+//ListAccessControlList handles a List service Request.
+func (db *DB) ListAccessControlList(
+	ctx context.Context,
+	request *models.ListAccessControlListRequest) (response *models.ListAccessControlListResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listAccessControlList(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

@@ -66,10 +66,10 @@ var ForwardingClassParents = []string{
 const insertForwardingClassQosQueueQuery = "insert into `ref_forwarding_class_qos_queue` (`from`, `to` ) values (?, ?);"
 
 // CreateForwardingClass inserts ForwardingClass to DB
-func CreateForwardingClass(
+func (db *DB) createForwardingClass(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateForwardingClassRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ForwardingClass
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertForwardingClassQuery)
@@ -319,8 +319,9 @@ func scanForwardingClass(values map[string]interface{}) (*models.ForwardingClass
 }
 
 // ListForwardingClass lists ForwardingClass with list spec.
-func ListForwardingClass(ctx context.Context, tx *sql.Tx, request *models.ListForwardingClassRequest) (response *models.ListForwardingClassResponse, err error) {
+func (db *DB) listForwardingClass(ctx context.Context, request *models.ListForwardingClassRequest) (response *models.ListForwardingClassResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -382,9 +383,8 @@ func ListForwardingClass(ctx context.Context, tx *sql.Tx, request *models.ListFo
 }
 
 // UpdateForwardingClass updates a resource
-func UpdateForwardingClass(
+func (db *DB) updateForwardingClass(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateForwardingClassRequest,
 ) error {
 	//TODO
@@ -392,15 +392,15 @@ func UpdateForwardingClass(
 }
 
 // DeleteForwardingClass deletes a resource
-func DeleteForwardingClass(
+func (db *DB) deleteForwardingClass(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteForwardingClassRequest) error {
 	deleteQuery := deleteForwardingClassQuery
 	selectQuery := "select count(uuid) from forwarding_class where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -435,4 +435,119 @@ func DeleteForwardingClass(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateForwardingClass handle a Create API
+func (db *DB) CreateForwardingClass(
+	ctx context.Context,
+	request *models.CreateForwardingClassRequest) (*models.CreateForwardingClassResponse, error) {
+	model := request.ForwardingClass
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createForwardingClass(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "forwarding_class",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateForwardingClassResponse{
+		ForwardingClass: request.ForwardingClass,
+	}, nil
+}
+
+//UpdateForwardingClass handles a Update request.
+func (db *DB) UpdateForwardingClass(
+	ctx context.Context,
+	request *models.UpdateForwardingClassRequest) (*models.UpdateForwardingClassResponse, error) {
+	model := request.ForwardingClass
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateForwardingClass(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "forwarding_class",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateForwardingClassResponse{
+		ForwardingClass: model,
+	}, nil
+}
+
+//DeleteForwardingClass delete a resource.
+func (db *DB) DeleteForwardingClass(ctx context.Context, request *models.DeleteForwardingClassRequest) (*models.DeleteForwardingClassResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteForwardingClass(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteForwardingClassResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetForwardingClass a Get request.
+func (db *DB) GetForwardingClass(ctx context.Context, request *models.GetForwardingClassRequest) (response *models.GetForwardingClassResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListForwardingClassRequest{
+		Spec: spec,
+	}
+	var result *models.ListForwardingClassResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listForwardingClass(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ForwardingClasss) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetForwardingClassResponse{
+		ForwardingClass: result.ForwardingClasss[0],
+	}
+	return response, nil
+}
+
+//ListForwardingClass handles a List service Request.
+func (db *DB) ListForwardingClass(
+	ctx context.Context,
+	request *models.ListForwardingClassRequest) (response *models.ListForwardingClassResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listForwardingClass(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

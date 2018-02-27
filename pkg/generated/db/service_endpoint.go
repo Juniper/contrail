@@ -44,17 +44,17 @@ var ServiceEndpointFields = []string{
 // ServiceEndpointRefFields is db reference fields for ServiceEndpoint
 var ServiceEndpointRefFields = map[string][]string{
 
+	"service_connection_module": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"physical_router": []string{
 	// <schema.Schema Value>
 
 	},
 
 	"service_object": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"service_connection_module": []string{
 	// <schema.Schema Value>
 
 	},
@@ -66,17 +66,17 @@ var ServiceEndpointBackRefFields = map[string][]string{}
 // ServiceEndpointParentTypes is possible parents for ServiceEndpoint
 var ServiceEndpointParents = []string{}
 
+const insertServiceEndpointServiceConnectionModuleQuery = "insert into `ref_service_endpoint_service_connection_module` (`from`, `to` ) values (?, ?);"
+
 const insertServiceEndpointPhysicalRouterQuery = "insert into `ref_service_endpoint_physical_router` (`from`, `to` ) values (?, ?);"
 
 const insertServiceEndpointServiceObjectQuery = "insert into `ref_service_endpoint_service_object` (`from`, `to` ) values (?, ?);"
 
-const insertServiceEndpointServiceConnectionModuleQuery = "insert into `ref_service_endpoint_service_connection_module` (`from`, `to` ) values (?, ?);"
-
 // CreateServiceEndpoint inserts ServiceEndpoint to DB
-func CreateServiceEndpoint(
+func (db *DB) createServiceEndpoint(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateServiceEndpointRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ServiceEndpoint
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceEndpointQuery)
@@ -364,8 +364,9 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 }
 
 // ListServiceEndpoint lists ServiceEndpoint with list spec.
-func ListServiceEndpoint(ctx context.Context, tx *sql.Tx, request *models.ListServiceEndpointRequest) (response *models.ListServiceEndpointResponse, err error) {
+func (db *DB) listServiceEndpoint(ctx context.Context, request *models.ListServiceEndpointRequest) (response *models.ListServiceEndpointResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -427,9 +428,8 @@ func ListServiceEndpoint(ctx context.Context, tx *sql.Tx, request *models.ListSe
 }
 
 // UpdateServiceEndpoint updates a resource
-func UpdateServiceEndpoint(
+func (db *DB) updateServiceEndpoint(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateServiceEndpointRequest,
 ) error {
 	//TODO
@@ -437,15 +437,15 @@ func UpdateServiceEndpoint(
 }
 
 // DeleteServiceEndpoint deletes a resource
-func DeleteServiceEndpoint(
+func (db *DB) deleteServiceEndpoint(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteServiceEndpointRequest) error {
 	deleteQuery := deleteServiceEndpointQuery
 	selectQuery := "select count(uuid) from service_endpoint where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -480,4 +480,119 @@ func DeleteServiceEndpoint(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateServiceEndpoint handle a Create API
+func (db *DB) CreateServiceEndpoint(
+	ctx context.Context,
+	request *models.CreateServiceEndpointRequest) (*models.CreateServiceEndpointResponse, error) {
+	model := request.ServiceEndpoint
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createServiceEndpoint(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_endpoint",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateServiceEndpointResponse{
+		ServiceEndpoint: request.ServiceEndpoint,
+	}, nil
+}
+
+//UpdateServiceEndpoint handles a Update request.
+func (db *DB) UpdateServiceEndpoint(
+	ctx context.Context,
+	request *models.UpdateServiceEndpointRequest) (*models.UpdateServiceEndpointResponse, error) {
+	model := request.ServiceEndpoint
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateServiceEndpoint(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_endpoint",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateServiceEndpointResponse{
+		ServiceEndpoint: model,
+	}, nil
+}
+
+//DeleteServiceEndpoint delete a resource.
+func (db *DB) DeleteServiceEndpoint(ctx context.Context, request *models.DeleteServiceEndpointRequest) (*models.DeleteServiceEndpointResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteServiceEndpoint(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteServiceEndpointResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetServiceEndpoint a Get request.
+func (db *DB) GetServiceEndpoint(ctx context.Context, request *models.GetServiceEndpointRequest) (response *models.GetServiceEndpointResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListServiceEndpointRequest{
+		Spec: spec,
+	}
+	var result *models.ListServiceEndpointResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listServiceEndpoint(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ServiceEndpoints) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetServiceEndpointResponse{
+		ServiceEndpoint: result.ServiceEndpoints[0],
+	}
+	return response, nil
+}
+
+//ListServiceEndpoint handles a List service Request.
+func (db *DB) ListServiceEndpoint(
+	ctx context.Context,
+	request *models.ListServiceEndpointRequest) (response *models.ListServiceEndpointResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listServiceEndpoint(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

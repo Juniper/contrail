@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateAliasIP(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateAliasIP(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "alias_ip",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateAliasIPResponse{
-		AliasIP: request.AliasIP,
-	}, nil
+
+	return service.Next().CreateAliasIP(ctx, request)
 }
 
 //RESTUpdateAliasIP handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateAliasIP(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateAliasIP(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "alias_ip",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateAliasIPResponse{
-		AliasIP: model,
-	}, nil
+	return service.Next().UpdateAliasIP(ctx, request)
 }
 
 //RESTDeleteAliasIP delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteAliasIP(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteAliasIP delete a resource.
-func (service *ContrailService) DeleteAliasIP(ctx context.Context, request *models.DeleteAliasIPRequest) (*models.DeleteAliasIPResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteAliasIP(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteAliasIPResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetAliasIP a REST Get request.
 func (service *ContrailService) RESTGetAliasIP(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetAliasIP(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetAliasIP a Get request.
-func (service *ContrailService) GetAliasIP(ctx context.Context, request *models.GetAliasIPRequest) (response *models.GetAliasIPResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListAliasIPRequest{
-		Spec: spec,
-	}
-	var result *models.ListAliasIPResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListAliasIP(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.AliasIPs) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetAliasIPResponse{
-		AliasIP: result.AliasIPs[0],
-	}
-	return response, nil
 }
 
 //RESTListAliasIP handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListAliasIP(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListAliasIP handles a List service Request.
-func (service *ContrailService) ListAliasIP(
-	ctx context.Context,
-	request *models.ListAliasIPRequest) (response *models.ListAliasIPResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListAliasIP(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

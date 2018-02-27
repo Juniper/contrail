@@ -12,7 +12,10 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/generated/db"
+	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/Juniper/contrail/pkg/generated/services"
+	custom "github.com/Juniper/contrail/pkg/models"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -31,24 +34,41 @@ func NewServer() (*Server, error) {
 	return server, nil
 }
 
+//SetupService setup service.
+//Application with custom logics can embed server struct, and overwrite
+//this method.
+func (s *Server) SetupService() models.Service {
+	service := &services.ContrailService{
+		BaseService: models.BaseService{},
+	}
+	service.RegisterRESTAPI(s.Echo)
+
+	dbService := db.NewService(s.DB)
+	customLogicService := custom.NewService()
+
+	models.Chain([]models.Service{
+		service,
+		customLogicService,
+		dbService,
+	})
+
+	return service
+}
+
 //Init setup the server.
 func (s *Server) Init() error {
 	common.SetLogLevel()
-	db, err := common.ConnectDB()
+	sqlDB, err := common.ConnectDB()
 	if err != nil {
 		return errors.Wrap(err, "Init DB failed")
 	}
-	s.DB = db
-
+	s.DB = sqlDB
 	e := s.Echo
 	e.Use(middleware.Logger())
 	//e.Use(middleware.Recover())
 	//e.Use(middleware.BodyLimit("10M"))
 
-	service := &services.ContrailService{
-		DB: db,
-	}
-	service.RegisterRESTAPI(e)
+	service := s.SetupService()
 
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")

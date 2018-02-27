@@ -64,10 +64,10 @@ var FlavorBackRefFields = map[string][]string{}
 var FlavorParents = []string{}
 
 // CreateFlavor inserts Flavor to DB
-func CreateFlavor(
+func (db *DB) createFlavor(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateFlavorRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.Flavor
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertFlavorQuery)
@@ -347,8 +347,9 @@ func scanFlavor(values map[string]interface{}) (*models.Flavor, error) {
 }
 
 // ListFlavor lists Flavor with list spec.
-func ListFlavor(ctx context.Context, tx *sql.Tx, request *models.ListFlavorRequest) (response *models.ListFlavorResponse, err error) {
+func (db *DB) listFlavor(ctx context.Context, request *models.ListFlavorRequest) (response *models.ListFlavorResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -410,9 +411,8 @@ func ListFlavor(ctx context.Context, tx *sql.Tx, request *models.ListFlavorReque
 }
 
 // UpdateFlavor updates a resource
-func UpdateFlavor(
+func (db *DB) updateFlavor(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateFlavorRequest,
 ) error {
 	//TODO
@@ -420,15 +420,15 @@ func UpdateFlavor(
 }
 
 // DeleteFlavor deletes a resource
-func DeleteFlavor(
+func (db *DB) deleteFlavor(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteFlavorRequest) error {
 	deleteQuery := deleteFlavorQuery
 	selectQuery := "select count(uuid) from flavor where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -463,4 +463,119 @@ func DeleteFlavor(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateFlavor handle a Create API
+func (db *DB) CreateFlavor(
+	ctx context.Context,
+	request *models.CreateFlavorRequest) (*models.CreateFlavorResponse, error) {
+	model := request.Flavor
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createFlavor(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "flavor",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateFlavorResponse{
+		Flavor: request.Flavor,
+	}, nil
+}
+
+//UpdateFlavor handles a Update request.
+func (db *DB) UpdateFlavor(
+	ctx context.Context,
+	request *models.UpdateFlavorRequest) (*models.UpdateFlavorResponse, error) {
+	model := request.Flavor
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateFlavor(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "flavor",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateFlavorResponse{
+		Flavor: model,
+	}, nil
+}
+
+//DeleteFlavor delete a resource.
+func (db *DB) DeleteFlavor(ctx context.Context, request *models.DeleteFlavorRequest) (*models.DeleteFlavorResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteFlavor(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteFlavorResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetFlavor a Get request.
+func (db *DB) GetFlavor(ctx context.Context, request *models.GetFlavorRequest) (response *models.GetFlavorResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListFlavorRequest{
+		Spec: spec,
+	}
+	var result *models.ListFlavorResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listFlavor(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.Flavors) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetFlavorResponse{
+		Flavor: result.Flavors[0],
+	}
+	return response, nil
+}
+
+//ListFlavor handles a List service Request.
+func (db *DB) ListFlavor(
+	ctx context.Context,
+	request *models.ListFlavorRequest) (response *models.ListFlavorResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listFlavor(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

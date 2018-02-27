@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateVirtualMachine(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateVirtualMachine(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "virtual_machine",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateVirtualMachineResponse{
-		VirtualMachine: request.VirtualMachine,
-	}, nil
+
+	return service.Next().CreateVirtualMachine(ctx, request)
 }
 
 //RESTUpdateVirtualMachine handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateVirtualMachine(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateVirtualMachine(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "virtual_machine",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateVirtualMachineResponse{
-		VirtualMachine: model,
-	}, nil
+	return service.Next().UpdateVirtualMachine(ctx, request)
 }
 
 //RESTDeleteVirtualMachine delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteVirtualMachine(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteVirtualMachine delete a resource.
-func (service *ContrailService) DeleteVirtualMachine(ctx context.Context, request *models.DeleteVirtualMachineRequest) (*models.DeleteVirtualMachineResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteVirtualMachine(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteVirtualMachineResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetVirtualMachine a REST Get request.
 func (service *ContrailService) RESTGetVirtualMachine(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetVirtualMachine(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetVirtualMachine a Get request.
-func (service *ContrailService) GetVirtualMachine(ctx context.Context, request *models.GetVirtualMachineRequest) (response *models.GetVirtualMachineResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListVirtualMachineRequest{
-		Spec: spec,
-	}
-	var result *models.ListVirtualMachineResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListVirtualMachine(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.VirtualMachines) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetVirtualMachineResponse{
-		VirtualMachine: result.VirtualMachines[0],
-	}
-	return response, nil
 }
 
 //RESTListVirtualMachine handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListVirtualMachine(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListVirtualMachine handles a List service Request.
-func (service *ContrailService) ListVirtualMachine(
-	ctx context.Context,
-	request *models.ListVirtualMachineRequest) (response *models.ListVirtualMachineResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListVirtualMachine(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

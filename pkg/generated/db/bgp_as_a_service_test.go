@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,13 +15,15 @@ var _ = errors.New("")
 
 func TestBGPAsAService(t *testing.T) {
 	// t.Parallel()
-	db := testDB
+	db := &DB{
+		DB: testDB,
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db, "metadata")
-	mutexTable := common.UseTable(db, "bgp_as_a_service")
-	// mutexProject := common.UseTable(db, "bgp_as_a_service")
+	mutexMetadata := common.UseTable(db.DB, "metadata")
+	mutexTable := common.UseTable(db.DB, "bgp_as_a_service")
+	// mutexProject := common.UseTable(db.DB, "bgp_as_a_service")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -39,60 +39,23 @@ func TestBGPAsAService(t *testing.T) {
 
 	// Create referred objects
 
-	var ServiceHealthCheckcreateref []*models.BGPAsAServiceServiceHealthCheckRef
-	var ServiceHealthCheckrefModel *models.ServiceHealthCheck
-	ServiceHealthCheckrefModel = models.MakeServiceHealthCheck()
-	ServiceHealthCheckrefModel.UUID = "bgp_as_a_service_service_health_check_ref_uuid"
-	ServiceHealthCheckrefModel.FQName = []string{"test", "bgp_as_a_service_service_health_check_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceHealthCheck(ctx, tx, &models.CreateServiceHealthCheckRequest{
-			ServiceHealthCheck: ServiceHealthCheckrefModel,
-		})
-	})
-	ServiceHealthCheckrefModel.UUID = "bgp_as_a_service_service_health_check_ref_uuid1"
-	ServiceHealthCheckrefModel.FQName = []string{"test", "bgp_as_a_service_service_health_check_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceHealthCheck(ctx, tx, &models.CreateServiceHealthCheckRequest{
-			ServiceHealthCheck: ServiceHealthCheckrefModel,
-		})
-	})
-	ServiceHealthCheckrefModel.UUID = "bgp_as_a_service_service_health_check_ref_uuid2"
-	ServiceHealthCheckrefModel.FQName = []string{"test", "bgp_as_a_service_service_health_check_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceHealthCheck(ctx, tx, &models.CreateServiceHealthCheckRequest{
-			ServiceHealthCheck: ServiceHealthCheckrefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	ServiceHealthCheckcreateref = append(ServiceHealthCheckcreateref, &models.BGPAsAServiceServiceHealthCheckRef{UUID: "bgp_as_a_service_service_health_check_ref_uuid", To: []string{"test", "bgp_as_a_service_service_health_check_ref_uuid"}})
-	ServiceHealthCheckcreateref = append(ServiceHealthCheckcreateref, &models.BGPAsAServiceServiceHealthCheckRef{UUID: "bgp_as_a_service_service_health_check_ref_uuid2", To: []string{"test", "bgp_as_a_service_service_health_check_ref_uuid2"}})
-	model.ServiceHealthCheckRefs = ServiceHealthCheckcreateref
-
 	var VirtualMachineInterfacecreateref []*models.BGPAsAServiceVirtualMachineInterfaceRef
 	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
 	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
 	VirtualMachineInterfacerefModel.UUID = "bgp_as_a_service_virtual_machine_interface_ref_uuid"
 	VirtualMachineInterfacerefModel.FQName = []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualMachineInterface(ctx, tx, &models.CreateVirtualMachineInterfaceRequest{
-			VirtualMachineInterface: VirtualMachineInterfacerefModel,
-		})
+	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: VirtualMachineInterfacerefModel,
 	})
 	VirtualMachineInterfacerefModel.UUID = "bgp_as_a_service_virtual_machine_interface_ref_uuid1"
 	VirtualMachineInterfacerefModel.FQName = []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualMachineInterface(ctx, tx, &models.CreateVirtualMachineInterfaceRequest{
-			VirtualMachineInterface: VirtualMachineInterfacerefModel,
-		})
+	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: VirtualMachineInterfacerefModel,
 	})
 	VirtualMachineInterfacerefModel.UUID = "bgp_as_a_service_virtual_machine_interface_ref_uuid2"
 	VirtualMachineInterfacerefModel.FQName = []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualMachineInterface(ctx, tx, &models.CreateVirtualMachineInterfaceRequest{
-			VirtualMachineInterface: VirtualMachineInterfacerefModel,
-		})
+	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: VirtualMachineInterfacerefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
@@ -100,6 +63,31 @@ func TestBGPAsAService(t *testing.T) {
 	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.BGPAsAServiceVirtualMachineInterfaceRef{UUID: "bgp_as_a_service_virtual_machine_interface_ref_uuid", To: []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid"}})
 	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.BGPAsAServiceVirtualMachineInterfaceRef{UUID: "bgp_as_a_service_virtual_machine_interface_ref_uuid2", To: []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid2"}})
 	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
+
+	var ServiceHealthCheckcreateref []*models.BGPAsAServiceServiceHealthCheckRef
+	var ServiceHealthCheckrefModel *models.ServiceHealthCheck
+	ServiceHealthCheckrefModel = models.MakeServiceHealthCheck()
+	ServiceHealthCheckrefModel.UUID = "bgp_as_a_service_service_health_check_ref_uuid"
+	ServiceHealthCheckrefModel.FQName = []string{"test", "bgp_as_a_service_service_health_check_ref_uuid"}
+	_, err = db.CreateServiceHealthCheck(ctx, &models.CreateServiceHealthCheckRequest{
+		ServiceHealthCheck: ServiceHealthCheckrefModel,
+	})
+	ServiceHealthCheckrefModel.UUID = "bgp_as_a_service_service_health_check_ref_uuid1"
+	ServiceHealthCheckrefModel.FQName = []string{"test", "bgp_as_a_service_service_health_check_ref_uuid1"}
+	_, err = db.CreateServiceHealthCheck(ctx, &models.CreateServiceHealthCheckRequest{
+		ServiceHealthCheck: ServiceHealthCheckrefModel,
+	})
+	ServiceHealthCheckrefModel.UUID = "bgp_as_a_service_service_health_check_ref_uuid2"
+	ServiceHealthCheckrefModel.FQName = []string{"test", "bgp_as_a_service_service_health_check_ref_uuid2"}
+	_, err = db.CreateServiceHealthCheck(ctx, &models.CreateServiceHealthCheckRequest{
+		ServiceHealthCheck: ServiceHealthCheckrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	ServiceHealthCheckcreateref = append(ServiceHealthCheckcreateref, &models.BGPAsAServiceServiceHealthCheckRef{UUID: "bgp_as_a_service_service_health_check_ref_uuid", To: []string{"test", "bgp_as_a_service_service_health_check_ref_uuid"}})
+	ServiceHealthCheckcreateref = append(ServiceHealthCheckcreateref, &models.BGPAsAServiceServiceHealthCheckRef{UUID: "bgp_as_a_service_service_health_check_ref_uuid2", To: []string{"test", "bgp_as_a_service_service_health_check_ref_uuid2"}})
+	model.ServiceHealthCheckRefs = ServiceHealthCheckcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -109,10 +97,9 @@ func TestBGPAsAService(t *testing.T) {
 	var createShare []*models.ShareType
 	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
 	model.Perms2.Share = createShare
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx, &models.CreateProjectRequest{
-			Project: projectModel,
-		})
+
+	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
+		Project: projectModel,
 	})
 	if err != nil {
 		t.Fatal("project create failed", err)
@@ -270,12 +257,11 @@ func TestBGPAsAService(t *testing.T) {
 	//    common.SetValueByPath(updateMap, "ServiceHealthCheckRefs", ".", ServiceHealthCheckref)
 	//
 	//
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateBGPAsAService(ctx, tx,
-			&models.CreateBGPAsAServiceRequest{
-				BGPAsAService: model,
-			})
-	})
+	_, err = db.CreateBGPAsAService(ctx,
+		&models.CreateBGPAsAServiceRequest{
+			BGPAsAService: model,
+		})
+
 	if err != nil {
 		t.Fatal("create failed", err)
 	}
@@ -289,7 +275,8 @@ func TestBGPAsAService(t *testing.T) {
 
 	//Delete ref entries, referred objects
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_bgp_as_a_service_virtual_machine_interface` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
@@ -302,35 +289,29 @@ func TestBGPAsAService(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualMachineInterface(ctx, tx,
-			&models.DeleteVirtualMachineInterfaceRequest{
-				ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid"})
-	})
+	_, err = db.DeleteVirtualMachineInterface(ctx,
+		&models.DeleteVirtualMachineInterfaceRequest{
+			ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref bgp_as_a_service_virtual_machine_interface_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualMachineInterface(ctx, tx,
-			&models.DeleteVirtualMachineInterfaceRequest{
-				ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid1"})
-	})
+	_, err = db.DeleteVirtualMachineInterface(ctx,
+		&models.DeleteVirtualMachineInterfaceRequest{
+			ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref bgp_as_a_service_virtual_machine_interface_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualMachineInterface(
-			ctx,
-			tx,
-			&models.DeleteVirtualMachineInterfaceRequest{
-				ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteVirtualMachineInterface(
+		ctx,
+		&models.DeleteVirtualMachineInterfaceRequest{
+			ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref bgp_as_a_service_virtual_machine_interface_ref_uuid2 failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_bgp_as_a_service_service_health_check` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing ServiceHealthCheckRefs delete statement failed")
@@ -343,100 +324,73 @@ func TestBGPAsAService(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceHealthCheck(ctx, tx,
-			&models.DeleteServiceHealthCheckRequest{
-				ID: "bgp_as_a_service_service_health_check_ref_uuid"})
-	})
+	_, err = db.DeleteServiceHealthCheck(ctx,
+		&models.DeleteServiceHealthCheckRequest{
+			ID: "bgp_as_a_service_service_health_check_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref bgp_as_a_service_service_health_check_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceHealthCheck(ctx, tx,
-			&models.DeleteServiceHealthCheckRequest{
-				ID: "bgp_as_a_service_service_health_check_ref_uuid1"})
-	})
+	_, err = db.DeleteServiceHealthCheck(ctx,
+		&models.DeleteServiceHealthCheckRequest{
+			ID: "bgp_as_a_service_service_health_check_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref bgp_as_a_service_service_health_check_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceHealthCheck(
-			ctx,
-			tx,
-			&models.DeleteServiceHealthCheckRequest{
-				ID: "bgp_as_a_service_service_health_check_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteServiceHealthCheck(
+		ctx,
+		&models.DeleteServiceHealthCheckRequest{
+			ID: "bgp_as_a_service_service_health_check_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref bgp_as_a_service_service_health_check_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteProject(ctx, tx, &models.DeleteProjectRequest{
-			ID: projectModel.UUID})
-	})
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
 	if err != nil {
 		t.Fatal("delete project failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListBGPAsAService(ctx, tx, &models.ListBGPAsAServiceRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.BGPAsAServices) != 1 {
-			return fmt.Errorf("expected one element")
-		}
-		return nil
-	})
+	response, err := db.ListBGPAsAService(ctx, &models.ListBGPAsAServiceRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
+	if len(response.BGPAsAServices) != 1 {
+		t.Fatal("expected one element", err)
+	}
 
 	ctxDemo := context.WithValue(ctx, "auth", common.NewAuthContext("default", "demo", "demo", []string{}))
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteBGPAsAService(ctxDemo, tx,
-			&models.DeleteBGPAsAServiceRequest{
-				ID: model.UUID},
-		)
-	})
+	_, err = db.DeleteBGPAsAService(ctxDemo,
+		&models.DeleteBGPAsAServiceRequest{
+			ID: model.UUID},
+	)
 	if err == nil {
 		t.Fatal("auth failed")
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteBGPAsAService(ctx, tx,
-			&models.DeleteBGPAsAServiceRequest{
-				ID: model.UUID})
-	})
-	if err != nil {
-		t.Fatal("delete failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateBGPAsAService(ctx, tx,
-			&models.CreateBGPAsAServiceRequest{
-				BGPAsAService: model})
-	})
+	_, err = db.CreateBGPAsAService(ctx,
+		&models.CreateBGPAsAServiceRequest{
+			BGPAsAService: model})
 	if err == nil {
 		t.Fatal("Raise Error On Duplicate Create failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListBGPAsAService(ctx, tx, &models.ListBGPAsAServiceRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.BGPAsAServices) != 0 {
-			return fmt.Errorf("expected no element")
-		}
-		return nil
-	})
+	_, err = db.DeleteBGPAsAService(ctx,
+		&models.DeleteBGPAsAServiceRequest{
+			ID: model.UUID})
+	if err != nil {
+		t.Fatal("delete failed", err)
+	}
+
+	response, err = db.ListBGPAsAService(ctx, &models.ListBGPAsAServiceRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+	if len(response.BGPAsAServices) != 0 {
+		t.Fatal("expected no element", err)
 	}
 	return
 }

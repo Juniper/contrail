@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateRouteTarget(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateRouteTarget(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "route_target",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateRouteTargetResponse{
-		RouteTarget: request.RouteTarget,
-	}, nil
+
+	return service.Next().CreateRouteTarget(ctx, request)
 }
 
 //RESTUpdateRouteTarget handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateRouteTarget(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateRouteTarget(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "route_target",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateRouteTargetResponse{
-		RouteTarget: model,
-	}, nil
+	return service.Next().UpdateRouteTarget(ctx, request)
 }
 
 //RESTDeleteRouteTarget delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteRouteTarget(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteRouteTarget delete a resource.
-func (service *ContrailService) DeleteRouteTarget(ctx context.Context, request *models.DeleteRouteTargetRequest) (*models.DeleteRouteTargetResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteRouteTarget(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteRouteTargetResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetRouteTarget a REST Get request.
 func (service *ContrailService) RESTGetRouteTarget(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetRouteTarget(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetRouteTarget a Get request.
-func (service *ContrailService) GetRouteTarget(ctx context.Context, request *models.GetRouteTargetRequest) (response *models.GetRouteTargetResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListRouteTargetRequest{
-		Spec: spec,
-	}
-	var result *models.ListRouteTargetResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListRouteTarget(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.RouteTargets) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetRouteTargetResponse{
-		RouteTarget: result.RouteTargets[0],
-	}
-	return response, nil
 }
 
 //RESTListRouteTarget handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListRouteTarget(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListRouteTarget handles a List service Request.
-func (service *ContrailService) ListRouteTarget(
-	ctx context.Context,
-	request *models.ListRouteTargetRequest) (response *models.ListRouteTargetResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListRouteTarget(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

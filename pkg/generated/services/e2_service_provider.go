@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateE2ServiceProvider(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateE2ServiceProvider(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "e2_service_provider",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateE2ServiceProviderResponse{
-		E2ServiceProvider: request.E2ServiceProvider,
-	}, nil
+
+	return service.Next().CreateE2ServiceProvider(ctx, request)
 }
 
 //RESTUpdateE2ServiceProvider handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateE2ServiceProvider(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateE2ServiceProvider(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "e2_service_provider",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateE2ServiceProviderResponse{
-		E2ServiceProvider: model,
-	}, nil
+	return service.Next().UpdateE2ServiceProvider(ctx, request)
 }
 
 //RESTDeleteE2ServiceProvider delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteE2ServiceProvider(c echo.Context) erro
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteE2ServiceProvider delete a resource.
-func (service *ContrailService) DeleteE2ServiceProvider(ctx context.Context, request *models.DeleteE2ServiceProviderRequest) (*models.DeleteE2ServiceProviderResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteE2ServiceProvider(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteE2ServiceProviderResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetE2ServiceProvider a REST Get request.
 func (service *ContrailService) RESTGetE2ServiceProvider(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetE2ServiceProvider(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetE2ServiceProvider a Get request.
-func (service *ContrailService) GetE2ServiceProvider(ctx context.Context, request *models.GetE2ServiceProviderRequest) (response *models.GetE2ServiceProviderResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListE2ServiceProviderRequest{
-		Spec: spec,
-	}
-	var result *models.ListE2ServiceProviderResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListE2ServiceProvider(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.E2ServiceProviders) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetE2ServiceProviderResponse{
-		E2ServiceProvider: result.E2ServiceProviders[0],
-	}
-	return response, nil
 }
 
 //RESTListE2ServiceProvider handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListE2ServiceProvider(c echo.Context) error 
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListE2ServiceProvider handles a List service Request.
-func (service *ContrailService) ListE2ServiceProvider(
-	ctx context.Context,
-	request *models.ListE2ServiceProviderRequest) (response *models.ListE2ServiceProviderResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListE2ServiceProvider(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

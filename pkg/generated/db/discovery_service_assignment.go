@@ -82,10 +82,10 @@ var DiscoveryServiceAssignmentBackRefFields = map[string][]string{
 var DiscoveryServiceAssignmentParents = []string{}
 
 // CreateDiscoveryServiceAssignment inserts DiscoveryServiceAssignment to DB
-func CreateDiscoveryServiceAssignment(
+func (db *DB) createDiscoveryServiceAssignment(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateDiscoveryServiceAssignmentRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.DiscoveryServiceAssignment
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertDiscoveryServiceAssignmentQuery)
@@ -455,8 +455,9 @@ func scanDiscoveryServiceAssignment(values map[string]interface{}) (*models.Disc
 }
 
 // ListDiscoveryServiceAssignment lists DiscoveryServiceAssignment with list spec.
-func ListDiscoveryServiceAssignment(ctx context.Context, tx *sql.Tx, request *models.ListDiscoveryServiceAssignmentRequest) (response *models.ListDiscoveryServiceAssignmentResponse, err error) {
+func (db *DB) listDiscoveryServiceAssignment(ctx context.Context, request *models.ListDiscoveryServiceAssignmentRequest) (response *models.ListDiscoveryServiceAssignmentResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -518,9 +519,8 @@ func ListDiscoveryServiceAssignment(ctx context.Context, tx *sql.Tx, request *mo
 }
 
 // UpdateDiscoveryServiceAssignment updates a resource
-func UpdateDiscoveryServiceAssignment(
+func (db *DB) updateDiscoveryServiceAssignment(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateDiscoveryServiceAssignmentRequest,
 ) error {
 	//TODO
@@ -528,15 +528,15 @@ func UpdateDiscoveryServiceAssignment(
 }
 
 // DeleteDiscoveryServiceAssignment deletes a resource
-func DeleteDiscoveryServiceAssignment(
+func (db *DB) deleteDiscoveryServiceAssignment(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteDiscoveryServiceAssignmentRequest) error {
 	deleteQuery := deleteDiscoveryServiceAssignmentQuery
 	selectQuery := "select count(uuid) from discovery_service_assignment where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -571,4 +571,119 @@ func DeleteDiscoveryServiceAssignment(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateDiscoveryServiceAssignment handle a Create API
+func (db *DB) CreateDiscoveryServiceAssignment(
+	ctx context.Context,
+	request *models.CreateDiscoveryServiceAssignmentRequest) (*models.CreateDiscoveryServiceAssignmentResponse, error) {
+	model := request.DiscoveryServiceAssignment
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createDiscoveryServiceAssignment(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "discovery_service_assignment",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateDiscoveryServiceAssignmentResponse{
+		DiscoveryServiceAssignment: request.DiscoveryServiceAssignment,
+	}, nil
+}
+
+//UpdateDiscoveryServiceAssignment handles a Update request.
+func (db *DB) UpdateDiscoveryServiceAssignment(
+	ctx context.Context,
+	request *models.UpdateDiscoveryServiceAssignmentRequest) (*models.UpdateDiscoveryServiceAssignmentResponse, error) {
+	model := request.DiscoveryServiceAssignment
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateDiscoveryServiceAssignment(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "discovery_service_assignment",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateDiscoveryServiceAssignmentResponse{
+		DiscoveryServiceAssignment: model,
+	}, nil
+}
+
+//DeleteDiscoveryServiceAssignment delete a resource.
+func (db *DB) DeleteDiscoveryServiceAssignment(ctx context.Context, request *models.DeleteDiscoveryServiceAssignmentRequest) (*models.DeleteDiscoveryServiceAssignmentResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteDiscoveryServiceAssignment(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteDiscoveryServiceAssignmentResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetDiscoveryServiceAssignment a Get request.
+func (db *DB) GetDiscoveryServiceAssignment(ctx context.Context, request *models.GetDiscoveryServiceAssignmentRequest) (response *models.GetDiscoveryServiceAssignmentResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListDiscoveryServiceAssignmentRequest{
+		Spec: spec,
+	}
+	var result *models.ListDiscoveryServiceAssignmentResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listDiscoveryServiceAssignment(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.DiscoveryServiceAssignments) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetDiscoveryServiceAssignmentResponse{
+		DiscoveryServiceAssignment: result.DiscoveryServiceAssignments[0],
+	}
+	return response, nil
+}
+
+//ListDiscoveryServiceAssignment handles a List service Request.
+func (db *DB) ListDiscoveryServiceAssignment(
+	ctx context.Context,
+	request *models.ListDiscoveryServiceAssignmentRequest) (response *models.ListDiscoveryServiceAssignmentResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listDiscoveryServiceAssignment(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

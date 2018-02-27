@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateAppformixNode(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateAppformixNode(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "appformix_node",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateAppformixNodeResponse{
-		AppformixNode: request.AppformixNode,
-	}, nil
+
+	return service.Next().CreateAppformixNode(ctx, request)
 }
 
 //RESTUpdateAppformixNode handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateAppformixNode(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateAppformixNode(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "appformix_node",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateAppformixNodeResponse{
-		AppformixNode: model,
-	}, nil
+	return service.Next().UpdateAppformixNode(ctx, request)
 }
 
 //RESTDeleteAppformixNode delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteAppformixNode(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteAppformixNode delete a resource.
-func (service *ContrailService) DeleteAppformixNode(ctx context.Context, request *models.DeleteAppformixNodeRequest) (*models.DeleteAppformixNodeResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteAppformixNode(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteAppformixNodeResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetAppformixNode a REST Get request.
 func (service *ContrailService) RESTGetAppformixNode(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetAppformixNode(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetAppformixNode a Get request.
-func (service *ContrailService) GetAppformixNode(ctx context.Context, request *models.GetAppformixNodeRequest) (response *models.GetAppformixNodeResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListAppformixNodeRequest{
-		Spec: spec,
-	}
-	var result *models.ListAppformixNodeResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListAppformixNode(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.AppformixNodes) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetAppformixNodeResponse{
-		AppformixNode: result.AppformixNodes[0],
-	}
-	return response, nil
 }
 
 //RESTListAppformixNode handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListAppformixNode(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListAppformixNode handles a List service Request.
-func (service *ContrailService) ListAppformixNode(
-	ctx context.Context,
-	request *models.ListAppformixNodeRequest) (response *models.ListAppformixNodeResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListAppformixNode(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

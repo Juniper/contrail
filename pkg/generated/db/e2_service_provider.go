@@ -67,10 +67,10 @@ const insertE2ServiceProviderPhysicalRouterQuery = "insert into `ref_e2_service_
 const insertE2ServiceProviderPeeringPolicyQuery = "insert into `ref_e2_service_provider_peering_policy` (`from`, `to` ) values (?, ?);"
 
 // CreateE2ServiceProvider inserts E2ServiceProvider to DB
-func CreateE2ServiceProvider(
+func (db *DB) createE2ServiceProvider(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateE2ServiceProviderRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.E2ServiceProvider
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertE2ServiceProviderQuery)
@@ -108,19 +108,6 @@ func CreateE2ServiceProvider(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtPhysicalRouterRef, err := tx.Prepare(insertE2ServiceProviderPhysicalRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing PhysicalRouterRefs create statement failed")
-	}
-	defer stmtPhysicalRouterRef.Close()
-	for _, ref := range model.PhysicalRouterRefs {
-
-		_, err = stmtPhysicalRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "PhysicalRouterRefs create failed")
-		}
-	}
-
 	stmtPeeringPolicyRef, err := tx.Prepare(insertE2ServiceProviderPeeringPolicyQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing PeeringPolicyRefs create statement failed")
@@ -131,6 +118,19 @@ func CreateE2ServiceProvider(
 		_, err = stmtPeeringPolicyRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PeeringPolicyRefs create failed")
+		}
+	}
+
+	stmtPhysicalRouterRef, err := tx.Prepare(insertE2ServiceProviderPhysicalRouterQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing PhysicalRouterRefs create statement failed")
+	}
+	defer stmtPhysicalRouterRef.Close()
+	for _, ref := range model.PhysicalRouterRefs {
+
+		_, err = stmtPhysicalRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "PhysicalRouterRefs create failed")
 		}
 	}
 
@@ -288,26 +288,6 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 
 	}
 
-	if value, ok := values["ref_physical_router"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.E2ServiceProviderPhysicalRouterRef{}
-			referenceModel.UUID = uuid
-			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_peering_policy"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -328,12 +308,33 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 		}
 	}
 
+	if value, ok := values["ref_physical_router"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.E2ServiceProviderPhysicalRouterRef{}
+			referenceModel.UUID = uuid
+			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
+
+		}
+	}
+
 	return m, nil
 }
 
 // ListE2ServiceProvider lists E2ServiceProvider with list spec.
-func ListE2ServiceProvider(ctx context.Context, tx *sql.Tx, request *models.ListE2ServiceProviderRequest) (response *models.ListE2ServiceProviderResponse, err error) {
+func (db *DB) listE2ServiceProvider(ctx context.Context, request *models.ListE2ServiceProviderRequest) (response *models.ListE2ServiceProviderResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -395,9 +396,8 @@ func ListE2ServiceProvider(ctx context.Context, tx *sql.Tx, request *models.List
 }
 
 // UpdateE2ServiceProvider updates a resource
-func UpdateE2ServiceProvider(
+func (db *DB) updateE2ServiceProvider(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateE2ServiceProviderRequest,
 ) error {
 	//TODO
@@ -405,15 +405,15 @@ func UpdateE2ServiceProvider(
 }
 
 // DeleteE2ServiceProvider deletes a resource
-func DeleteE2ServiceProvider(
+func (db *DB) deleteE2ServiceProvider(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteE2ServiceProviderRequest) error {
 	deleteQuery := deleteE2ServiceProviderQuery
 	selectQuery := "select count(uuid) from e2_service_provider where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -448,4 +448,119 @@ func DeleteE2ServiceProvider(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateE2ServiceProvider handle a Create API
+func (db *DB) CreateE2ServiceProvider(
+	ctx context.Context,
+	request *models.CreateE2ServiceProviderRequest) (*models.CreateE2ServiceProviderResponse, error) {
+	model := request.E2ServiceProvider
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createE2ServiceProvider(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "e2_service_provider",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateE2ServiceProviderResponse{
+		E2ServiceProvider: request.E2ServiceProvider,
+	}, nil
+}
+
+//UpdateE2ServiceProvider handles a Update request.
+func (db *DB) UpdateE2ServiceProvider(
+	ctx context.Context,
+	request *models.UpdateE2ServiceProviderRequest) (*models.UpdateE2ServiceProviderResponse, error) {
+	model := request.E2ServiceProvider
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateE2ServiceProvider(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "e2_service_provider",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateE2ServiceProviderResponse{
+		E2ServiceProvider: model,
+	}, nil
+}
+
+//DeleteE2ServiceProvider delete a resource.
+func (db *DB) DeleteE2ServiceProvider(ctx context.Context, request *models.DeleteE2ServiceProviderRequest) (*models.DeleteE2ServiceProviderResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteE2ServiceProvider(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteE2ServiceProviderResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetE2ServiceProvider a Get request.
+func (db *DB) GetE2ServiceProvider(ctx context.Context, request *models.GetE2ServiceProviderRequest) (response *models.GetE2ServiceProviderResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListE2ServiceProviderRequest{
+		Spec: spec,
+	}
+	var result *models.ListE2ServiceProviderResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listE2ServiceProvider(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.E2ServiceProviders) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetE2ServiceProviderResponse{
+		E2ServiceProvider: result.E2ServiceProviders[0],
+	}
+	return response, nil
+}
+
+//ListE2ServiceProvider handles a List service Request.
+func (db *DB) ListE2ServiceProvider(
+	ctx context.Context,
+	request *models.ListE2ServiceProviderRequest) (response *models.ListE2ServiceProviderResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listE2ServiceProvider(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

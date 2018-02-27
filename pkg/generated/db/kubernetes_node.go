@@ -67,10 +67,10 @@ var KubernetesNodeParents = []string{
 const insertKubernetesNodeNodeQuery = "insert into `ref_kubernetes_node_node` (`from`, `to` ) values (?, ?);"
 
 // CreateKubernetesNode inserts KubernetesNode to DB
-func CreateKubernetesNode(
+func (db *DB) createKubernetesNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateKubernetesNodeRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.KubernetesNode
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertKubernetesNodeQuery)
@@ -327,8 +327,9 @@ func scanKubernetesNode(values map[string]interface{}) (*models.KubernetesNode, 
 }
 
 // ListKubernetesNode lists KubernetesNode with list spec.
-func ListKubernetesNode(ctx context.Context, tx *sql.Tx, request *models.ListKubernetesNodeRequest) (response *models.ListKubernetesNodeResponse, err error) {
+func (db *DB) listKubernetesNode(ctx context.Context, request *models.ListKubernetesNodeRequest) (response *models.ListKubernetesNodeResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -390,9 +391,8 @@ func ListKubernetesNode(ctx context.Context, tx *sql.Tx, request *models.ListKub
 }
 
 // UpdateKubernetesNode updates a resource
-func UpdateKubernetesNode(
+func (db *DB) updateKubernetesNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateKubernetesNodeRequest,
 ) error {
 	//TODO
@@ -400,15 +400,15 @@ func UpdateKubernetesNode(
 }
 
 // DeleteKubernetesNode deletes a resource
-func DeleteKubernetesNode(
+func (db *DB) deleteKubernetesNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteKubernetesNodeRequest) error {
 	deleteQuery := deleteKubernetesNodeQuery
 	selectQuery := "select count(uuid) from kubernetes_node where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -443,4 +443,119 @@ func DeleteKubernetesNode(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateKubernetesNode handle a Create API
+func (db *DB) CreateKubernetesNode(
+	ctx context.Context,
+	request *models.CreateKubernetesNodeRequest) (*models.CreateKubernetesNodeResponse, error) {
+	model := request.KubernetesNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createKubernetesNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "kubernetes_node",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateKubernetesNodeResponse{
+		KubernetesNode: request.KubernetesNode,
+	}, nil
+}
+
+//UpdateKubernetesNode handles a Update request.
+func (db *DB) UpdateKubernetesNode(
+	ctx context.Context,
+	request *models.UpdateKubernetesNodeRequest) (*models.UpdateKubernetesNodeResponse, error) {
+	model := request.KubernetesNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateKubernetesNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "kubernetes_node",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateKubernetesNodeResponse{
+		KubernetesNode: model,
+	}, nil
+}
+
+//DeleteKubernetesNode delete a resource.
+func (db *DB) DeleteKubernetesNode(ctx context.Context, request *models.DeleteKubernetesNodeRequest) (*models.DeleteKubernetesNodeResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteKubernetesNode(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteKubernetesNodeResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetKubernetesNode a Get request.
+func (db *DB) GetKubernetesNode(ctx context.Context, request *models.GetKubernetesNodeRequest) (response *models.GetKubernetesNodeResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListKubernetesNodeRequest{
+		Spec: spec,
+	}
+	var result *models.ListKubernetesNodeResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listKubernetesNode(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.KubernetesNodes) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetKubernetesNodeResponse{
+		KubernetesNode: result.KubernetesNodes[0],
+	}
+	return response, nil
+}
+
+//ListKubernetesNode handles a List service Request.
+func (db *DB) ListKubernetesNode(
+	ctx context.Context,
+	request *models.ListKubernetesNodeRequest) (response *models.ListKubernetesNodeResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listKubernetesNode(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

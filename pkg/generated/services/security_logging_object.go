@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateSecurityLoggingObject(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateSecurityLoggingObject(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "security_logging_object",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateSecurityLoggingObjectResponse{
-		SecurityLoggingObject: request.SecurityLoggingObject,
-	}, nil
+
+	return service.Next().CreateSecurityLoggingObject(ctx, request)
 }
 
 //RESTUpdateSecurityLoggingObject handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateSecurityLoggingObject(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateSecurityLoggingObject(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "security_logging_object",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateSecurityLoggingObjectResponse{
-		SecurityLoggingObject: model,
-	}, nil
+	return service.Next().UpdateSecurityLoggingObject(ctx, request)
 }
 
 //RESTDeleteSecurityLoggingObject delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteSecurityLoggingObject(c echo.Context) 
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteSecurityLoggingObject delete a resource.
-func (service *ContrailService) DeleteSecurityLoggingObject(ctx context.Context, request *models.DeleteSecurityLoggingObjectRequest) (*models.DeleteSecurityLoggingObjectResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteSecurityLoggingObject(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteSecurityLoggingObjectResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetSecurityLoggingObject a REST Get request.
 func (service *ContrailService) RESTGetSecurityLoggingObject(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetSecurityLoggingObject(c echo.Context) err
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetSecurityLoggingObject a Get request.
-func (service *ContrailService) GetSecurityLoggingObject(ctx context.Context, request *models.GetSecurityLoggingObjectRequest) (response *models.GetSecurityLoggingObjectResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListSecurityLoggingObjectRequest{
-		Spec: spec,
-	}
-	var result *models.ListSecurityLoggingObjectResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListSecurityLoggingObject(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.SecurityLoggingObjects) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetSecurityLoggingObjectResponse{
-		SecurityLoggingObject: result.SecurityLoggingObjects[0],
-	}
-	return response, nil
 }
 
 //RESTListSecurityLoggingObject handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListSecurityLoggingObject(c echo.Context) er
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListSecurityLoggingObject handles a List service Request.
-func (service *ContrailService) ListSecurityLoggingObject(
-	ctx context.Context,
-	request *models.ListSecurityLoggingObjectRequest) (response *models.ListSecurityLoggingObjectResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListSecurityLoggingObject(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

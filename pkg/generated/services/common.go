@@ -1,7 +1,6 @@
 package services
 
 import (
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
@@ -11,12 +10,7 @@ import (
 )
 
 type ContrailService struct {
-	DB *sql.DB
-}
-
-//SetDB sets db object
-func (service *ContrailService) SetDB(db *sql.DB) {
-	service.DB = db
+	models.BaseService
 }
 
 type RESTResource struct {

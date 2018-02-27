@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateVirtualRouter(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateVirtualRouter(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "virtual_router",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateVirtualRouterResponse{
-		VirtualRouter: request.VirtualRouter,
-	}, nil
+
+	return service.Next().CreateVirtualRouter(ctx, request)
 }
 
 //RESTUpdateVirtualRouter handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateVirtualRouter(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateVirtualRouter(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "virtual_router",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateVirtualRouterResponse{
-		VirtualRouter: model,
-	}, nil
+	return service.Next().UpdateVirtualRouter(ctx, request)
 }
 
 //RESTDeleteVirtualRouter delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteVirtualRouter(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteVirtualRouter delete a resource.
-func (service *ContrailService) DeleteVirtualRouter(ctx context.Context, request *models.DeleteVirtualRouterRequest) (*models.DeleteVirtualRouterResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteVirtualRouter(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteVirtualRouterResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetVirtualRouter a REST Get request.
 func (service *ContrailService) RESTGetVirtualRouter(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetVirtualRouter(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetVirtualRouter a Get request.
-func (service *ContrailService) GetVirtualRouter(ctx context.Context, request *models.GetVirtualRouterRequest) (response *models.GetVirtualRouterResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListVirtualRouterRequest{
-		Spec: spec,
-	}
-	var result *models.ListVirtualRouterResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListVirtualRouter(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.VirtualRouters) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetVirtualRouterResponse{
-		VirtualRouter: result.VirtualRouters[0],
-	}
-	return response, nil
 }
 
 //RESTListVirtualRouter handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListVirtualRouter(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListVirtualRouter handles a List service Request.
-func (service *ContrailService) ListVirtualRouter(
-	ctx context.Context,
-	request *models.ListVirtualRouterRequest) (response *models.ListVirtualRouterResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListVirtualRouter(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

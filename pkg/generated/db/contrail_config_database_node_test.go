@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,13 +15,15 @@ var _ = errors.New("")
 
 func TestContrailConfigDatabaseNode(t *testing.T) {
 	// t.Parallel()
-	db := testDB
+	db := &DB{
+		DB: testDB,
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db, "metadata")
-	mutexTable := common.UseTable(db, "contrail_config_database_node")
-	// mutexProject := common.UseTable(db, "contrail_config_database_node")
+	mutexMetadata := common.UseTable(db.DB, "metadata")
+	mutexTable := common.UseTable(db.DB, "contrail_config_database_node")
+	// mutexProject := common.UseTable(db.DB, "contrail_config_database_node")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -44,24 +44,18 @@ func TestContrailConfigDatabaseNode(t *testing.T) {
 	NoderefModel = models.MakeNode()
 	NoderefModel.UUID = "contrail_config_database_node_node_ref_uuid"
 	NoderefModel.FQName = []string{"test", "contrail_config_database_node_node_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNode(ctx, tx, &models.CreateNodeRequest{
-			Node: NoderefModel,
-		})
+	_, err = db.CreateNode(ctx, &models.CreateNodeRequest{
+		Node: NoderefModel,
 	})
 	NoderefModel.UUID = "contrail_config_database_node_node_ref_uuid1"
 	NoderefModel.FQName = []string{"test", "contrail_config_database_node_node_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNode(ctx, tx, &models.CreateNodeRequest{
-			Node: NoderefModel,
-		})
+	_, err = db.CreateNode(ctx, &models.CreateNodeRequest{
+		Node: NoderefModel,
 	})
 	NoderefModel.UUID = "contrail_config_database_node_node_ref_uuid2"
 	NoderefModel.FQName = []string{"test", "contrail_config_database_node_node_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateNode(ctx, tx, &models.CreateNodeRequest{
-			Node: NoderefModel,
-		})
+	_, err = db.CreateNode(ctx, &models.CreateNodeRequest{
+		Node: NoderefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
@@ -78,10 +72,9 @@ func TestContrailConfigDatabaseNode(t *testing.T) {
 	var createShare []*models.ShareType
 	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
 	model.Perms2.Share = createShare
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx, &models.CreateProjectRequest{
-			Project: projectModel,
-		})
+
+	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
+		Project: projectModel,
 	})
 	if err != nil {
 		t.Fatal("project create failed", err)
@@ -227,12 +220,11 @@ func TestContrailConfigDatabaseNode(t *testing.T) {
 	//    common.SetValueByPath(updateMap, "NodeRefs", ".", Noderef)
 	//
 	//
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateContrailConfigDatabaseNode(ctx, tx,
-			&models.CreateContrailConfigDatabaseNodeRequest{
-				ContrailConfigDatabaseNode: model,
-			})
-	})
+	_, err = db.CreateContrailConfigDatabaseNode(ctx,
+		&models.CreateContrailConfigDatabaseNodeRequest{
+			ContrailConfigDatabaseNode: model,
+		})
+
 	if err != nil {
 		t.Fatal("create failed", err)
 	}
@@ -246,7 +238,8 @@ func TestContrailConfigDatabaseNode(t *testing.T) {
 
 	//Delete ref entries, referred objects
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_contrail_config_database_node_node` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing NodeRefs delete statement failed")
@@ -259,100 +252,73 @@ func TestContrailConfigDatabaseNode(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteNode(ctx, tx,
-			&models.DeleteNodeRequest{
-				ID: "contrail_config_database_node_node_ref_uuid"})
-	})
+	_, err = db.DeleteNode(ctx,
+		&models.DeleteNodeRequest{
+			ID: "contrail_config_database_node_node_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref contrail_config_database_node_node_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteNode(ctx, tx,
-			&models.DeleteNodeRequest{
-				ID: "contrail_config_database_node_node_ref_uuid1"})
-	})
+	_, err = db.DeleteNode(ctx,
+		&models.DeleteNodeRequest{
+			ID: "contrail_config_database_node_node_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref contrail_config_database_node_node_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteNode(
-			ctx,
-			tx,
-			&models.DeleteNodeRequest{
-				ID: "contrail_config_database_node_node_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteNode(
+		ctx,
+		&models.DeleteNodeRequest{
+			ID: "contrail_config_database_node_node_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref contrail_config_database_node_node_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteProject(ctx, tx, &models.DeleteProjectRequest{
-			ID: projectModel.UUID})
-	})
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
 	if err != nil {
 		t.Fatal("delete project failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListContrailConfigDatabaseNode(ctx, tx, &models.ListContrailConfigDatabaseNodeRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.ContrailConfigDatabaseNodes) != 1 {
-			return fmt.Errorf("expected one element")
-		}
-		return nil
-	})
+	response, err := db.ListContrailConfigDatabaseNode(ctx, &models.ListContrailConfigDatabaseNodeRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
+	if len(response.ContrailConfigDatabaseNodes) != 1 {
+		t.Fatal("expected one element", err)
+	}
 
 	ctxDemo := context.WithValue(ctx, "auth", common.NewAuthContext("default", "demo", "demo", []string{}))
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteContrailConfigDatabaseNode(ctxDemo, tx,
-			&models.DeleteContrailConfigDatabaseNodeRequest{
-				ID: model.UUID},
-		)
-	})
+	_, err = db.DeleteContrailConfigDatabaseNode(ctxDemo,
+		&models.DeleteContrailConfigDatabaseNodeRequest{
+			ID: model.UUID},
+	)
 	if err == nil {
 		t.Fatal("auth failed")
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteContrailConfigDatabaseNode(ctx, tx,
-			&models.DeleteContrailConfigDatabaseNodeRequest{
-				ID: model.UUID})
-	})
-	if err != nil {
-		t.Fatal("delete failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateContrailConfigDatabaseNode(ctx, tx,
-			&models.CreateContrailConfigDatabaseNodeRequest{
-				ContrailConfigDatabaseNode: model})
-	})
+	_, err = db.CreateContrailConfigDatabaseNode(ctx,
+		&models.CreateContrailConfigDatabaseNodeRequest{
+			ContrailConfigDatabaseNode: model})
 	if err == nil {
 		t.Fatal("Raise Error On Duplicate Create failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListContrailConfigDatabaseNode(ctx, tx, &models.ListContrailConfigDatabaseNodeRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.ContrailConfigDatabaseNodes) != 0 {
-			return fmt.Errorf("expected no element")
-		}
-		return nil
-	})
+	_, err = db.DeleteContrailConfigDatabaseNode(ctx,
+		&models.DeleteContrailConfigDatabaseNodeRequest{
+			ID: model.UUID})
+	if err != nil {
+		t.Fatal("delete failed", err)
+	}
+
+	response, err = db.ListContrailConfigDatabaseNode(ctx, &models.ListContrailConfigDatabaseNodeRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+	if len(response.ContrailConfigDatabaseNodes) != 0 {
+		t.Fatal("expected no element", err)
 	}
 	return
 }

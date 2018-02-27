@@ -59,10 +59,10 @@ var NetworkDeviceConfigParents = []string{}
 const insertNetworkDeviceConfigPhysicalRouterQuery = "insert into `ref_network_device_config_physical_router` (`from`, `to` ) values (?, ?);"
 
 // CreateNetworkDeviceConfig inserts NetworkDeviceConfig to DB
-func CreateNetworkDeviceConfig(
+func (db *DB) createNetworkDeviceConfig(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateNetworkDeviceConfigRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.NetworkDeviceConfig
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertNetworkDeviceConfigQuery)
@@ -284,8 +284,9 @@ func scanNetworkDeviceConfig(values map[string]interface{}) (*models.NetworkDevi
 }
 
 // ListNetworkDeviceConfig lists NetworkDeviceConfig with list spec.
-func ListNetworkDeviceConfig(ctx context.Context, tx *sql.Tx, request *models.ListNetworkDeviceConfigRequest) (response *models.ListNetworkDeviceConfigResponse, err error) {
+func (db *DB) listNetworkDeviceConfig(ctx context.Context, request *models.ListNetworkDeviceConfigRequest) (response *models.ListNetworkDeviceConfigResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -347,9 +348,8 @@ func ListNetworkDeviceConfig(ctx context.Context, tx *sql.Tx, request *models.Li
 }
 
 // UpdateNetworkDeviceConfig updates a resource
-func UpdateNetworkDeviceConfig(
+func (db *DB) updateNetworkDeviceConfig(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateNetworkDeviceConfigRequest,
 ) error {
 	//TODO
@@ -357,15 +357,15 @@ func UpdateNetworkDeviceConfig(
 }
 
 // DeleteNetworkDeviceConfig deletes a resource
-func DeleteNetworkDeviceConfig(
+func (db *DB) deleteNetworkDeviceConfig(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteNetworkDeviceConfigRequest) error {
 	deleteQuery := deleteNetworkDeviceConfigQuery
 	selectQuery := "select count(uuid) from network_device_config where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -400,4 +400,119 @@ func DeleteNetworkDeviceConfig(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateNetworkDeviceConfig handle a Create API
+func (db *DB) CreateNetworkDeviceConfig(
+	ctx context.Context,
+	request *models.CreateNetworkDeviceConfigRequest) (*models.CreateNetworkDeviceConfigResponse, error) {
+	model := request.NetworkDeviceConfig
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createNetworkDeviceConfig(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "network_device_config",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateNetworkDeviceConfigResponse{
+		NetworkDeviceConfig: request.NetworkDeviceConfig,
+	}, nil
+}
+
+//UpdateNetworkDeviceConfig handles a Update request.
+func (db *DB) UpdateNetworkDeviceConfig(
+	ctx context.Context,
+	request *models.UpdateNetworkDeviceConfigRequest) (*models.UpdateNetworkDeviceConfigResponse, error) {
+	model := request.NetworkDeviceConfig
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateNetworkDeviceConfig(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "network_device_config",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateNetworkDeviceConfigResponse{
+		NetworkDeviceConfig: model,
+	}, nil
+}
+
+//DeleteNetworkDeviceConfig delete a resource.
+func (db *DB) DeleteNetworkDeviceConfig(ctx context.Context, request *models.DeleteNetworkDeviceConfigRequest) (*models.DeleteNetworkDeviceConfigResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteNetworkDeviceConfig(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteNetworkDeviceConfigResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetNetworkDeviceConfig a Get request.
+func (db *DB) GetNetworkDeviceConfig(ctx context.Context, request *models.GetNetworkDeviceConfigRequest) (response *models.GetNetworkDeviceConfigResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListNetworkDeviceConfigRequest{
+		Spec: spec,
+	}
+	var result *models.ListNetworkDeviceConfigResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listNetworkDeviceConfig(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.NetworkDeviceConfigs) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetNetworkDeviceConfigResponse{
+		NetworkDeviceConfig: result.NetworkDeviceConfigs[0],
+	}
+	return response, nil
+}
+
+//ListNetworkDeviceConfig handles a List service Request.
+func (db *DB) ListNetworkDeviceConfig(
+	ctx context.Context,
+	request *models.ListNetworkDeviceConfigRequest) (response *models.ListNetworkDeviceConfigResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listNetworkDeviceConfig(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

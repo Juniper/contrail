@@ -71,10 +71,10 @@ var ContrailStorageNodeParents = []string{
 const insertContrailStorageNodeNodeQuery = "insert into `ref_contrail_storage_node_node` (`from`, `to` ) values (?, ?);"
 
 // CreateContrailStorageNode inserts ContrailStorageNode to DB
-func CreateContrailStorageNode(
+func (db *DB) createContrailStorageNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateContrailStorageNodeRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ContrailStorageNode
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertContrailStorageNodeQuery)
@@ -359,8 +359,9 @@ func scanContrailStorageNode(values map[string]interface{}) (*models.ContrailSto
 }
 
 // ListContrailStorageNode lists ContrailStorageNode with list spec.
-func ListContrailStorageNode(ctx context.Context, tx *sql.Tx, request *models.ListContrailStorageNodeRequest) (response *models.ListContrailStorageNodeResponse, err error) {
+func (db *DB) listContrailStorageNode(ctx context.Context, request *models.ListContrailStorageNodeRequest) (response *models.ListContrailStorageNodeResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -422,9 +423,8 @@ func ListContrailStorageNode(ctx context.Context, tx *sql.Tx, request *models.Li
 }
 
 // UpdateContrailStorageNode updates a resource
-func UpdateContrailStorageNode(
+func (db *DB) updateContrailStorageNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateContrailStorageNodeRequest,
 ) error {
 	//TODO
@@ -432,15 +432,15 @@ func UpdateContrailStorageNode(
 }
 
 // DeleteContrailStorageNode deletes a resource
-func DeleteContrailStorageNode(
+func (db *DB) deleteContrailStorageNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteContrailStorageNodeRequest) error {
 	deleteQuery := deleteContrailStorageNodeQuery
 	selectQuery := "select count(uuid) from contrail_storage_node where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -475,4 +475,119 @@ func DeleteContrailStorageNode(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateContrailStorageNode handle a Create API
+func (db *DB) CreateContrailStorageNode(
+	ctx context.Context,
+	request *models.CreateContrailStorageNodeRequest) (*models.CreateContrailStorageNodeResponse, error) {
+	model := request.ContrailStorageNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createContrailStorageNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "contrail_storage_node",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateContrailStorageNodeResponse{
+		ContrailStorageNode: request.ContrailStorageNode,
+	}, nil
+}
+
+//UpdateContrailStorageNode handles a Update request.
+func (db *DB) UpdateContrailStorageNode(
+	ctx context.Context,
+	request *models.UpdateContrailStorageNodeRequest) (*models.UpdateContrailStorageNodeResponse, error) {
+	model := request.ContrailStorageNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateContrailStorageNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "contrail_storage_node",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateContrailStorageNodeResponse{
+		ContrailStorageNode: model,
+	}, nil
+}
+
+//DeleteContrailStorageNode delete a resource.
+func (db *DB) DeleteContrailStorageNode(ctx context.Context, request *models.DeleteContrailStorageNodeRequest) (*models.DeleteContrailStorageNodeResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteContrailStorageNode(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteContrailStorageNodeResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetContrailStorageNode a Get request.
+func (db *DB) GetContrailStorageNode(ctx context.Context, request *models.GetContrailStorageNodeRequest) (response *models.GetContrailStorageNodeResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListContrailStorageNodeRequest{
+		Spec: spec,
+	}
+	var result *models.ListContrailStorageNodeResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listContrailStorageNode(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ContrailStorageNodes) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetContrailStorageNodeResponse{
+		ContrailStorageNode: result.ContrailStorageNodes[0],
+	}
+	return response, nil
+}
+
+//ListContrailStorageNode handles a List service Request.
+func (db *DB) ListContrailStorageNode(
+	ctx context.Context,
+	request *models.ListContrailStorageNodeRequest) (response *models.ListContrailStorageNodeResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listContrailStorageNode(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

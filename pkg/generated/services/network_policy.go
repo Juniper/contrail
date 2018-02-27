@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateNetworkPolicy(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateNetworkPolicy(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "network_policy",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateNetworkPolicyResponse{
-		NetworkPolicy: request.NetworkPolicy,
-	}, nil
+
+	return service.Next().CreateNetworkPolicy(ctx, request)
 }
 
 //RESTUpdateNetworkPolicy handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateNetworkPolicy(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateNetworkPolicy(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "network_policy",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateNetworkPolicyResponse{
-		NetworkPolicy: model,
-	}, nil
+	return service.Next().UpdateNetworkPolicy(ctx, request)
 }
 
 //RESTDeleteNetworkPolicy delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteNetworkPolicy(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteNetworkPolicy delete a resource.
-func (service *ContrailService) DeleteNetworkPolicy(ctx context.Context, request *models.DeleteNetworkPolicyRequest) (*models.DeleteNetworkPolicyResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteNetworkPolicy(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteNetworkPolicyResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetNetworkPolicy a REST Get request.
 func (service *ContrailService) RESTGetNetworkPolicy(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetNetworkPolicy(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetNetworkPolicy a Get request.
-func (service *ContrailService) GetNetworkPolicy(ctx context.Context, request *models.GetNetworkPolicyRequest) (response *models.GetNetworkPolicyResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListNetworkPolicyRequest{
-		Spec: spec,
-	}
-	var result *models.ListNetworkPolicyResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListNetworkPolicy(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.NetworkPolicys) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetNetworkPolicyResponse{
-		NetworkPolicy: result.NetworkPolicys[0],
-	}
-	return response, nil
 }
 
 //RESTListNetworkPolicy handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListNetworkPolicy(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListNetworkPolicy handles a List service Request.
-func (service *ContrailService) ListNetworkPolicy(
-	ctx context.Context,
-	request *models.ListNetworkPolicyRequest) (response *models.ListNetworkPolicyResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListNetworkPolicy(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

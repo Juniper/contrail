@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateRoutingPolicy(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateRoutingPolicy(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "routing_policy",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateRoutingPolicyResponse{
-		RoutingPolicy: request.RoutingPolicy,
-	}, nil
+
+	return service.Next().CreateRoutingPolicy(ctx, request)
 }
 
 //RESTUpdateRoutingPolicy handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateRoutingPolicy(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateRoutingPolicy(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "routing_policy",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateRoutingPolicyResponse{
-		RoutingPolicy: model,
-	}, nil
+	return service.Next().UpdateRoutingPolicy(ctx, request)
 }
 
 //RESTDeleteRoutingPolicy delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteRoutingPolicy(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteRoutingPolicy delete a resource.
-func (service *ContrailService) DeleteRoutingPolicy(ctx context.Context, request *models.DeleteRoutingPolicyRequest) (*models.DeleteRoutingPolicyResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteRoutingPolicy(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteRoutingPolicyResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetRoutingPolicy a REST Get request.
 func (service *ContrailService) RESTGetRoutingPolicy(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetRoutingPolicy(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetRoutingPolicy a Get request.
-func (service *ContrailService) GetRoutingPolicy(ctx context.Context, request *models.GetRoutingPolicyRequest) (response *models.GetRoutingPolicyResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListRoutingPolicyRequest{
-		Spec: spec,
-	}
-	var result *models.ListRoutingPolicyResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListRoutingPolicy(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.RoutingPolicys) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetRoutingPolicyResponse{
-		RoutingPolicy: result.RoutingPolicys[0],
-	}
-	return response, nil
 }
 
 //RESTListRoutingPolicy handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListRoutingPolicy(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListRoutingPolicy handles a List service Request.
-func (service *ContrailService) ListRoutingPolicy(
-	ctx context.Context,
-	request *models.ListRoutingPolicyRequest) (response *models.ListRoutingPolicyResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListRoutingPolicy(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

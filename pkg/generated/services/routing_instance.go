@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateRoutingInstance(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateRoutingInstance(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "routing_instance",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateRoutingInstanceResponse{
-		RoutingInstance: request.RoutingInstance,
-	}, nil
+
+	return service.Next().CreateRoutingInstance(ctx, request)
 }
 
 //RESTUpdateRoutingInstance handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateRoutingInstance(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateRoutingInstance(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "routing_instance",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateRoutingInstanceResponse{
-		RoutingInstance: model,
-	}, nil
+	return service.Next().UpdateRoutingInstance(ctx, request)
 }
 
 //RESTDeleteRoutingInstance delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteRoutingInstance(c echo.Context) error 
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteRoutingInstance delete a resource.
-func (service *ContrailService) DeleteRoutingInstance(ctx context.Context, request *models.DeleteRoutingInstanceRequest) (*models.DeleteRoutingInstanceResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteRoutingInstance(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteRoutingInstanceResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetRoutingInstance a REST Get request.
 func (service *ContrailService) RESTGetRoutingInstance(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetRoutingInstance(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetRoutingInstance a Get request.
-func (service *ContrailService) GetRoutingInstance(ctx context.Context, request *models.GetRoutingInstanceRequest) (response *models.GetRoutingInstanceResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListRoutingInstanceRequest{
-		Spec: spec,
-	}
-	var result *models.ListRoutingInstanceResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListRoutingInstance(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.RoutingInstances) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetRoutingInstanceResponse{
-		RoutingInstance: result.RoutingInstances[0],
-	}
-	return response, nil
 }
 
 //RESTListRoutingInstance handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListRoutingInstance(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListRoutingInstance handles a List service Request.
-func (service *ContrailService) ListRoutingInstance(
-	ctx context.Context,
-	request *models.ListRoutingInstanceRequest) (response *models.ListRoutingInstanceResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListRoutingInstance(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

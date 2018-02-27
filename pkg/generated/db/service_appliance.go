@@ -66,10 +66,10 @@ var ServiceApplianceParents = []string{
 const insertServiceAppliancePhysicalInterfaceQuery = "insert into `ref_service_appliance_physical_interface` (`from`, `to` ,`interface_type`) values (?, ?,?);"
 
 // CreateServiceAppliance inserts ServiceAppliance to DB
-func CreateServiceAppliance(
+func (db *DB) createServiceAppliance(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateServiceApplianceRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ServiceAppliance
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceApplianceQuery)
@@ -326,8 +326,9 @@ func scanServiceAppliance(values map[string]interface{}) (*models.ServiceApplian
 }
 
 // ListServiceAppliance lists ServiceAppliance with list spec.
-func ListServiceAppliance(ctx context.Context, tx *sql.Tx, request *models.ListServiceApplianceRequest) (response *models.ListServiceApplianceResponse, err error) {
+func (db *DB) listServiceAppliance(ctx context.Context, request *models.ListServiceApplianceRequest) (response *models.ListServiceApplianceResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -389,9 +390,8 @@ func ListServiceAppliance(ctx context.Context, tx *sql.Tx, request *models.ListS
 }
 
 // UpdateServiceAppliance updates a resource
-func UpdateServiceAppliance(
+func (db *DB) updateServiceAppliance(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateServiceApplianceRequest,
 ) error {
 	//TODO
@@ -399,15 +399,15 @@ func UpdateServiceAppliance(
 }
 
 // DeleteServiceAppliance deletes a resource
-func DeleteServiceAppliance(
+func (db *DB) deleteServiceAppliance(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteServiceApplianceRequest) error {
 	deleteQuery := deleteServiceApplianceQuery
 	selectQuery := "select count(uuid) from service_appliance where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -442,4 +442,119 @@ func DeleteServiceAppliance(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateServiceAppliance handle a Create API
+func (db *DB) CreateServiceAppliance(
+	ctx context.Context,
+	request *models.CreateServiceApplianceRequest) (*models.CreateServiceApplianceResponse, error) {
+	model := request.ServiceAppliance
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createServiceAppliance(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_appliance",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateServiceApplianceResponse{
+		ServiceAppliance: request.ServiceAppliance,
+	}, nil
+}
+
+//UpdateServiceAppliance handles a Update request.
+func (db *DB) UpdateServiceAppliance(
+	ctx context.Context,
+	request *models.UpdateServiceApplianceRequest) (*models.UpdateServiceApplianceResponse, error) {
+	model := request.ServiceAppliance
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateServiceAppliance(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_appliance",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateServiceApplianceResponse{
+		ServiceAppliance: model,
+	}, nil
+}
+
+//DeleteServiceAppliance delete a resource.
+func (db *DB) DeleteServiceAppliance(ctx context.Context, request *models.DeleteServiceApplianceRequest) (*models.DeleteServiceApplianceResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteServiceAppliance(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteServiceApplianceResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetServiceAppliance a Get request.
+func (db *DB) GetServiceAppliance(ctx context.Context, request *models.GetServiceApplianceRequest) (response *models.GetServiceApplianceResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListServiceApplianceRequest{
+		Spec: spec,
+	}
+	var result *models.ListServiceApplianceResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listServiceAppliance(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ServiceAppliances) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetServiceApplianceResponse{
+		ServiceAppliance: result.ServiceAppliances[0],
+	}
+	return response, nil
+}
+
+//ListServiceAppliance handles a List service Request.
+func (db *DB) ListServiceAppliance(
+	ctx context.Context,
+	request *models.ListServiceApplianceRequest) (response *models.ListServiceApplianceResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listServiceAppliance(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

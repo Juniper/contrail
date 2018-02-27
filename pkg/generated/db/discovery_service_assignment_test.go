@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,13 +15,15 @@ var _ = errors.New("")
 
 func TestDiscoveryServiceAssignment(t *testing.T) {
 	// t.Parallel()
-	db := testDB
+	db := &DB{
+		DB: testDB,
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db, "metadata")
-	mutexTable := common.UseTable(db, "discovery_service_assignment")
-	// mutexProject := common.UseTable(db, "discovery_service_assignment")
+	mutexMetadata := common.UseTable(db.DB, "metadata")
+	mutexTable := common.UseTable(db.DB, "discovery_service_assignment")
+	// mutexProject := common.UseTable(db.DB, "discovery_service_assignment")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -47,10 +47,9 @@ func TestDiscoveryServiceAssignment(t *testing.T) {
 	var createShare []*models.ShareType
 	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
 	model.Perms2.Share = createShare
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx, &models.CreateProjectRequest{
-			Project: projectModel,
-		})
+
+	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
+		Project: projectModel,
 	})
 	if err != nil {
 		t.Fatal("project create failed", err)
@@ -168,12 +167,11 @@ func TestDiscoveryServiceAssignment(t *testing.T) {
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
 	//
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateDiscoveryServiceAssignment(ctx, tx,
-			&models.CreateDiscoveryServiceAssignmentRequest{
-				DiscoveryServiceAssignment: model,
-			})
-	})
+	_, err = db.CreateDiscoveryServiceAssignment(ctx,
+		&models.CreateDiscoveryServiceAssignmentRequest{
+			DiscoveryServiceAssignment: model,
+		})
+
 	if err != nil {
 		t.Fatal("create failed", err)
 	}
@@ -188,71 +186,51 @@ func TestDiscoveryServiceAssignment(t *testing.T) {
 	//Delete ref entries, referred objects
 
 	//Delete the project created for sharing
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteProject(ctx, tx, &models.DeleteProjectRequest{
-			ID: projectModel.UUID})
-	})
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
 	if err != nil {
 		t.Fatal("delete project failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListDiscoveryServiceAssignment(ctx, tx, &models.ListDiscoveryServiceAssignmentRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.DiscoveryServiceAssignments) != 1 {
-			return fmt.Errorf("expected one element")
-		}
-		return nil
-	})
+	response, err := db.ListDiscoveryServiceAssignment(ctx, &models.ListDiscoveryServiceAssignmentRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
+	if len(response.DiscoveryServiceAssignments) != 1 {
+		t.Fatal("expected one element", err)
+	}
 
 	ctxDemo := context.WithValue(ctx, "auth", common.NewAuthContext("default", "demo", "demo", []string{}))
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteDiscoveryServiceAssignment(ctxDemo, tx,
-			&models.DeleteDiscoveryServiceAssignmentRequest{
-				ID: model.UUID},
-		)
-	})
+	_, err = db.DeleteDiscoveryServiceAssignment(ctxDemo,
+		&models.DeleteDiscoveryServiceAssignmentRequest{
+			ID: model.UUID},
+	)
 	if err == nil {
 		t.Fatal("auth failed")
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteDiscoveryServiceAssignment(ctx, tx,
-			&models.DeleteDiscoveryServiceAssignmentRequest{
-				ID: model.UUID})
-	})
-	if err != nil {
-		t.Fatal("delete failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateDiscoveryServiceAssignment(ctx, tx,
-			&models.CreateDiscoveryServiceAssignmentRequest{
-				DiscoveryServiceAssignment: model})
-	})
+	_, err = db.CreateDiscoveryServiceAssignment(ctx,
+		&models.CreateDiscoveryServiceAssignmentRequest{
+			DiscoveryServiceAssignment: model})
 	if err == nil {
 		t.Fatal("Raise Error On Duplicate Create failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListDiscoveryServiceAssignment(ctx, tx, &models.ListDiscoveryServiceAssignmentRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.DiscoveryServiceAssignments) != 0 {
-			return fmt.Errorf("expected no element")
-		}
-		return nil
-	})
+	_, err = db.DeleteDiscoveryServiceAssignment(ctx,
+		&models.DeleteDiscoveryServiceAssignmentRequest{
+			ID: model.UUID})
+	if err != nil {
+		t.Fatal("delete failed", err)
+	}
+
+	response, err = db.ListDiscoveryServiceAssignment(ctx, &models.ListDiscoveryServiceAssignmentRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+	if len(response.DiscoveryServiceAssignments) != 0 {
+		t.Fatal("expected no element", err)
 	}
 	return
 }

@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreatePhysicalRouter(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreatePhysicalRouter(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "physical_router",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreatePhysicalRouterResponse{
-		PhysicalRouter: request.PhysicalRouter,
-	}, nil
+
+	return service.Next().CreatePhysicalRouter(ctx, request)
 }
 
 //RESTUpdatePhysicalRouter handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdatePhysicalRouter(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdatePhysicalRouter(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "physical_router",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdatePhysicalRouterResponse{
-		PhysicalRouter: model,
-	}, nil
+	return service.Next().UpdatePhysicalRouter(ctx, request)
 }
 
 //RESTDeletePhysicalRouter delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeletePhysicalRouter(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeletePhysicalRouter delete a resource.
-func (service *ContrailService) DeletePhysicalRouter(ctx context.Context, request *models.DeletePhysicalRouterRequest) (*models.DeletePhysicalRouterResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeletePhysicalRouter(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeletePhysicalRouterResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetPhysicalRouter a REST Get request.
 func (service *ContrailService) RESTGetPhysicalRouter(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetPhysicalRouter(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetPhysicalRouter a Get request.
-func (service *ContrailService) GetPhysicalRouter(ctx context.Context, request *models.GetPhysicalRouterRequest) (response *models.GetPhysicalRouterResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListPhysicalRouterRequest{
-		Spec: spec,
-	}
-	var result *models.ListPhysicalRouterResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListPhysicalRouter(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.PhysicalRouters) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetPhysicalRouterResponse{
-		PhysicalRouter: result.PhysicalRouters[0],
-	}
-	return response, nil
 }
 
 //RESTListPhysicalRouter handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListPhysicalRouter(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListPhysicalRouter handles a List service Request.
-func (service *ContrailService) ListPhysicalRouter(
-	ctx context.Context,
-	request *models.ListPhysicalRouterRequest) (response *models.ListPhysicalRouterResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListPhysicalRouter(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

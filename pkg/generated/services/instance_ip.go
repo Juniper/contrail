@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateInstanceIP(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateInstanceIP(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "instance_ip",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateInstanceIPResponse{
-		InstanceIP: request.InstanceIP,
-	}, nil
+
+	return service.Next().CreateInstanceIP(ctx, request)
 }
 
 //RESTUpdateInstanceIP handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateInstanceIP(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateInstanceIP(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "instance_ip",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateInstanceIPResponse{
-		InstanceIP: model,
-	}, nil
+	return service.Next().UpdateInstanceIP(ctx, request)
 }
 
 //RESTDeleteInstanceIP delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteInstanceIP(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteInstanceIP delete a resource.
-func (service *ContrailService) DeleteInstanceIP(ctx context.Context, request *models.DeleteInstanceIPRequest) (*models.DeleteInstanceIPResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteInstanceIP(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteInstanceIPResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetInstanceIP a REST Get request.
 func (service *ContrailService) RESTGetInstanceIP(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetInstanceIP(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetInstanceIP a Get request.
-func (service *ContrailService) GetInstanceIP(ctx context.Context, request *models.GetInstanceIPRequest) (response *models.GetInstanceIPResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListInstanceIPRequest{
-		Spec: spec,
-	}
-	var result *models.ListInstanceIPResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListInstanceIP(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.InstanceIPs) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetInstanceIPResponse{
-		InstanceIP: result.InstanceIPs[0],
-	}
-	return response, nil
 }
 
 //RESTListInstanceIP handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListInstanceIP(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListInstanceIP handles a List service Request.
-func (service *ContrailService) ListInstanceIP(
-	ctx context.Context,
-	request *models.ListInstanceIPRequest) (response *models.ListInstanceIPResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListInstanceIP(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

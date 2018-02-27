@@ -74,10 +74,10 @@ var ServerBackRefFields = map[string][]string{}
 var ServerParents = []string{}
 
 // CreateServer inserts Server to DB
-func CreateServer(
+func (db *DB) createServer(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateServerRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.Server
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServerQuery)
@@ -427,8 +427,9 @@ func scanServer(values map[string]interface{}) (*models.Server, error) {
 }
 
 // ListServer lists Server with list spec.
-func ListServer(ctx context.Context, tx *sql.Tx, request *models.ListServerRequest) (response *models.ListServerResponse, err error) {
+func (db *DB) listServer(ctx context.Context, request *models.ListServerRequest) (response *models.ListServerResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -490,9 +491,8 @@ func ListServer(ctx context.Context, tx *sql.Tx, request *models.ListServerReque
 }
 
 // UpdateServer updates a resource
-func UpdateServer(
+func (db *DB) updateServer(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateServerRequest,
 ) error {
 	//TODO
@@ -500,15 +500,15 @@ func UpdateServer(
 }
 
 // DeleteServer deletes a resource
-func DeleteServer(
+func (db *DB) deleteServer(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteServerRequest) error {
 	deleteQuery := deleteServerQuery
 	selectQuery := "select count(uuid) from server where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -543,4 +543,119 @@ func DeleteServer(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateServer handle a Create API
+func (db *DB) CreateServer(
+	ctx context.Context,
+	request *models.CreateServerRequest) (*models.CreateServerResponse, error) {
+	model := request.Server
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createServer(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "server",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateServerResponse{
+		Server: request.Server,
+	}, nil
+}
+
+//UpdateServer handles a Update request.
+func (db *DB) UpdateServer(
+	ctx context.Context,
+	request *models.UpdateServerRequest) (*models.UpdateServerResponse, error) {
+	model := request.Server
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateServer(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "server",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateServerResponse{
+		Server: model,
+	}, nil
+}
+
+//DeleteServer delete a resource.
+func (db *DB) DeleteServer(ctx context.Context, request *models.DeleteServerRequest) (*models.DeleteServerResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteServer(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteServerResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetServer a Get request.
+func (db *DB) GetServer(ctx context.Context, request *models.GetServerRequest) (response *models.GetServerResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListServerRequest{
+		Spec: spec,
+	}
+	var result *models.ListServerResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listServer(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.Servers) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetServerResponse{
+		Server: result.Servers[0],
+	}
+	return response, nil
+}
+
+//ListServer handles a List service Request.
+func (db *DB) ListServer(
+	ctx context.Context,
+	request *models.ListServerRequest) (response *models.ListServerResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listServer(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

@@ -1047,19 +1047,19 @@ var ProjectParents = []string{
 	"domain",
 }
 
-const insertProjectFloatingIPPoolQuery = "insert into `ref_project_floating_ip_pool` (`from`, `to` ) values (?, ?);"
-
 const insertProjectAliasIPPoolQuery = "insert into `ref_project_alias_ip_pool` (`from`, `to` ) values (?, ?);"
 
 const insertProjectNamespaceQuery = "insert into `ref_project_namespace` (`from`, `to` ,`ip_prefix`,`ip_prefix_len`) values (?, ?,?,?);"
 
 const insertProjectApplicationPolicySetQuery = "insert into `ref_project_application_policy_set` (`from`, `to` ) values (?, ?);"
 
+const insertProjectFloatingIPPoolQuery = "insert into `ref_project_floating_ip_pool` (`from`, `to` ) values (?, ?);"
+
 // CreateProject inserts Project to DB
-func CreateProject(
+func (db *DB) createProject(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateProjectRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.Project
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertProjectQuery)
@@ -1497,6 +1497,26 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 
 	}
 
+	if value, ok := values["ref_alias_ip_pool"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ProjectAliasIPPoolRef{}
+			referenceModel.UUID = uuid
+			m.AliasIPPoolRefs = append(m.AliasIPPoolRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_namespace"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -1556,26 +1576,6 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			referenceModel := &models.ProjectFloatingIPPoolRef{}
 			referenceModel.UUID = uuid
 			m.FloatingIPPoolRefs = append(m.FloatingIPPoolRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_alias_ip_pool"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ProjectAliasIPPoolRef{}
-			referenceModel.UUID = uuid
-			m.AliasIPPoolRefs = append(m.AliasIPPoolRefs, referenceModel)
 
 		}
 	}
@@ -7272,8 +7272,9 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 }
 
 // ListProject lists Project with list spec.
-func ListProject(ctx context.Context, tx *sql.Tx, request *models.ListProjectRequest) (response *models.ListProjectResponse, err error) {
+func (db *DB) listProject(ctx context.Context, request *models.ListProjectRequest) (response *models.ListProjectResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -7335,9 +7336,8 @@ func ListProject(ctx context.Context, tx *sql.Tx, request *models.ListProjectReq
 }
 
 // UpdateProject updates a resource
-func UpdateProject(
+func (db *DB) updateProject(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateProjectRequest,
 ) error {
 	//TODO
@@ -7345,15 +7345,15 @@ func UpdateProject(
 }
 
 // DeleteProject deletes a resource
-func DeleteProject(
+func (db *DB) deleteProject(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteProjectRequest) error {
 	deleteQuery := deleteProjectQuery
 	selectQuery := "select count(uuid) from project where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -7388,4 +7388,119 @@ func DeleteProject(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateProject handle a Create API
+func (db *DB) CreateProject(
+	ctx context.Context,
+	request *models.CreateProjectRequest) (*models.CreateProjectResponse, error) {
+	model := request.Project
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createProject(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "project",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateProjectResponse{
+		Project: request.Project,
+	}, nil
+}
+
+//UpdateProject handles a Update request.
+func (db *DB) UpdateProject(
+	ctx context.Context,
+	request *models.UpdateProjectRequest) (*models.UpdateProjectResponse, error) {
+	model := request.Project
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateProject(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "project",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateProjectResponse{
+		Project: model,
+	}, nil
+}
+
+//DeleteProject delete a resource.
+func (db *DB) DeleteProject(ctx context.Context, request *models.DeleteProjectRequest) (*models.DeleteProjectResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteProject(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteProjectResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetProject a Get request.
+func (db *DB) GetProject(ctx context.Context, request *models.GetProjectRequest) (response *models.GetProjectResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListProjectRequest{
+		Spec: spec,
+	}
+	var result *models.ListProjectResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listProject(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.Projects) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetProjectResponse{
+		Project: result.Projects[0],
+	}
+	return response, nil
+}
+
+//ListProject handles a List service Request.
+func (db *DB) ListProject(
+	ctx context.Context,
+	request *models.ListProjectRequest) (response *models.ListProjectResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listProject(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

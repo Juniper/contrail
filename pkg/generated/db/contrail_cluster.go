@@ -403,10 +403,10 @@ var ContrailClusterBackRefFields = map[string][]string{
 var ContrailClusterParents = []string{}
 
 // CreateContrailCluster inserts ContrailCluster to DB
-func CreateContrailCluster(
+func (db *DB) createContrailCluster(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateContrailClusterRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ContrailCluster
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertContrailClusterQuery)
@@ -2736,8 +2736,9 @@ func scanContrailCluster(values map[string]interface{}) (*models.ContrailCluster
 }
 
 // ListContrailCluster lists ContrailCluster with list spec.
-func ListContrailCluster(ctx context.Context, tx *sql.Tx, request *models.ListContrailClusterRequest) (response *models.ListContrailClusterResponse, err error) {
+func (db *DB) listContrailCluster(ctx context.Context, request *models.ListContrailClusterRequest) (response *models.ListContrailClusterResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -2799,9 +2800,8 @@ func ListContrailCluster(ctx context.Context, tx *sql.Tx, request *models.ListCo
 }
 
 // UpdateContrailCluster updates a resource
-func UpdateContrailCluster(
+func (db *DB) updateContrailCluster(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateContrailClusterRequest,
 ) error {
 	//TODO
@@ -2809,15 +2809,15 @@ func UpdateContrailCluster(
 }
 
 // DeleteContrailCluster deletes a resource
-func DeleteContrailCluster(
+func (db *DB) deleteContrailCluster(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteContrailClusterRequest) error {
 	deleteQuery := deleteContrailClusterQuery
 	selectQuery := "select count(uuid) from contrail_cluster where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -2852,4 +2852,119 @@ func DeleteContrailCluster(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateContrailCluster handle a Create API
+func (db *DB) CreateContrailCluster(
+	ctx context.Context,
+	request *models.CreateContrailClusterRequest) (*models.CreateContrailClusterResponse, error) {
+	model := request.ContrailCluster
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createContrailCluster(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "contrail_cluster",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateContrailClusterResponse{
+		ContrailCluster: request.ContrailCluster,
+	}, nil
+}
+
+//UpdateContrailCluster handles a Update request.
+func (db *DB) UpdateContrailCluster(
+	ctx context.Context,
+	request *models.UpdateContrailClusterRequest) (*models.UpdateContrailClusterResponse, error) {
+	model := request.ContrailCluster
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateContrailCluster(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "contrail_cluster",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateContrailClusterResponse{
+		ContrailCluster: model,
+	}, nil
+}
+
+//DeleteContrailCluster delete a resource.
+func (db *DB) DeleteContrailCluster(ctx context.Context, request *models.DeleteContrailClusterRequest) (*models.DeleteContrailClusterResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteContrailCluster(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteContrailClusterResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetContrailCluster a Get request.
+func (db *DB) GetContrailCluster(ctx context.Context, request *models.GetContrailClusterRequest) (response *models.GetContrailClusterResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListContrailClusterRequest{
+		Spec: spec,
+	}
+	var result *models.ListContrailClusterResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listContrailCluster(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ContrailClusters) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetContrailClusterResponse{
+		ContrailCluster: result.ContrailClusters[0],
+	}
+	return response, nil
+}
+
+//ListContrailCluster handles a List service Request.
+func (db *DB) ListContrailCluster(
+	ctx context.Context,
+	request *models.ListContrailClusterRequest) (response *models.ListContrailClusterResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listContrailCluster(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

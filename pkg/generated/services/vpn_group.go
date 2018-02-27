@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateVPNGroup(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateVPNGroup(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "vpn_group",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateVPNGroupResponse{
-		VPNGroup: request.VPNGroup,
-	}, nil
+
+	return service.Next().CreateVPNGroup(ctx, request)
 }
 
 //RESTUpdateVPNGroup handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateVPNGroup(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateVPNGroup(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "vpn_group",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateVPNGroupResponse{
-		VPNGroup: model,
-	}, nil
+	return service.Next().UpdateVPNGroup(ctx, request)
 }
 
 //RESTDeleteVPNGroup delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteVPNGroup(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteVPNGroup delete a resource.
-func (service *ContrailService) DeleteVPNGroup(ctx context.Context, request *models.DeleteVPNGroupRequest) (*models.DeleteVPNGroupResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteVPNGroup(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteVPNGroupResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetVPNGroup a REST Get request.
 func (service *ContrailService) RESTGetVPNGroup(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetVPNGroup(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetVPNGroup a Get request.
-func (service *ContrailService) GetVPNGroup(ctx context.Context, request *models.GetVPNGroupRequest) (response *models.GetVPNGroupResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListVPNGroupRequest{
-		Spec: spec,
-	}
-	var result *models.ListVPNGroupResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListVPNGroup(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.VPNGroups) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetVPNGroupResponse{
-		VPNGroup: result.VPNGroups[0],
-	}
-	return response, nil
 }
 
 //RESTListVPNGroup handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListVPNGroup(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListVPNGroup handles a List service Request.
-func (service *ContrailService) ListVPNGroup(
-	ctx context.Context,
-	request *models.ListVPNGroupRequest) (response *models.ListVPNGroupResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListVPNGroup(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

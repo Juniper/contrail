@@ -54,10 +54,10 @@ var RoutingInstanceParents = []string{
 }
 
 // CreateRoutingInstance inserts RoutingInstance to DB
-func CreateRoutingInstance(
+func (db *DB) createRoutingInstance(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateRoutingInstanceRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.RoutingInstance
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertRoutingInstanceQuery)
@@ -246,8 +246,9 @@ func scanRoutingInstance(values map[string]interface{}) (*models.RoutingInstance
 }
 
 // ListRoutingInstance lists RoutingInstance with list spec.
-func ListRoutingInstance(ctx context.Context, tx *sql.Tx, request *models.ListRoutingInstanceRequest) (response *models.ListRoutingInstanceResponse, err error) {
+func (db *DB) listRoutingInstance(ctx context.Context, request *models.ListRoutingInstanceRequest) (response *models.ListRoutingInstanceResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -309,9 +310,8 @@ func ListRoutingInstance(ctx context.Context, tx *sql.Tx, request *models.ListRo
 }
 
 // UpdateRoutingInstance updates a resource
-func UpdateRoutingInstance(
+func (db *DB) updateRoutingInstance(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateRoutingInstanceRequest,
 ) error {
 	//TODO
@@ -319,15 +319,15 @@ func UpdateRoutingInstance(
 }
 
 // DeleteRoutingInstance deletes a resource
-func DeleteRoutingInstance(
+func (db *DB) deleteRoutingInstance(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteRoutingInstanceRequest) error {
 	deleteQuery := deleteRoutingInstanceQuery
 	selectQuery := "select count(uuid) from routing_instance where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -362,4 +362,119 @@ func DeleteRoutingInstance(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateRoutingInstance handle a Create API
+func (db *DB) CreateRoutingInstance(
+	ctx context.Context,
+	request *models.CreateRoutingInstanceRequest) (*models.CreateRoutingInstanceResponse, error) {
+	model := request.RoutingInstance
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createRoutingInstance(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "routing_instance",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateRoutingInstanceResponse{
+		RoutingInstance: request.RoutingInstance,
+	}, nil
+}
+
+//UpdateRoutingInstance handles a Update request.
+func (db *DB) UpdateRoutingInstance(
+	ctx context.Context,
+	request *models.UpdateRoutingInstanceRequest) (*models.UpdateRoutingInstanceResponse, error) {
+	model := request.RoutingInstance
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateRoutingInstance(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "routing_instance",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateRoutingInstanceResponse{
+		RoutingInstance: model,
+	}, nil
+}
+
+//DeleteRoutingInstance delete a resource.
+func (db *DB) DeleteRoutingInstance(ctx context.Context, request *models.DeleteRoutingInstanceRequest) (*models.DeleteRoutingInstanceResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteRoutingInstance(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteRoutingInstanceResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetRoutingInstance a Get request.
+func (db *DB) GetRoutingInstance(ctx context.Context, request *models.GetRoutingInstanceRequest) (response *models.GetRoutingInstanceResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListRoutingInstanceRequest{
+		Spec: spec,
+	}
+	var result *models.ListRoutingInstanceResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listRoutingInstance(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.RoutingInstances) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetRoutingInstanceResponse{
+		RoutingInstance: result.RoutingInstances[0],
+	}
+	return response, nil
+}
+
+//ListRoutingInstance handles a List service Request.
+func (db *DB) ListRoutingInstance(
+	ctx context.Context,
+	request *models.ListRoutingInstanceRequest) (response *models.ListRoutingInstanceResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listRoutingInstance(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

@@ -136,10 +136,10 @@ var LocationBackRefFields = map[string][]string{
 var LocationParents = []string{}
 
 // CreateLocation inserts Location to DB
-func CreateLocation(
+func (db *DB) createLocation(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateLocationRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.Location
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertLocationQuery)
@@ -860,8 +860,9 @@ func scanLocation(values map[string]interface{}) (*models.Location, error) {
 }
 
 // ListLocation lists Location with list spec.
-func ListLocation(ctx context.Context, tx *sql.Tx, request *models.ListLocationRequest) (response *models.ListLocationResponse, err error) {
+func (db *DB) listLocation(ctx context.Context, request *models.ListLocationRequest) (response *models.ListLocationResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -923,9 +924,8 @@ func ListLocation(ctx context.Context, tx *sql.Tx, request *models.ListLocationR
 }
 
 // UpdateLocation updates a resource
-func UpdateLocation(
+func (db *DB) updateLocation(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateLocationRequest,
 ) error {
 	//TODO
@@ -933,15 +933,15 @@ func UpdateLocation(
 }
 
 // DeleteLocation deletes a resource
-func DeleteLocation(
+func (db *DB) deleteLocation(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteLocationRequest) error {
 	deleteQuery := deleteLocationQuery
 	selectQuery := "select count(uuid) from location where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -976,4 +976,119 @@ func DeleteLocation(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateLocation handle a Create API
+func (db *DB) CreateLocation(
+	ctx context.Context,
+	request *models.CreateLocationRequest) (*models.CreateLocationResponse, error) {
+	model := request.Location
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createLocation(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "location",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateLocationResponse{
+		Location: request.Location,
+	}, nil
+}
+
+//UpdateLocation handles a Update request.
+func (db *DB) UpdateLocation(
+	ctx context.Context,
+	request *models.UpdateLocationRequest) (*models.UpdateLocationResponse, error) {
+	model := request.Location
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateLocation(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "location",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateLocationResponse{
+		Location: model,
+	}, nil
+}
+
+//DeleteLocation delete a resource.
+func (db *DB) DeleteLocation(ctx context.Context, request *models.DeleteLocationRequest) (*models.DeleteLocationResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteLocation(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteLocationResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetLocation a Get request.
+func (db *DB) GetLocation(ctx context.Context, request *models.GetLocationRequest) (response *models.GetLocationResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListLocationRequest{
+		Spec: spec,
+	}
+	var result *models.ListLocationResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listLocation(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.Locations) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetLocationResponse{
+		Location: result.Locations[0],
+	}
+	return response, nil
+}
+
+//ListLocation handles a List service Request.
+func (db *DB) ListLocation(
+	ctx context.Context,
+	request *models.ListLocationRequest) (response *models.ListLocationResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listLocation(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

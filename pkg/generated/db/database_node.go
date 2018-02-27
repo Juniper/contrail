@@ -55,10 +55,10 @@ var DatabaseNodeParents = []string{
 }
 
 // CreateDatabaseNode inserts DatabaseNode to DB
-func CreateDatabaseNode(
+func (db *DB) createDatabaseNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateDatabaseNodeRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.DatabaseNode
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertDatabaseNodeQuery)
@@ -254,8 +254,9 @@ func scanDatabaseNode(values map[string]interface{}) (*models.DatabaseNode, erro
 }
 
 // ListDatabaseNode lists DatabaseNode with list spec.
-func ListDatabaseNode(ctx context.Context, tx *sql.Tx, request *models.ListDatabaseNodeRequest) (response *models.ListDatabaseNodeResponse, err error) {
+func (db *DB) listDatabaseNode(ctx context.Context, request *models.ListDatabaseNodeRequest) (response *models.ListDatabaseNodeResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -317,9 +318,8 @@ func ListDatabaseNode(ctx context.Context, tx *sql.Tx, request *models.ListDatab
 }
 
 // UpdateDatabaseNode updates a resource
-func UpdateDatabaseNode(
+func (db *DB) updateDatabaseNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateDatabaseNodeRequest,
 ) error {
 	//TODO
@@ -327,15 +327,15 @@ func UpdateDatabaseNode(
 }
 
 // DeleteDatabaseNode deletes a resource
-func DeleteDatabaseNode(
+func (db *DB) deleteDatabaseNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteDatabaseNodeRequest) error {
 	deleteQuery := deleteDatabaseNodeQuery
 	selectQuery := "select count(uuid) from database_node where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -370,4 +370,119 @@ func DeleteDatabaseNode(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateDatabaseNode handle a Create API
+func (db *DB) CreateDatabaseNode(
+	ctx context.Context,
+	request *models.CreateDatabaseNodeRequest) (*models.CreateDatabaseNodeResponse, error) {
+	model := request.DatabaseNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createDatabaseNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "database_node",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateDatabaseNodeResponse{
+		DatabaseNode: request.DatabaseNode,
+	}, nil
+}
+
+//UpdateDatabaseNode handles a Update request.
+func (db *DB) UpdateDatabaseNode(
+	ctx context.Context,
+	request *models.UpdateDatabaseNodeRequest) (*models.UpdateDatabaseNodeResponse, error) {
+	model := request.DatabaseNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateDatabaseNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "database_node",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateDatabaseNodeResponse{
+		DatabaseNode: model,
+	}, nil
+}
+
+//DeleteDatabaseNode delete a resource.
+func (db *DB) DeleteDatabaseNode(ctx context.Context, request *models.DeleteDatabaseNodeRequest) (*models.DeleteDatabaseNodeResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteDatabaseNode(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteDatabaseNodeResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetDatabaseNode a Get request.
+func (db *DB) GetDatabaseNode(ctx context.Context, request *models.GetDatabaseNodeRequest) (response *models.GetDatabaseNodeResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListDatabaseNodeRequest{
+		Spec: spec,
+	}
+	var result *models.ListDatabaseNodeResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listDatabaseNode(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.DatabaseNodes) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetDatabaseNodeResponse{
+		DatabaseNode: result.DatabaseNodes[0],
+	}
+	return response, nil
+}
+
+//ListDatabaseNode handles a List service Request.
+func (db *DB) ListDatabaseNode(
+	ctx context.Context,
+	request *models.ListDatabaseNodeRequest) (response *models.ListDatabaseNodeResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listDatabaseNode(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

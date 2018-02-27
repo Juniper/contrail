@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateProviderAttachment(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateProviderAttachment(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "provider_attachment",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateProviderAttachmentResponse{
-		ProviderAttachment: request.ProviderAttachment,
-	}, nil
+
+	return service.Next().CreateProviderAttachment(ctx, request)
 }
 
 //RESTUpdateProviderAttachment handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateProviderAttachment(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateProviderAttachment(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "provider_attachment",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateProviderAttachmentResponse{
-		ProviderAttachment: model,
-	}, nil
+	return service.Next().UpdateProviderAttachment(ctx, request)
 }
 
 //RESTDeleteProviderAttachment delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteProviderAttachment(c echo.Context) err
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteProviderAttachment delete a resource.
-func (service *ContrailService) DeleteProviderAttachment(ctx context.Context, request *models.DeleteProviderAttachmentRequest) (*models.DeleteProviderAttachmentResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteProviderAttachment(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteProviderAttachmentResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetProviderAttachment a REST Get request.
 func (service *ContrailService) RESTGetProviderAttachment(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetProviderAttachment(c echo.Context) error 
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetProviderAttachment a Get request.
-func (service *ContrailService) GetProviderAttachment(ctx context.Context, request *models.GetProviderAttachmentRequest) (response *models.GetProviderAttachmentResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListProviderAttachmentRequest{
-		Spec: spec,
-	}
-	var result *models.ListProviderAttachmentResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListProviderAttachment(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.ProviderAttachments) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetProviderAttachmentResponse{
-		ProviderAttachment: result.ProviderAttachments[0],
-	}
-	return response, nil
 }
 
 //RESTListProviderAttachment handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListProviderAttachment(c echo.Context) error
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListProviderAttachment handles a List service Request.
-func (service *ContrailService) ListProviderAttachment(
-	ctx context.Context,
-	request *models.ListProviderAttachmentRequest) (response *models.ListProviderAttachmentResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListProviderAttachment(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

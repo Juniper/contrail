@@ -73,10 +73,10 @@ var ServiceHealthCheckParents = []string{
 const insertServiceHealthCheckServiceInstanceQuery = "insert into `ref_service_health_check_service_instance` (`from`, `to` ,`interface_type`) values (?, ?,?);"
 
 // CreateServiceHealthCheck inserts ServiceHealthCheck to DB
-func CreateServiceHealthCheck(
+func (db *DB) createServiceHealthCheck(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateServiceHealthCheckRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ServiceHealthCheck
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceHealthCheckQuery)
@@ -382,8 +382,9 @@ func scanServiceHealthCheck(values map[string]interface{}) (*models.ServiceHealt
 }
 
 // ListServiceHealthCheck lists ServiceHealthCheck with list spec.
-func ListServiceHealthCheck(ctx context.Context, tx *sql.Tx, request *models.ListServiceHealthCheckRequest) (response *models.ListServiceHealthCheckResponse, err error) {
+func (db *DB) listServiceHealthCheck(ctx context.Context, request *models.ListServiceHealthCheckRequest) (response *models.ListServiceHealthCheckResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -445,9 +446,8 @@ func ListServiceHealthCheck(ctx context.Context, tx *sql.Tx, request *models.Lis
 }
 
 // UpdateServiceHealthCheck updates a resource
-func UpdateServiceHealthCheck(
+func (db *DB) updateServiceHealthCheck(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateServiceHealthCheckRequest,
 ) error {
 	//TODO
@@ -455,15 +455,15 @@ func UpdateServiceHealthCheck(
 }
 
 // DeleteServiceHealthCheck deletes a resource
-func DeleteServiceHealthCheck(
+func (db *DB) deleteServiceHealthCheck(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteServiceHealthCheckRequest) error {
 	deleteQuery := deleteServiceHealthCheckQuery
 	selectQuery := "select count(uuid) from service_health_check where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -498,4 +498,119 @@ func DeleteServiceHealthCheck(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateServiceHealthCheck handle a Create API
+func (db *DB) CreateServiceHealthCheck(
+	ctx context.Context,
+	request *models.CreateServiceHealthCheckRequest) (*models.CreateServiceHealthCheckResponse, error) {
+	model := request.ServiceHealthCheck
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createServiceHealthCheck(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_health_check",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateServiceHealthCheckResponse{
+		ServiceHealthCheck: request.ServiceHealthCheck,
+	}, nil
+}
+
+//UpdateServiceHealthCheck handles a Update request.
+func (db *DB) UpdateServiceHealthCheck(
+	ctx context.Context,
+	request *models.UpdateServiceHealthCheckRequest) (*models.UpdateServiceHealthCheckResponse, error) {
+	model := request.ServiceHealthCheck
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateServiceHealthCheck(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_health_check",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateServiceHealthCheckResponse{
+		ServiceHealthCheck: model,
+	}, nil
+}
+
+//DeleteServiceHealthCheck delete a resource.
+func (db *DB) DeleteServiceHealthCheck(ctx context.Context, request *models.DeleteServiceHealthCheckRequest) (*models.DeleteServiceHealthCheckResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteServiceHealthCheck(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteServiceHealthCheckResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetServiceHealthCheck a Get request.
+func (db *DB) GetServiceHealthCheck(ctx context.Context, request *models.GetServiceHealthCheckRequest) (response *models.GetServiceHealthCheckResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListServiceHealthCheckRequest{
+		Spec: spec,
+	}
+	var result *models.ListServiceHealthCheckResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listServiceHealthCheck(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ServiceHealthChecks) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetServiceHealthCheckResponse{
+		ServiceHealthCheck: result.ServiceHealthChecks[0],
+	}
+	return response, nil
+}
+
+//ListServiceHealthCheck handles a List service Request.
+func (db *DB) ListServiceHealthCheck(
+	ctx context.Context,
+	request *models.ListServiceHealthCheckRequest) (response *models.ListServiceHealthCheckResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listServiceHealthCheck(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

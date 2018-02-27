@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateVirtualNetwork(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateVirtualNetwork(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "virtual_network",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateVirtualNetworkResponse{
-		VirtualNetwork: request.VirtualNetwork,
-	}, nil
+
+	return service.Next().CreateVirtualNetwork(ctx, request)
 }
 
 //RESTUpdateVirtualNetwork handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateVirtualNetwork(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateVirtualNetwork(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "virtual_network",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateVirtualNetworkResponse{
-		VirtualNetwork: model,
-	}, nil
+	return service.Next().UpdateVirtualNetwork(ctx, request)
 }
 
 //RESTDeleteVirtualNetwork delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteVirtualNetwork(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteVirtualNetwork delete a resource.
-func (service *ContrailService) DeleteVirtualNetwork(ctx context.Context, request *models.DeleteVirtualNetworkRequest) (*models.DeleteVirtualNetworkResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteVirtualNetwork(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteVirtualNetworkResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetVirtualNetwork a REST Get request.
 func (service *ContrailService) RESTGetVirtualNetwork(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetVirtualNetwork(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetVirtualNetwork a Get request.
-func (service *ContrailService) GetVirtualNetwork(ctx context.Context, request *models.GetVirtualNetworkRequest) (response *models.GetVirtualNetworkResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListVirtualNetworkRequest{
-		Spec: spec,
-	}
-	var result *models.ListVirtualNetworkResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListVirtualNetwork(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.VirtualNetworks) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetVirtualNetworkResponse{
-		VirtualNetwork: result.VirtualNetworks[0],
-	}
-	return response, nil
 }
 
 //RESTListVirtualNetwork handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListVirtualNetwork(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListVirtualNetwork handles a List service Request.
-func (service *ContrailService) ListVirtualNetwork(
-	ctx context.Context,
-	request *models.ListVirtualNetworkRequest) (response *models.ListVirtualNetworkResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListVirtualNetwork(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

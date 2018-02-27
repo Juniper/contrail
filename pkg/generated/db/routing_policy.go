@@ -63,10 +63,10 @@ var RoutingPolicyParents = []string{
 const insertRoutingPolicyServiceInstanceQuery = "insert into `ref_routing_policy_service_instance` (`from`, `to` ,`right_sequence`,`left_sequence`) values (?, ?,?,?);"
 
 // CreateRoutingPolicy inserts RoutingPolicy to DB
-func CreateRoutingPolicy(
+func (db *DB) createRoutingPolicy(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateRoutingPolicyRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.RoutingPolicy
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertRoutingPolicyQuery)
@@ -296,8 +296,9 @@ func scanRoutingPolicy(values map[string]interface{}) (*models.RoutingPolicy, er
 }
 
 // ListRoutingPolicy lists RoutingPolicy with list spec.
-func ListRoutingPolicy(ctx context.Context, tx *sql.Tx, request *models.ListRoutingPolicyRequest) (response *models.ListRoutingPolicyResponse, err error) {
+func (db *DB) listRoutingPolicy(ctx context.Context, request *models.ListRoutingPolicyRequest) (response *models.ListRoutingPolicyResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -359,9 +360,8 @@ func ListRoutingPolicy(ctx context.Context, tx *sql.Tx, request *models.ListRout
 }
 
 // UpdateRoutingPolicy updates a resource
-func UpdateRoutingPolicy(
+func (db *DB) updateRoutingPolicy(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateRoutingPolicyRequest,
 ) error {
 	//TODO
@@ -369,15 +369,15 @@ func UpdateRoutingPolicy(
 }
 
 // DeleteRoutingPolicy deletes a resource
-func DeleteRoutingPolicy(
+func (db *DB) deleteRoutingPolicy(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteRoutingPolicyRequest) error {
 	deleteQuery := deleteRoutingPolicyQuery
 	selectQuery := "select count(uuid) from routing_policy where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -412,4 +412,119 @@ func DeleteRoutingPolicy(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateRoutingPolicy handle a Create API
+func (db *DB) CreateRoutingPolicy(
+	ctx context.Context,
+	request *models.CreateRoutingPolicyRequest) (*models.CreateRoutingPolicyResponse, error) {
+	model := request.RoutingPolicy
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createRoutingPolicy(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "routing_policy",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateRoutingPolicyResponse{
+		RoutingPolicy: request.RoutingPolicy,
+	}, nil
+}
+
+//UpdateRoutingPolicy handles a Update request.
+func (db *DB) UpdateRoutingPolicy(
+	ctx context.Context,
+	request *models.UpdateRoutingPolicyRequest) (*models.UpdateRoutingPolicyResponse, error) {
+	model := request.RoutingPolicy
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateRoutingPolicy(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "routing_policy",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateRoutingPolicyResponse{
+		RoutingPolicy: model,
+	}, nil
+}
+
+//DeleteRoutingPolicy delete a resource.
+func (db *DB) DeleteRoutingPolicy(ctx context.Context, request *models.DeleteRoutingPolicyRequest) (*models.DeleteRoutingPolicyResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteRoutingPolicy(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteRoutingPolicyResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetRoutingPolicy a Get request.
+func (db *DB) GetRoutingPolicy(ctx context.Context, request *models.GetRoutingPolicyRequest) (response *models.GetRoutingPolicyResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListRoutingPolicyRequest{
+		Spec: spec,
+	}
+	var result *models.ListRoutingPolicyResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listRoutingPolicy(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.RoutingPolicys) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetRoutingPolicyResponse{
+		RoutingPolicy: result.RoutingPolicys[0],
+	}
+	return response, nil
+}
+
+//ListRoutingPolicy handles a List service Request.
+func (db *DB) ListRoutingPolicy(
+	ctx context.Context,
+	request *models.ListRoutingPolicyRequest) (response *models.ListRoutingPolicyResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listRoutingPolicy(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

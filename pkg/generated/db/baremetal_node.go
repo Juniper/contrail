@@ -81,10 +81,10 @@ var BaremetalNodeBackRefFields = map[string][]string{}
 var BaremetalNodeParents = []string{}
 
 // CreateBaremetalNode inserts BaremetalNode to DB
-func CreateBaremetalNode(
+func (db *DB) createBaremetalNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateBaremetalNodeRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.BaremetalNode
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertBaremetalNodeQuery)
@@ -483,8 +483,9 @@ func scanBaremetalNode(values map[string]interface{}) (*models.BaremetalNode, er
 }
 
 // ListBaremetalNode lists BaremetalNode with list spec.
-func ListBaremetalNode(ctx context.Context, tx *sql.Tx, request *models.ListBaremetalNodeRequest) (response *models.ListBaremetalNodeResponse, err error) {
+func (db *DB) listBaremetalNode(ctx context.Context, request *models.ListBaremetalNodeRequest) (response *models.ListBaremetalNodeResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -546,9 +547,8 @@ func ListBaremetalNode(ctx context.Context, tx *sql.Tx, request *models.ListBare
 }
 
 // UpdateBaremetalNode updates a resource
-func UpdateBaremetalNode(
+func (db *DB) updateBaremetalNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateBaremetalNodeRequest,
 ) error {
 	//TODO
@@ -556,15 +556,15 @@ func UpdateBaremetalNode(
 }
 
 // DeleteBaremetalNode deletes a resource
-func DeleteBaremetalNode(
+func (db *DB) deleteBaremetalNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteBaremetalNodeRequest) error {
 	deleteQuery := deleteBaremetalNodeQuery
 	selectQuery := "select count(uuid) from baremetal_node where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -599,4 +599,119 @@ func DeleteBaremetalNode(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateBaremetalNode handle a Create API
+func (db *DB) CreateBaremetalNode(
+	ctx context.Context,
+	request *models.CreateBaremetalNodeRequest) (*models.CreateBaremetalNodeResponse, error) {
+	model := request.BaremetalNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createBaremetalNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "baremetal_node",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateBaremetalNodeResponse{
+		BaremetalNode: request.BaremetalNode,
+	}, nil
+}
+
+//UpdateBaremetalNode handles a Update request.
+func (db *DB) UpdateBaremetalNode(
+	ctx context.Context,
+	request *models.UpdateBaremetalNodeRequest) (*models.UpdateBaremetalNodeResponse, error) {
+	model := request.BaremetalNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateBaremetalNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "baremetal_node",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateBaremetalNodeResponse{
+		BaremetalNode: model,
+	}, nil
+}
+
+//DeleteBaremetalNode delete a resource.
+func (db *DB) DeleteBaremetalNode(ctx context.Context, request *models.DeleteBaremetalNodeRequest) (*models.DeleteBaremetalNodeResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteBaremetalNode(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteBaremetalNodeResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetBaremetalNode a Get request.
+func (db *DB) GetBaremetalNode(ctx context.Context, request *models.GetBaremetalNodeRequest) (response *models.GetBaremetalNodeResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListBaremetalNodeRequest{
+		Spec: spec,
+	}
+	var result *models.ListBaremetalNodeResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listBaremetalNode(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.BaremetalNodes) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetBaremetalNodeResponse{
+		BaremetalNode: result.BaremetalNodes[0],
+	}
+	return response, nil
+}
+
+//ListBaremetalNode handles a List service Request.
+func (db *DB) ListBaremetalNode(
+	ctx context.Context,
+	request *models.ListBaremetalNodeRequest) (response *models.ListBaremetalNodeResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listBaremetalNode(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

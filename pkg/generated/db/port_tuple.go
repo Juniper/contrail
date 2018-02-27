@@ -54,10 +54,10 @@ var PortTupleParents = []string{
 }
 
 // CreatePortTuple inserts PortTuple to DB
-func CreatePortTuple(
+func (db *DB) createPortTuple(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreatePortTupleRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.PortTuple
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertPortTupleQuery)
@@ -246,8 +246,9 @@ func scanPortTuple(values map[string]interface{}) (*models.PortTuple, error) {
 }
 
 // ListPortTuple lists PortTuple with list spec.
-func ListPortTuple(ctx context.Context, tx *sql.Tx, request *models.ListPortTupleRequest) (response *models.ListPortTupleResponse, err error) {
+func (db *DB) listPortTuple(ctx context.Context, request *models.ListPortTupleRequest) (response *models.ListPortTupleResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -309,9 +310,8 @@ func ListPortTuple(ctx context.Context, tx *sql.Tx, request *models.ListPortTupl
 }
 
 // UpdatePortTuple updates a resource
-func UpdatePortTuple(
+func (db *DB) updatePortTuple(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdatePortTupleRequest,
 ) error {
 	//TODO
@@ -319,15 +319,15 @@ func UpdatePortTuple(
 }
 
 // DeletePortTuple deletes a resource
-func DeletePortTuple(
+func (db *DB) deletePortTuple(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeletePortTupleRequest) error {
 	deleteQuery := deletePortTupleQuery
 	selectQuery := "select count(uuid) from port_tuple where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -362,4 +362,119 @@ func DeletePortTuple(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreatePortTuple handle a Create API
+func (db *DB) CreatePortTuple(
+	ctx context.Context,
+	request *models.CreatePortTupleRequest) (*models.CreatePortTupleResponse, error) {
+	model := request.PortTuple
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createPortTuple(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "port_tuple",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreatePortTupleResponse{
+		PortTuple: request.PortTuple,
+	}, nil
+}
+
+//UpdatePortTuple handles a Update request.
+func (db *DB) UpdatePortTuple(
+	ctx context.Context,
+	request *models.UpdatePortTupleRequest) (*models.UpdatePortTupleResponse, error) {
+	model := request.PortTuple
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updatePortTuple(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "port_tuple",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdatePortTupleResponse{
+		PortTuple: model,
+	}, nil
+}
+
+//DeletePortTuple delete a resource.
+func (db *DB) DeletePortTuple(ctx context.Context, request *models.DeletePortTupleRequest) (*models.DeletePortTupleResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deletePortTuple(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeletePortTupleResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetPortTuple a Get request.
+func (db *DB) GetPortTuple(ctx context.Context, request *models.GetPortTupleRequest) (response *models.GetPortTupleResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListPortTupleRequest{
+		Spec: spec,
+	}
+	var result *models.ListPortTupleResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listPortTuple(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.PortTuples) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetPortTupleResponse{
+		PortTuple: result.PortTuples[0],
+	}
+	return response, nil
+}
+
+//ListPortTuple handles a List service Request.
+func (db *DB) ListPortTuple(
+	ctx context.Context,
+	request *models.ListPortTupleRequest) (response *models.ListPortTupleResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listPortTuple(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

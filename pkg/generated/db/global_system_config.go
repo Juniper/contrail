@@ -387,10 +387,10 @@ var GlobalSystemConfigParents = []string{
 const insertGlobalSystemConfigBGPRouterQuery = "insert into `ref_global_system_config_bgp_router` (`from`, `to` ) values (?, ?);"
 
 // CreateGlobalSystemConfig inserts GlobalSystemConfig to DB
-func CreateGlobalSystemConfig(
+func (db *DB) createGlobalSystemConfig(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateGlobalSystemConfigRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.GlobalSystemConfig
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertGlobalSystemConfigQuery)
@@ -2588,8 +2588,9 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 }
 
 // ListGlobalSystemConfig lists GlobalSystemConfig with list spec.
-func ListGlobalSystemConfig(ctx context.Context, tx *sql.Tx, request *models.ListGlobalSystemConfigRequest) (response *models.ListGlobalSystemConfigResponse, err error) {
+func (db *DB) listGlobalSystemConfig(ctx context.Context, request *models.ListGlobalSystemConfigRequest) (response *models.ListGlobalSystemConfigResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -2651,9 +2652,8 @@ func ListGlobalSystemConfig(ctx context.Context, tx *sql.Tx, request *models.Lis
 }
 
 // UpdateGlobalSystemConfig updates a resource
-func UpdateGlobalSystemConfig(
+func (db *DB) updateGlobalSystemConfig(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateGlobalSystemConfigRequest,
 ) error {
 	//TODO
@@ -2661,15 +2661,15 @@ func UpdateGlobalSystemConfig(
 }
 
 // DeleteGlobalSystemConfig deletes a resource
-func DeleteGlobalSystemConfig(
+func (db *DB) deleteGlobalSystemConfig(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteGlobalSystemConfigRequest) error {
 	deleteQuery := deleteGlobalSystemConfigQuery
 	selectQuery := "select count(uuid) from global_system_config where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -2704,4 +2704,119 @@ func DeleteGlobalSystemConfig(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateGlobalSystemConfig handle a Create API
+func (db *DB) CreateGlobalSystemConfig(
+	ctx context.Context,
+	request *models.CreateGlobalSystemConfigRequest) (*models.CreateGlobalSystemConfigResponse, error) {
+	model := request.GlobalSystemConfig
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createGlobalSystemConfig(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "global_system_config",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateGlobalSystemConfigResponse{
+		GlobalSystemConfig: request.GlobalSystemConfig,
+	}, nil
+}
+
+//UpdateGlobalSystemConfig handles a Update request.
+func (db *DB) UpdateGlobalSystemConfig(
+	ctx context.Context,
+	request *models.UpdateGlobalSystemConfigRequest) (*models.UpdateGlobalSystemConfigResponse, error) {
+	model := request.GlobalSystemConfig
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateGlobalSystemConfig(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "global_system_config",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateGlobalSystemConfigResponse{
+		GlobalSystemConfig: model,
+	}, nil
+}
+
+//DeleteGlobalSystemConfig delete a resource.
+func (db *DB) DeleteGlobalSystemConfig(ctx context.Context, request *models.DeleteGlobalSystemConfigRequest) (*models.DeleteGlobalSystemConfigResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteGlobalSystemConfig(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteGlobalSystemConfigResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetGlobalSystemConfig a Get request.
+func (db *DB) GetGlobalSystemConfig(ctx context.Context, request *models.GetGlobalSystemConfigRequest) (response *models.GetGlobalSystemConfigResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListGlobalSystemConfigRequest{
+		Spec: spec,
+	}
+	var result *models.ListGlobalSystemConfigResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listGlobalSystemConfig(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.GlobalSystemConfigs) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetGlobalSystemConfigResponse{
+		GlobalSystemConfig: result.GlobalSystemConfigs[0],
+	}
+	return response, nil
+}
+
+//ListGlobalSystemConfig handles a List service Request.
+func (db *DB) ListGlobalSystemConfig(
+	ctx context.Context,
+	request *models.ListGlobalSystemConfigRequest) (response *models.ListGlobalSystemConfigResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listGlobalSystemConfig(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

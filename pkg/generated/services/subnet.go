@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateSubnet(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateSubnet(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "subnet",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateSubnetResponse{
-		Subnet: request.Subnet,
-	}, nil
+
+	return service.Next().CreateSubnet(ctx, request)
 }
 
 //RESTUpdateSubnet handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateSubnet(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateSubnet(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "subnet",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateSubnetResponse{
-		Subnet: model,
-	}, nil
+	return service.Next().UpdateSubnet(ctx, request)
 }
 
 //RESTDeleteSubnet delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteSubnet(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteSubnet delete a resource.
-func (service *ContrailService) DeleteSubnet(ctx context.Context, request *models.DeleteSubnetRequest) (*models.DeleteSubnetResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteSubnet(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteSubnetResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetSubnet a REST Get request.
 func (service *ContrailService) RESTGetSubnet(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetSubnet(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetSubnet a Get request.
-func (service *ContrailService) GetSubnet(ctx context.Context, request *models.GetSubnetRequest) (response *models.GetSubnetResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListSubnetRequest{
-		Spec: spec,
-	}
-	var result *models.ListSubnetResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListSubnet(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.Subnets) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetSubnetResponse{
-		Subnet: result.Subnets[0],
-	}
-	return response, nil
 }
 
 //RESTListSubnet handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListSubnet(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListSubnet handles a List service Request.
-func (service *ContrailService) ListSubnet(
-	ctx context.Context,
-	request *models.ListSubnetRequest) (response *models.ListSubnetResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListSubnet(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

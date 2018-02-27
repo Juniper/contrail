@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateServiceGroup(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateServiceGroup(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "service_group",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateServiceGroupResponse{
-		ServiceGroup: request.ServiceGroup,
-	}, nil
+
+	return service.Next().CreateServiceGroup(ctx, request)
 }
 
 //RESTUpdateServiceGroup handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateServiceGroup(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateServiceGroup(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "service_group",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateServiceGroupResponse{
-		ServiceGroup: model,
-	}, nil
+	return service.Next().UpdateServiceGroup(ctx, request)
 }
 
 //RESTDeleteServiceGroup delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteServiceGroup(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteServiceGroup delete a resource.
-func (service *ContrailService) DeleteServiceGroup(ctx context.Context, request *models.DeleteServiceGroupRequest) (*models.DeleteServiceGroupResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteServiceGroup(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteServiceGroupResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetServiceGroup a REST Get request.
 func (service *ContrailService) RESTGetServiceGroup(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetServiceGroup(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetServiceGroup a Get request.
-func (service *ContrailService) GetServiceGroup(ctx context.Context, request *models.GetServiceGroupRequest) (response *models.GetServiceGroupResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListServiceGroupRequest{
-		Spec: spec,
-	}
-	var result *models.ListServiceGroupResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListServiceGroup(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.ServiceGroups) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetServiceGroupResponse{
-		ServiceGroup: result.ServiceGroups[0],
-	}
-	return response, nil
 }
 
 //RESTListServiceGroup handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListServiceGroup(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListServiceGroup handles a List service Request.
-func (service *ContrailService) ListServiceGroup(
-	ctx context.Context,
-	request *models.ListServiceGroupRequest) (response *models.ListServiceGroupResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListServiceGroup(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

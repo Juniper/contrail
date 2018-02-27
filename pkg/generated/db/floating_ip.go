@@ -73,15 +73,15 @@ var FloatingIPParents = []string{
 	"floating_ip_pool",
 }
 
-const insertFloatingIPProjectQuery = "insert into `ref_floating_ip_project` (`from`, `to` ) values (?, ?);"
-
 const insertFloatingIPVirtualMachineInterfaceQuery = "insert into `ref_floating_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
+const insertFloatingIPProjectQuery = "insert into `ref_floating_ip_project` (`from`, `to` ) values (?, ?);"
+
 // CreateFloatingIP inserts FloatingIP to DB
-func CreateFloatingIP(
+func (db *DB) createFloatingIP(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateFloatingIPRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.FloatingIP
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertFloatingIPQuery)
@@ -125,19 +125,6 @@ func CreateFloatingIP(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertFloatingIPVirtualMachineInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
-	}
-	defer stmtVirtualMachineInterfaceRef.Close()
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
 	stmtProjectRef, err := tx.Prepare(insertFloatingIPProjectQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ProjectRefs create statement failed")
@@ -148,6 +135,19 @@ func CreateFloatingIP(
 		_, err = stmtProjectRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ProjectRefs create failed")
+		}
+	}
+
+	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertFloatingIPVirtualMachineInterfaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
+	}
+	defer stmtVirtualMachineInterfaceRef.Close()
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
 	}
 
@@ -341,26 +341,6 @@ func scanFloatingIP(values map[string]interface{}) (*models.FloatingIP, error) {
 
 	}
 
-	if value, ok := values["ref_virtual_machine_interface"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.FloatingIPVirtualMachineInterfaceRef{}
-			referenceModel.UUID = uuid
-			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_project"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -381,12 +361,33 @@ func scanFloatingIP(values map[string]interface{}) (*models.FloatingIP, error) {
 		}
 	}
 
+	if value, ok := values["ref_virtual_machine_interface"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.FloatingIPVirtualMachineInterfaceRef{}
+			referenceModel.UUID = uuid
+			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
 	return m, nil
 }
 
 // ListFloatingIP lists FloatingIP with list spec.
-func ListFloatingIP(ctx context.Context, tx *sql.Tx, request *models.ListFloatingIPRequest) (response *models.ListFloatingIPResponse, err error) {
+func (db *DB) listFloatingIP(ctx context.Context, request *models.ListFloatingIPRequest) (response *models.ListFloatingIPResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -448,9 +449,8 @@ func ListFloatingIP(ctx context.Context, tx *sql.Tx, request *models.ListFloatin
 }
 
 // UpdateFloatingIP updates a resource
-func UpdateFloatingIP(
+func (db *DB) updateFloatingIP(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateFloatingIPRequest,
 ) error {
 	//TODO
@@ -458,15 +458,15 @@ func UpdateFloatingIP(
 }
 
 // DeleteFloatingIP deletes a resource
-func DeleteFloatingIP(
+func (db *DB) deleteFloatingIP(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteFloatingIPRequest) error {
 	deleteQuery := deleteFloatingIPQuery
 	selectQuery := "select count(uuid) from floating_ip where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -501,4 +501,119 @@ func DeleteFloatingIP(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateFloatingIP handle a Create API
+func (db *DB) CreateFloatingIP(
+	ctx context.Context,
+	request *models.CreateFloatingIPRequest) (*models.CreateFloatingIPResponse, error) {
+	model := request.FloatingIP
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createFloatingIP(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "floating_ip",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateFloatingIPResponse{
+		FloatingIP: request.FloatingIP,
+	}, nil
+}
+
+//UpdateFloatingIP handles a Update request.
+func (db *DB) UpdateFloatingIP(
+	ctx context.Context,
+	request *models.UpdateFloatingIPRequest) (*models.UpdateFloatingIPResponse, error) {
+	model := request.FloatingIP
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateFloatingIP(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "floating_ip",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateFloatingIPResponse{
+		FloatingIP: model,
+	}, nil
+}
+
+//DeleteFloatingIP delete a resource.
+func (db *DB) DeleteFloatingIP(ctx context.Context, request *models.DeleteFloatingIPRequest) (*models.DeleteFloatingIPResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteFloatingIP(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteFloatingIPResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetFloatingIP a Get request.
+func (db *DB) GetFloatingIP(ctx context.Context, request *models.GetFloatingIPRequest) (response *models.GetFloatingIPResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListFloatingIPRequest{
+		Spec: spec,
+	}
+	var result *models.ListFloatingIPResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listFloatingIP(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.FloatingIPs) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetFloatingIPResponse{
+		FloatingIP: result.FloatingIPs[0],
+	}
+	return response, nil
+}
+
+//ListFloatingIP handles a List service Request.
+func (db *DB) ListFloatingIP(
+	ctx context.Context,
+	request *models.ListFloatingIPRequest) (response *models.ListFloatingIPResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listFloatingIP(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

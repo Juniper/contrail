@@ -51,10 +51,10 @@ var RouteTargetBackRefFields = map[string][]string{}
 var RouteTargetParents = []string{}
 
 // CreateRouteTarget inserts RouteTarget to DB
-func CreateRouteTarget(
+func (db *DB) createRouteTarget(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateRouteTargetRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.RouteTarget
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertRouteTargetQuery)
@@ -243,8 +243,9 @@ func scanRouteTarget(values map[string]interface{}) (*models.RouteTarget, error)
 }
 
 // ListRouteTarget lists RouteTarget with list spec.
-func ListRouteTarget(ctx context.Context, tx *sql.Tx, request *models.ListRouteTargetRequest) (response *models.ListRouteTargetResponse, err error) {
+func (db *DB) listRouteTarget(ctx context.Context, request *models.ListRouteTargetRequest) (response *models.ListRouteTargetResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -306,9 +307,8 @@ func ListRouteTarget(ctx context.Context, tx *sql.Tx, request *models.ListRouteT
 }
 
 // UpdateRouteTarget updates a resource
-func UpdateRouteTarget(
+func (db *DB) updateRouteTarget(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateRouteTargetRequest,
 ) error {
 	//TODO
@@ -316,15 +316,15 @@ func UpdateRouteTarget(
 }
 
 // DeleteRouteTarget deletes a resource
-func DeleteRouteTarget(
+func (db *DB) deleteRouteTarget(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteRouteTargetRequest) error {
 	deleteQuery := deleteRouteTargetQuery
 	selectQuery := "select count(uuid) from route_target where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -359,4 +359,119 @@ func DeleteRouteTarget(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateRouteTarget handle a Create API
+func (db *DB) CreateRouteTarget(
+	ctx context.Context,
+	request *models.CreateRouteTargetRequest) (*models.CreateRouteTargetResponse, error) {
+	model := request.RouteTarget
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createRouteTarget(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "route_target",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateRouteTargetResponse{
+		RouteTarget: request.RouteTarget,
+	}, nil
+}
+
+//UpdateRouteTarget handles a Update request.
+func (db *DB) UpdateRouteTarget(
+	ctx context.Context,
+	request *models.UpdateRouteTargetRequest) (*models.UpdateRouteTargetResponse, error) {
+	model := request.RouteTarget
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateRouteTarget(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "route_target",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateRouteTargetResponse{
+		RouteTarget: model,
+	}, nil
+}
+
+//DeleteRouteTarget delete a resource.
+func (db *DB) DeleteRouteTarget(ctx context.Context, request *models.DeleteRouteTargetRequest) (*models.DeleteRouteTargetResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteRouteTarget(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteRouteTargetResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetRouteTarget a Get request.
+func (db *DB) GetRouteTarget(ctx context.Context, request *models.GetRouteTargetRequest) (response *models.GetRouteTargetResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListRouteTargetRequest{
+		Spec: spec,
+	}
+	var result *models.ListRouteTargetResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listRouteTarget(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.RouteTargets) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetRouteTargetResponse{
+		RouteTarget: result.RouteTargets[0],
+	}
+	return response, nil
+}
+
+//ListRouteTarget handles a List service Request.
+func (db *DB) ListRouteTarget(
+	ctx context.Context,
+	request *models.ListRouteTargetRequest) (response *models.ListRouteTargetResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listRouteTarget(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

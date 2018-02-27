@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateServer(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateServer(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "server",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateServerResponse{
-		Server: request.Server,
-	}, nil
+
+	return service.Next().CreateServer(ctx, request)
 }
 
 //RESTUpdateServer handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateServer(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateServer(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "server",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateServerResponse{
-		Server: model,
-	}, nil
+	return service.Next().UpdateServer(ctx, request)
 }
 
 //RESTDeleteServer delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteServer(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteServer delete a resource.
-func (service *ContrailService) DeleteServer(ctx context.Context, request *models.DeleteServerRequest) (*models.DeleteServerResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteServer(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteServerResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetServer a REST Get request.
 func (service *ContrailService) RESTGetServer(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetServer(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetServer a Get request.
-func (service *ContrailService) GetServer(ctx context.Context, request *models.GetServerRequest) (response *models.GetServerResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListServerRequest{
-		Spec: spec,
-	}
-	var result *models.ListServerResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListServer(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.Servers) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetServerResponse{
-		Server: result.Servers[0],
-	}
-	return response, nil
 }
 
 //RESTListServer handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListServer(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListServer handles a List service Request.
-func (service *ContrailService) ListServer(
-	ctx context.Context,
-	request *models.ListServerRequest) (response *models.ListServerResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListServer(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

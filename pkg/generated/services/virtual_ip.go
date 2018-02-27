@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateVirtualIP(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateVirtualIP(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "virtual_ip",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateVirtualIPResponse{
-		VirtualIP: request.VirtualIP,
-	}, nil
+
+	return service.Next().CreateVirtualIP(ctx, request)
 }
 
 //RESTUpdateVirtualIP handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateVirtualIP(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateVirtualIP(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "virtual_ip",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateVirtualIPResponse{
-		VirtualIP: model,
-	}, nil
+	return service.Next().UpdateVirtualIP(ctx, request)
 }
 
 //RESTDeleteVirtualIP delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteVirtualIP(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteVirtualIP delete a resource.
-func (service *ContrailService) DeleteVirtualIP(ctx context.Context, request *models.DeleteVirtualIPRequest) (*models.DeleteVirtualIPResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteVirtualIP(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteVirtualIPResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetVirtualIP a REST Get request.
 func (service *ContrailService) RESTGetVirtualIP(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetVirtualIP(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetVirtualIP a Get request.
-func (service *ContrailService) GetVirtualIP(ctx context.Context, request *models.GetVirtualIPRequest) (response *models.GetVirtualIPResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListVirtualIPRequest{
-		Spec: spec,
-	}
-	var result *models.ListVirtualIPResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListVirtualIP(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.VirtualIPs) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetVirtualIPResponse{
-		VirtualIP: result.VirtualIPs[0],
-	}
-	return response, nil
 }
 
 //RESTListVirtualIP handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListVirtualIP(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListVirtualIP handles a List service Request.
-func (service *ContrailService) ListVirtualIP(
-	ctx context.Context,
-	request *models.ListVirtualIPRequest) (response *models.ListVirtualIPResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListVirtualIP(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

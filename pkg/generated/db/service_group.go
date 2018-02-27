@@ -57,10 +57,10 @@ var ServiceGroupParents = []string{
 }
 
 // CreateServiceGroup inserts ServiceGroup to DB
-func CreateServiceGroup(
+func (db *DB) createServiceGroup(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateServiceGroupRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ServiceGroup
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceGroupQuery)
@@ -256,8 +256,9 @@ func scanServiceGroup(values map[string]interface{}) (*models.ServiceGroup, erro
 }
 
 // ListServiceGroup lists ServiceGroup with list spec.
-func ListServiceGroup(ctx context.Context, tx *sql.Tx, request *models.ListServiceGroupRequest) (response *models.ListServiceGroupResponse, err error) {
+func (db *DB) listServiceGroup(ctx context.Context, request *models.ListServiceGroupRequest) (response *models.ListServiceGroupResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -319,9 +320,8 @@ func ListServiceGroup(ctx context.Context, tx *sql.Tx, request *models.ListServi
 }
 
 // UpdateServiceGroup updates a resource
-func UpdateServiceGroup(
+func (db *DB) updateServiceGroup(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateServiceGroupRequest,
 ) error {
 	//TODO
@@ -329,15 +329,15 @@ func UpdateServiceGroup(
 }
 
 // DeleteServiceGroup deletes a resource
-func DeleteServiceGroup(
+func (db *DB) deleteServiceGroup(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteServiceGroupRequest) error {
 	deleteQuery := deleteServiceGroupQuery
 	selectQuery := "select count(uuid) from service_group where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -372,4 +372,119 @@ func DeleteServiceGroup(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateServiceGroup handle a Create API
+func (db *DB) CreateServiceGroup(
+	ctx context.Context,
+	request *models.CreateServiceGroupRequest) (*models.CreateServiceGroupResponse, error) {
+	model := request.ServiceGroup
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createServiceGroup(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_group",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateServiceGroupResponse{
+		ServiceGroup: request.ServiceGroup,
+	}, nil
+}
+
+//UpdateServiceGroup handles a Update request.
+func (db *DB) UpdateServiceGroup(
+	ctx context.Context,
+	request *models.UpdateServiceGroupRequest) (*models.UpdateServiceGroupResponse, error) {
+	model := request.ServiceGroup
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateServiceGroup(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_group",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateServiceGroupResponse{
+		ServiceGroup: model,
+	}, nil
+}
+
+//DeleteServiceGroup delete a resource.
+func (db *DB) DeleteServiceGroup(ctx context.Context, request *models.DeleteServiceGroupRequest) (*models.DeleteServiceGroupResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteServiceGroup(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteServiceGroupResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetServiceGroup a Get request.
+func (db *DB) GetServiceGroup(ctx context.Context, request *models.GetServiceGroupRequest) (response *models.GetServiceGroupResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListServiceGroupRequest{
+		Spec: spec,
+	}
+	var result *models.ListServiceGroupResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listServiceGroup(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ServiceGroups) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetServiceGroupResponse{
+		ServiceGroup: result.ServiceGroups[0],
+	}
+	return response, nil
+}
+
+//ListServiceGroup handles a List service Request.
+func (db *DB) ListServiceGroup(
+	ctx context.Context,
+	request *models.ListServiceGroupRequest) (response *models.ListServiceGroupResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listServiceGroup(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

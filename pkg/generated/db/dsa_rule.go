@@ -60,10 +60,10 @@ var DsaRuleParents = []string{
 }
 
 // CreateDsaRule inserts DsaRule to DB
-func CreateDsaRule(
+func (db *DB) createDsaRule(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateDsaRuleRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.DsaRule
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertDsaRuleQuery)
@@ -294,8 +294,9 @@ func scanDsaRule(values map[string]interface{}) (*models.DsaRule, error) {
 }
 
 // ListDsaRule lists DsaRule with list spec.
-func ListDsaRule(ctx context.Context, tx *sql.Tx, request *models.ListDsaRuleRequest) (response *models.ListDsaRuleResponse, err error) {
+func (db *DB) listDsaRule(ctx context.Context, request *models.ListDsaRuleRequest) (response *models.ListDsaRuleResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -357,9 +358,8 @@ func ListDsaRule(ctx context.Context, tx *sql.Tx, request *models.ListDsaRuleReq
 }
 
 // UpdateDsaRule updates a resource
-func UpdateDsaRule(
+func (db *DB) updateDsaRule(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateDsaRuleRequest,
 ) error {
 	//TODO
@@ -367,15 +367,15 @@ func UpdateDsaRule(
 }
 
 // DeleteDsaRule deletes a resource
-func DeleteDsaRule(
+func (db *DB) deleteDsaRule(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteDsaRuleRequest) error {
 	deleteQuery := deleteDsaRuleQuery
 	selectQuery := "select count(uuid) from dsa_rule where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -410,4 +410,119 @@ func DeleteDsaRule(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateDsaRule handle a Create API
+func (db *DB) CreateDsaRule(
+	ctx context.Context,
+	request *models.CreateDsaRuleRequest) (*models.CreateDsaRuleResponse, error) {
+	model := request.DsaRule
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createDsaRule(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "dsa_rule",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateDsaRuleResponse{
+		DsaRule: request.DsaRule,
+	}, nil
+}
+
+//UpdateDsaRule handles a Update request.
+func (db *DB) UpdateDsaRule(
+	ctx context.Context,
+	request *models.UpdateDsaRuleRequest) (*models.UpdateDsaRuleResponse, error) {
+	model := request.DsaRule
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateDsaRule(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "dsa_rule",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateDsaRuleResponse{
+		DsaRule: model,
+	}, nil
+}
+
+//DeleteDsaRule delete a resource.
+func (db *DB) DeleteDsaRule(ctx context.Context, request *models.DeleteDsaRuleRequest) (*models.DeleteDsaRuleResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteDsaRule(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteDsaRuleResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetDsaRule a Get request.
+func (db *DB) GetDsaRule(ctx context.Context, request *models.GetDsaRuleRequest) (response *models.GetDsaRuleResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListDsaRuleRequest{
+		Spec: spec,
+	}
+	var result *models.ListDsaRuleResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listDsaRule(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.DsaRules) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetDsaRuleResponse{
+		DsaRule: result.DsaRules[0],
+	}
+	return response, nil
+}
+
+//ListDsaRule handles a List service Request.
+func (db *DB) ListDsaRule(
+	ctx context.Context,
+	request *models.ListDsaRuleRequest) (response *models.ListDsaRuleResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listDsaRule(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

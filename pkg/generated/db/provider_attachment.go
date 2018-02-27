@@ -59,10 +59,10 @@ var ProviderAttachmentParents = []string{}
 const insertProviderAttachmentVirtualRouterQuery = "insert into `ref_provider_attachment_virtual_router` (`from`, `to` ) values (?, ?);"
 
 // CreateProviderAttachment inserts ProviderAttachment to DB
-func CreateProviderAttachment(
+func (db *DB) createProviderAttachment(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateProviderAttachmentRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ProviderAttachment
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertProviderAttachmentQuery)
@@ -284,8 +284,9 @@ func scanProviderAttachment(values map[string]interface{}) (*models.ProviderAtta
 }
 
 // ListProviderAttachment lists ProviderAttachment with list spec.
-func ListProviderAttachment(ctx context.Context, tx *sql.Tx, request *models.ListProviderAttachmentRequest) (response *models.ListProviderAttachmentResponse, err error) {
+func (db *DB) listProviderAttachment(ctx context.Context, request *models.ListProviderAttachmentRequest) (response *models.ListProviderAttachmentResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -347,9 +348,8 @@ func ListProviderAttachment(ctx context.Context, tx *sql.Tx, request *models.Lis
 }
 
 // UpdateProviderAttachment updates a resource
-func UpdateProviderAttachment(
+func (db *DB) updateProviderAttachment(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateProviderAttachmentRequest,
 ) error {
 	//TODO
@@ -357,15 +357,15 @@ func UpdateProviderAttachment(
 }
 
 // DeleteProviderAttachment deletes a resource
-func DeleteProviderAttachment(
+func (db *DB) deleteProviderAttachment(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteProviderAttachmentRequest) error {
 	deleteQuery := deleteProviderAttachmentQuery
 	selectQuery := "select count(uuid) from provider_attachment where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -400,4 +400,119 @@ func DeleteProviderAttachment(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateProviderAttachment handle a Create API
+func (db *DB) CreateProviderAttachment(
+	ctx context.Context,
+	request *models.CreateProviderAttachmentRequest) (*models.CreateProviderAttachmentResponse, error) {
+	model := request.ProviderAttachment
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createProviderAttachment(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "provider_attachment",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateProviderAttachmentResponse{
+		ProviderAttachment: request.ProviderAttachment,
+	}, nil
+}
+
+//UpdateProviderAttachment handles a Update request.
+func (db *DB) UpdateProviderAttachment(
+	ctx context.Context,
+	request *models.UpdateProviderAttachmentRequest) (*models.UpdateProviderAttachmentResponse, error) {
+	model := request.ProviderAttachment
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateProviderAttachment(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "provider_attachment",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateProviderAttachmentResponse{
+		ProviderAttachment: model,
+	}, nil
+}
+
+//DeleteProviderAttachment delete a resource.
+func (db *DB) DeleteProviderAttachment(ctx context.Context, request *models.DeleteProviderAttachmentRequest) (*models.DeleteProviderAttachmentResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteProviderAttachment(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteProviderAttachmentResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetProviderAttachment a Get request.
+func (db *DB) GetProviderAttachment(ctx context.Context, request *models.GetProviderAttachmentRequest) (response *models.GetProviderAttachmentResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListProviderAttachmentRequest{
+		Spec: spec,
+	}
+	var result *models.ListProviderAttachmentResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listProviderAttachment(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ProviderAttachments) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetProviderAttachmentResponse{
+		ProviderAttachment: result.ProviderAttachments[0],
+	}
+	return response, nil
+}
+
+//ListProviderAttachment handles a List service Request.
+func (db *DB) ListProviderAttachment(
+	ctx context.Context,
+	request *models.ListProviderAttachmentRequest) (response *models.ListProviderAttachmentResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listProviderAttachment(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

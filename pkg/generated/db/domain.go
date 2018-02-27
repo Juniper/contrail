@@ -229,10 +229,10 @@ var DomainParents = []string{
 }
 
 // CreateDomain inserts Domain to DB
-func CreateDomain(
+func (db *DB) createDomain(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateDomainRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.Domain
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertDomainQuery)
@@ -1473,8 +1473,9 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 }
 
 // ListDomain lists Domain with list spec.
-func ListDomain(ctx context.Context, tx *sql.Tx, request *models.ListDomainRequest) (response *models.ListDomainResponse, err error) {
+func (db *DB) listDomain(ctx context.Context, request *models.ListDomainRequest) (response *models.ListDomainResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -1536,9 +1537,8 @@ func ListDomain(ctx context.Context, tx *sql.Tx, request *models.ListDomainReque
 }
 
 // UpdateDomain updates a resource
-func UpdateDomain(
+func (db *DB) updateDomain(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateDomainRequest,
 ) error {
 	//TODO
@@ -1546,15 +1546,15 @@ func UpdateDomain(
 }
 
 // DeleteDomain deletes a resource
-func DeleteDomain(
+func (db *DB) deleteDomain(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteDomainRequest) error {
 	deleteQuery := deleteDomainQuery
 	selectQuery := "select count(uuid) from domain where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -1589,4 +1589,119 @@ func DeleteDomain(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateDomain handle a Create API
+func (db *DB) CreateDomain(
+	ctx context.Context,
+	request *models.CreateDomainRequest) (*models.CreateDomainResponse, error) {
+	model := request.Domain
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createDomain(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "domain",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateDomainResponse{
+		Domain: request.Domain,
+	}, nil
+}
+
+//UpdateDomain handles a Update request.
+func (db *DB) UpdateDomain(
+	ctx context.Context,
+	request *models.UpdateDomainRequest) (*models.UpdateDomainResponse, error) {
+	model := request.Domain
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateDomain(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "domain",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateDomainResponse{
+		Domain: model,
+	}, nil
+}
+
+//DeleteDomain delete a resource.
+func (db *DB) DeleteDomain(ctx context.Context, request *models.DeleteDomainRequest) (*models.DeleteDomainResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteDomain(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteDomainResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetDomain a Get request.
+func (db *DB) GetDomain(ctx context.Context, request *models.GetDomainRequest) (response *models.GetDomainResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListDomainRequest{
+		Spec: spec,
+	}
+	var result *models.ListDomainResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listDomain(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.Domains) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetDomainResponse{
+		Domain: result.Domains[0],
+	}
+	return response, nil
+}
+
+//ListDomain handles a List service Request.
+func (db *DB) ListDomain(
+	ctx context.Context,
+	request *models.ListDomainRequest) (response *models.ListDomainResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listDomain(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

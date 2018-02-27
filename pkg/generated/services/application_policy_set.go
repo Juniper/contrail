@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateApplicationPolicySet(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateApplicationPolicySet(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "application_policy_set",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateApplicationPolicySetResponse{
-		ApplicationPolicySet: request.ApplicationPolicySet,
-	}, nil
+
+	return service.Next().CreateApplicationPolicySet(ctx, request)
 }
 
 //RESTUpdateApplicationPolicySet handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateApplicationPolicySet(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateApplicationPolicySet(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "application_policy_set",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateApplicationPolicySetResponse{
-		ApplicationPolicySet: model,
-	}, nil
+	return service.Next().UpdateApplicationPolicySet(ctx, request)
 }
 
 //RESTDeleteApplicationPolicySet delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteApplicationPolicySet(c echo.Context) e
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteApplicationPolicySet delete a resource.
-func (service *ContrailService) DeleteApplicationPolicySet(ctx context.Context, request *models.DeleteApplicationPolicySetRequest) (*models.DeleteApplicationPolicySetResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteApplicationPolicySet(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteApplicationPolicySetResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetApplicationPolicySet a REST Get request.
 func (service *ContrailService) RESTGetApplicationPolicySet(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetApplicationPolicySet(c echo.Context) erro
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetApplicationPolicySet a Get request.
-func (service *ContrailService) GetApplicationPolicySet(ctx context.Context, request *models.GetApplicationPolicySetRequest) (response *models.GetApplicationPolicySetResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListApplicationPolicySetRequest{
-		Spec: spec,
-	}
-	var result *models.ListApplicationPolicySetResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListApplicationPolicySet(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.ApplicationPolicySets) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetApplicationPolicySetResponse{
-		ApplicationPolicySet: result.ApplicationPolicySets[0],
-	}
-	return response, nil
 }
 
 //RESTListApplicationPolicySet handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListApplicationPolicySet(c echo.Context) err
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListApplicationPolicySet handles a List service Request.
-func (service *ContrailService) ListApplicationPolicySet(
-	ctx context.Context,
-	request *models.ListApplicationPolicySetRequest) (response *models.ListApplicationPolicySetResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListApplicationPolicySet(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

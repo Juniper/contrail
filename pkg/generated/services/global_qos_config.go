@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateGlobalQosConfig(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateGlobalQosConfig(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "global_qos_config",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateGlobalQosConfigResponse{
-		GlobalQosConfig: request.GlobalQosConfig,
-	}, nil
+
+	return service.Next().CreateGlobalQosConfig(ctx, request)
 }
 
 //RESTUpdateGlobalQosConfig handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateGlobalQosConfig(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateGlobalQosConfig(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "global_qos_config",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateGlobalQosConfigResponse{
-		GlobalQosConfig: model,
-	}, nil
+	return service.Next().UpdateGlobalQosConfig(ctx, request)
 }
 
 //RESTDeleteGlobalQosConfig delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteGlobalQosConfig(c echo.Context) error 
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteGlobalQosConfig delete a resource.
-func (service *ContrailService) DeleteGlobalQosConfig(ctx context.Context, request *models.DeleteGlobalQosConfigRequest) (*models.DeleteGlobalQosConfigResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteGlobalQosConfig(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteGlobalQosConfigResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetGlobalQosConfig a REST Get request.
 func (service *ContrailService) RESTGetGlobalQosConfig(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetGlobalQosConfig(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetGlobalQosConfig a Get request.
-func (service *ContrailService) GetGlobalQosConfig(ctx context.Context, request *models.GetGlobalQosConfigRequest) (response *models.GetGlobalQosConfigResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListGlobalQosConfigRequest{
-		Spec: spec,
-	}
-	var result *models.ListGlobalQosConfigResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListGlobalQosConfig(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.GlobalQosConfigs) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetGlobalQosConfigResponse{
-		GlobalQosConfig: result.GlobalQosConfigs[0],
-	}
-	return response, nil
 }
 
 //RESTListGlobalQosConfig handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListGlobalQosConfig(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListGlobalQosConfig handles a List service Request.
-func (service *ContrailService) ListGlobalQosConfig(
-	ctx context.Context,
-	request *models.ListGlobalQosConfigRequest) (response *models.ListGlobalQosConfigResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListGlobalQosConfig(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

@@ -52,10 +52,10 @@ var TagTypeBackRefFields = map[string][]string{}
 var TagTypeParents = []string{}
 
 // CreateTagType inserts TagType to DB
-func CreateTagType(
+func (db *DB) createTagType(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateTagTypeRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.TagType
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertTagTypeQuery)
@@ -251,8 +251,9 @@ func scanTagType(values map[string]interface{}) (*models.TagType, error) {
 }
 
 // ListTagType lists TagType with list spec.
-func ListTagType(ctx context.Context, tx *sql.Tx, request *models.ListTagTypeRequest) (response *models.ListTagTypeResponse, err error) {
+func (db *DB) listTagType(ctx context.Context, request *models.ListTagTypeRequest) (response *models.ListTagTypeResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -314,9 +315,8 @@ func ListTagType(ctx context.Context, tx *sql.Tx, request *models.ListTagTypeReq
 }
 
 // UpdateTagType updates a resource
-func UpdateTagType(
+func (db *DB) updateTagType(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateTagTypeRequest,
 ) error {
 	//TODO
@@ -324,15 +324,15 @@ func UpdateTagType(
 }
 
 // DeleteTagType deletes a resource
-func DeleteTagType(
+func (db *DB) deleteTagType(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteTagTypeRequest) error {
 	deleteQuery := deleteTagTypeQuery
 	selectQuery := "select count(uuid) from tag_type where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -367,4 +367,119 @@ func DeleteTagType(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateTagType handle a Create API
+func (db *DB) CreateTagType(
+	ctx context.Context,
+	request *models.CreateTagTypeRequest) (*models.CreateTagTypeResponse, error) {
+	model := request.TagType
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createTagType(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "tag_type",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateTagTypeResponse{
+		TagType: request.TagType,
+	}, nil
+}
+
+//UpdateTagType handles a Update request.
+func (db *DB) UpdateTagType(
+	ctx context.Context,
+	request *models.UpdateTagTypeRequest) (*models.UpdateTagTypeResponse, error) {
+	model := request.TagType
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateTagType(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "tag_type",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateTagTypeResponse{
+		TagType: model,
+	}, nil
+}
+
+//DeleteTagType delete a resource.
+func (db *DB) DeleteTagType(ctx context.Context, request *models.DeleteTagTypeRequest) (*models.DeleteTagTypeResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteTagType(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteTagTypeResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetTagType a Get request.
+func (db *DB) GetTagType(ctx context.Context, request *models.GetTagTypeRequest) (response *models.GetTagTypeResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListTagTypeRequest{
+		Spec: spec,
+	}
+	var result *models.ListTagTypeResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listTagType(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.TagTypes) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetTagTypeResponse{
+		TagType: result.TagTypes[0],
+	}
+	return response, nil
+}
+
+//ListTagType handles a List service Request.
+func (db *DB) ListTagType(
+	ctx context.Context,
+	request *models.ListTagTypeRequest) (response *models.ListTagTypeResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listTagType(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

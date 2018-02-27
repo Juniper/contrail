@@ -218,10 +218,10 @@ var PolicyManagementBackRefFields = map[string][]string{
 var PolicyManagementParents = []string{}
 
 // CreatePolicyManagement inserts PolicyManagement to DB
-func CreatePolicyManagement(
+func (db *DB) createPolicyManagement(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreatePolicyManagementRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.PolicyManagement
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertPolicyManagementQuery)
@@ -1411,8 +1411,9 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 }
 
 // ListPolicyManagement lists PolicyManagement with list spec.
-func ListPolicyManagement(ctx context.Context, tx *sql.Tx, request *models.ListPolicyManagementRequest) (response *models.ListPolicyManagementResponse, err error) {
+func (db *DB) listPolicyManagement(ctx context.Context, request *models.ListPolicyManagementRequest) (response *models.ListPolicyManagementResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -1474,9 +1475,8 @@ func ListPolicyManagement(ctx context.Context, tx *sql.Tx, request *models.ListP
 }
 
 // UpdatePolicyManagement updates a resource
-func UpdatePolicyManagement(
+func (db *DB) updatePolicyManagement(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdatePolicyManagementRequest,
 ) error {
 	//TODO
@@ -1484,15 +1484,15 @@ func UpdatePolicyManagement(
 }
 
 // DeletePolicyManagement deletes a resource
-func DeletePolicyManagement(
+func (db *DB) deletePolicyManagement(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeletePolicyManagementRequest) error {
 	deleteQuery := deletePolicyManagementQuery
 	selectQuery := "select count(uuid) from policy_management where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -1527,4 +1527,119 @@ func DeletePolicyManagement(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreatePolicyManagement handle a Create API
+func (db *DB) CreatePolicyManagement(
+	ctx context.Context,
+	request *models.CreatePolicyManagementRequest) (*models.CreatePolicyManagementResponse, error) {
+	model := request.PolicyManagement
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createPolicyManagement(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "policy_management",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreatePolicyManagementResponse{
+		PolicyManagement: request.PolicyManagement,
+	}, nil
+}
+
+//UpdatePolicyManagement handles a Update request.
+func (db *DB) UpdatePolicyManagement(
+	ctx context.Context,
+	request *models.UpdatePolicyManagementRequest) (*models.UpdatePolicyManagementResponse, error) {
+	model := request.PolicyManagement
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updatePolicyManagement(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "policy_management",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdatePolicyManagementResponse{
+		PolicyManagement: model,
+	}, nil
+}
+
+//DeletePolicyManagement delete a resource.
+func (db *DB) DeletePolicyManagement(ctx context.Context, request *models.DeletePolicyManagementRequest) (*models.DeletePolicyManagementResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deletePolicyManagement(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeletePolicyManagementResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetPolicyManagement a Get request.
+func (db *DB) GetPolicyManagement(ctx context.Context, request *models.GetPolicyManagementRequest) (response *models.GetPolicyManagementResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListPolicyManagementRequest{
+		Spec: spec,
+	}
+	var result *models.ListPolicyManagementResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listPolicyManagement(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.PolicyManagements) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetPolicyManagementResponse{
+		PolicyManagement: result.PolicyManagements[0],
+	}
+	return response, nil
+}
+
+//ListPolicyManagement handles a List service Request.
+func (db *DB) ListPolicyManagement(
+	ctx context.Context,
+	request *models.ListPolicyManagementRequest) (response *models.ListPolicyManagementResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listPolicyManagement(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

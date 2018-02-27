@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,13 +15,15 @@ var _ = errors.New("")
 
 func TestTag(t *testing.T) {
 	// t.Parallel()
-	db := testDB
+	db := &DB{
+		DB: testDB,
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db, "metadata")
-	mutexTable := common.UseTable(db, "tag")
-	// mutexProject := common.UseTable(db, "tag")
+	mutexMetadata := common.UseTable(db.DB, "metadata")
+	mutexTable := common.UseTable(db.DB, "tag")
+	// mutexProject := common.UseTable(db.DB, "tag")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -44,24 +44,18 @@ func TestTag(t *testing.T) {
 	TagTyperefModel = models.MakeTagType()
 	TagTyperefModel.UUID = "tag_tag_type_ref_uuid"
 	TagTyperefModel.FQName = []string{"test", "tag_tag_type_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateTagType(ctx, tx, &models.CreateTagTypeRequest{
-			TagType: TagTyperefModel,
-		})
+	_, err = db.CreateTagType(ctx, &models.CreateTagTypeRequest{
+		TagType: TagTyperefModel,
 	})
 	TagTyperefModel.UUID = "tag_tag_type_ref_uuid1"
 	TagTyperefModel.FQName = []string{"test", "tag_tag_type_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateTagType(ctx, tx, &models.CreateTagTypeRequest{
-			TagType: TagTyperefModel,
-		})
+	_, err = db.CreateTagType(ctx, &models.CreateTagTypeRequest{
+		TagType: TagTyperefModel,
 	})
 	TagTyperefModel.UUID = "tag_tag_type_ref_uuid2"
 	TagTyperefModel.FQName = []string{"test", "tag_tag_type_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateTagType(ctx, tx, &models.CreateTagTypeRequest{
-			TagType: TagTyperefModel,
-		})
+	_, err = db.CreateTagType(ctx, &models.CreateTagTypeRequest{
+		TagType: TagTyperefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
@@ -78,10 +72,9 @@ func TestTag(t *testing.T) {
 	var createShare []*models.ShareType
 	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
 	model.Perms2.Share = createShare
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx, &models.CreateProjectRequest{
-			Project: projectModel,
-		})
+
+	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
+		Project: projectModel,
 	})
 	if err != nil {
 		t.Fatal("project create failed", err)
@@ -219,12 +212,11 @@ func TestTag(t *testing.T) {
 	//    common.SetValueByPath(updateMap, "TagTypeRefs", ".", TagTyperef)
 	//
 	//
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateTag(ctx, tx,
-			&models.CreateTagRequest{
-				Tag: model,
-			})
-	})
+	_, err = db.CreateTag(ctx,
+		&models.CreateTagRequest{
+			Tag: model,
+		})
+
 	if err != nil {
 		t.Fatal("create failed", err)
 	}
@@ -238,7 +230,8 @@ func TestTag(t *testing.T) {
 
 	//Delete ref entries, referred objects
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_tag_tag_type` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing TagTypeRefs delete statement failed")
@@ -251,100 +244,73 @@ func TestTag(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteTagType(ctx, tx,
-			&models.DeleteTagTypeRequest{
-				ID: "tag_tag_type_ref_uuid"})
-	})
+	_, err = db.DeleteTagType(ctx,
+		&models.DeleteTagTypeRequest{
+			ID: "tag_tag_type_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref tag_tag_type_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteTagType(ctx, tx,
-			&models.DeleteTagTypeRequest{
-				ID: "tag_tag_type_ref_uuid1"})
-	})
+	_, err = db.DeleteTagType(ctx,
+		&models.DeleteTagTypeRequest{
+			ID: "tag_tag_type_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref tag_tag_type_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteTagType(
-			ctx,
-			tx,
-			&models.DeleteTagTypeRequest{
-				ID: "tag_tag_type_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteTagType(
+		ctx,
+		&models.DeleteTagTypeRequest{
+			ID: "tag_tag_type_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref tag_tag_type_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteProject(ctx, tx, &models.DeleteProjectRequest{
-			ID: projectModel.UUID})
-	})
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
 	if err != nil {
 		t.Fatal("delete project failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListTag(ctx, tx, &models.ListTagRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.Tags) != 1 {
-			return fmt.Errorf("expected one element")
-		}
-		return nil
-	})
+	response, err := db.ListTag(ctx, &models.ListTagRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
+	if len(response.Tags) != 1 {
+		t.Fatal("expected one element", err)
+	}
 
 	ctxDemo := context.WithValue(ctx, "auth", common.NewAuthContext("default", "demo", "demo", []string{}))
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteTag(ctxDemo, tx,
-			&models.DeleteTagRequest{
-				ID: model.UUID},
-		)
-	})
+	_, err = db.DeleteTag(ctxDemo,
+		&models.DeleteTagRequest{
+			ID: model.UUID},
+	)
 	if err == nil {
 		t.Fatal("auth failed")
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteTag(ctx, tx,
-			&models.DeleteTagRequest{
-				ID: model.UUID})
-	})
-	if err != nil {
-		t.Fatal("delete failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateTag(ctx, tx,
-			&models.CreateTagRequest{
-				Tag: model})
-	})
+	_, err = db.CreateTag(ctx,
+		&models.CreateTagRequest{
+			Tag: model})
 	if err == nil {
 		t.Fatal("Raise Error On Duplicate Create failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListTag(ctx, tx, &models.ListTagRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.Tags) != 0 {
-			return fmt.Errorf("expected no element")
-		}
-		return nil
-	})
+	_, err = db.DeleteTag(ctx,
+		&models.DeleteTagRequest{
+			ID: model.UUID})
+	if err != nil {
+		t.Fatal("delete failed", err)
+	}
+
+	response, err = db.ListTag(ctx, &models.ListTagRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+	if len(response.Tags) != 0 {
+		t.Fatal("expected no element", err)
 	}
 	return
 }

@@ -94,10 +94,10 @@ var GlobalVrouterConfigParents = []string{
 }
 
 // CreateGlobalVrouterConfig inserts GlobalVrouterConfig to DB
-func CreateGlobalVrouterConfig(
+func (db *DB) createGlobalVrouterConfig(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateGlobalVrouterConfigRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.GlobalVrouterConfig
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertGlobalVrouterConfigQuery)
@@ -534,8 +534,9 @@ func scanGlobalVrouterConfig(values map[string]interface{}) (*models.GlobalVrout
 }
 
 // ListGlobalVrouterConfig lists GlobalVrouterConfig with list spec.
-func ListGlobalVrouterConfig(ctx context.Context, tx *sql.Tx, request *models.ListGlobalVrouterConfigRequest) (response *models.ListGlobalVrouterConfigResponse, err error) {
+func (db *DB) listGlobalVrouterConfig(ctx context.Context, request *models.ListGlobalVrouterConfigRequest) (response *models.ListGlobalVrouterConfigResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -597,9 +598,8 @@ func ListGlobalVrouterConfig(ctx context.Context, tx *sql.Tx, request *models.Li
 }
 
 // UpdateGlobalVrouterConfig updates a resource
-func UpdateGlobalVrouterConfig(
+func (db *DB) updateGlobalVrouterConfig(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateGlobalVrouterConfigRequest,
 ) error {
 	//TODO
@@ -607,15 +607,15 @@ func UpdateGlobalVrouterConfig(
 }
 
 // DeleteGlobalVrouterConfig deletes a resource
-func DeleteGlobalVrouterConfig(
+func (db *DB) deleteGlobalVrouterConfig(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteGlobalVrouterConfigRequest) error {
 	deleteQuery := deleteGlobalVrouterConfigQuery
 	selectQuery := "select count(uuid) from global_vrouter_config where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -650,4 +650,119 @@ func DeleteGlobalVrouterConfig(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateGlobalVrouterConfig handle a Create API
+func (db *DB) CreateGlobalVrouterConfig(
+	ctx context.Context,
+	request *models.CreateGlobalVrouterConfigRequest) (*models.CreateGlobalVrouterConfigResponse, error) {
+	model := request.GlobalVrouterConfig
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createGlobalVrouterConfig(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "global_vrouter_config",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateGlobalVrouterConfigResponse{
+		GlobalVrouterConfig: request.GlobalVrouterConfig,
+	}, nil
+}
+
+//UpdateGlobalVrouterConfig handles a Update request.
+func (db *DB) UpdateGlobalVrouterConfig(
+	ctx context.Context,
+	request *models.UpdateGlobalVrouterConfigRequest) (*models.UpdateGlobalVrouterConfigResponse, error) {
+	model := request.GlobalVrouterConfig
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateGlobalVrouterConfig(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "global_vrouter_config",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateGlobalVrouterConfigResponse{
+		GlobalVrouterConfig: model,
+	}, nil
+}
+
+//DeleteGlobalVrouterConfig delete a resource.
+func (db *DB) DeleteGlobalVrouterConfig(ctx context.Context, request *models.DeleteGlobalVrouterConfigRequest) (*models.DeleteGlobalVrouterConfigResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteGlobalVrouterConfig(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteGlobalVrouterConfigResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetGlobalVrouterConfig a Get request.
+func (db *DB) GetGlobalVrouterConfig(ctx context.Context, request *models.GetGlobalVrouterConfigRequest) (response *models.GetGlobalVrouterConfigResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListGlobalVrouterConfigRequest{
+		Spec: spec,
+	}
+	var result *models.ListGlobalVrouterConfigResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listGlobalVrouterConfig(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.GlobalVrouterConfigs) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetGlobalVrouterConfigResponse{
+		GlobalVrouterConfig: result.GlobalVrouterConfigs[0],
+	}
+	return response, nil
+}
+
+//ListGlobalVrouterConfig handles a List service Request.
+func (db *DB) ListGlobalVrouterConfig(
+	ctx context.Context,
+	request *models.ListGlobalVrouterConfigRequest) (response *models.ListGlobalVrouterConfigResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listGlobalVrouterConfig(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

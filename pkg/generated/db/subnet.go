@@ -61,10 +61,10 @@ var SubnetParents = []string{}
 const insertSubnetVirtualMachineInterfaceQuery = "insert into `ref_subnet_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateSubnet inserts Subnet to DB
-func CreateSubnet(
+func (db *DB) createSubnet(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateSubnetRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.Subnet
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertSubnetQuery)
@@ -300,8 +300,9 @@ func scanSubnet(values map[string]interface{}) (*models.Subnet, error) {
 }
 
 // ListSubnet lists Subnet with list spec.
-func ListSubnet(ctx context.Context, tx *sql.Tx, request *models.ListSubnetRequest) (response *models.ListSubnetResponse, err error) {
+func (db *DB) listSubnet(ctx context.Context, request *models.ListSubnetRequest) (response *models.ListSubnetResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -363,9 +364,8 @@ func ListSubnet(ctx context.Context, tx *sql.Tx, request *models.ListSubnetReque
 }
 
 // UpdateSubnet updates a resource
-func UpdateSubnet(
+func (db *DB) updateSubnet(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateSubnetRequest,
 ) error {
 	//TODO
@@ -373,15 +373,15 @@ func UpdateSubnet(
 }
 
 // DeleteSubnet deletes a resource
-func DeleteSubnet(
+func (db *DB) deleteSubnet(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteSubnetRequest) error {
 	deleteQuery := deleteSubnetQuery
 	selectQuery := "select count(uuid) from subnet where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -416,4 +416,119 @@ func DeleteSubnet(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateSubnet handle a Create API
+func (db *DB) CreateSubnet(
+	ctx context.Context,
+	request *models.CreateSubnetRequest) (*models.CreateSubnetResponse, error) {
+	model := request.Subnet
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createSubnet(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "subnet",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateSubnetResponse{
+		Subnet: request.Subnet,
+	}, nil
+}
+
+//UpdateSubnet handles a Update request.
+func (db *DB) UpdateSubnet(
+	ctx context.Context,
+	request *models.UpdateSubnetRequest) (*models.UpdateSubnetResponse, error) {
+	model := request.Subnet
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateSubnet(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "subnet",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateSubnetResponse{
+		Subnet: model,
+	}, nil
+}
+
+//DeleteSubnet delete a resource.
+func (db *DB) DeleteSubnet(ctx context.Context, request *models.DeleteSubnetRequest) (*models.DeleteSubnetResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteSubnet(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteSubnetResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetSubnet a Get request.
+func (db *DB) GetSubnet(ctx context.Context, request *models.GetSubnetRequest) (response *models.GetSubnetResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListSubnetRequest{
+		Spec: spec,
+	}
+	var result *models.ListSubnetResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listSubnet(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.Subnets) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetSubnetResponse{
+		Subnet: result.Subnets[0],
+	}
+	return response, nil
+}
+
+//ListSubnet handles a List service Request.
+func (db *DB) ListSubnet(
+	ctx context.Context,
+	request *models.ListSubnetRequest) (response *models.ListSubnetResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listSubnet(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

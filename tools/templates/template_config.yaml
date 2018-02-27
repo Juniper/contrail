@@ -1,6 +1,9 @@
 - type: type
   template_path: model.tmpl
   output_path: pkg/generated/models/__resource__.go
+- type: all
+  template_path: model_common.tmpl
+  output_path: pkg/generated/models/common.go
 # - type: resource
 #   template_path: model_api.tmpl
 #   output_path: pkg/generated/models/__resource___api.go
@@ -14,14 +17,17 @@
   template_path: sql_cleanup.tmpl
   output_path: tools/cleanup.sql
 - type: resource
+  template_path: db_common.tmpl
+  output_path: pkg/generated/db/common.go
+- type: resource
   template_path: db.tmpl
   output_path: pkg/generated/db/__resource__.go
 - type: resource
   template_path: db_test.tmpl
   output_path: pkg/generated/db/__resource___test.go
 - type: all
-  template_path: service_list.tmpl
-  output_path: pkg/generated/services/service_list.go
+  template_path: service_common.tmpl
+  output_path: pkg/generated/services/common.go
 - type: resource
   template_path: service.tmpl
   output_path: pkg/generated/services/__resource__.go

@@ -69,10 +69,10 @@ var QosConfigParents = []string{
 const insertQosConfigGlobalSystemConfigQuery = "insert into `ref_qos_config_global_system_config` (`from`, `to` ) values (?, ?);"
 
 // CreateQosConfig inserts QosConfig to DB
-func CreateQosConfig(
+func (db *DB) createQosConfig(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateQosConfigRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.QosConfig
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertQosConfigQuery)
@@ -329,8 +329,9 @@ func scanQosConfig(values map[string]interface{}) (*models.QosConfig, error) {
 }
 
 // ListQosConfig lists QosConfig with list spec.
-func ListQosConfig(ctx context.Context, tx *sql.Tx, request *models.ListQosConfigRequest) (response *models.ListQosConfigResponse, err error) {
+func (db *DB) listQosConfig(ctx context.Context, request *models.ListQosConfigRequest) (response *models.ListQosConfigResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -392,9 +393,8 @@ func ListQosConfig(ctx context.Context, tx *sql.Tx, request *models.ListQosConfi
 }
 
 // UpdateQosConfig updates a resource
-func UpdateQosConfig(
+func (db *DB) updateQosConfig(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateQosConfigRequest,
 ) error {
 	//TODO
@@ -402,15 +402,15 @@ func UpdateQosConfig(
 }
 
 // DeleteQosConfig deletes a resource
-func DeleteQosConfig(
+func (db *DB) deleteQosConfig(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteQosConfigRequest) error {
 	deleteQuery := deleteQosConfigQuery
 	selectQuery := "select count(uuid) from qos_config where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -445,4 +445,119 @@ func DeleteQosConfig(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateQosConfig handle a Create API
+func (db *DB) CreateQosConfig(
+	ctx context.Context,
+	request *models.CreateQosConfigRequest) (*models.CreateQosConfigResponse, error) {
+	model := request.QosConfig
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createQosConfig(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "qos_config",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateQosConfigResponse{
+		QosConfig: request.QosConfig,
+	}, nil
+}
+
+//UpdateQosConfig handles a Update request.
+func (db *DB) UpdateQosConfig(
+	ctx context.Context,
+	request *models.UpdateQosConfigRequest) (*models.UpdateQosConfigResponse, error) {
+	model := request.QosConfig
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateQosConfig(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "qos_config",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateQosConfigResponse{
+		QosConfig: model,
+	}, nil
+}
+
+//DeleteQosConfig delete a resource.
+func (db *DB) DeleteQosConfig(ctx context.Context, request *models.DeleteQosConfigRequest) (*models.DeleteQosConfigResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteQosConfig(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteQosConfigResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetQosConfig a Get request.
+func (db *DB) GetQosConfig(ctx context.Context, request *models.GetQosConfigRequest) (response *models.GetQosConfigResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListQosConfigRequest{
+		Spec: spec,
+	}
+	var result *models.ListQosConfigResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listQosConfig(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.QosConfigs) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetQosConfigResponse{
+		QosConfig: result.QosConfigs[0],
+	}
+	return response, nil
+}
+
+//ListQosConfig handles a List service Request.
+func (db *DB) ListQosConfig(
+	ctx context.Context,
+	request *models.ListQosConfigRequest) (response *models.ListQosConfigResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listQosConfig(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

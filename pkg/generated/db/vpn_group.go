@@ -65,10 +65,10 @@ var VPNGroupParents = []string{}
 const insertVPNGroupLocationQuery = "insert into `ref_vpn_group_location` (`from`, `to` ) values (?, ?);"
 
 // CreateVPNGroup inserts VPNGroup to DB
-func CreateVPNGroup(
+func (db *DB) createVPNGroup(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateVPNGroupRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.VPNGroup
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertVPNGroupQuery)
@@ -332,8 +332,9 @@ func scanVPNGroup(values map[string]interface{}) (*models.VPNGroup, error) {
 }
 
 // ListVPNGroup lists VPNGroup with list spec.
-func ListVPNGroup(ctx context.Context, tx *sql.Tx, request *models.ListVPNGroupRequest) (response *models.ListVPNGroupResponse, err error) {
+func (db *DB) listVPNGroup(ctx context.Context, request *models.ListVPNGroupRequest) (response *models.ListVPNGroupResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -395,9 +396,8 @@ func ListVPNGroup(ctx context.Context, tx *sql.Tx, request *models.ListVPNGroupR
 }
 
 // UpdateVPNGroup updates a resource
-func UpdateVPNGroup(
+func (db *DB) updateVPNGroup(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateVPNGroupRequest,
 ) error {
 	//TODO
@@ -405,15 +405,15 @@ func UpdateVPNGroup(
 }
 
 // DeleteVPNGroup deletes a resource
-func DeleteVPNGroup(
+func (db *DB) deleteVPNGroup(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteVPNGroupRequest) error {
 	deleteQuery := deleteVPNGroupQuery
 	selectQuery := "select count(uuid) from vpn_group where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -448,4 +448,119 @@ func DeleteVPNGroup(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateVPNGroup handle a Create API
+func (db *DB) CreateVPNGroup(
+	ctx context.Context,
+	request *models.CreateVPNGroupRequest) (*models.CreateVPNGroupResponse, error) {
+	model := request.VPNGroup
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createVPNGroup(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "vpn_group",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateVPNGroupResponse{
+		VPNGroup: request.VPNGroup,
+	}, nil
+}
+
+//UpdateVPNGroup handles a Update request.
+func (db *DB) UpdateVPNGroup(
+	ctx context.Context,
+	request *models.UpdateVPNGroupRequest) (*models.UpdateVPNGroupResponse, error) {
+	model := request.VPNGroup
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateVPNGroup(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "vpn_group",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateVPNGroupResponse{
+		VPNGroup: model,
+	}, nil
+}
+
+//DeleteVPNGroup delete a resource.
+func (db *DB) DeleteVPNGroup(ctx context.Context, request *models.DeleteVPNGroupRequest) (*models.DeleteVPNGroupResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteVPNGroup(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteVPNGroupResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetVPNGroup a Get request.
+func (db *DB) GetVPNGroup(ctx context.Context, request *models.GetVPNGroupRequest) (response *models.GetVPNGroupResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListVPNGroupRequest{
+		Spec: spec,
+	}
+	var result *models.ListVPNGroupResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listVPNGroup(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.VPNGroups) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetVPNGroupResponse{
+		VPNGroup: result.VPNGroups[0],
+	}
+	return response, nil
+}
+
+//ListVPNGroup handles a List service Request.
+func (db *DB) ListVPNGroup(
+	ctx context.Context,
+	request *models.ListVPNGroupRequest) (response *models.ListVPNGroupResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listVPNGroup(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

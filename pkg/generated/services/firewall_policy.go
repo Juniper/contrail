@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateFirewallPolicy(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateFirewallPolicy(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "firewall_policy",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateFirewallPolicyResponse{
-		FirewallPolicy: request.FirewallPolicy,
-	}, nil
+
+	return service.Next().CreateFirewallPolicy(ctx, request)
 }
 
 //RESTUpdateFirewallPolicy handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateFirewallPolicy(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateFirewallPolicy(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "firewall_policy",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateFirewallPolicyResponse{
-		FirewallPolicy: model,
-	}, nil
+	return service.Next().UpdateFirewallPolicy(ctx, request)
 }
 
 //RESTDeleteFirewallPolicy delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteFirewallPolicy(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteFirewallPolicy delete a resource.
-func (service *ContrailService) DeleteFirewallPolicy(ctx context.Context, request *models.DeleteFirewallPolicyRequest) (*models.DeleteFirewallPolicyResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteFirewallPolicy(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteFirewallPolicyResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetFirewallPolicy a REST Get request.
 func (service *ContrailService) RESTGetFirewallPolicy(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetFirewallPolicy(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetFirewallPolicy a Get request.
-func (service *ContrailService) GetFirewallPolicy(ctx context.Context, request *models.GetFirewallPolicyRequest) (response *models.GetFirewallPolicyResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListFirewallPolicyRequest{
-		Spec: spec,
-	}
-	var result *models.ListFirewallPolicyResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListFirewallPolicy(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.FirewallPolicys) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetFirewallPolicyResponse{
-		FirewallPolicy: result.FirewallPolicys[0],
-	}
-	return response, nil
 }
 
 //RESTListFirewallPolicy handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListFirewallPolicy(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListFirewallPolicy handles a List service Request.
-func (service *ContrailService) ListFirewallPolicy(
-	ctx context.Context,
-	request *models.ListFirewallPolicyRequest) (response *models.ListFirewallPolicyResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListFirewallPolicy(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateProject(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateProject(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "project",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateProjectResponse{
-		Project: request.Project,
-	}, nil
+
+	return service.Next().CreateProject(ctx, request)
 }
 
 //RESTUpdateProject handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateProject(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateProject(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "project",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateProjectResponse{
-		Project: model,
-	}, nil
+	return service.Next().UpdateProject(ctx, request)
 }
 
 //RESTDeleteProject delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteProject(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteProject delete a resource.
-func (service *ContrailService) DeleteProject(ctx context.Context, request *models.DeleteProjectRequest) (*models.DeleteProjectResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteProject(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteProjectResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetProject a REST Get request.
 func (service *ContrailService) RESTGetProject(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetProject(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetProject a Get request.
-func (service *ContrailService) GetProject(ctx context.Context, request *models.GetProjectRequest) (response *models.GetProjectResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListProjectRequest{
-		Spec: spec,
-	}
-	var result *models.ListProjectResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListProject(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.Projects) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetProjectResponse{
-		Project: result.Projects[0],
-	}
-	return response, nil
 }
 
 //RESTListProject handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListProject(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListProject handles a List service Request.
-func (service *ContrailService) ListProject(
-	ctx context.Context,
-	request *models.ListProjectRequest) (response *models.ListProjectResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListProject(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

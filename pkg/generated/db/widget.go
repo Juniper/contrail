@@ -54,10 +54,10 @@ var WidgetBackRefFields = map[string][]string{}
 var WidgetParents = []string{}
 
 // CreateWidget inserts Widget to DB
-func CreateWidget(
+func (db *DB) createWidget(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateWidgetRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.Widget
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertWidgetQuery)
@@ -267,8 +267,9 @@ func scanWidget(values map[string]interface{}) (*models.Widget, error) {
 }
 
 // ListWidget lists Widget with list spec.
-func ListWidget(ctx context.Context, tx *sql.Tx, request *models.ListWidgetRequest) (response *models.ListWidgetResponse, err error) {
+func (db *DB) listWidget(ctx context.Context, request *models.ListWidgetRequest) (response *models.ListWidgetResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -330,9 +331,8 @@ func ListWidget(ctx context.Context, tx *sql.Tx, request *models.ListWidgetReque
 }
 
 // UpdateWidget updates a resource
-func UpdateWidget(
+func (db *DB) updateWidget(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateWidgetRequest,
 ) error {
 	//TODO
@@ -340,15 +340,15 @@ func UpdateWidget(
 }
 
 // DeleteWidget deletes a resource
-func DeleteWidget(
+func (db *DB) deleteWidget(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteWidgetRequest) error {
 	deleteQuery := deleteWidgetQuery
 	selectQuery := "select count(uuid) from widget where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -383,4 +383,119 @@ func DeleteWidget(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateWidget handle a Create API
+func (db *DB) CreateWidget(
+	ctx context.Context,
+	request *models.CreateWidgetRequest) (*models.CreateWidgetResponse, error) {
+	model := request.Widget
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createWidget(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "widget",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateWidgetResponse{
+		Widget: request.Widget,
+	}, nil
+}
+
+//UpdateWidget handles a Update request.
+func (db *DB) UpdateWidget(
+	ctx context.Context,
+	request *models.UpdateWidgetRequest) (*models.UpdateWidgetResponse, error) {
+	model := request.Widget
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateWidget(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "widget",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateWidgetResponse{
+		Widget: model,
+	}, nil
+}
+
+//DeleteWidget delete a resource.
+func (db *DB) DeleteWidget(ctx context.Context, request *models.DeleteWidgetRequest) (*models.DeleteWidgetResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteWidget(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteWidgetResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetWidget a Get request.
+func (db *DB) GetWidget(ctx context.Context, request *models.GetWidgetRequest) (response *models.GetWidgetResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListWidgetRequest{
+		Spec: spec,
+	}
+	var result *models.ListWidgetResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listWidget(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.Widgets) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetWidgetResponse{
+		Widget: result.Widgets[0],
+	}
+	return response, nil
+}
+
+//ListWidget handles a List service Request.
+func (db *DB) ListWidget(
+	ctx context.Context,
+	request *models.ListWidgetRequest) (response *models.ListWidgetResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listWidget(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

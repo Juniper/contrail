@@ -160,10 +160,10 @@ var ConfigRootParents = []string{}
 const insertConfigRootTagQuery = "insert into `ref_config_root_tag` (`from`, `to` ) values (?, ?);"
 
 // CreateConfigRoot inserts ConfigRoot to DB
-func CreateConfigRoot(
+func (db *DB) createConfigRoot(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateConfigRootRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ConfigRoot
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertConfigRootQuery)
@@ -988,8 +988,9 @@ func scanConfigRoot(values map[string]interface{}) (*models.ConfigRoot, error) {
 }
 
 // ListConfigRoot lists ConfigRoot with list spec.
-func ListConfigRoot(ctx context.Context, tx *sql.Tx, request *models.ListConfigRootRequest) (response *models.ListConfigRootResponse, err error) {
+func (db *DB) listConfigRoot(ctx context.Context, request *models.ListConfigRootRequest) (response *models.ListConfigRootResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -1051,9 +1052,8 @@ func ListConfigRoot(ctx context.Context, tx *sql.Tx, request *models.ListConfigR
 }
 
 // UpdateConfigRoot updates a resource
-func UpdateConfigRoot(
+func (db *DB) updateConfigRoot(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateConfigRootRequest,
 ) error {
 	//TODO
@@ -1061,15 +1061,15 @@ func UpdateConfigRoot(
 }
 
 // DeleteConfigRoot deletes a resource
-func DeleteConfigRoot(
+func (db *DB) deleteConfigRoot(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteConfigRootRequest) error {
 	deleteQuery := deleteConfigRootQuery
 	selectQuery := "select count(uuid) from config_root where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -1104,4 +1104,119 @@ func DeleteConfigRoot(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateConfigRoot handle a Create API
+func (db *DB) CreateConfigRoot(
+	ctx context.Context,
+	request *models.CreateConfigRootRequest) (*models.CreateConfigRootResponse, error) {
+	model := request.ConfigRoot
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createConfigRoot(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "config_root",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateConfigRootResponse{
+		ConfigRoot: request.ConfigRoot,
+	}, nil
+}
+
+//UpdateConfigRoot handles a Update request.
+func (db *DB) UpdateConfigRoot(
+	ctx context.Context,
+	request *models.UpdateConfigRootRequest) (*models.UpdateConfigRootResponse, error) {
+	model := request.ConfigRoot
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateConfigRoot(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "config_root",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateConfigRootResponse{
+		ConfigRoot: model,
+	}, nil
+}
+
+//DeleteConfigRoot delete a resource.
+func (db *DB) DeleteConfigRoot(ctx context.Context, request *models.DeleteConfigRootRequest) (*models.DeleteConfigRootResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteConfigRoot(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteConfigRootResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetConfigRoot a Get request.
+func (db *DB) GetConfigRoot(ctx context.Context, request *models.GetConfigRootRequest) (response *models.GetConfigRootResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListConfigRootRequest{
+		Spec: spec,
+	}
+	var result *models.ListConfigRootResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listConfigRoot(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ConfigRoots) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetConfigRootResponse{
+		ConfigRoot: result.ConfigRoots[0],
+	}
+	return response, nil
+}
+
+//ListConfigRoot handles a List service Request.
+func (db *DB) ListConfigRoot(
+	ctx context.Context,
+	request *models.ListConfigRootRequest) (response *models.ListConfigRootResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listConfigRoot(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

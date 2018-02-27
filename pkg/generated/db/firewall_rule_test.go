@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,13 +15,15 @@ var _ = errors.New("")
 
 func TestFirewallRule(t *testing.T) {
 	// t.Parallel()
-	db := testDB
+	db := &DB{
+		DB: testDB,
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db, "metadata")
-	mutexTable := common.UseTable(db, "firewall_rule")
-	// mutexProject := common.UseTable(db, "firewall_rule")
+	mutexMetadata := common.UseTable(db.DB, "metadata")
+	mutexTable := common.UseTable(db.DB, "firewall_rule")
+	// mutexProject := common.UseTable(db.DB, "firewall_rule")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -39,91 +39,23 @@ func TestFirewallRule(t *testing.T) {
 
 	// Create referred objects
 
-	var ServiceGroupcreateref []*models.FirewallRuleServiceGroupRef
-	var ServiceGrouprefModel *models.ServiceGroup
-	ServiceGrouprefModel = models.MakeServiceGroup()
-	ServiceGrouprefModel.UUID = "firewall_rule_service_group_ref_uuid"
-	ServiceGrouprefModel.FQName = []string{"test", "firewall_rule_service_group_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceGroup(ctx, tx, &models.CreateServiceGroupRequest{
-			ServiceGroup: ServiceGrouprefModel,
-		})
-	})
-	ServiceGrouprefModel.UUID = "firewall_rule_service_group_ref_uuid1"
-	ServiceGrouprefModel.FQName = []string{"test", "firewall_rule_service_group_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceGroup(ctx, tx, &models.CreateServiceGroupRequest{
-			ServiceGroup: ServiceGrouprefModel,
-		})
-	})
-	ServiceGrouprefModel.UUID = "firewall_rule_service_group_ref_uuid2"
-	ServiceGrouprefModel.FQName = []string{"test", "firewall_rule_service_group_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceGroup(ctx, tx, &models.CreateServiceGroupRequest{
-			ServiceGroup: ServiceGrouprefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	ServiceGroupcreateref = append(ServiceGroupcreateref, &models.FirewallRuleServiceGroupRef{UUID: "firewall_rule_service_group_ref_uuid", To: []string{"test", "firewall_rule_service_group_ref_uuid"}})
-	ServiceGroupcreateref = append(ServiceGroupcreateref, &models.FirewallRuleServiceGroupRef{UUID: "firewall_rule_service_group_ref_uuid2", To: []string{"test", "firewall_rule_service_group_ref_uuid2"}})
-	model.ServiceGroupRefs = ServiceGroupcreateref
-
-	var AddressGroupcreateref []*models.FirewallRuleAddressGroupRef
-	var AddressGrouprefModel *models.AddressGroup
-	AddressGrouprefModel = models.MakeAddressGroup()
-	AddressGrouprefModel.UUID = "firewall_rule_address_group_ref_uuid"
-	AddressGrouprefModel.FQName = []string{"test", "firewall_rule_address_group_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateAddressGroup(ctx, tx, &models.CreateAddressGroupRequest{
-			AddressGroup: AddressGrouprefModel,
-		})
-	})
-	AddressGrouprefModel.UUID = "firewall_rule_address_group_ref_uuid1"
-	AddressGrouprefModel.FQName = []string{"test", "firewall_rule_address_group_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateAddressGroup(ctx, tx, &models.CreateAddressGroupRequest{
-			AddressGroup: AddressGrouprefModel,
-		})
-	})
-	AddressGrouprefModel.UUID = "firewall_rule_address_group_ref_uuid2"
-	AddressGrouprefModel.FQName = []string{"test", "firewall_rule_address_group_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateAddressGroup(ctx, tx, &models.CreateAddressGroupRequest{
-			AddressGroup: AddressGrouprefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	AddressGroupcreateref = append(AddressGroupcreateref, &models.FirewallRuleAddressGroupRef{UUID: "firewall_rule_address_group_ref_uuid", To: []string{"test", "firewall_rule_address_group_ref_uuid"}})
-	AddressGroupcreateref = append(AddressGroupcreateref, &models.FirewallRuleAddressGroupRef{UUID: "firewall_rule_address_group_ref_uuid2", To: []string{"test", "firewall_rule_address_group_ref_uuid2"}})
-	model.AddressGroupRefs = AddressGroupcreateref
-
 	var SecurityLoggingObjectcreateref []*models.FirewallRuleSecurityLoggingObjectRef
 	var SecurityLoggingObjectrefModel *models.SecurityLoggingObject
 	SecurityLoggingObjectrefModel = models.MakeSecurityLoggingObject()
 	SecurityLoggingObjectrefModel.UUID = "firewall_rule_security_logging_object_ref_uuid"
 	SecurityLoggingObjectrefModel.FQName = []string{"test", "firewall_rule_security_logging_object_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateSecurityLoggingObject(ctx, tx, &models.CreateSecurityLoggingObjectRequest{
-			SecurityLoggingObject: SecurityLoggingObjectrefModel,
-		})
+	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
+		SecurityLoggingObject: SecurityLoggingObjectrefModel,
 	})
 	SecurityLoggingObjectrefModel.UUID = "firewall_rule_security_logging_object_ref_uuid1"
 	SecurityLoggingObjectrefModel.FQName = []string{"test", "firewall_rule_security_logging_object_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateSecurityLoggingObject(ctx, tx, &models.CreateSecurityLoggingObjectRequest{
-			SecurityLoggingObject: SecurityLoggingObjectrefModel,
-		})
+	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
+		SecurityLoggingObject: SecurityLoggingObjectrefModel,
 	})
 	SecurityLoggingObjectrefModel.UUID = "firewall_rule_security_logging_object_ref_uuid2"
 	SecurityLoggingObjectrefModel.FQName = []string{"test", "firewall_rule_security_logging_object_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateSecurityLoggingObject(ctx, tx, &models.CreateSecurityLoggingObjectRequest{
-			SecurityLoggingObject: SecurityLoggingObjectrefModel,
-		})
+	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
+		SecurityLoggingObject: SecurityLoggingObjectrefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
@@ -137,24 +69,18 @@ func TestFirewallRule(t *testing.T) {
 	VirtualNetworkrefModel = models.MakeVirtualNetwork()
 	VirtualNetworkrefModel.UUID = "firewall_rule_virtual_network_ref_uuid"
 	VirtualNetworkrefModel.FQName = []string{"test", "firewall_rule_virtual_network_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualNetwork(ctx, tx, &models.CreateVirtualNetworkRequest{
-			VirtualNetwork: VirtualNetworkrefModel,
-		})
+	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
+		VirtualNetwork: VirtualNetworkrefModel,
 	})
 	VirtualNetworkrefModel.UUID = "firewall_rule_virtual_network_ref_uuid1"
 	VirtualNetworkrefModel.FQName = []string{"test", "firewall_rule_virtual_network_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualNetwork(ctx, tx, &models.CreateVirtualNetworkRequest{
-			VirtualNetwork: VirtualNetworkrefModel,
-		})
+	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
+		VirtualNetwork: VirtualNetworkrefModel,
 	})
 	VirtualNetworkrefModel.UUID = "firewall_rule_virtual_network_ref_uuid2"
 	VirtualNetworkrefModel.FQName = []string{"test", "firewall_rule_virtual_network_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualNetwork(ctx, tx, &models.CreateVirtualNetworkRequest{
-			VirtualNetwork: VirtualNetworkrefModel,
-		})
+	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
+		VirtualNetwork: VirtualNetworkrefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
@@ -162,6 +88,56 @@ func TestFirewallRule(t *testing.T) {
 	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.FirewallRuleVirtualNetworkRef{UUID: "firewall_rule_virtual_network_ref_uuid", To: []string{"test", "firewall_rule_virtual_network_ref_uuid"}})
 	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.FirewallRuleVirtualNetworkRef{UUID: "firewall_rule_virtual_network_ref_uuid2", To: []string{"test", "firewall_rule_virtual_network_ref_uuid2"}})
 	model.VirtualNetworkRefs = VirtualNetworkcreateref
+
+	var ServiceGroupcreateref []*models.FirewallRuleServiceGroupRef
+	var ServiceGrouprefModel *models.ServiceGroup
+	ServiceGrouprefModel = models.MakeServiceGroup()
+	ServiceGrouprefModel.UUID = "firewall_rule_service_group_ref_uuid"
+	ServiceGrouprefModel.FQName = []string{"test", "firewall_rule_service_group_ref_uuid"}
+	_, err = db.CreateServiceGroup(ctx, &models.CreateServiceGroupRequest{
+		ServiceGroup: ServiceGrouprefModel,
+	})
+	ServiceGrouprefModel.UUID = "firewall_rule_service_group_ref_uuid1"
+	ServiceGrouprefModel.FQName = []string{"test", "firewall_rule_service_group_ref_uuid1"}
+	_, err = db.CreateServiceGroup(ctx, &models.CreateServiceGroupRequest{
+		ServiceGroup: ServiceGrouprefModel,
+	})
+	ServiceGrouprefModel.UUID = "firewall_rule_service_group_ref_uuid2"
+	ServiceGrouprefModel.FQName = []string{"test", "firewall_rule_service_group_ref_uuid2"}
+	_, err = db.CreateServiceGroup(ctx, &models.CreateServiceGroupRequest{
+		ServiceGroup: ServiceGrouprefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	ServiceGroupcreateref = append(ServiceGroupcreateref, &models.FirewallRuleServiceGroupRef{UUID: "firewall_rule_service_group_ref_uuid", To: []string{"test", "firewall_rule_service_group_ref_uuid"}})
+	ServiceGroupcreateref = append(ServiceGroupcreateref, &models.FirewallRuleServiceGroupRef{UUID: "firewall_rule_service_group_ref_uuid2", To: []string{"test", "firewall_rule_service_group_ref_uuid2"}})
+	model.ServiceGroupRefs = ServiceGroupcreateref
+
+	var AddressGroupcreateref []*models.FirewallRuleAddressGroupRef
+	var AddressGrouprefModel *models.AddressGroup
+	AddressGrouprefModel = models.MakeAddressGroup()
+	AddressGrouprefModel.UUID = "firewall_rule_address_group_ref_uuid"
+	AddressGrouprefModel.FQName = []string{"test", "firewall_rule_address_group_ref_uuid"}
+	_, err = db.CreateAddressGroup(ctx, &models.CreateAddressGroupRequest{
+		AddressGroup: AddressGrouprefModel,
+	})
+	AddressGrouprefModel.UUID = "firewall_rule_address_group_ref_uuid1"
+	AddressGrouprefModel.FQName = []string{"test", "firewall_rule_address_group_ref_uuid1"}
+	_, err = db.CreateAddressGroup(ctx, &models.CreateAddressGroupRequest{
+		AddressGroup: AddressGrouprefModel,
+	})
+	AddressGrouprefModel.UUID = "firewall_rule_address_group_ref_uuid2"
+	AddressGrouprefModel.FQName = []string{"test", "firewall_rule_address_group_ref_uuid2"}
+	_, err = db.CreateAddressGroup(ctx, &models.CreateAddressGroupRequest{
+		AddressGroup: AddressGrouprefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	AddressGroupcreateref = append(AddressGroupcreateref, &models.FirewallRuleAddressGroupRef{UUID: "firewall_rule_address_group_ref_uuid", To: []string{"test", "firewall_rule_address_group_ref_uuid"}})
+	AddressGroupcreateref = append(AddressGroupcreateref, &models.FirewallRuleAddressGroupRef{UUID: "firewall_rule_address_group_ref_uuid2", To: []string{"test", "firewall_rule_address_group_ref_uuid2"}})
+	model.AddressGroupRefs = AddressGroupcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -171,10 +147,9 @@ func TestFirewallRule(t *testing.T) {
 	var createShare []*models.ShareType
 	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
 	model.Perms2.Share = createShare
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx, &models.CreateProjectRequest{
-			Project: projectModel,
-		})
+
+	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
+		Project: projectModel,
 	})
 	if err != nil {
 		t.Fatal("project create failed", err)
@@ -505,22 +480,6 @@ func TestFirewallRule(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var ServiceGroupref []interface{}
-	//    ServiceGroupref = append(ServiceGroupref, map[string]interface{}{"operation":"delete", "uuid":"firewall_rule_service_group_ref_uuid", "to": []string{"test", "firewall_rule_service_group_ref_uuid"}})
-	//    ServiceGroupref = append(ServiceGroupref, map[string]interface{}{"operation":"add", "uuid":"firewall_rule_service_group_ref_uuid1", "to": []string{"test", "firewall_rule_service_group_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ServiceGroupRefs", ".", ServiceGroupref)
-	//
-	//    var AddressGroupref []interface{}
-	//    AddressGroupref = append(AddressGroupref, map[string]interface{}{"operation":"delete", "uuid":"firewall_rule_address_group_ref_uuid", "to": []string{"test", "firewall_rule_address_group_ref_uuid"}})
-	//    AddressGroupref = append(AddressGroupref, map[string]interface{}{"operation":"add", "uuid":"firewall_rule_address_group_ref_uuid1", "to": []string{"test", "firewall_rule_address_group_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "AddressGroupRefs", ".", AddressGroupref)
-	//
 	//    var SecurityLoggingObjectref []interface{}
 	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"firewall_rule_security_logging_object_ref_uuid", "to": []string{"test", "firewall_rule_security_logging_object_ref_uuid"}})
 	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"firewall_rule_security_logging_object_ref_uuid1", "to": []string{"test", "firewall_rule_security_logging_object_ref_uuid1"}})
@@ -537,13 +496,28 @@ func TestFirewallRule(t *testing.T) {
 	//
 	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
 	//
+	//    var ServiceGroupref []interface{}
+	//    ServiceGroupref = append(ServiceGroupref, map[string]interface{}{"operation":"delete", "uuid":"firewall_rule_service_group_ref_uuid", "to": []string{"test", "firewall_rule_service_group_ref_uuid"}})
+	//    ServiceGroupref = append(ServiceGroupref, map[string]interface{}{"operation":"add", "uuid":"firewall_rule_service_group_ref_uuid1", "to": []string{"test", "firewall_rule_service_group_ref_uuid1"}})
 	//
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateFirewallRule(ctx, tx,
-			&models.CreateFirewallRuleRequest{
-				FirewallRule: model,
-			})
-	})
+	//
+	//
+	//    common.SetValueByPath(updateMap, "ServiceGroupRefs", ".", ServiceGroupref)
+	//
+	//    var AddressGroupref []interface{}
+	//    AddressGroupref = append(AddressGroupref, map[string]interface{}{"operation":"delete", "uuid":"firewall_rule_address_group_ref_uuid", "to": []string{"test", "firewall_rule_address_group_ref_uuid"}})
+	//    AddressGroupref = append(AddressGroupref, map[string]interface{}{"operation":"add", "uuid":"firewall_rule_address_group_ref_uuid1", "to": []string{"test", "firewall_rule_address_group_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "AddressGroupRefs", ".", AddressGroupref)
+	//
+	//
+	_, err = db.CreateFirewallRule(ctx,
+		&models.CreateFirewallRuleRequest{
+			FirewallRule: model,
+		})
+
 	if err != nil {
 		t.Fatal("create failed", err)
 	}
@@ -557,7 +531,8 @@ func TestFirewallRule(t *testing.T) {
 
 	//Delete ref entries, referred objects
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_firewall_rule_service_group` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing ServiceGroupRefs delete statement failed")
@@ -570,35 +545,29 @@ func TestFirewallRule(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceGroup(ctx, tx,
-			&models.DeleteServiceGroupRequest{
-				ID: "firewall_rule_service_group_ref_uuid"})
-	})
+	_, err = db.DeleteServiceGroup(ctx,
+		&models.DeleteServiceGroupRequest{
+			ID: "firewall_rule_service_group_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref firewall_rule_service_group_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceGroup(ctx, tx,
-			&models.DeleteServiceGroupRequest{
-				ID: "firewall_rule_service_group_ref_uuid1"})
-	})
+	_, err = db.DeleteServiceGroup(ctx,
+		&models.DeleteServiceGroupRequest{
+			ID: "firewall_rule_service_group_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref firewall_rule_service_group_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceGroup(
-			ctx,
-			tx,
-			&models.DeleteServiceGroupRequest{
-				ID: "firewall_rule_service_group_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteServiceGroup(
+		ctx,
+		&models.DeleteServiceGroupRequest{
+			ID: "firewall_rule_service_group_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref firewall_rule_service_group_ref_uuid2 failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_firewall_rule_address_group` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing AddressGroupRefs delete statement failed")
@@ -611,35 +580,29 @@ func TestFirewallRule(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteAddressGroup(ctx, tx,
-			&models.DeleteAddressGroupRequest{
-				ID: "firewall_rule_address_group_ref_uuid"})
-	})
+	_, err = db.DeleteAddressGroup(ctx,
+		&models.DeleteAddressGroupRequest{
+			ID: "firewall_rule_address_group_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref firewall_rule_address_group_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteAddressGroup(ctx, tx,
-			&models.DeleteAddressGroupRequest{
-				ID: "firewall_rule_address_group_ref_uuid1"})
-	})
+	_, err = db.DeleteAddressGroup(ctx,
+		&models.DeleteAddressGroupRequest{
+			ID: "firewall_rule_address_group_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref firewall_rule_address_group_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteAddressGroup(
-			ctx,
-			tx,
-			&models.DeleteAddressGroupRequest{
-				ID: "firewall_rule_address_group_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteAddressGroup(
+		ctx,
+		&models.DeleteAddressGroupRequest{
+			ID: "firewall_rule_address_group_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref firewall_rule_address_group_ref_uuid2 failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_firewall_rule_security_logging_object` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing SecurityLoggingObjectRefs delete statement failed")
@@ -652,35 +615,29 @@ func TestFirewallRule(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteSecurityLoggingObject(ctx, tx,
-			&models.DeleteSecurityLoggingObjectRequest{
-				ID: "firewall_rule_security_logging_object_ref_uuid"})
-	})
+	_, err = db.DeleteSecurityLoggingObject(ctx,
+		&models.DeleteSecurityLoggingObjectRequest{
+			ID: "firewall_rule_security_logging_object_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref firewall_rule_security_logging_object_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteSecurityLoggingObject(ctx, tx,
-			&models.DeleteSecurityLoggingObjectRequest{
-				ID: "firewall_rule_security_logging_object_ref_uuid1"})
-	})
+	_, err = db.DeleteSecurityLoggingObject(ctx,
+		&models.DeleteSecurityLoggingObjectRequest{
+			ID: "firewall_rule_security_logging_object_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref firewall_rule_security_logging_object_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteSecurityLoggingObject(
-			ctx,
-			tx,
-			&models.DeleteSecurityLoggingObjectRequest{
-				ID: "firewall_rule_security_logging_object_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteSecurityLoggingObject(
+		ctx,
+		&models.DeleteSecurityLoggingObjectRequest{
+			ID: "firewall_rule_security_logging_object_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref firewall_rule_security_logging_object_ref_uuid2 failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_firewall_rule_virtual_network` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing VirtualNetworkRefs delete statement failed")
@@ -693,100 +650,73 @@ func TestFirewallRule(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualNetwork(ctx, tx,
-			&models.DeleteVirtualNetworkRequest{
-				ID: "firewall_rule_virtual_network_ref_uuid"})
-	})
+	_, err = db.DeleteVirtualNetwork(ctx,
+		&models.DeleteVirtualNetworkRequest{
+			ID: "firewall_rule_virtual_network_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref firewall_rule_virtual_network_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualNetwork(ctx, tx,
-			&models.DeleteVirtualNetworkRequest{
-				ID: "firewall_rule_virtual_network_ref_uuid1"})
-	})
+	_, err = db.DeleteVirtualNetwork(ctx,
+		&models.DeleteVirtualNetworkRequest{
+			ID: "firewall_rule_virtual_network_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref firewall_rule_virtual_network_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualNetwork(
-			ctx,
-			tx,
-			&models.DeleteVirtualNetworkRequest{
-				ID: "firewall_rule_virtual_network_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteVirtualNetwork(
+		ctx,
+		&models.DeleteVirtualNetworkRequest{
+			ID: "firewall_rule_virtual_network_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref firewall_rule_virtual_network_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteProject(ctx, tx, &models.DeleteProjectRequest{
-			ID: projectModel.UUID})
-	})
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
 	if err != nil {
 		t.Fatal("delete project failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListFirewallRule(ctx, tx, &models.ListFirewallRuleRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.FirewallRules) != 1 {
-			return fmt.Errorf("expected one element")
-		}
-		return nil
-	})
+	response, err := db.ListFirewallRule(ctx, &models.ListFirewallRuleRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
+	if len(response.FirewallRules) != 1 {
+		t.Fatal("expected one element", err)
+	}
 
 	ctxDemo := context.WithValue(ctx, "auth", common.NewAuthContext("default", "demo", "demo", []string{}))
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteFirewallRule(ctxDemo, tx,
-			&models.DeleteFirewallRuleRequest{
-				ID: model.UUID},
-		)
-	})
+	_, err = db.DeleteFirewallRule(ctxDemo,
+		&models.DeleteFirewallRuleRequest{
+			ID: model.UUID},
+	)
 	if err == nil {
 		t.Fatal("auth failed")
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteFirewallRule(ctx, tx,
-			&models.DeleteFirewallRuleRequest{
-				ID: model.UUID})
-	})
-	if err != nil {
-		t.Fatal("delete failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateFirewallRule(ctx, tx,
-			&models.CreateFirewallRuleRequest{
-				FirewallRule: model})
-	})
+	_, err = db.CreateFirewallRule(ctx,
+		&models.CreateFirewallRuleRequest{
+			FirewallRule: model})
 	if err == nil {
 		t.Fatal("Raise Error On Duplicate Create failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListFirewallRule(ctx, tx, &models.ListFirewallRuleRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.FirewallRules) != 0 {
-			return fmt.Errorf("expected no element")
-		}
-		return nil
-	})
+	_, err = db.DeleteFirewallRule(ctx,
+		&models.DeleteFirewallRuleRequest{
+			ID: model.UUID})
+	if err != nil {
+		t.Fatal("delete failed", err)
+	}
+
+	response, err = db.ListFirewallRule(ctx, &models.ListFirewallRuleRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+	if len(response.FirewallRules) != 0 {
+		t.Fatal("expected no element", err)
 	}
 	return
 }

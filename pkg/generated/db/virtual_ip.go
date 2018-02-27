@@ -79,10 +79,10 @@ const insertVirtualIPLoadbalancerPoolQuery = "insert into `ref_virtual_ip_loadba
 const insertVirtualIPVirtualMachineInterfaceQuery = "insert into `ref_virtual_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateVirtualIP inserts VirtualIP to DB
-func CreateVirtualIP(
+func (db *DB) createVirtualIP(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateVirtualIPRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.VirtualIP
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertVirtualIPQuery)
@@ -407,8 +407,9 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 }
 
 // ListVirtualIP lists VirtualIP with list spec.
-func ListVirtualIP(ctx context.Context, tx *sql.Tx, request *models.ListVirtualIPRequest) (response *models.ListVirtualIPResponse, err error) {
+func (db *DB) listVirtualIP(ctx context.Context, request *models.ListVirtualIPRequest) (response *models.ListVirtualIPResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -470,9 +471,8 @@ func ListVirtualIP(ctx context.Context, tx *sql.Tx, request *models.ListVirtualI
 }
 
 // UpdateVirtualIP updates a resource
-func UpdateVirtualIP(
+func (db *DB) updateVirtualIP(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateVirtualIPRequest,
 ) error {
 	//TODO
@@ -480,15 +480,15 @@ func UpdateVirtualIP(
 }
 
 // DeleteVirtualIP deletes a resource
-func DeleteVirtualIP(
+func (db *DB) deleteVirtualIP(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteVirtualIPRequest) error {
 	deleteQuery := deleteVirtualIPQuery
 	selectQuery := "select count(uuid) from virtual_ip where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -523,4 +523,119 @@ func DeleteVirtualIP(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateVirtualIP handle a Create API
+func (db *DB) CreateVirtualIP(
+	ctx context.Context,
+	request *models.CreateVirtualIPRequest) (*models.CreateVirtualIPResponse, error) {
+	model := request.VirtualIP
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createVirtualIP(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "virtual_ip",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateVirtualIPResponse{
+		VirtualIP: request.VirtualIP,
+	}, nil
+}
+
+//UpdateVirtualIP handles a Update request.
+func (db *DB) UpdateVirtualIP(
+	ctx context.Context,
+	request *models.UpdateVirtualIPRequest) (*models.UpdateVirtualIPResponse, error) {
+	model := request.VirtualIP
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateVirtualIP(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "virtual_ip",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateVirtualIPResponse{
+		VirtualIP: model,
+	}, nil
+}
+
+//DeleteVirtualIP delete a resource.
+func (db *DB) DeleteVirtualIP(ctx context.Context, request *models.DeleteVirtualIPRequest) (*models.DeleteVirtualIPResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteVirtualIP(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteVirtualIPResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetVirtualIP a Get request.
+func (db *DB) GetVirtualIP(ctx context.Context, request *models.GetVirtualIPRequest) (response *models.GetVirtualIPResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListVirtualIPRequest{
+		Spec: spec,
+	}
+	var result *models.ListVirtualIPResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listVirtualIP(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.VirtualIPs) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetVirtualIPResponse{
+		VirtualIP: result.VirtualIPs[0],
+	}
+	return response, nil
+}
+
+//ListVirtualIP handles a List service Request.
+func (db *DB) ListVirtualIP(
+	ctx context.Context,
+	request *models.ListVirtualIPRequest) (response *models.ListVirtualIPResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listVirtualIP(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

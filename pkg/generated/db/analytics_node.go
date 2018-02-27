@@ -55,10 +55,10 @@ var AnalyticsNodeParents = []string{
 }
 
 // CreateAnalyticsNode inserts AnalyticsNode to DB
-func CreateAnalyticsNode(
+func (db *DB) createAnalyticsNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateAnalyticsNodeRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.AnalyticsNode
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertAnalyticsNodeQuery)
@@ -254,8 +254,9 @@ func scanAnalyticsNode(values map[string]interface{}) (*models.AnalyticsNode, er
 }
 
 // ListAnalyticsNode lists AnalyticsNode with list spec.
-func ListAnalyticsNode(ctx context.Context, tx *sql.Tx, request *models.ListAnalyticsNodeRequest) (response *models.ListAnalyticsNodeResponse, err error) {
+func (db *DB) listAnalyticsNode(ctx context.Context, request *models.ListAnalyticsNodeRequest) (response *models.ListAnalyticsNodeResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -317,9 +318,8 @@ func ListAnalyticsNode(ctx context.Context, tx *sql.Tx, request *models.ListAnal
 }
 
 // UpdateAnalyticsNode updates a resource
-func UpdateAnalyticsNode(
+func (db *DB) updateAnalyticsNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateAnalyticsNodeRequest,
 ) error {
 	//TODO
@@ -327,15 +327,15 @@ func UpdateAnalyticsNode(
 }
 
 // DeleteAnalyticsNode deletes a resource
-func DeleteAnalyticsNode(
+func (db *DB) deleteAnalyticsNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteAnalyticsNodeRequest) error {
 	deleteQuery := deleteAnalyticsNodeQuery
 	selectQuery := "select count(uuid) from analytics_node where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -370,4 +370,119 @@ func DeleteAnalyticsNode(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateAnalyticsNode handle a Create API
+func (db *DB) CreateAnalyticsNode(
+	ctx context.Context,
+	request *models.CreateAnalyticsNodeRequest) (*models.CreateAnalyticsNodeResponse, error) {
+	model := request.AnalyticsNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createAnalyticsNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "analytics_node",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateAnalyticsNodeResponse{
+		AnalyticsNode: request.AnalyticsNode,
+	}, nil
+}
+
+//UpdateAnalyticsNode handles a Update request.
+func (db *DB) UpdateAnalyticsNode(
+	ctx context.Context,
+	request *models.UpdateAnalyticsNodeRequest) (*models.UpdateAnalyticsNodeResponse, error) {
+	model := request.AnalyticsNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateAnalyticsNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "analytics_node",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateAnalyticsNodeResponse{
+		AnalyticsNode: model,
+	}, nil
+}
+
+//DeleteAnalyticsNode delete a resource.
+func (db *DB) DeleteAnalyticsNode(ctx context.Context, request *models.DeleteAnalyticsNodeRequest) (*models.DeleteAnalyticsNodeResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteAnalyticsNode(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteAnalyticsNodeResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetAnalyticsNode a Get request.
+func (db *DB) GetAnalyticsNode(ctx context.Context, request *models.GetAnalyticsNodeRequest) (response *models.GetAnalyticsNodeResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListAnalyticsNodeRequest{
+		Spec: spec,
+	}
+	var result *models.ListAnalyticsNodeResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listAnalyticsNode(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.AnalyticsNodes) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetAnalyticsNodeResponse{
+		AnalyticsNode: result.AnalyticsNodes[0],
+	}
+	return response, nil
+}
+
+//ListAnalyticsNode handles a List service Request.
+func (db *DB) ListAnalyticsNode(
+	ctx context.Context,
+	request *models.ListAnalyticsNodeRequest) (response *models.ListAnalyticsNodeResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listAnalyticsNode(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

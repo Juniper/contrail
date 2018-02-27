@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,13 +15,15 @@ var _ = errors.New("")
 
 func TestServiceInstance(t *testing.T) {
 	// t.Parallel()
-	db := testDB
+	db := &DB{
+		DB: testDB,
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db, "metadata")
-	mutexTable := common.UseTable(db, "service_instance")
-	// mutexProject := common.UseTable(db, "service_instance")
+	mutexMetadata := common.UseTable(db.DB, "metadata")
+	mutexTable := common.UseTable(db.DB, "service_instance")
+	// mutexProject := common.UseTable(db.DB, "service_instance")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -44,24 +44,18 @@ func TestServiceInstance(t *testing.T) {
 	ServiceTemplaterefModel = models.MakeServiceTemplate()
 	ServiceTemplaterefModel.UUID = "service_instance_service_template_ref_uuid"
 	ServiceTemplaterefModel.FQName = []string{"test", "service_instance_service_template_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceTemplate(ctx, tx, &models.CreateServiceTemplateRequest{
-			ServiceTemplate: ServiceTemplaterefModel,
-		})
+	_, err = db.CreateServiceTemplate(ctx, &models.CreateServiceTemplateRequest{
+		ServiceTemplate: ServiceTemplaterefModel,
 	})
 	ServiceTemplaterefModel.UUID = "service_instance_service_template_ref_uuid1"
 	ServiceTemplaterefModel.FQName = []string{"test", "service_instance_service_template_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceTemplate(ctx, tx, &models.CreateServiceTemplateRequest{
-			ServiceTemplate: ServiceTemplaterefModel,
-		})
+	_, err = db.CreateServiceTemplate(ctx, &models.CreateServiceTemplateRequest{
+		ServiceTemplate: ServiceTemplaterefModel,
 	})
 	ServiceTemplaterefModel.UUID = "service_instance_service_template_ref_uuid2"
 	ServiceTemplaterefModel.FQName = []string{"test", "service_instance_service_template_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceTemplate(ctx, tx, &models.CreateServiceTemplateRequest{
-			ServiceTemplate: ServiceTemplaterefModel,
-		})
+	_, err = db.CreateServiceTemplate(ctx, &models.CreateServiceTemplateRequest{
+		ServiceTemplate: ServiceTemplaterefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
@@ -75,24 +69,18 @@ func TestServiceInstance(t *testing.T) {
 	InstanceIPrefModel = models.MakeInstanceIP()
 	InstanceIPrefModel.UUID = "service_instance_instance_ip_ref_uuid"
 	InstanceIPrefModel.FQName = []string{"test", "service_instance_instance_ip_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateInstanceIP(ctx, tx, &models.CreateInstanceIPRequest{
-			InstanceIP: InstanceIPrefModel,
-		})
+	_, err = db.CreateInstanceIP(ctx, &models.CreateInstanceIPRequest{
+		InstanceIP: InstanceIPrefModel,
 	})
 	InstanceIPrefModel.UUID = "service_instance_instance_ip_ref_uuid1"
 	InstanceIPrefModel.FQName = []string{"test", "service_instance_instance_ip_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateInstanceIP(ctx, tx, &models.CreateInstanceIPRequest{
-			InstanceIP: InstanceIPrefModel,
-		})
+	_, err = db.CreateInstanceIP(ctx, &models.CreateInstanceIPRequest{
+		InstanceIP: InstanceIPrefModel,
 	})
 	InstanceIPrefModel.UUID = "service_instance_instance_ip_ref_uuid2"
 	InstanceIPrefModel.FQName = []string{"test", "service_instance_instance_ip_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateInstanceIP(ctx, tx, &models.CreateInstanceIPRequest{
-			InstanceIP: InstanceIPrefModel,
-		})
+	_, err = db.CreateInstanceIP(ctx, &models.CreateInstanceIPRequest{
+		InstanceIP: InstanceIPrefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
@@ -109,10 +97,9 @@ func TestServiceInstance(t *testing.T) {
 	var createShare []*models.ShareType
 	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
 	model.Perms2.Share = createShare
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx, &models.CreateProjectRequest{
-			Project: projectModel,
-		})
+
+	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
+		Project: projectModel,
 	})
 	if err != nil {
 		t.Fatal("project create failed", err)
@@ -293,6 +280,14 @@ func TestServiceInstance(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
+	//    var ServiceTemplateref []interface{}
+	//    ServiceTemplateref = append(ServiceTemplateref, map[string]interface{}{"operation":"delete", "uuid":"service_instance_service_template_ref_uuid", "to": []string{"test", "service_instance_service_template_ref_uuid"}})
+	//    ServiceTemplateref = append(ServiceTemplateref, map[string]interface{}{"operation":"add", "uuid":"service_instance_service_template_ref_uuid1", "to": []string{"test", "service_instance_service_template_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "ServiceTemplateRefs", ".", ServiceTemplateref)
+	//
 	//    var InstanceIPref []interface{}
 	//    InstanceIPref = append(InstanceIPref, map[string]interface{}{"operation":"delete", "uuid":"service_instance_instance_ip_ref_uuid", "to": []string{"test", "service_instance_instance_ip_ref_uuid"}})
 	//    InstanceIPref = append(InstanceIPref, map[string]interface{}{"operation":"add", "uuid":"service_instance_instance_ip_ref_uuid1", "to": []string{"test", "service_instance_instance_ip_ref_uuid1"}})
@@ -309,21 +304,12 @@ func TestServiceInstance(t *testing.T) {
 	//
 	//    common.SetValueByPath(updateMap, "InstanceIPRefs", ".", InstanceIPref)
 	//
-	//    var ServiceTemplateref []interface{}
-	//    ServiceTemplateref = append(ServiceTemplateref, map[string]interface{}{"operation":"delete", "uuid":"service_instance_service_template_ref_uuid", "to": []string{"test", "service_instance_service_template_ref_uuid"}})
-	//    ServiceTemplateref = append(ServiceTemplateref, map[string]interface{}{"operation":"add", "uuid":"service_instance_service_template_ref_uuid1", "to": []string{"test", "service_instance_service_template_ref_uuid1"}})
 	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ServiceTemplateRefs", ".", ServiceTemplateref)
-	//
-	//
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceInstance(ctx, tx,
-			&models.CreateServiceInstanceRequest{
-				ServiceInstance: model,
-			})
-	})
+	_, err = db.CreateServiceInstance(ctx,
+		&models.CreateServiceInstanceRequest{
+			ServiceInstance: model,
+		})
+
 	if err != nil {
 		t.Fatal("create failed", err)
 	}
@@ -337,7 +323,8 @@ func TestServiceInstance(t *testing.T) {
 
 	//Delete ref entries, referred objects
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_service_instance_service_template` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing ServiceTemplateRefs delete statement failed")
@@ -350,35 +337,29 @@ func TestServiceInstance(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceTemplate(ctx, tx,
-			&models.DeleteServiceTemplateRequest{
-				ID: "service_instance_service_template_ref_uuid"})
-	})
+	_, err = db.DeleteServiceTemplate(ctx,
+		&models.DeleteServiceTemplateRequest{
+			ID: "service_instance_service_template_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref service_instance_service_template_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceTemplate(ctx, tx,
-			&models.DeleteServiceTemplateRequest{
-				ID: "service_instance_service_template_ref_uuid1"})
-	})
+	_, err = db.DeleteServiceTemplate(ctx,
+		&models.DeleteServiceTemplateRequest{
+			ID: "service_instance_service_template_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref service_instance_service_template_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceTemplate(
-			ctx,
-			tx,
-			&models.DeleteServiceTemplateRequest{
-				ID: "service_instance_service_template_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteServiceTemplate(
+		ctx,
+		&models.DeleteServiceTemplateRequest{
+			ID: "service_instance_service_template_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref service_instance_service_template_ref_uuid2 failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_service_instance_instance_ip` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing InstanceIPRefs delete statement failed")
@@ -391,100 +372,73 @@ func TestServiceInstance(t *testing.T) {
 		}
 		return nil
 	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteInstanceIP(ctx, tx,
-			&models.DeleteInstanceIPRequest{
-				ID: "service_instance_instance_ip_ref_uuid"})
-	})
+	_, err = db.DeleteInstanceIP(ctx,
+		&models.DeleteInstanceIPRequest{
+			ID: "service_instance_instance_ip_ref_uuid"})
 	if err != nil {
 		t.Fatal("delete ref service_instance_instance_ip_ref_uuid  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteInstanceIP(ctx, tx,
-			&models.DeleteInstanceIPRequest{
-				ID: "service_instance_instance_ip_ref_uuid1"})
-	})
+	_, err = db.DeleteInstanceIP(ctx,
+		&models.DeleteInstanceIPRequest{
+			ID: "service_instance_instance_ip_ref_uuid1"})
 	if err != nil {
 		t.Fatal("delete ref service_instance_instance_ip_ref_uuid1  failed", err)
 	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteInstanceIP(
-			ctx,
-			tx,
-			&models.DeleteInstanceIPRequest{
-				ID: "service_instance_instance_ip_ref_uuid2",
-			})
-	})
+	_, err = db.DeleteInstanceIP(
+		ctx,
+		&models.DeleteInstanceIPRequest{
+			ID: "service_instance_instance_ip_ref_uuid2",
+		})
 	if err != nil {
 		t.Fatal("delete ref service_instance_instance_ip_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteProject(ctx, tx, &models.DeleteProjectRequest{
-			ID: projectModel.UUID})
-	})
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
 	if err != nil {
 		t.Fatal("delete project failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListServiceInstance(ctx, tx, &models.ListServiceInstanceRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.ServiceInstances) != 1 {
-			return fmt.Errorf("expected one element")
-		}
-		return nil
-	})
+	response, err := db.ListServiceInstance(ctx, &models.ListServiceInstanceRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
+	if len(response.ServiceInstances) != 1 {
+		t.Fatal("expected one element", err)
+	}
 
 	ctxDemo := context.WithValue(ctx, "auth", common.NewAuthContext("default", "demo", "demo", []string{}))
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceInstance(ctxDemo, tx,
-			&models.DeleteServiceInstanceRequest{
-				ID: model.UUID},
-		)
-	})
+	_, err = db.DeleteServiceInstance(ctxDemo,
+		&models.DeleteServiceInstanceRequest{
+			ID: model.UUID},
+	)
 	if err == nil {
 		t.Fatal("auth failed")
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteServiceInstance(ctx, tx,
-			&models.DeleteServiceInstanceRequest{
-				ID: model.UUID})
-	})
-	if err != nil {
-		t.Fatal("delete failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateServiceInstance(ctx, tx,
-			&models.CreateServiceInstanceRequest{
-				ServiceInstance: model})
-	})
+	_, err = db.CreateServiceInstance(ctx,
+		&models.CreateServiceInstanceRequest{
+			ServiceInstance: model})
 	if err == nil {
 		t.Fatal("Raise Error On Duplicate Create failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListServiceInstance(ctx, tx, &models.ListServiceInstanceRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.ServiceInstances) != 0 {
-			return fmt.Errorf("expected no element")
-		}
-		return nil
-	})
+	_, err = db.DeleteServiceInstance(ctx,
+		&models.DeleteServiceInstanceRequest{
+			ID: model.UUID})
+	if err != nil {
+		t.Fatal("delete failed", err)
+	}
+
+	response, err = db.ListServiceInstance(ctx, &models.ListServiceInstanceRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+	if len(response.ServiceInstances) != 0 {
+		t.Fatal("expected no element", err)
 	}
 	return
 }

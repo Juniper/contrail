@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateFloatingIPPool(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateFloatingIPPool(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "floating_ip_pool",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateFloatingIPPoolResponse{
-		FloatingIPPool: request.FloatingIPPool,
-	}, nil
+
+	return service.Next().CreateFloatingIPPool(ctx, request)
 }
 
 //RESTUpdateFloatingIPPool handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateFloatingIPPool(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateFloatingIPPool(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "floating_ip_pool",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateFloatingIPPoolResponse{
-		FloatingIPPool: model,
-	}, nil
+	return service.Next().UpdateFloatingIPPool(ctx, request)
 }
 
 //RESTDeleteFloatingIPPool delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteFloatingIPPool(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteFloatingIPPool delete a resource.
-func (service *ContrailService) DeleteFloatingIPPool(ctx context.Context, request *models.DeleteFloatingIPPoolRequest) (*models.DeleteFloatingIPPoolResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteFloatingIPPool(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteFloatingIPPoolResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetFloatingIPPool a REST Get request.
 func (service *ContrailService) RESTGetFloatingIPPool(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetFloatingIPPool(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetFloatingIPPool a Get request.
-func (service *ContrailService) GetFloatingIPPool(ctx context.Context, request *models.GetFloatingIPPoolRequest) (response *models.GetFloatingIPPoolResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListFloatingIPPoolRequest{
-		Spec: spec,
-	}
-	var result *models.ListFloatingIPPoolResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListFloatingIPPool(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.FloatingIPPools) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetFloatingIPPoolResponse{
-		FloatingIPPool: result.FloatingIPPools[0],
-	}
-	return response, nil
 }
 
 //RESTListFloatingIPPool handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListFloatingIPPool(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListFloatingIPPool handles a List service Request.
-func (service *ContrailService) ListFloatingIPPool(
-	ctx context.Context,
-	request *models.ListFloatingIPPoolRequest) (response *models.ListFloatingIPPoolResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListFloatingIPPool(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

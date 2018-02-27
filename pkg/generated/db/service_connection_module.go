@@ -61,10 +61,10 @@ var ServiceConnectionModuleParents = []string{}
 const insertServiceConnectionModuleServiceObjectQuery = "insert into `ref_service_connection_module_service_object` (`from`, `to` ) values (?, ?);"
 
 // CreateServiceConnectionModule inserts ServiceConnectionModule to DB
-func CreateServiceConnectionModule(
+func (db *DB) createServiceConnectionModule(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateServiceConnectionModuleRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ServiceConnectionModule
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceConnectionModuleQuery)
@@ -300,8 +300,9 @@ func scanServiceConnectionModule(values map[string]interface{}) (*models.Service
 }
 
 // ListServiceConnectionModule lists ServiceConnectionModule with list spec.
-func ListServiceConnectionModule(ctx context.Context, tx *sql.Tx, request *models.ListServiceConnectionModuleRequest) (response *models.ListServiceConnectionModuleResponse, err error) {
+func (db *DB) listServiceConnectionModule(ctx context.Context, request *models.ListServiceConnectionModuleRequest) (response *models.ListServiceConnectionModuleResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -363,9 +364,8 @@ func ListServiceConnectionModule(ctx context.Context, tx *sql.Tx, request *model
 }
 
 // UpdateServiceConnectionModule updates a resource
-func UpdateServiceConnectionModule(
+func (db *DB) updateServiceConnectionModule(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateServiceConnectionModuleRequest,
 ) error {
 	//TODO
@@ -373,15 +373,15 @@ func UpdateServiceConnectionModule(
 }
 
 // DeleteServiceConnectionModule deletes a resource
-func DeleteServiceConnectionModule(
+func (db *DB) deleteServiceConnectionModule(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteServiceConnectionModuleRequest) error {
 	deleteQuery := deleteServiceConnectionModuleQuery
 	selectQuery := "select count(uuid) from service_connection_module where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -416,4 +416,119 @@ func DeleteServiceConnectionModule(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateServiceConnectionModule handle a Create API
+func (db *DB) CreateServiceConnectionModule(
+	ctx context.Context,
+	request *models.CreateServiceConnectionModuleRequest) (*models.CreateServiceConnectionModuleResponse, error) {
+	model := request.ServiceConnectionModule
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createServiceConnectionModule(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_connection_module",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateServiceConnectionModuleResponse{
+		ServiceConnectionModule: request.ServiceConnectionModule,
+	}, nil
+}
+
+//UpdateServiceConnectionModule handles a Update request.
+func (db *DB) UpdateServiceConnectionModule(
+	ctx context.Context,
+	request *models.UpdateServiceConnectionModuleRequest) (*models.UpdateServiceConnectionModuleResponse, error) {
+	model := request.ServiceConnectionModule
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateServiceConnectionModule(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_connection_module",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateServiceConnectionModuleResponse{
+		ServiceConnectionModule: model,
+	}, nil
+}
+
+//DeleteServiceConnectionModule delete a resource.
+func (db *DB) DeleteServiceConnectionModule(ctx context.Context, request *models.DeleteServiceConnectionModuleRequest) (*models.DeleteServiceConnectionModuleResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteServiceConnectionModule(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteServiceConnectionModuleResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetServiceConnectionModule a Get request.
+func (db *DB) GetServiceConnectionModule(ctx context.Context, request *models.GetServiceConnectionModuleRequest) (response *models.GetServiceConnectionModuleResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListServiceConnectionModuleRequest{
+		Spec: spec,
+	}
+	var result *models.ListServiceConnectionModuleResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listServiceConnectionModule(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ServiceConnectionModules) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetServiceConnectionModuleResponse{
+		ServiceConnectionModule: result.ServiceConnectionModules[0],
+	}
+	return response, nil
+}
+
+//ListServiceConnectionModule handles a List service Request.
+func (db *DB) ListServiceConnectionModule(
+	ctx context.Context,
+	request *models.ListServiceConnectionModuleRequest) (response *models.ListServiceConnectionModuleResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listServiceConnectionModule(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

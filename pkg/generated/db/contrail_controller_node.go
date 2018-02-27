@@ -67,10 +67,10 @@ var ContrailControllerNodeParents = []string{
 const insertContrailControllerNodeNodeQuery = "insert into `ref_contrail_controller_node_node` (`from`, `to` ) values (?, ?);"
 
 // CreateContrailControllerNode inserts ContrailControllerNode to DB
-func CreateContrailControllerNode(
+func (db *DB) createContrailControllerNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateContrailControllerNodeRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ContrailControllerNode
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertContrailControllerNodeQuery)
@@ -327,8 +327,9 @@ func scanContrailControllerNode(values map[string]interface{}) (*models.Contrail
 }
 
 // ListContrailControllerNode lists ContrailControllerNode with list spec.
-func ListContrailControllerNode(ctx context.Context, tx *sql.Tx, request *models.ListContrailControllerNodeRequest) (response *models.ListContrailControllerNodeResponse, err error) {
+func (db *DB) listContrailControllerNode(ctx context.Context, request *models.ListContrailControllerNodeRequest) (response *models.ListContrailControllerNodeResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -390,9 +391,8 @@ func ListContrailControllerNode(ctx context.Context, tx *sql.Tx, request *models
 }
 
 // UpdateContrailControllerNode updates a resource
-func UpdateContrailControllerNode(
+func (db *DB) updateContrailControllerNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateContrailControllerNodeRequest,
 ) error {
 	//TODO
@@ -400,15 +400,15 @@ func UpdateContrailControllerNode(
 }
 
 // DeleteContrailControllerNode deletes a resource
-func DeleteContrailControllerNode(
+func (db *DB) deleteContrailControllerNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteContrailControllerNodeRequest) error {
 	deleteQuery := deleteContrailControllerNodeQuery
 	selectQuery := "select count(uuid) from contrail_controller_node where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -443,4 +443,119 @@ func DeleteContrailControllerNode(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateContrailControllerNode handle a Create API
+func (db *DB) CreateContrailControllerNode(
+	ctx context.Context,
+	request *models.CreateContrailControllerNodeRequest) (*models.CreateContrailControllerNodeResponse, error) {
+	model := request.ContrailControllerNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createContrailControllerNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "contrail_controller_node",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateContrailControllerNodeResponse{
+		ContrailControllerNode: request.ContrailControllerNode,
+	}, nil
+}
+
+//UpdateContrailControllerNode handles a Update request.
+func (db *DB) UpdateContrailControllerNode(
+	ctx context.Context,
+	request *models.UpdateContrailControllerNodeRequest) (*models.UpdateContrailControllerNodeResponse, error) {
+	model := request.ContrailControllerNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateContrailControllerNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "contrail_controller_node",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateContrailControllerNodeResponse{
+		ContrailControllerNode: model,
+	}, nil
+}
+
+//DeleteContrailControllerNode delete a resource.
+func (db *DB) DeleteContrailControllerNode(ctx context.Context, request *models.DeleteContrailControllerNodeRequest) (*models.DeleteContrailControllerNodeResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteContrailControllerNode(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteContrailControllerNodeResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetContrailControllerNode a Get request.
+func (db *DB) GetContrailControllerNode(ctx context.Context, request *models.GetContrailControllerNodeRequest) (response *models.GetContrailControllerNodeResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListContrailControllerNodeRequest{
+		Spec: spec,
+	}
+	var result *models.ListContrailControllerNodeResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listContrailControllerNode(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ContrailControllerNodes) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetContrailControllerNodeResponse{
+		ContrailControllerNode: result.ContrailControllerNodes[0],
+	}
+	return response, nil
+}
+
+//ListContrailControllerNode handles a List service Request.
+func (db *DB) ListContrailControllerNode(
+	ctx context.Context,
+	request *models.ListContrailControllerNodeRequest) (response *models.ListContrailControllerNodeResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listContrailControllerNode(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

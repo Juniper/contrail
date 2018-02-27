@@ -142,10 +142,10 @@ var GlobalQosConfigParents = []string{
 }
 
 // CreateGlobalQosConfig inserts GlobalQosConfig to DB
-func CreateGlobalQosConfig(
+func (db *DB) createGlobalQosConfig(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateGlobalQosConfigRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.GlobalQosConfig
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertGlobalQosConfigQuery)
@@ -862,8 +862,9 @@ func scanGlobalQosConfig(values map[string]interface{}) (*models.GlobalQosConfig
 }
 
 // ListGlobalQosConfig lists GlobalQosConfig with list spec.
-func ListGlobalQosConfig(ctx context.Context, tx *sql.Tx, request *models.ListGlobalQosConfigRequest) (response *models.ListGlobalQosConfigResponse, err error) {
+func (db *DB) listGlobalQosConfig(ctx context.Context, request *models.ListGlobalQosConfigRequest) (response *models.ListGlobalQosConfigResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -925,9 +926,8 @@ func ListGlobalQosConfig(ctx context.Context, tx *sql.Tx, request *models.ListGl
 }
 
 // UpdateGlobalQosConfig updates a resource
-func UpdateGlobalQosConfig(
+func (db *DB) updateGlobalQosConfig(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateGlobalQosConfigRequest,
 ) error {
 	//TODO
@@ -935,15 +935,15 @@ func UpdateGlobalQosConfig(
 }
 
 // DeleteGlobalQosConfig deletes a resource
-func DeleteGlobalQosConfig(
+func (db *DB) deleteGlobalQosConfig(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteGlobalQosConfigRequest) error {
 	deleteQuery := deleteGlobalQosConfigQuery
 	selectQuery := "select count(uuid) from global_qos_config where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -978,4 +978,119 @@ func DeleteGlobalQosConfig(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateGlobalQosConfig handle a Create API
+func (db *DB) CreateGlobalQosConfig(
+	ctx context.Context,
+	request *models.CreateGlobalQosConfigRequest) (*models.CreateGlobalQosConfigResponse, error) {
+	model := request.GlobalQosConfig
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createGlobalQosConfig(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "global_qos_config",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateGlobalQosConfigResponse{
+		GlobalQosConfig: request.GlobalQosConfig,
+	}, nil
+}
+
+//UpdateGlobalQosConfig handles a Update request.
+func (db *DB) UpdateGlobalQosConfig(
+	ctx context.Context,
+	request *models.UpdateGlobalQosConfigRequest) (*models.UpdateGlobalQosConfigResponse, error) {
+	model := request.GlobalQosConfig
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateGlobalQosConfig(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "global_qos_config",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateGlobalQosConfigResponse{
+		GlobalQosConfig: model,
+	}, nil
+}
+
+//DeleteGlobalQosConfig delete a resource.
+func (db *DB) DeleteGlobalQosConfig(ctx context.Context, request *models.DeleteGlobalQosConfigRequest) (*models.DeleteGlobalQosConfigResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteGlobalQosConfig(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteGlobalQosConfigResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetGlobalQosConfig a Get request.
+func (db *DB) GetGlobalQosConfig(ctx context.Context, request *models.GetGlobalQosConfigRequest) (response *models.GetGlobalQosConfigResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListGlobalQosConfigRequest{
+		Spec: spec,
+	}
+	var result *models.ListGlobalQosConfigResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listGlobalQosConfig(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.GlobalQosConfigs) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetGlobalQosConfigResponse{
+		GlobalQosConfig: result.GlobalQosConfigs[0],
+	}
+	return response, nil
+}
+
+//ListGlobalQosConfig handles a List service Request.
+func (db *DB) ListGlobalQosConfig(
+	ctx context.Context,
+	request *models.ListGlobalQosConfigRequest) (response *models.ListGlobalQosConfigResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listGlobalQosConfig(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

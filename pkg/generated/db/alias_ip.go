@@ -71,10 +71,10 @@ const insertAliasIPProjectQuery = "insert into `ref_alias_ip_project` (`from`, `
 const insertAliasIPVirtualMachineInterfaceQuery = "insert into `ref_alias_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateAliasIP inserts AliasIP to DB
-func CreateAliasIP(
+func (db *DB) createAliasIP(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateAliasIPRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.AliasIP
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertAliasIPQuery)
@@ -343,8 +343,9 @@ func scanAliasIP(values map[string]interface{}) (*models.AliasIP, error) {
 }
 
 // ListAliasIP lists AliasIP with list spec.
-func ListAliasIP(ctx context.Context, tx *sql.Tx, request *models.ListAliasIPRequest) (response *models.ListAliasIPResponse, err error) {
+func (db *DB) listAliasIP(ctx context.Context, request *models.ListAliasIPRequest) (response *models.ListAliasIPResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -406,9 +407,8 @@ func ListAliasIP(ctx context.Context, tx *sql.Tx, request *models.ListAliasIPReq
 }
 
 // UpdateAliasIP updates a resource
-func UpdateAliasIP(
+func (db *DB) updateAliasIP(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateAliasIPRequest,
 ) error {
 	//TODO
@@ -416,15 +416,15 @@ func UpdateAliasIP(
 }
 
 // DeleteAliasIP deletes a resource
-func DeleteAliasIP(
+func (db *DB) deleteAliasIP(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteAliasIPRequest) error {
 	deleteQuery := deleteAliasIPQuery
 	selectQuery := "select count(uuid) from alias_ip where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -459,4 +459,119 @@ func DeleteAliasIP(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateAliasIP handle a Create API
+func (db *DB) CreateAliasIP(
+	ctx context.Context,
+	request *models.CreateAliasIPRequest) (*models.CreateAliasIPResponse, error) {
+	model := request.AliasIP
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createAliasIP(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "alias_ip",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateAliasIPResponse{
+		AliasIP: request.AliasIP,
+	}, nil
+}
+
+//UpdateAliasIP handles a Update request.
+func (db *DB) UpdateAliasIP(
+	ctx context.Context,
+	request *models.UpdateAliasIPRequest) (*models.UpdateAliasIPResponse, error) {
+	model := request.AliasIP
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateAliasIP(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "alias_ip",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateAliasIPResponse{
+		AliasIP: model,
+	}, nil
+}
+
+//DeleteAliasIP delete a resource.
+func (db *DB) DeleteAliasIP(ctx context.Context, request *models.DeleteAliasIPRequest) (*models.DeleteAliasIPResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteAliasIP(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteAliasIPResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetAliasIP a Get request.
+func (db *DB) GetAliasIP(ctx context.Context, request *models.GetAliasIPRequest) (response *models.GetAliasIPResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListAliasIPRequest{
+		Spec: spec,
+	}
+	var result *models.ListAliasIPResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listAliasIP(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.AliasIPs) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetAliasIPResponse{
+		AliasIP: result.AliasIPs[0],
+	}
+	return response, nil
+}
+
+//ListAliasIP handles a List service Request.
+func (db *DB) ListAliasIP(
+	ctx context.Context,
+	request *models.ListAliasIPRequest) (response *models.ListAliasIPResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listAliasIP(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

@@ -54,6 +54,16 @@ var LoadbalancerPoolFields = []string{
 // LoadbalancerPoolRefFields is db reference fields for LoadbalancerPool
 var LoadbalancerPoolRefFields = map[string][]string{
 
+	"service_appliance_set": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"virtual_machine_interface": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"loadbalancer_listener": []string{
 	// <schema.Schema Value>
 
@@ -65,16 +75,6 @@ var LoadbalancerPoolRefFields = map[string][]string{
 	},
 
 	"loadbalancer_healthmonitor": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"service_appliance_set": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
 	},
@@ -120,21 +120,21 @@ var LoadbalancerPoolParents = []string{
 	"project",
 }
 
+const insertLoadbalancerPoolServiceInstanceQuery = "insert into `ref_loadbalancer_pool_service_instance` (`from`, `to` ) values (?, ?);"
+
+const insertLoadbalancerPoolLoadbalancerHealthmonitorQuery = "insert into `ref_loadbalancer_pool_loadbalancer_healthmonitor` (`from`, `to` ) values (?, ?);"
+
 const insertLoadbalancerPoolServiceApplianceSetQuery = "insert into `ref_loadbalancer_pool_service_appliance_set` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerPoolVirtualMachineInterfaceQuery = "insert into `ref_loadbalancer_pool_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerPoolLoadbalancerListenerQuery = "insert into `ref_loadbalancer_pool_loadbalancer_listener` (`from`, `to` ) values (?, ?);"
 
-const insertLoadbalancerPoolServiceInstanceQuery = "insert into `ref_loadbalancer_pool_service_instance` (`from`, `to` ) values (?, ?);"
-
-const insertLoadbalancerPoolLoadbalancerHealthmonitorQuery = "insert into `ref_loadbalancer_pool_loadbalancer_healthmonitor` (`from`, `to` ) values (?, ?);"
-
 // CreateLoadbalancerPool inserts LoadbalancerPool to DB
-func CreateLoadbalancerPool(
+func (db *DB) createLoadbalancerPool(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateLoadbalancerPoolRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.LoadbalancerPool
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertLoadbalancerPoolQuery)
@@ -181,32 +181,6 @@ func CreateLoadbalancerPool(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtServiceInstanceRef, err := tx.Prepare(insertLoadbalancerPoolServiceInstanceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceInstanceRefs create statement failed")
-	}
-	defer stmtServiceInstanceRef.Close()
-	for _, ref := range model.ServiceInstanceRefs {
-
-		_, err = stmtServiceInstanceRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceInstanceRefs create failed")
-		}
-	}
-
-	stmtLoadbalancerHealthmonitorRef, err := tx.Prepare(insertLoadbalancerPoolLoadbalancerHealthmonitorQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing LoadbalancerHealthmonitorRefs create statement failed")
-	}
-	defer stmtLoadbalancerHealthmonitorRef.Close()
-	for _, ref := range model.LoadbalancerHealthmonitorRefs {
-
-		_, err = stmtLoadbalancerHealthmonitorRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "LoadbalancerHealthmonitorRefs create failed")
-		}
-	}
-
 	stmtServiceApplianceSetRef, err := tx.Prepare(insertLoadbalancerPoolServiceApplianceSetQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ServiceApplianceSetRefs create statement failed")
@@ -243,6 +217,32 @@ func CreateLoadbalancerPool(
 		_, err = stmtLoadbalancerListenerRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "LoadbalancerListenerRefs create failed")
+		}
+	}
+
+	stmtServiceInstanceRef, err := tx.Prepare(insertLoadbalancerPoolServiceInstanceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceInstanceRefs create statement failed")
+	}
+	defer stmtServiceInstanceRef.Close()
+	for _, ref := range model.ServiceInstanceRefs {
+
+		_, err = stmtServiceInstanceRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceInstanceRefs create failed")
+		}
+	}
+
+	stmtLoadbalancerHealthmonitorRef, err := tx.Prepare(insertLoadbalancerPoolLoadbalancerHealthmonitorQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing LoadbalancerHealthmonitorRefs create statement failed")
+	}
+	defer stmtLoadbalancerHealthmonitorRef.Close()
+	for _, ref := range model.LoadbalancerHealthmonitorRefs {
+
+		_, err = stmtLoadbalancerHealthmonitorRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "LoadbalancerHealthmonitorRefs create failed")
 		}
 	}
 
@@ -739,8 +739,9 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 }
 
 // ListLoadbalancerPool lists LoadbalancerPool with list spec.
-func ListLoadbalancerPool(ctx context.Context, tx *sql.Tx, request *models.ListLoadbalancerPoolRequest) (response *models.ListLoadbalancerPoolResponse, err error) {
+func (db *DB) listLoadbalancerPool(ctx context.Context, request *models.ListLoadbalancerPoolRequest) (response *models.ListLoadbalancerPoolResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -802,9 +803,8 @@ func ListLoadbalancerPool(ctx context.Context, tx *sql.Tx, request *models.ListL
 }
 
 // UpdateLoadbalancerPool updates a resource
-func UpdateLoadbalancerPool(
+func (db *DB) updateLoadbalancerPool(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateLoadbalancerPoolRequest,
 ) error {
 	//TODO
@@ -812,15 +812,15 @@ func UpdateLoadbalancerPool(
 }
 
 // DeleteLoadbalancerPool deletes a resource
-func DeleteLoadbalancerPool(
+func (db *DB) deleteLoadbalancerPool(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteLoadbalancerPoolRequest) error {
 	deleteQuery := deleteLoadbalancerPoolQuery
 	selectQuery := "select count(uuid) from loadbalancer_pool where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -855,4 +855,119 @@ func DeleteLoadbalancerPool(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateLoadbalancerPool handle a Create API
+func (db *DB) CreateLoadbalancerPool(
+	ctx context.Context,
+	request *models.CreateLoadbalancerPoolRequest) (*models.CreateLoadbalancerPoolResponse, error) {
+	model := request.LoadbalancerPool
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createLoadbalancerPool(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "loadbalancer_pool",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateLoadbalancerPoolResponse{
+		LoadbalancerPool: request.LoadbalancerPool,
+	}, nil
+}
+
+//UpdateLoadbalancerPool handles a Update request.
+func (db *DB) UpdateLoadbalancerPool(
+	ctx context.Context,
+	request *models.UpdateLoadbalancerPoolRequest) (*models.UpdateLoadbalancerPoolResponse, error) {
+	model := request.LoadbalancerPool
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateLoadbalancerPool(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "loadbalancer_pool",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateLoadbalancerPoolResponse{
+		LoadbalancerPool: model,
+	}, nil
+}
+
+//DeleteLoadbalancerPool delete a resource.
+func (db *DB) DeleteLoadbalancerPool(ctx context.Context, request *models.DeleteLoadbalancerPoolRequest) (*models.DeleteLoadbalancerPoolResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteLoadbalancerPool(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteLoadbalancerPoolResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetLoadbalancerPool a Get request.
+func (db *DB) GetLoadbalancerPool(ctx context.Context, request *models.GetLoadbalancerPoolRequest) (response *models.GetLoadbalancerPoolResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListLoadbalancerPoolRequest{
+		Spec: spec,
+	}
+	var result *models.ListLoadbalancerPoolResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listLoadbalancerPool(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.LoadbalancerPools) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetLoadbalancerPoolResponse{
+		LoadbalancerPool: result.LoadbalancerPools[0],
+	}
+	return response, nil
+}
+
+//ListLoadbalancerPool handles a List service Request.
+func (db *DB) ListLoadbalancerPool(
+	ctx context.Context,
+	request *models.ListLoadbalancerPoolRequest) (response *models.ListLoadbalancerPoolResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listLoadbalancerPool(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

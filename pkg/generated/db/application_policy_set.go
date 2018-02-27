@@ -72,10 +72,10 @@ const insertApplicationPolicySetGlobalVrouterConfigQuery = "insert into `ref_app
 const insertApplicationPolicySetFirewallPolicyQuery = "insert into `ref_application_policy_set_firewall_policy` (`from`, `to` ,`sequence`) values (?, ?,?);"
 
 // CreateApplicationPolicySet inserts ApplicationPolicySet to DB
-func CreateApplicationPolicySet(
+func (db *DB) createApplicationPolicySet(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateApplicationPolicySetRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ApplicationPolicySet
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertApplicationPolicySetQuery)
@@ -113,6 +113,19 @@ func CreateApplicationPolicySet(
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtGlobalVrouterConfigRef, err := tx.Prepare(insertApplicationPolicySetGlobalVrouterConfigQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing GlobalVrouterConfigRefs create statement failed")
+	}
+	defer stmtGlobalVrouterConfigRef.Close()
+	for _, ref := range model.GlobalVrouterConfigRefs {
+
+		_, err = stmtGlobalVrouterConfigRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "GlobalVrouterConfigRefs create failed")
+		}
+	}
+
 	stmtFirewallPolicyRef, err := tx.Prepare(insertApplicationPolicySetFirewallPolicyQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing FirewallPolicyRefs create statement failed")
@@ -127,19 +140,6 @@ func CreateApplicationPolicySet(
 		_, err = stmtFirewallPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.GetSequence()))
 		if err != nil {
 			return errors.Wrap(err, "FirewallPolicyRefs create failed")
-		}
-	}
-
-	stmtGlobalVrouterConfigRef, err := tx.Prepare(insertApplicationPolicySetGlobalVrouterConfigQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing GlobalVrouterConfigRefs create statement failed")
-	}
-	defer stmtGlobalVrouterConfigRef.Close()
-	for _, ref := range model.GlobalVrouterConfigRefs {
-
-		_, err = stmtGlobalVrouterConfigRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "GlobalVrouterConfigRefs create failed")
 		}
 	}
 
@@ -344,8 +344,9 @@ func scanApplicationPolicySet(values map[string]interface{}) (*models.Applicatio
 }
 
 // ListApplicationPolicySet lists ApplicationPolicySet with list spec.
-func ListApplicationPolicySet(ctx context.Context, tx *sql.Tx, request *models.ListApplicationPolicySetRequest) (response *models.ListApplicationPolicySetResponse, err error) {
+func (db *DB) listApplicationPolicySet(ctx context.Context, request *models.ListApplicationPolicySetRequest) (response *models.ListApplicationPolicySetResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -407,9 +408,8 @@ func ListApplicationPolicySet(ctx context.Context, tx *sql.Tx, request *models.L
 }
 
 // UpdateApplicationPolicySet updates a resource
-func UpdateApplicationPolicySet(
+func (db *DB) updateApplicationPolicySet(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateApplicationPolicySetRequest,
 ) error {
 	//TODO
@@ -417,15 +417,15 @@ func UpdateApplicationPolicySet(
 }
 
 // DeleteApplicationPolicySet deletes a resource
-func DeleteApplicationPolicySet(
+func (db *DB) deleteApplicationPolicySet(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteApplicationPolicySetRequest) error {
 	deleteQuery := deleteApplicationPolicySetQuery
 	selectQuery := "select count(uuid) from application_policy_set where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -460,4 +460,119 @@ func DeleteApplicationPolicySet(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateApplicationPolicySet handle a Create API
+func (db *DB) CreateApplicationPolicySet(
+	ctx context.Context,
+	request *models.CreateApplicationPolicySetRequest) (*models.CreateApplicationPolicySetResponse, error) {
+	model := request.ApplicationPolicySet
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createApplicationPolicySet(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "application_policy_set",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateApplicationPolicySetResponse{
+		ApplicationPolicySet: request.ApplicationPolicySet,
+	}, nil
+}
+
+//UpdateApplicationPolicySet handles a Update request.
+func (db *DB) UpdateApplicationPolicySet(
+	ctx context.Context,
+	request *models.UpdateApplicationPolicySetRequest) (*models.UpdateApplicationPolicySetResponse, error) {
+	model := request.ApplicationPolicySet
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateApplicationPolicySet(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "application_policy_set",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateApplicationPolicySetResponse{
+		ApplicationPolicySet: model,
+	}, nil
+}
+
+//DeleteApplicationPolicySet delete a resource.
+func (db *DB) DeleteApplicationPolicySet(ctx context.Context, request *models.DeleteApplicationPolicySetRequest) (*models.DeleteApplicationPolicySetResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteApplicationPolicySet(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteApplicationPolicySetResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetApplicationPolicySet a Get request.
+func (db *DB) GetApplicationPolicySet(ctx context.Context, request *models.GetApplicationPolicySetRequest) (response *models.GetApplicationPolicySetResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListApplicationPolicySetRequest{
+		Spec: spec,
+	}
+	var result *models.ListApplicationPolicySetResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listApplicationPolicySet(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ApplicationPolicySets) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetApplicationPolicySetResponse{
+		ApplicationPolicySet: result.ApplicationPolicySets[0],
+	}
+	return response, nil
+}
+
+//ListApplicationPolicySet handles a List service Request.
+func (db *DB) ListApplicationPolicySet(
+	ctx context.Context,
+	request *models.ListApplicationPolicySetRequest) (response *models.ListApplicationPolicySetResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listApplicationPolicySet(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

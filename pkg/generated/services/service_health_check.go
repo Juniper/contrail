@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateServiceHealthCheck(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateServiceHealthCheck(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "service_health_check",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateServiceHealthCheckResponse{
-		ServiceHealthCheck: request.ServiceHealthCheck,
-	}, nil
+
+	return service.Next().CreateServiceHealthCheck(ctx, request)
 }
 
 //RESTUpdateServiceHealthCheck handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateServiceHealthCheck(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateServiceHealthCheck(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "service_health_check",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateServiceHealthCheckResponse{
-		ServiceHealthCheck: model,
-	}, nil
+	return service.Next().UpdateServiceHealthCheck(ctx, request)
 }
 
 //RESTDeleteServiceHealthCheck delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteServiceHealthCheck(c echo.Context) err
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteServiceHealthCheck delete a resource.
-func (service *ContrailService) DeleteServiceHealthCheck(ctx context.Context, request *models.DeleteServiceHealthCheckRequest) (*models.DeleteServiceHealthCheckResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteServiceHealthCheck(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteServiceHealthCheckResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetServiceHealthCheck a REST Get request.
 func (service *ContrailService) RESTGetServiceHealthCheck(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetServiceHealthCheck(c echo.Context) error 
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetServiceHealthCheck a Get request.
-func (service *ContrailService) GetServiceHealthCheck(ctx context.Context, request *models.GetServiceHealthCheckRequest) (response *models.GetServiceHealthCheckResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListServiceHealthCheckRequest{
-		Spec: spec,
-	}
-	var result *models.ListServiceHealthCheckResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListServiceHealthCheck(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.ServiceHealthChecks) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetServiceHealthCheckResponse{
-		ServiceHealthCheck: result.ServiceHealthChecks[0],
-	}
-	return response, nil
 }
 
 //RESTListServiceHealthCheck handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListServiceHealthCheck(c echo.Context) error
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListServiceHealthCheck handles a List service Request.
-func (service *ContrailService) ListServiceHealthCheck(
-	ctx context.Context,
-	request *models.ListServiceHealthCheckRequest) (response *models.ListServiceHealthCheckResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListServiceHealthCheck(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

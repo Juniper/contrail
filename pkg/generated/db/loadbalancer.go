@@ -76,17 +76,17 @@ var LoadbalancerParents = []string{
 	"project",
 }
 
+const insertLoadbalancerServiceInstanceQuery = "insert into `ref_loadbalancer_service_instance` (`from`, `to` ) values (?, ?);"
+
 const insertLoadbalancerServiceApplianceSetQuery = "insert into `ref_loadbalancer_service_appliance_set` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerVirtualMachineInterfaceQuery = "insert into `ref_loadbalancer_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
-const insertLoadbalancerServiceInstanceQuery = "insert into `ref_loadbalancer_service_instance` (`from`, `to` ) values (?, ?);"
-
 // CreateLoadbalancer inserts Loadbalancer to DB
-func CreateLoadbalancer(
+func (db *DB) createLoadbalancer(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateLoadbalancerRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.Loadbalancer
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertLoadbalancerQuery)
@@ -130,6 +130,19 @@ func CreateLoadbalancer(
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtServiceInstanceRef, err := tx.Prepare(insertLoadbalancerServiceInstanceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceInstanceRefs create statement failed")
+	}
+	defer stmtServiceInstanceRef.Close()
+	for _, ref := range model.ServiceInstanceRefs {
+
+		_, err = stmtServiceInstanceRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceInstanceRefs create failed")
+		}
+	}
+
 	stmtServiceApplianceSetRef, err := tx.Prepare(insertLoadbalancerServiceApplianceSetQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ServiceApplianceSetRefs create statement failed")
@@ -153,19 +166,6 @@ func CreateLoadbalancer(
 		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
-	stmtServiceInstanceRef, err := tx.Prepare(insertLoadbalancerServiceInstanceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceInstanceRefs create statement failed")
-	}
-	defer stmtServiceInstanceRef.Close()
-	for _, ref := range model.ServiceInstanceRefs {
-
-		_, err = stmtServiceInstanceRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceInstanceRefs create failed")
 		}
 	}
 
@@ -423,8 +423,9 @@ func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, erro
 }
 
 // ListLoadbalancer lists Loadbalancer with list spec.
-func ListLoadbalancer(ctx context.Context, tx *sql.Tx, request *models.ListLoadbalancerRequest) (response *models.ListLoadbalancerResponse, err error) {
+func (db *DB) listLoadbalancer(ctx context.Context, request *models.ListLoadbalancerRequest) (response *models.ListLoadbalancerResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -486,9 +487,8 @@ func ListLoadbalancer(ctx context.Context, tx *sql.Tx, request *models.ListLoadb
 }
 
 // UpdateLoadbalancer updates a resource
-func UpdateLoadbalancer(
+func (db *DB) updateLoadbalancer(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateLoadbalancerRequest,
 ) error {
 	//TODO
@@ -496,15 +496,15 @@ func UpdateLoadbalancer(
 }
 
 // DeleteLoadbalancer deletes a resource
-func DeleteLoadbalancer(
+func (db *DB) deleteLoadbalancer(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteLoadbalancerRequest) error {
 	deleteQuery := deleteLoadbalancerQuery
 	selectQuery := "select count(uuid) from loadbalancer where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -539,4 +539,119 @@ func DeleteLoadbalancer(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateLoadbalancer handle a Create API
+func (db *DB) CreateLoadbalancer(
+	ctx context.Context,
+	request *models.CreateLoadbalancerRequest) (*models.CreateLoadbalancerResponse, error) {
+	model := request.Loadbalancer
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createLoadbalancer(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "loadbalancer",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateLoadbalancerResponse{
+		Loadbalancer: request.Loadbalancer,
+	}, nil
+}
+
+//UpdateLoadbalancer handles a Update request.
+func (db *DB) UpdateLoadbalancer(
+	ctx context.Context,
+	request *models.UpdateLoadbalancerRequest) (*models.UpdateLoadbalancerResponse, error) {
+	model := request.Loadbalancer
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateLoadbalancer(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "loadbalancer",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateLoadbalancerResponse{
+		Loadbalancer: model,
+	}, nil
+}
+
+//DeleteLoadbalancer delete a resource.
+func (db *DB) DeleteLoadbalancer(ctx context.Context, request *models.DeleteLoadbalancerRequest) (*models.DeleteLoadbalancerResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteLoadbalancer(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteLoadbalancerResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetLoadbalancer a Get request.
+func (db *DB) GetLoadbalancer(ctx context.Context, request *models.GetLoadbalancerRequest) (response *models.GetLoadbalancerResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListLoadbalancerRequest{
+		Spec: spec,
+	}
+	var result *models.ListLoadbalancerResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listLoadbalancer(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.Loadbalancers) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetLoadbalancerResponse{
+		Loadbalancer: result.Loadbalancers[0],
+	}
+	return response, nil
+}
+
+//ListLoadbalancer handles a List service Request.
+func (db *DB) ListLoadbalancer(
+	ctx context.Context,
+	request *models.ListLoadbalancerRequest) (response *models.ListLoadbalancerResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listLoadbalancer(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

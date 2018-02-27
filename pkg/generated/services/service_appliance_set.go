@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateServiceApplianceSet(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateServiceApplianceSet(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "service_appliance_set",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateServiceApplianceSetResponse{
-		ServiceApplianceSet: request.ServiceApplianceSet,
-	}, nil
+
+	return service.Next().CreateServiceApplianceSet(ctx, request)
 }
 
 //RESTUpdateServiceApplianceSet handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateServiceApplianceSet(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateServiceApplianceSet(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "service_appliance_set",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateServiceApplianceSetResponse{
-		ServiceApplianceSet: model,
-	}, nil
+	return service.Next().UpdateServiceApplianceSet(ctx, request)
 }
 
 //RESTDeleteServiceApplianceSet delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteServiceApplianceSet(c echo.Context) er
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteServiceApplianceSet delete a resource.
-func (service *ContrailService) DeleteServiceApplianceSet(ctx context.Context, request *models.DeleteServiceApplianceSetRequest) (*models.DeleteServiceApplianceSetResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteServiceApplianceSet(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteServiceApplianceSetResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetServiceApplianceSet a REST Get request.
 func (service *ContrailService) RESTGetServiceApplianceSet(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetServiceApplianceSet(c echo.Context) error
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetServiceApplianceSet a Get request.
-func (service *ContrailService) GetServiceApplianceSet(ctx context.Context, request *models.GetServiceApplianceSetRequest) (response *models.GetServiceApplianceSetResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListServiceApplianceSetRequest{
-		Spec: spec,
-	}
-	var result *models.ListServiceApplianceSetResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListServiceApplianceSet(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.ServiceApplianceSets) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetServiceApplianceSetResponse{
-		ServiceApplianceSet: result.ServiceApplianceSets[0],
-	}
-	return response, nil
 }
 
 //RESTListServiceApplianceSet handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListServiceApplianceSet(c echo.Context) erro
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListServiceApplianceSet handles a List service Request.
-func (service *ContrailService) ListServiceApplianceSet(
-	ctx context.Context,
-	request *models.ListServiceApplianceSetRequest) (response *models.ListServiceApplianceSetResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListServiceApplianceSet(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

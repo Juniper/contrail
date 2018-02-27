@@ -74,10 +74,10 @@ var ServiceTemplateParents = []string{
 const insertServiceTemplateServiceApplianceSetQuery = "insert into `ref_service_template_service_appliance_set` (`from`, `to` ) values (?, ?);"
 
 // CreateServiceTemplate inserts ServiceTemplate to DB
-func CreateServiceTemplate(
+func (db *DB) createServiceTemplate(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateServiceTemplateRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ServiceTemplate
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceTemplateQuery)
@@ -383,8 +383,9 @@ func scanServiceTemplate(values map[string]interface{}) (*models.ServiceTemplate
 }
 
 // ListServiceTemplate lists ServiceTemplate with list spec.
-func ListServiceTemplate(ctx context.Context, tx *sql.Tx, request *models.ListServiceTemplateRequest) (response *models.ListServiceTemplateResponse, err error) {
+func (db *DB) listServiceTemplate(ctx context.Context, request *models.ListServiceTemplateRequest) (response *models.ListServiceTemplateResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -446,9 +447,8 @@ func ListServiceTemplate(ctx context.Context, tx *sql.Tx, request *models.ListSe
 }
 
 // UpdateServiceTemplate updates a resource
-func UpdateServiceTemplate(
+func (db *DB) updateServiceTemplate(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateServiceTemplateRequest,
 ) error {
 	//TODO
@@ -456,15 +456,15 @@ func UpdateServiceTemplate(
 }
 
 // DeleteServiceTemplate deletes a resource
-func DeleteServiceTemplate(
+func (db *DB) deleteServiceTemplate(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteServiceTemplateRequest) error {
 	deleteQuery := deleteServiceTemplateQuery
 	selectQuery := "select count(uuid) from service_template where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -499,4 +499,119 @@ func DeleteServiceTemplate(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateServiceTemplate handle a Create API
+func (db *DB) CreateServiceTemplate(
+	ctx context.Context,
+	request *models.CreateServiceTemplateRequest) (*models.CreateServiceTemplateResponse, error) {
+	model := request.ServiceTemplate
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createServiceTemplate(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_template",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateServiceTemplateResponse{
+		ServiceTemplate: request.ServiceTemplate,
+	}, nil
+}
+
+//UpdateServiceTemplate handles a Update request.
+func (db *DB) UpdateServiceTemplate(
+	ctx context.Context,
+	request *models.UpdateServiceTemplateRequest) (*models.UpdateServiceTemplateResponse, error) {
+	model := request.ServiceTemplate
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateServiceTemplate(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_template",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateServiceTemplateResponse{
+		ServiceTemplate: model,
+	}, nil
+}
+
+//DeleteServiceTemplate delete a resource.
+func (db *DB) DeleteServiceTemplate(ctx context.Context, request *models.DeleteServiceTemplateRequest) (*models.DeleteServiceTemplateResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteServiceTemplate(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteServiceTemplateResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetServiceTemplate a Get request.
+func (db *DB) GetServiceTemplate(ctx context.Context, request *models.GetServiceTemplateRequest) (response *models.GetServiceTemplateResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListServiceTemplateRequest{
+		Spec: spec,
+	}
+	var result *models.ListServiceTemplateResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listServiceTemplate(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ServiceTemplates) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetServiceTemplateResponse{
+		ServiceTemplate: result.ServiceTemplates[0],
+	}
+	return response, nil
+}
+
+//ListServiceTemplate handles a List service Request.
+func (db *DB) ListServiceTemplate(
+	ctx context.Context,
+	request *models.ListServiceTemplateRequest) (response *models.ListServiceTemplateResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listServiceTemplate(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

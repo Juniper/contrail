@@ -51,10 +51,10 @@ var BGPRouterBackRefFields = map[string][]string{}
 var BGPRouterParents = []string{}
 
 // CreateBGPRouter inserts BGPRouter to DB
-func CreateBGPRouter(
+func (db *DB) createBGPRouter(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateBGPRouterRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.BGPRouter
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertBGPRouterQuery)
@@ -243,8 +243,9 @@ func scanBGPRouter(values map[string]interface{}) (*models.BGPRouter, error) {
 }
 
 // ListBGPRouter lists BGPRouter with list spec.
-func ListBGPRouter(ctx context.Context, tx *sql.Tx, request *models.ListBGPRouterRequest) (response *models.ListBGPRouterResponse, err error) {
+func (db *DB) listBGPRouter(ctx context.Context, request *models.ListBGPRouterRequest) (response *models.ListBGPRouterResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -306,9 +307,8 @@ func ListBGPRouter(ctx context.Context, tx *sql.Tx, request *models.ListBGPRoute
 }
 
 // UpdateBGPRouter updates a resource
-func UpdateBGPRouter(
+func (db *DB) updateBGPRouter(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateBGPRouterRequest,
 ) error {
 	//TODO
@@ -316,15 +316,15 @@ func UpdateBGPRouter(
 }
 
 // DeleteBGPRouter deletes a resource
-func DeleteBGPRouter(
+func (db *DB) deleteBGPRouter(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteBGPRouterRequest) error {
 	deleteQuery := deleteBGPRouterQuery
 	selectQuery := "select count(uuid) from bgp_router where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -359,4 +359,119 @@ func DeleteBGPRouter(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateBGPRouter handle a Create API
+func (db *DB) CreateBGPRouter(
+	ctx context.Context,
+	request *models.CreateBGPRouterRequest) (*models.CreateBGPRouterResponse, error) {
+	model := request.BGPRouter
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createBGPRouter(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "bgp_router",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateBGPRouterResponse{
+		BGPRouter: request.BGPRouter,
+	}, nil
+}
+
+//UpdateBGPRouter handles a Update request.
+func (db *DB) UpdateBGPRouter(
+	ctx context.Context,
+	request *models.UpdateBGPRouterRequest) (*models.UpdateBGPRouterResponse, error) {
+	model := request.BGPRouter
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateBGPRouter(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "bgp_router",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateBGPRouterResponse{
+		BGPRouter: model,
+	}, nil
+}
+
+//DeleteBGPRouter delete a resource.
+func (db *DB) DeleteBGPRouter(ctx context.Context, request *models.DeleteBGPRouterRequest) (*models.DeleteBGPRouterResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteBGPRouter(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteBGPRouterResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetBGPRouter a Get request.
+func (db *DB) GetBGPRouter(ctx context.Context, request *models.GetBGPRouterRequest) (response *models.GetBGPRouterResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListBGPRouterRequest{
+		Spec: spec,
+	}
+	var result *models.ListBGPRouterResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listBGPRouter(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.BGPRouters) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetBGPRouterResponse{
+		BGPRouter: result.BGPRouters[0],
+	}
+	return response, nil
+}
+
+//ListBGPRouter handles a List service Request.
+func (db *DB) ListBGPRouter(
+	ctx context.Context,
+	request *models.ListBGPRouterRequest) (response *models.ListBGPRouterResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listBGPRouter(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

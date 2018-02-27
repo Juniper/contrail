@@ -73,10 +73,10 @@ const insertSecurityLoggingObjectSecurityGroupQuery = "insert into `ref_security
 const insertSecurityLoggingObjectNetworkPolicyQuery = "insert into `ref_security_logging_object_network_policy` (`from`, `to` ,`rule`) values (?, ?,?);"
 
 // CreateSecurityLoggingObject inserts SecurityLoggingObject to DB
-func CreateSecurityLoggingObject(
+func (db *DB) createSecurityLoggingObject(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateSecurityLoggingObjectRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.SecurityLoggingObject
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertSecurityLoggingObjectQuery)
@@ -115,23 +115,6 @@ func CreateSecurityLoggingObject(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtNetworkPolicyRef, err := tx.Prepare(insertSecurityLoggingObjectNetworkPolicyQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing NetworkPolicyRefs create statement failed")
-	}
-	defer stmtNetworkPolicyRef.Close()
-	for _, ref := range model.NetworkPolicyRefs {
-
-		if ref.Attr == nil {
-			ref.Attr = &models.SecurityLoggingObjectRuleListType{}
-		}
-
-		_, err = stmtNetworkPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetRule()))
-		if err != nil {
-			return errors.Wrap(err, "NetworkPolicyRefs create failed")
-		}
-	}
-
 	stmtSecurityGroupRef, err := tx.Prepare(insertSecurityLoggingObjectSecurityGroupQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing SecurityGroupRefs create statement failed")
@@ -146,6 +129,23 @@ func CreateSecurityLoggingObject(
 		_, err = stmtSecurityGroupRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetRule()))
 		if err != nil {
 			return errors.Wrap(err, "SecurityGroupRefs create failed")
+		}
+	}
+
+	stmtNetworkPolicyRef, err := tx.Prepare(insertSecurityLoggingObjectNetworkPolicyQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing NetworkPolicyRefs create statement failed")
+	}
+	defer stmtNetworkPolicyRef.Close()
+	for _, ref := range model.NetworkPolicyRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = &models.SecurityLoggingObjectRuleListType{}
+		}
+
+		_, err = stmtNetworkPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetRule()))
+		if err != nil {
+			return errors.Wrap(err, "NetworkPolicyRefs create failed")
 		}
 	}
 
@@ -359,8 +359,9 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 }
 
 // ListSecurityLoggingObject lists SecurityLoggingObject with list spec.
-func ListSecurityLoggingObject(ctx context.Context, tx *sql.Tx, request *models.ListSecurityLoggingObjectRequest) (response *models.ListSecurityLoggingObjectResponse, err error) {
+func (db *DB) listSecurityLoggingObject(ctx context.Context, request *models.ListSecurityLoggingObjectRequest) (response *models.ListSecurityLoggingObjectResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -422,9 +423,8 @@ func ListSecurityLoggingObject(ctx context.Context, tx *sql.Tx, request *models.
 }
 
 // UpdateSecurityLoggingObject updates a resource
-func UpdateSecurityLoggingObject(
+func (db *DB) updateSecurityLoggingObject(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateSecurityLoggingObjectRequest,
 ) error {
 	//TODO
@@ -432,15 +432,15 @@ func UpdateSecurityLoggingObject(
 }
 
 // DeleteSecurityLoggingObject deletes a resource
-func DeleteSecurityLoggingObject(
+func (db *DB) deleteSecurityLoggingObject(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteSecurityLoggingObjectRequest) error {
 	deleteQuery := deleteSecurityLoggingObjectQuery
 	selectQuery := "select count(uuid) from security_logging_object where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -475,4 +475,119 @@ func DeleteSecurityLoggingObject(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateSecurityLoggingObject handle a Create API
+func (db *DB) CreateSecurityLoggingObject(
+	ctx context.Context,
+	request *models.CreateSecurityLoggingObjectRequest) (*models.CreateSecurityLoggingObjectResponse, error) {
+	model := request.SecurityLoggingObject
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createSecurityLoggingObject(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "security_logging_object",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateSecurityLoggingObjectResponse{
+		SecurityLoggingObject: request.SecurityLoggingObject,
+	}, nil
+}
+
+//UpdateSecurityLoggingObject handles a Update request.
+func (db *DB) UpdateSecurityLoggingObject(
+	ctx context.Context,
+	request *models.UpdateSecurityLoggingObjectRequest) (*models.UpdateSecurityLoggingObjectResponse, error) {
+	model := request.SecurityLoggingObject
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateSecurityLoggingObject(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "security_logging_object",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateSecurityLoggingObjectResponse{
+		SecurityLoggingObject: model,
+	}, nil
+}
+
+//DeleteSecurityLoggingObject delete a resource.
+func (db *DB) DeleteSecurityLoggingObject(ctx context.Context, request *models.DeleteSecurityLoggingObjectRequest) (*models.DeleteSecurityLoggingObjectResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteSecurityLoggingObject(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteSecurityLoggingObjectResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetSecurityLoggingObject a Get request.
+func (db *DB) GetSecurityLoggingObject(ctx context.Context, request *models.GetSecurityLoggingObjectRequest) (response *models.GetSecurityLoggingObjectResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListSecurityLoggingObjectRequest{
+		Spec: spec,
+	}
+	var result *models.ListSecurityLoggingObjectResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listSecurityLoggingObject(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.SecurityLoggingObjects) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetSecurityLoggingObjectResponse{
+		SecurityLoggingObject: result.SecurityLoggingObjects[0],
+	}
+	return response, nil
+}
+
+//ListSecurityLoggingObject handles a List service Request.
+func (db *DB) ListSecurityLoggingObject(
+	ctx context.Context,
+	request *models.ListSecurityLoggingObjectRequest) (response *models.ListSecurityLoggingObjectResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listSecurityLoggingObject(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

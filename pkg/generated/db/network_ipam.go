@@ -72,10 +72,10 @@ var NetworkIpamParents = []string{
 const insertNetworkIpamVirtualDNSQuery = "insert into `ref_network_ipam_virtual_DNS` (`from`, `to` ) values (?, ?);"
 
 // CreateNetworkIpam inserts NetworkIpam to DB
-func CreateNetworkIpam(
+func (db *DB) createNetworkIpam(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateNetworkIpamRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.NetworkIpam
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertNetworkIpamQuery)
@@ -367,8 +367,9 @@ func scanNetworkIpam(values map[string]interface{}) (*models.NetworkIpam, error)
 }
 
 // ListNetworkIpam lists NetworkIpam with list spec.
-func ListNetworkIpam(ctx context.Context, tx *sql.Tx, request *models.ListNetworkIpamRequest) (response *models.ListNetworkIpamResponse, err error) {
+func (db *DB) listNetworkIpam(ctx context.Context, request *models.ListNetworkIpamRequest) (response *models.ListNetworkIpamResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -430,9 +431,8 @@ func ListNetworkIpam(ctx context.Context, tx *sql.Tx, request *models.ListNetwor
 }
 
 // UpdateNetworkIpam updates a resource
-func UpdateNetworkIpam(
+func (db *DB) updateNetworkIpam(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateNetworkIpamRequest,
 ) error {
 	//TODO
@@ -440,15 +440,15 @@ func UpdateNetworkIpam(
 }
 
 // DeleteNetworkIpam deletes a resource
-func DeleteNetworkIpam(
+func (db *DB) deleteNetworkIpam(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteNetworkIpamRequest) error {
 	deleteQuery := deleteNetworkIpamQuery
 	selectQuery := "select count(uuid) from network_ipam where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -483,4 +483,119 @@ func DeleteNetworkIpam(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateNetworkIpam handle a Create API
+func (db *DB) CreateNetworkIpam(
+	ctx context.Context,
+	request *models.CreateNetworkIpamRequest) (*models.CreateNetworkIpamResponse, error) {
+	model := request.NetworkIpam
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createNetworkIpam(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "network_ipam",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateNetworkIpamResponse{
+		NetworkIpam: request.NetworkIpam,
+	}, nil
+}
+
+//UpdateNetworkIpam handles a Update request.
+func (db *DB) UpdateNetworkIpam(
+	ctx context.Context,
+	request *models.UpdateNetworkIpamRequest) (*models.UpdateNetworkIpamResponse, error) {
+	model := request.NetworkIpam
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateNetworkIpam(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "network_ipam",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateNetworkIpamResponse{
+		NetworkIpam: model,
+	}, nil
+}
+
+//DeleteNetworkIpam delete a resource.
+func (db *DB) DeleteNetworkIpam(ctx context.Context, request *models.DeleteNetworkIpamRequest) (*models.DeleteNetworkIpamResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteNetworkIpam(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteNetworkIpamResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetNetworkIpam a Get request.
+func (db *DB) GetNetworkIpam(ctx context.Context, request *models.GetNetworkIpamRequest) (response *models.GetNetworkIpamResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListNetworkIpamRequest{
+		Spec: spec,
+	}
+	var result *models.ListNetworkIpamResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listNetworkIpam(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.NetworkIpams) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetNetworkIpamResponse{
+		NetworkIpam: result.NetworkIpams[0],
+	}
+	return response, nil
+}
+
+//ListNetworkIpam handles a List service Request.
+func (db *DB) ListNetworkIpam(
+	ctx context.Context,
+	request *models.ListNetworkIpamRequest) (response *models.ListNetworkIpamResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listNetworkIpam(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

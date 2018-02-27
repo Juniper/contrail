@@ -67,10 +67,10 @@ var ContrailAnalyticsDatabaseNodeParents = []string{
 const insertContrailAnalyticsDatabaseNodeNodeQuery = "insert into `ref_contrail_analytics_database_node_node` (`from`, `to` ) values (?, ?);"
 
 // CreateContrailAnalyticsDatabaseNode inserts ContrailAnalyticsDatabaseNode to DB
-func CreateContrailAnalyticsDatabaseNode(
+func (db *DB) createContrailAnalyticsDatabaseNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateContrailAnalyticsDatabaseNodeRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ContrailAnalyticsDatabaseNode
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertContrailAnalyticsDatabaseNodeQuery)
@@ -327,8 +327,9 @@ func scanContrailAnalyticsDatabaseNode(values map[string]interface{}) (*models.C
 }
 
 // ListContrailAnalyticsDatabaseNode lists ContrailAnalyticsDatabaseNode with list spec.
-func ListContrailAnalyticsDatabaseNode(ctx context.Context, tx *sql.Tx, request *models.ListContrailAnalyticsDatabaseNodeRequest) (response *models.ListContrailAnalyticsDatabaseNodeResponse, err error) {
+func (db *DB) listContrailAnalyticsDatabaseNode(ctx context.Context, request *models.ListContrailAnalyticsDatabaseNodeRequest) (response *models.ListContrailAnalyticsDatabaseNodeResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -390,9 +391,8 @@ func ListContrailAnalyticsDatabaseNode(ctx context.Context, tx *sql.Tx, request 
 }
 
 // UpdateContrailAnalyticsDatabaseNode updates a resource
-func UpdateContrailAnalyticsDatabaseNode(
+func (db *DB) updateContrailAnalyticsDatabaseNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateContrailAnalyticsDatabaseNodeRequest,
 ) error {
 	//TODO
@@ -400,15 +400,15 @@ func UpdateContrailAnalyticsDatabaseNode(
 }
 
 // DeleteContrailAnalyticsDatabaseNode deletes a resource
-func DeleteContrailAnalyticsDatabaseNode(
+func (db *DB) deleteContrailAnalyticsDatabaseNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteContrailAnalyticsDatabaseNodeRequest) error {
 	deleteQuery := deleteContrailAnalyticsDatabaseNodeQuery
 	selectQuery := "select count(uuid) from contrail_analytics_database_node where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -443,4 +443,119 @@ func DeleteContrailAnalyticsDatabaseNode(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateContrailAnalyticsDatabaseNode handle a Create API
+func (db *DB) CreateContrailAnalyticsDatabaseNode(
+	ctx context.Context,
+	request *models.CreateContrailAnalyticsDatabaseNodeRequest) (*models.CreateContrailAnalyticsDatabaseNodeResponse, error) {
+	model := request.ContrailAnalyticsDatabaseNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createContrailAnalyticsDatabaseNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "contrail_analytics_database_node",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateContrailAnalyticsDatabaseNodeResponse{
+		ContrailAnalyticsDatabaseNode: request.ContrailAnalyticsDatabaseNode,
+	}, nil
+}
+
+//UpdateContrailAnalyticsDatabaseNode handles a Update request.
+func (db *DB) UpdateContrailAnalyticsDatabaseNode(
+	ctx context.Context,
+	request *models.UpdateContrailAnalyticsDatabaseNodeRequest) (*models.UpdateContrailAnalyticsDatabaseNodeResponse, error) {
+	model := request.ContrailAnalyticsDatabaseNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateContrailAnalyticsDatabaseNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "contrail_analytics_database_node",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateContrailAnalyticsDatabaseNodeResponse{
+		ContrailAnalyticsDatabaseNode: model,
+	}, nil
+}
+
+//DeleteContrailAnalyticsDatabaseNode delete a resource.
+func (db *DB) DeleteContrailAnalyticsDatabaseNode(ctx context.Context, request *models.DeleteContrailAnalyticsDatabaseNodeRequest) (*models.DeleteContrailAnalyticsDatabaseNodeResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteContrailAnalyticsDatabaseNode(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteContrailAnalyticsDatabaseNodeResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetContrailAnalyticsDatabaseNode a Get request.
+func (db *DB) GetContrailAnalyticsDatabaseNode(ctx context.Context, request *models.GetContrailAnalyticsDatabaseNodeRequest) (response *models.GetContrailAnalyticsDatabaseNodeResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListContrailAnalyticsDatabaseNodeRequest{
+		Spec: spec,
+	}
+	var result *models.ListContrailAnalyticsDatabaseNodeResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listContrailAnalyticsDatabaseNode(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ContrailAnalyticsDatabaseNodes) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetContrailAnalyticsDatabaseNodeResponse{
+		ContrailAnalyticsDatabaseNode: result.ContrailAnalyticsDatabaseNodes[0],
+	}
+	return response, nil
+}
+
+//ListContrailAnalyticsDatabaseNode handles a List service Request.
+func (db *DB) ListContrailAnalyticsDatabaseNode(
+	ctx context.Context,
+	request *models.ListContrailAnalyticsDatabaseNodeRequest) (response *models.ListContrailAnalyticsDatabaseNodeResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listContrailAnalyticsDatabaseNode(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

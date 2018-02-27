@@ -2,8 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,13 +15,15 @@ var _ = errors.New("")
 
 func TestSecurityGroup(t *testing.T) {
 	// t.Parallel()
-	db := testDB
+	db := &DB{
+		DB: testDB,
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db, "metadata")
-	mutexTable := common.UseTable(db, "security_group")
-	// mutexProject := common.UseTable(db, "security_group")
+	mutexMetadata := common.UseTable(db.DB, "metadata")
+	mutexTable := common.UseTable(db.DB, "security_group")
+	// mutexProject := common.UseTable(db.DB, "security_group")
 	defer func() {
 		mutexTable.Unlock()
 		mutexMetadata.Unlock()
@@ -47,10 +47,9 @@ func TestSecurityGroup(t *testing.T) {
 	var createShare []*models.ShareType
 	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
 	model.Perms2.Share = createShare
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx, &models.CreateProjectRequest{
-			Project: projectModel,
-		})
+
+	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
+		Project: projectModel,
 	})
 	if err != nil {
 		t.Fatal("project create failed", err)
@@ -186,12 +185,11 @@ func TestSecurityGroup(t *testing.T) {
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
 	//
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateSecurityGroup(ctx, tx,
-			&models.CreateSecurityGroupRequest{
-				SecurityGroup: model,
-			})
-	})
+	_, err = db.CreateSecurityGroup(ctx,
+		&models.CreateSecurityGroupRequest{
+			SecurityGroup: model,
+		})
+
 	if err != nil {
 		t.Fatal("create failed", err)
 	}
@@ -206,71 +204,51 @@ func TestSecurityGroup(t *testing.T) {
 	//Delete ref entries, referred objects
 
 	//Delete the project created for sharing
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteProject(ctx, tx, &models.DeleteProjectRequest{
-			ID: projectModel.UUID})
-	})
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
 	if err != nil {
 		t.Fatal("delete project failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListSecurityGroup(ctx, tx, &models.ListSecurityGroupRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.SecurityGroups) != 1 {
-			return fmt.Errorf("expected one element")
-		}
-		return nil
-	})
+	response, err := db.ListSecurityGroup(ctx, &models.ListSecurityGroupRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
+	if len(response.SecurityGroups) != 1 {
+		t.Fatal("expected one element", err)
+	}
 
 	ctxDemo := context.WithValue(ctx, "auth", common.NewAuthContext("default", "demo", "demo", []string{}))
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteSecurityGroup(ctxDemo, tx,
-			&models.DeleteSecurityGroupRequest{
-				ID: model.UUID},
-		)
-	})
+	_, err = db.DeleteSecurityGroup(ctxDemo,
+		&models.DeleteSecurityGroupRequest{
+			ID: model.UUID},
+	)
 	if err == nil {
 		t.Fatal("auth failed")
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteSecurityGroup(ctx, tx,
-			&models.DeleteSecurityGroupRequest{
-				ID: model.UUID})
-	})
-	if err != nil {
-		t.Fatal("delete failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateSecurityGroup(ctx, tx,
-			&models.CreateSecurityGroupRequest{
-				SecurityGroup: model})
-	})
+	_, err = db.CreateSecurityGroup(ctx,
+		&models.CreateSecurityGroupRequest{
+			SecurityGroup: model})
 	if err == nil {
 		t.Fatal("Raise Error On Duplicate Create failed", err)
 	}
 
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		response, err := ListSecurityGroup(ctx, tx, &models.ListSecurityGroupRequest{
-			Spec: &models.ListSpec{Limit: 1}})
-		if err != nil {
-			return err
-		}
-		if len(response.SecurityGroups) != 0 {
-			return fmt.Errorf("expected no element")
-		}
-		return nil
-	})
+	_, err = db.DeleteSecurityGroup(ctx,
+		&models.DeleteSecurityGroupRequest{
+			ID: model.UUID})
+	if err != nil {
+		t.Fatal("delete failed", err)
+	}
+
+	response, err = db.ListSecurityGroup(ctx, &models.ListSecurityGroupRequest{
+		Spec: &models.ListSpec{Limit: 1}})
 	if err != nil {
 		t.Fatal("list failed", err)
+	}
+	if len(response.SecurityGroups) != 0 {
+		t.Fatal("expected no element", err)
 	}
 	return
 }

@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateLocation(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateLocation(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "location",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateLocationResponse{
-		Location: request.Location,
-	}, nil
+
+	return service.Next().CreateLocation(ctx, request)
 }
 
 //RESTUpdateLocation handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateLocation(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateLocation(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "location",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateLocationResponse{
-		Location: model,
-	}, nil
+	return service.Next().UpdateLocation(ctx, request)
 }
 
 //RESTDeleteLocation delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteLocation(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteLocation delete a resource.
-func (service *ContrailService) DeleteLocation(ctx context.Context, request *models.DeleteLocationRequest) (*models.DeleteLocationResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteLocation(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteLocationResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetLocation a REST Get request.
 func (service *ContrailService) RESTGetLocation(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetLocation(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetLocation a Get request.
-func (service *ContrailService) GetLocation(ctx context.Context, request *models.GetLocationRequest) (response *models.GetLocationResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListLocationRequest{
-		Spec: spec,
-	}
-	var result *models.ListLocationResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListLocation(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.Locations) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetLocationResponse{
-		Location: result.Locations[0],
-	}
-	return response, nil
 }
 
 //RESTListLocation handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListLocation(c echo.Context) error {
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListLocation handles a List service Request.
-func (service *ContrailService) ListLocation(
-	ctx context.Context,
-	request *models.ListLocationRequest) (response *models.ListLocationResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListLocation(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

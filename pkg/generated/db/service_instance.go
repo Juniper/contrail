@@ -107,10 +107,10 @@ const insertServiceInstanceServiceTemplateQuery = "insert into `ref_service_inst
 const insertServiceInstanceInstanceIPQuery = "insert into `ref_service_instance_instance_ip` (`from`, `to` ,`interface_type`) values (?, ?,?);"
 
 // CreateServiceInstance inserts ServiceInstance to DB
-func CreateServiceInstance(
+func (db *DB) createServiceInstance(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateServiceInstanceRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ServiceInstance
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceInstanceQuery)
@@ -160,6 +160,19 @@ func CreateServiceInstance(
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtServiceTemplateRef, err := tx.Prepare(insertServiceInstanceServiceTemplateQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceTemplateRefs create statement failed")
+	}
+	defer stmtServiceTemplateRef.Close()
+	for _, ref := range model.ServiceTemplateRefs {
+
+		_, err = stmtServiceTemplateRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceTemplateRefs create failed")
+		}
+	}
+
 	stmtInstanceIPRef, err := tx.Prepare(insertServiceInstanceInstanceIPQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing InstanceIPRefs create statement failed")
@@ -174,19 +187,6 @@ func CreateServiceInstance(
 		_, err = stmtInstanceIPRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.GetInterfaceType()))
 		if err != nil {
 			return errors.Wrap(err, "InstanceIPRefs create failed")
-		}
-	}
-
-	stmtServiceTemplateRef, err := tx.Prepare(insertServiceInstanceServiceTemplateQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceTemplateRefs create statement failed")
-	}
-	defer stmtServiceTemplateRef.Close()
-	for _, ref := range model.ServiceTemplateRefs {
-
-		_, err = stmtServiceTemplateRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceTemplateRefs create failed")
 		}
 	}
 
@@ -416,6 +416,26 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 
 	}
 
+	if value, ok := values["ref_service_template"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ServiceInstanceServiceTemplateRef{}
+			referenceModel.UUID = uuid
+			m.ServiceTemplateRefs = append(m.ServiceTemplateRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_instance_ip"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -435,26 +455,6 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 
 			attr := models.MakeServiceInterfaceTag()
 			referenceModel.Attr = attr
-
-		}
-	}
-
-	if value, ok := values["ref_service_template"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ServiceInstanceServiceTemplateRef{}
-			referenceModel.UUID = uuid
-			m.ServiceTemplateRefs = append(m.ServiceTemplateRefs, referenceModel)
 
 		}
 	}
@@ -608,8 +608,9 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 }
 
 // ListServiceInstance lists ServiceInstance with list spec.
-func ListServiceInstance(ctx context.Context, tx *sql.Tx, request *models.ListServiceInstanceRequest) (response *models.ListServiceInstanceResponse, err error) {
+func (db *DB) listServiceInstance(ctx context.Context, request *models.ListServiceInstanceRequest) (response *models.ListServiceInstanceResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -671,9 +672,8 @@ func ListServiceInstance(ctx context.Context, tx *sql.Tx, request *models.ListSe
 }
 
 // UpdateServiceInstance updates a resource
-func UpdateServiceInstance(
+func (db *DB) updateServiceInstance(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateServiceInstanceRequest,
 ) error {
 	//TODO
@@ -681,15 +681,15 @@ func UpdateServiceInstance(
 }
 
 // DeleteServiceInstance deletes a resource
-func DeleteServiceInstance(
+func (db *DB) deleteServiceInstance(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteServiceInstanceRequest) error {
 	deleteQuery := deleteServiceInstanceQuery
 	selectQuery := "select count(uuid) from service_instance where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -724,4 +724,119 @@ func DeleteServiceInstance(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateServiceInstance handle a Create API
+func (db *DB) CreateServiceInstance(
+	ctx context.Context,
+	request *models.CreateServiceInstanceRequest) (*models.CreateServiceInstanceResponse, error) {
+	model := request.ServiceInstance
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createServiceInstance(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_instance",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateServiceInstanceResponse{
+		ServiceInstance: request.ServiceInstance,
+	}, nil
+}
+
+//UpdateServiceInstance handles a Update request.
+func (db *DB) UpdateServiceInstance(
+	ctx context.Context,
+	request *models.UpdateServiceInstanceRequest) (*models.UpdateServiceInstanceResponse, error) {
+	model := request.ServiceInstance
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateServiceInstance(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_instance",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateServiceInstanceResponse{
+		ServiceInstance: model,
+	}, nil
+}
+
+//DeleteServiceInstance delete a resource.
+func (db *DB) DeleteServiceInstance(ctx context.Context, request *models.DeleteServiceInstanceRequest) (*models.DeleteServiceInstanceResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteServiceInstance(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteServiceInstanceResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetServiceInstance a Get request.
+func (db *DB) GetServiceInstance(ctx context.Context, request *models.GetServiceInstanceRequest) (response *models.GetServiceInstanceResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListServiceInstanceRequest{
+		Spec: spec,
+	}
+	var result *models.ListServiceInstanceResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listServiceInstance(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ServiceInstances) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetServiceInstanceResponse{
+		ServiceInstance: result.ServiceInstances[0],
+	}
+	return response, nil
+}
+
+//ListServiceInstance handles a List service Request.
+func (db *DB) ListServiceInstance(
+	ctx context.Context,
+	request *models.ListServiceInstanceRequest) (response *models.ListServiceInstanceResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listServiceInstance(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

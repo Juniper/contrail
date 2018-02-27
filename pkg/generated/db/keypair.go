@@ -53,10 +53,10 @@ var KeypairBackRefFields = map[string][]string{}
 var KeypairParents = []string{}
 
 // CreateKeypair inserts Keypair to DB
-func CreateKeypair(
+func (db *DB) createKeypair(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateKeypairRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.Keypair
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertKeypairQuery)
@@ -259,8 +259,9 @@ func scanKeypair(values map[string]interface{}) (*models.Keypair, error) {
 }
 
 // ListKeypair lists Keypair with list spec.
-func ListKeypair(ctx context.Context, tx *sql.Tx, request *models.ListKeypairRequest) (response *models.ListKeypairResponse, err error) {
+func (db *DB) listKeypair(ctx context.Context, request *models.ListKeypairRequest) (response *models.ListKeypairResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -322,9 +323,8 @@ func ListKeypair(ctx context.Context, tx *sql.Tx, request *models.ListKeypairReq
 }
 
 // UpdateKeypair updates a resource
-func UpdateKeypair(
+func (db *DB) updateKeypair(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateKeypairRequest,
 ) error {
 	//TODO
@@ -332,15 +332,15 @@ func UpdateKeypair(
 }
 
 // DeleteKeypair deletes a resource
-func DeleteKeypair(
+func (db *DB) deleteKeypair(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteKeypairRequest) error {
 	deleteQuery := deleteKeypairQuery
 	selectQuery := "select count(uuid) from keypair where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -375,4 +375,119 @@ func DeleteKeypair(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateKeypair handle a Create API
+func (db *DB) CreateKeypair(
+	ctx context.Context,
+	request *models.CreateKeypairRequest) (*models.CreateKeypairResponse, error) {
+	model := request.Keypair
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createKeypair(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "keypair",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateKeypairResponse{
+		Keypair: request.Keypair,
+	}, nil
+}
+
+//UpdateKeypair handles a Update request.
+func (db *DB) UpdateKeypair(
+	ctx context.Context,
+	request *models.UpdateKeypairRequest) (*models.UpdateKeypairResponse, error) {
+	model := request.Keypair
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateKeypair(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "keypair",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateKeypairResponse{
+		Keypair: model,
+	}, nil
+}
+
+//DeleteKeypair delete a resource.
+func (db *DB) DeleteKeypair(ctx context.Context, request *models.DeleteKeypairRequest) (*models.DeleteKeypairResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteKeypair(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteKeypairResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetKeypair a Get request.
+func (db *DB) GetKeypair(ctx context.Context, request *models.GetKeypairRequest) (response *models.GetKeypairResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListKeypairRequest{
+		Spec: spec,
+	}
+	var result *models.ListKeypairResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listKeypair(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.Keypairs) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetKeypairResponse{
+		Keypair: result.Keypairs[0],
+	}
+	return response, nil
+}
+
+//ListKeypair handles a List service Request.
+func (db *DB) ListKeypair(
+	ctx context.Context,
+	request *models.ListKeypairRequest) (response *models.ListKeypairResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listKeypair(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

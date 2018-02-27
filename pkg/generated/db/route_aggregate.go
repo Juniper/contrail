@@ -62,10 +62,10 @@ var RouteAggregateParents = []string{
 const insertRouteAggregateServiceInstanceQuery = "insert into `ref_route_aggregate_service_instance` (`from`, `to` ,`interface_type`) values (?, ?,?);"
 
 // CreateRouteAggregate inserts RouteAggregate to DB
-func CreateRouteAggregate(
+func (db *DB) createRouteAggregate(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateRouteAggregateRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.RouteAggregate
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertRouteAggregateQuery)
@@ -294,8 +294,9 @@ func scanRouteAggregate(values map[string]interface{}) (*models.RouteAggregate, 
 }
 
 // ListRouteAggregate lists RouteAggregate with list spec.
-func ListRouteAggregate(ctx context.Context, tx *sql.Tx, request *models.ListRouteAggregateRequest) (response *models.ListRouteAggregateResponse, err error) {
+func (db *DB) listRouteAggregate(ctx context.Context, request *models.ListRouteAggregateRequest) (response *models.ListRouteAggregateResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -357,9 +358,8 @@ func ListRouteAggregate(ctx context.Context, tx *sql.Tx, request *models.ListRou
 }
 
 // UpdateRouteAggregate updates a resource
-func UpdateRouteAggregate(
+func (db *DB) updateRouteAggregate(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateRouteAggregateRequest,
 ) error {
 	//TODO
@@ -367,15 +367,15 @@ func UpdateRouteAggregate(
 }
 
 // DeleteRouteAggregate deletes a resource
-func DeleteRouteAggregate(
+func (db *DB) deleteRouteAggregate(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteRouteAggregateRequest) error {
 	deleteQuery := deleteRouteAggregateQuery
 	selectQuery := "select count(uuid) from route_aggregate where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -410,4 +410,119 @@ func DeleteRouteAggregate(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateRouteAggregate handle a Create API
+func (db *DB) CreateRouteAggregate(
+	ctx context.Context,
+	request *models.CreateRouteAggregateRequest) (*models.CreateRouteAggregateResponse, error) {
+	model := request.RouteAggregate
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createRouteAggregate(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "route_aggregate",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateRouteAggregateResponse{
+		RouteAggregate: request.RouteAggregate,
+	}, nil
+}
+
+//UpdateRouteAggregate handles a Update request.
+func (db *DB) UpdateRouteAggregate(
+	ctx context.Context,
+	request *models.UpdateRouteAggregateRequest) (*models.UpdateRouteAggregateResponse, error) {
+	model := request.RouteAggregate
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateRouteAggregate(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "route_aggregate",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateRouteAggregateResponse{
+		RouteAggregate: model,
+	}, nil
+}
+
+//DeleteRouteAggregate delete a resource.
+func (db *DB) DeleteRouteAggregate(ctx context.Context, request *models.DeleteRouteAggregateRequest) (*models.DeleteRouteAggregateResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteRouteAggregate(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteRouteAggregateResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetRouteAggregate a Get request.
+func (db *DB) GetRouteAggregate(ctx context.Context, request *models.GetRouteAggregateRequest) (response *models.GetRouteAggregateResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListRouteAggregateRequest{
+		Spec: spec,
+	}
+	var result *models.ListRouteAggregateResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listRouteAggregate(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.RouteAggregates) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetRouteAggregateResponse{
+		RouteAggregate: result.RouteAggregates[0],
+	}
+	return response, nil
+}
+
+//ListRouteAggregate handles a List service Request.
+func (db *DB) ListRouteAggregate(
+	ctx context.Context,
+	request *models.ListRouteAggregateRequest) (response *models.ListRouteAggregateResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listRouteAggregate(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

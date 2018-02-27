@@ -51,10 +51,10 @@ var ServiceObjectBackRefFields = map[string][]string{}
 var ServiceObjectParents = []string{}
 
 // CreateServiceObject inserts ServiceObject to DB
-func CreateServiceObject(
+func (db *DB) createServiceObject(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateServiceObjectRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ServiceObject
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertServiceObjectQuery)
@@ -243,8 +243,9 @@ func scanServiceObject(values map[string]interface{}) (*models.ServiceObject, er
 }
 
 // ListServiceObject lists ServiceObject with list spec.
-func ListServiceObject(ctx context.Context, tx *sql.Tx, request *models.ListServiceObjectRequest) (response *models.ListServiceObjectResponse, err error) {
+func (db *DB) listServiceObject(ctx context.Context, request *models.ListServiceObjectRequest) (response *models.ListServiceObjectResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -306,9 +307,8 @@ func ListServiceObject(ctx context.Context, tx *sql.Tx, request *models.ListServ
 }
 
 // UpdateServiceObject updates a resource
-func UpdateServiceObject(
+func (db *DB) updateServiceObject(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateServiceObjectRequest,
 ) error {
 	//TODO
@@ -316,15 +316,15 @@ func UpdateServiceObject(
 }
 
 // DeleteServiceObject deletes a resource
-func DeleteServiceObject(
+func (db *DB) deleteServiceObject(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteServiceObjectRequest) error {
 	deleteQuery := deleteServiceObjectQuery
 	selectQuery := "select count(uuid) from service_object where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -359,4 +359,119 @@ func DeleteServiceObject(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateServiceObject handle a Create API
+func (db *DB) CreateServiceObject(
+	ctx context.Context,
+	request *models.CreateServiceObjectRequest) (*models.CreateServiceObjectResponse, error) {
+	model := request.ServiceObject
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createServiceObject(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_object",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateServiceObjectResponse{
+		ServiceObject: request.ServiceObject,
+	}, nil
+}
+
+//UpdateServiceObject handles a Update request.
+func (db *DB) UpdateServiceObject(
+	ctx context.Context,
+	request *models.UpdateServiceObjectRequest) (*models.UpdateServiceObjectResponse, error) {
+	model := request.ServiceObject
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateServiceObject(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "service_object",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateServiceObjectResponse{
+		ServiceObject: model,
+	}, nil
+}
+
+//DeleteServiceObject delete a resource.
+func (db *DB) DeleteServiceObject(ctx context.Context, request *models.DeleteServiceObjectRequest) (*models.DeleteServiceObjectResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteServiceObject(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteServiceObjectResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetServiceObject a Get request.
+func (db *DB) GetServiceObject(ctx context.Context, request *models.GetServiceObjectRequest) (response *models.GetServiceObjectResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListServiceObjectRequest{
+		Spec: spec,
+	}
+	var result *models.ListServiceObjectResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listServiceObject(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ServiceObjects) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetServiceObjectResponse{
+		ServiceObject: result.ServiceObjects[0],
+	}
+	return response, nil
+}
+
+//ListServiceObject handles a List service Request.
+func (db *DB) ListServiceObject(
+	ctx context.Context,
+	request *models.ListServiceObjectRequest) (response *models.ListServiceObjectResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listServiceObject(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

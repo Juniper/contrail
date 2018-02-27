@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
 	"github.com/Juniper/contrail/pkg/generated/models"
 	"github.com/labstack/echo"
 	"github.com/satori/go.uuid"
@@ -53,20 +51,8 @@ func (service *ContrailService) CreateGlobalVrouterConfig(
 	}
 	model.Perms2 = &models.PermType2{}
 	model.Perms2.Owner = auth.ProjectID()
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.CreateGlobalVrouterConfig(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "global_vrouter_config",
-		}).Debug("db create failed on create")
-		return nil, common.ErrorInternal
-	}
-	return &models.CreateGlobalVrouterConfigResponse{
-		GlobalVrouterConfig: request.GlobalVrouterConfig,
-	}, nil
+
+	return service.Next().CreateGlobalVrouterConfig(ctx, request)
 }
 
 //RESTUpdateGlobalVrouterConfig handles a REST Update request.
@@ -96,20 +82,7 @@ func (service *ContrailService) UpdateGlobalVrouterConfig(
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.UpdateGlobalVrouterConfig(ctx, tx, request)
-		}); err != nil {
-		log.WithFields(log.Fields{
-			"err":      err,
-			"resource": "global_vrouter_config",
-		}).Debug("db update failed")
-		return nil, common.ErrorInternal
-	}
-	return &models.UpdateGlobalVrouterConfigResponse{
-		GlobalVrouterConfig: model,
-	}, nil
+	return service.Next().UpdateGlobalVrouterConfig(ctx, request)
 }
 
 //RESTDeleteGlobalVrouterConfig delete a resource using REST service.
@@ -126,21 +99,6 @@ func (service *ContrailService) RESTDeleteGlobalVrouterConfig(c echo.Context) er
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-//DeleteGlobalVrouterConfig delete a resource.
-func (service *ContrailService) DeleteGlobalVrouterConfig(ctx context.Context, request *models.DeleteGlobalVrouterConfigRequest) (*models.DeleteGlobalVrouterConfigResponse, error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			return db.DeleteGlobalVrouterConfig(ctx, tx, request)
-		}); err != nil {
-		log.WithField("err", err).Debug("error deleting a resource")
-		return nil, common.ErrorInternal
-	}
-	return &models.DeleteGlobalVrouterConfigResponse{
-		ID: request.ID,
-	}, nil
-}
-
 //RESTGetGlobalVrouterConfig a REST Get request.
 func (service *ContrailService) RESTGetGlobalVrouterConfig(c echo.Context) error {
 	id := c.Param("id")
@@ -153,38 +111,6 @@ func (service *ContrailService) RESTGetGlobalVrouterConfig(c echo.Context) error
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//GetGlobalVrouterConfig a Get request.
-func (service *ContrailService) GetGlobalVrouterConfig(ctx context.Context, request *models.GetGlobalVrouterConfigRequest) (response *models.GetGlobalVrouterConfigResponse, err error) {
-	spec := &models.ListSpec{
-		Limit: 1,
-		Filters: []*models.Filter{
-			&models.Filter{
-				Key:    "uuid",
-				Values: []string{request.ID},
-			},
-		},
-	}
-	listRequest := &models.ListGlobalVrouterConfigRequest{
-		Spec: spec,
-	}
-	var result *models.ListGlobalVrouterConfigResponse
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			result, err = db.ListGlobalVrouterConfig(ctx, tx, listRequest)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	if len(result.GlobalVrouterConfigs) == 0 {
-		return nil, common.ErrorNotFound
-	}
-	response = &models.GetGlobalVrouterConfigResponse{
-		GlobalVrouterConfig: result.GlobalVrouterConfigs[0],
-	}
-	return response, nil
 }
 
 //RESTListGlobalVrouterConfig handles a List REST service Request.
@@ -200,19 +126,4 @@ func (service *ContrailService) RESTListGlobalVrouterConfig(c echo.Context) erro
 		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-//ListGlobalVrouterConfig handles a List service Request.
-func (service *ContrailService) ListGlobalVrouterConfig(
-	ctx context.Context,
-	request *models.ListGlobalVrouterConfigRequest) (response *models.ListGlobalVrouterConfigResponse, err error) {
-	if err := common.DoInTransaction(
-		service.DB,
-		func(tx *sql.Tx) error {
-			response, err = db.ListGlobalVrouterConfig(ctx, tx, request)
-			return err
-		}); err != nil {
-		return nil, common.ErrorInternal
-	}
-	return response, nil
 }

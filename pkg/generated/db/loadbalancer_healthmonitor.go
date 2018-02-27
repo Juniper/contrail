@@ -62,10 +62,10 @@ var LoadbalancerHealthmonitorParents = []string{
 }
 
 // CreateLoadbalancerHealthmonitor inserts LoadbalancerHealthmonitor to DB
-func CreateLoadbalancerHealthmonitor(
+func (db *DB) createLoadbalancerHealthmonitor(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateLoadbalancerHealthmonitorRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.LoadbalancerHealthmonitor
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertLoadbalancerHealthmonitorQuery)
@@ -310,8 +310,9 @@ func scanLoadbalancerHealthmonitor(values map[string]interface{}) (*models.Loadb
 }
 
 // ListLoadbalancerHealthmonitor lists LoadbalancerHealthmonitor with list spec.
-func ListLoadbalancerHealthmonitor(ctx context.Context, tx *sql.Tx, request *models.ListLoadbalancerHealthmonitorRequest) (response *models.ListLoadbalancerHealthmonitorResponse, err error) {
+func (db *DB) listLoadbalancerHealthmonitor(ctx context.Context, request *models.ListLoadbalancerHealthmonitorRequest) (response *models.ListLoadbalancerHealthmonitorResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -373,9 +374,8 @@ func ListLoadbalancerHealthmonitor(ctx context.Context, tx *sql.Tx, request *mod
 }
 
 // UpdateLoadbalancerHealthmonitor updates a resource
-func UpdateLoadbalancerHealthmonitor(
+func (db *DB) updateLoadbalancerHealthmonitor(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateLoadbalancerHealthmonitorRequest,
 ) error {
 	//TODO
@@ -383,15 +383,15 @@ func UpdateLoadbalancerHealthmonitor(
 }
 
 // DeleteLoadbalancerHealthmonitor deletes a resource
-func DeleteLoadbalancerHealthmonitor(
+func (db *DB) deleteLoadbalancerHealthmonitor(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteLoadbalancerHealthmonitorRequest) error {
 	deleteQuery := deleteLoadbalancerHealthmonitorQuery
 	selectQuery := "select count(uuid) from loadbalancer_healthmonitor where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -426,4 +426,119 @@ func DeleteLoadbalancerHealthmonitor(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateLoadbalancerHealthmonitor handle a Create API
+func (db *DB) CreateLoadbalancerHealthmonitor(
+	ctx context.Context,
+	request *models.CreateLoadbalancerHealthmonitorRequest) (*models.CreateLoadbalancerHealthmonitorResponse, error) {
+	model := request.LoadbalancerHealthmonitor
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createLoadbalancerHealthmonitor(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "loadbalancer_healthmonitor",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateLoadbalancerHealthmonitorResponse{
+		LoadbalancerHealthmonitor: request.LoadbalancerHealthmonitor,
+	}, nil
+}
+
+//UpdateLoadbalancerHealthmonitor handles a Update request.
+func (db *DB) UpdateLoadbalancerHealthmonitor(
+	ctx context.Context,
+	request *models.UpdateLoadbalancerHealthmonitorRequest) (*models.UpdateLoadbalancerHealthmonitorResponse, error) {
+	model := request.LoadbalancerHealthmonitor
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateLoadbalancerHealthmonitor(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "loadbalancer_healthmonitor",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateLoadbalancerHealthmonitorResponse{
+		LoadbalancerHealthmonitor: model,
+	}, nil
+}
+
+//DeleteLoadbalancerHealthmonitor delete a resource.
+func (db *DB) DeleteLoadbalancerHealthmonitor(ctx context.Context, request *models.DeleteLoadbalancerHealthmonitorRequest) (*models.DeleteLoadbalancerHealthmonitorResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteLoadbalancerHealthmonitor(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteLoadbalancerHealthmonitorResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetLoadbalancerHealthmonitor a Get request.
+func (db *DB) GetLoadbalancerHealthmonitor(ctx context.Context, request *models.GetLoadbalancerHealthmonitorRequest) (response *models.GetLoadbalancerHealthmonitorResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListLoadbalancerHealthmonitorRequest{
+		Spec: spec,
+	}
+	var result *models.ListLoadbalancerHealthmonitorResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listLoadbalancerHealthmonitor(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.LoadbalancerHealthmonitors) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetLoadbalancerHealthmonitorResponse{
+		LoadbalancerHealthmonitor: result.LoadbalancerHealthmonitors[0],
+	}
+	return response, nil
+}
+
+//ListLoadbalancerHealthmonitor handles a List service Request.
+func (db *DB) ListLoadbalancerHealthmonitor(
+	ctx context.Context,
+	request *models.ListLoadbalancerHealthmonitorRequest) (response *models.ListLoadbalancerHealthmonitorResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listLoadbalancerHealthmonitor(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

@@ -56,10 +56,10 @@ var NamespaceParents = []string{
 }
 
 // CreateNamespace inserts Namespace to DB
-func CreateNamespace(
+func (db *DB) createNamespace(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateNamespaceRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.Namespace
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertNamespaceQuery)
@@ -262,8 +262,9 @@ func scanNamespace(values map[string]interface{}) (*models.Namespace, error) {
 }
 
 // ListNamespace lists Namespace with list spec.
-func ListNamespace(ctx context.Context, tx *sql.Tx, request *models.ListNamespaceRequest) (response *models.ListNamespaceResponse, err error) {
+func (db *DB) listNamespace(ctx context.Context, request *models.ListNamespaceRequest) (response *models.ListNamespaceResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -325,9 +326,8 @@ func ListNamespace(ctx context.Context, tx *sql.Tx, request *models.ListNamespac
 }
 
 // UpdateNamespace updates a resource
-func UpdateNamespace(
+func (db *DB) updateNamespace(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateNamespaceRequest,
 ) error {
 	//TODO
@@ -335,15 +335,15 @@ func UpdateNamespace(
 }
 
 // DeleteNamespace deletes a resource
-func DeleteNamespace(
+func (db *DB) deleteNamespace(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteNamespaceRequest) error {
 	deleteQuery := deleteNamespaceQuery
 	selectQuery := "select count(uuid) from namespace where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -378,4 +378,119 @@ func DeleteNamespace(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateNamespace handle a Create API
+func (db *DB) CreateNamespace(
+	ctx context.Context,
+	request *models.CreateNamespaceRequest) (*models.CreateNamespaceResponse, error) {
+	model := request.Namespace
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createNamespace(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "namespace",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateNamespaceResponse{
+		Namespace: request.Namespace,
+	}, nil
+}
+
+//UpdateNamespace handles a Update request.
+func (db *DB) UpdateNamespace(
+	ctx context.Context,
+	request *models.UpdateNamespaceRequest) (*models.UpdateNamespaceResponse, error) {
+	model := request.Namespace
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateNamespace(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "namespace",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateNamespaceResponse{
+		Namespace: model,
+	}, nil
+}
+
+//DeleteNamespace delete a resource.
+func (db *DB) DeleteNamespace(ctx context.Context, request *models.DeleteNamespaceRequest) (*models.DeleteNamespaceResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteNamespace(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteNamespaceResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetNamespace a Get request.
+func (db *DB) GetNamespace(ctx context.Context, request *models.GetNamespaceRequest) (response *models.GetNamespaceResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListNamespaceRequest{
+		Spec: spec,
+	}
+	var result *models.ListNamespaceResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listNamespace(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.Namespaces) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetNamespaceResponse{
+		Namespace: result.Namespaces[0],
+	}
+	return response, nil
+}
+
+//ListNamespace handles a List service Request.
+func (db *DB) ListNamespace(
+	ctx context.Context,
+	request *models.ListNamespaceRequest) (response *models.ListNamespaceResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listNamespace(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

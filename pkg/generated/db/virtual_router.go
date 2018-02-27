@@ -132,10 +132,10 @@ const insertVirtualRouterNetworkIpamQuery = "insert into `ref_virtual_router_net
 const insertVirtualRouterVirtualMachineQuery = "insert into `ref_virtual_router_virtual_machine` (`from`, `to` ) values (?, ?);"
 
 // CreateVirtualRouter inserts VirtualRouter to DB
-func CreateVirtualRouter(
+func (db *DB) createVirtualRouter(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateVirtualRouterRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.VirtualRouter
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertVirtualRouterQuery)
@@ -768,8 +768,9 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 }
 
 // ListVirtualRouter lists VirtualRouter with list spec.
-func ListVirtualRouter(ctx context.Context, tx *sql.Tx, request *models.ListVirtualRouterRequest) (response *models.ListVirtualRouterResponse, err error) {
+func (db *DB) listVirtualRouter(ctx context.Context, request *models.ListVirtualRouterRequest) (response *models.ListVirtualRouterResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -831,9 +832,8 @@ func ListVirtualRouter(ctx context.Context, tx *sql.Tx, request *models.ListVirt
 }
 
 // UpdateVirtualRouter updates a resource
-func UpdateVirtualRouter(
+func (db *DB) updateVirtualRouter(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateVirtualRouterRequest,
 ) error {
 	//TODO
@@ -841,15 +841,15 @@ func UpdateVirtualRouter(
 }
 
 // DeleteVirtualRouter deletes a resource
-func DeleteVirtualRouter(
+func (db *DB) deleteVirtualRouter(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteVirtualRouterRequest) error {
 	deleteQuery := deleteVirtualRouterQuery
 	selectQuery := "select count(uuid) from virtual_router where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -884,4 +884,119 @@ func DeleteVirtualRouter(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateVirtualRouter handle a Create API
+func (db *DB) CreateVirtualRouter(
+	ctx context.Context,
+	request *models.CreateVirtualRouterRequest) (*models.CreateVirtualRouterResponse, error) {
+	model := request.VirtualRouter
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createVirtualRouter(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "virtual_router",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateVirtualRouterResponse{
+		VirtualRouter: request.VirtualRouter,
+	}, nil
+}
+
+//UpdateVirtualRouter handles a Update request.
+func (db *DB) UpdateVirtualRouter(
+	ctx context.Context,
+	request *models.UpdateVirtualRouterRequest) (*models.UpdateVirtualRouterResponse, error) {
+	model := request.VirtualRouter
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateVirtualRouter(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "virtual_router",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateVirtualRouterResponse{
+		VirtualRouter: model,
+	}, nil
+}
+
+//DeleteVirtualRouter delete a resource.
+func (db *DB) DeleteVirtualRouter(ctx context.Context, request *models.DeleteVirtualRouterRequest) (*models.DeleteVirtualRouterResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteVirtualRouter(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteVirtualRouterResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetVirtualRouter a Get request.
+func (db *DB) GetVirtualRouter(ctx context.Context, request *models.GetVirtualRouterRequest) (response *models.GetVirtualRouterResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListVirtualRouterRequest{
+		Spec: spec,
+	}
+	var result *models.ListVirtualRouterResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listVirtualRouter(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.VirtualRouters) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetVirtualRouterResponse{
+		VirtualRouter: result.VirtualRouters[0],
+	}
+	return response, nil
+}
+
+//ListVirtualRouter handles a List service Request.
+func (db *DB) ListVirtualRouter(
+	ctx context.Context,
+	request *models.ListVirtualRouterRequest) (response *models.ListVirtualRouterResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listVirtualRouter(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

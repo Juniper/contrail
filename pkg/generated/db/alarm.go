@@ -59,10 +59,10 @@ var AlarmParents = []string{
 }
 
 // CreateAlarm inserts Alarm to DB
-func CreateAlarm(
+func (db *DB) createAlarm(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateAlarmRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.Alarm
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertAlarmQuery)
@@ -272,8 +272,9 @@ func scanAlarm(values map[string]interface{}) (*models.Alarm, error) {
 }
 
 // ListAlarm lists Alarm with list spec.
-func ListAlarm(ctx context.Context, tx *sql.Tx, request *models.ListAlarmRequest) (response *models.ListAlarmResponse, err error) {
+func (db *DB) listAlarm(ctx context.Context, request *models.ListAlarmRequest) (response *models.ListAlarmResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -335,9 +336,8 @@ func ListAlarm(ctx context.Context, tx *sql.Tx, request *models.ListAlarmRequest
 }
 
 // UpdateAlarm updates a resource
-func UpdateAlarm(
+func (db *DB) updateAlarm(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateAlarmRequest,
 ) error {
 	//TODO
@@ -345,15 +345,15 @@ func UpdateAlarm(
 }
 
 // DeleteAlarm deletes a resource
-func DeleteAlarm(
+func (db *DB) deleteAlarm(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteAlarmRequest) error {
 	deleteQuery := deleteAlarmQuery
 	selectQuery := "select count(uuid) from alarm where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -388,4 +388,119 @@ func DeleteAlarm(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateAlarm handle a Create API
+func (db *DB) CreateAlarm(
+	ctx context.Context,
+	request *models.CreateAlarmRequest) (*models.CreateAlarmResponse, error) {
+	model := request.Alarm
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createAlarm(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "alarm",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateAlarmResponse{
+		Alarm: request.Alarm,
+	}, nil
+}
+
+//UpdateAlarm handles a Update request.
+func (db *DB) UpdateAlarm(
+	ctx context.Context,
+	request *models.UpdateAlarmRequest) (*models.UpdateAlarmResponse, error) {
+	model := request.Alarm
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateAlarm(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "alarm",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateAlarmResponse{
+		Alarm: model,
+	}, nil
+}
+
+//DeleteAlarm delete a resource.
+func (db *DB) DeleteAlarm(ctx context.Context, request *models.DeleteAlarmRequest) (*models.DeleteAlarmResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteAlarm(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteAlarmResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetAlarm a Get request.
+func (db *DB) GetAlarm(ctx context.Context, request *models.GetAlarmRequest) (response *models.GetAlarmResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListAlarmRequest{
+		Spec: spec,
+	}
+	var result *models.ListAlarmResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listAlarm(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.Alarms) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetAlarmResponse{
+		Alarm: result.Alarms[0],
+	}
+	return response, nil
+}
+
+//ListAlarm handles a List service Request.
+func (db *DB) ListAlarm(
+	ctx context.Context,
+	request *models.ListAlarmRequest) (response *models.ListAlarmResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listAlarm(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

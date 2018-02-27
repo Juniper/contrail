@@ -55,10 +55,10 @@ var ConfigNodeParents = []string{
 }
 
 // CreateConfigNode inserts ConfigNode to DB
-func CreateConfigNode(
+func (db *DB) createConfigNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateConfigNodeRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.ConfigNode
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertConfigNodeQuery)
@@ -254,8 +254,9 @@ func scanConfigNode(values map[string]interface{}) (*models.ConfigNode, error) {
 }
 
 // ListConfigNode lists ConfigNode with list spec.
-func ListConfigNode(ctx context.Context, tx *sql.Tx, request *models.ListConfigNodeRequest) (response *models.ListConfigNodeResponse, err error) {
+func (db *DB) listConfigNode(ctx context.Context, request *models.ListConfigNodeRequest) (response *models.ListConfigNodeResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -317,9 +318,8 @@ func ListConfigNode(ctx context.Context, tx *sql.Tx, request *models.ListConfigN
 }
 
 // UpdateConfigNode updates a resource
-func UpdateConfigNode(
+func (db *DB) updateConfigNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateConfigNodeRequest,
 ) error {
 	//TODO
@@ -327,15 +327,15 @@ func UpdateConfigNode(
 }
 
 // DeleteConfigNode deletes a resource
-func DeleteConfigNode(
+func (db *DB) deleteConfigNode(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteConfigNodeRequest) error {
 	deleteQuery := deleteConfigNodeQuery
 	selectQuery := "select count(uuid) from config_node where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -370,4 +370,119 @@ func DeleteConfigNode(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateConfigNode handle a Create API
+func (db *DB) CreateConfigNode(
+	ctx context.Context,
+	request *models.CreateConfigNodeRequest) (*models.CreateConfigNodeResponse, error) {
+	model := request.ConfigNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createConfigNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "config_node",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateConfigNodeResponse{
+		ConfigNode: request.ConfigNode,
+	}, nil
+}
+
+//UpdateConfigNode handles a Update request.
+func (db *DB) UpdateConfigNode(
+	ctx context.Context,
+	request *models.UpdateConfigNodeRequest) (*models.UpdateConfigNodeResponse, error) {
+	model := request.ConfigNode
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateConfigNode(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "config_node",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateConfigNodeResponse{
+		ConfigNode: model,
+	}, nil
+}
+
+//DeleteConfigNode delete a resource.
+func (db *DB) DeleteConfigNode(ctx context.Context, request *models.DeleteConfigNodeRequest) (*models.DeleteConfigNodeResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteConfigNode(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteConfigNodeResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetConfigNode a Get request.
+func (db *DB) GetConfigNode(ctx context.Context, request *models.GetConfigNodeRequest) (response *models.GetConfigNodeResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListConfigNodeRequest{
+		Spec: spec,
+	}
+	var result *models.ListConfigNodeResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listConfigNode(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.ConfigNodes) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetConfigNodeResponse{
+		ConfigNode: result.ConfigNodes[0],
+	}
+	return response, nil
+}
+
+//ListConfigNode handles a List service Request.
+func (db *DB) ListConfigNode(
+	ctx context.Context,
+	request *models.ListConfigNodeRequest) (response *models.ListConfigNodeResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listConfigNode(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }

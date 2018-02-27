@@ -57,10 +57,10 @@ var QosQueueParents = []string{
 }
 
 // CreateQosQueue inserts QosQueue to DB
-func CreateQosQueue(
+func (db *DB) createQosQueue(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.CreateQosQueueRequest) error {
+	tx := common.GetTransaction(ctx)
 	model := request.QosQueue
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insertQosQueueQuery)
@@ -270,8 +270,9 @@ func scanQosQueue(values map[string]interface{}) (*models.QosQueue, error) {
 }
 
 // ListQosQueue lists QosQueue with list spec.
-func ListQosQueue(ctx context.Context, tx *sql.Tx, request *models.ListQosQueueRequest) (response *models.ListQosQueueResponse, err error) {
+func (db *DB) listQosQueue(ctx context.Context, request *models.ListQosQueueRequest) (response *models.ListQosQueueResponse, err error) {
 	var rows *sql.Rows
+	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
@@ -333,9 +334,8 @@ func ListQosQueue(ctx context.Context, tx *sql.Tx, request *models.ListQosQueueR
 }
 
 // UpdateQosQueue updates a resource
-func UpdateQosQueue(
+func (db *DB) updateQosQueue(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.UpdateQosQueueRequest,
 ) error {
 	//TODO
@@ -343,15 +343,15 @@ func UpdateQosQueue(
 }
 
 // DeleteQosQueue deletes a resource
-func DeleteQosQueue(
+func (db *DB) deleteQosQueue(
 	ctx context.Context,
-	tx *sql.Tx,
 	request *models.DeleteQosQueueRequest) error {
 	deleteQuery := deleteQosQueueQuery
 	selectQuery := "select count(uuid) from qos_queue where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
+	tx := common.GetTransaction(ctx)
 	auth := common.GetAuthCTX(ctx)
 	if auth.IsAdmin() {
 		row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -386,4 +386,119 @@ func DeleteQosQueue(
 		"uuid": uuid,
 	}).Debug("deleted")
 	return err
+}
+
+//CreateQosQueue handle a Create API
+func (db *DB) CreateQosQueue(
+	ctx context.Context,
+	request *models.CreateQosQueueRequest) (*models.CreateQosQueueResponse, error) {
+	model := request.QosQueue
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.createQosQueue(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "qos_queue",
+		}).Debug("db create failed on create")
+		return nil, common.ErrorInternal
+	}
+	return &models.CreateQosQueueResponse{
+		QosQueue: request.QosQueue,
+	}, nil
+}
+
+//UpdateQosQueue handles a Update request.
+func (db *DB) UpdateQosQueue(
+	ctx context.Context,
+	request *models.UpdateQosQueueRequest) (*models.UpdateQosQueueResponse, error) {
+	model := request.QosQueue
+	if model == nil {
+		return nil, common.ErrorBadRequest("Update body is empty")
+	}
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.updateQosQueue(ctx, request)
+		}); err != nil {
+		log.WithFields(log.Fields{
+			"err":      err,
+			"resource": "qos_queue",
+		}).Debug("db update failed")
+		return nil, common.ErrorInternal
+	}
+	return &models.UpdateQosQueueResponse{
+		QosQueue: model,
+	}, nil
+}
+
+//DeleteQosQueue delete a resource.
+func (db *DB) DeleteQosQueue(ctx context.Context, request *models.DeleteQosQueueRequest) (*models.DeleteQosQueueResponse, error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.deleteQosQueue(ctx, request)
+		}); err != nil {
+		log.WithField("err", err).Debug("error deleting a resource")
+		return nil, common.ErrorInternal
+	}
+	return &models.DeleteQosQueueResponse{
+		ID: request.ID,
+	}, nil
+}
+
+//GetQosQueue a Get request.
+func (db *DB) GetQosQueue(ctx context.Context, request *models.GetQosQueueRequest) (response *models.GetQosQueueResponse, err error) {
+	spec := &models.ListSpec{
+		Limit: 1,
+		Filters: []*models.Filter{
+			&models.Filter{
+				Key:    "uuid",
+				Values: []string{request.ID},
+			},
+		},
+	}
+	listRequest := &models.ListQosQueueRequest{
+		Spec: spec,
+	}
+	var result *models.ListQosQueueResponse
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			result, err = db.listQosQueue(ctx, listRequest)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	if len(result.QosQueues) == 0 {
+		return nil, common.ErrorNotFound
+	}
+	response = &models.GetQosQueueResponse{
+		QosQueue: result.QosQueues[0],
+	}
+	return response, nil
+}
+
+//ListQosQueue handles a List service Request.
+func (db *DB) ListQosQueue(
+	ctx context.Context,
+	request *models.ListQosQueueRequest) (response *models.ListQosQueueResponse, err error) {
+	if err := common.DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			response, err = db.listQosQueue(ctx, request)
+			return err
+		}); err != nil {
+		return nil, common.ErrorInternal
+	}
+	return response, nil
 }
