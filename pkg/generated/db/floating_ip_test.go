@@ -39,37 +39,6 @@ func TestFloatingIP(t *testing.T) {
 
 	// Create referred objects
 
-	var Projectcreateref []*models.FloatingIPProjectRef
-	var ProjectrefModel *models.Project
-	ProjectrefModel = models.MakeProject()
-	ProjectrefModel.UUID = "floating_ip_project_ref_uuid"
-	ProjectrefModel.FQName = []string{"test", "floating_ip_project_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx, &models.CreateProjectRequest{
-			Project: ProjectrefModel,
-		})
-	})
-	ProjectrefModel.UUID = "floating_ip_project_ref_uuid1"
-	ProjectrefModel.FQName = []string{"test", "floating_ip_project_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx, &models.CreateProjectRequest{
-			Project: ProjectrefModel,
-		})
-	})
-	ProjectrefModel.UUID = "floating_ip_project_ref_uuid2"
-	ProjectrefModel.FQName = []string{"test", "floating_ip_project_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateProject(ctx, tx, &models.CreateProjectRequest{
-			Project: ProjectrefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	Projectcreateref = append(Projectcreateref, &models.FloatingIPProjectRef{UUID: "floating_ip_project_ref_uuid", To: []string{"test", "floating_ip_project_ref_uuid"}})
-	Projectcreateref = append(Projectcreateref, &models.FloatingIPProjectRef{UUID: "floating_ip_project_ref_uuid2", To: []string{"test", "floating_ip_project_ref_uuid2"}})
-	model.ProjectRefs = Projectcreateref
-
 	var VirtualMachineInterfacecreateref []*models.FloatingIPVirtualMachineInterfaceRef
 	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
 	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
@@ -100,6 +69,37 @@ func TestFloatingIP(t *testing.T) {
 	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.FloatingIPVirtualMachineInterfaceRef{UUID: "floating_ip_virtual_machine_interface_ref_uuid", To: []string{"test", "floating_ip_virtual_machine_interface_ref_uuid"}})
 	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.FloatingIPVirtualMachineInterfaceRef{UUID: "floating_ip_virtual_machine_interface_ref_uuid2", To: []string{"test", "floating_ip_virtual_machine_interface_ref_uuid2"}})
 	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
+
+	var Projectcreateref []*models.FloatingIPProjectRef
+	var ProjectrefModel *models.Project
+	ProjectrefModel = models.MakeProject()
+	ProjectrefModel.UUID = "floating_ip_project_ref_uuid"
+	ProjectrefModel.FQName = []string{"test", "floating_ip_project_ref_uuid"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateProject(ctx, tx, &models.CreateProjectRequest{
+			Project: ProjectrefModel,
+		})
+	})
+	ProjectrefModel.UUID = "floating_ip_project_ref_uuid1"
+	ProjectrefModel.FQName = []string{"test", "floating_ip_project_ref_uuid1"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateProject(ctx, tx, &models.CreateProjectRequest{
+			Project: ProjectrefModel,
+		})
+	})
+	ProjectrefModel.UUID = "floating_ip_project_ref_uuid2"
+	ProjectrefModel.FQName = []string{"test", "floating_ip_project_ref_uuid2"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateProject(ctx, tx, &models.CreateProjectRequest{
+			Project: ProjectrefModel,
+		})
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	Projectcreateref = append(Projectcreateref, &models.FloatingIPProjectRef{UUID: "floating_ip_project_ref_uuid", To: []string{"test", "floating_ip_project_ref_uuid"}})
+	Projectcreateref = append(Projectcreateref, &models.FloatingIPProjectRef{UUID: "floating_ip_project_ref_uuid2", To: []string{"test", "floating_ip_project_ref_uuid2"}})
+	model.ProjectRefs = Projectcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -263,14 +263,6 @@ func TestFloatingIP(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var VirtualMachineInterfaceref []interface{}
-	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"floating_ip_virtual_machine_interface_ref_uuid", "to": []string{"test", "floating_ip_virtual_machine_interface_ref_uuid"}})
-	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"floating_ip_virtual_machine_interface_ref_uuid1", "to": []string{"test", "floating_ip_virtual_machine_interface_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
-	//
 	//    var Projectref []interface{}
 	//    Projectref = append(Projectref, map[string]interface{}{"operation":"delete", "uuid":"floating_ip_project_ref_uuid", "to": []string{"test", "floating_ip_project_ref_uuid"}})
 	//    Projectref = append(Projectref, map[string]interface{}{"operation":"add", "uuid":"floating_ip_project_ref_uuid1", "to": []string{"test", "floating_ip_project_ref_uuid1"}})
@@ -278,6 +270,14 @@ func TestFloatingIP(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "ProjectRefs", ".", Projectref)
+	//
+	//    var VirtualMachineInterfaceref []interface{}
+	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"floating_ip_virtual_machine_interface_ref_uuid", "to": []string{"test", "floating_ip_virtual_machine_interface_ref_uuid"}})
+	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"floating_ip_virtual_machine_interface_ref_uuid1", "to": []string{"test", "floating_ip_virtual_machine_interface_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

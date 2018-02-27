@@ -288,14 +288,6 @@ func TestLoadbalancer(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var ServiceApplianceSetref []interface{}
-	//    ServiceApplianceSetref = append(ServiceApplianceSetref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_service_appliance_set_ref_uuid", "to": []string{"test", "loadbalancer_service_appliance_set_ref_uuid"}})
-	//    ServiceApplianceSetref = append(ServiceApplianceSetref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_service_appliance_set_ref_uuid1", "to": []string{"test", "loadbalancer_service_appliance_set_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ServiceApplianceSetRefs", ".", ServiceApplianceSetref)
-	//
 	//    var VirtualMachineInterfaceref []interface{}
 	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_virtual_machine_interface_ref_uuid", "to": []string{"test", "loadbalancer_virtual_machine_interface_ref_uuid"}})
 	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_virtual_machine_interface_ref_uuid1", "to": []string{"test", "loadbalancer_virtual_machine_interface_ref_uuid1"}})
@@ -311,6 +303,14 @@ func TestLoadbalancer(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "ServiceInstanceRefs", ".", ServiceInstanceref)
+	//
+	//    var ServiceApplianceSetref []interface{}
+	//    ServiceApplianceSetref = append(ServiceApplianceSetref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_service_appliance_set_ref_uuid", "to": []string{"test", "loadbalancer_service_appliance_set_ref_uuid"}})
+	//    ServiceApplianceSetref = append(ServiceApplianceSetref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_service_appliance_set_ref_uuid1", "to": []string{"test", "loadbalancer_service_appliance_set_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "ServiceApplianceSetRefs", ".", ServiceApplianceSetref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
@@ -331,6 +331,47 @@ func TestLoadbalancer(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_loadbalancer_virtual_machine_interface` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
+		}
+		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_virtual_machine_interface_ref_uuid")
+		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_virtual_machine_interface_ref_uuid1")
+		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_virtual_machine_interface_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteVirtualMachineInterface(ctx, tx,
+			&models.DeleteVirtualMachineInterfaceRequest{
+				ID: "loadbalancer_virtual_machine_interface_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref loadbalancer_virtual_machine_interface_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteVirtualMachineInterface(ctx, tx,
+			&models.DeleteVirtualMachineInterfaceRequest{
+				ID: "loadbalancer_virtual_machine_interface_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref loadbalancer_virtual_machine_interface_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteVirtualMachineInterface(
+			ctx,
+			tx,
+			&models.DeleteVirtualMachineInterfaceRequest{
+				ID: "loadbalancer_virtual_machine_interface_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref loadbalancer_virtual_machine_interface_ref_uuid2 failed", err)
+	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		stmt, err := tx.Prepare("delete from `ref_loadbalancer_service_instance` where `from` = ? AND `to` = ?;")
@@ -412,47 +453,6 @@ func TestLoadbalancer(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("delete ref loadbalancer_service_appliance_set_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_loadbalancer_virtual_machine_interface` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_virtual_machine_interface_ref_uuid")
-		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_virtual_machine_interface_ref_uuid1")
-		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_virtual_machine_interface_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualMachineInterface(ctx, tx,
-			&models.DeleteVirtualMachineInterfaceRequest{
-				ID: "loadbalancer_virtual_machine_interface_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_virtual_machine_interface_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualMachineInterface(ctx, tx,
-			&models.DeleteVirtualMachineInterfaceRequest{
-				ID: "loadbalancer_virtual_machine_interface_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_virtual_machine_interface_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualMachineInterface(
-			ctx,
-			tx,
-			&models.DeleteVirtualMachineInterfaceRequest{
-				ID: "loadbalancer_virtual_machine_interface_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_virtual_machine_interface_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

@@ -63,9 +63,9 @@ var SecurityLoggingObjectBackRefFields = map[string][]string{}
 // SecurityLoggingObjectParentTypes is possible parents for SecurityLoggingObject
 var SecurityLoggingObjectParents = []string{
 
-	"global_vrouter_config",
-
 	"project",
+
+	"global_vrouter_config",
 }
 
 const insertSecurityLoggingObjectSecurityGroupQuery = "insert into `ref_security_logging_object_security_group` (`from`, `to` ,`rule`) values (?, ?,?);"
@@ -115,23 +115,6 @@ func CreateSecurityLoggingObject(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtSecurityGroupRef, err := tx.Prepare(insertSecurityLoggingObjectSecurityGroupQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing SecurityGroupRefs create statement failed")
-	}
-	defer stmtSecurityGroupRef.Close()
-	for _, ref := range model.SecurityGroupRefs {
-
-		if ref.Attr == nil {
-			ref.Attr = &models.SecurityLoggingObjectRuleListType{}
-		}
-
-		_, err = stmtSecurityGroupRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetRule()))
-		if err != nil {
-			return errors.Wrap(err, "SecurityGroupRefs create failed")
-		}
-	}
-
 	stmtNetworkPolicyRef, err := tx.Prepare(insertSecurityLoggingObjectNetworkPolicyQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing NetworkPolicyRefs create statement failed")
@@ -146,6 +129,23 @@ func CreateSecurityLoggingObject(
 		_, err = stmtNetworkPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetRule()))
 		if err != nil {
 			return errors.Wrap(err, "NetworkPolicyRefs create failed")
+		}
+	}
+
+	stmtSecurityGroupRef, err := tx.Prepare(insertSecurityLoggingObjectSecurityGroupQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing SecurityGroupRefs create statement failed")
+	}
+	defer stmtSecurityGroupRef.Close()
+	for _, ref := range model.SecurityGroupRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = &models.SecurityLoggingObjectRuleListType{}
+		}
+
+		_, err = stmtSecurityGroupRef.ExecContext(ctx, model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetRule()))
+		if err != nil {
+			return errors.Wrap(err, "SecurityGroupRefs create failed")
 		}
 	}
 

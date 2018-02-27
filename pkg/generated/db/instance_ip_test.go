@@ -362,14 +362,6 @@ func TestInstanceIP(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var VirtualRouterref []interface{}
-	//    VirtualRouterref = append(VirtualRouterref, map[string]interface{}{"operation":"delete", "uuid":"instance_ip_virtual_router_ref_uuid", "to": []string{"test", "instance_ip_virtual_router_ref_uuid"}})
-	//    VirtualRouterref = append(VirtualRouterref, map[string]interface{}{"operation":"add", "uuid":"instance_ip_virtual_router_ref_uuid1", "to": []string{"test", "instance_ip_virtual_router_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualRouterRefs", ".", VirtualRouterref)
-	//
 	//    var NetworkIpamref []interface{}
 	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"delete", "uuid":"instance_ip_network_ipam_ref_uuid", "to": []string{"test", "instance_ip_network_ipam_ref_uuid"}})
 	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"add", "uuid":"instance_ip_network_ipam_ref_uuid1", "to": []string{"test", "instance_ip_network_ipam_ref_uuid1"}})
@@ -401,6 +393,14 @@ func TestInstanceIP(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "PhysicalRouterRefs", ".", PhysicalRouterref)
+	//
+	//    var VirtualRouterref []interface{}
+	//    VirtualRouterref = append(VirtualRouterref, map[string]interface{}{"operation":"delete", "uuid":"instance_ip_virtual_router_ref_uuid", "to": []string{"test", "instance_ip_virtual_router_ref_uuid"}})
+	//    VirtualRouterref = append(VirtualRouterref, map[string]interface{}{"operation":"add", "uuid":"instance_ip_virtual_router_ref_uuid1", "to": []string{"test", "instance_ip_virtual_router_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "VirtualRouterRefs", ".", VirtualRouterref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

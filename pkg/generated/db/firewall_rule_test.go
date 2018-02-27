@@ -505,22 +505,6 @@ func TestFirewallRule(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var SecurityLoggingObjectref []interface{}
-	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"firewall_rule_security_logging_object_ref_uuid", "to": []string{"test", "firewall_rule_security_logging_object_ref_uuid"}})
-	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"firewall_rule_security_logging_object_ref_uuid1", "to": []string{"test", "firewall_rule_security_logging_object_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "SecurityLoggingObjectRefs", ".", SecurityLoggingObjectref)
-	//
-	//    var VirtualNetworkref []interface{}
-	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"delete", "uuid":"firewall_rule_virtual_network_ref_uuid", "to": []string{"test", "firewall_rule_virtual_network_ref_uuid"}})
-	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"add", "uuid":"firewall_rule_virtual_network_ref_uuid1", "to": []string{"test", "firewall_rule_virtual_network_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
-	//
 	//    var ServiceGroupref []interface{}
 	//    ServiceGroupref = append(ServiceGroupref, map[string]interface{}{"operation":"delete", "uuid":"firewall_rule_service_group_ref_uuid", "to": []string{"test", "firewall_rule_service_group_ref_uuid"}})
 	//    ServiceGroupref = append(ServiceGroupref, map[string]interface{}{"operation":"add", "uuid":"firewall_rule_service_group_ref_uuid1", "to": []string{"test", "firewall_rule_service_group_ref_uuid1"}})
@@ -536,6 +520,22 @@ func TestFirewallRule(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "AddressGroupRefs", ".", AddressGroupref)
+	//
+	//    var SecurityLoggingObjectref []interface{}
+	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"firewall_rule_security_logging_object_ref_uuid", "to": []string{"test", "firewall_rule_security_logging_object_ref_uuid"}})
+	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"firewall_rule_security_logging_object_ref_uuid1", "to": []string{"test", "firewall_rule_security_logging_object_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "SecurityLoggingObjectRefs", ".", SecurityLoggingObjectref)
+	//
+	//    var VirtualNetworkref []interface{}
+	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"delete", "uuid":"firewall_rule_virtual_network_ref_uuid", "to": []string{"test", "firewall_rule_virtual_network_ref_uuid"}})
+	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"add", "uuid":"firewall_rule_virtual_network_ref_uuid1", "to": []string{"test", "firewall_rule_virtual_network_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
@@ -556,88 +556,6 @@ func TestFirewallRule(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_firewall_rule_security_logging_object` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing SecurityLoggingObjectRefs delete statement failed")
-		}
-		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_security_logging_object_ref_uuid")
-		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_security_logging_object_ref_uuid1")
-		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_security_logging_object_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "SecurityLoggingObjectRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteSecurityLoggingObject(ctx, tx,
-			&models.DeleteSecurityLoggingObjectRequest{
-				ID: "firewall_rule_security_logging_object_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref firewall_rule_security_logging_object_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteSecurityLoggingObject(ctx, tx,
-			&models.DeleteSecurityLoggingObjectRequest{
-				ID: "firewall_rule_security_logging_object_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref firewall_rule_security_logging_object_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteSecurityLoggingObject(
-			ctx,
-			tx,
-			&models.DeleteSecurityLoggingObjectRequest{
-				ID: "firewall_rule_security_logging_object_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref firewall_rule_security_logging_object_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_firewall_rule_virtual_network` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing VirtualNetworkRefs delete statement failed")
-		}
-		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_virtual_network_ref_uuid")
-		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_virtual_network_ref_uuid1")
-		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_virtual_network_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualNetwork(ctx, tx,
-			&models.DeleteVirtualNetworkRequest{
-				ID: "firewall_rule_virtual_network_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref firewall_rule_virtual_network_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualNetwork(ctx, tx,
-			&models.DeleteVirtualNetworkRequest{
-				ID: "firewall_rule_virtual_network_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref firewall_rule_virtual_network_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualNetwork(
-			ctx,
-			tx,
-			&models.DeleteVirtualNetworkRequest{
-				ID: "firewall_rule_virtual_network_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref firewall_rule_virtual_network_ref_uuid2 failed", err)
-	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		stmt, err := tx.Prepare("delete from `ref_firewall_rule_service_group` where `from` = ? AND `to` = ?;")
@@ -719,6 +637,88 @@ func TestFirewallRule(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("delete ref firewall_rule_address_group_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_firewall_rule_security_logging_object` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing SecurityLoggingObjectRefs delete statement failed")
+		}
+		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_security_logging_object_ref_uuid")
+		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_security_logging_object_ref_uuid1")
+		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_security_logging_object_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "SecurityLoggingObjectRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteSecurityLoggingObject(ctx, tx,
+			&models.DeleteSecurityLoggingObjectRequest{
+				ID: "firewall_rule_security_logging_object_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref firewall_rule_security_logging_object_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteSecurityLoggingObject(ctx, tx,
+			&models.DeleteSecurityLoggingObjectRequest{
+				ID: "firewall_rule_security_logging_object_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref firewall_rule_security_logging_object_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteSecurityLoggingObject(
+			ctx,
+			tx,
+			&models.DeleteSecurityLoggingObjectRequest{
+				ID: "firewall_rule_security_logging_object_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref firewall_rule_security_logging_object_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_firewall_rule_virtual_network` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing VirtualNetworkRefs delete statement failed")
+		}
+		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_virtual_network_ref_uuid")
+		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_virtual_network_ref_uuid1")
+		_, err = stmt.Exec("firewall_rule_dummy_uuid", "firewall_rule_virtual_network_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteVirtualNetwork(ctx, tx,
+			&models.DeleteVirtualNetworkRequest{
+				ID: "firewall_rule_virtual_network_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref firewall_rule_virtual_network_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteVirtualNetwork(ctx, tx,
+			&models.DeleteVirtualNetworkRequest{
+				ID: "firewall_rule_virtual_network_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref firewall_rule_virtual_network_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteVirtualNetwork(
+			ctx,
+			tx,
+			&models.DeleteVirtualNetworkRequest{
+				ID: "firewall_rule_virtual_network_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref firewall_rule_virtual_network_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

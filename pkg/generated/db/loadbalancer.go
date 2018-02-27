@@ -130,6 +130,19 @@ func CreateLoadbalancer(
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtServiceApplianceSetRef, err := tx.Prepare(insertLoadbalancerServiceApplianceSetQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceApplianceSetRefs create statement failed")
+	}
+	defer stmtServiceApplianceSetRef.Close()
+	for _, ref := range model.ServiceApplianceSetRefs {
+
+		_, err = stmtServiceApplianceSetRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
+		}
+	}
+
 	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertLoadbalancerVirtualMachineInterfaceQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
@@ -153,19 +166,6 @@ func CreateLoadbalancer(
 		_, err = stmtServiceInstanceRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceInstanceRefs create failed")
-		}
-	}
-
-	stmtServiceApplianceSetRef, err := tx.Prepare(insertLoadbalancerServiceApplianceSetQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceApplianceSetRefs create statement failed")
-	}
-	defer stmtServiceApplianceSetRef.Close()
-	for _, ref := range model.ServiceApplianceSetRefs {
-
-		_, err = stmtServiceApplianceSetRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
 		}
 	}
 

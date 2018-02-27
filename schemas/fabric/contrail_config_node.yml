@@ -10,7 +10,11 @@ references:
       operations: "CRUD"
       description: "Reference to node object for this config node."
       presence: "optional"
-parent: contrail_cluster
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this config node."
+    presence: "optional"
 plural: contrail_config_nodes
 prefix: /
 schema:

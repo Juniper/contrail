@@ -62,9 +62,9 @@ var E2ServiceProviderBackRefFields = map[string][]string{}
 // E2ServiceProviderParentTypes is possible parents for E2ServiceProvider
 var E2ServiceProviderParents = []string{}
 
-const insertE2ServiceProviderPeeringPolicyQuery = "insert into `ref_e2_service_provider_peering_policy` (`from`, `to` ) values (?, ?);"
-
 const insertE2ServiceProviderPhysicalRouterQuery = "insert into `ref_e2_service_provider_physical_router` (`from`, `to` ) values (?, ?);"
+
+const insertE2ServiceProviderPeeringPolicyQuery = "insert into `ref_e2_service_provider_peering_policy` (`from`, `to` ) values (?, ?);"
 
 // CreateE2ServiceProvider inserts E2ServiceProvider to DB
 func CreateE2ServiceProvider(

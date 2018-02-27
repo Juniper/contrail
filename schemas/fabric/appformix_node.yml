@@ -8,9 +8,13 @@ metadata:
 references:
     node:
       operations: "CRUD"
-      description: "Reference to node object for this config node."
+      description: "Reference to node object for this appformix node."
       presence: "optional"
-parent: contrail_cluster
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this appformix node."
+    presence: "optional"
 plural: appformix_nodes
 prefix: /
 schema:

@@ -44,17 +44,17 @@ var ServiceEndpointFields = []string{
 // ServiceEndpointRefFields is db reference fields for ServiceEndpoint
 var ServiceEndpointRefFields = map[string][]string{
 
-	"service_connection_module": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"physical_router": []string{
 	// <schema.Schema Value>
 
 	},
 
 	"service_object": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"service_connection_module": []string{
 	// <schema.Schema Value>
 
 	},
@@ -66,11 +66,11 @@ var ServiceEndpointBackRefFields = map[string][]string{}
 // ServiceEndpointParentTypes is possible parents for ServiceEndpoint
 var ServiceEndpointParents = []string{}
 
-const insertServiceEndpointServiceConnectionModuleQuery = "insert into `ref_service_endpoint_service_connection_module` (`from`, `to` ) values (?, ?);"
-
 const insertServiceEndpointPhysicalRouterQuery = "insert into `ref_service_endpoint_physical_router` (`from`, `to` ) values (?, ?);"
 
 const insertServiceEndpointServiceObjectQuery = "insert into `ref_service_endpoint_service_object` (`from`, `to` ) values (?, ?);"
+
+const insertServiceEndpointServiceConnectionModuleQuery = "insert into `ref_service_endpoint_service_connection_module` (`from`, `to` ) values (?, ?);"
 
 // CreateServiceEndpoint inserts ServiceEndpoint to DB
 func CreateServiceEndpoint(
@@ -300,26 +300,6 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	}
 
-	if value, ok := values["ref_service_connection_module"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ServiceEndpointServiceConnectionModuleRef{}
-			referenceModel.UUID = uuid
-			m.ServiceConnectionModuleRefs = append(m.ServiceConnectionModuleRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_physical_router"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -356,6 +336,26 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 			referenceModel := &models.ServiceEndpointServiceObjectRef{}
 			referenceModel.UUID = uuid
 			m.ServiceObjectRefs = append(m.ServiceObjectRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_service_connection_module"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ServiceEndpointServiceConnectionModuleRef{}
+			referenceModel.UUID = uuid
+			m.ServiceConnectionModuleRefs = append(m.ServiceConnectionModuleRefs, referenceModel)
 
 		}
 	}

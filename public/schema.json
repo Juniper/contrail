@@ -26363,9 +26363,17 @@
             "plural": "appformix_nodes",
             "title": "Appformix Node",
             "description": "Appformix Node",
+            "parents": {
+                "contrail_cluster": {
+                    "description": "Parent of this appformix node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
             "references": {
                 "node": {
-                    "description": "Reference to node object for this config node.",
+                    "description": "Reference to node object for this appformix node.",
                     "operations": "CRUD",
                     "presence": "optional",
                     "attr": null
@@ -27444,6 +27452,14 @@
             "plural": "contrail_analytics_database_nodes",
             "title": "Contrail Analytics Database Node",
             "description": "Contrail Analytics Database Node",
+            "parents": {
+                "contrail_cluster": {
+                    "description": "Parent of this analyticsdb node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
             "references": {
                 "node": {
                     "description": "Reference to node object for this analyticsdb node.",
@@ -27747,6 +27763,14 @@
             "plural": "contrail_analytics_nodes",
             "title": "Contrail Analytics Node",
             "description": "Contrail Analytics Node",
+            "parents": {
+                "contrail_cluster": {
+                    "description": "Parent of this analytics node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
             "references": {
                 "node": {
                     "description": "Reference to node object for this analytics node.",
@@ -28591,6 +28615,14 @@
             "plural": "contrail_config_database_nodes",
             "title": "Contrail Config Database Node",
             "description": "Contrail Config Database Node",
+            "parents": {
+                "contrail_cluster": {
+                    "description": "Parent of this configdb node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
             "references": {
                 "node": {
                     "description": "Reference to node object for this configdb node.",
@@ -28894,6 +28926,14 @@
             "plural": "contrail_config_nodes",
             "title": "Contrail Config Node",
             "description": "Contrail Config Node",
+            "parents": {
+                "contrail_cluster": {
+                    "description": "Parent of this config node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
             "references": {
                 "node": {
                     "description": "Reference to node object for this config node.",
@@ -29197,6 +29237,14 @@
             "plural": "contrail_control_nodes",
             "title": "Contrail Control Node",
             "description": "Contrail Control Node",
+            "parents": {
+                "contrail_cluster": {
+                    "description": "Parent of this control node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
             "references": {
                 "node": {
                     "description": "Reference to node object for this control node.",
@@ -29500,6 +29548,14 @@
             "plural": "contrail_storage_nodes",
             "title": "Contrail Storage Node",
             "description": "Contrail Storage Node",
+            "parents": {
+                "contrail_cluster": {
+                    "description": "Parent of this storage node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
             "references": {
                 "node": {
                     "description": "Reference to node object for this storage node.",
@@ -29855,6 +29911,14 @@
             "plural": "contrail_vrouter_nodes",
             "title": "Contrail Vrouter Node",
             "description": "Contrail Vrouter Node",
+            "parents": {
+                "contrail_cluster": {
+                    "description": "Parent of this vrouter node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
             "references": {
                 "node": {
                     "description": "Reference to node object for this vrouter node.",
@@ -30214,6 +30278,14 @@
             "plural": "contrail_controller_nodes",
             "title": "Contrail Controller Node",
             "description": "Contrail Controller Node",
+            "parents": {
+                "contrail_cluster": {
+                    "description": "Parent of this webui node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
             "references": {
                 "node": {
                     "description": "Reference to node object for this webui node.",
@@ -31690,6 +31762,14 @@
             "plural": "kubernetes_master_nodes",
             "title": "kubernetes Master Node",
             "description": "kubernetes Master Node",
+            "parents": {
+                "contrail_cluster": {
+                    "description": "Parent of this kubernetes master node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
             "references": {
                 "node": {
                     "description": "Reference to node object for this kubernetes master node.",
@@ -31993,6 +32073,14 @@
             "plural": "kubernetes_nodes",
             "title": "kubernetes Node",
             "description": "Kubernetes Node",
+            "parents": {
+                "contrail_cluster": {
+                    "description": "Parent of this kubernetes node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
             "references": {
                 "node": {
                     "description": "Reference to node object for this kubernetes node.",

@@ -10,7 +10,11 @@ references:
       operations: "CRUD"
       description: "Reference to node object for this analytics node."
       presence: "optional"
-parent: contrail_cluster
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this analytics node."
+    presence: "optional"
 plural: contrail_analytics_nodes
 prefix: /
 schema:

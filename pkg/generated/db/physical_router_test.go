@@ -39,37 +39,6 @@ func TestPhysicalRouter(t *testing.T) {
 
 	// Create referred objects
 
-	var VirtualNetworkcreateref []*models.PhysicalRouterVirtualNetworkRef
-	var VirtualNetworkrefModel *models.VirtualNetwork
-	VirtualNetworkrefModel = models.MakeVirtualNetwork()
-	VirtualNetworkrefModel.UUID = "physical_router_virtual_network_ref_uuid"
-	VirtualNetworkrefModel.FQName = []string{"test", "physical_router_virtual_network_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualNetwork(ctx, tx, &models.CreateVirtualNetworkRequest{
-			VirtualNetwork: VirtualNetworkrefModel,
-		})
-	})
-	VirtualNetworkrefModel.UUID = "physical_router_virtual_network_ref_uuid1"
-	VirtualNetworkrefModel.FQName = []string{"test", "physical_router_virtual_network_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualNetwork(ctx, tx, &models.CreateVirtualNetworkRequest{
-			VirtualNetwork: VirtualNetworkrefModel,
-		})
-	})
-	VirtualNetworkrefModel.UUID = "physical_router_virtual_network_ref_uuid2"
-	VirtualNetworkrefModel.FQName = []string{"test", "physical_router_virtual_network_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateVirtualNetwork(ctx, tx, &models.CreateVirtualNetworkRequest{
-			VirtualNetwork: VirtualNetworkrefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.PhysicalRouterVirtualNetworkRef{UUID: "physical_router_virtual_network_ref_uuid", To: []string{"test", "physical_router_virtual_network_ref_uuid"}})
-	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.PhysicalRouterVirtualNetworkRef{UUID: "physical_router_virtual_network_ref_uuid2", To: []string{"test", "physical_router_virtual_network_ref_uuid2"}})
-	model.VirtualNetworkRefs = VirtualNetworkcreateref
-
 	var BGPRoutercreateref []*models.PhysicalRouterBGPRouterRef
 	var BGPRouterrefModel *models.BGPRouter
 	BGPRouterrefModel = models.MakeBGPRouter()
@@ -131,6 +100,37 @@ func TestPhysicalRouter(t *testing.T) {
 	VirtualRoutercreateref = append(VirtualRoutercreateref, &models.PhysicalRouterVirtualRouterRef{UUID: "physical_router_virtual_router_ref_uuid", To: []string{"test", "physical_router_virtual_router_ref_uuid"}})
 	VirtualRoutercreateref = append(VirtualRoutercreateref, &models.PhysicalRouterVirtualRouterRef{UUID: "physical_router_virtual_router_ref_uuid2", To: []string{"test", "physical_router_virtual_router_ref_uuid2"}})
 	model.VirtualRouterRefs = VirtualRoutercreateref
+
+	var VirtualNetworkcreateref []*models.PhysicalRouterVirtualNetworkRef
+	var VirtualNetworkrefModel *models.VirtualNetwork
+	VirtualNetworkrefModel = models.MakeVirtualNetwork()
+	VirtualNetworkrefModel.UUID = "physical_router_virtual_network_ref_uuid"
+	VirtualNetworkrefModel.FQName = []string{"test", "physical_router_virtual_network_ref_uuid"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateVirtualNetwork(ctx, tx, &models.CreateVirtualNetworkRequest{
+			VirtualNetwork: VirtualNetworkrefModel,
+		})
+	})
+	VirtualNetworkrefModel.UUID = "physical_router_virtual_network_ref_uuid1"
+	VirtualNetworkrefModel.FQName = []string{"test", "physical_router_virtual_network_ref_uuid1"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateVirtualNetwork(ctx, tx, &models.CreateVirtualNetworkRequest{
+			VirtualNetwork: VirtualNetworkrefModel,
+		})
+	})
+	VirtualNetworkrefModel.UUID = "physical_router_virtual_network_ref_uuid2"
+	VirtualNetworkrefModel.FQName = []string{"test", "physical_router_virtual_network_ref_uuid2"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateVirtualNetwork(ctx, tx, &models.CreateVirtualNetworkRequest{
+			VirtualNetwork: VirtualNetworkrefModel,
+		})
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.PhysicalRouterVirtualNetworkRef{UUID: "physical_router_virtual_network_ref_uuid", To: []string{"test", "physical_router_virtual_network_ref_uuid"}})
+	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.PhysicalRouterVirtualNetworkRef{UUID: "physical_router_virtual_network_ref_uuid2", To: []string{"test", "physical_router_virtual_network_ref_uuid2"}})
+	model.VirtualNetworkRefs = VirtualNetworkcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -449,47 +449,6 @@ func TestPhysicalRouter(t *testing.T) {
 	//Delete ref entries, referred objects
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_physical_router_virtual_router` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing VirtualRouterRefs delete statement failed")
-		}
-		_, err = stmt.Exec("physical_router_dummy_uuid", "physical_router_virtual_router_ref_uuid")
-		_, err = stmt.Exec("physical_router_dummy_uuid", "physical_router_virtual_router_ref_uuid1")
-		_, err = stmt.Exec("physical_router_dummy_uuid", "physical_router_virtual_router_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "VirtualRouterRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualRouter(ctx, tx,
-			&models.DeleteVirtualRouterRequest{
-				ID: "physical_router_virtual_router_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref physical_router_virtual_router_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualRouter(ctx, tx,
-			&models.DeleteVirtualRouterRequest{
-				ID: "physical_router_virtual_router_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref physical_router_virtual_router_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteVirtualRouter(
-			ctx,
-			tx,
-			&models.DeleteVirtualRouterRequest{
-				ID: "physical_router_virtual_router_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref physical_router_virtual_router_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		stmt, err := tx.Prepare("delete from `ref_physical_router_virtual_network` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing VirtualNetworkRefs delete statement failed")
@@ -569,6 +528,47 @@ func TestPhysicalRouter(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("delete ref physical_router_bgp_router_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_physical_router_virtual_router` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing VirtualRouterRefs delete statement failed")
+		}
+		_, err = stmt.Exec("physical_router_dummy_uuid", "physical_router_virtual_router_ref_uuid")
+		_, err = stmt.Exec("physical_router_dummy_uuid", "physical_router_virtual_router_ref_uuid1")
+		_, err = stmt.Exec("physical_router_dummy_uuid", "physical_router_virtual_router_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "VirtualRouterRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteVirtualRouter(ctx, tx,
+			&models.DeleteVirtualRouterRequest{
+				ID: "physical_router_virtual_router_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref physical_router_virtual_router_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteVirtualRouter(ctx, tx,
+			&models.DeleteVirtualRouterRequest{
+				ID: "physical_router_virtual_router_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref physical_router_virtual_router_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteVirtualRouter(
+			ctx,
+			tx,
+			&models.DeleteVirtualRouterRequest{
+				ID: "physical_router_virtual_router_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref physical_router_virtual_router_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing
