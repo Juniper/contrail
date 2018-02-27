@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	pkglog "github.com/Juniper/contrail/pkg/log"
@@ -36,25 +37,30 @@ func (w *pollingWatcher) Action(actionType string, resource map[string]interface
 func (w *pollingWatcher) Sync() error {
 	resources := w.resources
 	//TODO(nati) Proper stop support using channel
-	var list []interface{}
+	var list map[string][]interface{}
 	w.log.Debug("Polling data")
-	_, err := w.agent.APIServer.Read(w.agent.schemas[w.SchemaID].PluralPath, &list)
+	resourcePath := w.agent.schemas[w.SchemaID].PluralPath
+	_, err := w.agent.APIServer.Read(resourcePath, &list)
 	if err != nil {
 		return err
 	}
 	idsExistsInServer := map[string]bool{}
-	for _, rawResource := range list {
+	for _, rawResource := range list[strings.TrimLeft(resourcePath, "/")] {
 		resource, ok := rawResource.(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("invalid resource type")
 		}
-		id, ok := resource["id"].(string)
+		id, ok := resource["uuid"].(string)
 		if !ok {
 			return fmt.Errorf("invalid resource type")
 		}
 		idsExistsInServer[id] = true
-		existingResource, exists := resources[resource["id"].(string)]
+		existingResource, exists := resources[id]
 		if exists {
+			/* set the exact schemaID in the read resource
+			   before comparing it with the existing resource
+			*/
+			resource["schema_id"] = w.SchemaID
 			if !reflect.DeepEqual(resource, existingResource) {
 				err = w.Action(actionUpdate, resource)
 				if err != nil {
