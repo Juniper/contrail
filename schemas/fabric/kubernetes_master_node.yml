@@ -10,7 +10,11 @@ references:
       operations: "CRUD"
       description: "Reference to node object for this kubernetes master node."
       presence: "optional"
-parent: contrail_cluster
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this kubernetes master node."
+    presence: "optional"
 plural: kubernetes_master_nodes
 prefix: /
 schema:

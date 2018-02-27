@@ -39,37 +39,6 @@ func TestSecurityLoggingObject(t *testing.T) {
 
 	// Create referred objects
 
-	var SecurityGroupcreateref []*models.SecurityLoggingObjectSecurityGroupRef
-	var SecurityGrouprefModel *models.SecurityGroup
-	SecurityGrouprefModel = models.MakeSecurityGroup()
-	SecurityGrouprefModel.UUID = "security_logging_object_security_group_ref_uuid"
-	SecurityGrouprefModel.FQName = []string{"test", "security_logging_object_security_group_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateSecurityGroup(ctx, tx, &models.CreateSecurityGroupRequest{
-			SecurityGroup: SecurityGrouprefModel,
-		})
-	})
-	SecurityGrouprefModel.UUID = "security_logging_object_security_group_ref_uuid1"
-	SecurityGrouprefModel.FQName = []string{"test", "security_logging_object_security_group_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateSecurityGroup(ctx, tx, &models.CreateSecurityGroupRequest{
-			SecurityGroup: SecurityGrouprefModel,
-		})
-	})
-	SecurityGrouprefModel.UUID = "security_logging_object_security_group_ref_uuid2"
-	SecurityGrouprefModel.FQName = []string{"test", "security_logging_object_security_group_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreateSecurityGroup(ctx, tx, &models.CreateSecurityGroupRequest{
-			SecurityGroup: SecurityGrouprefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	SecurityGroupcreateref = append(SecurityGroupcreateref, &models.SecurityLoggingObjectSecurityGroupRef{UUID: "security_logging_object_security_group_ref_uuid", To: []string{"test", "security_logging_object_security_group_ref_uuid"}})
-	SecurityGroupcreateref = append(SecurityGroupcreateref, &models.SecurityLoggingObjectSecurityGroupRef{UUID: "security_logging_object_security_group_ref_uuid2", To: []string{"test", "security_logging_object_security_group_ref_uuid2"}})
-	model.SecurityGroupRefs = SecurityGroupcreateref
-
 	var NetworkPolicycreateref []*models.SecurityLoggingObjectNetworkPolicyRef
 	var NetworkPolicyrefModel *models.NetworkPolicy
 	NetworkPolicyrefModel = models.MakeNetworkPolicy()
@@ -100,6 +69,37 @@ func TestSecurityLoggingObject(t *testing.T) {
 	NetworkPolicycreateref = append(NetworkPolicycreateref, &models.SecurityLoggingObjectNetworkPolicyRef{UUID: "security_logging_object_network_policy_ref_uuid", To: []string{"test", "security_logging_object_network_policy_ref_uuid"}})
 	NetworkPolicycreateref = append(NetworkPolicycreateref, &models.SecurityLoggingObjectNetworkPolicyRef{UUID: "security_logging_object_network_policy_ref_uuid2", To: []string{"test", "security_logging_object_network_policy_ref_uuid2"}})
 	model.NetworkPolicyRefs = NetworkPolicycreateref
+
+	var SecurityGroupcreateref []*models.SecurityLoggingObjectSecurityGroupRef
+	var SecurityGrouprefModel *models.SecurityGroup
+	SecurityGrouprefModel = models.MakeSecurityGroup()
+	SecurityGrouprefModel.UUID = "security_logging_object_security_group_ref_uuid"
+	SecurityGrouprefModel.FQName = []string{"test", "security_logging_object_security_group_ref_uuid"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateSecurityGroup(ctx, tx, &models.CreateSecurityGroupRequest{
+			SecurityGroup: SecurityGrouprefModel,
+		})
+	})
+	SecurityGrouprefModel.UUID = "security_logging_object_security_group_ref_uuid1"
+	SecurityGrouprefModel.FQName = []string{"test", "security_logging_object_security_group_ref_uuid1"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateSecurityGroup(ctx, tx, &models.CreateSecurityGroupRequest{
+			SecurityGroup: SecurityGrouprefModel,
+		})
+	})
+	SecurityGrouprefModel.UUID = "security_logging_object_security_group_ref_uuid2"
+	SecurityGrouprefModel.FQName = []string{"test", "security_logging_object_security_group_ref_uuid2"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreateSecurityGroup(ctx, tx, &models.CreateSecurityGroupRequest{
+			SecurityGroup: SecurityGrouprefModel,
+		})
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	SecurityGroupcreateref = append(SecurityGroupcreateref, &models.SecurityLoggingObjectSecurityGroupRef{UUID: "security_logging_object_security_group_ref_uuid", To: []string{"test", "security_logging_object_security_group_ref_uuid"}})
+	SecurityGroupcreateref = append(SecurityGroupcreateref, &models.SecurityLoggingObjectSecurityGroupRef{UUID: "security_logging_object_security_group_ref_uuid2", To: []string{"test", "security_logging_object_security_group_ref_uuid2"}})
+	model.SecurityGroupRefs = SecurityGroupcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -296,47 +296,6 @@ func TestSecurityLoggingObject(t *testing.T) {
 	//Delete ref entries, referred objects
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_security_logging_object_security_group` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing SecurityGroupRefs delete statement failed")
-		}
-		_, err = stmt.Exec("security_logging_object_dummy_uuid", "security_logging_object_security_group_ref_uuid")
-		_, err = stmt.Exec("security_logging_object_dummy_uuid", "security_logging_object_security_group_ref_uuid1")
-		_, err = stmt.Exec("security_logging_object_dummy_uuid", "security_logging_object_security_group_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "SecurityGroupRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteSecurityGroup(ctx, tx,
-			&models.DeleteSecurityGroupRequest{
-				ID: "security_logging_object_security_group_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref security_logging_object_security_group_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteSecurityGroup(ctx, tx,
-			&models.DeleteSecurityGroupRequest{
-				ID: "security_logging_object_security_group_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref security_logging_object_security_group_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeleteSecurityGroup(
-			ctx,
-			tx,
-			&models.DeleteSecurityGroupRequest{
-				ID: "security_logging_object_security_group_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref security_logging_object_security_group_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		stmt, err := tx.Prepare("delete from `ref_security_logging_object_network_policy` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing NetworkPolicyRefs delete statement failed")
@@ -375,6 +334,47 @@ func TestSecurityLoggingObject(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("delete ref security_logging_object_network_policy_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_security_logging_object_security_group` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing SecurityGroupRefs delete statement failed")
+		}
+		_, err = stmt.Exec("security_logging_object_dummy_uuid", "security_logging_object_security_group_ref_uuid")
+		_, err = stmt.Exec("security_logging_object_dummy_uuid", "security_logging_object_security_group_ref_uuid1")
+		_, err = stmt.Exec("security_logging_object_dummy_uuid", "security_logging_object_security_group_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "SecurityGroupRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteSecurityGroup(ctx, tx,
+			&models.DeleteSecurityGroupRequest{
+				ID: "security_logging_object_security_group_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref security_logging_object_security_group_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteSecurityGroup(ctx, tx,
+			&models.DeleteSecurityGroupRequest{
+				ID: "security_logging_object_security_group_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref security_logging_object_security_group_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeleteSecurityGroup(
+			ctx,
+			tx,
+			&models.DeleteSecurityGroupRequest{
+				ID: "security_logging_object_security_group_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref security_logging_object_security_group_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

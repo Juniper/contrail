@@ -39,37 +39,6 @@ func TestE2ServiceProvider(t *testing.T) {
 
 	// Create referred objects
 
-	var PhysicalRoutercreateref []*models.E2ServiceProviderPhysicalRouterRef
-	var PhysicalRouterrefModel *models.PhysicalRouter
-	PhysicalRouterrefModel = models.MakePhysicalRouter()
-	PhysicalRouterrefModel.UUID = "e2_service_provider_physical_router_ref_uuid"
-	PhysicalRouterrefModel.FQName = []string{"test", "e2_service_provider_physical_router_ref_uuid"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreatePhysicalRouter(ctx, tx, &models.CreatePhysicalRouterRequest{
-			PhysicalRouter: PhysicalRouterrefModel,
-		})
-	})
-	PhysicalRouterrefModel.UUID = "e2_service_provider_physical_router_ref_uuid1"
-	PhysicalRouterrefModel.FQName = []string{"test", "e2_service_provider_physical_router_ref_uuid1"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreatePhysicalRouter(ctx, tx, &models.CreatePhysicalRouterRequest{
-			PhysicalRouter: PhysicalRouterrefModel,
-		})
-	})
-	PhysicalRouterrefModel.UUID = "e2_service_provider_physical_router_ref_uuid2"
-	PhysicalRouterrefModel.FQName = []string{"test", "e2_service_provider_physical_router_ref_uuid2"}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return CreatePhysicalRouter(ctx, tx, &models.CreatePhysicalRouterRequest{
-			PhysicalRouter: PhysicalRouterrefModel,
-		})
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	PhysicalRoutercreateref = append(PhysicalRoutercreateref, &models.E2ServiceProviderPhysicalRouterRef{UUID: "e2_service_provider_physical_router_ref_uuid", To: []string{"test", "e2_service_provider_physical_router_ref_uuid"}})
-	PhysicalRoutercreateref = append(PhysicalRoutercreateref, &models.E2ServiceProviderPhysicalRouterRef{UUID: "e2_service_provider_physical_router_ref_uuid2", To: []string{"test", "e2_service_provider_physical_router_ref_uuid2"}})
-	model.PhysicalRouterRefs = PhysicalRoutercreateref
-
 	var PeeringPolicycreateref []*models.E2ServiceProviderPeeringPolicyRef
 	var PeeringPolicyrefModel *models.PeeringPolicy
 	PeeringPolicyrefModel = models.MakePeeringPolicy()
@@ -100,6 +69,37 @@ func TestE2ServiceProvider(t *testing.T) {
 	PeeringPolicycreateref = append(PeeringPolicycreateref, &models.E2ServiceProviderPeeringPolicyRef{UUID: "e2_service_provider_peering_policy_ref_uuid", To: []string{"test", "e2_service_provider_peering_policy_ref_uuid"}})
 	PeeringPolicycreateref = append(PeeringPolicycreateref, &models.E2ServiceProviderPeeringPolicyRef{UUID: "e2_service_provider_peering_policy_ref_uuid2", To: []string{"test", "e2_service_provider_peering_policy_ref_uuid2"}})
 	model.PeeringPolicyRefs = PeeringPolicycreateref
+
+	var PhysicalRoutercreateref []*models.E2ServiceProviderPhysicalRouterRef
+	var PhysicalRouterrefModel *models.PhysicalRouter
+	PhysicalRouterrefModel = models.MakePhysicalRouter()
+	PhysicalRouterrefModel.UUID = "e2_service_provider_physical_router_ref_uuid"
+	PhysicalRouterrefModel.FQName = []string{"test", "e2_service_provider_physical_router_ref_uuid"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreatePhysicalRouter(ctx, tx, &models.CreatePhysicalRouterRequest{
+			PhysicalRouter: PhysicalRouterrefModel,
+		})
+	})
+	PhysicalRouterrefModel.UUID = "e2_service_provider_physical_router_ref_uuid1"
+	PhysicalRouterrefModel.FQName = []string{"test", "e2_service_provider_physical_router_ref_uuid1"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreatePhysicalRouter(ctx, tx, &models.CreatePhysicalRouterRequest{
+			PhysicalRouter: PhysicalRouterrefModel,
+		})
+	})
+	PhysicalRouterrefModel.UUID = "e2_service_provider_physical_router_ref_uuid2"
+	PhysicalRouterrefModel.FQName = []string{"test", "e2_service_provider_physical_router_ref_uuid2"}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return CreatePhysicalRouter(ctx, tx, &models.CreatePhysicalRouterRequest{
+			PhysicalRouter: PhysicalRouterrefModel,
+		})
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	PhysicalRoutercreateref = append(PhysicalRoutercreateref, &models.E2ServiceProviderPhysicalRouterRef{UUID: "e2_service_provider_physical_router_ref_uuid", To: []string{"test", "e2_service_provider_physical_router_ref_uuid"}})
+	PhysicalRoutercreateref = append(PhysicalRoutercreateref, &models.E2ServiceProviderPhysicalRouterRef{UUID: "e2_service_provider_physical_router_ref_uuid2", To: []string{"test", "e2_service_provider_physical_router_ref_uuid2"}})
+	model.PhysicalRouterRefs = PhysicalRoutercreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -233,14 +233,6 @@ func TestE2ServiceProvider(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var PeeringPolicyref []interface{}
-	//    PeeringPolicyref = append(PeeringPolicyref, map[string]interface{}{"operation":"delete", "uuid":"e2_service_provider_peering_policy_ref_uuid", "to": []string{"test", "e2_service_provider_peering_policy_ref_uuid"}})
-	//    PeeringPolicyref = append(PeeringPolicyref, map[string]interface{}{"operation":"add", "uuid":"e2_service_provider_peering_policy_ref_uuid1", "to": []string{"test", "e2_service_provider_peering_policy_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "PeeringPolicyRefs", ".", PeeringPolicyref)
-	//
 	//    var PhysicalRouterref []interface{}
 	//    PhysicalRouterref = append(PhysicalRouterref, map[string]interface{}{"operation":"delete", "uuid":"e2_service_provider_physical_router_ref_uuid", "to": []string{"test", "e2_service_provider_physical_router_ref_uuid"}})
 	//    PhysicalRouterref = append(PhysicalRouterref, map[string]interface{}{"operation":"add", "uuid":"e2_service_provider_physical_router_ref_uuid1", "to": []string{"test", "e2_service_provider_physical_router_ref_uuid1"}})
@@ -248,6 +240,14 @@ func TestE2ServiceProvider(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "PhysicalRouterRefs", ".", PhysicalRouterref)
+	//
+	//    var PeeringPolicyref []interface{}
+	//    PeeringPolicyref = append(PeeringPolicyref, map[string]interface{}{"operation":"delete", "uuid":"e2_service_provider_peering_policy_ref_uuid", "to": []string{"test", "e2_service_provider_peering_policy_ref_uuid"}})
+	//    PeeringPolicyref = append(PeeringPolicyref, map[string]interface{}{"operation":"add", "uuid":"e2_service_provider_peering_policy_ref_uuid1", "to": []string{"test", "e2_service_provider_peering_policy_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "PeeringPolicyRefs", ".", PeeringPolicyref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
@@ -268,47 +268,6 @@ func TestE2ServiceProvider(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
-
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		stmt, err := tx.Prepare("delete from `ref_e2_service_provider_peering_policy` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing PeeringPolicyRefs delete statement failed")
-		}
-		_, err = stmt.Exec("e2_service_provider_dummy_uuid", "e2_service_provider_peering_policy_ref_uuid")
-		_, err = stmt.Exec("e2_service_provider_dummy_uuid", "e2_service_provider_peering_policy_ref_uuid1")
-		_, err = stmt.Exec("e2_service_provider_dummy_uuid", "e2_service_provider_peering_policy_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "PeeringPolicyRefs delete failed")
-		}
-		return nil
-	})
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeletePeeringPolicy(ctx, tx,
-			&models.DeletePeeringPolicyRequest{
-				ID: "e2_service_provider_peering_policy_ref_uuid"})
-	})
-	if err != nil {
-		t.Fatal("delete ref e2_service_provider_peering_policy_ref_uuid  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeletePeeringPolicy(ctx, tx,
-			&models.DeletePeeringPolicyRequest{
-				ID: "e2_service_provider_peering_policy_ref_uuid1"})
-	})
-	if err != nil {
-		t.Fatal("delete ref e2_service_provider_peering_policy_ref_uuid1  failed", err)
-	}
-	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
-		return DeletePeeringPolicy(
-			ctx,
-			tx,
-			&models.DeletePeeringPolicyRequest{
-				ID: "e2_service_provider_peering_policy_ref_uuid2",
-			})
-	})
-	if err != nil {
-		t.Fatal("delete ref e2_service_provider_peering_policy_ref_uuid2 failed", err)
-	}
 
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
 		stmt, err := tx.Prepare("delete from `ref_e2_service_provider_physical_router` where `from` = ? AND `to` = ?;")
@@ -349,6 +308,47 @@ func TestE2ServiceProvider(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal("delete ref e2_service_provider_physical_router_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		stmt, err := tx.Prepare("delete from `ref_e2_service_provider_peering_policy` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing PeeringPolicyRefs delete statement failed")
+		}
+		_, err = stmt.Exec("e2_service_provider_dummy_uuid", "e2_service_provider_peering_policy_ref_uuid")
+		_, err = stmt.Exec("e2_service_provider_dummy_uuid", "e2_service_provider_peering_policy_ref_uuid1")
+		_, err = stmt.Exec("e2_service_provider_dummy_uuid", "e2_service_provider_peering_policy_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "PeeringPolicyRefs delete failed")
+		}
+		return nil
+	})
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeletePeeringPolicy(ctx, tx,
+			&models.DeletePeeringPolicyRequest{
+				ID: "e2_service_provider_peering_policy_ref_uuid"})
+	})
+	if err != nil {
+		t.Fatal("delete ref e2_service_provider_peering_policy_ref_uuid  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeletePeeringPolicy(ctx, tx,
+			&models.DeletePeeringPolicyRequest{
+				ID: "e2_service_provider_peering_policy_ref_uuid1"})
+	})
+	if err != nil {
+		t.Fatal("delete ref e2_service_provider_peering_policy_ref_uuid1  failed", err)
+	}
+	err = common.DoInTransaction(db, func(tx *sql.Tx) error {
+		return DeletePeeringPolicy(
+			ctx,
+			tx,
+			&models.DeletePeeringPolicyRequest{
+				ID: "e2_service_provider_peering_policy_ref_uuid2",
+			})
+	})
+	if err != nil {
+		t.Fatal("delete ref e2_service_provider_peering_policy_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

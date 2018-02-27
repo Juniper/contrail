@@ -151,9 +151,9 @@ var PhysicalRouterBackRefFields = map[string][]string{
 // PhysicalRouterParentTypes is possible parents for PhysicalRouter
 var PhysicalRouterParents = []string{
 
-	"location",
-
 	"global_system_config",
+
+	"location",
 }
 
 const insertPhysicalRouterVirtualNetworkQuery = "insert into `ref_physical_router_virtual_network` (`from`, `to` ) values (?, ?);"
@@ -236,19 +236,6 @@ func CreatePhysicalRouter(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtVirtualRouterRef, err := tx.Prepare(insertPhysicalRouterVirtualRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualRouterRefs create statement failed")
-	}
-	defer stmtVirtualRouterRef.Close()
-	for _, ref := range model.VirtualRouterRefs {
-
-		_, err = stmtVirtualRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualRouterRefs create failed")
-		}
-	}
-
 	stmtVirtualNetworkRef, err := tx.Prepare(insertPhysicalRouterVirtualNetworkQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing VirtualNetworkRefs create statement failed")
@@ -272,6 +259,19 @@ func CreatePhysicalRouter(
 		_, err = stmtBGPRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "BGPRouterRefs create failed")
+		}
+	}
+
+	stmtVirtualRouterRef, err := tx.Prepare(insertPhysicalRouterVirtualRouterQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualRouterRefs create statement failed")
+	}
+	defer stmtVirtualRouterRef.Close()
+	for _, ref := range model.VirtualRouterRefs {
+
+		_, err = stmtVirtualRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualRouterRefs create failed")
 		}
 	}
 

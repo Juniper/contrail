@@ -172,8 +172,8 @@ It has these top-level messages:
 	GetConfigRootRequest
 	GetConfigRootResponse
 	CustomerAttachment
-	CustomerAttachmentFloatingIPRef
 	CustomerAttachmentVirtualMachineInterfaceRef
+	CustomerAttachmentFloatingIPRef
 	CreateCustomerAttachmentRequest
 	CreateCustomerAttachmentResponse
 	UpdateCustomerAttachmentRequest
@@ -242,8 +242,8 @@ It has these top-level messages:
 	GetE2ServiceProviderRequest
 	GetE2ServiceProviderResponse
 	FirewallPolicy
-	FirewallPolicyFirewallRuleRef
 	FirewallPolicySecurityLoggingObjectRef
+	FirewallPolicyFirewallRuleRef
 	CreateFirewallPolicyRequest
 	CreateFirewallPolicyResponse
 	UpdateFirewallPolicyRequest
@@ -281,8 +281,8 @@ It has these top-level messages:
 	GetFloatingIPPoolRequest
 	GetFloatingIPPoolResponse
 	FloatingIP
-	FloatingIPProjectRef
 	FloatingIPVirtualMachineInterfaceRef
+	FloatingIPProjectRef
 	CreateFloatingIPRequest
 	CreateFloatingIPResponse
 	UpdateFloatingIPRequest
@@ -402,11 +402,11 @@ It has these top-level messages:
 	GetLoadbalancerMemberRequest
 	GetLoadbalancerMemberResponse
 	LoadbalancerPool
-	LoadbalancerPoolLoadbalancerListenerRef
-	LoadbalancerPoolServiceInstanceRef
 	LoadbalancerPoolLoadbalancerHealthmonitorRef
 	LoadbalancerPoolServiceApplianceSetRef
 	LoadbalancerPoolVirtualMachineInterfaceRef
+	LoadbalancerPoolLoadbalancerListenerRef
+	LoadbalancerPoolServiceInstanceRef
 	CreateLoadbalancerPoolRequest
 	CreateLoadbalancerPoolResponse
 	UpdateLoadbalancerPoolRequest
@@ -444,13 +444,13 @@ It has these top-level messages:
 	GetLogicalInterfaceRequest
 	GetLogicalInterfaceResponse
 	LogicalRouter
+	LogicalRouterRouteTargetRef
+	LogicalRouterVirtualMachineInterfaceRef
 	LogicalRouterServiceInstanceRef
 	LogicalRouterRouteTableRef
 	LogicalRouterVirtualNetworkRef
 	LogicalRouterPhysicalRouterRef
 	LogicalRouterBGPVPNRef
-	LogicalRouterRouteTargetRef
-	LogicalRouterVirtualMachineInterfaceRef
 	CreateLogicalRouterRequest
 	CreateLogicalRouterResponse
 	UpdateLogicalRouterRequest
@@ -567,10 +567,10 @@ It has these top-level messages:
 	GetPortTupleRequest
 	GetPortTupleResponse
 	Project
-	ProjectApplicationPolicySetRef
-	ProjectFloatingIPPoolRef
 	ProjectAliasIPPoolRef
 	ProjectNamespaceRef
+	ProjectApplicationPolicySetRef
+	ProjectFloatingIPPoolRef
 	CreateProjectRequest
 	CreateProjectResponse
 	UpdateProjectRequest
@@ -733,9 +733,9 @@ It has these top-level messages:
 	GetServiceConnectionModuleRequest
 	GetServiceConnectionModuleResponse
 	ServiceEndpoint
-	ServiceEndpointServiceObjectRef
 	ServiceEndpointServiceConnectionModuleRef
 	ServiceEndpointPhysicalRouterRef
+	ServiceEndpointServiceObjectRef
 	CreateServiceEndpointRequest
 	CreateServiceEndpointResponse
 	UpdateServiceEndpointRequest
@@ -889,18 +889,18 @@ It has these top-level messages:
 	VirtualMachineInterface
 	VirtualMachineInterfaceBGPRouterRef
 	VirtualMachineInterfaceRoutingInstanceRef
-	VirtualMachineInterfacePortTupleRef
-	VirtualMachineInterfaceSecurityGroupRef
-	VirtualMachineInterfaceVirtualMachineInterfaceRef
-	VirtualMachineInterfaceSecurityLoggingObjectRef
-	VirtualMachineInterfaceVirtualNetworkRef
-	VirtualMachineInterfaceVirtualMachineRef
-	VirtualMachineInterfaceBridgeDomainRef
-	VirtualMachineInterfaceServiceEndpointRef
-	VirtualMachineInterfaceInterfaceRouteTableRef
 	VirtualMachineInterfaceQosConfigRef
+	VirtualMachineInterfaceSecurityGroupRef
+	VirtualMachineInterfaceVirtualNetworkRef
+	VirtualMachineInterfaceVirtualMachineInterfaceRef
+	VirtualMachineInterfaceVirtualMachineRef
 	VirtualMachineInterfacePhysicalInterfaceRef
 	VirtualMachineInterfaceServiceHealthCheckRef
+	VirtualMachineInterfaceSecurityLoggingObjectRef
+	VirtualMachineInterfaceInterfaceRouteTableRef
+	VirtualMachineInterfacePortTupleRef
+	VirtualMachineInterfaceServiceEndpointRef
+	VirtualMachineInterfaceBridgeDomainRef
 	CreateVirtualMachineInterfaceRequest
 	CreateVirtualMachineInterfaceResponse
 	UpdateVirtualMachineInterfaceRequest
@@ -924,13 +924,13 @@ It has these top-level messages:
 	GetVirtualMachineRequest
 	GetVirtualMachineResponse
 	VirtualNetwork
-	VirtualNetworkNetworkIpamRef
-	VirtualNetworkSecurityLoggingObjectRef
-	VirtualNetworkNetworkPolicyRef
 	VirtualNetworkQosConfigRef
 	VirtualNetworkRouteTableRef
 	VirtualNetworkVirtualNetworkRef
 	VirtualNetworkBGPVPNRef
+	VirtualNetworkNetworkIpamRef
+	VirtualNetworkSecurityLoggingObjectRef
+	VirtualNetworkNetworkPolicyRef
 	CreateVirtualNetworkRequest
 	CreateVirtualNetworkResponse
 	UpdateVirtualNetworkRequest
@@ -1219,125 +1219,125 @@ It has these top-level messages:
 	ListWidgetResponse
 	GetWidgetRequest
 	GetWidgetResponse
-	SubnetListType
-	OpenStackLink
-	SNMPCredentials
-	ServiceTemplateType
-	KeyValuePair
-	SubnetType
-	PolicyEntriesType
-	BridgeDomainMembershipType
-	StaticMirrorNhType
-	AllowedAddressPair
-	KeyValuePairs
-	PermType2
-	UveKeysType
-	LoadbalancerListenerType
-	LoadbalancerMemberType
-	PolicyRuleType
-	VirtualIpType
+	PortType
+	FirewallRuleEndpointType
+	AlarmExpression
+	RbacRuleEntriesType
+	DomainLimitsType
+	TelemetryResourceInfo
 	LocalLinkConnection
-	RouteTargetList
-	LinklocalServiceEntryType
-	MatchConditionType
-	AlarmOrList
-	FirewallRuleMatchTagsTypeIdList
-	BGPaaServiceParametersType
-	FlowAgingTimeoutList
+	SubnetType
+	UveKeysType
+	IpamDnsAddressType
 	UserCredentials
-	PluginProperty
-	DhcpOptionsListType
-	IpamType
-	IpamSubnets
-	AllowedAddressPairs
-	MACMoveLimitControlType
-	IpAddressesType
+	MACLimitControlType
+	FirewallRuleMatchTagsTypeIdList
+	GracefulRestartParametersType
+	FlowAgingTimeout
+	PermType
+	PermType2
+	BGPaaServiceParametersType
+	ShareType
+	MatchConditionType
+	SecurityLoggingObjectRuleEntryType
+	InterfaceMirrorType
+	ProviderDetails
 	DhcpOptionType
 	VirtualDnsType
-	VirtualMachineInterfacePropertiesType
-	InstanceInfo
-	AddressType
-	InterfaceMirrorType
-	OpenStackImageProperty
-	ServiceApplianceInterfaceType
-	ActionListType
-	FloatingIpPoolSubnetType
-	SecurityLoggingObjectRuleEntryType
-	VirtualDnsRecordType
-	ServiceInterfaceTag
-	ShareType
-	RbacRuleType
-	JunosServicePorts
-	QosIdForwardingClassPair
-	FirewallSequence
-	PluginProperties
-	LinklocalServicesTypes
-	BaremetalProperties
-	PolicyBasedForwardingRuleType
-	FirewallRuleMatchTagsType
-	IpamSubnetType
-	OpenStackFlavorProperty
-	VirtualRouterNetworkIpamType
-	FirewallRuleEndpointType
-	LoadbalancerType
-	MemberType
-	IdPermsType
-	AllocationPoolType
-	ProviderDetails
-	OpenStackAddress
-	RbacPermType
-	DiscoveryPubSubEndPointType
-	DiscoveryServiceAssignmentType
-	FirewallServiceType
-	FirewallServiceGroupType
-	DriverInfo
-	PortMap
-	PortMappings
-	CommunityAttributes
-	RouteTableType
-	FatFlowProtocols
-	VirtualNetworkType
-	RoutingPolicyServiceInstanceType
-	PortType
-	DomainLimitsType
-	AlarmOperand2
-	LoadbalancerPoolType
-	ServiceHealthCheckType
-	MacAddressesType
-	PermType
-	VrfAssignRuleType
-	VrfAssignTableType
-	UserDefinedLogStat
-	ServiceScaleOutType
-	RbacRuleEntriesType
-	GracefulRestartParametersType
-	IpamDnsAddressType
-	QuotaType
-	QosIdForwardingClassPairs
-	ServiceInstanceType
-	AlarmAndList
-	EcmpHashingIncludeFields
-	ServiceTemplateInterfaceType
 	ProtocolType
+	DriverInfo
 	VirtualNetworkPolicyType
-	FlowAgingTimeout
-	ServiceInstanceInterfaceType
-	TimerType
-	AclEntriesType
-	TelemetryStateInfo
-	SecurityLoggingObjectRuleListType
-	AlarmExpression
-	EncapsulationPrioritiesType
-	VnSubnetsType
-	LoadbalancerHealthmonitorType
-	MACLimitControlType
-	ControlTrafficDscpType
-	RouteType
-	TelemetryResourceInfo
-	MirrorActionType
-	AclRuleType
-	UserDefinedLogStatList
+	MACMoveLimitControlType
+	LinklocalServicesTypes
+	ServiceInstanceType
+	VrfAssignRuleType
+	RoutingPolicyServiceInstanceType
+	PluginProperties
+	StaticMirrorNhType
+	RbacRuleType
+	PortMappings
+	IpamSubnetType
+	ServiceTemplateType
+	FirewallSequence
+	KeyValuePair
+	LoadbalancerType
+	JunosServicePorts
+	ServiceTemplateInterfaceType
+	PluginProperty
+	AllowedAddressPairs
+	AllocationPoolType
 	SequenceType
+	FloatingIpPoolSubnetType
+	ControlTrafficDscpType
+	IpAddressesType
+	ServiceHealthCheckType
+	AclRuleType
+	RbacPermType
+	MacAddressesType
+	FlowAgingTimeoutList
+	LoadbalancerMemberType
+	BridgeDomainMembershipType
+	VnSubnetsType
+	SNMPCredentials
+	LinklocalServiceEntryType
+	RouteTableType
+	FirewallServiceGroupType
+	VirtualRouterNetworkIpamType
+	MirrorActionType
+	PortMap
+	CommunityAttributes
+	IpamSubnets
+	QosIdForwardingClassPair
+	VirtualNetworkType
+	IdPermsType
+	MemberType
+	ServiceInstanceInterfaceType
+	FirewallRuleMatchTagsType
+	VirtualDnsRecordType
+	AlarmOperand2
+	DiscoveryServiceAssignmentType
+	RouteType
+	VirtualIpType
+	EcmpHashingIncludeFields
+	SubnetListType
+	AlarmAndList
+	LoadbalancerHealthmonitorType
+	QosIdForwardingClassPairs
+	AlarmOrList
+	RouteTargetList
+	TimerType
+	ServiceApplianceInterfaceType
+	SecurityLoggingObjectRuleListType
+	ServiceScaleOutType
+	OpenStackAddress
+	ActionListType
+	EncapsulationPrioritiesType
+	PolicyRuleType
+	OpenStackLink
+	DiscoveryPubSubEndPointType
+	UserDefinedLogStat
+	TelemetryStateInfo
+	ServiceInterfaceTag
+	AclEntriesType
+	LoadbalancerListenerType
+	DhcpOptionsListType
+	FatFlowProtocols
+	VirtualMachineInterfacePropertiesType
+	AddressType
+	FirewallServiceType
+	LoadbalancerPoolType
+	PolicyBasedForwardingRuleType
+	PolicyEntriesType
+	BaremetalProperties
+	AllowedAddressPair
+	InstanceInfo
+	OpenStackFlavorProperty
+	OpenStackImageProperty
+	KeyValuePairs
+	UserDefinedLogStatList
+	IpamType
+	QuotaType
+	VrfAssignTableType
 */
 package models
 
@@ -7914,46 +7914,6 @@ func BenchmarkCustomerAttachmentProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkCustomerAttachmentFloatingIPRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*CustomerAttachmentFloatingIPRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedCustomerAttachmentFloatingIPRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkCustomerAttachmentFloatingIPRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedCustomerAttachmentFloatingIPRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &CustomerAttachmentFloatingIPRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
 func BenchmarkCustomerAttachmentVirtualMachineInterfaceRefProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -7984,6 +7944,46 @@ func BenchmarkCustomerAttachmentVirtualMachineInterfaceRefProtoUnmarshal(b *test
 		datas[i] = dAtA
 	}
 	msg := &CustomerAttachmentVirtualMachineInterfaceRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkCustomerAttachmentFloatingIPRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*CustomerAttachmentFloatingIPRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedCustomerAttachmentFloatingIPRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkCustomerAttachmentFloatingIPRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedCustomerAttachmentFloatingIPRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &CustomerAttachmentFloatingIPRef{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -10714,46 +10714,6 @@ func BenchmarkFirewallPolicyProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkFirewallPolicyFirewallRuleRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FirewallPolicyFirewallRuleRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedFirewallPolicyFirewallRuleRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallPolicyFirewallRuleRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedFirewallPolicyFirewallRuleRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &FirewallPolicyFirewallRuleRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
 func BenchmarkFirewallPolicySecurityLoggingObjectRefProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -10784,6 +10744,46 @@ func BenchmarkFirewallPolicySecurityLoggingObjectRefProtoUnmarshal(b *testing.B)
 		datas[i] = dAtA
 	}
 	msg := &FirewallPolicySecurityLoggingObjectRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFirewallPolicyFirewallRuleRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*FirewallPolicyFirewallRuleRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedFirewallPolicyFirewallRuleRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFirewallPolicyFirewallRuleRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedFirewallPolicyFirewallRuleRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &FirewallPolicyFirewallRuleRef{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -12274,46 +12274,6 @@ func BenchmarkFloatingIPProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkFloatingIPProjectRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FloatingIPProjectRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedFloatingIPProjectRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFloatingIPProjectRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedFloatingIPProjectRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &FloatingIPProjectRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
 func BenchmarkFloatingIPVirtualMachineInterfaceRefProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -12344,6 +12304,46 @@ func BenchmarkFloatingIPVirtualMachineInterfaceRefProtoUnmarshal(b *testing.B) {
 		datas[i] = dAtA
 	}
 	msg := &FloatingIPVirtualMachineInterfaceRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFloatingIPProjectRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*FloatingIPProjectRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedFloatingIPProjectRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFloatingIPProjectRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedFloatingIPProjectRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &FloatingIPProjectRef{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -17114,86 +17114,6 @@ func BenchmarkLoadbalancerPoolProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkLoadbalancerPoolLoadbalancerListenerRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LoadbalancerPoolLoadbalancerListenerRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedLoadbalancerPoolLoadbalancerListenerRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerPoolLoadbalancerListenerRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedLoadbalancerPoolLoadbalancerListenerRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &LoadbalancerPoolLoadbalancerListenerRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerPoolServiceInstanceRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LoadbalancerPoolServiceInstanceRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedLoadbalancerPoolServiceInstanceRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerPoolServiceInstanceRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedLoadbalancerPoolServiceInstanceRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &LoadbalancerPoolServiceInstanceRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
 func BenchmarkLoadbalancerPoolLoadbalancerHealthmonitorRefProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -17304,6 +17224,86 @@ func BenchmarkLoadbalancerPoolVirtualMachineInterfaceRefProtoUnmarshal(b *testin
 		datas[i] = dAtA
 	}
 	msg := &LoadbalancerPoolVirtualMachineInterfaceRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerPoolLoadbalancerListenerRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LoadbalancerPoolLoadbalancerListenerRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedLoadbalancerPoolLoadbalancerListenerRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerPoolLoadbalancerListenerRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedLoadbalancerPoolLoadbalancerListenerRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &LoadbalancerPoolLoadbalancerListenerRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerPoolServiceInstanceRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LoadbalancerPoolServiceInstanceRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedLoadbalancerPoolServiceInstanceRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerPoolServiceInstanceRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedLoadbalancerPoolServiceInstanceRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &LoadbalancerPoolServiceInstanceRef{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -18794,6 +18794,86 @@ func BenchmarkLogicalRouterProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
+func BenchmarkLogicalRouterRouteTargetRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LogicalRouterRouteTargetRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedLogicalRouterRouteTargetRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLogicalRouterRouteTargetRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedLogicalRouterRouteTargetRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &LogicalRouterRouteTargetRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLogicalRouterVirtualMachineInterfaceRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LogicalRouterVirtualMachineInterfaceRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedLogicalRouterVirtualMachineInterfaceRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLogicalRouterVirtualMachineInterfaceRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedLogicalRouterVirtualMachineInterfaceRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &LogicalRouterVirtualMachineInterfaceRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
 func BenchmarkLogicalRouterServiceInstanceRefProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -18984,86 +19064,6 @@ func BenchmarkLogicalRouterBGPVPNRefProtoUnmarshal(b *testing.B) {
 		datas[i] = dAtA
 	}
 	msg := &LogicalRouterBGPVPNRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLogicalRouterRouteTargetRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LogicalRouterRouteTargetRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedLogicalRouterRouteTargetRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLogicalRouterRouteTargetRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedLogicalRouterRouteTargetRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &LogicalRouterRouteTargetRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLogicalRouterVirtualMachineInterfaceRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LogicalRouterVirtualMachineInterfaceRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedLogicalRouterVirtualMachineInterfaceRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLogicalRouterVirtualMachineInterfaceRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedLogicalRouterVirtualMachineInterfaceRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &LogicalRouterVirtualMachineInterfaceRef{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -23714,86 +23714,6 @@ func BenchmarkProjectProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkProjectApplicationPolicySetRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ProjectApplicationPolicySetRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedProjectApplicationPolicySetRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkProjectApplicationPolicySetRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedProjectApplicationPolicySetRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &ProjectApplicationPolicySetRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkProjectFloatingIPPoolRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ProjectFloatingIPPoolRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedProjectFloatingIPPoolRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkProjectFloatingIPPoolRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedProjectFloatingIPPoolRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &ProjectFloatingIPPoolRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
 func BenchmarkProjectAliasIPPoolRefProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -23864,6 +23784,86 @@ func BenchmarkProjectNamespaceRefProtoUnmarshal(b *testing.B) {
 		datas[i] = dAtA
 	}
 	msg := &ProjectNamespaceRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkProjectApplicationPolicySetRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ProjectApplicationPolicySetRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedProjectApplicationPolicySetRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkProjectApplicationPolicySetRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedProjectApplicationPolicySetRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &ProjectApplicationPolicySetRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkProjectFloatingIPPoolRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ProjectFloatingIPPoolRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedProjectFloatingIPPoolRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkProjectFloatingIPPoolRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedProjectFloatingIPPoolRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &ProjectFloatingIPPoolRef{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -30354,46 +30354,6 @@ func BenchmarkServiceEndpointProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkServiceEndpointServiceObjectRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ServiceEndpointServiceObjectRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedServiceEndpointServiceObjectRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkServiceEndpointServiceObjectRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedServiceEndpointServiceObjectRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &ServiceEndpointServiceObjectRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
 func BenchmarkServiceEndpointServiceConnectionModuleRefProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -30464,6 +30424,46 @@ func BenchmarkServiceEndpointPhysicalRouterRefProtoUnmarshal(b *testing.B) {
 		datas[i] = dAtA
 	}
 	msg := &ServiceEndpointPhysicalRouterRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceEndpointServiceObjectRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ServiceEndpointServiceObjectRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedServiceEndpointServiceObjectRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceEndpointServiceObjectRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedServiceEndpointServiceObjectRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &ServiceEndpointServiceObjectRef{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -36594,12 +36594,12 @@ func BenchmarkVirtualMachineInterfaceRoutingInstanceRefProtoUnmarshal(b *testing
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkVirtualMachineInterfacePortTupleRefProtoMarshal(b *testing.B) {
+func BenchmarkVirtualMachineInterfaceQosConfigRefProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*VirtualMachineInterfacePortTupleRef, 10000)
+	pops := make([]*VirtualMachineInterfaceQosConfigRef, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVirtualMachineInterfacePortTupleRef(popr, false)
+		pops[i] = NewPopulatedVirtualMachineInterfaceQosConfigRef(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -36612,18 +36612,18 @@ func BenchmarkVirtualMachineInterfacePortTupleRefProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkVirtualMachineInterfacePortTupleRefProtoUnmarshal(b *testing.B) {
+func BenchmarkVirtualMachineInterfaceQosConfigRefProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVirtualMachineInterfacePortTupleRef(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedVirtualMachineInterfaceQosConfigRef(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &VirtualMachineInterfacePortTupleRef{}
+	msg := &VirtualMachineInterfaceQosConfigRef{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -36674,86 +36674,6 @@ func BenchmarkVirtualMachineInterfaceSecurityGroupRefProtoUnmarshal(b *testing.B
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkVirtualMachineInterfaceVirtualMachineInterfaceRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualMachineInterfaceVirtualMachineInterfaceRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVirtualMachineInterfaceVirtualMachineInterfaceRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualMachineInterfaceVirtualMachineInterfaceRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVirtualMachineInterfaceVirtualMachineInterfaceRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &VirtualMachineInterfaceVirtualMachineInterfaceRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualMachineInterfaceSecurityLoggingObjectRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualMachineInterfaceSecurityLoggingObjectRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVirtualMachineInterfaceSecurityLoggingObjectRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualMachineInterfaceSecurityLoggingObjectRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVirtualMachineInterfaceSecurityLoggingObjectRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &VirtualMachineInterfaceSecurityLoggingObjectRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
 func BenchmarkVirtualMachineInterfaceVirtualNetworkRefProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -36794,6 +36714,46 @@ func BenchmarkVirtualMachineInterfaceVirtualNetworkRefProtoUnmarshal(b *testing.
 	b.SetBytes(int64(total / b.N))
 }
 
+func BenchmarkVirtualMachineInterfaceVirtualMachineInterfaceRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualMachineInterfaceVirtualMachineInterfaceRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedVirtualMachineInterfaceVirtualMachineInterfaceRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfaceVirtualMachineInterfaceRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedVirtualMachineInterfaceVirtualMachineInterfaceRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &VirtualMachineInterfaceVirtualMachineInterfaceRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
 func BenchmarkVirtualMachineInterfaceVirtualMachineRefProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -36824,166 +36784,6 @@ func BenchmarkVirtualMachineInterfaceVirtualMachineRefProtoUnmarshal(b *testing.
 		datas[i] = dAtA
 	}
 	msg := &VirtualMachineInterfaceVirtualMachineRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualMachineInterfaceBridgeDomainRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualMachineInterfaceBridgeDomainRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVirtualMachineInterfaceBridgeDomainRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualMachineInterfaceBridgeDomainRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVirtualMachineInterfaceBridgeDomainRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &VirtualMachineInterfaceBridgeDomainRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualMachineInterfaceServiceEndpointRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualMachineInterfaceServiceEndpointRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVirtualMachineInterfaceServiceEndpointRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualMachineInterfaceServiceEndpointRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVirtualMachineInterfaceServiceEndpointRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &VirtualMachineInterfaceServiceEndpointRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualMachineInterfaceInterfaceRouteTableRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualMachineInterfaceInterfaceRouteTableRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVirtualMachineInterfaceInterfaceRouteTableRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualMachineInterfaceInterfaceRouteTableRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVirtualMachineInterfaceInterfaceRouteTableRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &VirtualMachineInterfaceInterfaceRouteTableRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualMachineInterfaceQosConfigRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualMachineInterfaceQosConfigRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVirtualMachineInterfaceQosConfigRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualMachineInterfaceQosConfigRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVirtualMachineInterfaceQosConfigRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &VirtualMachineInterfaceQosConfigRef{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -37064,6 +36864,206 @@ func BenchmarkVirtualMachineInterfaceServiceHealthCheckRefProtoUnmarshal(b *test
 		datas[i] = dAtA
 	}
 	msg := &VirtualMachineInterfaceServiceHealthCheckRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfaceSecurityLoggingObjectRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualMachineInterfaceSecurityLoggingObjectRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedVirtualMachineInterfaceSecurityLoggingObjectRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfaceSecurityLoggingObjectRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedVirtualMachineInterfaceSecurityLoggingObjectRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &VirtualMachineInterfaceSecurityLoggingObjectRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfaceInterfaceRouteTableRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualMachineInterfaceInterfaceRouteTableRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedVirtualMachineInterfaceInterfaceRouteTableRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfaceInterfaceRouteTableRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedVirtualMachineInterfaceInterfaceRouteTableRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &VirtualMachineInterfaceInterfaceRouteTableRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfacePortTupleRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualMachineInterfacePortTupleRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedVirtualMachineInterfacePortTupleRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfacePortTupleRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedVirtualMachineInterfacePortTupleRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &VirtualMachineInterfacePortTupleRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfaceServiceEndpointRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualMachineInterfaceServiceEndpointRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedVirtualMachineInterfaceServiceEndpointRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfaceServiceEndpointRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedVirtualMachineInterfaceServiceEndpointRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &VirtualMachineInterfaceServiceEndpointRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfaceBridgeDomainRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualMachineInterfaceBridgeDomainRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedVirtualMachineInterfaceBridgeDomainRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfaceBridgeDomainRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedVirtualMachineInterfaceBridgeDomainRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &VirtualMachineInterfaceBridgeDomainRef{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -37994,126 +37994,6 @@ func BenchmarkVirtualNetworkProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkVirtualNetworkNetworkIpamRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualNetworkNetworkIpamRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVirtualNetworkNetworkIpamRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualNetworkNetworkIpamRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVirtualNetworkNetworkIpamRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &VirtualNetworkNetworkIpamRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualNetworkSecurityLoggingObjectRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualNetworkSecurityLoggingObjectRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVirtualNetworkSecurityLoggingObjectRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualNetworkSecurityLoggingObjectRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVirtualNetworkSecurityLoggingObjectRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &VirtualNetworkSecurityLoggingObjectRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualNetworkNetworkPolicyRefProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualNetworkNetworkPolicyRef, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVirtualNetworkNetworkPolicyRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualNetworkNetworkPolicyRefProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVirtualNetworkNetworkPolicyRef(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &VirtualNetworkNetworkPolicyRef{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
 func BenchmarkVirtualNetworkQosConfigRefProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -38264,6 +38144,126 @@ func BenchmarkVirtualNetworkBGPVPNRefProtoUnmarshal(b *testing.B) {
 		datas[i] = dAtA
 	}
 	msg := &VirtualNetworkBGPVPNRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualNetworkNetworkIpamRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualNetworkNetworkIpamRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedVirtualNetworkNetworkIpamRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualNetworkNetworkIpamRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedVirtualNetworkNetworkIpamRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &VirtualNetworkNetworkIpamRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualNetworkSecurityLoggingObjectRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualNetworkSecurityLoggingObjectRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedVirtualNetworkSecurityLoggingObjectRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualNetworkSecurityLoggingObjectRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedVirtualNetworkSecurityLoggingObjectRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &VirtualNetworkSecurityLoggingObjectRef{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualNetworkNetworkPolicyRefProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualNetworkNetworkPolicyRef, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedVirtualNetworkNetworkPolicyRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualNetworkNetworkPolicyRefProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedVirtualNetworkNetworkPolicyRef(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &VirtualNetworkNetworkPolicyRef{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -49794,12 +49794,12 @@ func BenchmarkGetWidgetResponseProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkSubnetListTypeProtoMarshal(b *testing.B) {
+func BenchmarkPortTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*SubnetListType, 10000)
+	pops := make([]*PortType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedSubnetListType(popr, false)
+		pops[i] = NewPopulatedPortType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -49812,18 +49812,18 @@ func BenchmarkSubnetListTypeProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkSubnetListTypeProtoUnmarshal(b *testing.B) {
+func BenchmarkPortTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedSubnetListType(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedPortType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &SubnetListType{}
+	msg := &PortType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -49834,12 +49834,12 @@ func BenchmarkSubnetListTypeProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkOpenStackLinkProtoMarshal(b *testing.B) {
+func BenchmarkFirewallRuleEndpointTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*OpenStackLink, 10000)
+	pops := make([]*FirewallRuleEndpointType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedOpenStackLink(popr, false)
+		pops[i] = NewPopulatedFirewallRuleEndpointType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -49852,18 +49852,18 @@ func BenchmarkOpenStackLinkProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkOpenStackLinkProtoUnmarshal(b *testing.B) {
+func BenchmarkFirewallRuleEndpointTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedOpenStackLink(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedFirewallRuleEndpointType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &OpenStackLink{}
+	msg := &FirewallRuleEndpointType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -49874,12 +49874,12 @@ func BenchmarkOpenStackLinkProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkSNMPCredentialsProtoMarshal(b *testing.B) {
+func BenchmarkAlarmExpressionProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*SNMPCredentials, 10000)
+	pops := make([]*AlarmExpression, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedSNMPCredentials(popr, false)
+		pops[i] = NewPopulatedAlarmExpression(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -49892,18 +49892,18 @@ func BenchmarkSNMPCredentialsProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkSNMPCredentialsProtoUnmarshal(b *testing.B) {
+func BenchmarkAlarmExpressionProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedSNMPCredentials(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedAlarmExpression(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &SNMPCredentials{}
+	msg := &AlarmExpression{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -49914,12 +49914,12 @@ func BenchmarkSNMPCredentialsProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkServiceTemplateTypeProtoMarshal(b *testing.B) {
+func BenchmarkRbacRuleEntriesTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*ServiceTemplateType, 10000)
+	pops := make([]*RbacRuleEntriesType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedServiceTemplateType(popr, false)
+		pops[i] = NewPopulatedRbacRuleEntriesType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -49932,18 +49932,18 @@ func BenchmarkServiceTemplateTypeProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkServiceTemplateTypeProtoUnmarshal(b *testing.B) {
+func BenchmarkRbacRuleEntriesTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedServiceTemplateType(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedRbacRuleEntriesType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &ServiceTemplateType{}
+	msg := &RbacRuleEntriesType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -49954,12 +49954,12 @@ func BenchmarkServiceTemplateTypeProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkKeyValuePairProtoMarshal(b *testing.B) {
+func BenchmarkDomainLimitsTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*KeyValuePair, 10000)
+	pops := make([]*DomainLimitsType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedKeyValuePair(popr, false)
+		pops[i] = NewPopulatedDomainLimitsType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -49972,18 +49972,18 @@ func BenchmarkKeyValuePairProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkKeyValuePairProtoUnmarshal(b *testing.B) {
+func BenchmarkDomainLimitsTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedKeyValuePair(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedDomainLimitsType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &KeyValuePair{}
+	msg := &DomainLimitsType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -49994,12 +49994,12 @@ func BenchmarkKeyValuePairProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkSubnetTypeProtoMarshal(b *testing.B) {
+func BenchmarkTelemetryResourceInfoProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*SubnetType, 10000)
+	pops := make([]*TelemetryResourceInfo, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedSubnetType(popr, false)
+		pops[i] = NewPopulatedTelemetryResourceInfo(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -50012,458 +50012,18 @@ func BenchmarkSubnetTypeProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkSubnetTypeProtoUnmarshal(b *testing.B) {
+func BenchmarkTelemetryResourceInfoProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedSubnetType(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedTelemetryResourceInfo(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &SubnetType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPolicyEntriesTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*PolicyEntriesType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedPolicyEntriesType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPolicyEntriesTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedPolicyEntriesType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &PolicyEntriesType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkBridgeDomainMembershipTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*BridgeDomainMembershipType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedBridgeDomainMembershipType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkBridgeDomainMembershipTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedBridgeDomainMembershipType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &BridgeDomainMembershipType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkStaticMirrorNhTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*StaticMirrorNhType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedStaticMirrorNhType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkStaticMirrorNhTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedStaticMirrorNhType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &StaticMirrorNhType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAllowedAddressPairProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*AllowedAddressPair, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedAllowedAddressPair(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAllowedAddressPairProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedAllowedAddressPair(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &AllowedAddressPair{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkKeyValuePairsProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*KeyValuePairs, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedKeyValuePairs(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkKeyValuePairsProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedKeyValuePairs(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &KeyValuePairs{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPermType2ProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*PermType2, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedPermType2(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPermType2ProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedPermType2(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &PermType2{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkUveKeysTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*UveKeysType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedUveKeysType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkUveKeysTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedUveKeysType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &UveKeysType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerListenerTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LoadbalancerListenerType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedLoadbalancerListenerType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerListenerTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedLoadbalancerListenerType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &LoadbalancerListenerType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerMemberTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LoadbalancerMemberType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedLoadbalancerMemberType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerMemberTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedLoadbalancerMemberType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &LoadbalancerMemberType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPolicyRuleTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*PolicyRuleType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedPolicyRuleType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPolicyRuleTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedPolicyRuleType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &PolicyRuleType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualIpTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualIpType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVirtualIpType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualIpTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVirtualIpType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &VirtualIpType{}
+	msg := &TelemetryResourceInfo{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -50514,12 +50074,12 @@ func BenchmarkLocalLinkConnectionProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkRouteTargetListProtoMarshal(b *testing.B) {
+func BenchmarkSubnetTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*RouteTargetList, 10000)
+	pops := make([]*SubnetType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedRouteTargetList(popr, false)
+		pops[i] = NewPopulatedSubnetType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -50532,18 +50092,18 @@ func BenchmarkRouteTargetListProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkRouteTargetListProtoUnmarshal(b *testing.B) {
+func BenchmarkSubnetTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedRouteTargetList(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedSubnetType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &RouteTargetList{}
+	msg := &SubnetType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -50554,12 +50114,12 @@ func BenchmarkRouteTargetListProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkLinklocalServiceEntryTypeProtoMarshal(b *testing.B) {
+func BenchmarkUveKeysTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*LinklocalServiceEntryType, 10000)
+	pops := make([]*UveKeysType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedLinklocalServiceEntryType(popr, false)
+		pops[i] = NewPopulatedUveKeysType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -50572,18 +50132,18 @@ func BenchmarkLinklocalServiceEntryTypeProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkLinklocalServiceEntryTypeProtoUnmarshal(b *testing.B) {
+func BenchmarkUveKeysTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedLinklocalServiceEntryType(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedUveKeysType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &LinklocalServiceEntryType{}
+	msg := &UveKeysType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -50594,12 +50154,12 @@ func BenchmarkLinklocalServiceEntryTypeProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkMatchConditionTypeProtoMarshal(b *testing.B) {
+func BenchmarkIpamDnsAddressTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*MatchConditionType, 10000)
+	pops := make([]*IpamDnsAddressType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedMatchConditionType(popr, false)
+		pops[i] = NewPopulatedIpamDnsAddressType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -50612,178 +50172,18 @@ func BenchmarkMatchConditionTypeProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkMatchConditionTypeProtoUnmarshal(b *testing.B) {
+func BenchmarkIpamDnsAddressTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedMatchConditionType(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedIpamDnsAddressType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &MatchConditionType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAlarmOrListProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*AlarmOrList, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedAlarmOrList(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAlarmOrListProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedAlarmOrList(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &AlarmOrList{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallRuleMatchTagsTypeIdListProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FirewallRuleMatchTagsTypeIdList, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedFirewallRuleMatchTagsTypeIdList(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallRuleMatchTagsTypeIdListProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedFirewallRuleMatchTagsTypeIdList(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &FirewallRuleMatchTagsTypeIdList{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkBGPaaServiceParametersTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*BGPaaServiceParametersType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedBGPaaServiceParametersType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkBGPaaServiceParametersTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedBGPaaServiceParametersType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &BGPaaServiceParametersType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFlowAgingTimeoutListProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FlowAgingTimeoutList, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedFlowAgingTimeoutList(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFlowAgingTimeoutListProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedFlowAgingTimeoutList(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &FlowAgingTimeoutList{}
+	msg := &IpamDnsAddressType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -50834,12 +50234,12 @@ func BenchmarkUserCredentialsProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkPluginPropertyProtoMarshal(b *testing.B) {
+func BenchmarkMACLimitControlTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*PluginProperty, 10000)
+	pops := make([]*MACLimitControlType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedPluginProperty(popr, false)
+		pops[i] = NewPopulatedMACLimitControlType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -50852,18 +50252,18 @@ func BenchmarkPluginPropertyProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkPluginPropertyProtoUnmarshal(b *testing.B) {
+func BenchmarkMACLimitControlTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedPluginProperty(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedMACLimitControlType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &PluginProperty{}
+	msg := &MACLimitControlType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -50874,12 +50274,12 @@ func BenchmarkPluginPropertyProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkDhcpOptionsListTypeProtoMarshal(b *testing.B) {
+func BenchmarkFirewallRuleMatchTagsTypeIdListProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*DhcpOptionsListType, 10000)
+	pops := make([]*FirewallRuleMatchTagsTypeIdList, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedDhcpOptionsListType(popr, false)
+		pops[i] = NewPopulatedFirewallRuleMatchTagsTypeIdList(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -50892,18 +50292,18 @@ func BenchmarkDhcpOptionsListTypeProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkDhcpOptionsListTypeProtoUnmarshal(b *testing.B) {
+func BenchmarkFirewallRuleMatchTagsTypeIdListProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedDhcpOptionsListType(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedFirewallRuleMatchTagsTypeIdList(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &DhcpOptionsListType{}
+	msg := &FirewallRuleMatchTagsTypeIdList{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -50914,12 +50314,12 @@ func BenchmarkDhcpOptionsListTypeProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkIpamTypeProtoMarshal(b *testing.B) {
+func BenchmarkGracefulRestartParametersTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*IpamType, 10000)
+	pops := make([]*GracefulRestartParametersType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedIpamType(popr, false)
+		pops[i] = NewPopulatedGracefulRestartParametersType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -50932,18 +50332,18 @@ func BenchmarkIpamTypeProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkIpamTypeProtoUnmarshal(b *testing.B) {
+func BenchmarkGracefulRestartParametersTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedIpamType(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedGracefulRestartParametersType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &IpamType{}
+	msg := &GracefulRestartParametersType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -50954,12 +50354,12 @@ func BenchmarkIpamTypeProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkIpamSubnetsProtoMarshal(b *testing.B) {
+func BenchmarkFlowAgingTimeoutProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*IpamSubnets, 10000)
+	pops := make([]*FlowAgingTimeout, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedIpamSubnets(popr, false)
+		pops[i] = NewPopulatedFlowAgingTimeout(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -50972,18 +50372,18 @@ func BenchmarkIpamSubnetsProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkIpamSubnetsProtoUnmarshal(b *testing.B) {
+func BenchmarkFlowAgingTimeoutProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedIpamSubnets(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedFlowAgingTimeout(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &IpamSubnets{}
+	msg := &FlowAgingTimeout{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -50994,12 +50394,12 @@ func BenchmarkIpamSubnetsProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkAllowedAddressPairsProtoMarshal(b *testing.B) {
+func BenchmarkPermTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*AllowedAddressPairs, 10000)
+	pops := make([]*PermType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedAllowedAddressPairs(popr, false)
+		pops[i] = NewPopulatedPermType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -51012,18 +50412,18 @@ func BenchmarkAllowedAddressPairsProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkAllowedAddressPairsProtoUnmarshal(b *testing.B) {
+func BenchmarkPermTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedAllowedAddressPairs(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedPermType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &AllowedAddressPairs{}
+	msg := &PermType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -51034,12 +50434,12 @@ func BenchmarkAllowedAddressPairsProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkMACMoveLimitControlTypeProtoMarshal(b *testing.B) {
+func BenchmarkPermType2ProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*MACMoveLimitControlType, 10000)
+	pops := make([]*PermType2, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedMACMoveLimitControlType(popr, false)
+		pops[i] = NewPopulatedPermType2(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -51052,18 +50452,18 @@ func BenchmarkMACMoveLimitControlTypeProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkMACMoveLimitControlTypeProtoUnmarshal(b *testing.B) {
+func BenchmarkPermType2ProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedMACMoveLimitControlType(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedPermType2(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &MACMoveLimitControlType{}
+	msg := &PermType2{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -51074,12 +50474,12 @@ func BenchmarkMACMoveLimitControlTypeProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkIpAddressesTypeProtoMarshal(b *testing.B) {
+func BenchmarkBGPaaServiceParametersTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*IpAddressesType, 10000)
+	pops := make([]*BGPaaServiceParametersType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedIpAddressesType(popr, false)
+		pops[i] = NewPopulatedBGPaaServiceParametersType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -51092,18 +50492,218 @@ func BenchmarkIpAddressesTypeProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkIpAddressesTypeProtoUnmarshal(b *testing.B) {
+func BenchmarkBGPaaServiceParametersTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedIpAddressesType(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedBGPaaServiceParametersType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &IpAddressesType{}
+	msg := &BGPaaServiceParametersType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkShareTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ShareType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedShareType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkShareTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedShareType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &ShareType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkMatchConditionTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*MatchConditionType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedMatchConditionType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkMatchConditionTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedMatchConditionType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &MatchConditionType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkSecurityLoggingObjectRuleEntryTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*SecurityLoggingObjectRuleEntryType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedSecurityLoggingObjectRuleEntryType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkSecurityLoggingObjectRuleEntryTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedSecurityLoggingObjectRuleEntryType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &SecurityLoggingObjectRuleEntryType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkInterfaceMirrorTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*InterfaceMirrorType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedInterfaceMirrorType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkInterfaceMirrorTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedInterfaceMirrorType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &InterfaceMirrorType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkProviderDetailsProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ProviderDetails, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedProviderDetails(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkProviderDetailsProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedProviderDetails(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &ProviderDetails{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -51194,12 +50794,12 @@ func BenchmarkVirtualDnsTypeProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkVirtualMachineInterfacePropertiesTypeProtoMarshal(b *testing.B) {
+func BenchmarkProtocolTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*VirtualMachineInterfacePropertiesType, 10000)
+	pops := make([]*ProtocolType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVirtualMachineInterfacePropertiesType(popr, false)
+		pops[i] = NewPopulatedProtocolType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -51212,1418 +50812,18 @@ func BenchmarkVirtualMachineInterfacePropertiesTypeProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkVirtualMachineInterfacePropertiesTypeProtoUnmarshal(b *testing.B) {
+func BenchmarkProtocolTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVirtualMachineInterfacePropertiesType(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedProtocolType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &VirtualMachineInterfacePropertiesType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkInstanceInfoProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*InstanceInfo, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedInstanceInfo(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkInstanceInfoProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedInstanceInfo(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &InstanceInfo{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAddressTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*AddressType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedAddressType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAddressTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedAddressType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &AddressType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkInterfaceMirrorTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*InterfaceMirrorType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedInterfaceMirrorType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkInterfaceMirrorTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedInterfaceMirrorType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &InterfaceMirrorType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkOpenStackImagePropertyProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*OpenStackImageProperty, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedOpenStackImageProperty(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkOpenStackImagePropertyProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedOpenStackImageProperty(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &OpenStackImageProperty{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkServiceApplianceInterfaceTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ServiceApplianceInterfaceType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedServiceApplianceInterfaceType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkServiceApplianceInterfaceTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedServiceApplianceInterfaceType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &ServiceApplianceInterfaceType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkActionListTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ActionListType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedActionListType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkActionListTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedActionListType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &ActionListType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFloatingIpPoolSubnetTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FloatingIpPoolSubnetType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedFloatingIpPoolSubnetType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFloatingIpPoolSubnetTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedFloatingIpPoolSubnetType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &FloatingIpPoolSubnetType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkSecurityLoggingObjectRuleEntryTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*SecurityLoggingObjectRuleEntryType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedSecurityLoggingObjectRuleEntryType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkSecurityLoggingObjectRuleEntryTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedSecurityLoggingObjectRuleEntryType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &SecurityLoggingObjectRuleEntryType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualDnsRecordTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualDnsRecordType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVirtualDnsRecordType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualDnsRecordTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVirtualDnsRecordType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &VirtualDnsRecordType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkServiceInterfaceTagProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ServiceInterfaceTag, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedServiceInterfaceTag(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkServiceInterfaceTagProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedServiceInterfaceTag(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &ServiceInterfaceTag{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkShareTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ShareType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedShareType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkShareTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedShareType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &ShareType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkRbacRuleTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*RbacRuleType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedRbacRuleType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkRbacRuleTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedRbacRuleType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &RbacRuleType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkJunosServicePortsProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*JunosServicePorts, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedJunosServicePorts(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkJunosServicePortsProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedJunosServicePorts(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &JunosServicePorts{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkQosIdForwardingClassPairProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*QosIdForwardingClassPair, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedQosIdForwardingClassPair(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkQosIdForwardingClassPairProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedQosIdForwardingClassPair(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &QosIdForwardingClassPair{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallSequenceProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FirewallSequence, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedFirewallSequence(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallSequenceProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedFirewallSequence(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &FirewallSequence{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPluginPropertiesProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*PluginProperties, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedPluginProperties(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPluginPropertiesProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedPluginProperties(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &PluginProperties{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLinklocalServicesTypesProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LinklocalServicesTypes, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedLinklocalServicesTypes(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLinklocalServicesTypesProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedLinklocalServicesTypes(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &LinklocalServicesTypes{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkBaremetalPropertiesProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*BaremetalProperties, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedBaremetalProperties(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkBaremetalPropertiesProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedBaremetalProperties(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &BaremetalProperties{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPolicyBasedForwardingRuleTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*PolicyBasedForwardingRuleType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedPolicyBasedForwardingRuleType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPolicyBasedForwardingRuleTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedPolicyBasedForwardingRuleType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &PolicyBasedForwardingRuleType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallRuleMatchTagsTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FirewallRuleMatchTagsType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedFirewallRuleMatchTagsType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallRuleMatchTagsTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedFirewallRuleMatchTagsType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &FirewallRuleMatchTagsType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkIpamSubnetTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*IpamSubnetType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedIpamSubnetType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkIpamSubnetTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedIpamSubnetType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &IpamSubnetType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkOpenStackFlavorPropertyProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*OpenStackFlavorProperty, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedOpenStackFlavorProperty(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkOpenStackFlavorPropertyProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedOpenStackFlavorProperty(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &OpenStackFlavorProperty{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualRouterNetworkIpamTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualRouterNetworkIpamType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVirtualRouterNetworkIpamType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualRouterNetworkIpamTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVirtualRouterNetworkIpamType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &VirtualRouterNetworkIpamType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallRuleEndpointTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FirewallRuleEndpointType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedFirewallRuleEndpointType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallRuleEndpointTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedFirewallRuleEndpointType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &FirewallRuleEndpointType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LoadbalancerType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedLoadbalancerType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedLoadbalancerType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &LoadbalancerType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkMemberTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*MemberType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedMemberType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkMemberTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedMemberType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &MemberType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkIdPermsTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*IdPermsType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedIdPermsType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkIdPermsTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedIdPermsType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &IdPermsType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAllocationPoolTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*AllocationPoolType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedAllocationPoolType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAllocationPoolTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedAllocationPoolType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &AllocationPoolType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkProviderDetailsProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ProviderDetails, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedProviderDetails(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkProviderDetailsProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedProviderDetails(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &ProviderDetails{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkOpenStackAddressProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*OpenStackAddress, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedOpenStackAddress(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkOpenStackAddressProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedOpenStackAddress(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &OpenStackAddress{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkRbacPermTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*RbacPermType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedRbacPermType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkRbacPermTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedRbacPermType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &RbacPermType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkDiscoveryPubSubEndPointTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*DiscoveryPubSubEndPointType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedDiscoveryPubSubEndPointType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkDiscoveryPubSubEndPointTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedDiscoveryPubSubEndPointType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &DiscoveryPubSubEndPointType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkDiscoveryServiceAssignmentTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*DiscoveryServiceAssignmentType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedDiscoveryServiceAssignmentType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkDiscoveryServiceAssignmentTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedDiscoveryServiceAssignmentType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &DiscoveryServiceAssignmentType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallServiceTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FirewallServiceType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedFirewallServiceType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallServiceTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedFirewallServiceType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &FirewallServiceType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallServiceGroupTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FirewallServiceGroupType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedFirewallServiceGroupType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallServiceGroupTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedFirewallServiceGroupType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &FirewallServiceGroupType{}
+	msg := &ProtocolType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -52674,12 +50874,12 @@ func BenchmarkDriverInfoProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkPortMapProtoMarshal(b *testing.B) {
+func BenchmarkVirtualNetworkPolicyTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*PortMap, 10000)
+	pops := make([]*VirtualNetworkPolicyType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedPortMap(popr, false)
+		pops[i] = NewPopulatedVirtualNetworkPolicyType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -52692,18 +50892,18 @@ func BenchmarkPortMapProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkPortMapProtoUnmarshal(b *testing.B) {
+func BenchmarkVirtualNetworkPolicyTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedPortMap(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedVirtualNetworkPolicyType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &PortMap{}
+	msg := &VirtualNetworkPolicyType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -52714,12 +50914,12 @@ func BenchmarkPortMapProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkPortMappingsProtoMarshal(b *testing.B) {
+func BenchmarkMACMoveLimitControlTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*PortMappings, 10000)
+	pops := make([]*MACMoveLimitControlType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedPortMappings(popr, false)
+		pops[i] = NewPopulatedMACMoveLimitControlType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -52732,18 +50932,18 @@ func BenchmarkPortMappingsProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkPortMappingsProtoUnmarshal(b *testing.B) {
+func BenchmarkMACMoveLimitControlTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedPortMappings(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedMACMoveLimitControlType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &PortMappings{}
+	msg := &MACMoveLimitControlType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -52754,12 +50954,12 @@ func BenchmarkPortMappingsProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkCommunityAttributesProtoMarshal(b *testing.B) {
+func BenchmarkLinklocalServicesTypesProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*CommunityAttributes, 10000)
+	pops := make([]*LinklocalServicesTypes, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedCommunityAttributes(popr, false)
+		pops[i] = NewPopulatedLinklocalServicesTypes(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -52772,818 +50972,18 @@ func BenchmarkCommunityAttributesProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkCommunityAttributesProtoUnmarshal(b *testing.B) {
+func BenchmarkLinklocalServicesTypesProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedCommunityAttributes(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedLinklocalServicesTypes(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &CommunityAttributes{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkRouteTableTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*RouteTableType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedRouteTableType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkRouteTableTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedRouteTableType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &RouteTableType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFatFlowProtocolsProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FatFlowProtocols, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedFatFlowProtocols(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFatFlowProtocolsProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedFatFlowProtocols(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &FatFlowProtocols{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualNetworkTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualNetworkType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVirtualNetworkType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualNetworkTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVirtualNetworkType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &VirtualNetworkType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkRoutingPolicyServiceInstanceTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*RoutingPolicyServiceInstanceType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedRoutingPolicyServiceInstanceType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkRoutingPolicyServiceInstanceTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedRoutingPolicyServiceInstanceType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &RoutingPolicyServiceInstanceType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPortTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*PortType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedPortType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPortTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedPortType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &PortType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkDomainLimitsTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*DomainLimitsType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedDomainLimitsType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkDomainLimitsTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedDomainLimitsType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &DomainLimitsType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAlarmOperand2ProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*AlarmOperand2, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedAlarmOperand2(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAlarmOperand2ProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedAlarmOperand2(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &AlarmOperand2{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerPoolTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LoadbalancerPoolType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedLoadbalancerPoolType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerPoolTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedLoadbalancerPoolType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &LoadbalancerPoolType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkServiceHealthCheckTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ServiceHealthCheckType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedServiceHealthCheckType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkServiceHealthCheckTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedServiceHealthCheckType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &ServiceHealthCheckType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkMacAddressesTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*MacAddressesType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedMacAddressesType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkMacAddressesTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedMacAddressesType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &MacAddressesType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPermTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*PermType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedPermType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPermTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedPermType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &PermType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVrfAssignRuleTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VrfAssignRuleType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVrfAssignRuleType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVrfAssignRuleTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVrfAssignRuleType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &VrfAssignRuleType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVrfAssignTableTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VrfAssignTableType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVrfAssignTableType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVrfAssignTableTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVrfAssignTableType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &VrfAssignTableType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkUserDefinedLogStatProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*UserDefinedLogStat, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedUserDefinedLogStat(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkUserDefinedLogStatProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedUserDefinedLogStat(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &UserDefinedLogStat{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkServiceScaleOutTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ServiceScaleOutType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedServiceScaleOutType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkServiceScaleOutTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedServiceScaleOutType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &ServiceScaleOutType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkRbacRuleEntriesTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*RbacRuleEntriesType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedRbacRuleEntriesType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkRbacRuleEntriesTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedRbacRuleEntriesType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &RbacRuleEntriesType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkGracefulRestartParametersTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*GracefulRestartParametersType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedGracefulRestartParametersType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkGracefulRestartParametersTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedGracefulRestartParametersType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &GracefulRestartParametersType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkIpamDnsAddressTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*IpamDnsAddressType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedIpamDnsAddressType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkIpamDnsAddressTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedIpamDnsAddressType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &IpamDnsAddressType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkQuotaTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*QuotaType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedQuotaType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkQuotaTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedQuotaType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &QuotaType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkQosIdForwardingClassPairsProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*QosIdForwardingClassPairs, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedQosIdForwardingClassPairs(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkQosIdForwardingClassPairsProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedQosIdForwardingClassPairs(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &QosIdForwardingClassPairs{}
+	msg := &LinklocalServicesTypes{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -53634,12 +51034,12 @@ func BenchmarkServiceInstanceTypeProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkAlarmAndListProtoMarshal(b *testing.B) {
+func BenchmarkVrfAssignRuleTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*AlarmAndList, 10000)
+	pops := make([]*VrfAssignRuleType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedAlarmAndList(popr, false)
+		pops[i] = NewPopulatedVrfAssignRuleType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -53652,18 +51052,18 @@ func BenchmarkAlarmAndListProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkAlarmAndListProtoUnmarshal(b *testing.B) {
+func BenchmarkVrfAssignRuleTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedAlarmAndList(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedVrfAssignRuleType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &AlarmAndList{}
+	msg := &VrfAssignRuleType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -53674,12 +51074,12 @@ func BenchmarkAlarmAndListProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkEcmpHashingIncludeFieldsProtoMarshal(b *testing.B) {
+func BenchmarkRoutingPolicyServiceInstanceTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*EcmpHashingIncludeFields, 10000)
+	pops := make([]*RoutingPolicyServiceInstanceType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedEcmpHashingIncludeFields(popr, false)
+		pops[i] = NewPopulatedRoutingPolicyServiceInstanceType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -53692,18 +51092,418 @@ func BenchmarkEcmpHashingIncludeFieldsProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkEcmpHashingIncludeFieldsProtoUnmarshal(b *testing.B) {
+func BenchmarkRoutingPolicyServiceInstanceTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedEcmpHashingIncludeFields(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedRoutingPolicyServiceInstanceType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &EcmpHashingIncludeFields{}
+	msg := &RoutingPolicyServiceInstanceType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPluginPropertiesProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*PluginProperties, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedPluginProperties(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPluginPropertiesProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedPluginProperties(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &PluginProperties{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkStaticMirrorNhTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*StaticMirrorNhType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedStaticMirrorNhType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkStaticMirrorNhTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedStaticMirrorNhType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &StaticMirrorNhType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkRbacRuleTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*RbacRuleType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedRbacRuleType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkRbacRuleTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedRbacRuleType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &RbacRuleType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPortMappingsProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*PortMappings, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedPortMappings(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPortMappingsProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedPortMappings(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &PortMappings{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkIpamSubnetTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*IpamSubnetType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedIpamSubnetType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkIpamSubnetTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedIpamSubnetType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &IpamSubnetType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceTemplateTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ServiceTemplateType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedServiceTemplateType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceTemplateTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedServiceTemplateType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &ServiceTemplateType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFirewallSequenceProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*FirewallSequence, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedFirewallSequence(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFirewallSequenceProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedFirewallSequence(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &FirewallSequence{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkKeyValuePairProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*KeyValuePair, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedKeyValuePair(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkKeyValuePairProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedKeyValuePair(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &KeyValuePair{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LoadbalancerType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedLoadbalancerType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedLoadbalancerType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &LoadbalancerType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkJunosServicePortsProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*JunosServicePorts, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedJunosServicePorts(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkJunosServicePortsProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedJunosServicePorts(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &JunosServicePorts{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -53754,12 +51554,12 @@ func BenchmarkServiceTemplateInterfaceTypeProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkProtocolTypeProtoMarshal(b *testing.B) {
+func BenchmarkPluginPropertyProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*ProtocolType, 10000)
+	pops := make([]*PluginProperty, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedProtocolType(popr, false)
+		pops[i] = NewPopulatedPluginProperty(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -53772,18 +51572,18 @@ func BenchmarkProtocolTypeProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkProtocolTypeProtoUnmarshal(b *testing.B) {
+func BenchmarkPluginPropertyProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedProtocolType(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedPluginProperty(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &ProtocolType{}
+	msg := &PluginProperty{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -53794,12 +51594,12 @@ func BenchmarkProtocolTypeProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkVirtualNetworkPolicyTypeProtoMarshal(b *testing.B) {
+func BenchmarkAllowedAddressPairsProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*VirtualNetworkPolicyType, 10000)
+	pops := make([]*AllowedAddressPairs, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVirtualNetworkPolicyType(popr, false)
+		pops[i] = NewPopulatedAllowedAddressPairs(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -53812,18 +51612,18 @@ func BenchmarkVirtualNetworkPolicyTypeProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkVirtualNetworkPolicyTypeProtoUnmarshal(b *testing.B) {
+func BenchmarkAllowedAddressPairsProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVirtualNetworkPolicyType(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedAllowedAddressPairs(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &VirtualNetworkPolicyType{}
+	msg := &AllowedAddressPairs{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -53834,12 +51634,12 @@ func BenchmarkVirtualNetworkPolicyTypeProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkFlowAgingTimeoutProtoMarshal(b *testing.B) {
+func BenchmarkAllocationPoolTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*FlowAgingTimeout, 10000)
+	pops := make([]*AllocationPoolType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedFlowAgingTimeout(popr, false)
+		pops[i] = NewPopulatedAllocationPoolType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -53852,18 +51652,18 @@ func BenchmarkFlowAgingTimeoutProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkFlowAgingTimeoutProtoUnmarshal(b *testing.B) {
+func BenchmarkAllocationPoolTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedFlowAgingTimeout(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedAllocationPoolType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &FlowAgingTimeout{}
+	msg := &AllocationPoolType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -53874,12 +51674,12 @@ func BenchmarkFlowAgingTimeoutProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkServiceInstanceInterfaceTypeProtoMarshal(b *testing.B) {
+func BenchmarkSequenceTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*ServiceInstanceInterfaceType, 10000)
+	pops := make([]*SequenceType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedServiceInstanceInterfaceType(popr, false)
+		pops[i] = NewPopulatedSequenceType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -53892,18 +51692,18 @@ func BenchmarkServiceInstanceInterfaceTypeProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkServiceInstanceInterfaceTypeProtoUnmarshal(b *testing.B) {
+func BenchmarkSequenceTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedServiceInstanceInterfaceType(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedSequenceType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &ServiceInstanceInterfaceType{}
+	msg := &SequenceType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -53914,12 +51714,12 @@ func BenchmarkServiceInstanceInterfaceTypeProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkTimerTypeProtoMarshal(b *testing.B) {
+func BenchmarkFloatingIpPoolSubnetTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*TimerType, 10000)
+	pops := make([]*FloatingIpPoolSubnetType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedTimerType(popr, false)
+		pops[i] = NewPopulatedFloatingIpPoolSubnetType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -53932,338 +51732,18 @@ func BenchmarkTimerTypeProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkTimerTypeProtoUnmarshal(b *testing.B) {
+func BenchmarkFloatingIpPoolSubnetTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedTimerType(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedFloatingIpPoolSubnetType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &TimerType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAclEntriesTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*AclEntriesType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedAclEntriesType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAclEntriesTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedAclEntriesType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &AclEntriesType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkTelemetryStateInfoProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*TelemetryStateInfo, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedTelemetryStateInfo(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkTelemetryStateInfoProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedTelemetryStateInfo(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &TelemetryStateInfo{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkSecurityLoggingObjectRuleListTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*SecurityLoggingObjectRuleListType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedSecurityLoggingObjectRuleListType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkSecurityLoggingObjectRuleListTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedSecurityLoggingObjectRuleListType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &SecurityLoggingObjectRuleListType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAlarmExpressionProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*AlarmExpression, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedAlarmExpression(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAlarmExpressionProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedAlarmExpression(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &AlarmExpression{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkEncapsulationPrioritiesTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*EncapsulationPrioritiesType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedEncapsulationPrioritiesType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkEncapsulationPrioritiesTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedEncapsulationPrioritiesType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &EncapsulationPrioritiesType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVnSubnetsTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VnSubnetsType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedVnSubnetsType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVnSubnetsTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedVnSubnetsType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &VnSubnetsType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerHealthmonitorTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LoadbalancerHealthmonitorType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedLoadbalancerHealthmonitorType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerHealthmonitorTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedLoadbalancerHealthmonitorType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &LoadbalancerHealthmonitorType{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkMACLimitControlTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*MACLimitControlType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedMACLimitControlType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkMACLimitControlTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedMACLimitControlType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &MACLimitControlType{}
+	msg := &FloatingIpPoolSubnetType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -54314,12 +51794,12 @@ func BenchmarkControlTrafficDscpTypeProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkRouteTypeProtoMarshal(b *testing.B) {
+func BenchmarkIpAddressesTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*RouteType, 10000)
+	pops := make([]*IpAddressesType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedRouteType(popr, false)
+		pops[i] = NewPopulatedIpAddressesType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -54332,18 +51812,18 @@ func BenchmarkRouteTypeProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkRouteTypeProtoUnmarshal(b *testing.B) {
+func BenchmarkIpAddressesTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedRouteType(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedIpAddressesType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &RouteType{}
+	msg := &IpAddressesType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -54354,12 +51834,12 @@ func BenchmarkRouteTypeProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkTelemetryResourceInfoProtoMarshal(b *testing.B) {
+func BenchmarkServiceHealthCheckTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*TelemetryResourceInfo, 10000)
+	pops := make([]*ServiceHealthCheckType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedTelemetryResourceInfo(popr, false)
+		pops[i] = NewPopulatedServiceHealthCheckType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -54372,58 +51852,18 @@ func BenchmarkTelemetryResourceInfoProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkTelemetryResourceInfoProtoUnmarshal(b *testing.B) {
+func BenchmarkServiceHealthCheckTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedTelemetryResourceInfo(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedServiceHealthCheckType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &TelemetryResourceInfo{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += len(datas[i%10000])
-		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
-			panic(err)
-		}
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkMirrorActionTypeProtoMarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*MirrorActionType, 10000)
-	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedMirrorActionType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		dAtA, err := proto.Marshal(pops[i%10000])
-		if err != nil {
-			panic(err)
-		}
-		total += len(dAtA)
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkMirrorActionTypeProtoUnmarshal(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	datas := make([][]byte, 10000)
-	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedMirrorActionType(popr, false))
-		if err != nil {
-			panic(err)
-		}
-		datas[i] = dAtA
-	}
-	msg := &MirrorActionType{}
+	msg := &ServiceHealthCheckType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -54474,6 +51914,2486 @@ func BenchmarkAclRuleTypeProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
+func BenchmarkRbacPermTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*RbacPermType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedRbacPermType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkRbacPermTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedRbacPermType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &RbacPermType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkMacAddressesTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*MacAddressesType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedMacAddressesType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkMacAddressesTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedMacAddressesType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &MacAddressesType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFlowAgingTimeoutListProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*FlowAgingTimeoutList, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedFlowAgingTimeoutList(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFlowAgingTimeoutListProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedFlowAgingTimeoutList(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &FlowAgingTimeoutList{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerMemberTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LoadbalancerMemberType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedLoadbalancerMemberType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerMemberTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedLoadbalancerMemberType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &LoadbalancerMemberType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkBridgeDomainMembershipTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*BridgeDomainMembershipType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedBridgeDomainMembershipType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkBridgeDomainMembershipTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedBridgeDomainMembershipType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &BridgeDomainMembershipType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVnSubnetsTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VnSubnetsType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedVnSubnetsType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVnSubnetsTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedVnSubnetsType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &VnSubnetsType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkSNMPCredentialsProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*SNMPCredentials, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedSNMPCredentials(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkSNMPCredentialsProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedSNMPCredentials(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &SNMPCredentials{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLinklocalServiceEntryTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LinklocalServiceEntryType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedLinklocalServiceEntryType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLinklocalServiceEntryTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedLinklocalServiceEntryType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &LinklocalServiceEntryType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkRouteTableTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*RouteTableType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedRouteTableType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkRouteTableTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedRouteTableType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &RouteTableType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFirewallServiceGroupTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*FirewallServiceGroupType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedFirewallServiceGroupType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFirewallServiceGroupTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedFirewallServiceGroupType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &FirewallServiceGroupType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualRouterNetworkIpamTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualRouterNetworkIpamType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedVirtualRouterNetworkIpamType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualRouterNetworkIpamTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedVirtualRouterNetworkIpamType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &VirtualRouterNetworkIpamType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkMirrorActionTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*MirrorActionType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedMirrorActionType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkMirrorActionTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedMirrorActionType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &MirrorActionType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPortMapProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*PortMap, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedPortMap(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPortMapProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedPortMap(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &PortMap{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkCommunityAttributesProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*CommunityAttributes, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedCommunityAttributes(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkCommunityAttributesProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedCommunityAttributes(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &CommunityAttributes{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkIpamSubnetsProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*IpamSubnets, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedIpamSubnets(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkIpamSubnetsProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedIpamSubnets(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &IpamSubnets{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkQosIdForwardingClassPairProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*QosIdForwardingClassPair, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedQosIdForwardingClassPair(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkQosIdForwardingClassPairProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedQosIdForwardingClassPair(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &QosIdForwardingClassPair{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualNetworkTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualNetworkType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedVirtualNetworkType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualNetworkTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedVirtualNetworkType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &VirtualNetworkType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkIdPermsTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*IdPermsType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedIdPermsType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkIdPermsTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedIdPermsType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &IdPermsType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkMemberTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*MemberType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedMemberType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkMemberTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedMemberType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &MemberType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceInstanceInterfaceTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ServiceInstanceInterfaceType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedServiceInstanceInterfaceType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceInstanceInterfaceTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedServiceInstanceInterfaceType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &ServiceInstanceInterfaceType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFirewallRuleMatchTagsTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*FirewallRuleMatchTagsType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedFirewallRuleMatchTagsType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFirewallRuleMatchTagsTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedFirewallRuleMatchTagsType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &FirewallRuleMatchTagsType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualDnsRecordTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualDnsRecordType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedVirtualDnsRecordType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualDnsRecordTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedVirtualDnsRecordType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &VirtualDnsRecordType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAlarmOperand2ProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*AlarmOperand2, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedAlarmOperand2(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAlarmOperand2ProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedAlarmOperand2(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &AlarmOperand2{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkDiscoveryServiceAssignmentTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*DiscoveryServiceAssignmentType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedDiscoveryServiceAssignmentType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkDiscoveryServiceAssignmentTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedDiscoveryServiceAssignmentType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &DiscoveryServiceAssignmentType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkRouteTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*RouteType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedRouteType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkRouteTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedRouteType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &RouteType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualIpTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualIpType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedVirtualIpType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualIpTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedVirtualIpType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &VirtualIpType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkEcmpHashingIncludeFieldsProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*EcmpHashingIncludeFields, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedEcmpHashingIncludeFields(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkEcmpHashingIncludeFieldsProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedEcmpHashingIncludeFields(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &EcmpHashingIncludeFields{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkSubnetListTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*SubnetListType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedSubnetListType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkSubnetListTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedSubnetListType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &SubnetListType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAlarmAndListProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*AlarmAndList, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedAlarmAndList(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAlarmAndListProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedAlarmAndList(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &AlarmAndList{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerHealthmonitorTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LoadbalancerHealthmonitorType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedLoadbalancerHealthmonitorType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerHealthmonitorTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedLoadbalancerHealthmonitorType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &LoadbalancerHealthmonitorType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkQosIdForwardingClassPairsProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*QosIdForwardingClassPairs, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedQosIdForwardingClassPairs(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkQosIdForwardingClassPairsProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedQosIdForwardingClassPairs(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &QosIdForwardingClassPairs{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAlarmOrListProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*AlarmOrList, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedAlarmOrList(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAlarmOrListProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedAlarmOrList(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &AlarmOrList{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkRouteTargetListProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*RouteTargetList, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedRouteTargetList(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkRouteTargetListProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedRouteTargetList(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &RouteTargetList{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkTimerTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*TimerType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedTimerType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkTimerTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedTimerType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &TimerType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceApplianceInterfaceTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ServiceApplianceInterfaceType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedServiceApplianceInterfaceType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceApplianceInterfaceTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedServiceApplianceInterfaceType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &ServiceApplianceInterfaceType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkSecurityLoggingObjectRuleListTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*SecurityLoggingObjectRuleListType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedSecurityLoggingObjectRuleListType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkSecurityLoggingObjectRuleListTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedSecurityLoggingObjectRuleListType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &SecurityLoggingObjectRuleListType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceScaleOutTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ServiceScaleOutType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedServiceScaleOutType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceScaleOutTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedServiceScaleOutType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &ServiceScaleOutType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkOpenStackAddressProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*OpenStackAddress, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedOpenStackAddress(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkOpenStackAddressProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedOpenStackAddress(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &OpenStackAddress{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkActionListTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ActionListType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedActionListType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkActionListTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedActionListType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &ActionListType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkEncapsulationPrioritiesTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*EncapsulationPrioritiesType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedEncapsulationPrioritiesType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkEncapsulationPrioritiesTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedEncapsulationPrioritiesType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &EncapsulationPrioritiesType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPolicyRuleTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*PolicyRuleType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedPolicyRuleType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPolicyRuleTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedPolicyRuleType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &PolicyRuleType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkOpenStackLinkProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*OpenStackLink, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedOpenStackLink(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkOpenStackLinkProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedOpenStackLink(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &OpenStackLink{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkDiscoveryPubSubEndPointTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*DiscoveryPubSubEndPointType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedDiscoveryPubSubEndPointType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkDiscoveryPubSubEndPointTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedDiscoveryPubSubEndPointType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &DiscoveryPubSubEndPointType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkUserDefinedLogStatProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*UserDefinedLogStat, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedUserDefinedLogStat(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkUserDefinedLogStatProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedUserDefinedLogStat(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &UserDefinedLogStat{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkTelemetryStateInfoProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*TelemetryStateInfo, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedTelemetryStateInfo(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkTelemetryStateInfoProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedTelemetryStateInfo(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &TelemetryStateInfo{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceInterfaceTagProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ServiceInterfaceTag, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedServiceInterfaceTag(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceInterfaceTagProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedServiceInterfaceTag(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &ServiceInterfaceTag{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAclEntriesTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*AclEntriesType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedAclEntriesType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAclEntriesTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedAclEntriesType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &AclEntriesType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerListenerTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LoadbalancerListenerType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedLoadbalancerListenerType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerListenerTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedLoadbalancerListenerType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &LoadbalancerListenerType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkDhcpOptionsListTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*DhcpOptionsListType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedDhcpOptionsListType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkDhcpOptionsListTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedDhcpOptionsListType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &DhcpOptionsListType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFatFlowProtocolsProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*FatFlowProtocols, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedFatFlowProtocols(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFatFlowProtocolsProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedFatFlowProtocols(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &FatFlowProtocols{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfacePropertiesTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualMachineInterfacePropertiesType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedVirtualMachineInterfacePropertiesType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfacePropertiesTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedVirtualMachineInterfacePropertiesType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &VirtualMachineInterfacePropertiesType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAddressTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*AddressType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedAddressType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAddressTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedAddressType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &AddressType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFirewallServiceTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*FirewallServiceType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedFirewallServiceType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFirewallServiceTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedFirewallServiceType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &FirewallServiceType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerPoolTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LoadbalancerPoolType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedLoadbalancerPoolType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerPoolTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedLoadbalancerPoolType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &LoadbalancerPoolType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPolicyBasedForwardingRuleTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*PolicyBasedForwardingRuleType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedPolicyBasedForwardingRuleType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPolicyBasedForwardingRuleTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedPolicyBasedForwardingRuleType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &PolicyBasedForwardingRuleType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPolicyEntriesTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*PolicyEntriesType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedPolicyEntriesType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPolicyEntriesTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedPolicyEntriesType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &PolicyEntriesType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkBaremetalPropertiesProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*BaremetalProperties, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedBaremetalProperties(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkBaremetalPropertiesProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedBaremetalProperties(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &BaremetalProperties{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAllowedAddressPairProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*AllowedAddressPair, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedAllowedAddressPair(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAllowedAddressPairProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedAllowedAddressPair(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &AllowedAddressPair{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkInstanceInfoProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*InstanceInfo, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedInstanceInfo(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkInstanceInfoProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedInstanceInfo(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &InstanceInfo{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkOpenStackFlavorPropertyProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*OpenStackFlavorProperty, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedOpenStackFlavorProperty(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkOpenStackFlavorPropertyProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedOpenStackFlavorProperty(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &OpenStackFlavorProperty{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkOpenStackImagePropertyProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*OpenStackImageProperty, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedOpenStackImageProperty(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkOpenStackImagePropertyProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedOpenStackImageProperty(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &OpenStackImageProperty{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkKeyValuePairsProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*KeyValuePairs, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedKeyValuePairs(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkKeyValuePairsProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedKeyValuePairs(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &KeyValuePairs{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
 func BenchmarkUserDefinedLogStatListProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -54514,12 +54434,12 @@ func BenchmarkUserDefinedLogStatListProtoUnmarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkSequenceTypeProtoMarshal(b *testing.B) {
+func BenchmarkIpamTypeProtoMarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*SequenceType, 10000)
+	pops := make([]*IpamType, 10000)
 	for i := 0; i < 10000; i++ {
-		pops[i] = NewPopulatedSequenceType(popr, false)
+		pops[i] = NewPopulatedIpamType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -54532,18 +54452,98 @@ func BenchmarkSequenceTypeProtoMarshal(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkSequenceTypeProtoUnmarshal(b *testing.B) {
+func BenchmarkIpamTypeProtoUnmarshal(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	datas := make([][]byte, 10000)
 	for i := 0; i < 10000; i++ {
-		dAtA, err := proto.Marshal(NewPopulatedSequenceType(popr, false))
+		dAtA, err := proto.Marshal(NewPopulatedIpamType(popr, false))
 		if err != nil {
 			panic(err)
 		}
 		datas[i] = dAtA
 	}
-	msg := &SequenceType{}
+	msg := &IpamType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkQuotaTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*QuotaType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedQuotaType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkQuotaTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedQuotaType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &QuotaType{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += len(datas[i%10000])
+		if err := proto.Unmarshal(datas[i%10000], msg); err != nil {
+			panic(err)
+		}
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVrfAssignTableTypeProtoMarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VrfAssignTableType, 10000)
+	for i := 0; i < 10000; i++ {
+		pops[i] = NewPopulatedVrfAssignTableType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dAtA, err := proto.Marshal(pops[i%10000])
+		if err != nil {
+			panic(err)
+		}
+		total += len(dAtA)
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVrfAssignTableTypeProtoUnmarshal(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	datas := make([][]byte, 10000)
+	for i := 0; i < 10000; i++ {
+		dAtA, err := proto.Marshal(NewPopulatedVrfAssignTableType(popr, false))
+		if err != nil {
+			panic(err)
+		}
+		datas[i] = dAtA
+	}
+	msg := &VrfAssignTableType{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		total += len(datas[i%10000])
@@ -56850,12 +56850,12 @@ func BenchmarkCustomerAttachmentSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkCustomerAttachmentFloatingIPRefSize(b *testing.B) {
+func BenchmarkCustomerAttachmentVirtualMachineInterfaceRefSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*CustomerAttachmentFloatingIPRef, 1000)
+	pops := make([]*CustomerAttachmentVirtualMachineInterfaceRef, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedCustomerAttachmentFloatingIPRef(popr, false)
+		pops[i] = NewPopulatedCustomerAttachmentVirtualMachineInterfaceRef(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -56864,12 +56864,12 @@ func BenchmarkCustomerAttachmentFloatingIPRefSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkCustomerAttachmentVirtualMachineInterfaceRefSize(b *testing.B) {
+func BenchmarkCustomerAttachmentFloatingIPRefSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*CustomerAttachmentVirtualMachineInterfaceRef, 1000)
+	pops := make([]*CustomerAttachmentFloatingIPRef, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedCustomerAttachmentVirtualMachineInterfaceRef(popr, false)
+		pops[i] = NewPopulatedCustomerAttachmentFloatingIPRef(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -57830,12 +57830,12 @@ func BenchmarkFirewallPolicySize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkFirewallPolicyFirewallRuleRefSize(b *testing.B) {
+func BenchmarkFirewallPolicySecurityLoggingObjectRefSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*FirewallPolicyFirewallRuleRef, 1000)
+	pops := make([]*FirewallPolicySecurityLoggingObjectRef, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedFirewallPolicyFirewallRuleRef(popr, false)
+		pops[i] = NewPopulatedFirewallPolicySecurityLoggingObjectRef(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -57844,12 +57844,12 @@ func BenchmarkFirewallPolicyFirewallRuleRefSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkFirewallPolicySecurityLoggingObjectRefSize(b *testing.B) {
+func BenchmarkFirewallPolicyFirewallRuleRefSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*FirewallPolicySecurityLoggingObjectRef, 1000)
+	pops := make([]*FirewallPolicyFirewallRuleRef, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedFirewallPolicySecurityLoggingObjectRef(popr, false)
+		pops[i] = NewPopulatedFirewallPolicyFirewallRuleRef(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -58376,12 +58376,12 @@ func BenchmarkFloatingIPSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkFloatingIPProjectRefSize(b *testing.B) {
+func BenchmarkFloatingIPVirtualMachineInterfaceRefSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*FloatingIPProjectRef, 1000)
+	pops := make([]*FloatingIPVirtualMachineInterfaceRef, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedFloatingIPProjectRef(popr, false)
+		pops[i] = NewPopulatedFloatingIPVirtualMachineInterfaceRef(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -58390,12 +58390,12 @@ func BenchmarkFloatingIPProjectRefSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkFloatingIPVirtualMachineInterfaceRefSize(b *testing.B) {
+func BenchmarkFloatingIPProjectRefSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*FloatingIPVirtualMachineInterfaceRef, 1000)
+	pops := make([]*FloatingIPProjectRef, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedFloatingIPVirtualMachineInterfaceRef(popr, false)
+		pops[i] = NewPopulatedFloatingIPProjectRef(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -60070,34 +60070,6 @@ func BenchmarkLoadbalancerPoolSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkLoadbalancerPoolLoadbalancerListenerRefSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LoadbalancerPoolLoadbalancerListenerRef, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedLoadbalancerPoolLoadbalancerListenerRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerPoolServiceInstanceRefSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LoadbalancerPoolServiceInstanceRef, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedLoadbalancerPoolServiceInstanceRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
 func BenchmarkLoadbalancerPoolLoadbalancerHealthmonitorRefSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -60132,6 +60104,34 @@ func BenchmarkLoadbalancerPoolVirtualMachineInterfaceRefSize(b *testing.B) {
 	pops := make([]*LoadbalancerPoolVirtualMachineInterfaceRef, 1000)
 	for i := 0; i < 1000; i++ {
 		pops[i] = NewPopulatedLoadbalancerPoolVirtualMachineInterfaceRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerPoolLoadbalancerListenerRefSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LoadbalancerPoolLoadbalancerListenerRef, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedLoadbalancerPoolLoadbalancerListenerRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerPoolServiceInstanceRefSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LoadbalancerPoolServiceInstanceRef, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedLoadbalancerPoolServiceInstanceRef(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -60658,6 +60658,34 @@ func BenchmarkLogicalRouterSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
+func BenchmarkLogicalRouterRouteTargetRefSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LogicalRouterRouteTargetRef, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedLogicalRouterRouteTargetRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLogicalRouterVirtualMachineInterfaceRefSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LogicalRouterVirtualMachineInterfaceRef, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedLogicalRouterVirtualMachineInterfaceRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
 func BenchmarkLogicalRouterServiceInstanceRefSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -60720,34 +60748,6 @@ func BenchmarkLogicalRouterBGPVPNRefSize(b *testing.B) {
 	pops := make([]*LogicalRouterBGPVPNRef, 1000)
 	for i := 0; i < 1000; i++ {
 		pops[i] = NewPopulatedLogicalRouterBGPVPNRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLogicalRouterRouteTargetRefSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LogicalRouterRouteTargetRef, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedLogicalRouterRouteTargetRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLogicalRouterVirtualMachineInterfaceRefSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LogicalRouterVirtualMachineInterfaceRef, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedLogicalRouterVirtualMachineInterfaceRef(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -62380,34 +62380,6 @@ func BenchmarkProjectSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkProjectApplicationPolicySetRefSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ProjectApplicationPolicySetRef, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedProjectApplicationPolicySetRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkProjectFloatingIPPoolRefSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ProjectFloatingIPPoolRef, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedProjectFloatingIPPoolRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
 func BenchmarkProjectAliasIPPoolRefSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -62428,6 +62400,34 @@ func BenchmarkProjectNamespaceRefSize(b *testing.B) {
 	pops := make([]*ProjectNamespaceRef, 1000)
 	for i := 0; i < 1000; i++ {
 		pops[i] = NewPopulatedProjectNamespaceRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkProjectApplicationPolicySetRefSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ProjectApplicationPolicySetRef, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedProjectApplicationPolicySetRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkProjectFloatingIPPoolRefSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ProjectFloatingIPPoolRef, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedProjectFloatingIPPoolRef(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -64704,20 +64704,6 @@ func BenchmarkServiceEndpointSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkServiceEndpointServiceObjectRefSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ServiceEndpointServiceObjectRef, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedServiceEndpointServiceObjectRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
 func BenchmarkServiceEndpointServiceConnectionModuleRefSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -64738,6 +64724,20 @@ func BenchmarkServiceEndpointPhysicalRouterRefSize(b *testing.B) {
 	pops := make([]*ServiceEndpointPhysicalRouterRef, 1000)
 	for i := 0; i < 1000; i++ {
 		pops[i] = NewPopulatedServiceEndpointPhysicalRouterRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceEndpointServiceObjectRefSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ServiceEndpointServiceObjectRef, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedServiceEndpointServiceObjectRef(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -66888,12 +66888,12 @@ func BenchmarkVirtualMachineInterfaceRoutingInstanceRefSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkVirtualMachineInterfacePortTupleRefSize(b *testing.B) {
+func BenchmarkVirtualMachineInterfaceQosConfigRefSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*VirtualMachineInterfacePortTupleRef, 1000)
+	pops := make([]*VirtualMachineInterfaceQosConfigRef, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVirtualMachineInterfacePortTupleRef(popr, false)
+		pops[i] = NewPopulatedVirtualMachineInterfaceQosConfigRef(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -66916,34 +66916,6 @@ func BenchmarkVirtualMachineInterfaceSecurityGroupRefSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkVirtualMachineInterfaceVirtualMachineInterfaceRefSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualMachineInterfaceVirtualMachineInterfaceRef, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVirtualMachineInterfaceVirtualMachineInterfaceRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualMachineInterfaceSecurityLoggingObjectRefSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualMachineInterfaceSecurityLoggingObjectRef, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVirtualMachineInterfaceSecurityLoggingObjectRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
 func BenchmarkVirtualMachineInterfaceVirtualNetworkRefSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -66958,68 +66930,26 @@ func BenchmarkVirtualMachineInterfaceVirtualNetworkRefSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
+func BenchmarkVirtualMachineInterfaceVirtualMachineInterfaceRefSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualMachineInterfaceVirtualMachineInterfaceRef, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedVirtualMachineInterfaceVirtualMachineInterfaceRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
 func BenchmarkVirtualMachineInterfaceVirtualMachineRefSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
 	pops := make([]*VirtualMachineInterfaceVirtualMachineRef, 1000)
 	for i := 0; i < 1000; i++ {
 		pops[i] = NewPopulatedVirtualMachineInterfaceVirtualMachineRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualMachineInterfaceBridgeDomainRefSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualMachineInterfaceBridgeDomainRef, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVirtualMachineInterfaceBridgeDomainRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualMachineInterfaceServiceEndpointRefSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualMachineInterfaceServiceEndpointRef, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVirtualMachineInterfaceServiceEndpointRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualMachineInterfaceInterfaceRouteTableRefSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualMachineInterfaceInterfaceRouteTableRef, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVirtualMachineInterfaceInterfaceRouteTableRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualMachineInterfaceQosConfigRefSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualMachineInterfaceQosConfigRef, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVirtualMachineInterfaceQosConfigRef(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -67048,6 +66978,76 @@ func BenchmarkVirtualMachineInterfaceServiceHealthCheckRefSize(b *testing.B) {
 	pops := make([]*VirtualMachineInterfaceServiceHealthCheckRef, 1000)
 	for i := 0; i < 1000; i++ {
 		pops[i] = NewPopulatedVirtualMachineInterfaceServiceHealthCheckRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfaceSecurityLoggingObjectRefSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualMachineInterfaceSecurityLoggingObjectRef, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedVirtualMachineInterfaceSecurityLoggingObjectRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfaceInterfaceRouteTableRefSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualMachineInterfaceInterfaceRouteTableRef, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedVirtualMachineInterfaceInterfaceRouteTableRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfacePortTupleRefSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualMachineInterfacePortTupleRef, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedVirtualMachineInterfacePortTupleRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfaceServiceEndpointRefSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualMachineInterfaceServiceEndpointRef, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedVirtualMachineInterfaceServiceEndpointRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfaceBridgeDomainRefSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualMachineInterfaceBridgeDomainRef, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedVirtualMachineInterfaceBridgeDomainRef(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -67378,48 +67378,6 @@ func BenchmarkVirtualNetworkSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkVirtualNetworkNetworkIpamRefSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualNetworkNetworkIpamRef, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVirtualNetworkNetworkIpamRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualNetworkSecurityLoggingObjectRefSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualNetworkSecurityLoggingObjectRef, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVirtualNetworkSecurityLoggingObjectRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualNetworkNetworkPolicyRefSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualNetworkNetworkPolicyRef, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVirtualNetworkNetworkPolicyRef(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
 func BenchmarkVirtualNetworkQosConfigRefSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -67468,6 +67426,48 @@ func BenchmarkVirtualNetworkBGPVPNRefSize(b *testing.B) {
 	pops := make([]*VirtualNetworkBGPVPNRef, 1000)
 	for i := 0; i < 1000; i++ {
 		pops[i] = NewPopulatedVirtualNetworkBGPVPNRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualNetworkNetworkIpamRefSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualNetworkNetworkIpamRef, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedVirtualNetworkNetworkIpamRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualNetworkSecurityLoggingObjectRefSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualNetworkSecurityLoggingObjectRef, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedVirtualNetworkSecurityLoggingObjectRef(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualNetworkNetworkPolicyRefSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualNetworkNetworkPolicyRef, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedVirtualNetworkNetworkPolicyRef(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71508,12 +71508,12 @@ func BenchmarkGetWidgetResponseSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkSubnetListTypeSize(b *testing.B) {
+func BenchmarkPortTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*SubnetListType, 1000)
+	pops := make([]*PortType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedSubnetListType(popr, false)
+		pops[i] = NewPopulatedPortType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71522,12 +71522,12 @@ func BenchmarkSubnetListTypeSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkOpenStackLinkSize(b *testing.B) {
+func BenchmarkFirewallRuleEndpointTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*OpenStackLink, 1000)
+	pops := make([]*FirewallRuleEndpointType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedOpenStackLink(popr, false)
+		pops[i] = NewPopulatedFirewallRuleEndpointType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71536,12 +71536,12 @@ func BenchmarkOpenStackLinkSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkSNMPCredentialsSize(b *testing.B) {
+func BenchmarkAlarmExpressionSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*SNMPCredentials, 1000)
+	pops := make([]*AlarmExpression, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedSNMPCredentials(popr, false)
+		pops[i] = NewPopulatedAlarmExpression(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71550,12 +71550,12 @@ func BenchmarkSNMPCredentialsSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkServiceTemplateTypeSize(b *testing.B) {
+func BenchmarkRbacRuleEntriesTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*ServiceTemplateType, 1000)
+	pops := make([]*RbacRuleEntriesType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedServiceTemplateType(popr, false)
+		pops[i] = NewPopulatedRbacRuleEntriesType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71564,12 +71564,12 @@ func BenchmarkServiceTemplateTypeSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkKeyValuePairSize(b *testing.B) {
+func BenchmarkDomainLimitsTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*KeyValuePair, 1000)
+	pops := make([]*DomainLimitsType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedKeyValuePair(popr, false)
+		pops[i] = NewPopulatedDomainLimitsType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71578,166 +71578,12 @@ func BenchmarkKeyValuePairSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkSubnetTypeSize(b *testing.B) {
+func BenchmarkTelemetryResourceInfoSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*SubnetType, 1000)
+	pops := make([]*TelemetryResourceInfo, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedSubnetType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPolicyEntriesTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*PolicyEntriesType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedPolicyEntriesType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkBridgeDomainMembershipTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*BridgeDomainMembershipType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedBridgeDomainMembershipType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkStaticMirrorNhTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*StaticMirrorNhType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedStaticMirrorNhType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAllowedAddressPairSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*AllowedAddressPair, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedAllowedAddressPair(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkKeyValuePairsSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*KeyValuePairs, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedKeyValuePairs(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPermType2Size(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*PermType2, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedPermType2(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkUveKeysTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*UveKeysType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedUveKeysType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerListenerTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LoadbalancerListenerType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedLoadbalancerListenerType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerMemberTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LoadbalancerMemberType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedLoadbalancerMemberType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPolicyRuleTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*PolicyRuleType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedPolicyRuleType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualIpTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualIpType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVirtualIpType(popr, false)
+		pops[i] = NewPopulatedTelemetryResourceInfo(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71760,12 +71606,12 @@ func BenchmarkLocalLinkConnectionSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkRouteTargetListSize(b *testing.B) {
+func BenchmarkSubnetTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*RouteTargetList, 1000)
+	pops := make([]*SubnetType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedRouteTargetList(popr, false)
+		pops[i] = NewPopulatedSubnetType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71774,12 +71620,12 @@ func BenchmarkRouteTargetListSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkLinklocalServiceEntryTypeSize(b *testing.B) {
+func BenchmarkUveKeysTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*LinklocalServiceEntryType, 1000)
+	pops := make([]*UveKeysType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedLinklocalServiceEntryType(popr, false)
+		pops[i] = NewPopulatedUveKeysType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71788,68 +71634,12 @@ func BenchmarkLinklocalServiceEntryTypeSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkMatchConditionTypeSize(b *testing.B) {
+func BenchmarkIpamDnsAddressTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*MatchConditionType, 1000)
+	pops := make([]*IpamDnsAddressType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedMatchConditionType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAlarmOrListSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*AlarmOrList, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedAlarmOrList(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallRuleMatchTagsTypeIdListSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FirewallRuleMatchTagsTypeIdList, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedFirewallRuleMatchTagsTypeIdList(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkBGPaaServiceParametersTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*BGPaaServiceParametersType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedBGPaaServiceParametersType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFlowAgingTimeoutListSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FlowAgingTimeoutList, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedFlowAgingTimeoutList(popr, false)
+		pops[i] = NewPopulatedIpamDnsAddressType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71872,12 +71662,12 @@ func BenchmarkUserCredentialsSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkPluginPropertySize(b *testing.B) {
+func BenchmarkMACLimitControlTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*PluginProperty, 1000)
+	pops := make([]*MACLimitControlType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedPluginProperty(popr, false)
+		pops[i] = NewPopulatedMACLimitControlType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71886,12 +71676,12 @@ func BenchmarkPluginPropertySize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkDhcpOptionsListTypeSize(b *testing.B) {
+func BenchmarkFirewallRuleMatchTagsTypeIdListSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*DhcpOptionsListType, 1000)
+	pops := make([]*FirewallRuleMatchTagsTypeIdList, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedDhcpOptionsListType(popr, false)
+		pops[i] = NewPopulatedFirewallRuleMatchTagsTypeIdList(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71900,12 +71690,12 @@ func BenchmarkDhcpOptionsListTypeSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkIpamTypeSize(b *testing.B) {
+func BenchmarkGracefulRestartParametersTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*IpamType, 1000)
+	pops := make([]*GracefulRestartParametersType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedIpamType(popr, false)
+		pops[i] = NewPopulatedGracefulRestartParametersType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71914,12 +71704,12 @@ func BenchmarkIpamTypeSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkIpamSubnetsSize(b *testing.B) {
+func BenchmarkFlowAgingTimeoutSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*IpamSubnets, 1000)
+	pops := make([]*FlowAgingTimeout, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedIpamSubnets(popr, false)
+		pops[i] = NewPopulatedFlowAgingTimeout(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71928,12 +71718,12 @@ func BenchmarkIpamSubnetsSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkAllowedAddressPairsSize(b *testing.B) {
+func BenchmarkPermTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*AllowedAddressPairs, 1000)
+	pops := make([]*PermType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedAllowedAddressPairs(popr, false)
+		pops[i] = NewPopulatedPermType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71942,12 +71732,12 @@ func BenchmarkAllowedAddressPairsSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkMACMoveLimitControlTypeSize(b *testing.B) {
+func BenchmarkPermType2Size(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*MACMoveLimitControlType, 1000)
+	pops := make([]*PermType2, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedMACMoveLimitControlType(popr, false)
+		pops[i] = NewPopulatedPermType2(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71956,12 +71746,82 @@ func BenchmarkMACMoveLimitControlTypeSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkIpAddressesTypeSize(b *testing.B) {
+func BenchmarkBGPaaServiceParametersTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*IpAddressesType, 1000)
+	pops := make([]*BGPaaServiceParametersType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedIpAddressesType(popr, false)
+		pops[i] = NewPopulatedBGPaaServiceParametersType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkShareTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ShareType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedShareType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkMatchConditionTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*MatchConditionType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedMatchConditionType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkSecurityLoggingObjectRuleEntryTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*SecurityLoggingObjectRuleEntryType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedSecurityLoggingObjectRuleEntryType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkInterfaceMirrorTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*InterfaceMirrorType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedInterfaceMirrorType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkProviderDetailsSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ProviderDetails, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedProviderDetails(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -71998,502 +71858,12 @@ func BenchmarkVirtualDnsTypeSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkVirtualMachineInterfacePropertiesTypeSize(b *testing.B) {
+func BenchmarkProtocolTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*VirtualMachineInterfacePropertiesType, 1000)
+	pops := make([]*ProtocolType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVirtualMachineInterfacePropertiesType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkInstanceInfoSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*InstanceInfo, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedInstanceInfo(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAddressTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*AddressType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedAddressType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkInterfaceMirrorTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*InterfaceMirrorType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedInterfaceMirrorType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkOpenStackImagePropertySize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*OpenStackImageProperty, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedOpenStackImageProperty(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkServiceApplianceInterfaceTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ServiceApplianceInterfaceType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedServiceApplianceInterfaceType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkActionListTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ActionListType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedActionListType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFloatingIpPoolSubnetTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FloatingIpPoolSubnetType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedFloatingIpPoolSubnetType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkSecurityLoggingObjectRuleEntryTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*SecurityLoggingObjectRuleEntryType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedSecurityLoggingObjectRuleEntryType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualDnsRecordTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualDnsRecordType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVirtualDnsRecordType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkServiceInterfaceTagSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ServiceInterfaceTag, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedServiceInterfaceTag(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkShareTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ShareType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedShareType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkRbacRuleTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*RbacRuleType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedRbacRuleType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkJunosServicePortsSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*JunosServicePorts, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedJunosServicePorts(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkQosIdForwardingClassPairSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*QosIdForwardingClassPair, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedQosIdForwardingClassPair(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallSequenceSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FirewallSequence, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedFirewallSequence(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPluginPropertiesSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*PluginProperties, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedPluginProperties(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLinklocalServicesTypesSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LinklocalServicesTypes, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedLinklocalServicesTypes(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkBaremetalPropertiesSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*BaremetalProperties, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedBaremetalProperties(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPolicyBasedForwardingRuleTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*PolicyBasedForwardingRuleType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedPolicyBasedForwardingRuleType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallRuleMatchTagsTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FirewallRuleMatchTagsType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedFirewallRuleMatchTagsType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkIpamSubnetTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*IpamSubnetType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedIpamSubnetType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkOpenStackFlavorPropertySize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*OpenStackFlavorProperty, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedOpenStackFlavorProperty(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualRouterNetworkIpamTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualRouterNetworkIpamType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVirtualRouterNetworkIpamType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallRuleEndpointTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FirewallRuleEndpointType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedFirewallRuleEndpointType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LoadbalancerType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedLoadbalancerType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkMemberTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*MemberType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedMemberType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkIdPermsTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*IdPermsType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedIdPermsType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAllocationPoolTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*AllocationPoolType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedAllocationPoolType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkProviderDetailsSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ProviderDetails, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedProviderDetails(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkOpenStackAddressSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*OpenStackAddress, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedOpenStackAddress(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkRbacPermTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*RbacPermType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedRbacPermType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkDiscoveryPubSubEndPointTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*DiscoveryPubSubEndPointType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedDiscoveryPubSubEndPointType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkDiscoveryServiceAssignmentTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*DiscoveryServiceAssignmentType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedDiscoveryServiceAssignmentType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallServiceTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FirewallServiceType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedFirewallServiceType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFirewallServiceGroupTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FirewallServiceGroupType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedFirewallServiceGroupType(popr, false)
+		pops[i] = NewPopulatedProtocolType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -72516,12 +71886,12 @@ func BenchmarkDriverInfoSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkPortMapSize(b *testing.B) {
+func BenchmarkVirtualNetworkPolicyTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*PortMap, 1000)
+	pops := make([]*VirtualNetworkPolicyType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedPortMap(popr, false)
+		pops[i] = NewPopulatedVirtualNetworkPolicyType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -72530,12 +71900,12 @@ func BenchmarkPortMapSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkPortMappingsSize(b *testing.B) {
+func BenchmarkMACMoveLimitControlTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*PortMappings, 1000)
+	pops := make([]*MACMoveLimitControlType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedPortMappings(popr, false)
+		pops[i] = NewPopulatedMACMoveLimitControlType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -72544,292 +71914,12 @@ func BenchmarkPortMappingsSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkCommunityAttributesSize(b *testing.B) {
+func BenchmarkLinklocalServicesTypesSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*CommunityAttributes, 1000)
+	pops := make([]*LinklocalServicesTypes, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedCommunityAttributes(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkRouteTableTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*RouteTableType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedRouteTableType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkFatFlowProtocolsSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*FatFlowProtocols, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedFatFlowProtocols(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVirtualNetworkTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VirtualNetworkType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVirtualNetworkType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkRoutingPolicyServiceInstanceTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*RoutingPolicyServiceInstanceType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedRoutingPolicyServiceInstanceType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPortTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*PortType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedPortType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkDomainLimitsTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*DomainLimitsType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedDomainLimitsType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAlarmOperand2Size(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*AlarmOperand2, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedAlarmOperand2(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerPoolTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LoadbalancerPoolType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedLoadbalancerPoolType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkServiceHealthCheckTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ServiceHealthCheckType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedServiceHealthCheckType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkMacAddressesTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*MacAddressesType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedMacAddressesType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkPermTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*PermType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedPermType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVrfAssignRuleTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VrfAssignRuleType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVrfAssignRuleType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVrfAssignTableTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VrfAssignTableType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVrfAssignTableType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkUserDefinedLogStatSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*UserDefinedLogStat, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedUserDefinedLogStat(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkServiceScaleOutTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*ServiceScaleOutType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedServiceScaleOutType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkRbacRuleEntriesTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*RbacRuleEntriesType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedRbacRuleEntriesType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkGracefulRestartParametersTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*GracefulRestartParametersType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedGracefulRestartParametersType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkIpamDnsAddressTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*IpamDnsAddressType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedIpamDnsAddressType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkQuotaTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*QuotaType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedQuotaType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkQosIdForwardingClassPairsSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*QosIdForwardingClassPairs, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedQosIdForwardingClassPairs(popr, false)
+		pops[i] = NewPopulatedLinklocalServicesTypes(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -72852,12 +71942,12 @@ func BenchmarkServiceInstanceTypeSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkAlarmAndListSize(b *testing.B) {
+func BenchmarkVrfAssignRuleTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*AlarmAndList, 1000)
+	pops := make([]*VrfAssignRuleType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedAlarmAndList(popr, false)
+		pops[i] = NewPopulatedVrfAssignRuleType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -72866,12 +71956,152 @@ func BenchmarkAlarmAndListSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkEcmpHashingIncludeFieldsSize(b *testing.B) {
+func BenchmarkRoutingPolicyServiceInstanceTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*EcmpHashingIncludeFields, 1000)
+	pops := make([]*RoutingPolicyServiceInstanceType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedEcmpHashingIncludeFields(popr, false)
+		pops[i] = NewPopulatedRoutingPolicyServiceInstanceType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPluginPropertiesSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*PluginProperties, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedPluginProperties(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkStaticMirrorNhTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*StaticMirrorNhType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedStaticMirrorNhType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkRbacRuleTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*RbacRuleType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedRbacRuleType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPortMappingsSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*PortMappings, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedPortMappings(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkIpamSubnetTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*IpamSubnetType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedIpamSubnetType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceTemplateTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ServiceTemplateType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedServiceTemplateType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFirewallSequenceSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*FirewallSequence, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedFirewallSequence(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkKeyValuePairSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*KeyValuePair, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedKeyValuePair(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LoadbalancerType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedLoadbalancerType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkJunosServicePortsSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*JunosServicePorts, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedJunosServicePorts(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -72894,12 +72124,12 @@ func BenchmarkServiceTemplateInterfaceTypeSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkProtocolTypeSize(b *testing.B) {
+func BenchmarkPluginPropertySize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*ProtocolType, 1000)
+	pops := make([]*PluginProperty, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedProtocolType(popr, false)
+		pops[i] = NewPopulatedPluginProperty(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -72908,12 +72138,12 @@ func BenchmarkProtocolTypeSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkVirtualNetworkPolicyTypeSize(b *testing.B) {
+func BenchmarkAllowedAddressPairsSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*VirtualNetworkPolicyType, 1000)
+	pops := make([]*AllowedAddressPairs, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVirtualNetworkPolicyType(popr, false)
+		pops[i] = NewPopulatedAllowedAddressPairs(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -72922,12 +72152,12 @@ func BenchmarkVirtualNetworkPolicyTypeSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkFlowAgingTimeoutSize(b *testing.B) {
+func BenchmarkAllocationPoolTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*FlowAgingTimeout, 1000)
+	pops := make([]*AllocationPoolType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedFlowAgingTimeout(popr, false)
+		pops[i] = NewPopulatedAllocationPoolType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -72936,12 +72166,12 @@ func BenchmarkFlowAgingTimeoutSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkServiceInstanceInterfaceTypeSize(b *testing.B) {
+func BenchmarkSequenceTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*ServiceInstanceInterfaceType, 1000)
+	pops := make([]*SequenceType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedServiceInstanceInterfaceType(popr, false)
+		pops[i] = NewPopulatedSequenceType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -72950,124 +72180,12 @@ func BenchmarkServiceInstanceInterfaceTypeSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkTimerTypeSize(b *testing.B) {
+func BenchmarkFloatingIpPoolSubnetTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*TimerType, 1000)
+	pops := make([]*FloatingIpPoolSubnetType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedTimerType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAclEntriesTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*AclEntriesType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedAclEntriesType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkTelemetryStateInfoSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*TelemetryStateInfo, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedTelemetryStateInfo(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkSecurityLoggingObjectRuleListTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*SecurityLoggingObjectRuleListType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedSecurityLoggingObjectRuleListType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkAlarmExpressionSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*AlarmExpression, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedAlarmExpression(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkEncapsulationPrioritiesTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*EncapsulationPrioritiesType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedEncapsulationPrioritiesType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkVnSubnetsTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*VnSubnetsType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedVnSubnetsType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkLoadbalancerHealthmonitorTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*LoadbalancerHealthmonitorType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedLoadbalancerHealthmonitorType(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkMACLimitControlTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*MACLimitControlType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedMACLimitControlType(popr, false)
+		pops[i] = NewPopulatedFloatingIpPoolSubnetType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -73090,12 +72208,12 @@ func BenchmarkControlTrafficDscpTypeSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkRouteTypeSize(b *testing.B) {
+func BenchmarkIpAddressesTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*RouteType, 1000)
+	pops := make([]*IpAddressesType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedRouteType(popr, false)
+		pops[i] = NewPopulatedIpAddressesType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -73104,26 +72222,12 @@ func BenchmarkRouteTypeSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkTelemetryResourceInfoSize(b *testing.B) {
+func BenchmarkServiceHealthCheckTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*TelemetryResourceInfo, 1000)
+	pops := make([]*ServiceHealthCheckType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedTelemetryResourceInfo(popr, false)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		total += pops[i%1000].Size()
-	}
-	b.SetBytes(int64(total / b.N))
-}
-
-func BenchmarkMirrorActionTypeSize(b *testing.B) {
-	popr := rand.New(rand.NewSource(616))
-	total := 0
-	pops := make([]*MirrorActionType, 1000)
-	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedMirrorActionType(popr, false)
+		pops[i] = NewPopulatedServiceHealthCheckType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -73146,6 +72250,874 @@ func BenchmarkAclRuleTypeSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
+func BenchmarkRbacPermTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*RbacPermType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedRbacPermType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkMacAddressesTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*MacAddressesType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedMacAddressesType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFlowAgingTimeoutListSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*FlowAgingTimeoutList, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedFlowAgingTimeoutList(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerMemberTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LoadbalancerMemberType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedLoadbalancerMemberType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkBridgeDomainMembershipTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*BridgeDomainMembershipType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedBridgeDomainMembershipType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVnSubnetsTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VnSubnetsType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedVnSubnetsType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkSNMPCredentialsSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*SNMPCredentials, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedSNMPCredentials(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLinklocalServiceEntryTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LinklocalServiceEntryType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedLinklocalServiceEntryType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkRouteTableTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*RouteTableType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedRouteTableType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFirewallServiceGroupTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*FirewallServiceGroupType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedFirewallServiceGroupType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualRouterNetworkIpamTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualRouterNetworkIpamType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedVirtualRouterNetworkIpamType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkMirrorActionTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*MirrorActionType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedMirrorActionType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPortMapSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*PortMap, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedPortMap(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkCommunityAttributesSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*CommunityAttributes, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedCommunityAttributes(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkIpamSubnetsSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*IpamSubnets, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedIpamSubnets(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkQosIdForwardingClassPairSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*QosIdForwardingClassPair, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedQosIdForwardingClassPair(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualNetworkTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualNetworkType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedVirtualNetworkType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkIdPermsTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*IdPermsType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedIdPermsType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkMemberTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*MemberType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedMemberType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceInstanceInterfaceTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ServiceInstanceInterfaceType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedServiceInstanceInterfaceType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFirewallRuleMatchTagsTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*FirewallRuleMatchTagsType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedFirewallRuleMatchTagsType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualDnsRecordTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualDnsRecordType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedVirtualDnsRecordType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAlarmOperand2Size(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*AlarmOperand2, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedAlarmOperand2(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkDiscoveryServiceAssignmentTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*DiscoveryServiceAssignmentType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedDiscoveryServiceAssignmentType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkRouteTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*RouteType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedRouteType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualIpTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualIpType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedVirtualIpType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkEcmpHashingIncludeFieldsSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*EcmpHashingIncludeFields, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedEcmpHashingIncludeFields(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkSubnetListTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*SubnetListType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedSubnetListType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAlarmAndListSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*AlarmAndList, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedAlarmAndList(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerHealthmonitorTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LoadbalancerHealthmonitorType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedLoadbalancerHealthmonitorType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkQosIdForwardingClassPairsSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*QosIdForwardingClassPairs, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedQosIdForwardingClassPairs(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAlarmOrListSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*AlarmOrList, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedAlarmOrList(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkRouteTargetListSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*RouteTargetList, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedRouteTargetList(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkTimerTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*TimerType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedTimerType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceApplianceInterfaceTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ServiceApplianceInterfaceType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedServiceApplianceInterfaceType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkSecurityLoggingObjectRuleListTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*SecurityLoggingObjectRuleListType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedSecurityLoggingObjectRuleListType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceScaleOutTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ServiceScaleOutType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedServiceScaleOutType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkOpenStackAddressSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*OpenStackAddress, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedOpenStackAddress(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkActionListTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ActionListType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedActionListType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkEncapsulationPrioritiesTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*EncapsulationPrioritiesType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedEncapsulationPrioritiesType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPolicyRuleTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*PolicyRuleType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedPolicyRuleType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkOpenStackLinkSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*OpenStackLink, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedOpenStackLink(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkDiscoveryPubSubEndPointTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*DiscoveryPubSubEndPointType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedDiscoveryPubSubEndPointType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkUserDefinedLogStatSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*UserDefinedLogStat, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedUserDefinedLogStat(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkTelemetryStateInfoSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*TelemetryStateInfo, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedTelemetryStateInfo(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkServiceInterfaceTagSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*ServiceInterfaceTag, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedServiceInterfaceTag(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAclEntriesTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*AclEntriesType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedAclEntriesType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerListenerTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LoadbalancerListenerType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedLoadbalancerListenerType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkDhcpOptionsListTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*DhcpOptionsListType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedDhcpOptionsListType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFatFlowProtocolsSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*FatFlowProtocols, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedFatFlowProtocols(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVirtualMachineInterfacePropertiesTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VirtualMachineInterfacePropertiesType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedVirtualMachineInterfacePropertiesType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAddressTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*AddressType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedAddressType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkFirewallServiceTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*FirewallServiceType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedFirewallServiceType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkLoadbalancerPoolTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*LoadbalancerPoolType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedLoadbalancerPoolType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPolicyBasedForwardingRuleTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*PolicyBasedForwardingRuleType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedPolicyBasedForwardingRuleType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkPolicyEntriesTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*PolicyEntriesType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedPolicyEntriesType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkBaremetalPropertiesSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*BaremetalProperties, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedBaremetalProperties(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkAllowedAddressPairSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*AllowedAddressPair, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedAllowedAddressPair(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkInstanceInfoSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*InstanceInfo, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedInstanceInfo(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkOpenStackFlavorPropertySize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*OpenStackFlavorProperty, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedOpenStackFlavorProperty(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkOpenStackImagePropertySize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*OpenStackImageProperty, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedOpenStackImageProperty(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkKeyValuePairsSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*KeyValuePairs, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedKeyValuePairs(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
 func BenchmarkUserDefinedLogStatListSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
@@ -73160,12 +73132,40 @@ func BenchmarkUserDefinedLogStatListSize(b *testing.B) {
 	b.SetBytes(int64(total / b.N))
 }
 
-func BenchmarkSequenceTypeSize(b *testing.B) {
+func BenchmarkIpamTypeSize(b *testing.B) {
 	popr := rand.New(rand.NewSource(616))
 	total := 0
-	pops := make([]*SequenceType, 1000)
+	pops := make([]*IpamType, 1000)
 	for i := 0; i < 1000; i++ {
-		pops[i] = NewPopulatedSequenceType(popr, false)
+		pops[i] = NewPopulatedIpamType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkQuotaTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*QuotaType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedQuotaType(popr, false)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		total += pops[i%1000].Size()
+	}
+	b.SetBytes(int64(total / b.N))
+}
+
+func BenchmarkVrfAssignTableTypeSize(b *testing.B) {
+	popr := rand.New(rand.NewSource(616))
+	total := 0
+	pops := make([]*VrfAssignTableType, 1000)
+	for i := 0; i < 1000; i++ {
+		pops[i] = NewPopulatedVrfAssignTableType(popr, false)
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

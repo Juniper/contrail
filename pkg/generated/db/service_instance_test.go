@@ -293,14 +293,6 @@ func TestServiceInstance(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var ServiceTemplateref []interface{}
-	//    ServiceTemplateref = append(ServiceTemplateref, map[string]interface{}{"operation":"delete", "uuid":"service_instance_service_template_ref_uuid", "to": []string{"test", "service_instance_service_template_ref_uuid"}})
-	//    ServiceTemplateref = append(ServiceTemplateref, map[string]interface{}{"operation":"add", "uuid":"service_instance_service_template_ref_uuid1", "to": []string{"test", "service_instance_service_template_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ServiceTemplateRefs", ".", ServiceTemplateref)
-	//
 	//    var InstanceIPref []interface{}
 	//    InstanceIPref = append(InstanceIPref, map[string]interface{}{"operation":"delete", "uuid":"service_instance_instance_ip_ref_uuid", "to": []string{"test", "service_instance_instance_ip_ref_uuid"}})
 	//    InstanceIPref = append(InstanceIPref, map[string]interface{}{"operation":"add", "uuid":"service_instance_instance_ip_ref_uuid1", "to": []string{"test", "service_instance_instance_ip_ref_uuid1"}})
@@ -316,6 +308,14 @@ func TestServiceInstance(t *testing.T) {
 	//    InstanceIPref = append(InstanceIPref, map[string]interface{}{"operation":"update", "uuid":"service_instance_instance_ip_ref_uuid2", "to": []string{"test", "service_instance_instance_ip_ref_uuid2"}, "attr": InstanceIPAttr})
 	//
 	//    common.SetValueByPath(updateMap, "InstanceIPRefs", ".", InstanceIPref)
+	//
+	//    var ServiceTemplateref []interface{}
+	//    ServiceTemplateref = append(ServiceTemplateref, map[string]interface{}{"operation":"delete", "uuid":"service_instance_service_template_ref_uuid", "to": []string{"test", "service_instance_service_template_ref_uuid"}})
+	//    ServiceTemplateref = append(ServiceTemplateref, map[string]interface{}{"operation":"add", "uuid":"service_instance_service_template_ref_uuid1", "to": []string{"test", "service_instance_service_template_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "ServiceTemplateRefs", ".", ServiceTemplateref)
 	//
 	//
 	err = common.DoInTransaction(db, func(tx *sql.Tx) error {

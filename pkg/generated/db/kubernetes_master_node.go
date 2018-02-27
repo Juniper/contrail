@@ -59,7 +59,10 @@ var KubernetesMasterNodeRefFields = map[string][]string{
 var KubernetesMasterNodeBackRefFields = map[string][]string{}
 
 // KubernetesMasterNodeParentTypes is possible parents for KubernetesMasterNode
-var KubernetesMasterNodeParents = []string{}
+var KubernetesMasterNodeParents = []string{
+
+	"contrail_cluster",
+}
 
 const insertKubernetesMasterNodeNodeQuery = "insert into `ref_kubernetes_master_node_node` (`from`, `to` ) values (?, ?);"
 

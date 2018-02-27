@@ -59,7 +59,10 @@ var ContrailConfigNodeRefFields = map[string][]string{
 var ContrailConfigNodeBackRefFields = map[string][]string{}
 
 // ContrailConfigNodeParentTypes is possible parents for ContrailConfigNode
-var ContrailConfigNodeParents = []string{}
+var ContrailConfigNodeParents = []string{
+
+	"contrail_cluster",
+}
 
 const insertContrailConfigNodeNodeQuery = "insert into `ref_contrail_config_node_node` (`from`, `to` ) values (?, ?);"
 

@@ -20196,7 +20196,7 @@
                     "$ref": "#/definitions/IdPermsType"
                 },
                 "node_ref": {
-                    "description": "Reference to node object for this config node.",
+                    "description": "Reference to node object for this appformix node.",
                     "properties": {
                         "to": {
                             "type": "array",
@@ -21527,6 +21527,13 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "appformix_nodes": {
+                    "description": "Parent of this appformix node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/AppformixNodeAPIType"
+                    }
+                },
                 "config_audit_ttl": {
                     "id": "config_audit_ttl",
                     "description": "Configuration Audit Retention Time in hours",
@@ -21542,6 +21549,20 @@
                     "default": "",
                     "items": null
                 },
+                "contrail_analytics_database_nodes": {
+                    "description": "Parent of this analyticsdb node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ContrailAnalyticsDatabaseNodeAPIType"
+                    }
+                },
+                "contrail_analytics_nodes": {
+                    "description": "Parent of this analytics node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ContrailAnalyticsNodeAPIType"
+                    }
+                },
                 "contrail_analyticsdb": {
                     "id": "contrail_analyticsdb",
                     "type": "string",
@@ -21555,6 +21576,20 @@
                     "title": "Contrail Config",
                     "default": "",
                     "items": null
+                },
+                "contrail_config_database_nodes": {
+                    "description": "Parent of this configdb node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ContrailConfigDatabaseNodeAPIType"
+                    }
+                },
+                "contrail_config_nodes": {
+                    "description": "Parent of this config node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ContrailConfigNodeAPIType"
+                    }
                 },
                 "contrail_configdb": {
                     "id": "contrail_configdb",
@@ -21570,12 +21605,40 @@
                     "default": "",
                     "items": null
                 },
+                "contrail_control_nodes": {
+                    "description": "Parent of this control node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ContrailControlNodeAPIType"
+                    }
+                },
+                "contrail_controller_nodes": {
+                    "description": "Parent of this webui node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ContrailControllerNodeAPIType"
+                    }
+                },
+                "contrail_storage_nodes": {
+                    "description": "Parent of this storage node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ContrailStorageNodeAPIType"
+                    }
+                },
                 "contrail_vrouter": {
                     "id": "contrail_vrouter",
                     "type": "string",
                     "title": "Contrail Vrouter",
                     "default": "",
                     "items": null
+                },
+                "contrail_vrouter_nodes": {
+                    "description": "Parent of this vrouter node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ContrailVrouterNodeAPIType"
+                    }
                 },
                 "contrail_webui": {
                     "id": "contrail_webui",
@@ -21656,6 +21719,20 @@
                     "title": "Kubernetes Master",
                     "default": "",
                     "items": null
+                },
+                "kubernetes_master_nodes": {
+                    "description": "Parent of this kubernetes master node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/KubernetesMasterNodeAPIType"
+                    }
+                },
+                "kubernetes_nodes": {
+                    "description": "Parent of this kubernetes node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/KubernetesNodeAPIType"
+                    }
                 },
                 "openstack": {
                     "id": "openstack",
