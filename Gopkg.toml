@@ -56,3 +56,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/databus23/keystone"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/go-openapi/spec"
