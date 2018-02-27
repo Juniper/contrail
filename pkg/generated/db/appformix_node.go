@@ -59,7 +59,10 @@ var AppformixNodeRefFields = map[string][]string{
 var AppformixNodeBackRefFields = map[string][]string{}
 
 // AppformixNodeParentTypes is possible parents for AppformixNode
-var AppformixNodeParents = []string{}
+var AppformixNodeParents = []string{
+
+	"contrail_cluster",
+}
 
 const insertAppformixNodeNodeQuery = "insert into `ref_appformix_node_node` (`from`, `to` ) values (?, ?);"
 

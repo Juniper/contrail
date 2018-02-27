@@ -69,7 +69,335 @@ var ContrailClusterFields = []string{
 var ContrailClusterRefFields = map[string][]string{}
 
 // ContrailClusterBackRefFields is db back reference fields for ContrailCluster
-var ContrailClusterBackRefFields = map[string][]string{}
+var ContrailClusterBackRefFields = map[string][]string{
+
+	"appformix_node": []string{
+		"uuid",
+		"provisioning_state",
+		"provisioning_start_time",
+		"provisioning_progress_stage",
+		"provisioning_progress",
+		"provisioning_log",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"display_name",
+		"key_value_pair",
+	},
+
+	"contrail_analytics_database_node": []string{
+		"uuid",
+		"provisioning_state",
+		"provisioning_start_time",
+		"provisioning_progress_stage",
+		"provisioning_progress",
+		"provisioning_log",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"display_name",
+		"key_value_pair",
+	},
+
+	"contrail_analytics_node": []string{
+		"uuid",
+		"provisioning_state",
+		"provisioning_start_time",
+		"provisioning_progress_stage",
+		"provisioning_progress",
+		"provisioning_log",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"display_name",
+		"key_value_pair",
+	},
+
+	"contrail_config_database_node": []string{
+		"uuid",
+		"provisioning_state",
+		"provisioning_start_time",
+		"provisioning_progress_stage",
+		"provisioning_progress",
+		"provisioning_log",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"display_name",
+		"key_value_pair",
+	},
+
+	"contrail_config_node": []string{
+		"uuid",
+		"provisioning_state",
+		"provisioning_start_time",
+		"provisioning_progress_stage",
+		"provisioning_progress",
+		"provisioning_log",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"display_name",
+		"key_value_pair",
+	},
+
+	"contrail_control_node": []string{
+		"uuid",
+		"provisioning_state",
+		"provisioning_start_time",
+		"provisioning_progress_stage",
+		"provisioning_progress",
+		"provisioning_log",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"display_name",
+		"key_value_pair",
+	},
+
+	"contrail_storage_node": []string{
+		"uuid",
+		"storage_backend_bond_interface_members",
+		"storage_access_bond_interface_members",
+		"provisioning_state",
+		"provisioning_start_time",
+		"provisioning_progress_stage",
+		"provisioning_progress",
+		"provisioning_log",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"osd_drives",
+		"journal_drives",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"display_name",
+		"key_value_pair",
+	},
+
+	"contrail_vrouter_node": []string{
+		"vrouter_type",
+		"vrouter_bond_interface_members",
+		"vrouter_bond_interface",
+		"uuid",
+		"provisioning_state",
+		"provisioning_start_time",
+		"provisioning_progress_stage",
+		"provisioning_progress",
+		"provisioning_log",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"display_name",
+		"default_gateway",
+		"key_value_pair",
+	},
+
+	"contrail_controller_node": []string{
+		"uuid",
+		"provisioning_state",
+		"provisioning_start_time",
+		"provisioning_progress_stage",
+		"provisioning_progress",
+		"provisioning_log",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"display_name",
+		"key_value_pair",
+	},
+
+	"kubernetes_master_node": []string{
+		"uuid",
+		"provisioning_state",
+		"provisioning_start_time",
+		"provisioning_progress_stage",
+		"provisioning_progress",
+		"provisioning_log",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"display_name",
+		"key_value_pair",
+	},
+
+	"kubernetes_node": []string{
+		"uuid",
+		"provisioning_state",
+		"provisioning_start_time",
+		"provisioning_progress_stage",
+		"provisioning_progress",
+		"provisioning_log",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"display_name",
+		"key_value_pair",
+	},
+}
 
 // ContrailClusterParentTypes is possible parents for ContrailCluster
 var ContrailClusterParents = []string{}
@@ -429,6 +757,1979 @@ func scanContrailCluster(values map[string]interface{}) (*models.ContrailCluster
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
+	}
+
+	if value, ok := values["backref_appformix_node"]; ok {
+		var childResources []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
+				continue
+			}
+			childModel := models.MakeAppformixNode()
+			m.AppformixNodes = append(m.AppformixNodes, childModel)
+
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
+
+				childModel.UUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_state"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningState = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_start_time"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningStartTime = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress_stage"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgressStage = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgress = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_log"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningLog = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
+	}
+
+	if value, ok := values["backref_contrail_analytics_database_node"]; ok {
+		var childResources []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
+				continue
+			}
+			childModel := models.MakeContrailAnalyticsDatabaseNode()
+			m.ContrailAnalyticsDatabaseNodes = append(m.ContrailAnalyticsDatabaseNodes, childModel)
+
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
+
+				childModel.UUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_state"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningState = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_start_time"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningStartTime = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress_stage"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgressStage = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgress = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_log"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningLog = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
+	}
+
+	if value, ok := values["backref_contrail_analytics_node"]; ok {
+		var childResources []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
+				continue
+			}
+			childModel := models.MakeContrailAnalyticsNode()
+			m.ContrailAnalyticsNodes = append(m.ContrailAnalyticsNodes, childModel)
+
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
+
+				childModel.UUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_state"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningState = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_start_time"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningStartTime = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress_stage"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgressStage = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgress = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_log"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningLog = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
+	}
+
+	if value, ok := values["backref_contrail_config_database_node"]; ok {
+		var childResources []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
+				continue
+			}
+			childModel := models.MakeContrailConfigDatabaseNode()
+			m.ContrailConfigDatabaseNodes = append(m.ContrailConfigDatabaseNodes, childModel)
+
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
+
+				childModel.UUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_state"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningState = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_start_time"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningStartTime = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress_stage"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgressStage = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgress = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_log"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningLog = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
+	}
+
+	if value, ok := values["backref_contrail_config_node"]; ok {
+		var childResources []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
+				continue
+			}
+			childModel := models.MakeContrailConfigNode()
+			m.ContrailConfigNodes = append(m.ContrailConfigNodes, childModel)
+
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
+
+				childModel.UUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_state"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningState = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_start_time"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningStartTime = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress_stage"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgressStage = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgress = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_log"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningLog = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
+	}
+
+	if value, ok := values["backref_contrail_control_node"]; ok {
+		var childResources []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
+				continue
+			}
+			childModel := models.MakeContrailControlNode()
+			m.ContrailControlNodes = append(m.ContrailControlNodes, childModel)
+
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
+
+				childModel.UUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_state"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningState = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_start_time"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningStartTime = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress_stage"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgressStage = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgress = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_log"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningLog = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
+	}
+
+	if value, ok := values["backref_contrail_storage_node"]; ok {
+		var childResources []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
+				continue
+			}
+			childModel := models.MakeContrailStorageNode()
+			m.ContrailStorageNodes = append(m.ContrailStorageNodes, childModel)
+
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
+
+				childModel.UUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["storage_backend_bond_interface_members"]; ok && propertyValue != nil {
+
+				childModel.StorageBackendBondInterfaceMembers = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["storage_access_bond_interface_members"]; ok && propertyValue != nil {
+
+				childModel.StorageAccessBondInterfaceMembers = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_state"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningState = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_start_time"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningStartTime = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress_stage"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgressStage = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgress = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_log"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningLog = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["osd_drives"]; ok && propertyValue != nil {
+
+				childModel.OsdDrives = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["journal_drives"]; ok && propertyValue != nil {
+
+				childModel.JournalDrives = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
+	}
+
+	if value, ok := values["backref_contrail_vrouter_node"]; ok {
+		var childResources []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
+				continue
+			}
+			childModel := models.MakeContrailVrouterNode()
+			m.ContrailVrouterNodes = append(m.ContrailVrouterNodes, childModel)
+
+			if propertyValue, ok := childResourceMap["vrouter_type"]; ok && propertyValue != nil {
+
+				childModel.VrouterType = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["vrouter_bond_interface_members"]; ok && propertyValue != nil {
+
+				childModel.VrouterBondInterfaceMembers = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["vrouter_bond_interface"]; ok && propertyValue != nil {
+
+				childModel.VrouterBondInterface = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
+
+				childModel.UUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_state"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningState = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_start_time"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningStartTime = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress_stage"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgressStage = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgress = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_log"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningLog = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["default_gateway"]; ok && propertyValue != nil {
+
+				childModel.DefaultGateway = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
+	}
+
+	if value, ok := values["backref_contrail_controller_node"]; ok {
+		var childResources []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
+				continue
+			}
+			childModel := models.MakeContrailControllerNode()
+			m.ContrailControllerNodes = append(m.ContrailControllerNodes, childModel)
+
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
+
+				childModel.UUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_state"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningState = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_start_time"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningStartTime = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress_stage"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgressStage = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgress = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_log"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningLog = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
+	}
+
+	if value, ok := values["backref_kubernetes_master_node"]; ok {
+		var childResources []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
+				continue
+			}
+			childModel := models.MakeKubernetesMasterNode()
+			m.KubernetesMasterNodes = append(m.KubernetesMasterNodes, childModel)
+
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
+
+				childModel.UUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_state"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningState = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_start_time"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningStartTime = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress_stage"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgressStage = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgress = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_log"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningLog = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
+	}
+
+	if value, ok := values["backref_kubernetes_node"]; ok {
+		var childResources []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
+				continue
+			}
+			childModel := models.MakeKubernetesNode()
+			m.KubernetesNodes = append(m.KubernetesNodes, childModel)
+
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
+
+				childModel.UUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_state"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningState = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_start_time"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningStartTime = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress_stage"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgressStage = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_progress"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningProgress = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["provisioning_log"]; ok && propertyValue != nil {
+
+				childModel.ProvisioningLog = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				childModel.Perms2.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.GlobalAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				childModel.ParentUUID = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				childModel.ParentType = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.UserVisible = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OwnerAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Owner = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OtherAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.GroupAccess = schema.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Group = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.LastModified = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Enable = schema.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Description = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Creator = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Created = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				childModel.DisplayName = schema.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
+
+		}
 	}
 
 	return m, nil

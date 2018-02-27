@@ -1758,7 +1758,7 @@
 | display_name | [string](#string) |  | Display name user configured string(name) that can be updated any time. Used as openstack name. |
 | annotations | [KeyValuePairs](#github.com.Juniper.contrail.pkg.generated.models.KeyValuePairs) |  | Dictionary of arbitrary (key, value) on a resource. |
 | perms2 | [PermType2](#github.com.Juniper.contrail.pkg.generated.models.PermType2) |  | Permissions data for role based access. |
-| node_refs | [AppformixNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.AppformixNodeNodeRef) | repeated | Reference to node object for this config node. |
+| node_refs | [AppformixNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.AppformixNodeNodeRef) | repeated | Reference to node object for this appformix node. |
 
 
 
@@ -1861,8 +1861,8 @@
 | bgpaas_ipv4_mapped_ipv6_nexthop | [bool](#bool) |  | True when client bgp implementation expects to receive a ipv4-mapped ipv6 address (as opposed to regular ipv6 address) as the bgp nexthop for ipv6 routes. |
 | bgpaas_ip_address | [string](#string) |  | Ip address of the BGP peer. |
 | autonomous_system | [int64](#int64) |  | 16 bit BGP Autonomous System number for the cluster. |
-| service_health_check_refs | [BGPAsAServiceServiceHealthCheckRef](#github.com.Juniper.contrail.pkg.generated.models.BGPAsAServiceServiceHealthCheckRef) | repeated | Reference to health check object attached to BGPaaS object, used to enable BFD health check over active BGPaaS VMI. |
 | virtual_machine_interface_refs | [BGPAsAServiceVirtualMachineInterfaceRef](#github.com.Juniper.contrail.pkg.generated.models.BGPAsAServiceVirtualMachineInterfaceRef) | repeated | Reference to VMI on which BGPaaS BGP peering will happen. |
+| service_health_check_refs | [BGPAsAServiceServiceHealthCheckRef](#github.com.Juniper.contrail.pkg.generated.models.BGPAsAServiceServiceHealthCheckRef) | repeated | Reference to health check object attached to BGPaaS object, used to enable BFD health check over active BGPaaS VMI. |
 
 
 
@@ -2298,6 +2298,17 @@
 | default_vrouter_bond_interface_members | [string](#string) |  | vRouter Bond Interface Members |
 | flow_ttl | [string](#string) |  | Flow Data Retention Time in hours |
 | statistics_ttl | [string](#string) |  | Statistics Data Retention Time in hours |
+| appformix_nodes | [AppformixNode](#github.com.Juniper.contrail.pkg.generated.models.AppformixNode) | repeated | Parent of this appformix node. |
+| contrail_analytics_database_nodes | [ContrailAnalyticsDatabaseNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailAnalyticsDatabaseNode) | repeated | Parent of this analyticsdb node. |
+| contrail_analytics_nodes | [ContrailAnalyticsNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailAnalyticsNode) | repeated | Parent of this analytics node. |
+| contrail_config_database_nodes | [ContrailConfigDatabaseNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailConfigDatabaseNode) | repeated | Parent of this configdb node. |
+| contrail_config_nodes | [ContrailConfigNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailConfigNode) | repeated | Parent of this config node. |
+| contrail_control_nodes | [ContrailControlNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailControlNode) | repeated | Parent of this control node. |
+| contrail_storage_nodes | [ContrailStorageNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailStorageNode) | repeated | Parent of this storage node. |
+| contrail_vrouter_nodes | [ContrailVrouterNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailVrouterNode) | repeated | Parent of this vrouter node. |
+| contrail_controller_nodes | [ContrailControllerNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailControllerNode) | repeated | Parent of this webui node. |
+| kubernetes_master_nodes | [KubernetesMasterNode](#github.com.Juniper.contrail.pkg.generated.models.KubernetesMasterNode) | repeated | Parent of this kubernetes master node. |
+| kubernetes_nodes | [KubernetesNode](#github.com.Juniper.contrail.pkg.generated.models.KubernetesNode) | repeated | Parent of this kubernetes node. |
 
 
 
@@ -16321,11 +16332,11 @@
 | loadbalancer_pool_properties | [LoadbalancerPoolType](#github.com.Juniper.contrail.pkg.generated.models.LoadbalancerPoolType) |  | Configuration for loadbalancer pool like protocol, subnet, etc. |
 | loadbalancer_pool_custom_attributes | [KeyValuePairs](#github.com.Juniper.contrail.pkg.generated.models.KeyValuePairs) |  | Custom loadbalancer config, opaque to the system. Specified as list of Key:Value pairs. Applicable to LBaaS V1. |
 | loadbalancer_pool_provider | [string](#string) |  | Provider field selects backend provider of the LBaaS, Cloudadmin could offer different levels of service like gold, silver, bronze. Provided by HA-proxy or various HW or SW appliances in the backend. Applicable to LBaaS V1 |
+| virtual_machine_interface_refs | [LoadbalancerPoolVirtualMachineInterfaceRef](#github.com.Juniper.contrail.pkg.generated.models.LoadbalancerPoolVirtualMachineInterfaceRef) | repeated | Reference to the virtual machine interface reaching pool subnet, applicable to LBaaS V1. |
+| loadbalancer_listener_refs | [LoadbalancerPoolLoadbalancerListenerRef](#github.com.Juniper.contrail.pkg.generated.models.LoadbalancerPoolLoadbalancerListenerRef) | repeated | Reference to loadbalancer listener served by this pool, applicable to LBaaS V2. |
 | service_instance_refs | [LoadbalancerPoolServiceInstanceRef](#github.com.Juniper.contrail.pkg.generated.models.LoadbalancerPoolServiceInstanceRef) | repeated | Reference to the service instance serving this pool, applicable to LBaaS V1. |
 | loadbalancer_healthmonitor_refs | [LoadbalancerPoolLoadbalancerHealthmonitorRef](#github.com.Juniper.contrail.pkg.generated.models.LoadbalancerPoolLoadbalancerHealthmonitorRef) | repeated | Reference to loadbalancer healthmonitor that this pool uses. |
 | service_appliance_set_refs | [LoadbalancerPoolServiceApplianceSetRef](#github.com.Juniper.contrail.pkg.generated.models.LoadbalancerPoolServiceApplianceSetRef) | repeated |  |
-| virtual_machine_interface_refs | [LoadbalancerPoolVirtualMachineInterfaceRef](#github.com.Juniper.contrail.pkg.generated.models.LoadbalancerPoolVirtualMachineInterfaceRef) | repeated | Reference to the virtual machine interface reaching pool subnet, applicable to LBaaS V1. |
-| loadbalancer_listener_refs | [LoadbalancerPoolLoadbalancerListenerRef](#github.com.Juniper.contrail.pkg.generated.models.LoadbalancerPoolLoadbalancerListenerRef) | repeated | Reference to loadbalancer listener served by this pool, applicable to LBaaS V2. |
 | loadbalancer_members | [LoadbalancerMember](#github.com.Juniper.contrail.pkg.generated.models.LoadbalancerMember) | repeated | Configuration object representing each member of load balancer pool. |
 
 
@@ -17532,10 +17543,10 @@
 | vxlan_routing | [bool](#bool) |  | When this knob is enabled for a project, an internal system VN (VN-Int) is created for every logical router in the project. |
 | alarm_enable | [bool](#bool) |  | Flag to enable/disable alarms configured under global-system-config. True, if not set. |
 | quota | [QuotaType](#github.com.Juniper.contrail.pkg.generated.models.QuotaType) |  | Max instances limits for various objects under project. |
-| alias_ip_pool_refs | [ProjectAliasIPPoolRef](#github.com.Juniper.contrail.pkg.generated.models.ProjectAliasIPPoolRef) | repeated | Reference to alias ip pool in this project. |
 | namespace_refs | [ProjectNamespaceRef](#github.com.Juniper.contrail.pkg.generated.models.ProjectNamespaceRef) | repeated | Reference to network namespace of this project. |
 | application_policy_set_refs | [ProjectApplicationPolicySetRef](#github.com.Juniper.contrail.pkg.generated.models.ProjectApplicationPolicySetRef) | repeated | Reference to default application-policy-set is automatically createdby system for default socped application policy sets. Needed by vrouter to identify default application-policy-set rules of a virtual machine interface |
 | floating_ip_pool_refs | [ProjectFloatingIPPoolRef](#github.com.Juniper.contrail.pkg.generated.models.ProjectFloatingIPPoolRef) | repeated | Reference to floating ip pool in this project. |
+| alias_ip_pool_refs | [ProjectAliasIPPoolRef](#github.com.Juniper.contrail.pkg.generated.models.ProjectAliasIPPoolRef) | repeated | Reference to alias ip pool in this project. |
 | address_groups | [AddressGroup](#github.com.Juniper.contrail.pkg.generated.models.AddressGroup) | repeated | Project level address Group object |
 | alarms | [Alarm](#github.com.Juniper.contrail.pkg.generated.models.Alarm) | repeated | List of alarms that are applicable to objects anchored under the project. |
 | api_access_lists | [APIAccessList](#github.com.Juniper.contrail.pkg.generated.models.APIAccessList) | repeated | API access list is list of rules that define role based access to each API and its properties at project level. |
@@ -22510,20 +22521,20 @@
 | vrf_assign_table | [VrfAssignTableType](#github.com.Juniper.contrail.pkg.generated.models.VrfAssignTableType) |  | VRF assignment policy for this interface, automatically generated by system. |
 | port_security_enabled | [bool](#bool) |  | Port security status on the network |
 | virtual_machine_interface_properties | [VirtualMachineInterfacePropertiesType](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfacePropertiesType) |  | Virtual Machine Interface miscellaneous configurations. |
-| virtual_machine_refs | [VirtualMachineInterfaceVirtualMachineRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceVirtualMachineRef) | repeated | This interface belongs to the referenced virtual machine. |
-| bridge_domain_refs | [VirtualMachineInterfaceBridgeDomainRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceBridgeDomainRef) | repeated | Virtual Machine interface maps to a bridge-domain by defaultor based on in coming 802.1Q vlan tag |
-| service_endpoint_refs | [VirtualMachineInterfaceServiceEndpointRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceServiceEndpointRef) | repeated | Links the access endpoint i.e virtual-machine-interface to service endpoint. |
-| service_health_check_refs | [VirtualMachineInterfaceServiceHealthCheckRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceServiceHealthCheckRef) | repeated | Reference to health check object attached to this interface. |
-| interface_route_table_refs | [VirtualMachineInterfaceInterfaceRouteTableRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceInterfaceRouteTableRef) | repeated | Reference to the interface route table attached to this interface. |
-| qos_config_refs | [VirtualMachineInterfaceQosConfigRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceQosConfigRef) | repeated | Reference to QoS config for this virtual machine interface. |
-| physical_interface_refs | [VirtualMachineInterfacePhysicalInterfaceRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfacePhysicalInterfaceRef) | repeated | Reference to the physical interface of service appliance this service interface represents. |
-| security_group_refs | [VirtualMachineInterfaceSecurityGroupRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceSecurityGroupRef) | repeated | Interface ACL, Automatically generated by system based on security groups attached to this interface. |
 | bgp_router_refs | [VirtualMachineInterfaceBGPRouterRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceBGPRouterRef) | repeated | Reference to bgp-router from the virtual machine interface. |
 | routing_instance_refs | [VirtualMachineInterfaceRoutingInstanceRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceRoutingInstanceRef) | repeated | Automatically generated Forwarding policy. This will be deprecated in future in favour of VRF assign rules. |
-| port_tuple_refs | [VirtualMachineInterfacePortTupleRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfacePortTupleRef) | repeated |  |
+| qos_config_refs | [VirtualMachineInterfaceQosConfigRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceQosConfigRef) | repeated | Reference to QoS config for this virtual machine interface. |
 | virtual_machine_interface_refs | [VirtualMachineInterfaceVirtualMachineInterfaceRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceVirtualMachineInterfaceRef) | repeated | List of references to the sub interfaces of this interface. |
-| security_logging_object_refs | [VirtualMachineInterfaceSecurityLoggingObjectRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceSecurityLoggingObjectRef) | repeated | Reference to security logging object for this virtual machine interface |
+| virtual_machine_refs | [VirtualMachineInterfaceVirtualMachineRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceVirtualMachineRef) | repeated | This interface belongs to the referenced virtual machine. |
+| physical_interface_refs | [VirtualMachineInterfacePhysicalInterfaceRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfacePhysicalInterfaceRef) | repeated | Reference to the physical interface of service appliance this service interface represents. |
+| service_health_check_refs | [VirtualMachineInterfaceServiceHealthCheckRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceServiceHealthCheckRef) | repeated | Reference to health check object attached to this interface. |
+| security_group_refs | [VirtualMachineInterfaceSecurityGroupRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceSecurityGroupRef) | repeated | Interface ACL, Automatically generated by system based on security groups attached to this interface. |
 | virtual_network_refs | [VirtualMachineInterfaceVirtualNetworkRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceVirtualNetworkRef) | repeated | This interface is member of the referenced virtual network. |
+| security_logging_object_refs | [VirtualMachineInterfaceSecurityLoggingObjectRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceSecurityLoggingObjectRef) | repeated | Reference to security logging object for this virtual machine interface |
+| interface_route_table_refs | [VirtualMachineInterfaceInterfaceRouteTableRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceInterfaceRouteTableRef) | repeated | Reference to the interface route table attached to this interface. |
+| port_tuple_refs | [VirtualMachineInterfacePortTupleRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfacePortTupleRef) | repeated |  |
+| service_endpoint_refs | [VirtualMachineInterfaceServiceEndpointRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceServiceEndpointRef) | repeated | Links the access endpoint i.e virtual-machine-interface to service endpoint. |
+| bridge_domain_refs | [VirtualMachineInterfaceBridgeDomainRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceBridgeDomainRef) | repeated | Virtual Machine interface maps to a bridge-domain by defaultor based on in coming 802.1Q vlan tag |
 
 
 
@@ -22827,13 +22838,13 @@
 | multi_policy_service_chains_enabled | [bool](#bool) |  |  |
 | mac_limit_control | [MACLimitControlType](#github.com.Juniper.contrail.pkg.generated.models.MACLimitControlType) |  | MAC limit control on the network |
 | is_shared | [bool](#bool) |  | When true, this virtual network is shared with all tenants. |
+| security_logging_object_refs | [VirtualNetworkSecurityLoggingObjectRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkSecurityLoggingObjectRef) | repeated | Reference to security logging object for this virtual network. |
+| network_policy_refs | [VirtualNetworkNetworkPolicyRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkNetworkPolicyRef) | repeated | Reference to network-policy attached to this network. It has sequence number to specify attachment order. |
+| qos_config_refs | [VirtualNetworkQosConfigRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkQosConfigRef) | repeated | Reference to QoS configuration for this virtual network. |
 | route_table_refs | [VirtualNetworkRouteTableRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkRouteTableRef) | repeated | Reference to route table attached to this virtual network. |
 | virtual_network_refs | [VirtualNetworkVirtualNetworkRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkVirtualNetworkRef) | repeated | Reference to a virtual network which is the provider network for the given virtual network. Traffic forwarding happens in the routing instance of the provider network. |
 | bgpvpn_refs | [VirtualNetworkBGPVPNRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkBGPVPNRef) | repeated | Back reference to virtual network associated to the BGP VPN resource |
 | network_ipam_refs | [VirtualNetworkNetworkIpamRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkNetworkIpamRef) | repeated | Reference to network-ipam this network is using. It has list of subnets that are being used as property of the reference. |
-| security_logging_object_refs | [VirtualNetworkSecurityLoggingObjectRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkSecurityLoggingObjectRef) | repeated | Reference to security logging object for this virtual network. |
-| network_policy_refs | [VirtualNetworkNetworkPolicyRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkNetworkPolicyRef) | repeated | Reference to network-policy attached to this network. It has sequence number to specify attachment order. |
-| qos_config_refs | [VirtualNetworkQosConfigRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkQosConfigRef) | repeated | Reference to QoS configuration for this virtual network. |
 | access_control_lists | [AccessControlList](#github.com.Juniper.contrail.pkg.generated.models.AccessControlList) | repeated | Virtual network access control list are automatically derived from all the network policies attached to virtual network. |
 | alias_ip_pools | [AliasIPPool](#github.com.Juniper.contrail.pkg.generated.models.AliasIPPool) | repeated | Alias ip pool is set of addresses that are carved out of a given network. Ip(s) from this set can be assigned to virtual-machine-interface so that they become members of this network |
 | bridge_domains | [BridgeDomain](#github.com.Juniper.contrail.pkg.generated.models.BridgeDomain) | repeated | bridge-domains configured in a virtual network |

@@ -10,7 +10,11 @@ references:
       operations: "CRUD"
       description: "Reference to node object for this vrouter node."
       presence: "optional"
-parent: contrail_cluster
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this vrouter node."
+    presence: "optional"
 plural: contrail_vrouter_nodes
 prefix: /contrail
 schema:

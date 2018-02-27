@@ -125,19 +125,6 @@ func CreateFloatingIP(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtProjectRef, err := tx.Prepare(insertFloatingIPProjectQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ProjectRefs create statement failed")
-	}
-	defer stmtProjectRef.Close()
-	for _, ref := range model.ProjectRefs {
-
-		_, err = stmtProjectRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ProjectRefs create failed")
-		}
-	}
-
 	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertFloatingIPVirtualMachineInterfaceQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
@@ -148,6 +135,19 @@ func CreateFloatingIP(
 		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
+	}
+
+	stmtProjectRef, err := tx.Prepare(insertFloatingIPProjectQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ProjectRefs create statement failed")
+	}
+	defer stmtProjectRef.Close()
+	for _, ref := range model.ProjectRefs {
+
+		_, err = stmtProjectRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ProjectRefs create failed")
 		}
 	}
 

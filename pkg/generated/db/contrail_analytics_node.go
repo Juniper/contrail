@@ -59,7 +59,10 @@ var ContrailAnalyticsNodeRefFields = map[string][]string{
 var ContrailAnalyticsNodeBackRefFields = map[string][]string{}
 
 // ContrailAnalyticsNodeParentTypes is possible parents for ContrailAnalyticsNode
-var ContrailAnalyticsNodeParents = []string{}
+var ContrailAnalyticsNodeParents = []string{
+
+	"contrail_cluster",
+}
 
 const insertContrailAnalyticsNodeNodeQuery = "insert into `ref_contrail_analytics_node_node` (`from`, `to` ) values (?, ?);"
 
