@@ -3,8 +3,6 @@ package common
 import (
 	"encoding/json"
 	"strings"
-
-	"github.com/Juniper/contrail/pkg/schema"
 )
 
 //MustJSON Marshal json
@@ -24,7 +22,7 @@ func access(dataSource map[string]interface{}, path []string, ok *bool, isSet bo
 		*ok = true
 		return dataSource
 	}
-	currentAttr := schema.CamelToSnake(path[0])
+	currentAttr := CamelToSnake(path[0])
 	path = path[1:]
 	if mapValue, found := dataSource[currentAttr]; found {
 		switch mapValue.(type) {
@@ -80,7 +78,7 @@ func getPathAsList(path string, delimiter string) ([]string, string) {
 	if pathAsList[0] == "" {
 		pathAsList = pathAsList[1:] //ignore the leading empty string on split of .a.b.c
 	}
-	attributeName := schema.CamelToSnake(pathAsList[len(pathAsList)-1])
+	attributeName := CamelToSnake(pathAsList[len(pathAsList)-1])
 	pathAsList = pathAsList[:len(pathAsList)-1]
 	return pathAsList, attributeName
 }

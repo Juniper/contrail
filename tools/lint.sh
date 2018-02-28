@@ -38,7 +38,9 @@ gometalinter \
 	--line-length 120 \
 	--dupl-threshold=70 \
 	--vendor \
-	--skip pkg/generated \
+	--skip pkg/services \
+	--skip pkg/serviceif \
+	--skip pkg/models \
 	./...
 
 gometalinter \
@@ -58,6 +60,7 @@ gometalinter \
 	--line-length 120 \
 	--dupl-threshold=70 \
 	--vendor \
-	--skip pkg/generated \
+	--skip pkg/models \
+	--skip pkg/services \
 	./cmd/... \
 	./pkg/agent/... \

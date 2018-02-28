@@ -12,10 +12,9 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
-	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/generated/services"
-	custom "github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/serviceif"
+	"github.com/Juniper/contrail/pkg/services"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -37,18 +36,15 @@ func NewServer() (*Server, error) {
 //SetupService setup service.
 //Application with custom logics can embed server struct, and overwrite
 //this method.
-func (s *Server) SetupService() models.Service {
+func (s *Server) SetupService() serviceif.Service {
 	service := &services.ContrailService{
-		BaseService: models.BaseService{},
+		BaseService: serviceif.BaseService{},
 	}
 	service.RegisterRESTAPI(s.Echo)
+	dbService := db.NewService(s.DB, viper.GetString("database.dialect"))
 
-	dbService := db.NewService(s.DB)
-	customLogicService := custom.NewService()
-
-	models.Chain([]models.Service{
+	serviceif.Chain([]serviceif.Service{
 		service,
-		customLogicService,
 		dbService,
 	})
 
@@ -58,7 +54,7 @@ func (s *Server) SetupService() models.Service {
 //Init setup the server.
 func (s *Server) Init() error {
 	common.SetLogLevel()
-	sqlDB, err := common.ConnectDB()
+	sqlDB, err := db.ConnectDB()
 	if err != nil {
 		return errors.Wrap(err, "Init DB failed")
 	}
@@ -102,7 +98,7 @@ func (s *Server) Init() error {
 		for prefix, target := range proxy {
 			g := e.Group(prefix)
 			g.Use(removePathPrefixMiddleware(prefix))
-			g.Use(proxyMiddleware(prefix, target[0], viper.GetBool("server.proxy.insecure")))
+			g.Use(proxyMiddleware(target[0], viper.GetBool("server.proxy.insecure")))
 		}
 	}
 	keystoneAuthURL := viper.GetString("keystone.authurl")

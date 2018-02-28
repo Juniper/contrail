@@ -29,6 +29,7 @@ func NewServer(t *testing.T) *Server {
 		"address":                  ":9091",
 		"database.connection":      "root:contrail123@tcp(localhost:3306)/contrail_test",
 		"database.max_open_conn":   100,
+		"database.dialect":         "mysql",
 		"keystone.local":           true,
 		"keystone.assignment.type": "static",
 		"keystone.assignment.file": "../keystone.yml",

@@ -141,7 +141,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -334,7 +334,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -527,7 +527,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -720,7 +720,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -913,7 +913,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -1106,7 +1106,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -1299,7 +1299,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -1492,7 +1492,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -1685,7 +1685,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -1878,7 +1878,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -2071,7 +2071,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -2264,7 +2264,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -2457,7 +2457,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -2650,7 +2650,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -2843,7 +2843,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -3036,7 +3036,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -3229,7 +3229,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -3422,7 +3422,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -3615,7 +3615,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -3808,7 +3808,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -4001,7 +4001,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -4194,7 +4194,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -4387,7 +4387,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -4580,7 +4580,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -4773,7 +4773,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -4966,7 +4966,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -5159,7 +5159,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -5352,7 +5352,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -5545,7 +5545,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -5738,7 +5738,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -5931,7 +5931,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -6124,7 +6124,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -6317,7 +6317,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -6510,7 +6510,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -6703,7 +6703,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -6896,7 +6896,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -7089,7 +7089,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -7282,7 +7282,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -7475,7 +7475,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -7668,7 +7668,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -7861,7 +7861,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -8054,7 +8054,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -8247,7 +8247,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -8440,7 +8440,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -8633,7 +8633,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -8826,7 +8826,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -9019,7 +9019,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -9212,7 +9212,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -9405,7 +9405,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -9598,7 +9598,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -9791,7 +9791,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -9984,7 +9984,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -10177,7 +10177,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -10370,7 +10370,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -10563,7 +10563,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -10756,7 +10756,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -10949,7 +10949,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -11142,7 +11142,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -11335,7 +11335,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -11528,7 +11528,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -11721,7 +11721,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -11914,7 +11914,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -12107,7 +12107,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -12300,7 +12300,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -12493,7 +12493,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -12686,7 +12686,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -12879,7 +12879,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -13072,7 +13072,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -13265,7 +13265,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -13458,7 +13458,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -13651,7 +13651,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -13844,7 +13844,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -14037,7 +14037,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -14230,7 +14230,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -14423,7 +14423,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -14616,7 +14616,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -14809,7 +14809,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -15002,7 +15002,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -15195,7 +15195,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -15388,7 +15388,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -15581,7 +15581,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -15774,7 +15774,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -15967,7 +15967,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -16160,7 +16160,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -16353,7 +16353,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -16546,7 +16546,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -16739,7 +16739,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -16932,7 +16932,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -17125,7 +17125,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -17318,7 +17318,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -17511,7 +17511,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -17704,7 +17704,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -17897,7 +17897,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -18090,7 +18090,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -18283,7 +18283,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -18476,7 +18476,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -18669,7 +18669,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -18862,7 +18862,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -19055,7 +19055,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -19248,7 +19248,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -19441,7 +19441,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -19634,7 +19634,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -19827,7 +19827,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -20020,7 +20020,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -20213,7 +20213,7 @@
                         "in": "query"
                     },
                     {
-                        "description": "Included shared object in reponse.",
+                        "description": "Included shared object in response.",
                         "name": "shared",
                         "in": "query"
                     },
@@ -28798,6 +28798,13 @@
                     "type": "string",
                     "title": "Machine State",
                     "default": "enroll",
+                    "items": null
+                },
+                "ssh_key": {
+                    "id": "ssh_key",
+                    "description": "SSH Public Key",
+                    "type": "string",
+                    "title": "SSH public key",
                     "items": null
                 },
                 "type": {

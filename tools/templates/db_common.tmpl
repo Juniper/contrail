@@ -1,23 +1,12 @@
 package db
 
-import (
-    "database/sql"
-    "github.com/Juniper/contrail/pkg/generated/models"
-)
-
-type DB struct {
-    models.BaseService
-    DB *sql.DB
-}
-
-func NewService(db *sql.DB) models.Service {
-    return &DB{
-        BaseService: models.BaseService{},
-        DB: db,
-    }
-}
-
-//SetDB sets db object.
-func (db *DB) SetDB(sqlDB *sql.DB)  {
-    db.DB = sqlDB
+func (db *DB) initQueryBuilders() {
+    queryBuilders := map[string]*QueryBuilder{}
+    db.queryBuilders = queryBuilders
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    queryBuilders["{{ schema.ID }}"] = NewQueryBuilder(db.Dialect,
+       "{{ schema.ID }}", {{ schema.JSONSchema.GoName }}Fields,
+       {{ schema.JSONSchema.GoName }}RefFields,
+       {{ schema.JSONSchema.GoName }}BackRefFields)
+{% endif%}{% endfor %}
 }

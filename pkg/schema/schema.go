@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/Juniper/contrail/pkg/common"
 	log "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -326,7 +327,7 @@ func (s *JSONSchema) resolveGoName(name string) error {
 	if s == nil {
 		return nil
 	}
-	s.GoName = SnakeToCamel(name)
+	s.GoName = common.SnakeToCamel(name)
 	if s.GoName == "Size" {
 		s.GoName = "Size_"
 	}
@@ -497,7 +498,7 @@ func (api *API) resolveAllSQL() error {
 }
 
 func (api *API) resolveRelation(linkTo string, reference *Reference) error {
-	reference.GoName = SnakeToCamel(linkTo)
+	reference.GoName = common.SnakeToCamel(linkTo)
 	reference.Attr = mapSlice(reference.AttrSlice).JSONSchema()
 	linkToSchema := api.schemaByID(linkTo)
 	if linkToSchema == nil {
@@ -622,7 +623,7 @@ func MakeAPI(dir string) (*API, error) {
 			return nil
 		}
 		var schema Schema
-		err = LoadFile(path, &schema)
+		err = common.LoadFile(path, &schema)
 		if err != nil {
 			log.Warn(fmt.Sprintf("[%s] %s", path, err))
 			return nil

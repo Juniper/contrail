@@ -3,7 +3,7 @@ package services
 import (
     "context"
     "net/http"
-    "github.com/Juniper/contrail/pkg/generated/models"
+    "github.com/Juniper/contrail/pkg/models"
     "github.com/satori/go.uuid"
     "github.com/labstack/echo"
     "github.com/Juniper/contrail/pkg/common"
@@ -12,6 +12,7 @@ import (
 )
 
 //RESTCreate{{ schema.JSONSchema.GoName }} handle a Create REST service.
+// nolint
 func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
     requestData := &models.Create{{ schema.JSONSchema.GoName }}Request{
     }
@@ -31,6 +32,7 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
 }
 
 //Create{{ schema.JSONSchema.GoName }} handle a Create API
+// nolint
 func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error) {
@@ -57,6 +59,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 }
 
 //RESTUpdate{{ schema.JSONSchema.GoName }} handles a REST Update request.
+// nolint
 func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
     //id := c.Param("id")
     request := &models.Update{{ schema.JSONSchema.GoName }}Request{
@@ -77,6 +80,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 }
 
 //Update{{ schema.JSONSchema.GoName }} handles a Update request.
+// nolint
 func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *models.Update{{ schema.JSONSchema.GoName }}Request) (*models.Update{{ schema.JSONSchema.GoName }}Response, error) {
@@ -88,6 +92,7 @@ func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
 }
 
 //RESTDelete{{ schema.JSONSchema.GoName }} delete a resource using REST service.
+// nolint
 func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.Context) error {
     id := c.Param("id")
     request := &models.Delete{{ schema.JSONSchema.GoName }}Request{
@@ -103,6 +108,7 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
 
 
 //RESTGet{{ schema.JSONSchema.GoName }} a REST Get request.
+// nolint
 func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
     id := c.Param("id")
     request := &models.Get{{ schema.JSONSchema.GoName }}Request{
@@ -117,9 +123,10 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
 }
 
 //RESTList{{ schema.JSONSchema.GoName }} handles a List REST service Request.
+// nolint
 func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
     var err error
-    spec := common.GetListSpec(c)
+    spec := models.GetListSpec(c)
     request := &models.List{{ schema.JSONSchema.GoName }}Request{
         Spec: spec,
     }
