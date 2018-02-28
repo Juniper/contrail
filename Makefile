@@ -15,11 +15,11 @@ build: ## Run go build
 generate: ## Run the source code generator
 	rm -rf pkg/generated
 	go run cmd/contrailutil/main.go generate --schemas schemas --templates tools/templates/template_config.yaml --schema-output public/schema.json --openapi-output public/openapi.json
-	protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto_model.md  --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/generated/models/generated.proto
-	protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto_service.md --gogo_out=plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/generated/services/generated.proto
-	go fmt github.com/Juniper/contrail/pkg/generated/db
-	go fmt github.com/Juniper/contrail/pkg/generated/models 
-	go fmt github.com/Juniper/contrail/pkg/generated/services
+	protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto_model.md  --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/review.opencontrail.org/Juniper/contrail/pkg/generated/models/generated.proto
+	protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto_service.md --gogo_out=plugins=grpc:$(GOPATH)/src/ proto/review.opencontrail.org/Juniper/contrail/pkg/generated/services/generated.proto
+	go fmt review.opencontrail.org/Juniper/contrail/pkg/generated/db
+	go fmt review.opencontrail.org/Juniper/contrail/pkg/generated/models 
+	go fmt review.opencontrail.org/Juniper/contrail/pkg/generated/services
 
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package
