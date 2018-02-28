@@ -1,0 +1,57 @@
+- hosts: all
+  name: Build and test Juniper/contrail
+  roles:
+    - install-docker-daemon
+  tasks:
+    
+    - name: Run builder docker image {{ item.name }} in background
+      docker_container:
+        name: "{{ item.name|default(item.image.split('/')[-1].split(':')[0]) }}"
+        state: started
+        env: "{{ item.environment|default(omit) }}"
+        net: bridge
+        command: sleep infinity
+        volumes: "{{ ansible_env.HOME }}/{{ zuul.project.src_dir }}:/src"
+        working_dir: /src
+      with_items: "{{ docker[0] }}"
+      register: runner
+
+    - name: Run required docker image {{ item.name }} in background
+      docker_container:
+        name: "{{ item.name|default(item.image.split('/')[-1].split(':')[0]) }}"
+        state: started
+        env: "{{ item.environment|default(omit) }}"
+        net:
+          container: "{{ runner.docker_container.ID }}"
+        command: sleep infinity
+      with_items: "{{ docker[1:] }}"
+
+    - name: install mysql client
+      shell: >
+        docker exec "{{ runner.docker_container.ID }}" 
+        sudo apt install mysql-client
+ 
+    - name: install deps
+      shell: >
+        docker exec "{{ runner.docker_container.ID }}"
+        ./tools/deps.sh
+
+    - name: lint
+      shell: >
+        docker exec "{{ runner.docker_container.ID }}"
+        ./tools/lint.sh
+
+    - name: wait for db
+      shell: >
+        docker exec "{{ runner.docker_container.ID }}"
+        dockerize -wait tcp://localhost:3306 -timeout 1m
+
+    - name: reset database
+      shell: >
+        docker exec "{{ runner.docker_container.ID }}"
+        ./tools/reset_db.sh
+
+    - name: run test
+      shell: >
+        docker exec "{{ runner.docker_container.ID }}"
+        make test
