@@ -1,8 +1,8 @@
 syntax = "proto3";
-package github.com.Juniper.contrail.pkg.generated.services;
+package github.com.Juniper.contrail.pkg.services;
 
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
-import "github.com/Juniper/contrail/pkg/generated/models/generated.proto";
+import "github.com/Juniper/contrail/pkg/models/generated.proto";
 
 option (gogoproto.protosizer_all) = true;
 option (gogoproto.sizer_all) = false;
@@ -10,10 +10,10 @@ option go_package = "services";
 
 service ContrailService {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-rpc Get{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.generated.models.Get{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.generated.models.Get{{ schema.JSONSchema.GoName }}Response);
-rpc List{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.generated.models.List{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.generated.models.List{{ schema.JSONSchema.GoName }}Response);
-rpc Create{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.generated.models.Create{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.generated.models.Create{{ schema.JSONSchema.GoName }}Response);
-rpc Update{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.generated.models.Update{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.generated.models.Update{{ schema.JSONSchema.GoName }}Response);
-rpc Delete{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.generated.models.Delete{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.generated.models.Delete{{ schema.JSONSchema.GoName }}Response);
+rpc Get{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.Get{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.models.Get{{ schema.JSONSchema.GoName }}Response);
+rpc List{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.List{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.models.List{{ schema.JSONSchema.GoName }}Response);
+rpc Create{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.Create{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.models.Create{{ schema.JSONSchema.GoName }}Response);
+rpc Update{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.Update{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.models.Update{{ schema.JSONSchema.GoName }}Response);
+rpc Delete{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.Delete{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.models.Delete{{ schema.JSONSchema.GoName }}Response);
 {% endif %}{% endfor %}
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/schema"
 	log "github.com/sirupsen/logrus"
 )
@@ -37,7 +38,7 @@ func generateCode() {
 		log.Fatal(err)
 	}
 
-	if err = schema.SaveFile(schemaOutputPath, api); err != nil {
+	if err = common.SaveFile(schemaOutputPath, api); err != nil {
 		log.Fatal(err)
 	}
 
@@ -46,7 +47,7 @@ func generateCode() {
 		log.Fatal(err)
 	}
 
-	if err = schema.SaveFile(openapiOutputPath, openapi); err != nil {
+	if err = common.SaveFile(openapiOutputPath, openapi); err != nil {
 		log.Fatal(err)
 	}
 }

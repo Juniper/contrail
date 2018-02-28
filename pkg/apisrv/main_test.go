@@ -12,7 +12,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/schema"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -73,7 +72,7 @@ func RunTest(file string) error {
 	}
 	for _, task := range testData.Workflow {
 		log.Debug("[Step] ", task.Name)
-		task.Request.Data = schema.YAMLtoJSONCompat(task.Request.Data)
+		task.Request.Data = common.YAMLtoJSONCompat(task.Request.Data)
 		clientID := "default"
 		if task.Client != "" {
 			clientID = task.Client
@@ -83,7 +82,7 @@ func RunTest(file string) error {
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("task %v failed", task))
 		}
-		task.Expect = schema.YAMLtoJSONCompat(task.Expect)
+		task.Expect = common.YAMLtoJSONCompat(task.Expect)
 		err = checkDiff("", task.Expect, task.Request.Output)
 		if err != nil {
 			log.WithFields(
@@ -102,7 +101,7 @@ func RunTest(file string) error {
 
 func LoadTest(file string) (*TestScenario, error) {
 	var testScenario TestScenario
-	err := schema.LoadFile(file, &testScenario)
+	err := common.LoadFile(file, &testScenario)
 	return &testScenario, err
 }
 

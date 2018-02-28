@@ -1,42 +1,33 @@
 - type: type
   template_path: model.tmpl
-  output_path: pkg/generated/models/__resource__.go
+  output_path: pkg/models/gen___resource__.go
 - type: all
-  template_path: model_common.tmpl
-  output_path: pkg/generated/models/common.go
-# - type: resource
-#   template_path: model_api.tmpl
-#   output_path: pkg/generated/models/__resource___api.go
-# - type: type
-#   template_path: model_test.tmpl
-#   output_path: pkg/generated/models/__resource___test.go
+  template_path: sql_mysql.tmpl
+  output_path: tools/init_mysql.sql
 - type: all
-  template_path: sql.tmpl
-  output_path: tools/init.sql
+  template_path: sql_psql.tmpl
+  output_path: tools/init_psql.sql
 - type: all
   template_path: sql_cleanup.tmpl
   output_path: tools/cleanup.sql
 - type: resource
-  template_path: db_common.tmpl
-  output_path: pkg/generated/db/common.go
-- type: resource
   template_path: db.tmpl
-  output_path: pkg/generated/db/__resource__.go
+  output_path: pkg/db/gen___resource__.go
 - type: resource
   template_path: db_test.tmpl
-  output_path: pkg/generated/db/__resource___test.go
+  output_path: pkg/db/gen___resource___test.go
 - type: all
   template_path: service_common.tmpl
-  output_path: pkg/generated/services/common.go
+  output_path: pkg/services/gen_common.go
+- type: all
+  template_path: base_service.tmpl
+  output_path: pkg/services/base_service.go
 - type: resource
   template_path: service.tmpl
-  output_path: pkg/generated/services/__resource__.go
+  output_path: pkg/services/gen___resource__.go
 - type: all
   template_path: proto_model.tmpl
-  output_path: proto/github.com/Juniper/contrail/pkg/generated/models/generated.proto
+  output_path: proto/github.com/Juniper/contrail/pkg/models/generated.proto
 - type: all
   template_path: proto_service.tmpl
-  output_path: proto/github.com/Juniper/contrail/pkg/generated/services/generated.proto
-- type: all
-  template_path: db_test_main.tmpl
-  output_path: pkg/generated/db/main_test.go
+  output_path: proto/github.com/Juniper/contrail/pkg/services/generated.proto

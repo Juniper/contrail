@@ -12,10 +12,8 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/db"
-	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/generated/services"
-	custom "github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/services"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -37,18 +35,15 @@ func NewServer() (*Server, error) {
 //SetupService setup service.
 //Application with custom logics can embed server struct, and overwrite
 //this method.
-func (s *Server) SetupService() models.Service {
+func (s *Server) SetupService() services.Service {
 	service := &services.ContrailService{
-		BaseService: models.BaseService{},
+		BaseService: services.BaseService{},
 	}
 	service.RegisterRESTAPI(s.Echo)
-
 	dbService := db.NewService(s.DB)
-	customLogicService := custom.NewService()
 
-	models.Chain([]models.Service{
+	services.Chain([]services.Service{
 		service,
-		customLogicService,
 		dbService,
 	})
 
@@ -58,7 +53,7 @@ func (s *Server) SetupService() models.Service {
 //Init setup the server.
 func (s *Server) Init() error {
 	common.SetLogLevel()
-	sqlDB, err := common.ConnectDB()
+	sqlDB, err := db.ConnectDB()
 	if err != nil {
 		return errors.Wrap(err, "Init DB failed")
 	}

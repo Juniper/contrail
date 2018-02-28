@@ -1,3 +1,4 @@
+// nolint
 package db
 
 import (
@@ -6,8 +7,7 @@ import (
 	"encoding/json"
 
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/schema"
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -56,10 +56,11 @@ const insert{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Query = "insert 
 {% endfor %}
 
 // Create{{ schema.JSONSchema.GoName }} inserts {{ schema.JSONSchema.GoName }} to DB
+// nolint
 func (db *DB) create{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *models.Create{{ schema.JSONSchema.GoName }}Request) error {
-    tx := common.GetTransaction(ctx)
+    tx := GetTransaction(ctx)
     model := request.{{ schema.JSONSchema.GoName }}
 	// Prepare statement for inserting data
 	stmt, err := tx.Prepare(insert{{ schema.JSONSchema.GoName }}Query)
@@ -95,16 +96,16 @@ func (db *DB) create{{ schema.JSONSchema.GoName }}(
         }
     }
     {% endfor %}
-    metaData := &common.MetaData{
+    metaData := &MetaData{
         UUID: model.UUID,
         Type: "{{ schema.ID }}",
         FQName: model.FQName,
     }
-    err = common.CreateMetaData(tx, metaData)
+    err = CreateMetaData(tx, metaData)
     if err != nil {
         return err
     }
-    err = common.CreateSharing(tx, "{{ schema.ID }}", model.UUID, model.GetPerms2().GetShare())
+    err = CreateSharing(tx, "{{ schema.ID }}", model.UUID, model.GetPerms2().GetShare())
     if err != nil {
         return err
     }
@@ -122,11 +123,11 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
             json.Unmarshal(value.([]byte), &m{{ column.Path }})
         {% else %}
             {% if column.Bind == "int" %}
-               m{{ column.Path }} = schema.InterfaceToInt64(value)
+               m{{ column.Path }} = common.InterfaceToInt64(value)
             {% elif column.Bind == "bool" %}
-               m{{ column.Path }} = schema.InterfaceToBool(value)
+               m{{ column.Path }} = common.InterfaceToBool(value)
             {% elif column.Bind == "string" %}
-               m{{ column.Path }} = schema.InterfaceToString(value)
+               m{{ column.Path }} = common.InterfaceToString(value)
             {% endif %}
         {% endif %}
     }
@@ -134,14 +135,14 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
     {% for linkTo, reference in schema.References %}
     if value, ok := values["ref_{{ linkTo }}"]; ok {
         var references []interface{}
-        stringValue := schema.InterfaceToString(value)
+        stringValue := common.InterfaceToString(value)
         json.Unmarshal([]byte("[" + stringValue + "]"), &references )
         for _, reference := range references {
             referenceMap, ok := reference.(map[string]interface{})
             if !ok {
                 continue
             }
-            uuid := schema.InterfaceToString(referenceMap["to"])
+            uuid := common.InterfaceToString(referenceMap["to"])
             if uuid == "" {
                 continue
             }
@@ -154,14 +155,14 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
             {% for column in reference.Colums %}
                 if refAttrValue, ok := referenceMap[column]; ok && refAttrValue != nil {
                 {% if column.Bind == "json" %}
-                    json.Unmarshal(schema.InterfaceToBytes(refAttrValue), &attr{{ column.Path }})
+                    json.Unmarshal(common.InterfaceToBytes(refAttrValue), &attr{{ column.Path }})
                 {% else %}
                     {% if column.Bind == "int" %}
-                        attr{{ column.Path }} = schema.InterfaceToInt64(refAttrValue)
+                        attr{{ column.Path }} = common.InterfaceToInt64(refAttrValue)
                     {% elif column.Bind == "bool" %}
-                        attr{{ column.Path }} = schema.InterfaceToBool(refAttrValue)
+                        attr{{ column.Path }} = common.InterfaceToBool(refAttrValue)
                     {% elif column.Bind == "string" %}
-                        attr{{ column.Path }} = schema.InterfaceToString(refAttrValue)
+                        attr{{ column.Path }} = common.InterfaceToString(refAttrValue)
                     {% endif %}
                 {% endif %}
                 }
@@ -174,14 +175,14 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
     {% set child = backref.LinkTo %}
     if value, ok := values["backref_{{ child.ID }}"]; ok {
         var childResources []interface{}
-        stringValue := schema.InterfaceToString(value)
+        stringValue := common.InterfaceToString(value)
         json.Unmarshal([]byte("[" + stringValue + "]"), &childResources )
         for _, childResource := range childResources {
             childResourceMap, ok := childResource.(map[string]interface{})
             if !ok {
                 continue
             }
-            uuid := schema.InterfaceToString(childResourceMap["uuid"])
+            uuid := common.InterfaceToString(childResourceMap["uuid"])
             if uuid == "" {
                 continue
             }
@@ -191,14 +192,14 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
             {% for column in child.Columns %}
                 if propertyValue, ok := childResourceMap["{{ column.Column }}"]; ok && propertyValue != nil {
                 {% if column.Bind == "json" %}
-                    json.Unmarshal(schema.InterfaceToBytes(propertyValue), &childModel{{ column.Path }})
+                    json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel{{ column.Path }})
                 {% else %}
                     {% if column.Bind == "int" %}
-                        childModel{{ column.Path }} = schema.InterfaceToInt64(propertyValue)
+                        childModel{{ column.Path }} = common.InterfaceToInt64(propertyValue)
                     {% elif column.Bind == "bool" %}
-                        childModel{{ column.Path }} = schema.InterfaceToBool(propertyValue)
+                        childModel{{ column.Path }} = common.InterfaceToBool(propertyValue)
                     {% elif column.Bind == "string" %}
-                        childModel{{ column.Path }} = schema.InterfaceToString(propertyValue)
+                        childModel{{ column.Path }} = common.InterfaceToString(propertyValue)
                     {% endif %}
                 {% endif %}
                 }
@@ -212,8 +213,8 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
 // List{{ schema.JSONSchema.GoName }} lists {{ schema.JSONSchema.GoName }} with list spec.
 func (db *DB) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.List{{ schema.JSONSchema.GoName }}Request) (response *models.List{{ schema.JSONSchema.GoName }}Response, err error) {
     var rows *sql.Rows
-    tx := common.GetTransaction(ctx)
-    qb := &common.ListQueryBuilder{}
+    tx := GetTransaction(ctx)
+    qb := &ListQueryBuilder{}
     qb.Auth = common.GetAuthCTX(ctx)
     spec := request.Spec
     qb.Spec = spec
@@ -224,11 +225,11 @@ func (db *DB) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *m
     result := []*models.{{ schema.JSONSchema.GoName }}{}
 
     if spec.ParentFQName != nil {
-       parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
+       parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
        if err != nil {
            return nil, errors.Wrap(err, "can't find parents")
        }
-       spec.Filters = common.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
+       spec.Filters = models.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
     }
 
     query := qb.BuildQuery()
@@ -291,7 +292,7 @@ func (db *DB) delete{{ schema.JSONSchema.GoName }}(
     var err error
     var count int
     uuid := request.ID
-    tx := common.GetTransaction(ctx)
+    tx := GetTransaction(ctx)
     auth := common.GetAuthCTX(ctx)
     if auth.IsAdmin() {
         row := tx.QueryRowContext(ctx, selectQuery, uuid)
@@ -321,7 +322,7 @@ func (db *DB) delete{{ schema.JSONSchema.GoName }}(
         return errors.Wrap(err, "delete failed")
     }
 
-    err = common.DeleteMetaData(tx, uuid)
+    err = DeleteMetaData(tx, uuid)
     log.WithFields(log.Fields{
         "uuid": uuid,
     }).Debug("deleted")
@@ -329,6 +330,7 @@ func (db *DB) delete{{ schema.JSONSchema.GoName }}(
 }
 
 //Create{{ schema.JSONSchema.GoName }} handle a Create API
+// nolint
 func (db *DB) Create{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error) {
@@ -336,7 +338,7 @@ func (db *DB) Create{{ schema.JSONSchema.GoName }}(
     if model == nil {
         return nil, common.ErrorBadRequest("Update body is empty")
     }
-    if err := common.DoInTransaction(
+    if err := DoInTransaction(
         ctx,
         db.DB,
         func (ctx context.Context) error {
@@ -361,7 +363,7 @@ func (db *DB) Update{{ schema.JSONSchema.GoName }}(
     if model == nil {
         return nil, common.ErrorBadRequest("Update body is empty")
     }
-    if err := common.DoInTransaction(
+    if err := DoInTransaction(
         ctx,
         db.DB,
         func (ctx context.Context) error {
@@ -380,7 +382,7 @@ func (db *DB) Update{{ schema.JSONSchema.GoName }}(
 
 //Delete{{ schema.JSONSchema.GoName }} delete a resource.
 func (db *DB) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Delete{{ schema.JSONSchema.GoName }}Request) (*models.Delete{{ schema.JSONSchema.GoName }}Response, error) {
-    if err := common.DoInTransaction(
+    if err := DoInTransaction(
         ctx,
         db.DB,
         func (ctx context.Context) error {
@@ -409,7 +411,7 @@ func (db *DB) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *mo
         Spec: spec,
     }
     var result *models.List{{ schema.JSONSchema.GoName }}Response
-    if err := common.DoInTransaction(
+    if err := DoInTransaction(
         ctx,
         db.DB,
         func (ctx context.Context) error {
@@ -428,10 +430,11 @@ func (db *DB) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *mo
 }
 
 //List{{ schema.JSONSchema.GoName }} handles a List service Request.
+// nolint
 func (db *DB) List{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *models.List{{ schema.JSONSchema.GoName }}Request) (response *models.List{{ schema.JSONSchema.GoName }}Response, err error) {
-    if err := common.DoInTransaction(
+    if err := DoInTransaction(
         ctx,
         db.DB,
         func (ctx context.Context) error {

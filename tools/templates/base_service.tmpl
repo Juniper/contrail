@@ -1,0 +1,76 @@
+package services
+
+import (
+    "context"
+    "github.com/Juniper/contrail/pkg/models"
+)
+
+type Service interface {
+    Next() Service
+    SetNext(Service)
+ {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    Create{{ schema.JSONSchema.GoName }}(context.Context, *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error)
+    Update{{ schema.JSONSchema.GoName }}(context.Context, *models.Update{{ schema.JSONSchema.GoName }}Request) (*models.Update{{ schema.JSONSchema.GoName }}Response, error)
+    Delete{{ schema.JSONSchema.GoName }}(context.Context, *models.Delete{{ schema.JSONSchema.GoName }}Request) (*models.Delete{{ schema.JSONSchema.GoName }}Response, error)
+    Get{{ schema.JSONSchema.GoName }}(context.Context, *models.Get{{ schema.JSONSchema.GoName }}Request) (*models.Get{{ schema.JSONSchema.GoName }}Response, error)
+    List{{ schema.JSONSchema.GoName }}(context.Context, *models.List{{ schema.JSONSchema.GoName }}Request) (*models.List{{ schema.JSONSchema.GoName }}Response, error)
+{% endif%}{% endfor %}
+}
+
+//Chain setup chain of services.
+func Chain(services []Service) {
+    if len(services) < 2 {
+        return
+    }
+    previous := services[0]
+    for i := 1; i < len(services); i++ {
+        current := services[i]
+        previous.SetNext(current)
+        previous = current
+    }
+}
+
+type BaseService struct{
+    next Service
+}
+
+func (service *BaseService) Next() Service {
+    return service.next
+}
+
+func (service *BaseService) SetNext(next Service) {
+    service.next = next
+}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+func (service *BaseService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (service *BaseService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Update{{ schema.JSONSchema.GoName }}Request) (*models.Update{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (service *BaseService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Delete{{ schema.JSONSchema.GoName }}Request) (*models.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (service *BaseService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Get{{ schema.JSONSchema.GoName }}Request) (*models.Get{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().Get{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (service *BaseService) List{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.List{{ schema.JSONSchema.GoName }}Request) (*models.List{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().List{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+{% endif%}{% endfor %}

@@ -8,8 +8,8 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/generated/services"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
