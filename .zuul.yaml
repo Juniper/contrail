@@ -1,0 +1,26 @@
+- project:
+    name: Juniper/contrail
+    check:
+      jobs:
+        - contrail-go-docker
+
+- job:
+    name: contrail-go-docker
+    description: |
+      Job that builds and tests Juniper/contrail project.
+    voting: False
+    parent: contrail-src-base
+    required-projects:
+      - Juniper/contrail
+    run: playbooks/contrail-go-docker/run.yaml
+    #post-run: playbooks/contrail-go-docker/post.yaml
+    nodeset:
+      nodes:
+        - name: contrail-go
+          label: centos-7-4-builder
+    vars:
+      docker:
+        - image: circleci/golang:1.9.2
+#        - image: circleci/mysql:5.7
+#          environment:
+#            MYSQL_ROOT_PASSWORD: contrail123
