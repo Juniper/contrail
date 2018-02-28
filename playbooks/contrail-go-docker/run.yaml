@@ -1,0 +1,79 @@
+- hosts: all
+  name: Build and test Juniper/contrail
+  roles:
+    - install-docker-daemon
+  vars:
+    workdir: /src
+  tasks:
+
+    - name: "Install docker-py"
+      yum:
+        name: python-docker-py
+        state: present
+      become: yes
+      become_user: root
+
+    - name: "Run builder docker image {{ docker.0.name }} in background"
+      docker_container:
+        name: "{{ docker.0.name|default(docker.0.image.split('/')[-1].split(':')[0]) }}"
+        image: "{{ docker.0.image }}"
+        state: started
+        env: "{{ docker.0.environment|default(omit) }}"
+        network_mode: bridge
+        command: sleep infinity
+        volumes: 
+          - "{{ ansible_env.HOME }}/{{ zuul.project.src_dir }}:{{ workdir }}"
+      register: runner
+      become: yes
+      become_user: root
+
+    - name: debug docker setup
+      debug:
+        var: runner
+
+    - name: "Run required docker image {{ item.name }} in background"
+      docker_container:
+        name: "{{ item.name|default(item.image.split('/')[-1].split(':')[0]) }}"
+        image: "{{ item.image }}"
+        state: started
+        env: "{{ item.environment|default(omit) }}"
+        network_mode:
+          container: "{{ runner.docker_container.ID }}"
+        command: sleep infinity
+      with_items: "{{ docker[1:] }}"
+      become: yes
+      become_user: root
+
+    - name: Set docker as default runner
+      set_fact:
+        exec: docker exec -w /src {{ runner.docker_container.ID }}
+
+    - name: install mysql client
+      shell: >
+        {{ exec }}
+        sudo apt install mysql-client
+ 
+    - name: install deps
+      shell: >
+        {{ exec }}
+        ./tools/deps.sh
+
+    - name: lint
+      shell: >
+        {{ exec }}
+        ./tools/lint.sh
+
+    - name: wait for db
+      shell: >
+        {{ exec }}
+        dockerize -wait tcp://localhost:3306 -timeout 1m
+
+    - name: reset database
+      shell: >
+        {{ exec }}
+        ./tools/reset_db.sh
+
+    - name: run test
+      shell: >
+        {{ exec }}
+        make test
