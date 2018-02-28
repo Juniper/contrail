@@ -1,0 +1,34 @@
+- hosts: all
+  name: Build and test Juniper/contrail
+  roles:
+    - install-docker-daemon
+  vars:
+    workdir: /go/src/github.com/Juniper/contrail
+  tasks:
+
+    - include: build-setup.yaml
+
+    - name: run build inside docker runner 
+      include: build-step.yaml
+      loop_control:
+        label: "{{ item.name }}"
+      with_items:
+        #- name: install mysql client
+        #  command: sudo apt-get install mysql-client
+        - name: install deps
+          command: cd {{ workdir }} && make deps
+        #- name: lint
+        #command: cd {{ workdir }} && make lint
+        #- name: Wait for db
+        #command: dockerize -wait tcp://localhost:3306 -timeout 1m
+        #- name: Reset database
+        #command: cd /src && ./tools/reset_db.sh
+        #- name: Run test
+        #command: cd /src && make test
+        - name: Install packaging tools
+          command: |
+            sudo apt-get install -y zip build-essential rpm rubygems ruby-dev curl && \
+            sudo gem install --no-ri --no-rdoc fpm
+        - name: Make package
+          command: cd {{ workdir }} && make build binaries package && find . -name '*.rpm'
+

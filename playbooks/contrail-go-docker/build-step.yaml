@@ -1,0 +1,5 @@
+- name: "{{ item.name|default('item.command') }}"
+  command: >
+    {{ exec }} "{{ item.command }}"
+  become: yes
+  become_user: root
