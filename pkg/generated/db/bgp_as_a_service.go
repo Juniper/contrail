@@ -121,19 +121,6 @@ func (db *DB) createBGPAsAService(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtServiceHealthCheckRef, err := tx.Prepare(insertBGPAsAServiceServiceHealthCheckQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceHealthCheckRefs create statement failed")
-	}
-	defer stmtServiceHealthCheckRef.Close()
-	for _, ref := range model.ServiceHealthCheckRefs {
-
-		_, err = stmtServiceHealthCheckRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceHealthCheckRefs create failed")
-		}
-	}
-
 	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertBGPAsAServiceVirtualMachineInterfaceQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
@@ -144,6 +131,19 @@ func (db *DB) createBGPAsAService(
 		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
+	}
+
+	stmtServiceHealthCheckRef, err := tx.Prepare(insertBGPAsAServiceServiceHealthCheckQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceHealthCheckRefs create statement failed")
+	}
+	defer stmtServiceHealthCheckRef.Close()
+	for _, ref := range model.ServiceHealthCheckRefs {
+
+		_, err = stmtServiceHealthCheckRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceHealthCheckRefs create failed")
 		}
 	}
 

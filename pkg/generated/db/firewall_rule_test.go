@@ -39,56 +39,6 @@ func TestFirewallRule(t *testing.T) {
 
 	// Create referred objects
 
-	var SecurityLoggingObjectcreateref []*models.FirewallRuleSecurityLoggingObjectRef
-	var SecurityLoggingObjectrefModel *models.SecurityLoggingObject
-	SecurityLoggingObjectrefModel = models.MakeSecurityLoggingObject()
-	SecurityLoggingObjectrefModel.UUID = "firewall_rule_security_logging_object_ref_uuid"
-	SecurityLoggingObjectrefModel.FQName = []string{"test", "firewall_rule_security_logging_object_ref_uuid"}
-	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
-		SecurityLoggingObject: SecurityLoggingObjectrefModel,
-	})
-	SecurityLoggingObjectrefModel.UUID = "firewall_rule_security_logging_object_ref_uuid1"
-	SecurityLoggingObjectrefModel.FQName = []string{"test", "firewall_rule_security_logging_object_ref_uuid1"}
-	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
-		SecurityLoggingObject: SecurityLoggingObjectrefModel,
-	})
-	SecurityLoggingObjectrefModel.UUID = "firewall_rule_security_logging_object_ref_uuid2"
-	SecurityLoggingObjectrefModel.FQName = []string{"test", "firewall_rule_security_logging_object_ref_uuid2"}
-	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
-		SecurityLoggingObject: SecurityLoggingObjectrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.FirewallRuleSecurityLoggingObjectRef{UUID: "firewall_rule_security_logging_object_ref_uuid", To: []string{"test", "firewall_rule_security_logging_object_ref_uuid"}})
-	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.FirewallRuleSecurityLoggingObjectRef{UUID: "firewall_rule_security_logging_object_ref_uuid2", To: []string{"test", "firewall_rule_security_logging_object_ref_uuid2"}})
-	model.SecurityLoggingObjectRefs = SecurityLoggingObjectcreateref
-
-	var VirtualNetworkcreateref []*models.FirewallRuleVirtualNetworkRef
-	var VirtualNetworkrefModel *models.VirtualNetwork
-	VirtualNetworkrefModel = models.MakeVirtualNetwork()
-	VirtualNetworkrefModel.UUID = "firewall_rule_virtual_network_ref_uuid"
-	VirtualNetworkrefModel.FQName = []string{"test", "firewall_rule_virtual_network_ref_uuid"}
-	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
-		VirtualNetwork: VirtualNetworkrefModel,
-	})
-	VirtualNetworkrefModel.UUID = "firewall_rule_virtual_network_ref_uuid1"
-	VirtualNetworkrefModel.FQName = []string{"test", "firewall_rule_virtual_network_ref_uuid1"}
-	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
-		VirtualNetwork: VirtualNetworkrefModel,
-	})
-	VirtualNetworkrefModel.UUID = "firewall_rule_virtual_network_ref_uuid2"
-	VirtualNetworkrefModel.FQName = []string{"test", "firewall_rule_virtual_network_ref_uuid2"}
-	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
-		VirtualNetwork: VirtualNetworkrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.FirewallRuleVirtualNetworkRef{UUID: "firewall_rule_virtual_network_ref_uuid", To: []string{"test", "firewall_rule_virtual_network_ref_uuid"}})
-	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.FirewallRuleVirtualNetworkRef{UUID: "firewall_rule_virtual_network_ref_uuid2", To: []string{"test", "firewall_rule_virtual_network_ref_uuid2"}})
-	model.VirtualNetworkRefs = VirtualNetworkcreateref
-
 	var ServiceGroupcreateref []*models.FirewallRuleServiceGroupRef
 	var ServiceGrouprefModel *models.ServiceGroup
 	ServiceGrouprefModel = models.MakeServiceGroup()
@@ -138,6 +88,56 @@ func TestFirewallRule(t *testing.T) {
 	AddressGroupcreateref = append(AddressGroupcreateref, &models.FirewallRuleAddressGroupRef{UUID: "firewall_rule_address_group_ref_uuid", To: []string{"test", "firewall_rule_address_group_ref_uuid"}})
 	AddressGroupcreateref = append(AddressGroupcreateref, &models.FirewallRuleAddressGroupRef{UUID: "firewall_rule_address_group_ref_uuid2", To: []string{"test", "firewall_rule_address_group_ref_uuid2"}})
 	model.AddressGroupRefs = AddressGroupcreateref
+
+	var SecurityLoggingObjectcreateref []*models.FirewallRuleSecurityLoggingObjectRef
+	var SecurityLoggingObjectrefModel *models.SecurityLoggingObject
+	SecurityLoggingObjectrefModel = models.MakeSecurityLoggingObject()
+	SecurityLoggingObjectrefModel.UUID = "firewall_rule_security_logging_object_ref_uuid"
+	SecurityLoggingObjectrefModel.FQName = []string{"test", "firewall_rule_security_logging_object_ref_uuid"}
+	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
+		SecurityLoggingObject: SecurityLoggingObjectrefModel,
+	})
+	SecurityLoggingObjectrefModel.UUID = "firewall_rule_security_logging_object_ref_uuid1"
+	SecurityLoggingObjectrefModel.FQName = []string{"test", "firewall_rule_security_logging_object_ref_uuid1"}
+	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
+		SecurityLoggingObject: SecurityLoggingObjectrefModel,
+	})
+	SecurityLoggingObjectrefModel.UUID = "firewall_rule_security_logging_object_ref_uuid2"
+	SecurityLoggingObjectrefModel.FQName = []string{"test", "firewall_rule_security_logging_object_ref_uuid2"}
+	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
+		SecurityLoggingObject: SecurityLoggingObjectrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.FirewallRuleSecurityLoggingObjectRef{UUID: "firewall_rule_security_logging_object_ref_uuid", To: []string{"test", "firewall_rule_security_logging_object_ref_uuid"}})
+	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.FirewallRuleSecurityLoggingObjectRef{UUID: "firewall_rule_security_logging_object_ref_uuid2", To: []string{"test", "firewall_rule_security_logging_object_ref_uuid2"}})
+	model.SecurityLoggingObjectRefs = SecurityLoggingObjectcreateref
+
+	var VirtualNetworkcreateref []*models.FirewallRuleVirtualNetworkRef
+	var VirtualNetworkrefModel *models.VirtualNetwork
+	VirtualNetworkrefModel = models.MakeVirtualNetwork()
+	VirtualNetworkrefModel.UUID = "firewall_rule_virtual_network_ref_uuid"
+	VirtualNetworkrefModel.FQName = []string{"test", "firewall_rule_virtual_network_ref_uuid"}
+	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
+		VirtualNetwork: VirtualNetworkrefModel,
+	})
+	VirtualNetworkrefModel.UUID = "firewall_rule_virtual_network_ref_uuid1"
+	VirtualNetworkrefModel.FQName = []string{"test", "firewall_rule_virtual_network_ref_uuid1"}
+	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
+		VirtualNetwork: VirtualNetworkrefModel,
+	})
+	VirtualNetworkrefModel.UUID = "firewall_rule_virtual_network_ref_uuid2"
+	VirtualNetworkrefModel.FQName = []string{"test", "firewall_rule_virtual_network_ref_uuid2"}
+	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
+		VirtualNetwork: VirtualNetworkrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.FirewallRuleVirtualNetworkRef{UUID: "firewall_rule_virtual_network_ref_uuid", To: []string{"test", "firewall_rule_virtual_network_ref_uuid"}})
+	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.FirewallRuleVirtualNetworkRef{UUID: "firewall_rule_virtual_network_ref_uuid2", To: []string{"test", "firewall_rule_virtual_network_ref_uuid2"}})
+	model.VirtualNetworkRefs = VirtualNetworkcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -480,22 +480,6 @@ func TestFirewallRule(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var SecurityLoggingObjectref []interface{}
-	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"firewall_rule_security_logging_object_ref_uuid", "to": []string{"test", "firewall_rule_security_logging_object_ref_uuid"}})
-	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"firewall_rule_security_logging_object_ref_uuid1", "to": []string{"test", "firewall_rule_security_logging_object_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "SecurityLoggingObjectRefs", ".", SecurityLoggingObjectref)
-	//
-	//    var VirtualNetworkref []interface{}
-	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"delete", "uuid":"firewall_rule_virtual_network_ref_uuid", "to": []string{"test", "firewall_rule_virtual_network_ref_uuid"}})
-	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"add", "uuid":"firewall_rule_virtual_network_ref_uuid1", "to": []string{"test", "firewall_rule_virtual_network_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
-	//
 	//    var ServiceGroupref []interface{}
 	//    ServiceGroupref = append(ServiceGroupref, map[string]interface{}{"operation":"delete", "uuid":"firewall_rule_service_group_ref_uuid", "to": []string{"test", "firewall_rule_service_group_ref_uuid"}})
 	//    ServiceGroupref = append(ServiceGroupref, map[string]interface{}{"operation":"add", "uuid":"firewall_rule_service_group_ref_uuid1", "to": []string{"test", "firewall_rule_service_group_ref_uuid1"}})
@@ -511,6 +495,22 @@ func TestFirewallRule(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "AddressGroupRefs", ".", AddressGroupref)
+	//
+	//    var SecurityLoggingObjectref []interface{}
+	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"firewall_rule_security_logging_object_ref_uuid", "to": []string{"test", "firewall_rule_security_logging_object_ref_uuid"}})
+	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"firewall_rule_security_logging_object_ref_uuid1", "to": []string{"test", "firewall_rule_security_logging_object_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "SecurityLoggingObjectRefs", ".", SecurityLoggingObjectref)
+	//
+	//    var VirtualNetworkref []interface{}
+	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"delete", "uuid":"firewall_rule_virtual_network_ref_uuid", "to": []string{"test", "firewall_rule_virtual_network_ref_uuid"}})
+	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"add", "uuid":"firewall_rule_virtual_network_ref_uuid1", "to": []string{"test", "firewall_rule_virtual_network_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
 	//
 	//
 	_, err = db.CreateFirewallRule(ctx,

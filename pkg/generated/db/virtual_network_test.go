@@ -499,15 +499,47 @@ func TestVirtualNetwork(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
+	//    var BGPVPNref []interface{}
+	//    BGPVPNref = append(BGPVPNref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_bgpvpn_ref_uuid", "to": []string{"test", "virtual_network_bgpvpn_ref_uuid"}})
+	//    BGPVPNref = append(BGPVPNref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_bgpvpn_ref_uuid1", "to": []string{"test", "virtual_network_bgpvpn_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "BGPVPNRefs", ".", BGPVPNref)
+	//
+	//    var NetworkIpamref []interface{}
+	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_network_ipam_ref_uuid", "to": []string{"test", "virtual_network_network_ipam_ref_uuid"}})
+	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_network_ipam_ref_uuid1", "to": []string{"test", "virtual_network_network_ipam_ref_uuid1"}})
+	//
+	//    NetworkIpamAttr := map[string]interface{}{}
+	//
+	//
+	//
+	//    common.SetValueByPath(NetworkIpamAttr, ".IpamSubnets", ".", map[string]string{"test": "test"})
+	//
+	//
+	//
+	//    common.SetValueByPath(NetworkIpamAttr, ".HostRoutes.Route", ".", map[string]string{"test": "test"})
+	//
+	//
+	//
+	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"update", "uuid":"virtual_network_network_ipam_ref_uuid2", "to": []string{"test", "virtual_network_network_ipam_ref_uuid2"}, "attr": NetworkIpamAttr})
+	//
+	//    common.SetValueByPath(updateMap, "NetworkIpamRefs", ".", NetworkIpamref)
+	//
+	//    var SecurityLoggingObjectref []interface{}
+	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_security_logging_object_ref_uuid", "to": []string{"test", "virtual_network_security_logging_object_ref_uuid"}})
+	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_security_logging_object_ref_uuid1", "to": []string{"test", "virtual_network_security_logging_object_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "SecurityLoggingObjectRefs", ".", SecurityLoggingObjectref)
+	//
 	//    var NetworkPolicyref []interface{}
 	//    NetworkPolicyref = append(NetworkPolicyref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_network_policy_ref_uuid", "to": []string{"test", "virtual_network_network_policy_ref_uuid"}})
 	//    NetworkPolicyref = append(NetworkPolicyref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_network_policy_ref_uuid1", "to": []string{"test", "virtual_network_network_policy_ref_uuid1"}})
 	//
 	//    NetworkPolicyAttr := map[string]interface{}{}
-	//
-	//
-	//
-	//    common.SetValueByPath(NetworkPolicyAttr, ".Timer.StartTime", ".", "test")
 	//
 	//
 	//
@@ -520,6 +552,10 @@ func TestVirtualNetwork(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(NetworkPolicyAttr, ".Timer.EndTime", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(NetworkPolicyAttr, ".Timer.StartTime", ".", "test")
 	//
 	//
 	//
@@ -559,42 +595,6 @@ func TestVirtualNetwork(t *testing.T) {
 	//
 	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
 	//
-	//    var BGPVPNref []interface{}
-	//    BGPVPNref = append(BGPVPNref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_bgpvpn_ref_uuid", "to": []string{"test", "virtual_network_bgpvpn_ref_uuid"}})
-	//    BGPVPNref = append(BGPVPNref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_bgpvpn_ref_uuid1", "to": []string{"test", "virtual_network_bgpvpn_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "BGPVPNRefs", ".", BGPVPNref)
-	//
-	//    var NetworkIpamref []interface{}
-	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_network_ipam_ref_uuid", "to": []string{"test", "virtual_network_network_ipam_ref_uuid"}})
-	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_network_ipam_ref_uuid1", "to": []string{"test", "virtual_network_network_ipam_ref_uuid1"}})
-	//
-	//    NetworkIpamAttr := map[string]interface{}{}
-	//
-	//
-	//
-	//    common.SetValueByPath(NetworkIpamAttr, ".IpamSubnets", ".", map[string]string{"test": "test"})
-	//
-	//
-	//
-	//    common.SetValueByPath(NetworkIpamAttr, ".HostRoutes.Route", ".", map[string]string{"test": "test"})
-	//
-	//
-	//
-	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"update", "uuid":"virtual_network_network_ipam_ref_uuid2", "to": []string{"test", "virtual_network_network_ipam_ref_uuid2"}, "attr": NetworkIpamAttr})
-	//
-	//    common.SetValueByPath(updateMap, "NetworkIpamRefs", ".", NetworkIpamref)
-	//
-	//    var SecurityLoggingObjectref []interface{}
-	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_security_logging_object_ref_uuid", "to": []string{"test", "virtual_network_security_logging_object_ref_uuid"}})
-	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_security_logging_object_ref_uuid1", "to": []string{"test", "virtual_network_security_logging_object_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "SecurityLoggingObjectRefs", ".", SecurityLoggingObjectref)
-	//
 	//
 	_, err = db.CreateVirtualNetwork(ctx,
 		&models.CreateVirtualNetworkRequest{
@@ -613,41 +613,6 @@ func TestVirtualNetwork(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
-
-	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := common.GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_virtual_network_network_policy` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing NetworkPolicyRefs delete statement failed")
-		}
-		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_network_policy_ref_uuid")
-		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_network_policy_ref_uuid1")
-		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_network_policy_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "NetworkPolicyRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteNetworkPolicy(ctx,
-		&models.DeleteNetworkPolicyRequest{
-			ID: "virtual_network_network_policy_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref virtual_network_network_policy_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteNetworkPolicy(ctx,
-		&models.DeleteNetworkPolicyRequest{
-			ID: "virtual_network_network_policy_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref virtual_network_network_policy_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteNetworkPolicy(
-		ctx,
-		&models.DeleteNetworkPolicyRequest{
-			ID: "virtual_network_network_policy_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref virtual_network_network_policy_ref_uuid2 failed", err)
-	}
 
 	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := common.GetTransaction(ctx)
@@ -857,6 +822,41 @@ func TestVirtualNetwork(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref virtual_network_security_logging_object_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_virtual_network_network_policy` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing NetworkPolicyRefs delete statement failed")
+		}
+		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_network_policy_ref_uuid")
+		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_network_policy_ref_uuid1")
+		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_network_policy_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "NetworkPolicyRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteNetworkPolicy(ctx,
+		&models.DeleteNetworkPolicyRequest{
+			ID: "virtual_network_network_policy_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref virtual_network_network_policy_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteNetworkPolicy(ctx,
+		&models.DeleteNetworkPolicyRequest{
+			ID: "virtual_network_network_policy_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref virtual_network_network_policy_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteNetworkPolicy(
+		ctx,
+		&models.DeleteNetworkPolicyRequest{
+			ID: "virtual_network_network_policy_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref virtual_network_network_policy_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

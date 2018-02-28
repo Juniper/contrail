@@ -73,9 +73,9 @@ var FloatingIPParents = []string{
 	"floating_ip_pool",
 }
 
-const insertFloatingIPVirtualMachineInterfaceQuery = "insert into `ref_floating_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
-
 const insertFloatingIPProjectQuery = "insert into `ref_floating_ip_project` (`from`, `to` ) values (?, ?);"
+
+const insertFloatingIPVirtualMachineInterfaceQuery = "insert into `ref_floating_ip_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateFloatingIP inserts FloatingIP to DB
 func (db *DB) createFloatingIP(
@@ -125,19 +125,6 @@ func (db *DB) createFloatingIP(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtProjectRef, err := tx.Prepare(insertFloatingIPProjectQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ProjectRefs create statement failed")
-	}
-	defer stmtProjectRef.Close()
-	for _, ref := range model.ProjectRefs {
-
-		_, err = stmtProjectRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ProjectRefs create failed")
-		}
-	}
-
 	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertFloatingIPVirtualMachineInterfaceQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
@@ -148,6 +135,19 @@ func (db *DB) createFloatingIP(
 		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
+	}
+
+	stmtProjectRef, err := tx.Prepare(insertFloatingIPProjectQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ProjectRefs create statement failed")
+	}
+	defer stmtProjectRef.Close()
+	for _, ref := range model.ProjectRefs {
+
+		_, err = stmtProjectRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ProjectRefs create failed")
 		}
 	}
 
@@ -341,26 +341,6 @@ func scanFloatingIP(values map[string]interface{}) (*models.FloatingIP, error) {
 
 	}
 
-	if value, ok := values["ref_project"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.FloatingIPProjectRef{}
-			referenceModel.UUID = uuid
-			m.ProjectRefs = append(m.ProjectRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -377,6 +357,26 @@ func scanFloatingIP(values map[string]interface{}) (*models.FloatingIP, error) {
 			referenceModel := &models.FloatingIPVirtualMachineInterfaceRef{}
 			referenceModel.UUID = uuid
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_project"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.FloatingIPProjectRef{}
+			referenceModel.UUID = uuid
+			m.ProjectRefs = append(m.ProjectRefs, referenceModel)
 
 		}
 	}

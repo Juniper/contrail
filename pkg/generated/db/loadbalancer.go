@@ -51,17 +51,17 @@ var LoadbalancerFields = []string{
 // LoadbalancerRefFields is db reference fields for Loadbalancer
 var LoadbalancerRefFields = map[string][]string{
 
+	"service_instance": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"service_appliance_set": []string{
 	// <schema.Schema Value>
 
 	},
 
 	"virtual_machine_interface": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"service_instance": []string{
 	// <schema.Schema Value>
 
 	},
@@ -76,11 +76,11 @@ var LoadbalancerParents = []string{
 	"project",
 }
 
-const insertLoadbalancerServiceInstanceQuery = "insert into `ref_loadbalancer_service_instance` (`from`, `to` ) values (?, ?);"
-
 const insertLoadbalancerServiceApplianceSetQuery = "insert into `ref_loadbalancer_service_appliance_set` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerVirtualMachineInterfaceQuery = "insert into `ref_loadbalancer_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
+
+const insertLoadbalancerServiceInstanceQuery = "insert into `ref_loadbalancer_service_instance` (`from`, `to` ) values (?, ?);"
 
 // CreateLoadbalancer inserts Loadbalancer to DB
 func (db *DB) createLoadbalancer(
@@ -130,19 +130,6 @@ func (db *DB) createLoadbalancer(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtServiceInstanceRef, err := tx.Prepare(insertLoadbalancerServiceInstanceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing ServiceInstanceRefs create statement failed")
-	}
-	defer stmtServiceInstanceRef.Close()
-	for _, ref := range model.ServiceInstanceRefs {
-
-		_, err = stmtServiceInstanceRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceInstanceRefs create failed")
-		}
-	}
-
 	stmtServiceApplianceSetRef, err := tx.Prepare(insertLoadbalancerServiceApplianceSetQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing ServiceApplianceSetRefs create statement failed")
@@ -166,6 +153,19 @@ func (db *DB) createLoadbalancer(
 		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
+	}
+
+	stmtServiceInstanceRef, err := tx.Prepare(insertLoadbalancerServiceInstanceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing ServiceInstanceRefs create statement failed")
+	}
+	defer stmtServiceInstanceRef.Close()
+	for _, ref := range model.ServiceInstanceRefs {
+
+		_, err = stmtServiceInstanceRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceInstanceRefs create failed")
 		}
 	}
 
@@ -359,6 +359,26 @@ func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, erro
 
 	}
 
+	if value, ok := values["ref_service_instance"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LoadbalancerServiceInstanceRef{}
+			referenceModel.UUID = uuid
+			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_service_appliance_set"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -395,26 +415,6 @@ func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, erro
 			referenceModel := &models.LoadbalancerVirtualMachineInterfaceRef{}
 			referenceModel.UUID = uuid
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_service_instance"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LoadbalancerServiceInstanceRef{}
-			referenceModel.UUID = uuid
-			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
 
 		}
 	}

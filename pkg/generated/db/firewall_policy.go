@@ -66,9 +66,9 @@ var FirewallPolicyParents = []string{
 	"policy_management",
 }
 
-const insertFirewallPolicySecurityLoggingObjectQuery = "insert into `ref_firewall_policy_security_logging_object` (`from`, `to` ) values (?, ?);"
-
 const insertFirewallPolicyFirewallRuleQuery = "insert into `ref_firewall_policy_firewall_rule` (`from`, `to` ,`sequence`) values (?, ?,?);"
+
+const insertFirewallPolicySecurityLoggingObjectQuery = "insert into `ref_firewall_policy_security_logging_object` (`from`, `to` ) values (?, ?);"
 
 // CreateFirewallPolicy inserts FirewallPolicy to DB
 func (db *DB) createFirewallPolicy(

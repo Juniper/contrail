@@ -151,16 +151,16 @@ var PhysicalRouterBackRefFields = map[string][]string{
 // PhysicalRouterParentTypes is possible parents for PhysicalRouter
 var PhysicalRouterParents = []string{
 
-	"global_system_config",
-
 	"location",
+
+	"global_system_config",
 }
+
+const insertPhysicalRouterVirtualRouterQuery = "insert into `ref_physical_router_virtual_router` (`from`, `to` ) values (?, ?);"
 
 const insertPhysicalRouterVirtualNetworkQuery = "insert into `ref_physical_router_virtual_network` (`from`, `to` ) values (?, ?);"
 
 const insertPhysicalRouterBGPRouterQuery = "insert into `ref_physical_router_bgp_router` (`from`, `to` ) values (?, ?);"
-
-const insertPhysicalRouterVirtualRouterQuery = "insert into `ref_physical_router_virtual_router` (`from`, `to` ) values (?, ?);"
 
 // CreatePhysicalRouter inserts PhysicalRouter to DB
 func (db *DB) createPhysicalRouter(

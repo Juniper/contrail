@@ -11,8 +11,11 @@
 #   template_path: model_test.tmpl
 #   output_path: pkg/generated/models/__resource___test.go
 - type: all
-  template_path: sql.tmpl
-  output_path: tools/init.sql
+  template_path: sql_mysql.tmpl
+  output_path: tools/init_mysql.sql
+- type: all
+  template_path: sql_psql.tmpl
+  output_path: tools/init_psql.sql
 - type: all
   template_path: sql_cleanup.tmpl
   output_path: tools/cleanup.sql

@@ -79,11 +79,6 @@ var VirtualNetworkFields = []string{
 // VirtualNetworkRefFields is db reference fields for VirtualNetwork
 var VirtualNetworkRefFields = map[string][]string{
 
-	"bgpvpn": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"network_ipam": []string{
 		// <schema.Schema Value>
 		"ipam_subnets",
@@ -97,10 +92,10 @@ var VirtualNetworkRefFields = map[string][]string{
 
 	"network_policy": []string{
 		// <schema.Schema Value>
-		"start_time",
 		"off_interval",
 		"on_interval",
 		"end_time",
+		"start_time",
 		"major",
 		"minor",
 	},
@@ -116,6 +111,11 @@ var VirtualNetworkRefFields = map[string][]string{
 	},
 
 	"virtual_network": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"bgpvpn": []string{
 	// <schema.Schema Value>
 
 	},
@@ -263,8 +263,6 @@ var VirtualNetworkParents = []string{
 	"project",
 }
 
-const insertVirtualNetworkRouteTableQuery = "insert into `ref_virtual_network_route_table` (`from`, `to` ) values (?, ?);"
-
 const insertVirtualNetworkVirtualNetworkQuery = "insert into `ref_virtual_network_virtual_network` (`from`, `to` ) values (?, ?);"
 
 const insertVirtualNetworkBGPVPNQuery = "insert into `ref_virtual_network_bgpvpn` (`from`, `to` ) values (?, ?);"
@@ -273,9 +271,11 @@ const insertVirtualNetworkNetworkIpamQuery = "insert into `ref_virtual_network_n
 
 const insertVirtualNetworkSecurityLoggingObjectQuery = "insert into `ref_virtual_network_security_logging_object` (`from`, `to` ) values (?, ?);"
 
-const insertVirtualNetworkNetworkPolicyQuery = "insert into `ref_virtual_network_network_policy` (`from`, `to` ,`start_time`,`off_interval`,`on_interval`,`end_time`,`major`,`minor`) values (?, ?,?,?,?,?,?,?);"
+const insertVirtualNetworkNetworkPolicyQuery = "insert into `ref_virtual_network_network_policy` (`from`, `to` ,`off_interval`,`on_interval`,`end_time`,`start_time`,`major`,`minor`) values (?, ?,?,?,?,?,?,?);"
 
 const insertVirtualNetworkQosConfigQuery = "insert into `ref_virtual_network_qos_config` (`from`, `to` ) values (?, ?);"
+
+const insertVirtualNetworkRouteTableQuery = "insert into `ref_virtual_network_route_table` (`from`, `to` ) values (?, ?);"
 
 // CreateVirtualNetwork inserts VirtualNetwork to DB
 func (db *DB) createVirtualNetwork(
@@ -447,10 +447,10 @@ func (db *DB) createVirtualNetwork(
 			ref.Attr = &models.VirtualNetworkPolicyType{}
 		}
 
-		_, err = stmtNetworkPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.GetTimer().GetStartTime()),
-			string(ref.Attr.GetTimer().GetOffInterval()),
+		_, err = stmtNetworkPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.GetTimer().GetOffInterval()),
 			string(ref.Attr.GetTimer().GetOnInterval()),
 			string(ref.Attr.GetTimer().GetEndTime()),
+			string(ref.Attr.GetTimer().GetStartTime()),
 			int(ref.Attr.GetSequence().GetMajor()),
 			int(ref.Attr.GetSequence().GetMinor()))
 		if err != nil {
@@ -816,6 +816,26 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 	}
 
+	if value, ok := values["ref_bgpvpn"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkBGPVPNRef{}
+			referenceModel.UUID = uuid
+			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_network_ipam"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -938,26 +958,6 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 			referenceModel := &models.VirtualNetworkVirtualNetworkRef{}
 			referenceModel.UUID = uuid
 			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_bgpvpn"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkBGPVPNRef{}
-			referenceModel.UUID = uuid
-			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
 
 		}
 	}

@@ -102,9 +102,9 @@ var ServiceInstanceParents = []string{
 	"project",
 }
 
-const insertServiceInstanceServiceTemplateQuery = "insert into `ref_service_instance_service_template` (`from`, `to` ) values (?, ?);"
-
 const insertServiceInstanceInstanceIPQuery = "insert into `ref_service_instance_instance_ip` (`from`, `to` ,`interface_type`) values (?, ?,?);"
+
+const insertServiceInstanceServiceTemplateQuery = "insert into `ref_service_instance_service_template` (`from`, `to` ) values (?, ?);"
 
 // CreateServiceInstance inserts ServiceInstance to DB
 func (db *DB) createServiceInstance(

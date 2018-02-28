@@ -61,9 +61,9 @@ var CustomerAttachmentBackRefFields = map[string][]string{}
 // CustomerAttachmentParentTypes is possible parents for CustomerAttachment
 var CustomerAttachmentParents = []string{}
 
-const insertCustomerAttachmentVirtualMachineInterfaceQuery = "insert into `ref_customer_attachment_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
-
 const insertCustomerAttachmentFloatingIPQuery = "insert into `ref_customer_attachment_floating_ip` (`from`, `to` ) values (?, ?);"
+
+const insertCustomerAttachmentVirtualMachineInterfaceQuery = "insert into `ref_customer_attachment_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateCustomerAttachment inserts CustomerAttachment to DB
 func (db *DB) createCustomerAttachment(
@@ -106,19 +106,6 @@ func (db *DB) createCustomerAttachment(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertCustomerAttachmentVirtualMachineInterfaceQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
-	}
-	defer stmtVirtualMachineInterfaceRef.Close()
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
 	stmtFloatingIPRef, err := tx.Prepare(insertCustomerAttachmentFloatingIPQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing FloatingIPRefs create statement failed")
@@ -129,6 +116,19 @@ func (db *DB) createCustomerAttachment(
 		_, err = stmtFloatingIPRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "FloatingIPRefs create failed")
+		}
+	}
+
+	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertCustomerAttachmentVirtualMachineInterfaceQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
+	}
+	defer stmtVirtualMachineInterfaceRef.Close()
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
 	}
 

@@ -363,26 +363,6 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 
 	}
 
-	if value, ok := values["ref_loadbalancer_pool"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualIPLoadbalancerPoolRef{}
-			referenceModel.UUID = uuid
-			m.LoadbalancerPoolRefs = append(m.LoadbalancerPoolRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -399,6 +379,26 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 			referenceModel := &models.VirtualIPVirtualMachineInterfaceRef{}
 			referenceModel.UUID = uuid
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_loadbalancer_pool"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualIPLoadbalancerPoolRef{}
+			referenceModel.UUID = uuid
+			m.LoadbalancerPoolRefs = append(m.LoadbalancerPoolRefs, referenceModel)
 
 		}
 	}
