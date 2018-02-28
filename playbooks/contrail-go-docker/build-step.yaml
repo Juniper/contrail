@@ -1,0 +1,5 @@
+- name: "{{runner }}: {{ item.name }}"
+  command: >
+    {{ exec }} "{{ item.command }}"
+  become: yes
+  become_user: root
