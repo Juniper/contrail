@@ -1,0 +1,23 @@
+- hosts: all
+  name: Build and test Juniper/contrail
+  roles:
+    - install-docker-daemon
+  vars:
+    workdir: /go/src/github.com/Juniper/contrail
+  tasks:
+    - include: build-setup.yaml
+
+    - name: run 
+      include: build-step.yaml
+      loop_control:
+        label: "{{ item.name }}"
+      with_items: # Insert tasks here
+        - name: Install deps
+          command: make deps
+        - name: Install packaging tools
+          command: |
+            sudo apt-get install -y zip build-essential rpm rubygems ruby-dev curl;
+            sudo gem install --no-ri --no-rdoc fpm;
+        - name: Make package
+          command: make build binaries package
+
