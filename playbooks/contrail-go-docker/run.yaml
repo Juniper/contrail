@@ -1,0 +1,78 @@
+- hosts: all
+  name: Build and test Juniper/contrail
+  roles:
+    - install-docker-daemon
+  vars:
+    workdir: /go/src
+  tasks:
+
+    - name: "Install docker-py"
+      yum:
+        name: python-docker-py
+        state: present
+      become: yes
+      become_user: root
+
+    - name: Disable selinux for the build
+      selinux:
+        state: disabled
+      become: yes
+      become_user: root
+
+    - name: "Start runner docker container in background"
+      docker_container:
+        name: "{{ docker.0.name|default('runner') }}"
+        image: "{{ docker.0.image }}"
+        state: started
+        env: "{{ docker.0.environment|default(omit) }}"
+        network_mode: host
+        command: sleep infinity
+        volumes: 
+          - "{{ ansible_env.HOME }}/{{ zuul.project.src_dir }}:{{ workdir }}"
+      become: yes
+      become_user: root
+
+    - name: "Run required additional docker containers in background"
+      docker_container:
+        name: "{{ item.name|default(item.image.split('/')[-1].split(':')[0]) }}"
+        image: "{{ item.image }}"
+        state: started
+        env: "{{ item.environment|default(omit) }}"
+        network_mode: host
+      with_items: "{{ docker[1:] }}"
+      become: yes
+      become_user: root
+
+    - name: Set docker as default runner
+      set_fact:
+         exec: docker exec {{ docker.0.name|default('runner') }} bash -c
+
+    - name: run build inside docker runner 
+      shell: >
+        {{ exec }} "{{ item.command }}"
+      become: yes
+      become_user: root
+      with_items:
+        - name: install mysql client
+          command: sudo apt-get install mysql-client
+        - name: install deps
+          command: cd {{ workdir }} && ./tools/deps.sh
+          #- name: lint
+          #command: cd /src && ./tools/lint.sh
+          #- name: Wait for db
+          #command: dockerize -wait tcp://localhost:3306 -timeout 1m
+          #- name: Reset database
+          #command: cd /src && ./tools/reset_db.sh
+          #- name: Run test
+          #command: cd /src && make test
+        - name: Install packaging tools
+          command: |
+            cd {{ workdir }} && \
+            sudo apt-get install -y zip build-essential rpm rubygems ruby-dev curl && \
+            curl -L https://github.com/tcnksm/ghr/releases/download/v0.5.0/ghr_v0.5.0_linux_amd64.zip -o /tmp/ghr_v0.5.0_linux_amd64.zip && \
+            sudo unzip /tmp/ghr_v0.5.0_linux_amd64.zip -d {{ workdir }} && \
+            sudo chmod 0755 ghr && \
+            make deps && \
+            sudo gem install --no-ri --no-rdoc fpm
+        - name: Make package
+          command: cd {{ workdir }} && make package
