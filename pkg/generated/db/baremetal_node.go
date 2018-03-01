@@ -670,7 +670,8 @@ func (db *DB) DeleteBaremetalNode(ctx context.Context, request *models.DeleteBar
 //GetBaremetalNode a Get request.
 func (db *DB) GetBaremetalNode(ctx context.Context, request *models.GetBaremetalNodeRequest) (response *models.GetBaremetalNodeResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

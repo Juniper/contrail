@@ -534,7 +534,8 @@ func (db *DB) DeleteFlavor(ctx context.Context, request *models.DeleteFlavorRequ
 //GetFlavor a Get request.
 func (db *DB) GetFlavor(ctx context.Context, request *models.GetFlavorRequest) (response *models.GetFlavorResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

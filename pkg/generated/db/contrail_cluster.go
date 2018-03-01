@@ -2923,7 +2923,8 @@ func (db *DB) DeleteContrailCluster(ctx context.Context, request *models.DeleteC
 //GetContrailCluster a Get request.
 func (db *DB) GetContrailCluster(ctx context.Context, request *models.GetContrailClusterRequest) (response *models.GetContrailClusterResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

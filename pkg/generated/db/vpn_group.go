@@ -519,7 +519,8 @@ func (db *DB) DeleteVPNGroup(ctx context.Context, request *models.DeleteVPNGroup
 //GetVPNGroup a Get request.
 func (db *DB) GetVPNGroup(ctx context.Context, request *models.GetVPNGroupRequest) (response *models.GetVPNGroupResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

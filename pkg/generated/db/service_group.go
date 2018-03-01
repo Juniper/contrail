@@ -443,7 +443,8 @@ func (db *DB) DeleteServiceGroup(ctx context.Context, request *models.DeleteServ
 //GetServiceGroup a Get request.
 func (db *DB) GetServiceGroup(ctx context.Context, request *models.GetServiceGroupRequest) (response *models.GetServiceGroupResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

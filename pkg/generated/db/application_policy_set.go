@@ -67,9 +67,9 @@ var ApplicationPolicySetParents = []string{
 	"policy_management",
 }
 
-const insertApplicationPolicySetGlobalVrouterConfigQuery = "insert into `ref_application_policy_set_global_vrouter_config` (`from`, `to` ) values (?, ?);"
-
 const insertApplicationPolicySetFirewallPolicyQuery = "insert into `ref_application_policy_set_firewall_policy` (`from`, `to` ,`sequence`) values (?, ?,?);"
+
+const insertApplicationPolicySetGlobalVrouterConfigQuery = "insert into `ref_application_policy_set_global_vrouter_config` (`from`, `to` ) values (?, ?);"
 
 // CreateApplicationPolicySet inserts ApplicationPolicySet to DB
 func (db *DB) createApplicationPolicySet(
@@ -113,19 +113,6 @@ func (db *DB) createApplicationPolicySet(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtGlobalVrouterConfigRef, err := tx.Prepare(insertApplicationPolicySetGlobalVrouterConfigQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing GlobalVrouterConfigRefs create statement failed")
-	}
-	defer stmtGlobalVrouterConfigRef.Close()
-	for _, ref := range model.GlobalVrouterConfigRefs {
-
-		_, err = stmtGlobalVrouterConfigRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "GlobalVrouterConfigRefs create failed")
-		}
-	}
-
 	stmtFirewallPolicyRef, err := tx.Prepare(insertApplicationPolicySetFirewallPolicyQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing FirewallPolicyRefs create statement failed")
@@ -140,6 +127,19 @@ func (db *DB) createApplicationPolicySet(
 		_, err = stmtFirewallPolicyRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.GetSequence()))
 		if err != nil {
 			return errors.Wrap(err, "FirewallPolicyRefs create failed")
+		}
+	}
+
+	stmtGlobalVrouterConfigRef, err := tx.Prepare(insertApplicationPolicySetGlobalVrouterConfigQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing GlobalVrouterConfigRefs create statement failed")
+	}
+	defer stmtGlobalVrouterConfigRef.Close()
+	for _, ref := range model.GlobalVrouterConfigRefs {
+
+		_, err = stmtGlobalVrouterConfigRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "GlobalVrouterConfigRefs create failed")
 		}
 	}
 
@@ -531,7 +531,8 @@ func (db *DB) DeleteApplicationPolicySet(ctx context.Context, request *models.De
 //GetApplicationPolicySet a Get request.
 func (db *DB) GetApplicationPolicySet(ctx context.Context, request *models.GetApplicationPolicySetRequest) (response *models.GetApplicationPolicySetResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

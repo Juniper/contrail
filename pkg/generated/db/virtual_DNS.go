@@ -709,7 +709,8 @@ func (db *DB) DeleteVirtualDNS(ctx context.Context, request *models.DeleteVirtua
 //GetVirtualDNS a Get request.
 func (db *DB) GetVirtualDNS(ctx context.Context, request *models.GetVirtualDNSRequest) (response *models.GetVirtualDNSResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

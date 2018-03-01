@@ -438,7 +438,8 @@ func (db *DB) DeleteDashboard(ctx context.Context, request *models.DeleteDashboa
 //GetDashboard a Get request.
 func (db *DB) GetDashboard(ctx context.Context, request *models.GetDashboardRequest) (response *models.GetDashboardResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

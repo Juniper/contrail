@@ -300,6 +300,26 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	}
 
+	if value, ok := values["ref_service_connection_module"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ServiceEndpointServiceConnectionModuleRef{}
+			referenceModel.UUID = uuid
+			m.ServiceConnectionModuleRefs = append(m.ServiceConnectionModuleRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_physical_router"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -336,26 +356,6 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 			referenceModel := &models.ServiceEndpointServiceObjectRef{}
 			referenceModel.UUID = uuid
 			m.ServiceObjectRefs = append(m.ServiceObjectRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_service_connection_module"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ServiceEndpointServiceConnectionModuleRef{}
-			referenceModel.UUID = uuid
-			m.ServiceConnectionModuleRefs = append(m.ServiceConnectionModuleRefs, referenceModel)
 
 		}
 	}
@@ -551,7 +551,8 @@ func (db *DB) DeleteServiceEndpoint(ctx context.Context, request *models.DeleteS
 //GetServiceEndpoint a Get request.
 func (db *DB) GetServiceEndpoint(ctx context.Context, request *models.GetServiceEndpointRequest) (response *models.GetServiceEndpointResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

@@ -457,7 +457,8 @@ func (db *DB) DeleteQosQueue(ctx context.Context, request *models.DeleteQosQueue
 //GetQosQueue a Get request.
 func (db *DB) GetQosQueue(ctx context.Context, request *models.GetQosQueueRequest) (response *models.GetQosQueueResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

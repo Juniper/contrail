@@ -438,7 +438,8 @@ func (db *DB) DeleteTagType(ctx context.Context, request *models.DeleteTagTypeRe
 //GetTagType a Get request.
 func (db *DB) GetTagType(ctx context.Context, request *models.GetTagTypeRequest) (response *models.GetTagTypeResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

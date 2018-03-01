@@ -441,7 +441,8 @@ func (db *DB) DeleteAnalyticsNode(ctx context.Context, request *models.DeleteAna
 //GetAnalyticsNode a Get request.
 func (db *DB) GetAnalyticsNode(ctx context.Context, request *models.GetAnalyticsNodeRequest) (response *models.GetAnalyticsNodeResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

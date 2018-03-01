@@ -449,7 +449,8 @@ func (db *DB) DeleteNamespace(ctx context.Context, request *models.DeleteNamespa
 //GetNamespace a Get request.
 func (db *DB) GetNamespace(ctx context.Context, request *models.GetNamespaceRequest) (response *models.GetNamespaceResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

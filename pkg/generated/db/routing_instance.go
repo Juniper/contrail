@@ -433,7 +433,8 @@ func (db *DB) DeleteRoutingInstance(ctx context.Context, request *models.DeleteR
 //GetRoutingInstance a Get request.
 func (db *DB) GetRoutingInstance(ctx context.Context, request *models.GetRoutingInstanceRequest) (response *models.GetRoutingInstanceResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

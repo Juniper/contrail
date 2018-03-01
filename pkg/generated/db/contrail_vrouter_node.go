@@ -546,7 +546,8 @@ func (db *DB) DeleteContrailVrouterNode(ctx context.Context, request *models.Del
 //GetContrailVrouterNode a Get request.
 func (db *DB) GetContrailVrouterNode(ctx context.Context, request *models.GetContrailVrouterNodeRequest) (response *models.GetContrailVrouterNodeResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

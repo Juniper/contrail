@@ -514,7 +514,8 @@ func (db *DB) DeleteAppformixNode(ctx context.Context, request *models.DeleteApp
 //GetAppformixNode a Get request.
 func (db *DB) GetAppformixNode(ctx context.Context, request *models.GetAppformixNodeRequest) (response *models.GetAppformixNodeResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

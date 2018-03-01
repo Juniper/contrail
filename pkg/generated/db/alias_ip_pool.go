@@ -617,7 +617,8 @@ func (db *DB) DeleteAliasIPPool(ctx context.Context, request *models.DeleteAlias
 //GetAliasIPPool a Get request.
 func (db *DB) GetAliasIPPool(ctx context.Context, request *models.GetAliasIPPoolRequest) (response *models.GetAliasIPPoolResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

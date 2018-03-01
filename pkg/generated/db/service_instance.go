@@ -795,7 +795,8 @@ func (db *DB) DeleteServiceInstance(ctx context.Context, request *models.DeleteS
 //GetServiceInstance a Get request.
 func (db *DB) GetServiceInstance(ctx context.Context, request *models.GetServiceInstanceRequest) (response *models.GetServiceInstanceResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

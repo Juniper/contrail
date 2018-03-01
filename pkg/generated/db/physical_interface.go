@@ -666,7 +666,8 @@ func (db *DB) DeletePhysicalInterface(ctx context.Context, request *models.Delet
 //GetPhysicalInterface a Get request.
 func (db *DB) GetPhysicalInterface(ctx context.Context, request *models.GetPhysicalInterfaceRequest) (response *models.GetPhysicalInterfaceResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

@@ -721,7 +721,8 @@ func (db *DB) DeleteGlobalVrouterConfig(ctx context.Context, request *models.Del
 //GetGlobalVrouterConfig a Get request.
 func (db *DB) GetGlobalVrouterConfig(ctx context.Context, request *models.GetGlobalVrouterConfigRequest) (response *models.GetGlobalVrouterConfigResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

@@ -459,7 +459,8 @@ func (db *DB) DeleteAccessControlList(ctx context.Context, request *models.Delet
 //GetAccessControlList a Get request.
 func (db *DB) GetAccessControlList(ctx context.Context, request *models.GetAccessControlListRequest) (response *models.GetAccessControlListResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

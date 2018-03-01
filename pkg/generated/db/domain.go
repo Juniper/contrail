@@ -1660,7 +1660,8 @@ func (db *DB) DeleteDomain(ctx context.Context, request *models.DeleteDomainRequ
 //GetDomain a Get request.
 func (db *DB) GetDomain(ctx context.Context, request *models.GetDomainRequest) (response *models.GetDomainResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

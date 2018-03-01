@@ -879,7 +879,8 @@ func (db *DB) DeleteVirtualMachine(ctx context.Context, request *models.DeleteVi
 //GetVirtualMachine a Get request.
 func (db *DB) GetVirtualMachine(ctx context.Context, request *models.GetVirtualMachineRequest) (response *models.GetVirtualMachineResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

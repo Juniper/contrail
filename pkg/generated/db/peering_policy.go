@@ -438,7 +438,8 @@ func (db *DB) DeletePeeringPolicy(ctx context.Context, request *models.DeletePee
 //GetPeeringPolicy a Get request.
 func (db *DB) GetPeeringPolicy(ctx context.Context, request *models.GetPeeringPolicyRequest) (response *models.GetPeeringPolicyResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

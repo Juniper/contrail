@@ -487,7 +487,8 @@ func (db *DB) DeleteSubnet(ctx context.Context, request *models.DeleteSubnetRequ
 //GetSubnet a Get request.
 func (db *DB) GetSubnet(ctx context.Context, request *models.GetSubnetRequest) (response *models.GetSubnetResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

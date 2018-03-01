@@ -489,7 +489,8 @@ func (db *DB) DeleteInterfaceRouteTable(ctx context.Context, request *models.Del
 //GetInterfaceRouteTable a Get request.
 func (db *DB) GetInterfaceRouteTable(ctx context.Context, request *models.GetInterfaceRouteTableRequest) (response *models.GetInterfaceRouteTableResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

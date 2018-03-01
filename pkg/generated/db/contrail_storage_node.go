@@ -546,7 +546,8 @@ func (db *DB) DeleteContrailStorageNode(ctx context.Context, request *models.Del
 //GetContrailStorageNode a Get request.
 func (db *DB) GetContrailStorageNode(ctx context.Context, request *models.GetContrailStorageNodeRequest) (response *models.GetContrailStorageNodeResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

@@ -530,7 +530,8 @@ func (db *DB) DeleteAliasIP(ctx context.Context, request *models.DeleteAliasIPRe
 //GetAliasIP a Get request.
 func (db *DB) GetAliasIP(ctx context.Context, request *models.GetAliasIPRequest) (response *models.GetAliasIPResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

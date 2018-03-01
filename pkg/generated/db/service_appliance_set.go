@@ -655,7 +655,8 @@ func (db *DB) DeleteServiceApplianceSet(ctx context.Context, request *models.Del
 //GetServiceApplianceSet a Get request.
 func (db *DB) GetServiceApplianceSet(ctx context.Context, request *models.GetServiceApplianceSetRequest) (response *models.GetServiceApplianceSetResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

@@ -514,7 +514,8 @@ func (db *DB) DeleteContrailConfigNode(ctx context.Context, request *models.Dele
 //GetContrailConfigNode a Get request.
 func (db *DB) GetContrailConfigNode(ctx context.Context, request *models.GetContrailConfigNodeRequest) (response *models.GetContrailConfigNodeResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

@@ -497,7 +497,8 @@ func (db *DB) DeleteLoadbalancerHealthmonitor(ctx context.Context, request *mode
 //GetLoadbalancerHealthmonitor a Get request.
 func (db *DB) GetLoadbalancerHealthmonitor(ctx context.Context, request *models.GetLoadbalancerHealthmonitorRequest) (response *models.GetLoadbalancerHealthmonitorResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

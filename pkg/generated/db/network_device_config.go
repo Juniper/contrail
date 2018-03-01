@@ -471,7 +471,8 @@ func (db *DB) DeleteNetworkDeviceConfig(ctx context.Context, request *models.Del
 //GetNetworkDeviceConfig a Get request.
 func (db *DB) GetNetworkDeviceConfig(ctx context.Context, request *models.GetNetworkDeviceConfigRequest) (response *models.GetNetworkDeviceConfigResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

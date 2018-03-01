@@ -445,7 +445,8 @@ func (db *DB) DeleteAPIAccessList(ctx context.Context, request *models.DeleteAPI
 //GetAPIAccessList a Get request.
 func (db *DB) GetAPIAccessList(ctx context.Context, request *models.GetAPIAccessListRequest) (response *models.GetAPIAccessListResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

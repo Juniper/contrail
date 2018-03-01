@@ -2775,7 +2775,8 @@ func (db *DB) DeleteGlobalSystemConfig(ctx context.Context, request *models.Dele
 //GetGlobalSystemConfig a Get request.
 func (db *DB) GetGlobalSystemConfig(ctx context.Context, request *models.GetGlobalSystemConfigRequest) (response *models.GetGlobalSystemConfigResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

@@ -487,7 +487,8 @@ func (db *DB) DeleteServiceConnectionModule(ctx context.Context, request *models
 //GetServiceConnectionModule a Get request.
 func (db *DB) GetServiceConnectionModule(ctx context.Context, request *models.GetServiceConnectionModuleRequest) (response *models.GetServiceConnectionModuleResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

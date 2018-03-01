@@ -433,7 +433,8 @@ func (db *DB) DeletePortTuple(ctx context.Context, request *models.DeletePortTup
 //GetPortTuple a Get request.
 func (db *DB) GetPortTuple(ctx context.Context, request *models.GetPortTupleRequest) (response *models.GetPortTupleResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

@@ -955,7 +955,8 @@ func (db *DB) DeleteVirtualRouter(ctx context.Context, request *models.DeleteVir
 //GetVirtualRouter a Get request.
 func (db *DB) GetVirtualRouter(ctx context.Context, request *models.GetVirtualRouterRequest) (response *models.GetVirtualRouterResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

@@ -500,7 +500,8 @@ func (db *DB) DeleteTag(ctx context.Context, request *models.DeleteTagRequest) (
 //GetTag a Get request.
 func (db *DB) GetTag(ctx context.Context, request *models.GetTagRequest) (response *models.GetTagResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

@@ -441,7 +441,8 @@ func (db *DB) DeleteDatabaseNode(ctx context.Context, request *models.DeleteData
 //GetDatabaseNode a Get request.
 func (db *DB) GetDatabaseNode(ctx context.Context, request *models.GetDatabaseNodeRequest) (response *models.GetDatabaseNodeResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

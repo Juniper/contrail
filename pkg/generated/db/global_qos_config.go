@@ -1049,7 +1049,8 @@ func (db *DB) DeleteGlobalQosConfig(ctx context.Context, request *models.DeleteG
 //GetGlobalQosConfig a Get request.
 func (db *DB) GetGlobalQosConfig(ctx context.Context, request *models.GetGlobalQosConfigRequest) (response *models.GetGlobalQosConfigResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

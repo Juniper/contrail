@@ -465,7 +465,8 @@ func (db *DB) DeleteBGPVPN(ctx context.Context, request *models.DeleteBGPVPNRequ
 //GetBGPVPN a Get request.
 func (db *DB) GetBGPVPN(ctx context.Context, request *models.GetBGPVPNRequest) (response *models.GetBGPVPNResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

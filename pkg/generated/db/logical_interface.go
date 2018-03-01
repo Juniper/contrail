@@ -492,7 +492,8 @@ func (db *DB) DeleteLogicalInterface(ctx context.Context, request *models.Delete
 //GetLogicalInterface a Get request.
 func (db *DB) GetLogicalInterface(ctx context.Context, request *models.GetLogicalInterfaceRequest) (response *models.GetLogicalInterfaceResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

@@ -430,7 +430,8 @@ func (db *DB) DeleteRouteTarget(ctx context.Context, request *models.DeleteRoute
 //GetRouteTarget a Get request.
 func (db *DB) GetRouteTarget(ctx context.Context, request *models.GetRouteTargetRequest) (response *models.GetRouteTargetResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

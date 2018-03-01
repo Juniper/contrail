@@ -39,30 +39,80 @@ func TestVirtualMachineInterface(t *testing.T) {
 
 	// Create referred objects
 
-	var VirtualMachineInterfacecreateref []*models.VirtualMachineInterfaceVirtualMachineInterfaceRef
-	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
-	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
-	VirtualMachineInterfacerefModel.UUID = "virtual_machine_interface_virtual_machine_interface_ref_uuid"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_machine_interface_virtual_machine_interface_ref_uuid"}
-	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
-		VirtualMachineInterface: VirtualMachineInterfacerefModel,
+	var BGPRoutercreateref []*models.VirtualMachineInterfaceBGPRouterRef
+	var BGPRouterrefModel *models.BGPRouter
+	BGPRouterrefModel = models.MakeBGPRouter()
+	BGPRouterrefModel.UUID = "virtual_machine_interface_bgp_router_ref_uuid"
+	BGPRouterrefModel.FQName = []string{"test", "virtual_machine_interface_bgp_router_ref_uuid"}
+	_, err = db.CreateBGPRouter(ctx, &models.CreateBGPRouterRequest{
+		BGPRouter: BGPRouterrefModel,
 	})
-	VirtualMachineInterfacerefModel.UUID = "virtual_machine_interface_virtual_machine_interface_ref_uuid1"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_machine_interface_virtual_machine_interface_ref_uuid1"}
-	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
-		VirtualMachineInterface: VirtualMachineInterfacerefModel,
+	BGPRouterrefModel.UUID = "virtual_machine_interface_bgp_router_ref_uuid1"
+	BGPRouterrefModel.FQName = []string{"test", "virtual_machine_interface_bgp_router_ref_uuid1"}
+	_, err = db.CreateBGPRouter(ctx, &models.CreateBGPRouterRequest{
+		BGPRouter: BGPRouterrefModel,
 	})
-	VirtualMachineInterfacerefModel.UUID = "virtual_machine_interface_virtual_machine_interface_ref_uuid2"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_machine_interface_virtual_machine_interface_ref_uuid2"}
-	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
-		VirtualMachineInterface: VirtualMachineInterfacerefModel,
+	BGPRouterrefModel.UUID = "virtual_machine_interface_bgp_router_ref_uuid2"
+	BGPRouterrefModel.FQName = []string{"test", "virtual_machine_interface_bgp_router_ref_uuid2"}
+	_, err = db.CreateBGPRouter(ctx, &models.CreateBGPRouterRequest{
+		BGPRouter: BGPRouterrefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
 	}
-	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.VirtualMachineInterfaceVirtualMachineInterfaceRef{UUID: "virtual_machine_interface_virtual_machine_interface_ref_uuid", To: []string{"test", "virtual_machine_interface_virtual_machine_interface_ref_uuid"}})
-	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.VirtualMachineInterfaceVirtualMachineInterfaceRef{UUID: "virtual_machine_interface_virtual_machine_interface_ref_uuid2", To: []string{"test", "virtual_machine_interface_virtual_machine_interface_ref_uuid2"}})
-	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
+	BGPRoutercreateref = append(BGPRoutercreateref, &models.VirtualMachineInterfaceBGPRouterRef{UUID: "virtual_machine_interface_bgp_router_ref_uuid", To: []string{"test", "virtual_machine_interface_bgp_router_ref_uuid"}})
+	BGPRoutercreateref = append(BGPRoutercreateref, &models.VirtualMachineInterfaceBGPRouterRef{UUID: "virtual_machine_interface_bgp_router_ref_uuid2", To: []string{"test", "virtual_machine_interface_bgp_router_ref_uuid2"}})
+	model.BGPRouterRefs = BGPRoutercreateref
+
+	var RoutingInstancecreateref []*models.VirtualMachineInterfaceRoutingInstanceRef
+	var RoutingInstancerefModel *models.RoutingInstance
+	RoutingInstancerefModel = models.MakeRoutingInstance()
+	RoutingInstancerefModel.UUID = "virtual_machine_interface_routing_instance_ref_uuid"
+	RoutingInstancerefModel.FQName = []string{"test", "virtual_machine_interface_routing_instance_ref_uuid"}
+	_, err = db.CreateRoutingInstance(ctx, &models.CreateRoutingInstanceRequest{
+		RoutingInstance: RoutingInstancerefModel,
+	})
+	RoutingInstancerefModel.UUID = "virtual_machine_interface_routing_instance_ref_uuid1"
+	RoutingInstancerefModel.FQName = []string{"test", "virtual_machine_interface_routing_instance_ref_uuid1"}
+	_, err = db.CreateRoutingInstance(ctx, &models.CreateRoutingInstanceRequest{
+		RoutingInstance: RoutingInstancerefModel,
+	})
+	RoutingInstancerefModel.UUID = "virtual_machine_interface_routing_instance_ref_uuid2"
+	RoutingInstancerefModel.FQName = []string{"test", "virtual_machine_interface_routing_instance_ref_uuid2"}
+	_, err = db.CreateRoutingInstance(ctx, &models.CreateRoutingInstanceRequest{
+		RoutingInstance: RoutingInstancerefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	RoutingInstancecreateref = append(RoutingInstancecreateref, &models.VirtualMachineInterfaceRoutingInstanceRef{UUID: "virtual_machine_interface_routing_instance_ref_uuid", To: []string{"test", "virtual_machine_interface_routing_instance_ref_uuid"}})
+	RoutingInstancecreateref = append(RoutingInstancecreateref, &models.VirtualMachineInterfaceRoutingInstanceRef{UUID: "virtual_machine_interface_routing_instance_ref_uuid2", To: []string{"test", "virtual_machine_interface_routing_instance_ref_uuid2"}})
+	model.RoutingInstanceRefs = RoutingInstancecreateref
+
+	var SecurityLoggingObjectcreateref []*models.VirtualMachineInterfaceSecurityLoggingObjectRef
+	var SecurityLoggingObjectrefModel *models.SecurityLoggingObject
+	SecurityLoggingObjectrefModel = models.MakeSecurityLoggingObject()
+	SecurityLoggingObjectrefModel.UUID = "virtual_machine_interface_security_logging_object_ref_uuid"
+	SecurityLoggingObjectrefModel.FQName = []string{"test", "virtual_machine_interface_security_logging_object_ref_uuid"}
+	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
+		SecurityLoggingObject: SecurityLoggingObjectrefModel,
+	})
+	SecurityLoggingObjectrefModel.UUID = "virtual_machine_interface_security_logging_object_ref_uuid1"
+	SecurityLoggingObjectrefModel.FQName = []string{"test", "virtual_machine_interface_security_logging_object_ref_uuid1"}
+	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
+		SecurityLoggingObject: SecurityLoggingObjectrefModel,
+	})
+	SecurityLoggingObjectrefModel.UUID = "virtual_machine_interface_security_logging_object_ref_uuid2"
+	SecurityLoggingObjectrefModel.FQName = []string{"test", "virtual_machine_interface_security_logging_object_ref_uuid2"}
+	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
+		SecurityLoggingObject: SecurityLoggingObjectrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.VirtualMachineInterfaceSecurityLoggingObjectRef{UUID: "virtual_machine_interface_security_logging_object_ref_uuid", To: []string{"test", "virtual_machine_interface_security_logging_object_ref_uuid"}})
+	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.VirtualMachineInterfaceSecurityLoggingObjectRef{UUID: "virtual_machine_interface_security_logging_object_ref_uuid2", To: []string{"test", "virtual_machine_interface_security_logging_object_ref_uuid2"}})
+	model.SecurityLoggingObjectRefs = SecurityLoggingObjectcreateref
 
 	var ServiceHealthCheckcreateref []*models.VirtualMachineInterfaceServiceHealthCheckRef
 	var ServiceHealthCheckrefModel *models.ServiceHealthCheck
@@ -114,105 +164,55 @@ func TestVirtualMachineInterface(t *testing.T) {
 	ServiceEndpointcreateref = append(ServiceEndpointcreateref, &models.VirtualMachineInterfaceServiceEndpointRef{UUID: "virtual_machine_interface_service_endpoint_ref_uuid2", To: []string{"test", "virtual_machine_interface_service_endpoint_ref_uuid2"}})
 	model.ServiceEndpointRefs = ServiceEndpointcreateref
 
-	var VirtualMachinecreateref []*models.VirtualMachineInterfaceVirtualMachineRef
-	var VirtualMachinerefModel *models.VirtualMachine
-	VirtualMachinerefModel = models.MakeVirtualMachine()
-	VirtualMachinerefModel.UUID = "virtual_machine_interface_virtual_machine_ref_uuid"
-	VirtualMachinerefModel.FQName = []string{"test", "virtual_machine_interface_virtual_machine_ref_uuid"}
-	_, err = db.CreateVirtualMachine(ctx, &models.CreateVirtualMachineRequest{
-		VirtualMachine: VirtualMachinerefModel,
+	var VirtualMachineInterfacecreateref []*models.VirtualMachineInterfaceVirtualMachineInterfaceRef
+	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
+	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
+	VirtualMachineInterfacerefModel.UUID = "virtual_machine_interface_virtual_machine_interface_ref_uuid"
+	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_machine_interface_virtual_machine_interface_ref_uuid"}
+	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: VirtualMachineInterfacerefModel,
 	})
-	VirtualMachinerefModel.UUID = "virtual_machine_interface_virtual_machine_ref_uuid1"
-	VirtualMachinerefModel.FQName = []string{"test", "virtual_machine_interface_virtual_machine_ref_uuid1"}
-	_, err = db.CreateVirtualMachine(ctx, &models.CreateVirtualMachineRequest{
-		VirtualMachine: VirtualMachinerefModel,
+	VirtualMachineInterfacerefModel.UUID = "virtual_machine_interface_virtual_machine_interface_ref_uuid1"
+	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_machine_interface_virtual_machine_interface_ref_uuid1"}
+	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: VirtualMachineInterfacerefModel,
 	})
-	VirtualMachinerefModel.UUID = "virtual_machine_interface_virtual_machine_ref_uuid2"
-	VirtualMachinerefModel.FQName = []string{"test", "virtual_machine_interface_virtual_machine_ref_uuid2"}
-	_, err = db.CreateVirtualMachine(ctx, &models.CreateVirtualMachineRequest{
-		VirtualMachine: VirtualMachinerefModel,
+	VirtualMachineInterfacerefModel.UUID = "virtual_machine_interface_virtual_machine_interface_ref_uuid2"
+	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_machine_interface_virtual_machine_interface_ref_uuid2"}
+	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: VirtualMachineInterfacerefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
 	}
-	VirtualMachinecreateref = append(VirtualMachinecreateref, &models.VirtualMachineInterfaceVirtualMachineRef{UUID: "virtual_machine_interface_virtual_machine_ref_uuid", To: []string{"test", "virtual_machine_interface_virtual_machine_ref_uuid"}})
-	VirtualMachinecreateref = append(VirtualMachinecreateref, &models.VirtualMachineInterfaceVirtualMachineRef{UUID: "virtual_machine_interface_virtual_machine_ref_uuid2", To: []string{"test", "virtual_machine_interface_virtual_machine_ref_uuid2"}})
-	model.VirtualMachineRefs = VirtualMachinecreateref
+	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.VirtualMachineInterfaceVirtualMachineInterfaceRef{UUID: "virtual_machine_interface_virtual_machine_interface_ref_uuid", To: []string{"test", "virtual_machine_interface_virtual_machine_interface_ref_uuid"}})
+	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.VirtualMachineInterfaceVirtualMachineInterfaceRef{UUID: "virtual_machine_interface_virtual_machine_interface_ref_uuid2", To: []string{"test", "virtual_machine_interface_virtual_machine_interface_ref_uuid2"}})
+	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
 
-	var BGPRoutercreateref []*models.VirtualMachineInterfaceBGPRouterRef
-	var BGPRouterrefModel *models.BGPRouter
-	BGPRouterrefModel = models.MakeBGPRouter()
-	BGPRouterrefModel.UUID = "virtual_machine_interface_bgp_router_ref_uuid"
-	BGPRouterrefModel.FQName = []string{"test", "virtual_machine_interface_bgp_router_ref_uuid"}
-	_, err = db.CreateBGPRouter(ctx, &models.CreateBGPRouterRequest{
-		BGPRouter: BGPRouterrefModel,
+	var InterfaceRouteTablecreateref []*models.VirtualMachineInterfaceInterfaceRouteTableRef
+	var InterfaceRouteTablerefModel *models.InterfaceRouteTable
+	InterfaceRouteTablerefModel = models.MakeInterfaceRouteTable()
+	InterfaceRouteTablerefModel.UUID = "virtual_machine_interface_interface_route_table_ref_uuid"
+	InterfaceRouteTablerefModel.FQName = []string{"test", "virtual_machine_interface_interface_route_table_ref_uuid"}
+	_, err = db.CreateInterfaceRouteTable(ctx, &models.CreateInterfaceRouteTableRequest{
+		InterfaceRouteTable: InterfaceRouteTablerefModel,
 	})
-	BGPRouterrefModel.UUID = "virtual_machine_interface_bgp_router_ref_uuid1"
-	BGPRouterrefModel.FQName = []string{"test", "virtual_machine_interface_bgp_router_ref_uuid1"}
-	_, err = db.CreateBGPRouter(ctx, &models.CreateBGPRouterRequest{
-		BGPRouter: BGPRouterrefModel,
+	InterfaceRouteTablerefModel.UUID = "virtual_machine_interface_interface_route_table_ref_uuid1"
+	InterfaceRouteTablerefModel.FQName = []string{"test", "virtual_machine_interface_interface_route_table_ref_uuid1"}
+	_, err = db.CreateInterfaceRouteTable(ctx, &models.CreateInterfaceRouteTableRequest{
+		InterfaceRouteTable: InterfaceRouteTablerefModel,
 	})
-	BGPRouterrefModel.UUID = "virtual_machine_interface_bgp_router_ref_uuid2"
-	BGPRouterrefModel.FQName = []string{"test", "virtual_machine_interface_bgp_router_ref_uuid2"}
-	_, err = db.CreateBGPRouter(ctx, &models.CreateBGPRouterRequest{
-		BGPRouter: BGPRouterrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	BGPRoutercreateref = append(BGPRoutercreateref, &models.VirtualMachineInterfaceBGPRouterRef{UUID: "virtual_machine_interface_bgp_router_ref_uuid", To: []string{"test", "virtual_machine_interface_bgp_router_ref_uuid"}})
-	BGPRoutercreateref = append(BGPRoutercreateref, &models.VirtualMachineInterfaceBGPRouterRef{UUID: "virtual_machine_interface_bgp_router_ref_uuid2", To: []string{"test", "virtual_machine_interface_bgp_router_ref_uuid2"}})
-	model.BGPRouterRefs = BGPRoutercreateref
-
-	var RoutingInstancecreateref []*models.VirtualMachineInterfaceRoutingInstanceRef
-	var RoutingInstancerefModel *models.RoutingInstance
-	RoutingInstancerefModel = models.MakeRoutingInstance()
-	RoutingInstancerefModel.UUID = "virtual_machine_interface_routing_instance_ref_uuid"
-	RoutingInstancerefModel.FQName = []string{"test", "virtual_machine_interface_routing_instance_ref_uuid"}
-	_, err = db.CreateRoutingInstance(ctx, &models.CreateRoutingInstanceRequest{
-		RoutingInstance: RoutingInstancerefModel,
-	})
-	RoutingInstancerefModel.UUID = "virtual_machine_interface_routing_instance_ref_uuid1"
-	RoutingInstancerefModel.FQName = []string{"test", "virtual_machine_interface_routing_instance_ref_uuid1"}
-	_, err = db.CreateRoutingInstance(ctx, &models.CreateRoutingInstanceRequest{
-		RoutingInstance: RoutingInstancerefModel,
-	})
-	RoutingInstancerefModel.UUID = "virtual_machine_interface_routing_instance_ref_uuid2"
-	RoutingInstancerefModel.FQName = []string{"test", "virtual_machine_interface_routing_instance_ref_uuid2"}
-	_, err = db.CreateRoutingInstance(ctx, &models.CreateRoutingInstanceRequest{
-		RoutingInstance: RoutingInstancerefModel,
+	InterfaceRouteTablerefModel.UUID = "virtual_machine_interface_interface_route_table_ref_uuid2"
+	InterfaceRouteTablerefModel.FQName = []string{"test", "virtual_machine_interface_interface_route_table_ref_uuid2"}
+	_, err = db.CreateInterfaceRouteTable(ctx, &models.CreateInterfaceRouteTableRequest{
+		InterfaceRouteTable: InterfaceRouteTablerefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
 	}
-	RoutingInstancecreateref = append(RoutingInstancecreateref, &models.VirtualMachineInterfaceRoutingInstanceRef{UUID: "virtual_machine_interface_routing_instance_ref_uuid", To: []string{"test", "virtual_machine_interface_routing_instance_ref_uuid"}})
-	RoutingInstancecreateref = append(RoutingInstancecreateref, &models.VirtualMachineInterfaceRoutingInstanceRef{UUID: "virtual_machine_interface_routing_instance_ref_uuid2", To: []string{"test", "virtual_machine_interface_routing_instance_ref_uuid2"}})
-	model.RoutingInstanceRefs = RoutingInstancecreateref
-
-	var QosConfigcreateref []*models.VirtualMachineInterfaceQosConfigRef
-	var QosConfigrefModel *models.QosConfig
-	QosConfigrefModel = models.MakeQosConfig()
-	QosConfigrefModel.UUID = "virtual_machine_interface_qos_config_ref_uuid"
-	QosConfigrefModel.FQName = []string{"test", "virtual_machine_interface_qos_config_ref_uuid"}
-	_, err = db.CreateQosConfig(ctx, &models.CreateQosConfigRequest{
-		QosConfig: QosConfigrefModel,
-	})
-	QosConfigrefModel.UUID = "virtual_machine_interface_qos_config_ref_uuid1"
-	QosConfigrefModel.FQName = []string{"test", "virtual_machine_interface_qos_config_ref_uuid1"}
-	_, err = db.CreateQosConfig(ctx, &models.CreateQosConfigRequest{
-		QosConfig: QosConfigrefModel,
-	})
-	QosConfigrefModel.UUID = "virtual_machine_interface_qos_config_ref_uuid2"
-	QosConfigrefModel.FQName = []string{"test", "virtual_machine_interface_qos_config_ref_uuid2"}
-	_, err = db.CreateQosConfig(ctx, &models.CreateQosConfigRequest{
-		QosConfig: QosConfigrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	QosConfigcreateref = append(QosConfigcreateref, &models.VirtualMachineInterfaceQosConfigRef{UUID: "virtual_machine_interface_qos_config_ref_uuid", To: []string{"test", "virtual_machine_interface_qos_config_ref_uuid"}})
-	QosConfigcreateref = append(QosConfigcreateref, &models.VirtualMachineInterfaceQosConfigRef{UUID: "virtual_machine_interface_qos_config_ref_uuid2", To: []string{"test", "virtual_machine_interface_qos_config_ref_uuid2"}})
-	model.QosConfigRefs = QosConfigcreateref
+	InterfaceRouteTablecreateref = append(InterfaceRouteTablecreateref, &models.VirtualMachineInterfaceInterfaceRouteTableRef{UUID: "virtual_machine_interface_interface_route_table_ref_uuid", To: []string{"test", "virtual_machine_interface_interface_route_table_ref_uuid"}})
+	InterfaceRouteTablecreateref = append(InterfaceRouteTablecreateref, &models.VirtualMachineInterfaceInterfaceRouteTableRef{UUID: "virtual_machine_interface_interface_route_table_ref_uuid2", To: []string{"test", "virtual_machine_interface_interface_route_table_ref_uuid2"}})
+	model.InterfaceRouteTableRefs = InterfaceRouteTablecreateref
 
 	var SecurityGroupcreateref []*models.VirtualMachineInterfaceSecurityGroupRef
 	var SecurityGrouprefModel *models.SecurityGroup
@@ -239,31 +239,6 @@ func TestVirtualMachineInterface(t *testing.T) {
 	SecurityGroupcreateref = append(SecurityGroupcreateref, &models.VirtualMachineInterfaceSecurityGroupRef{UUID: "virtual_machine_interface_security_group_ref_uuid2", To: []string{"test", "virtual_machine_interface_security_group_ref_uuid2"}})
 	model.SecurityGroupRefs = SecurityGroupcreateref
 
-	var VirtualNetworkcreateref []*models.VirtualMachineInterfaceVirtualNetworkRef
-	var VirtualNetworkrefModel *models.VirtualNetwork
-	VirtualNetworkrefModel = models.MakeVirtualNetwork()
-	VirtualNetworkrefModel.UUID = "virtual_machine_interface_virtual_network_ref_uuid"
-	VirtualNetworkrefModel.FQName = []string{"test", "virtual_machine_interface_virtual_network_ref_uuid"}
-	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
-		VirtualNetwork: VirtualNetworkrefModel,
-	})
-	VirtualNetworkrefModel.UUID = "virtual_machine_interface_virtual_network_ref_uuid1"
-	VirtualNetworkrefModel.FQName = []string{"test", "virtual_machine_interface_virtual_network_ref_uuid1"}
-	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
-		VirtualNetwork: VirtualNetworkrefModel,
-	})
-	VirtualNetworkrefModel.UUID = "virtual_machine_interface_virtual_network_ref_uuid2"
-	VirtualNetworkrefModel.FQName = []string{"test", "virtual_machine_interface_virtual_network_ref_uuid2"}
-	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
-		VirtualNetwork: VirtualNetworkrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.VirtualMachineInterfaceVirtualNetworkRef{UUID: "virtual_machine_interface_virtual_network_ref_uuid", To: []string{"test", "virtual_machine_interface_virtual_network_ref_uuid"}})
-	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.VirtualMachineInterfaceVirtualNetworkRef{UUID: "virtual_machine_interface_virtual_network_ref_uuid2", To: []string{"test", "virtual_machine_interface_virtual_network_ref_uuid2"}})
-	model.VirtualNetworkRefs = VirtualNetworkcreateref
-
 	var BridgeDomaincreateref []*models.VirtualMachineInterfaceBridgeDomainRef
 	var BridgeDomainrefModel *models.BridgeDomain
 	BridgeDomainrefModel = models.MakeBridgeDomain()
@@ -289,55 +264,55 @@ func TestVirtualMachineInterface(t *testing.T) {
 	BridgeDomaincreateref = append(BridgeDomaincreateref, &models.VirtualMachineInterfaceBridgeDomainRef{UUID: "virtual_machine_interface_bridge_domain_ref_uuid2", To: []string{"test", "virtual_machine_interface_bridge_domain_ref_uuid2"}})
 	model.BridgeDomainRefs = BridgeDomaincreateref
 
-	var SecurityLoggingObjectcreateref []*models.VirtualMachineInterfaceSecurityLoggingObjectRef
-	var SecurityLoggingObjectrefModel *models.SecurityLoggingObject
-	SecurityLoggingObjectrefModel = models.MakeSecurityLoggingObject()
-	SecurityLoggingObjectrefModel.UUID = "virtual_machine_interface_security_logging_object_ref_uuid"
-	SecurityLoggingObjectrefModel.FQName = []string{"test", "virtual_machine_interface_security_logging_object_ref_uuid"}
-	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
-		SecurityLoggingObject: SecurityLoggingObjectrefModel,
+	var VirtualMachinecreateref []*models.VirtualMachineInterfaceVirtualMachineRef
+	var VirtualMachinerefModel *models.VirtualMachine
+	VirtualMachinerefModel = models.MakeVirtualMachine()
+	VirtualMachinerefModel.UUID = "virtual_machine_interface_virtual_machine_ref_uuid"
+	VirtualMachinerefModel.FQName = []string{"test", "virtual_machine_interface_virtual_machine_ref_uuid"}
+	_, err = db.CreateVirtualMachine(ctx, &models.CreateVirtualMachineRequest{
+		VirtualMachine: VirtualMachinerefModel,
 	})
-	SecurityLoggingObjectrefModel.UUID = "virtual_machine_interface_security_logging_object_ref_uuid1"
-	SecurityLoggingObjectrefModel.FQName = []string{"test", "virtual_machine_interface_security_logging_object_ref_uuid1"}
-	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
-		SecurityLoggingObject: SecurityLoggingObjectrefModel,
+	VirtualMachinerefModel.UUID = "virtual_machine_interface_virtual_machine_ref_uuid1"
+	VirtualMachinerefModel.FQName = []string{"test", "virtual_machine_interface_virtual_machine_ref_uuid1"}
+	_, err = db.CreateVirtualMachine(ctx, &models.CreateVirtualMachineRequest{
+		VirtualMachine: VirtualMachinerefModel,
 	})
-	SecurityLoggingObjectrefModel.UUID = "virtual_machine_interface_security_logging_object_ref_uuid2"
-	SecurityLoggingObjectrefModel.FQName = []string{"test", "virtual_machine_interface_security_logging_object_ref_uuid2"}
-	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
-		SecurityLoggingObject: SecurityLoggingObjectrefModel,
+	VirtualMachinerefModel.UUID = "virtual_machine_interface_virtual_machine_ref_uuid2"
+	VirtualMachinerefModel.FQName = []string{"test", "virtual_machine_interface_virtual_machine_ref_uuid2"}
+	_, err = db.CreateVirtualMachine(ctx, &models.CreateVirtualMachineRequest{
+		VirtualMachine: VirtualMachinerefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
 	}
-	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.VirtualMachineInterfaceSecurityLoggingObjectRef{UUID: "virtual_machine_interface_security_logging_object_ref_uuid", To: []string{"test", "virtual_machine_interface_security_logging_object_ref_uuid"}})
-	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.VirtualMachineInterfaceSecurityLoggingObjectRef{UUID: "virtual_machine_interface_security_logging_object_ref_uuid2", To: []string{"test", "virtual_machine_interface_security_logging_object_ref_uuid2"}})
-	model.SecurityLoggingObjectRefs = SecurityLoggingObjectcreateref
+	VirtualMachinecreateref = append(VirtualMachinecreateref, &models.VirtualMachineInterfaceVirtualMachineRef{UUID: "virtual_machine_interface_virtual_machine_ref_uuid", To: []string{"test", "virtual_machine_interface_virtual_machine_ref_uuid"}})
+	VirtualMachinecreateref = append(VirtualMachinecreateref, &models.VirtualMachineInterfaceVirtualMachineRef{UUID: "virtual_machine_interface_virtual_machine_ref_uuid2", To: []string{"test", "virtual_machine_interface_virtual_machine_ref_uuid2"}})
+	model.VirtualMachineRefs = VirtualMachinecreateref
 
-	var InterfaceRouteTablecreateref []*models.VirtualMachineInterfaceInterfaceRouteTableRef
-	var InterfaceRouteTablerefModel *models.InterfaceRouteTable
-	InterfaceRouteTablerefModel = models.MakeInterfaceRouteTable()
-	InterfaceRouteTablerefModel.UUID = "virtual_machine_interface_interface_route_table_ref_uuid"
-	InterfaceRouteTablerefModel.FQName = []string{"test", "virtual_machine_interface_interface_route_table_ref_uuid"}
-	_, err = db.CreateInterfaceRouteTable(ctx, &models.CreateInterfaceRouteTableRequest{
-		InterfaceRouteTable: InterfaceRouteTablerefModel,
+	var QosConfigcreateref []*models.VirtualMachineInterfaceQosConfigRef
+	var QosConfigrefModel *models.QosConfig
+	QosConfigrefModel = models.MakeQosConfig()
+	QosConfigrefModel.UUID = "virtual_machine_interface_qos_config_ref_uuid"
+	QosConfigrefModel.FQName = []string{"test", "virtual_machine_interface_qos_config_ref_uuid"}
+	_, err = db.CreateQosConfig(ctx, &models.CreateQosConfigRequest{
+		QosConfig: QosConfigrefModel,
 	})
-	InterfaceRouteTablerefModel.UUID = "virtual_machine_interface_interface_route_table_ref_uuid1"
-	InterfaceRouteTablerefModel.FQName = []string{"test", "virtual_machine_interface_interface_route_table_ref_uuid1"}
-	_, err = db.CreateInterfaceRouteTable(ctx, &models.CreateInterfaceRouteTableRequest{
-		InterfaceRouteTable: InterfaceRouteTablerefModel,
+	QosConfigrefModel.UUID = "virtual_machine_interface_qos_config_ref_uuid1"
+	QosConfigrefModel.FQName = []string{"test", "virtual_machine_interface_qos_config_ref_uuid1"}
+	_, err = db.CreateQosConfig(ctx, &models.CreateQosConfigRequest{
+		QosConfig: QosConfigrefModel,
 	})
-	InterfaceRouteTablerefModel.UUID = "virtual_machine_interface_interface_route_table_ref_uuid2"
-	InterfaceRouteTablerefModel.FQName = []string{"test", "virtual_machine_interface_interface_route_table_ref_uuid2"}
-	_, err = db.CreateInterfaceRouteTable(ctx, &models.CreateInterfaceRouteTableRequest{
-		InterfaceRouteTable: InterfaceRouteTablerefModel,
+	QosConfigrefModel.UUID = "virtual_machine_interface_qos_config_ref_uuid2"
+	QosConfigrefModel.FQName = []string{"test", "virtual_machine_interface_qos_config_ref_uuid2"}
+	_, err = db.CreateQosConfig(ctx, &models.CreateQosConfigRequest{
+		QosConfig: QosConfigrefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
 	}
-	InterfaceRouteTablecreateref = append(InterfaceRouteTablecreateref, &models.VirtualMachineInterfaceInterfaceRouteTableRef{UUID: "virtual_machine_interface_interface_route_table_ref_uuid", To: []string{"test", "virtual_machine_interface_interface_route_table_ref_uuid"}})
-	InterfaceRouteTablecreateref = append(InterfaceRouteTablecreateref, &models.VirtualMachineInterfaceInterfaceRouteTableRef{UUID: "virtual_machine_interface_interface_route_table_ref_uuid2", To: []string{"test", "virtual_machine_interface_interface_route_table_ref_uuid2"}})
-	model.InterfaceRouteTableRefs = InterfaceRouteTablecreateref
+	QosConfigcreateref = append(QosConfigcreateref, &models.VirtualMachineInterfaceQosConfigRef{UUID: "virtual_machine_interface_qos_config_ref_uuid", To: []string{"test", "virtual_machine_interface_qos_config_ref_uuid"}})
+	QosConfigcreateref = append(QosConfigcreateref, &models.VirtualMachineInterfaceQosConfigRef{UUID: "virtual_machine_interface_qos_config_ref_uuid2", To: []string{"test", "virtual_machine_interface_qos_config_ref_uuid2"}})
+	model.QosConfigRefs = QosConfigcreateref
 
 	var PortTuplecreateref []*models.VirtualMachineInterfacePortTupleRef
 	var PortTuplerefModel *models.PortTuple
@@ -388,6 +363,31 @@ func TestVirtualMachineInterface(t *testing.T) {
 	PhysicalInterfacecreateref = append(PhysicalInterfacecreateref, &models.VirtualMachineInterfacePhysicalInterfaceRef{UUID: "virtual_machine_interface_physical_interface_ref_uuid", To: []string{"test", "virtual_machine_interface_physical_interface_ref_uuid"}})
 	PhysicalInterfacecreateref = append(PhysicalInterfacecreateref, &models.VirtualMachineInterfacePhysicalInterfaceRef{UUID: "virtual_machine_interface_physical_interface_ref_uuid2", To: []string{"test", "virtual_machine_interface_physical_interface_ref_uuid2"}})
 	model.PhysicalInterfaceRefs = PhysicalInterfacecreateref
+
+	var VirtualNetworkcreateref []*models.VirtualMachineInterfaceVirtualNetworkRef
+	var VirtualNetworkrefModel *models.VirtualNetwork
+	VirtualNetworkrefModel = models.MakeVirtualNetwork()
+	VirtualNetworkrefModel.UUID = "virtual_machine_interface_virtual_network_ref_uuid"
+	VirtualNetworkrefModel.FQName = []string{"test", "virtual_machine_interface_virtual_network_ref_uuid"}
+	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
+		VirtualNetwork: VirtualNetworkrefModel,
+	})
+	VirtualNetworkrefModel.UUID = "virtual_machine_interface_virtual_network_ref_uuid1"
+	VirtualNetworkrefModel.FQName = []string{"test", "virtual_machine_interface_virtual_network_ref_uuid1"}
+	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
+		VirtualNetwork: VirtualNetworkrefModel,
+	})
+	VirtualNetworkrefModel.UUID = "virtual_machine_interface_virtual_network_ref_uuid2"
+	VirtualNetworkrefModel.FQName = []string{"test", "virtual_machine_interface_virtual_network_ref_uuid2"}
+	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
+		VirtualNetwork: VirtualNetworkrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.VirtualMachineInterfaceVirtualNetworkRef{UUID: "virtual_machine_interface_virtual_network_ref_uuid", To: []string{"test", "virtual_machine_interface_virtual_network_ref_uuid"}})
+	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.VirtualMachineInterfaceVirtualNetworkRef{UUID: "virtual_machine_interface_virtual_network_ref_uuid2", To: []string{"test", "virtual_machine_interface_virtual_network_ref_uuid2"}})
+	model.VirtualNetworkRefs = VirtualNetworkcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -694,30 +694,6 @@ func TestVirtualMachineInterface(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var VirtualMachineInterfaceref []interface{}
-	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_virtual_machine_interface_ref_uuid", "to": []string{"test", "virtual_machine_interface_virtual_machine_interface_ref_uuid"}})
-	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_virtual_machine_interface_ref_uuid1", "to": []string{"test", "virtual_machine_interface_virtual_machine_interface_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
-	//
-	//    var ServiceHealthCheckref []interface{}
-	//    ServiceHealthCheckref = append(ServiceHealthCheckref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_service_health_check_ref_uuid", "to": []string{"test", "virtual_machine_interface_service_health_check_ref_uuid"}})
-	//    ServiceHealthCheckref = append(ServiceHealthCheckref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_service_health_check_ref_uuid1", "to": []string{"test", "virtual_machine_interface_service_health_check_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ServiceHealthCheckRefs", ".", ServiceHealthCheckref)
-	//
-	//    var ServiceEndpointref []interface{}
-	//    ServiceEndpointref = append(ServiceEndpointref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_service_endpoint_ref_uuid", "to": []string{"test", "virtual_machine_interface_service_endpoint_ref_uuid"}})
-	//    ServiceEndpointref = append(ServiceEndpointref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_service_endpoint_ref_uuid1", "to": []string{"test", "virtual_machine_interface_service_endpoint_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ServiceEndpointRefs", ".", ServiceEndpointref)
-	//
 	//    var VirtualMachineref []interface{}
 	//    VirtualMachineref = append(VirtualMachineref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_virtual_machine_ref_uuid", "to": []string{"test", "virtual_machine_interface_virtual_machine_ref_uuid"}})
 	//    VirtualMachineref = append(VirtualMachineref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_virtual_machine_ref_uuid1", "to": []string{"test", "virtual_machine_interface_virtual_machine_ref_uuid1"}})
@@ -725,6 +701,38 @@ func TestVirtualMachineInterface(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "VirtualMachineRefs", ".", VirtualMachineref)
+	//
+	//    var QosConfigref []interface{}
+	//    QosConfigref = append(QosConfigref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_qos_config_ref_uuid", "to": []string{"test", "virtual_machine_interface_qos_config_ref_uuid"}})
+	//    QosConfigref = append(QosConfigref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_qos_config_ref_uuid1", "to": []string{"test", "virtual_machine_interface_qos_config_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "QosConfigRefs", ".", QosConfigref)
+	//
+	//    var PortTupleref []interface{}
+	//    PortTupleref = append(PortTupleref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_port_tuple_ref_uuid", "to": []string{"test", "virtual_machine_interface_port_tuple_ref_uuid"}})
+	//    PortTupleref = append(PortTupleref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_port_tuple_ref_uuid1", "to": []string{"test", "virtual_machine_interface_port_tuple_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "PortTupleRefs", ".", PortTupleref)
+	//
+	//    var PhysicalInterfaceref []interface{}
+	//    PhysicalInterfaceref = append(PhysicalInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_physical_interface_ref_uuid", "to": []string{"test", "virtual_machine_interface_physical_interface_ref_uuid"}})
+	//    PhysicalInterfaceref = append(PhysicalInterfaceref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_physical_interface_ref_uuid1", "to": []string{"test", "virtual_machine_interface_physical_interface_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "PhysicalInterfaceRefs", ".", PhysicalInterfaceref)
+	//
+	//    var VirtualNetworkref []interface{}
+	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_virtual_network_ref_uuid", "to": []string{"test", "virtual_machine_interface_virtual_network_ref_uuid"}})
+	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_virtual_network_ref_uuid1", "to": []string{"test", "virtual_machine_interface_virtual_network_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
 	//
 	//    var BGPRouterref []interface{}
 	//    BGPRouterref = append(BGPRouterref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_bgp_router_ref_uuid", "to": []string{"test", "virtual_machine_interface_bgp_router_ref_uuid"}})
@@ -739,6 +747,18 @@ func TestVirtualMachineInterface(t *testing.T) {
 	//    RoutingInstanceref = append(RoutingInstanceref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_routing_instance_ref_uuid1", "to": []string{"test", "virtual_machine_interface_routing_instance_ref_uuid1"}})
 	//
 	//    RoutingInstanceAttr := map[string]interface{}{}
+	//
+	//
+	//
+	//    common.SetValueByPath(RoutingInstanceAttr, ".Ipv6ServiceChainAddress", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(RoutingInstanceAttr, ".Direction", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(RoutingInstanceAttr, ".MPLSLabel", ".", 1.0)
 	//
 	//
 	//
@@ -762,29 +782,49 @@ func TestVirtualMachineInterface(t *testing.T) {
 	//
 	//
 	//
-	//    common.SetValueByPath(RoutingInstanceAttr, ".Ipv6ServiceChainAddress", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(RoutingInstanceAttr, ".Direction", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(RoutingInstanceAttr, ".MPLSLabel", ".", 1.0)
-	//
-	//
-	//
 	//    RoutingInstanceref = append(RoutingInstanceref, map[string]interface{}{"operation":"update", "uuid":"virtual_machine_interface_routing_instance_ref_uuid2", "to": []string{"test", "virtual_machine_interface_routing_instance_ref_uuid2"}, "attr": RoutingInstanceAttr})
 	//
 	//    common.SetValueByPath(updateMap, "RoutingInstanceRefs", ".", RoutingInstanceref)
 	//
-	//    var QosConfigref []interface{}
-	//    QosConfigref = append(QosConfigref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_qos_config_ref_uuid", "to": []string{"test", "virtual_machine_interface_qos_config_ref_uuid"}})
-	//    QosConfigref = append(QosConfigref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_qos_config_ref_uuid1", "to": []string{"test", "virtual_machine_interface_qos_config_ref_uuid1"}})
+	//    var SecurityLoggingObjectref []interface{}
+	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_security_logging_object_ref_uuid", "to": []string{"test", "virtual_machine_interface_security_logging_object_ref_uuid"}})
+	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_security_logging_object_ref_uuid1", "to": []string{"test", "virtual_machine_interface_security_logging_object_ref_uuid1"}})
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, "QosConfigRefs", ".", QosConfigref)
+	//    common.SetValueByPath(updateMap, "SecurityLoggingObjectRefs", ".", SecurityLoggingObjectref)
+	//
+	//    var ServiceHealthCheckref []interface{}
+	//    ServiceHealthCheckref = append(ServiceHealthCheckref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_service_health_check_ref_uuid", "to": []string{"test", "virtual_machine_interface_service_health_check_ref_uuid"}})
+	//    ServiceHealthCheckref = append(ServiceHealthCheckref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_service_health_check_ref_uuid1", "to": []string{"test", "virtual_machine_interface_service_health_check_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "ServiceHealthCheckRefs", ".", ServiceHealthCheckref)
+	//
+	//    var ServiceEndpointref []interface{}
+	//    ServiceEndpointref = append(ServiceEndpointref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_service_endpoint_ref_uuid", "to": []string{"test", "virtual_machine_interface_service_endpoint_ref_uuid"}})
+	//    ServiceEndpointref = append(ServiceEndpointref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_service_endpoint_ref_uuid1", "to": []string{"test", "virtual_machine_interface_service_endpoint_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "ServiceEndpointRefs", ".", ServiceEndpointref)
+	//
+	//    var VirtualMachineInterfaceref []interface{}
+	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_virtual_machine_interface_ref_uuid", "to": []string{"test", "virtual_machine_interface_virtual_machine_interface_ref_uuid"}})
+	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_virtual_machine_interface_ref_uuid1", "to": []string{"test", "virtual_machine_interface_virtual_machine_interface_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
+	//
+	//    var InterfaceRouteTableref []interface{}
+	//    InterfaceRouteTableref = append(InterfaceRouteTableref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_interface_route_table_ref_uuid", "to": []string{"test", "virtual_machine_interface_interface_route_table_ref_uuid"}})
+	//    InterfaceRouteTableref = append(InterfaceRouteTableref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_interface_route_table_ref_uuid1", "to": []string{"test", "virtual_machine_interface_interface_route_table_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "InterfaceRouteTableRefs", ".", InterfaceRouteTableref)
 	//
 	//    var SecurityGroupref []interface{}
 	//    SecurityGroupref = append(SecurityGroupref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_security_group_ref_uuid", "to": []string{"test", "virtual_machine_interface_security_group_ref_uuid"}})
@@ -793,14 +833,6 @@ func TestVirtualMachineInterface(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "SecurityGroupRefs", ".", SecurityGroupref)
-	//
-	//    var VirtualNetworkref []interface{}
-	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_virtual_network_ref_uuid", "to": []string{"test", "virtual_machine_interface_virtual_network_ref_uuid"}})
-	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_virtual_network_ref_uuid1", "to": []string{"test", "virtual_machine_interface_virtual_network_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
 	//
 	//    var BridgeDomainref []interface{}
 	//    BridgeDomainref = append(BridgeDomainref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_bridge_domain_ref_uuid", "to": []string{"test", "virtual_machine_interface_bridge_domain_ref_uuid"}})
@@ -817,38 +849,6 @@ func TestVirtualMachineInterface(t *testing.T) {
 	//    BridgeDomainref = append(BridgeDomainref, map[string]interface{}{"operation":"update", "uuid":"virtual_machine_interface_bridge_domain_ref_uuid2", "to": []string{"test", "virtual_machine_interface_bridge_domain_ref_uuid2"}, "attr": BridgeDomainAttr})
 	//
 	//    common.SetValueByPath(updateMap, "BridgeDomainRefs", ".", BridgeDomainref)
-	//
-	//    var SecurityLoggingObjectref []interface{}
-	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_security_logging_object_ref_uuid", "to": []string{"test", "virtual_machine_interface_security_logging_object_ref_uuid"}})
-	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_security_logging_object_ref_uuid1", "to": []string{"test", "virtual_machine_interface_security_logging_object_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "SecurityLoggingObjectRefs", ".", SecurityLoggingObjectref)
-	//
-	//    var InterfaceRouteTableref []interface{}
-	//    InterfaceRouteTableref = append(InterfaceRouteTableref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_interface_route_table_ref_uuid", "to": []string{"test", "virtual_machine_interface_interface_route_table_ref_uuid"}})
-	//    InterfaceRouteTableref = append(InterfaceRouteTableref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_interface_route_table_ref_uuid1", "to": []string{"test", "virtual_machine_interface_interface_route_table_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "InterfaceRouteTableRefs", ".", InterfaceRouteTableref)
-	//
-	//    var PortTupleref []interface{}
-	//    PortTupleref = append(PortTupleref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_port_tuple_ref_uuid", "to": []string{"test", "virtual_machine_interface_port_tuple_ref_uuid"}})
-	//    PortTupleref = append(PortTupleref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_port_tuple_ref_uuid1", "to": []string{"test", "virtual_machine_interface_port_tuple_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "PortTupleRefs", ".", PortTupleref)
-	//
-	//    var PhysicalInterfaceref []interface{}
-	//    PhysicalInterfaceref = append(PhysicalInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"virtual_machine_interface_physical_interface_ref_uuid", "to": []string{"test", "virtual_machine_interface_physical_interface_ref_uuid"}})
-	//    PhysicalInterfaceref = append(PhysicalInterfaceref, map[string]interface{}{"operation":"add", "uuid":"virtual_machine_interface_physical_interface_ref_uuid1", "to": []string{"test", "virtual_machine_interface_physical_interface_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "PhysicalInterfaceRefs", ".", PhysicalInterfaceref)
 	//
 	//
 	_, err = db.CreateVirtualMachineInterface(ctx,
@@ -871,142 +871,72 @@ func TestVirtualMachineInterface(t *testing.T) {
 
 	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := common.GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_qos_config` where `from` = ? AND `to` = ?;")
+		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_bgp_router` where `from` = ? AND `to` = ?;")
 		if err != nil {
-			return errors.Wrap(err, "preparing QosConfigRefs delete statement failed")
+			return errors.Wrap(err, "preparing BGPRouterRefs delete statement failed")
 		}
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_qos_config_ref_uuid")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_qos_config_ref_uuid1")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_qos_config_ref_uuid2")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_bgp_router_ref_uuid")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_bgp_router_ref_uuid1")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_bgp_router_ref_uuid2")
 		if err != nil {
-			return errors.Wrap(err, "QosConfigRefs delete failed")
+			return errors.Wrap(err, "BGPRouterRefs delete failed")
 		}
 		return nil
 	})
-	_, err = db.DeleteQosConfig(ctx,
-		&models.DeleteQosConfigRequest{
-			ID: "virtual_machine_interface_qos_config_ref_uuid"})
+	_, err = db.DeleteBGPRouter(ctx,
+		&models.DeleteBGPRouterRequest{
+			ID: "virtual_machine_interface_bgp_router_ref_uuid"})
 	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_qos_config_ref_uuid  failed", err)
+		t.Fatal("delete ref virtual_machine_interface_bgp_router_ref_uuid  failed", err)
 	}
-	_, err = db.DeleteQosConfig(ctx,
-		&models.DeleteQosConfigRequest{
-			ID: "virtual_machine_interface_qos_config_ref_uuid1"})
+	_, err = db.DeleteBGPRouter(ctx,
+		&models.DeleteBGPRouterRequest{
+			ID: "virtual_machine_interface_bgp_router_ref_uuid1"})
 	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_qos_config_ref_uuid1  failed", err)
+		t.Fatal("delete ref virtual_machine_interface_bgp_router_ref_uuid1  failed", err)
 	}
-	_, err = db.DeleteQosConfig(
+	_, err = db.DeleteBGPRouter(
 		ctx,
-		&models.DeleteQosConfigRequest{
-			ID: "virtual_machine_interface_qos_config_ref_uuid2",
+		&models.DeleteBGPRouterRequest{
+			ID: "virtual_machine_interface_bgp_router_ref_uuid2",
 		})
 	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_qos_config_ref_uuid2 failed", err)
+		t.Fatal("delete ref virtual_machine_interface_bgp_router_ref_uuid2 failed", err)
 	}
 
 	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := common.GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_security_group` where `from` = ? AND `to` = ?;")
+		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_routing_instance` where `from` = ? AND `to` = ?;")
 		if err != nil {
-			return errors.Wrap(err, "preparing SecurityGroupRefs delete statement failed")
+			return errors.Wrap(err, "preparing RoutingInstanceRefs delete statement failed")
 		}
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_security_group_ref_uuid")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_security_group_ref_uuid1")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_security_group_ref_uuid2")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_routing_instance_ref_uuid")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_routing_instance_ref_uuid1")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_routing_instance_ref_uuid2")
 		if err != nil {
-			return errors.Wrap(err, "SecurityGroupRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteSecurityGroup(ctx,
-		&models.DeleteSecurityGroupRequest{
-			ID: "virtual_machine_interface_security_group_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_security_group_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteSecurityGroup(ctx,
-		&models.DeleteSecurityGroupRequest{
-			ID: "virtual_machine_interface_security_group_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_security_group_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteSecurityGroup(
-		ctx,
-		&models.DeleteSecurityGroupRequest{
-			ID: "virtual_machine_interface_security_group_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_security_group_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := common.GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_virtual_network` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing VirtualNetworkRefs delete statement failed")
-		}
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_virtual_network_ref_uuid")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_virtual_network_ref_uuid1")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_virtual_network_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs delete failed")
+			return errors.Wrap(err, "RoutingInstanceRefs delete failed")
 		}
 		return nil
 	})
-	_, err = db.DeleteVirtualNetwork(ctx,
-		&models.DeleteVirtualNetworkRequest{
-			ID: "virtual_machine_interface_virtual_network_ref_uuid"})
+	_, err = db.DeleteRoutingInstance(ctx,
+		&models.DeleteRoutingInstanceRequest{
+			ID: "virtual_machine_interface_routing_instance_ref_uuid"})
 	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_virtual_network_ref_uuid  failed", err)
+		t.Fatal("delete ref virtual_machine_interface_routing_instance_ref_uuid  failed", err)
 	}
-	_, err = db.DeleteVirtualNetwork(ctx,
-		&models.DeleteVirtualNetworkRequest{
-			ID: "virtual_machine_interface_virtual_network_ref_uuid1"})
+	_, err = db.DeleteRoutingInstance(ctx,
+		&models.DeleteRoutingInstanceRequest{
+			ID: "virtual_machine_interface_routing_instance_ref_uuid1"})
 	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_virtual_network_ref_uuid1  failed", err)
+		t.Fatal("delete ref virtual_machine_interface_routing_instance_ref_uuid1  failed", err)
 	}
-	_, err = db.DeleteVirtualNetwork(
+	_, err = db.DeleteRoutingInstance(
 		ctx,
-		&models.DeleteVirtualNetworkRequest{
-			ID: "virtual_machine_interface_virtual_network_ref_uuid2",
+		&models.DeleteRoutingInstanceRequest{
+			ID: "virtual_machine_interface_routing_instance_ref_uuid2",
 		})
 	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_virtual_network_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := common.GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_bridge_domain` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing BridgeDomainRefs delete statement failed")
-		}
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_bridge_domain_ref_uuid")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_bridge_domain_ref_uuid1")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_bridge_domain_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "BridgeDomainRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteBridgeDomain(ctx,
-		&models.DeleteBridgeDomainRequest{
-			ID: "virtual_machine_interface_bridge_domain_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_bridge_domain_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteBridgeDomain(ctx,
-		&models.DeleteBridgeDomainRequest{
-			ID: "virtual_machine_interface_bridge_domain_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_bridge_domain_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteBridgeDomain(
-		ctx,
-		&models.DeleteBridgeDomainRequest{
-			ID: "virtual_machine_interface_bridge_domain_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_bridge_domain_ref_uuid2 failed", err)
+		t.Fatal("delete ref virtual_machine_interface_routing_instance_ref_uuid2 failed", err)
 	}
 
 	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
@@ -1042,146 +972,6 @@ func TestVirtualMachineInterface(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref virtual_machine_interface_security_logging_object_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := common.GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_interface_route_table` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing InterfaceRouteTableRefs delete statement failed")
-		}
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_interface_route_table_ref_uuid")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_interface_route_table_ref_uuid1")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_interface_route_table_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "InterfaceRouteTableRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteInterfaceRouteTable(ctx,
-		&models.DeleteInterfaceRouteTableRequest{
-			ID: "virtual_machine_interface_interface_route_table_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_interface_route_table_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteInterfaceRouteTable(ctx,
-		&models.DeleteInterfaceRouteTableRequest{
-			ID: "virtual_machine_interface_interface_route_table_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_interface_route_table_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteInterfaceRouteTable(
-		ctx,
-		&models.DeleteInterfaceRouteTableRequest{
-			ID: "virtual_machine_interface_interface_route_table_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_interface_route_table_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := common.GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_port_tuple` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing PortTupleRefs delete statement failed")
-		}
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_port_tuple_ref_uuid")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_port_tuple_ref_uuid1")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_port_tuple_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "PortTupleRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeletePortTuple(ctx,
-		&models.DeletePortTupleRequest{
-			ID: "virtual_machine_interface_port_tuple_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_port_tuple_ref_uuid  failed", err)
-	}
-	_, err = db.DeletePortTuple(ctx,
-		&models.DeletePortTupleRequest{
-			ID: "virtual_machine_interface_port_tuple_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_port_tuple_ref_uuid1  failed", err)
-	}
-	_, err = db.DeletePortTuple(
-		ctx,
-		&models.DeletePortTupleRequest{
-			ID: "virtual_machine_interface_port_tuple_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_port_tuple_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := common.GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_physical_interface` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing PhysicalInterfaceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_physical_interface_ref_uuid")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_physical_interface_ref_uuid1")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_physical_interface_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "PhysicalInterfaceRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeletePhysicalInterface(ctx,
-		&models.DeletePhysicalInterfaceRequest{
-			ID: "virtual_machine_interface_physical_interface_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_physical_interface_ref_uuid  failed", err)
-	}
-	_, err = db.DeletePhysicalInterface(ctx,
-		&models.DeletePhysicalInterfaceRequest{
-			ID: "virtual_machine_interface_physical_interface_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_physical_interface_ref_uuid1  failed", err)
-	}
-	_, err = db.DeletePhysicalInterface(
-		ctx,
-		&models.DeletePhysicalInterfaceRequest{
-			ID: "virtual_machine_interface_physical_interface_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_physical_interface_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := common.GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_virtual_machine_interface` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_virtual_machine_interface_ref_uuid")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_virtual_machine_interface_ref_uuid1")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_virtual_machine_interface_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteVirtualMachineInterface(ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "virtual_machine_interface_virtual_machine_interface_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_virtual_machine_interface_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteVirtualMachineInterface(ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "virtual_machine_interface_virtual_machine_interface_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_virtual_machine_interface_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteVirtualMachineInterface(
-		ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "virtual_machine_interface_virtual_machine_interface_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_virtual_machine_interface_ref_uuid2 failed", err)
 	}
 
 	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
@@ -1256,6 +1046,216 @@ func TestVirtualMachineInterface(t *testing.T) {
 
 	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := common.GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_bridge_domain` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing BridgeDomainRefs delete statement failed")
+		}
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_bridge_domain_ref_uuid")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_bridge_domain_ref_uuid1")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_bridge_domain_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "BridgeDomainRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteBridgeDomain(ctx,
+		&models.DeleteBridgeDomainRequest{
+			ID: "virtual_machine_interface_bridge_domain_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_bridge_domain_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteBridgeDomain(ctx,
+		&models.DeleteBridgeDomainRequest{
+			ID: "virtual_machine_interface_bridge_domain_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_bridge_domain_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteBridgeDomain(
+		ctx,
+		&models.DeleteBridgeDomainRequest{
+			ID: "virtual_machine_interface_bridge_domain_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_bridge_domain_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_virtual_machine_interface` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
+		}
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_virtual_machine_interface_ref_uuid")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_virtual_machine_interface_ref_uuid1")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_virtual_machine_interface_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteVirtualMachineInterface(ctx,
+		&models.DeleteVirtualMachineInterfaceRequest{
+			ID: "virtual_machine_interface_virtual_machine_interface_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_virtual_machine_interface_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteVirtualMachineInterface(ctx,
+		&models.DeleteVirtualMachineInterfaceRequest{
+			ID: "virtual_machine_interface_virtual_machine_interface_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_virtual_machine_interface_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteVirtualMachineInterface(
+		ctx,
+		&models.DeleteVirtualMachineInterfaceRequest{
+			ID: "virtual_machine_interface_virtual_machine_interface_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_virtual_machine_interface_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_interface_route_table` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing InterfaceRouteTableRefs delete statement failed")
+		}
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_interface_route_table_ref_uuid")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_interface_route_table_ref_uuid1")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_interface_route_table_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "InterfaceRouteTableRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteInterfaceRouteTable(ctx,
+		&models.DeleteInterfaceRouteTableRequest{
+			ID: "virtual_machine_interface_interface_route_table_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_interface_route_table_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteInterfaceRouteTable(ctx,
+		&models.DeleteInterfaceRouteTableRequest{
+			ID: "virtual_machine_interface_interface_route_table_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_interface_route_table_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteInterfaceRouteTable(
+		ctx,
+		&models.DeleteInterfaceRouteTableRequest{
+			ID: "virtual_machine_interface_interface_route_table_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_interface_route_table_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_security_group` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing SecurityGroupRefs delete statement failed")
+		}
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_security_group_ref_uuid")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_security_group_ref_uuid1")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_security_group_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "SecurityGroupRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteSecurityGroup(ctx,
+		&models.DeleteSecurityGroupRequest{
+			ID: "virtual_machine_interface_security_group_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_security_group_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteSecurityGroup(ctx,
+		&models.DeleteSecurityGroupRequest{
+			ID: "virtual_machine_interface_security_group_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_security_group_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteSecurityGroup(
+		ctx,
+		&models.DeleteSecurityGroupRequest{
+			ID: "virtual_machine_interface_security_group_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_security_group_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_physical_interface` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing PhysicalInterfaceRefs delete statement failed")
+		}
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_physical_interface_ref_uuid")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_physical_interface_ref_uuid1")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_physical_interface_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "PhysicalInterfaceRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeletePhysicalInterface(ctx,
+		&models.DeletePhysicalInterfaceRequest{
+			ID: "virtual_machine_interface_physical_interface_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_physical_interface_ref_uuid  failed", err)
+	}
+	_, err = db.DeletePhysicalInterface(ctx,
+		&models.DeletePhysicalInterfaceRequest{
+			ID: "virtual_machine_interface_physical_interface_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_physical_interface_ref_uuid1  failed", err)
+	}
+	_, err = db.DeletePhysicalInterface(
+		ctx,
+		&models.DeletePhysicalInterfaceRequest{
+			ID: "virtual_machine_interface_physical_interface_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_physical_interface_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_virtual_network` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing VirtualNetworkRefs delete statement failed")
+		}
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_virtual_network_ref_uuid")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_virtual_network_ref_uuid1")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_virtual_network_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteVirtualNetwork(ctx,
+		&models.DeleteVirtualNetworkRequest{
+			ID: "virtual_machine_interface_virtual_network_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_virtual_network_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteVirtualNetwork(ctx,
+		&models.DeleteVirtualNetworkRequest{
+			ID: "virtual_machine_interface_virtual_network_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_virtual_network_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteVirtualNetwork(
+		ctx,
+		&models.DeleteVirtualNetworkRequest{
+			ID: "virtual_machine_interface_virtual_network_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref virtual_machine_interface_virtual_network_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_virtual_machine` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing VirtualMachineRefs delete statement failed")
@@ -1291,72 +1291,72 @@ func TestVirtualMachineInterface(t *testing.T) {
 
 	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := common.GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_bgp_router` where `from` = ? AND `to` = ?;")
+		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_qos_config` where `from` = ? AND `to` = ?;")
 		if err != nil {
-			return errors.Wrap(err, "preparing BGPRouterRefs delete statement failed")
+			return errors.Wrap(err, "preparing QosConfigRefs delete statement failed")
 		}
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_bgp_router_ref_uuid")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_bgp_router_ref_uuid1")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_bgp_router_ref_uuid2")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_qos_config_ref_uuid")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_qos_config_ref_uuid1")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_qos_config_ref_uuid2")
 		if err != nil {
-			return errors.Wrap(err, "BGPRouterRefs delete failed")
+			return errors.Wrap(err, "QosConfigRefs delete failed")
 		}
 		return nil
 	})
-	_, err = db.DeleteBGPRouter(ctx,
-		&models.DeleteBGPRouterRequest{
-			ID: "virtual_machine_interface_bgp_router_ref_uuid"})
+	_, err = db.DeleteQosConfig(ctx,
+		&models.DeleteQosConfigRequest{
+			ID: "virtual_machine_interface_qos_config_ref_uuid"})
 	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_bgp_router_ref_uuid  failed", err)
+		t.Fatal("delete ref virtual_machine_interface_qos_config_ref_uuid  failed", err)
 	}
-	_, err = db.DeleteBGPRouter(ctx,
-		&models.DeleteBGPRouterRequest{
-			ID: "virtual_machine_interface_bgp_router_ref_uuid1"})
+	_, err = db.DeleteQosConfig(ctx,
+		&models.DeleteQosConfigRequest{
+			ID: "virtual_machine_interface_qos_config_ref_uuid1"})
 	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_bgp_router_ref_uuid1  failed", err)
+		t.Fatal("delete ref virtual_machine_interface_qos_config_ref_uuid1  failed", err)
 	}
-	_, err = db.DeleteBGPRouter(
+	_, err = db.DeleteQosConfig(
 		ctx,
-		&models.DeleteBGPRouterRequest{
-			ID: "virtual_machine_interface_bgp_router_ref_uuid2",
+		&models.DeleteQosConfigRequest{
+			ID: "virtual_machine_interface_qos_config_ref_uuid2",
 		})
 	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_bgp_router_ref_uuid2 failed", err)
+		t.Fatal("delete ref virtual_machine_interface_qos_config_ref_uuid2 failed", err)
 	}
 
 	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := common.GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_routing_instance` where `from` = ? AND `to` = ?;")
+		stmt, err := tx.Prepare("delete from `ref_virtual_machine_interface_port_tuple` where `from` = ? AND `to` = ?;")
 		if err != nil {
-			return errors.Wrap(err, "preparing RoutingInstanceRefs delete statement failed")
+			return errors.Wrap(err, "preparing PortTupleRefs delete statement failed")
 		}
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_routing_instance_ref_uuid")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_routing_instance_ref_uuid1")
-		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_routing_instance_ref_uuid2")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_port_tuple_ref_uuid")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_port_tuple_ref_uuid1")
+		_, err = stmt.Exec("virtual_machine_interface_dummy_uuid", "virtual_machine_interface_port_tuple_ref_uuid2")
 		if err != nil {
-			return errors.Wrap(err, "RoutingInstanceRefs delete failed")
+			return errors.Wrap(err, "PortTupleRefs delete failed")
 		}
 		return nil
 	})
-	_, err = db.DeleteRoutingInstance(ctx,
-		&models.DeleteRoutingInstanceRequest{
-			ID: "virtual_machine_interface_routing_instance_ref_uuid"})
+	_, err = db.DeletePortTuple(ctx,
+		&models.DeletePortTupleRequest{
+			ID: "virtual_machine_interface_port_tuple_ref_uuid"})
 	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_routing_instance_ref_uuid  failed", err)
+		t.Fatal("delete ref virtual_machine_interface_port_tuple_ref_uuid  failed", err)
 	}
-	_, err = db.DeleteRoutingInstance(ctx,
-		&models.DeleteRoutingInstanceRequest{
-			ID: "virtual_machine_interface_routing_instance_ref_uuid1"})
+	_, err = db.DeletePortTuple(ctx,
+		&models.DeletePortTupleRequest{
+			ID: "virtual_machine_interface_port_tuple_ref_uuid1"})
 	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_routing_instance_ref_uuid1  failed", err)
+		t.Fatal("delete ref virtual_machine_interface_port_tuple_ref_uuid1  failed", err)
 	}
-	_, err = db.DeleteRoutingInstance(
+	_, err = db.DeletePortTuple(
 		ctx,
-		&models.DeleteRoutingInstanceRequest{
-			ID: "virtual_machine_interface_routing_instance_ref_uuid2",
+		&models.DeletePortTupleRequest{
+			ID: "virtual_machine_interface_port_tuple_ref_uuid2",
 		})
 	if err != nil {
-		t.Fatal("delete ref virtual_machine_interface_routing_instance_ref_uuid2 failed", err)
+		t.Fatal("delete ref virtual_machine_interface_port_tuple_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

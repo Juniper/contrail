@@ -516,7 +516,8 @@ func (db *DB) DeleteQosConfig(ctx context.Context, request *models.DeleteQosConf
 //GetQosConfig a Get request.
 func (db *DB) GetQosConfig(ctx context.Context, request *models.GetQosConfigRequest) (response *models.GetQosConfigResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

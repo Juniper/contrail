@@ -441,7 +441,8 @@ func (db *DB) DeleteRouteTable(ctx context.Context, request *models.DeleteRouteT
 //GetRouteTable a Get request.
 func (db *DB) GetRouteTable(ctx context.Context, request *models.GetRouteTableRequest) (response *models.GetRouteTableResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

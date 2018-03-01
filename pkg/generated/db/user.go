@@ -441,7 +441,8 @@ func (db *DB) DeleteUser(ctx context.Context, request *models.DeleteUserRequest)
 //GetUser a Get request.
 func (db *DB) GetUser(ctx context.Context, request *models.GetUserRequest) (response *models.GetUserResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

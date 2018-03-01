@@ -483,7 +483,8 @@ func (db *DB) DeleteRoutingPolicy(ctx context.Context, request *models.DeleteRou
 //GetRoutingPolicy a Get request.
 func (db *DB) GetRoutingPolicy(ctx context.Context, request *models.GetRoutingPolicyRequest) (response *models.GetRoutingPolicyResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

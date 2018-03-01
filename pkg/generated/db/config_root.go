@@ -1175,7 +1175,8 @@ func (db *DB) DeleteConfigRoot(ctx context.Context, request *models.DeleteConfig
 //GetConfigRoot a Get request.
 func (db *DB) GetConfigRoot(ctx context.Context, request *models.GetConfigRootRequest) (response *models.GetConfigRootResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

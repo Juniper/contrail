@@ -481,7 +481,8 @@ func (db *DB) DeleteDsaRule(ctx context.Context, request *models.DeleteDsaRuleRe
 //GetDsaRule a Get request.
 func (db *DB) GetDsaRule(ctx context.Context, request *models.GetDsaRuleRequest) (response *models.GetDsaRuleResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

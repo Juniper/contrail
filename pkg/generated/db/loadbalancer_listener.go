@@ -522,7 +522,8 @@ func (db *DB) DeleteLoadbalancerListener(ctx context.Context, request *models.De
 //GetLoadbalancerListener a Get request.
 func (db *DB) GetLoadbalancerListener(ctx context.Context, request *models.GetLoadbalancerListenerRequest) (response *models.GetLoadbalancerListenerResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

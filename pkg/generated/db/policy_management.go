@@ -1598,7 +1598,8 @@ func (db *DB) DeletePolicyManagement(ctx context.Context, request *models.Delete
 //GetPolicyManagement a Get request.
 func (db *DB) GetPolicyManagement(ctx context.Context, request *models.GetPolicyManagementRequest) (response *models.GetPolicyManagementResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

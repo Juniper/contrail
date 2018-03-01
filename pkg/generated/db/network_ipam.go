@@ -554,7 +554,8 @@ func (db *DB) DeleteNetworkIpam(ctx context.Context, request *models.DeleteNetwo
 //GetNetworkIpam a Get request.
 func (db *DB) GetNetworkIpam(ctx context.Context, request *models.GetNetworkIpamRequest) (response *models.GetNetworkIpamResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

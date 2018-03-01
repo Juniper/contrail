@@ -443,7 +443,8 @@ func (db *DB) DeleteAddressGroup(ctx context.Context, request *models.DeleteAddr
 //GetAddressGroup a Get request.
 func (db *DB) GetAddressGroup(ctx context.Context, request *models.GetAddressGroupRequest) (response *models.GetAddressGroupResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

@@ -481,7 +481,8 @@ func (db *DB) DeleteRouteAggregate(ctx context.Context, request *models.DeleteRo
 //GetRouteAggregate a Get request.
 func (db *DB) GetRouteAggregate(ctx context.Context, request *models.GetRouteAggregateRequest) (response *models.GetRouteAggregateResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

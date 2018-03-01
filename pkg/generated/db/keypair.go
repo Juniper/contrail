@@ -446,7 +446,8 @@ func (db *DB) DeleteKeypair(ctx context.Context, request *models.DeleteKeypairRe
 //GetKeypair a Get request.
 func (db *DB) GetKeypair(ctx context.Context, request *models.GetKeypairRequest) (response *models.GetKeypairResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

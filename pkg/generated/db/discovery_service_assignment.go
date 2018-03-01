@@ -642,7 +642,8 @@ func (db *DB) DeleteDiscoveryServiceAssignment(ctx context.Context, request *mod
 //GetDiscoveryServiceAssignment a Get request.
 func (db *DB) GetDiscoveryServiceAssignment(ctx context.Context, request *models.GetDiscoveryServiceAssignmentRequest) (response *models.GetDiscoveryServiceAssignmentResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

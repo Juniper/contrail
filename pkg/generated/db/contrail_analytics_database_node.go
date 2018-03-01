@@ -514,7 +514,8 @@ func (db *DB) DeleteContrailAnalyticsDatabaseNode(ctx context.Context, request *
 //GetContrailAnalyticsDatabaseNode a Get request.
 func (db *DB) GetContrailAnalyticsDatabaseNode(ctx context.Context, request *models.GetContrailAnalyticsDatabaseNodeRequest) (response *models.GetContrailAnalyticsDatabaseNodeResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

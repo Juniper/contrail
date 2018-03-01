@@ -459,7 +459,8 @@ func (db *DB) DeleteAlarm(ctx context.Context, request *models.DeleteAlarmReques
 //GetAlarm a Get request.
 func (db *DB) GetAlarm(ctx context.Context, request *models.GetAlarmRequest) (response *models.GetAlarmResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

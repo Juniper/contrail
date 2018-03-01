@@ -454,7 +454,8 @@ func (db *DB) DeleteWidget(ctx context.Context, request *models.DeleteWidgetRequ
 //GetWidget a Get request.
 func (db *DB) GetWidget(ctx context.Context, request *models.GetWidgetRequest) (response *models.GetWidgetResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

@@ -1047,7 +1047,8 @@ func (db *DB) DeleteLocation(ctx context.Context, request *models.DeleteLocation
 //GetLocation a Get request.
 func (db *DB) GetLocation(ctx context.Context, request *models.GetLocationRequest) (response *models.GetLocationResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

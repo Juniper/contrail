@@ -481,7 +481,8 @@ func (db *DB) DeleteVirtualDNSRecord(ctx context.Context, request *models.Delete
 //GetVirtualDNSRecord a Get request.
 func (db *DB) GetVirtualDNSRecord(ctx context.Context, request *models.GetVirtualDNSRecordRequest) (response *models.GetVirtualDNSRecordResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

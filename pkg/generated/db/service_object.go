@@ -430,7 +430,8 @@ func (db *DB) DeleteServiceObject(ctx context.Context, request *models.DeleteSer
 //GetServiceObject a Get request.
 func (db *DB) GetServiceObject(ctx context.Context, request *models.GetServiceObjectRequest) (response *models.GetServiceObjectResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

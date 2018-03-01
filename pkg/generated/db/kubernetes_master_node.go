@@ -514,7 +514,8 @@ func (db *DB) DeleteKubernetesMasterNode(ctx context.Context, request *models.De
 //GetKubernetesMasterNode a Get request.
 func (db *DB) GetKubernetesMasterNode(ctx context.Context, request *models.GetKubernetesMasterNodeRequest) (response *models.GetKubernetesMasterNodeResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

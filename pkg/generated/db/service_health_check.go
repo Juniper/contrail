@@ -569,7 +569,8 @@ func (db *DB) DeleteServiceHealthCheck(ctx context.Context, request *models.Dele
 //GetServiceHealthCheck a Get request.
 func (db *DB) GetServiceHealthCheck(ctx context.Context, request *models.GetServiceHealthCheckRequest) (response *models.GetServiceHealthCheckResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

@@ -481,7 +481,8 @@ func (db *DB) DeleteLoadbalancerMember(ctx context.Context, request *models.Dele
 //GetLoadbalancerMember a Get request.
 func (db *DB) GetLoadbalancerMember(ctx context.Context, request *models.GetLoadbalancerMemberRequest) (response *models.GetLoadbalancerMemberResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

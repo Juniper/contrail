@@ -574,7 +574,8 @@ func (db *DB) DeleteOsImage(ctx context.Context, request *models.DeleteOsImageRe
 //GetOsImage a Get request.
 func (db *DB) GetOsImage(ctx context.Context, request *models.GetOsImageRequest) (response *models.GetOsImageResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

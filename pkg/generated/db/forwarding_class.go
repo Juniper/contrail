@@ -506,7 +506,8 @@ func (db *DB) DeleteForwardingClass(ctx context.Context, request *models.DeleteF
 //GetForwardingClass a Get request.
 func (db *DB) GetForwardingClass(ctx context.Context, request *models.GetForwardingClassRequest) (response *models.GetForwardingClassResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

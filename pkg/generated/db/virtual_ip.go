@@ -594,7 +594,8 @@ func (db *DB) DeleteVirtualIP(ctx context.Context, request *models.DeleteVirtual
 //GetVirtualIP a Get request.
 func (db *DB) GetVirtualIP(ctx context.Context, request *models.GetVirtualIPRequest) (response *models.GetVirtualIPResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

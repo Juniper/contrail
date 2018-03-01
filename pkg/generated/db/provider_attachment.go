@@ -471,7 +471,8 @@ func (db *DB) DeleteProviderAttachment(ctx context.Context, request *models.Dele
 //GetProviderAttachment a Get request.
 func (db *DB) GetProviderAttachment(ctx context.Context, request *models.GetProviderAttachmentRequest) (response *models.GetProviderAttachmentResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

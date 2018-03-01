@@ -441,7 +441,8 @@ func (db *DB) DeleteNetworkPolicy(ctx context.Context, request *models.DeleteNet
 //GetNetworkPolicy a Get request.
 func (db *DB) GetNetworkPolicy(ctx context.Context, request *models.GetNetworkPolicyRequest) (response *models.GetNetworkPolicyResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

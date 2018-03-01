@@ -494,7 +494,8 @@ func (db *DB) DeleteBaremetalPort(ctx context.Context, request *models.DeleteBar
 //GetBaremetalPort a Get request.
 func (db *DB) GetBaremetalPort(ctx context.Context, request *models.GetBaremetalPortRequest) (response *models.GetBaremetalPortResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",

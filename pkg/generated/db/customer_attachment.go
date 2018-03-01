@@ -280,26 +280,6 @@ func scanCustomerAttachment(values map[string]interface{}) (*models.CustomerAtta
 
 	}
 
-	if value, ok := values["ref_virtual_machine_interface"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.CustomerAttachmentVirtualMachineInterfaceRef{}
-			referenceModel.UUID = uuid
-			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_floating_ip"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -316,6 +296,26 @@ func scanCustomerAttachment(values map[string]interface{}) (*models.CustomerAtta
 			referenceModel := &models.CustomerAttachmentFloatingIPRef{}
 			referenceModel.UUID = uuid
 			m.FloatingIPRefs = append(m.FloatingIPRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_machine_interface"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.CustomerAttachmentVirtualMachineInterfaceRef{}
+			referenceModel.UUID = uuid
+			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
 
 		}
 	}
@@ -511,7 +511,8 @@ func (db *DB) DeleteCustomerAttachment(ctx context.Context, request *models.Dele
 //GetCustomerAttachment a Get request.
 func (db *DB) GetCustomerAttachment(ctx context.Context, request *models.GetCustomerAttachmentRequest) (response *models.GetCustomerAttachmentResponse, err error) {
 	spec := &models.ListSpec{
-		Limit: 1,
+		Limit:  1,
+		Detail: true,
 		Filters: []*models.Filter{
 			&models.Filter{
 				Key:    "uuid",
