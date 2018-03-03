@@ -9,11 +9,10 @@
     description: |
       Job that builds and tests Juniper/contrail project.
     voting: False
-    parent: contrail-src-base
+    parent: contrail-src-publish-package-el-base
     required-projects:
       - Juniper/contrail
     run: playbooks/contrail-go-docker/run.yaml
-    #post-run: playbooks/contrail-go-docker/post.yaml
     nodeset:
       nodes:
         - name: contrail-go
