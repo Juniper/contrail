@@ -21,3 +21,11 @@
         - name: Make package
           command: make build binaries package
 
+    - name: List packages
+      file:
+        name: "{{ ansible_env.HOME }}"
+        recurse: yes
+        owner: "{{ ansible_env.USER }}"
+      become: yes
+      become_user: root
+
