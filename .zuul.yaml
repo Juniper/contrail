@@ -13,7 +13,7 @@
     required-projects:
       - Juniper/contrail
     run: playbooks/contrail-go-docker/run.yaml
-    #post-run: playbooks/contrail-go-docker/post.yaml
+    post-run: playbooks/contrail-go-docker/post.yaml
     nodeset:
       nodes:
         - name: contrail-go
