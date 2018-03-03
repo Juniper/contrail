@@ -1,0 +1,5 @@
+- hosts: all
+  name: Upload RPM packages for Juniper/contrail
+  roles:
+    - fetch-packages
+    - packaging-publish-el
