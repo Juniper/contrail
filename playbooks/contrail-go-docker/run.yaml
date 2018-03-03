@@ -21,3 +21,6 @@
         - name: Make package
           command: make build binaries package
 
+     - name: List packages
+       command: find . -name '*.rpm'
+
