@@ -20,10 +20,12 @@ var server *apisrv.Server
 func TestMain(m *testing.M) {
 	viper.SetConfigName("server")
 	viper.AddConfigPath(".")
-	viper.ReadInConfig()
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	common.SetLogLevel()
-	var err error
 	server, err = apisrv.NewServer()
 	if err != nil {
 		log.Fatal(err)
@@ -39,7 +41,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer server.Close()
+	defer server.Close() // nolint: errcheck
 
 	log.Info("starting test")
 	code := m.Run()

@@ -22,11 +22,9 @@ var RmCmd = &cobra.Command{
 	Short: "Remove a resource with specified UUID",
 	Long:  "Invoke command with empty SchemaID in order to show possible usages",
 	Run: func(cmd *cobra.Command, args []string) {
-		schemaID := ""
-		uuid := ""
+		schemaID, uuid := "", ""
 		if len(args) >= 2 {
-			schemaID = args[0]
-			uuid = args[1]
+			schemaID, uuid = args[0], args[1]
 		}
 		output, err := deleteResource(schemaID, uuid)
 		if err != nil {

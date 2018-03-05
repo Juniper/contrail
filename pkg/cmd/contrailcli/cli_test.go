@@ -54,9 +54,11 @@ func TestCLIHelpMessagesWhenGivenEmptySchemaID(t *testing.T) {
 
 func TestCLI(t *testing.T) {
 	setupClient("TestCLI")
-	deleteResources(virtualNetworks)
+	o, err := deleteResources(virtualNetworks)
+	assert.NoError(t, err)
+	assert.Equal(t, "", o)
 
-	o, err := syncResources(virtualNetworks)
+	o, err = syncResources(virtualNetworks)
 	assert.NoError(t, err)
 	checkDataEqual(t, virtualNetworks, o)
 
@@ -86,6 +88,7 @@ func TestCLI(t *testing.T) {
 
 	o, err = deleteResources(virtualNetworks)
 	assert.NoError(t, err)
+	assert.Equal(t, "", o)
 
 	o, err = listResources(vnSchemaID)
 	assert.NoError(t, err)

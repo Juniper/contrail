@@ -2,6 +2,7 @@ package apisrv
 
 import (
 	"database/sql"
+	"net/url"
 	"strings"
 	"time"
 
@@ -115,7 +116,12 @@ func (s *Server) Init() error {
 		for prefix, target := range proxy {
 			g := e.Group(prefix)
 			g.Use(removePathPrefixMiddleware(prefix))
-			g.Use(proxyMiddleware(target[0], viper.GetBool("server.proxy.insecure")))
+
+			t, err := url.Parse(target[0])
+			if err != nil {
+				return errors.Wrapf(err, "bad proxy target URL: %s", target[0])
+			}
+			g.Use(proxyMiddleware(t, viper.GetBool("server.proxy.insecure")))
 		}
 	}
 	keystoneAuthURL := viper.GetString("keystone.authurl")

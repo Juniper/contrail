@@ -38,7 +38,10 @@ func deleteResources(dataPath string) (string, error) {
 	if err != nil {
 		return "", nil
 	}
-	pp.Println(request)
+	_, err = pp.Println(request)
+	if err != nil {
+		fmt.Printf("Error printing request: %v", err)
+	}
 	for i := len(request.Resources) - 1; i >= 0; i-- {
 		resource := request.Resources[i]
 		uuid, err := common.GetUUIDFromInterface(resource.Data)

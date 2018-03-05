@@ -23,9 +23,9 @@ bin/
 
 # ignore generated code
 
-pkg/models/gen_*
-pkg/services/gen_*
-pkg/db/gen_*
+pkg/**/gen_*
+pkg/**/generated.pb.go
+
 pkg/serviceif/serviceif.go
 doc/proto_model.md
 doc/proto_service.md
