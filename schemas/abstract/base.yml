@@ -52,4 +52,10 @@
         presence: "system-only"
         description: "Permissions data for role based access."
         $ref: "types.json#/definitions/PermType2"
+      configuration_version:
+        operations: "CRUD"
+        presence: "true"
+        description: "Configuration Version for the object."
+        type: integer
+        sql: bigint
 
