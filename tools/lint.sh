@@ -15,8 +15,8 @@ set -o pipefail
 # TODO(daniel): run the same set of tools for all Go files
 gometalinter \
 	--enable-all \
-	--exclude "Subprocess launching with variable" \
-	--exclude "TLS InsecureSkipVerify may be true" \
+	--exclude "Subprocess launching with variable.*\(gas\)$" \
+	--exclude "TLS InsecureSkipVerify.*\(gas\)$" \
 	--disable errcheck \
 	--disable deadcode \
 	--disable dupl \
@@ -43,8 +43,8 @@ gometalinter \
 
 gometalinter \
 	--enable-all \
-	--exclude "Subprocess launching with variable" \
-	--exclude "TLS InsecureSkipVerify may be true" \
+	--exclude "Subprocess launching with variable.*\(gas\)$" \
+	--exclude "TLS InsecureSkipVerify.*\(gas\)$" \
 	--disable megacheck \
 	--disable safesql \
 	--disable staticcheck \

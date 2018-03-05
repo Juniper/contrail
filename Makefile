@@ -1,4 +1,4 @@
-all: deps lint test build integration
+all: deps lint test build
 
 deps: ## Setup the go dependencies
 	./tools/deps.sh
@@ -18,7 +18,7 @@ generate: ## Run the source code generator
 	protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto_model.md  --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/generated/models/generated.proto
 	protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto_service.md --gogo_out=plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/generated/services/generated.proto
 	go fmt github.com/Juniper/contrail/pkg/generated/db
-	go fmt github.com/Juniper/contrail/pkg/generated/models 
+	go fmt github.com/Juniper/contrail/pkg/generated/models
 	go fmt github.com/Juniper/contrail/pkg/generated/services
 
 package: ## Generate the packages

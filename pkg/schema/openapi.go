@@ -4,6 +4,7 @@ import (
 	"github.com/go-openapi/spec"
 )
 
+// ToOpenAPI creates Open API schema definition of API.
 func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 	definitions := spec.Definitions{}
 	paths := &spec.Paths{
@@ -44,12 +45,12 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 				SchemaProps: spec.SchemaProps{
 					Description: reference.Description,
 					Properties: map[string]spec.Schema{
-						"uuid": spec.Schema{
+						"uuid": {
 							SchemaProps: spec.SchemaProps{
 								Type: spec.StringOrArray([]string{"string"}),
 							},
 						},
-						"to": spec.Schema{
+						"to": {
 							SchemaProps: spec.SchemaProps{
 								Type: spec.StringOrArray([]string{"array"}),
 								Items: &spec.SchemaOrArray{
@@ -121,7 +122,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 						Responses: &spec.Responses{
 							ResponsesProps: spec.ResponsesProps{
 								StatusCodeResponses: map[int]spec.Response{
-									200: spec.Response{
+									200: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Show resource",
 											Schema: &spec.Schema{
@@ -131,17 +132,17 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 											},
 										},
 									},
-									404: spec.Response{
+									404: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Resource not found",
 										},
 									},
-									401: spec.Response{
+									401: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Unauthorized",
 										},
 									},
-									500: spec.Response{
+									500: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Server Side Error",
 										},
@@ -158,27 +159,27 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 						Responses: &spec.Responses{
 							ResponsesProps: spec.ResponsesProps{
 								StatusCodeResponses: map[int]spec.Response{
-									204: spec.Response{
+									204: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Delete a resource",
 										},
 									},
-									401: spec.Response{
+									401: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Unauthorized",
 										},
 									},
-									404: spec.Response{
+									404: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Resource not found",
 										},
 									},
-									409: spec.Response{
+									409: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Data conflict",
 										},
 									},
-									500: spec.Response{
+									500: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Server Side Error",
 										},
@@ -192,7 +193,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 				Put: &spec.Operation{
 					OperationProps: spec.OperationProps{
 						Parameters: []spec.Parameter{
-							spec.Parameter{
+							{
 								ParamProps: spec.ParamProps{
 									Required: true,
 									In:       "body",
@@ -207,7 +208,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 						Responses: &spec.Responses{
 							ResponsesProps: spec.ResponsesProps{
 								StatusCodeResponses: map[int]spec.Response{
-									200: spec.Response{
+									200: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Update a resource",
 											Schema: &spec.Schema{
@@ -217,27 +218,27 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 											},
 										},
 									},
-									400: spec.Response{
+									400: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Bad request",
 										},
 									},
-									401: spec.Response{
+									401: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Unauthorized",
 										},
 									},
-									404: spec.Response{
+									404: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Resource not found",
 										},
 									},
-									409: spec.Response{
+									409: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Data conflict",
 										},
 									},
-									500: spec.Response{
+									500: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Server Side Error",
 										},
@@ -254,7 +255,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 				Post: &spec.Operation{
 					OperationProps: spec.OperationProps{
 						Parameters: []spec.Parameter{
-							spec.Parameter{
+							{
 								ParamProps: spec.ParamProps{
 									In:       "body",
 									Required: true,
@@ -269,7 +270,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 						Responses: &spec.Responses{
 							ResponsesProps: spec.ResponsesProps{
 								StatusCodeResponses: map[int]spec.Response{
-									201: spec.Response{
+									201: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Create a resource",
 											Schema: &spec.Schema{
@@ -279,27 +280,27 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 											},
 										},
 									},
-									400: spec.Response{
+									400: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Bad request",
 										},
 									},
-									401: spec.Response{
+									401: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Unauthorized",
 										},
 									},
-									404: spec.Response{
+									404: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Resource not found",
 										},
 									},
-									409: spec.Response{
+									409: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Data conflict",
 										},
 									},
-									500: spec.Response{
+									500: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Server Side Error",
 										},
@@ -312,7 +313,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 				Get: &spec.Operation{
 					OperationProps: spec.OperationProps{
 						Parameters: []spec.Parameter{
-							spec.Parameter{
+							{
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "parent_id",
@@ -320,7 +321,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 									Required:    false,
 								},
 							},
-							spec.Parameter{
+							{
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "parent_fq_name_str",
@@ -328,7 +329,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 									Required:    false,
 								},
 							},
-							spec.Parameter{
+							{
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "pobj_uuids",
@@ -336,7 +337,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 									Required:    false,
 								},
 							},
-							spec.Parameter{
+							{
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "detail",
@@ -344,7 +345,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 									Required:    false,
 								},
 							},
-							spec.Parameter{
+							{
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "back_ref_id",
@@ -352,7 +353,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 									Required:    false,
 								},
 							},
-							spec.Parameter{
+							{
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "page_marker",
@@ -360,7 +361,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 									Required:    false,
 								},
 							},
-							spec.Parameter{
+							{
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "page_limit",
@@ -368,7 +369,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 									Required:    false,
 								},
 							},
-							spec.Parameter{
+							{
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "count",
@@ -376,7 +377,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 									Required:    false,
 								},
 							},
-							spec.Parameter{
+							{
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "fields",
@@ -384,15 +385,15 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 									Required:    false,
 								},
 							},
-							spec.Parameter{
+							{
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "shared",
-									Description: "Included shared object in reponse.",
+									Description: "Included shared object in response.",
 									Required:    false,
 								},
 							},
-							spec.Parameter{
+							{
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "filters",
@@ -400,7 +401,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 									Required:    false,
 								},
 							},
-							spec.Parameter{
+							{
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "exclude_hrefs",
@@ -412,7 +413,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 						Responses: &spec.Responses{
 							ResponsesProps: spec.ResponsesProps{
 								StatusCodeResponses: map[int]spec.Response{
-									200: spec.Response{
+									200: {
 										ResponseProps: spec.ResponseProps{
 											Description: "list a resource",
 											Schema: &spec.Schema{
@@ -422,22 +423,22 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 											},
 										},
 									},
-									400: spec.Response{
+									400: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Bad request",
 										},
 									},
-									404: spec.Response{
+									404: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Resource not found",
 										},
 									},
-									401: spec.Response{
+									401: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Unauthorized",
 										},
 									},
-									500: spec.Response{
+									500: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Server Side Error",
 										},
@@ -456,7 +457,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 		definitions[apiSchema.JSONSchema.GoName+"APIListType"] = spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Properties: map[string]spec.Schema{
-					apiSchema.PluralPath: spec.Schema{
+					apiSchema.PluralPath: {
 						SchemaProps: spec.SchemaProps{
 							Type: spec.StringOrArray([]string{"array"}),
 							Items: &spec.SchemaOrArray{
@@ -474,7 +475,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 		definitions[apiSchema.JSONSchema.GoName+"APISingleType"] = spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Properties: map[string]spec.Schema{
-					apiSchema.Path: spec.Schema{
+					apiSchema.Path: {
 						SchemaProps: spec.SchemaProps{
 							Ref: ref,
 						},
@@ -495,6 +496,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 	return openAPI, nil
 }
 
+// ToOpenAPI creates Open API schema definition of JSONSchema object.
 func (s *JSONSchema) ToOpenAPI() (*spec.Schema, error) {
 	if s == nil {
 		return nil, nil
