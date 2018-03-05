@@ -39,6 +39,7 @@ var ForwardingClassFields = []string{
 	"forwarding_class_id",
 	"forwarding_class_dscp",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -92,6 +93,7 @@ func (db *DB) createForwardingClass(
 		int(model.GetForwardingClassID()),
 		int(model.GetForwardingClassDSCP()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -268,6 +270,12 @@ func scanForwardingClass(values map[string]interface{}) (*models.ForwardingClass
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

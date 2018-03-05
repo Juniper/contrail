@@ -69,23 +69,13 @@ var VirtualNetworkFields = []string{
 	"destination_port",
 	"destination_ip",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 	"address_allocation_mode",
 }
 
 // VirtualNetworkRefFields is db reference fields for VirtualNetwork
 var VirtualNetworkRefFields = map[string][]string{
-
-	"network_ipam": []string{
-		// <schema.Schema Value>
-		"ipam_subnets",
-		"route",
-	},
-
-	"security_logging_object": []string{
-	// <schema.Schema Value>
-
-	},
 
 	"network_policy": []string{
 		// <schema.Schema Value>
@@ -116,6 +106,17 @@ var VirtualNetworkRefFields = map[string][]string{
 	// <schema.Schema Value>
 
 	},
+
+	"network_ipam": []string{
+		// <schema.Schema Value>
+		"ipam_subnets",
+		"route",
+	},
+
+	"security_logging_object": []string{
+	// <schema.Schema Value>
+
+	},
 }
 
 // VirtualNetworkBackRefFields is db back reference fields for VirtualNetwork
@@ -142,6 +143,7 @@ var VirtualNetworkBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 		"access_control_list_hash",
 		"dynamic",
@@ -169,6 +171,7 @@ var VirtualNetworkBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 
@@ -201,6 +204,7 @@ var VirtualNetworkBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 
@@ -226,6 +230,7 @@ var VirtualNetworkBackRefFields = map[string][]string{
 		"fq_name",
 		"subnet_uuid",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 
@@ -250,6 +255,7 @@ var VirtualNetworkBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 }
@@ -322,26 +328,11 @@ func (db *DB) createVirtualNetwork(
 		bool(model.GetEcmpHashingIncludeFields().GetDestinationPort()),
 		bool(model.GetEcmpHashingIncludeFields().GetDestinationIP()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()),
 		string(model.GetAddressAllocationMode()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
-	}
-
-	for _, ref := range model.VirtualNetworkRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_network"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs create failed")
-		}
-	}
-
-	for _, ref := range model.BGPVPNRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("bgpvpn"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "BGPVPNRefs create failed")
-		}
 	}
 
 	for _, ref := range model.NetworkIpamRefs {
@@ -395,6 +386,22 @@ func (db *DB) createVirtualNetwork(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("route_table"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "RouteTableRefs create failed")
+		}
+	}
+
+	for _, ref := range model.VirtualNetworkRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_network"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs create failed")
+		}
+	}
+
+	for _, ref := range model.BGPVPNRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("bgpvpn"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "BGPVPNRefs create failed")
 		}
 	}
 
@@ -744,6 +751,12 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 	}
 
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
+
+	}
+
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
@@ -754,6 +767,66 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 		m.AddressAllocationMode = common.InterfaceToString(value)
 
+	}
+
+	if value, ok := values["ref_route_table"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkRouteTableRef{}
+			referenceModel.UUID = uuid
+			m.RouteTableRefs = append(m.RouteTableRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_network"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkVirtualNetworkRef{}
+			referenceModel.UUID = uuid
+			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_bgpvpn"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualNetworkBGPVPNRef{}
+			referenceModel.UUID = uuid
+			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
+
+		}
 	}
 
 	if value, ok := values["ref_network_ipam"]; ok {
@@ -838,66 +911,6 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 			referenceModel := &models.VirtualNetworkQosConfigRef{}
 			referenceModel.UUID = uuid
 			m.QosConfigRefs = append(m.QosConfigRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_route_table"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkRouteTableRef{}
-			referenceModel.UUID = uuid
-			m.RouteTableRefs = append(m.RouteTableRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_virtual_network"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkVirtualNetworkRef{}
-			referenceModel.UUID = uuid
-			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_bgpvpn"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualNetworkBGPVPNRef{}
-			referenceModel.UUID = uuid
-			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
 
 		}
 	}
@@ -1035,6 +1048,12 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 
@@ -1198,6 +1217,12 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 
@@ -1394,6 +1419,12 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			}
 
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
+
+			}
+
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
 				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
@@ -1545,6 +1576,12 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 
 			}
 
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
+
+			}
+
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
 				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
@@ -1687,6 +1724,12 @@ func scanVirtualNetwork(values map[string]interface{}) (*models.VirtualNetwork, 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 

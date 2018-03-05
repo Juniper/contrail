@@ -38,6 +38,7 @@ var SecurityGroupFields = []string{
 	"fq_name",
 	"display_name",
 	"configured_security_group_id",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -68,6 +69,7 @@ var SecurityGroupBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 		"access_control_list_hash",
 		"dynamic",
@@ -112,6 +114,7 @@ func (db *DB) createSecurityGroup(
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
 		int(model.GetConfiguredSecurityGroupID()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -277,6 +280,12 @@ func scanSecurityGroup(values map[string]interface{}) (*models.SecurityGroup, er
 
 	}
 
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
+
+	}
+
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
@@ -416,6 +425,12 @@ func scanSecurityGroup(values map[string]interface{}) (*models.SecurityGroup, er
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 

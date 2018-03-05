@@ -35,20 +35,21 @@ var FirewallPolicyFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 }
 
 // FirewallPolicyRefFields is db reference fields for FirewallPolicy
 var FirewallPolicyRefFields = map[string][]string{
 
-	"security_logging_object": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"firewall_rule": []string{
 		// <schema.Schema Value>
 		"sequence",
+	},
+
+	"security_logging_object": []string{
+	// <schema.Schema Value>
+
 	},
 }
 
@@ -91,6 +92,7 @@ func (db *DB) createFirewallPolicy(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -255,6 +257,12 @@ func scanFirewallPolicy(values map[string]interface{}) (*models.FirewallPolicy, 
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

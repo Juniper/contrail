@@ -42,31 +42,6 @@ func TestLoadbalancer(t *testing.T) {
 
 	// Create referred objects
 
-	var ServiceApplianceSetcreateref []*models.LoadbalancerServiceApplianceSetRef
-	var ServiceApplianceSetrefModel *models.ServiceApplianceSet
-	ServiceApplianceSetrefModel = models.MakeServiceApplianceSet()
-	ServiceApplianceSetrefModel.UUID = "loadbalancer_service_appliance_set_ref_uuid"
-	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_service_appliance_set_ref_uuid"}
-	_, err = db.CreateServiceApplianceSet(ctx, &models.CreateServiceApplianceSetRequest{
-		ServiceApplianceSet: ServiceApplianceSetrefModel,
-	})
-	ServiceApplianceSetrefModel.UUID = "loadbalancer_service_appliance_set_ref_uuid1"
-	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_service_appliance_set_ref_uuid1"}
-	_, err = db.CreateServiceApplianceSet(ctx, &models.CreateServiceApplianceSetRequest{
-		ServiceApplianceSet: ServiceApplianceSetrefModel,
-	})
-	ServiceApplianceSetrefModel.UUID = "loadbalancer_service_appliance_set_ref_uuid2"
-	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_service_appliance_set_ref_uuid2"}
-	_, err = db.CreateServiceApplianceSet(ctx, &models.CreateServiceApplianceSetRequest{
-		ServiceApplianceSet: ServiceApplianceSetrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	ServiceApplianceSetcreateref = append(ServiceApplianceSetcreateref, &models.LoadbalancerServiceApplianceSetRef{UUID: "loadbalancer_service_appliance_set_ref_uuid", To: []string{"test", "loadbalancer_service_appliance_set_ref_uuid"}})
-	ServiceApplianceSetcreateref = append(ServiceApplianceSetcreateref, &models.LoadbalancerServiceApplianceSetRef{UUID: "loadbalancer_service_appliance_set_ref_uuid2", To: []string{"test", "loadbalancer_service_appliance_set_ref_uuid2"}})
-	model.ServiceApplianceSetRefs = ServiceApplianceSetcreateref
-
 	var VirtualMachineInterfacecreateref []*models.LoadbalancerVirtualMachineInterfaceRef
 	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
 	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
@@ -116,6 +91,31 @@ func TestLoadbalancer(t *testing.T) {
 	ServiceInstancecreateref = append(ServiceInstancecreateref, &models.LoadbalancerServiceInstanceRef{UUID: "loadbalancer_service_instance_ref_uuid", To: []string{"test", "loadbalancer_service_instance_ref_uuid"}})
 	ServiceInstancecreateref = append(ServiceInstancecreateref, &models.LoadbalancerServiceInstanceRef{UUID: "loadbalancer_service_instance_ref_uuid2", To: []string{"test", "loadbalancer_service_instance_ref_uuid2"}})
 	model.ServiceInstanceRefs = ServiceInstancecreateref
+
+	var ServiceApplianceSetcreateref []*models.LoadbalancerServiceApplianceSetRef
+	var ServiceApplianceSetrefModel *models.ServiceApplianceSet
+	ServiceApplianceSetrefModel = models.MakeServiceApplianceSet()
+	ServiceApplianceSetrefModel.UUID = "loadbalancer_service_appliance_set_ref_uuid"
+	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_service_appliance_set_ref_uuid"}
+	_, err = db.CreateServiceApplianceSet(ctx, &models.CreateServiceApplianceSetRequest{
+		ServiceApplianceSet: ServiceApplianceSetrefModel,
+	})
+	ServiceApplianceSetrefModel.UUID = "loadbalancer_service_appliance_set_ref_uuid1"
+	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_service_appliance_set_ref_uuid1"}
+	_, err = db.CreateServiceApplianceSet(ctx, &models.CreateServiceApplianceSetRequest{
+		ServiceApplianceSet: ServiceApplianceSetrefModel,
+	})
+	ServiceApplianceSetrefModel.UUID = "loadbalancer_service_appliance_set_ref_uuid2"
+	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_service_appliance_set_ref_uuid2"}
+	_, err = db.CreateServiceApplianceSet(ctx, &models.CreateServiceApplianceSetRequest{
+		ServiceApplianceSet: ServiceApplianceSetrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	ServiceApplianceSetcreateref = append(ServiceApplianceSetcreateref, &models.LoadbalancerServiceApplianceSetRef{UUID: "loadbalancer_service_appliance_set_ref_uuid", To: []string{"test", "loadbalancer_service_appliance_set_ref_uuid"}})
+	ServiceApplianceSetcreateref = append(ServiceApplianceSetcreateref, &models.LoadbalancerServiceApplianceSetRef{UUID: "loadbalancer_service_appliance_set_ref_uuid2", To: []string{"test", "loadbalancer_service_appliance_set_ref_uuid2"}})
+	model.ServiceApplianceSetRefs = ServiceApplianceSetcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -254,6 +254,10 @@ func TestLoadbalancer(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, ".DisplayName", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".ConfigurationVersion", ".", 1.0)
 	//
 	//
 	//

@@ -35,6 +35,7 @@ var BGPAsAServiceFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"bgpaas_suppress_route_advertisement",
 	"bgpaas_shared",
 	"bgpaas_session_attributes",
@@ -95,6 +96,7 @@ func (db *DB) createBGPAsAService(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		bool(model.GetBgpaasSuppressRouteAdvertisement()),
 		bool(model.GetBgpaasShared()),
 		string(model.GetBgpaasSessionAttributes()),
@@ -261,6 +263,12 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

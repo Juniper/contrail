@@ -44,6 +44,7 @@ var ContrailVrouterNodeFields = []string{
 	"fq_name",
 	"display_name",
 	"default_gateway",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -102,6 +103,7 @@ func (db *DB) createContrailVrouterNode(
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
 		string(model.GetDefaultGateway()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -308,6 +310,12 @@ func scanContrailVrouterNode(values map[string]interface{}) (*models.ContrailVro
 	if value, ok := values["default_gateway"]; ok {
 
 		m.DefaultGateway = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

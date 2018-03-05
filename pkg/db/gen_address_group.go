@@ -35,6 +35,7 @@ var AddressGroupFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 	"subnet",
 }
@@ -81,6 +82,7 @@ func (db *DB) createAddressGroup(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()),
 		common.MustJSON(model.GetAddressGroupPrefix().GetSubnet()))
 	if err != nil {
@@ -226,6 +228,12 @@ func scanAddressGroup(values map[string]interface{}) (*models.AddressGroup, erro
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

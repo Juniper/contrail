@@ -36,6 +36,7 @@ var PhysicalInterfaceFields = []string{
 	"fq_name",
 	"ethernet_segment_identifier",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -74,6 +75,7 @@ var PhysicalInterfaceBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 }
@@ -113,6 +115,7 @@ func (db *DB) createPhysicalInterface(
 		common.MustJSON(model.GetFQName()),
 		string(model.GetEthernetSegmentIdentifier()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -271,6 +274,12 @@ func scanPhysicalInterface(values map[string]interface{}) (*models.PhysicalInter
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 
@@ -445,6 +454,12 @@ func scanPhysicalInterface(values map[string]interface{}) (*models.PhysicalInter
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 

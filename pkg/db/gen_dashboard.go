@@ -36,6 +36,7 @@ var DashboardFields = []string{
 	"fq_name",
 	"display_name",
 	"container_config",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -77,6 +78,7 @@ func (db *DB) createDashboard(
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
 		string(model.GetContainerConfig()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -227,6 +229,12 @@ func scanDashboard(values map[string]interface{}) (*models.Dashboard, error) {
 	if value, ok := values["container_config"]; ok {
 
 		m.ContainerConfig = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

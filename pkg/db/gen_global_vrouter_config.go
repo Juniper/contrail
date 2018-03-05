@@ -48,6 +48,7 @@ var GlobalVrouterConfigFields = []string{
 	"destination_port",
 	"destination_ip",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -80,6 +81,7 @@ var GlobalVrouterConfigBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 }
@@ -131,6 +133,7 @@ func (db *DB) createGlobalVrouterConfig(
 		bool(model.GetEcmpHashingIncludeFields().GetDestinationPort()),
 		bool(model.GetEcmpHashingIncludeFields().GetDestinationIP()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -356,6 +359,12 @@ func scanGlobalVrouterConfig(values map[string]interface{}) (*models.GlobalVrout
 
 	}
 
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
+
+	}
+
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
@@ -507,6 +516,12 @@ func scanGlobalVrouterConfig(values map[string]interface{}) (*models.GlobalVrout
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 

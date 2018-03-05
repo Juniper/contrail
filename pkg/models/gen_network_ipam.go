@@ -12,17 +12,18 @@ var _ = common.OPERATION
 func MakeNetworkIpam() *NetworkIpam {
 	return &NetworkIpam{
 		//TODO(nati): Apply default
-		UUID:             "",
-		ParentUUID:       "",
-		ParentType:       "",
-		FQName:           []string{},
-		IDPerms:          MakeIdPermsType(),
-		DisplayName:      "",
-		Annotations:      MakeKeyValuePairs(),
-		Perms2:           MakePermType2(),
-		NetworkIpamMGMT:  MakeIpamType(),
-		IpamSubnets:      MakeIpamSubnets(),
-		IpamSubnetMethod: "",
+		UUID:                 "",
+		ParentUUID:           "",
+		ParentType:           "",
+		FQName:               []string{},
+		IDPerms:              MakeIdPermsType(),
+		DisplayName:          "",
+		Annotations:          MakeKeyValuePairs(),
+		Perms2:               MakePermType2(),
+		ConfigurationVersion: 0,
+		NetworkIpamMGMT:      MakeIpamType(),
+		IpamSubnets:          MakeIpamSubnets(),
+		IpamSubnetMethod:     "",
 	}
 }
 
@@ -36,17 +37,18 @@ func InterfaceToNetworkIpam(i interface{}) *NetworkIpam {
 	}
 	return &NetworkIpam{
 		//TODO(nati): Apply default
-		UUID:             common.InterfaceToString(m["uuid"]),
-		ParentUUID:       common.InterfaceToString(m["parent_uuid"]),
-		ParentType:       common.InterfaceToString(m["parent_type"]),
-		FQName:           common.InterfaceToStringList(m["fq_name"]),
-		IDPerms:          InterfaceToIdPermsType(m["id_perms"]),
-		DisplayName:      common.InterfaceToString(m["display_name"]),
-		Annotations:      InterfaceToKeyValuePairs(m["annotations"]),
-		Perms2:           InterfaceToPermType2(m["perms2"]),
-		NetworkIpamMGMT:  InterfaceToIpamType(m["network_ipam_mgmt"]),
-		IpamSubnets:      InterfaceToIpamSubnets(m["ipam_subnets"]),
-		IpamSubnetMethod: common.InterfaceToString(m["ipam_subnet_method"]),
+		UUID:                 common.InterfaceToString(m["uuid"]),
+		ParentUUID:           common.InterfaceToString(m["parent_uuid"]),
+		ParentType:           common.InterfaceToString(m["parent_type"]),
+		FQName:               common.InterfaceToStringList(m["fq_name"]),
+		IDPerms:              InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:          common.InterfaceToString(m["display_name"]),
+		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:               InterfaceToPermType2(m["perms2"]),
+		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
+		NetworkIpamMGMT:      InterfaceToIpamType(m["network_ipam_mgmt"]),
+		IpamSubnets:          InterfaceToIpamSubnets(m["ipam_subnets"]),
+		IpamSubnetMethod:     common.InterfaceToString(m["ipam_subnet_method"]),
 	}
 }
 

@@ -51,6 +51,7 @@ var GlobalSystemConfigFields = []string{
 	"bgp_helper_enable",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"config_version",
 	"port_start",
 	"port_end",
@@ -94,6 +95,7 @@ var GlobalSystemConfigBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 		"alarm_severity",
 		"or_list",
@@ -120,6 +122,7 @@ var GlobalSystemConfigBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 		"analytics_node_ip_address",
 	},
@@ -145,6 +148,7 @@ var GlobalSystemConfigBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"rbac_rule",
 		"key_value_pair",
 	},
@@ -170,6 +174,7 @@ var GlobalSystemConfigBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"config_node_ip_address",
 		"key_value_pair",
 	},
@@ -196,6 +201,7 @@ var GlobalSystemConfigBackRefFields = map[string][]string{
 		"fq_name",
 		"display_name",
 		"database_node_ip_address",
+		"configuration_version",
 		"key_value_pair",
 	},
 
@@ -223,6 +229,7 @@ var GlobalSystemConfigBackRefFields = map[string][]string{
 		"dns",
 		"control",
 		"analytics",
+		"configuration_version",
 		"key_value_pair",
 	},
 
@@ -260,6 +267,7 @@ var GlobalSystemConfigBackRefFields = map[string][]string{
 		"destination_port",
 		"destination_ip",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 
@@ -317,6 +325,7 @@ var GlobalSystemConfigBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 
@@ -344,6 +353,7 @@ var GlobalSystemConfigBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"annotations_key_value_pair",
 	},
 
@@ -371,6 +381,7 @@ var GlobalSystemConfigBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 }
@@ -425,6 +436,7 @@ func (db *DB) createGlobalSystemConfig(
 		bool(model.GetGracefulRestartParameters().GetBGPHelperEnable()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		string(model.GetConfigVersion()),
 		int(model.GetBgpaasParameters().GetPortStart()),
 		int(model.GetBgpaasParameters().GetPortEnd()),
@@ -682,6 +694,12 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 
 	}
 
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
+
+	}
+
 	if value, ok := values["config_version"]; ok {
 
 		m.ConfigVersion = common.InterfaceToString(value)
@@ -886,6 +904,12 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 
 			}
 
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
+
+			}
+
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
 				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
@@ -1043,6 +1067,12 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 
 			}
 
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
+
+			}
+
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
 				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
@@ -1194,6 +1224,12 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 
 			}
 
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
+
+			}
+
 			if propertyValue, ok := childResourceMap["rbac_rule"]; ok && propertyValue != nil {
 
 				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.APIAccessListEntries.RbacRule)
@@ -1342,6 +1378,12 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 
@@ -1499,6 +1541,12 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 			if propertyValue, ok := childResourceMap["database_node_ip_address"]; ok && propertyValue != nil {
 
 				childModel.DatabaseNodeIPAddress = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 
@@ -1662,6 +1710,12 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 			if propertyValue, ok := childResourceMap["analytics"]; ok && propertyValue != nil {
 
 				childModel.ControlTrafficDSCP.Analytics = common.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 
@@ -1885,6 +1939,12 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 
@@ -2231,6 +2291,12 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 
 			}
 
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
+
+			}
+
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
 				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
@@ -2394,6 +2460,12 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 
 			}
 
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
+
+			}
+
 			if propertyValue, ok := childResourceMap["annotations_key_value_pair"]; ok && propertyValue != nil {
 
 				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
@@ -2554,6 +2626,12 @@ func scanGlobalSystemConfig(values map[string]interface{}) (*models.GlobalSystem
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 

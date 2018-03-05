@@ -38,21 +38,22 @@ var VirtualRouterFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 }
 
 // VirtualRouterRefFields is db reference fields for VirtualRouter
 var VirtualRouterRefFields = map[string][]string{
 
-	"virtual_machine": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"network_ipam": []string{
 		// <schema.Schema Value>
 		"subnet",
 		"allocation_pools",
+	},
+
+	"virtual_machine": []string{
+	// <schema.Schema Value>
+
 	},
 }
 
@@ -114,6 +115,7 @@ var VirtualRouterBackRefFields = map[string][]string{
 		"destination_port",
 		"destination_ip",
 		"display_name",
+		"configuration_version",
 		"annotations_key_value_pair",
 	},
 }
@@ -155,6 +157,7 @@ func (db *DB) createVirtualRouter(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -341,30 +344,16 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 
 	}
 
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
+
+	}
+
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
-	}
-
-	if value, ok := values["ref_virtual_machine"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualRouterVirtualMachineRef{}
-			referenceModel.UUID = uuid
-			m.VirtualMachineRefs = append(m.VirtualMachineRefs, referenceModel)
-
-		}
 	}
 
 	if value, ok := values["ref_network_ipam"]; ok {
@@ -386,6 +375,26 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 
 			attr := models.MakeVirtualRouterNetworkIpamType()
 			referenceModel.Attr = attr
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_machine"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualRouterVirtualMachineRef{}
+			referenceModel.UUID = uuid
+			m.VirtualMachineRefs = append(m.VirtualMachineRefs, referenceModel)
 
 		}
 	}
@@ -727,6 +736,12 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 

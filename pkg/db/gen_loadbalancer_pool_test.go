@@ -325,6 +325,10 @@ func TestLoadbalancerPool(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(updateMap, ".ConfigurationVersion", ".", 1.0)
+	//
+	//
+	//
 	//    if ".Annotations.KeyValuePair" == ".Perms2.Share" {
 	//        var share []interface{}
 	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
@@ -339,6 +343,22 @@ func TestLoadbalancerPool(t *testing.T) {
 	//    common.SetValueByPath(updateMap, "perms2.owner", ".", "admin")
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
+	//
+	//    var ServiceInstanceref []interface{}
+	//    ServiceInstanceref = append(ServiceInstanceref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_pool_service_instance_ref_uuid", "to": []string{"test", "loadbalancer_pool_service_instance_ref_uuid"}})
+	//    ServiceInstanceref = append(ServiceInstanceref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_pool_service_instance_ref_uuid1", "to": []string{"test", "loadbalancer_pool_service_instance_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "ServiceInstanceRefs", ".", ServiceInstanceref)
+	//
+	//    var LoadbalancerHealthmonitorref []interface{}
+	//    LoadbalancerHealthmonitorref = append(LoadbalancerHealthmonitorref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid", "to": []string{"test", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid"}})
+	//    LoadbalancerHealthmonitorref = append(LoadbalancerHealthmonitorref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1", "to": []string{"test", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "LoadbalancerHealthmonitorRefs", ".", LoadbalancerHealthmonitorref)
 	//
 	//    var ServiceApplianceSetref []interface{}
 	//    ServiceApplianceSetref = append(ServiceApplianceSetref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_pool_service_appliance_set_ref_uuid", "to": []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid"}})
@@ -364,22 +384,6 @@ func TestLoadbalancerPool(t *testing.T) {
 	//
 	//    common.SetValueByPath(updateMap, "LoadbalancerListenerRefs", ".", LoadbalancerListenerref)
 	//
-	//    var ServiceInstanceref []interface{}
-	//    ServiceInstanceref = append(ServiceInstanceref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_pool_service_instance_ref_uuid", "to": []string{"test", "loadbalancer_pool_service_instance_ref_uuid"}})
-	//    ServiceInstanceref = append(ServiceInstanceref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_pool_service_instance_ref_uuid1", "to": []string{"test", "loadbalancer_pool_service_instance_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ServiceInstanceRefs", ".", ServiceInstanceref)
-	//
-	//    var LoadbalancerHealthmonitorref []interface{}
-	//    LoadbalancerHealthmonitorref = append(LoadbalancerHealthmonitorref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid", "to": []string{"test", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid"}})
-	//    LoadbalancerHealthmonitorref = append(LoadbalancerHealthmonitorref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1", "to": []string{"test", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "LoadbalancerHealthmonitorRefs", ".", LoadbalancerHealthmonitorref)
-	//
 	//
 	_, err = db.CreateLoadbalancerPool(ctx,
 		&models.CreateLoadbalancerPoolRequest{
@@ -398,6 +402,76 @@ func TestLoadbalancerPool(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_loadbalancer_pool_service_instance` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing ServiceInstanceRefs delete statement failed")
+		}
+		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_instance_ref_uuid")
+		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_instance_ref_uuid1")
+		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_instance_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "ServiceInstanceRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteServiceInstance(ctx,
+		&models.DeleteServiceInstanceRequest{
+			ID: "loadbalancer_pool_service_instance_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref loadbalancer_pool_service_instance_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteServiceInstance(ctx,
+		&models.DeleteServiceInstanceRequest{
+			ID: "loadbalancer_pool_service_instance_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref loadbalancer_pool_service_instance_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteServiceInstance(
+		ctx,
+		&models.DeleteServiceInstanceRequest{
+			ID: "loadbalancer_pool_service_instance_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref loadbalancer_pool_service_instance_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_loadbalancer_pool_loadbalancer_healthmonitor` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing LoadbalancerHealthmonitorRefs delete statement failed")
+		}
+		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid")
+		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1")
+		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "LoadbalancerHealthmonitorRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteLoadbalancerHealthmonitor(ctx,
+		&models.DeleteLoadbalancerHealthmonitorRequest{
+			ID: "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteLoadbalancerHealthmonitor(ctx,
+		&models.DeleteLoadbalancerHealthmonitorRequest{
+			ID: "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteLoadbalancerHealthmonitor(
+		ctx,
+		&models.DeleteLoadbalancerHealthmonitorRequest{
+			ID: "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid2 failed", err)
+	}
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
@@ -502,76 +576,6 @@ func TestLoadbalancerPool(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref loadbalancer_pool_loadbalancer_listener_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_loadbalancer_pool_service_instance` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing ServiceInstanceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_instance_ref_uuid")
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_instance_ref_uuid1")
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_instance_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "ServiceInstanceRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteServiceInstance(ctx,
-		&models.DeleteServiceInstanceRequest{
-			ID: "loadbalancer_pool_service_instance_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_service_instance_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteServiceInstance(ctx,
-		&models.DeleteServiceInstanceRequest{
-			ID: "loadbalancer_pool_service_instance_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_service_instance_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteServiceInstance(
-		ctx,
-		&models.DeleteServiceInstanceRequest{
-			ID: "loadbalancer_pool_service_instance_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_service_instance_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_loadbalancer_pool_loadbalancer_healthmonitor` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing LoadbalancerHealthmonitorRefs delete statement failed")
-		}
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid")
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1")
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "LoadbalancerHealthmonitorRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteLoadbalancerHealthmonitor(ctx,
-		&models.DeleteLoadbalancerHealthmonitorRequest{
-			ID: "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteLoadbalancerHealthmonitor(ctx,
-		&models.DeleteLoadbalancerHealthmonitorRequest{
-			ID: "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteLoadbalancerHealthmonitor(
-		ctx,
-		&models.DeleteLoadbalancerHealthmonitorRequest{
-			ID: "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

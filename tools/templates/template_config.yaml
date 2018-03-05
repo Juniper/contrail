@@ -26,6 +26,9 @@
   template_path: serviceif.tmpl
   output_path: pkg/serviceif/serviceif.go
 - type: resource
+  template_path: etcdserviceif.tmpl
+  output_path: pkg/db/etcd/gen___resource___etcdif.go
+- type: resource
   template_path: service.tmpl
   output_path: pkg/services/gen___resource__.go
 - type: all

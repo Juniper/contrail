@@ -40,6 +40,7 @@ var QosConfigFields = []string{
 	"dscp_entries_qos_id_forwarding_class_pair",
 	"display_name",
 	"default_forwarding_class_id",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -96,6 +97,7 @@ func (db *DB) createQosConfig(
 		common.MustJSON(model.GetDSCPEntries().GetQosIDForwardingClassPair()),
 		string(model.GetDisplayName()),
 		int(model.GetDefaultForwardingClassID()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -278,6 +280,12 @@ func scanQosConfig(values map[string]interface{}) (*models.QosConfig, error) {
 	if value, ok := values["default_forwarding_class_id"]; ok {
 
 		m.DefaultForwardingClassID = common.InterfaceToInt64(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

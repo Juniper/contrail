@@ -35,6 +35,7 @@ var AliasIPFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 	"alias_ip_address_family",
 	"alias_ip_address",
@@ -43,12 +44,12 @@ var AliasIPFields = []string{
 // AliasIPRefFields is db reference fields for AliasIP
 var AliasIPRefFields = map[string][]string{
 
-	"virtual_machine_interface": []string{
+	"project": []string{
 	// <schema.Schema Value>
 
 	},
 
-	"project": []string{
+	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
 	},
@@ -91,6 +92,7 @@ func (db *DB) createAliasIP(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()),
 		string(model.GetAliasIPAddressFamily()),
 		string(model.GetAliasIPAddress()))
@@ -256,6 +258,12 @@ func scanAliasIP(values map[string]interface{}) (*models.AliasIP, error) {
 
 	}
 
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
+
+	}
+
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
@@ -274,26 +282,6 @@ func scanAliasIP(values map[string]interface{}) (*models.AliasIP, error) {
 
 	}
 
-	if value, ok := values["ref_project"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.AliasIPProjectRef{}
-			referenceModel.UUID = uuid
-			m.ProjectRefs = append(m.ProjectRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -310,6 +298,26 @@ func scanAliasIP(values map[string]interface{}) (*models.AliasIP, error) {
 			referenceModel := &models.AliasIPVirtualMachineInterfaceRef{}
 			referenceModel.UUID = uuid
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_project"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.AliasIPProjectRef{}
+			referenceModel.UUID = uuid
+			m.ProjectRefs = append(m.ProjectRefs, referenceModel)
 
 		}
 	}

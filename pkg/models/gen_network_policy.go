@@ -20,6 +20,7 @@ func MakeNetworkPolicy() *NetworkPolicy {
 		DisplayName:          "",
 		Annotations:          MakeKeyValuePairs(),
 		Perms2:               MakePermType2(),
+		ConfigurationVersion: 0,
 		NetworkPolicyEntries: MakePolicyEntriesType(),
 	}
 }
@@ -42,6 +43,7 @@ func InterfaceToNetworkPolicy(i interface{}) *NetworkPolicy {
 		DisplayName:          common.InterfaceToString(m["display_name"]),
 		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:               InterfaceToPermType2(m["perms2"]),
+		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
 		NetworkPolicyEntries: InterfaceToPolicyEntriesType(m["network_policy_entries"]),
 	}
 }

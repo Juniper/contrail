@@ -12,17 +12,18 @@ var _ = common.OPERATION
 func MakeQosQueue() *QosQueue {
 	return &QosQueue{
 		//TODO(nati): Apply default
-		UUID:               "",
-		ParentUUID:         "",
-		ParentType:         "",
-		FQName:             []string{},
-		IDPerms:            MakeIdPermsType(),
-		DisplayName:        "",
-		Annotations:        MakeKeyValuePairs(),
-		Perms2:             MakePermType2(),
-		QosQueueIdentifier: 0,
-		MaxBandwidth:       0,
-		MinBandwidth:       0,
+		UUID:                 "",
+		ParentUUID:           "",
+		ParentType:           "",
+		FQName:               []string{},
+		IDPerms:              MakeIdPermsType(),
+		DisplayName:          "",
+		Annotations:          MakeKeyValuePairs(),
+		Perms2:               MakePermType2(),
+		ConfigurationVersion: 0,
+		QosQueueIdentifier:   0,
+		MaxBandwidth:         0,
+		MinBandwidth:         0,
 	}
 }
 
@@ -36,17 +37,18 @@ func InterfaceToQosQueue(i interface{}) *QosQueue {
 	}
 	return &QosQueue{
 		//TODO(nati): Apply default
-		UUID:               common.InterfaceToString(m["uuid"]),
-		ParentUUID:         common.InterfaceToString(m["parent_uuid"]),
-		ParentType:         common.InterfaceToString(m["parent_type"]),
-		FQName:             common.InterfaceToStringList(m["fq_name"]),
-		IDPerms:            InterfaceToIdPermsType(m["id_perms"]),
-		DisplayName:        common.InterfaceToString(m["display_name"]),
-		Annotations:        InterfaceToKeyValuePairs(m["annotations"]),
-		Perms2:             InterfaceToPermType2(m["perms2"]),
-		QosQueueIdentifier: common.InterfaceToInt64(m["qos_queue_identifier"]),
-		MaxBandwidth:       common.InterfaceToInt64(m["max_bandwidth"]),
-		MinBandwidth:       common.InterfaceToInt64(m["min_bandwidth"]),
+		UUID:                 common.InterfaceToString(m["uuid"]),
+		ParentUUID:           common.InterfaceToString(m["parent_uuid"]),
+		ParentType:           common.InterfaceToString(m["parent_type"]),
+		FQName:               common.InterfaceToStringList(m["fq_name"]),
+		IDPerms:              InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:          common.InterfaceToString(m["display_name"]),
+		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:               InterfaceToPermType2(m["perms2"]),
+		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
+		QosQueueIdentifier:   common.InterfaceToInt64(m["qos_queue_identifier"]),
+		MaxBandwidth:         common.InterfaceToInt64(m["max_bandwidth"]),
+		MinBandwidth:         common.InterfaceToInt64(m["min_bandwidth"]),
 	}
 }
 

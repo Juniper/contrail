@@ -12,15 +12,16 @@ var _ = common.OPERATION
 func MakeVirtualDNS() *VirtualDNS {
 	return &VirtualDNS{
 		//TODO(nati): Apply default
-		UUID:           "",
-		ParentUUID:     "",
-		ParentType:     "",
-		FQName:         []string{},
-		IDPerms:        MakeIdPermsType(),
-		DisplayName:    "",
-		Annotations:    MakeKeyValuePairs(),
-		Perms2:         MakePermType2(),
-		VirtualDNSData: MakeVirtualDnsType(),
+		UUID:                 "",
+		ParentUUID:           "",
+		ParentType:           "",
+		FQName:               []string{},
+		IDPerms:              MakeIdPermsType(),
+		DisplayName:          "",
+		Annotations:          MakeKeyValuePairs(),
+		Perms2:               MakePermType2(),
+		ConfigurationVersion: 0,
+		VirtualDNSData:       MakeVirtualDnsType(),
 	}
 }
 
@@ -34,15 +35,16 @@ func InterfaceToVirtualDNS(i interface{}) *VirtualDNS {
 	}
 	return &VirtualDNS{
 		//TODO(nati): Apply default
-		UUID:           common.InterfaceToString(m["uuid"]),
-		ParentUUID:     common.InterfaceToString(m["parent_uuid"]),
-		ParentType:     common.InterfaceToString(m["parent_type"]),
-		FQName:         common.InterfaceToStringList(m["fq_name"]),
-		IDPerms:        InterfaceToIdPermsType(m["id_perms"]),
-		DisplayName:    common.InterfaceToString(m["display_name"]),
-		Annotations:    InterfaceToKeyValuePairs(m["annotations"]),
-		Perms2:         InterfaceToPermType2(m["perms2"]),
-		VirtualDNSData: InterfaceToVirtualDnsType(m["virtual_DNS_data"]),
+		UUID:                 common.InterfaceToString(m["uuid"]),
+		ParentUUID:           common.InterfaceToString(m["parent_uuid"]),
+		ParentType:           common.InterfaceToString(m["parent_type"]),
+		FQName:               common.InterfaceToStringList(m["fq_name"]),
+		IDPerms:              InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:          common.InterfaceToString(m["display_name"]),
+		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:               InterfaceToPermType2(m["perms2"]),
+		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
+		VirtualDNSData:       InterfaceToVirtualDnsType(m["virtual_DNS_data"]),
 	}
 }
 

@@ -20,6 +20,7 @@ func MakeAliasIP() *AliasIP {
 		DisplayName:          "",
 		Annotations:          MakeKeyValuePairs(),
 		Perms2:               MakePermType2(),
+		ConfigurationVersion: 0,
 		AliasIPAddress:       "",
 		AliasIPAddressFamily: "",
 	}
@@ -43,6 +44,7 @@ func InterfaceToAliasIP(i interface{}) *AliasIP {
 		DisplayName:          common.InterfaceToString(m["display_name"]),
 		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:               InterfaceToPermType2(m["perms2"]),
+		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
 		AliasIPAddress:       common.InterfaceToString(m["alias_ip_address"]),
 		AliasIPAddressFamily: common.InterfaceToString(m["alias_ip_address_family"]),
 	}
