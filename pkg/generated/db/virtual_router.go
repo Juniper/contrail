@@ -372,6 +372,26 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 
 	}
 
+	if value, ok := values["ref_virtual_machine"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualRouterVirtualMachineRef{}
+			referenceModel.UUID = uuid
+			m.VirtualMachineRefs = append(m.VirtualMachineRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_network_ipam"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -391,26 +411,6 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 
 			attr := models.MakeVirtualRouterNetworkIpamType()
 			referenceModel.Attr = attr
-
-		}
-	}
-
-	if value, ok := values["ref_virtual_machine"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualRouterVirtualMachineRef{}
-			referenceModel.UUID = uuid
-			m.VirtualMachineRefs = append(m.VirtualMachineRefs, referenceModel)
 
 		}
 	}

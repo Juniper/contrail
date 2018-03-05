@@ -51,17 +51,17 @@ var LoadbalancerFields = []string{
 // LoadbalancerRefFields is db reference fields for Loadbalancer
 var LoadbalancerRefFields = map[string][]string{
 
+	"service_instance": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"service_appliance_set": []string{
 	// <schema.Schema Value>
 
 	},
 
 	"virtual_machine_interface": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"service_instance": []string{
 	// <schema.Schema Value>
 
 	},
@@ -76,11 +76,11 @@ var LoadbalancerParents = []string{
 	"project",
 }
 
-const insertLoadbalancerServiceApplianceSetQuery = "insert into `ref_loadbalancer_service_appliance_set` (`from`, `to` ) values (?, ?);"
-
 const insertLoadbalancerVirtualMachineInterfaceQuery = "insert into `ref_loadbalancer_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 const insertLoadbalancerServiceInstanceQuery = "insert into `ref_loadbalancer_service_instance` (`from`, `to` ) values (?, ?);"
+
+const insertLoadbalancerServiceApplianceSetQuery = "insert into `ref_loadbalancer_service_appliance_set` (`from`, `to` ) values (?, ?);"
 
 // CreateLoadbalancer inserts Loadbalancer to DB
 func (db *DB) createLoadbalancer(

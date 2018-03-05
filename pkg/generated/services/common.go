@@ -1181,17 +1181,17 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 				Data: response.ContrailVrouterNode,
 			})
 
-		case "contrail_controller_node":
-			request := &models.CreateContrailControllerNodeRequest{
-				ContrailControllerNode: models.InterfaceToContrailControllerNode(resource.Data),
+		case "contrail_webui_node":
+			request := &models.CreateContrailWebuiNodeRequest{
+				ContrailWebuiNode: models.InterfaceToContrailWebuiNode(resource.Data),
 			}
-			response, err := service.CreateContrailControllerNode(ctx, request)
+			response, err := service.CreateContrailWebuiNode(ctx, request)
 			if err != nil {
 				return common.ToHTTPError(err)
 			}
 			responses = append(responses, &RESTResource{
 				Kind: resource.Kind,
-				Data: response.ContrailControllerNode,
+				Data: response.ContrailWebuiNode,
 			})
 
 		case "dashboard":
@@ -1296,6 +1296,71 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 			responses = append(responses, &RESTResource{
 				Kind: resource.Kind,
 				Data: response.Node,
+			})
+
+		case "openstack_compute_node":
+			request := &models.CreateOpenstackComputeNodeRequest{
+				OpenstackComputeNode: models.InterfaceToOpenstackComputeNode(resource.Data),
+			}
+			response, err := service.CreateOpenstackComputeNode(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.OpenstackComputeNode,
+			})
+
+		case "openstack_control_node":
+			request := &models.CreateOpenstackControlNodeRequest{
+				OpenstackControlNode: models.InterfaceToOpenstackControlNode(resource.Data),
+			}
+			response, err := service.CreateOpenstackControlNode(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.OpenstackControlNode,
+			})
+
+		case "openstack_monitoring_node":
+			request := &models.CreateOpenstackMonitoringNodeRequest{
+				OpenstackMonitoringNode: models.InterfaceToOpenstackMonitoringNode(resource.Data),
+			}
+			response, err := service.CreateOpenstackMonitoringNode(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.OpenstackMonitoringNode,
+			})
+
+		case "openstack_network_node":
+			request := &models.CreateOpenstackNetworkNodeRequest{
+				OpenstackNetworkNode: models.InterfaceToOpenstackNetworkNode(resource.Data),
+			}
+			response, err := service.CreateOpenstackNetworkNode(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.OpenstackNetworkNode,
+			})
+
+		case "openstack_storage_node":
+			request := &models.CreateOpenstackStorageNodeRequest{
+				OpenstackStorageNode: models.InterfaceToOpenstackStorageNode(resource.Data),
+			}
+			response, err := service.CreateOpenstackStorageNode(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.OpenstackStorageNode,
 			})
 
 		case "server":
@@ -1873,11 +1938,11 @@ func (service *ContrailService) RegisterRESTAPI(e *echo.Echo) {
 	e.GET("/contrailcontrail-vrouter-node/:id", service.RESTGetContrailVrouterNode)
 	e.DELETE("/contrailcontrail-vrouter-node/:id", service.RESTDeleteContrailVrouterNode)
 
-	e.POST("/contrail-controller-nodes", service.RESTCreateContrailControllerNode)
-	e.GET("/contrail-controller-nodes", service.RESTListContrailControllerNode)
-	e.PUT("/contrail-controller-node/:id", service.RESTUpdateContrailControllerNode)
-	e.GET("/contrail-controller-node/:id", service.RESTGetContrailControllerNode)
-	e.DELETE("/contrail-controller-node/:id", service.RESTDeleteContrailControllerNode)
+	e.POST("/contrail-webui-nodes", service.RESTCreateContrailWebuiNode)
+	e.GET("/contrail-webui-nodes", service.RESTListContrailWebuiNode)
+	e.PUT("/contrail-webui-node/:id", service.RESTUpdateContrailWebuiNode)
+	e.GET("/contrail-webui-node/:id", service.RESTGetContrailWebuiNode)
+	e.DELETE("/contrail-webui-node/:id", service.RESTDeleteContrailWebuiNode)
 
 	e.POST("/dashboards", service.RESTCreateDashboard)
 	e.GET("/dashboards", service.RESTListDashboard)
@@ -1926,6 +1991,36 @@ func (service *ContrailService) RegisterRESTAPI(e *echo.Echo) {
 	e.PUT("/node/:id", service.RESTUpdateNode)
 	e.GET("/node/:id", service.RESTGetNode)
 	e.DELETE("/node/:id", service.RESTDeleteNode)
+
+	e.POST("/openstack-compute-nodes", service.RESTCreateOpenstackComputeNode)
+	e.GET("/openstack-compute-nodes", service.RESTListOpenstackComputeNode)
+	e.PUT("/openstack-compute-node/:id", service.RESTUpdateOpenstackComputeNode)
+	e.GET("/openstack-compute-node/:id", service.RESTGetOpenstackComputeNode)
+	e.DELETE("/openstack-compute-node/:id", service.RESTDeleteOpenstackComputeNode)
+
+	e.POST("/openstack-control-nodes", service.RESTCreateOpenstackControlNode)
+	e.GET("/openstack-control-nodes", service.RESTListOpenstackControlNode)
+	e.PUT("/openstack-control-node/:id", service.RESTUpdateOpenstackControlNode)
+	e.GET("/openstack-control-node/:id", service.RESTGetOpenstackControlNode)
+	e.DELETE("/openstack-control-node/:id", service.RESTDeleteOpenstackControlNode)
+
+	e.POST("/openstack-monitoring-nodes", service.RESTCreateOpenstackMonitoringNode)
+	e.GET("/openstack-monitoring-nodes", service.RESTListOpenstackMonitoringNode)
+	e.PUT("/openstack-monitoring-node/:id", service.RESTUpdateOpenstackMonitoringNode)
+	e.GET("/openstack-monitoring-node/:id", service.RESTGetOpenstackMonitoringNode)
+	e.DELETE("/openstack-monitoring-node/:id", service.RESTDeleteOpenstackMonitoringNode)
+
+	e.POST("/openstack-network-nodes", service.RESTCreateOpenstackNetworkNode)
+	e.GET("/openstack-network-nodes", service.RESTListOpenstackNetworkNode)
+	e.PUT("/openstack-network-node/:id", service.RESTUpdateOpenstackNetworkNode)
+	e.GET("/openstack-network-node/:id", service.RESTGetOpenstackNetworkNode)
+	e.DELETE("/openstack-network-node/:id", service.RESTDeleteOpenstackNetworkNode)
+
+	e.POST("/openstack-storage-nodes", service.RESTCreateOpenstackStorageNode)
+	e.GET("/openstack-storage-nodes", service.RESTListOpenstackStorageNode)
+	e.PUT("/openstack-storage-node/:id", service.RESTUpdateOpenstackStorageNode)
+	e.GET("/openstack-storage-node/:id", service.RESTGetOpenstackStorageNode)
+	e.DELETE("/openstack-storage-node/:id", service.RESTDeleteOpenstackStorageNode)
 
 	e.POST("/openserverservers", service.RESTCreateServer)
 	e.GET("/openserverservers", service.RESTListServer)

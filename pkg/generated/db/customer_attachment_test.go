@@ -39,31 +39,6 @@ func TestCustomerAttachment(t *testing.T) {
 
 	// Create referred objects
 
-	var FloatingIPcreateref []*models.CustomerAttachmentFloatingIPRef
-	var FloatingIPrefModel *models.FloatingIP
-	FloatingIPrefModel = models.MakeFloatingIP()
-	FloatingIPrefModel.UUID = "customer_attachment_floating_ip_ref_uuid"
-	FloatingIPrefModel.FQName = []string{"test", "customer_attachment_floating_ip_ref_uuid"}
-	_, err = db.CreateFloatingIP(ctx, &models.CreateFloatingIPRequest{
-		FloatingIP: FloatingIPrefModel,
-	})
-	FloatingIPrefModel.UUID = "customer_attachment_floating_ip_ref_uuid1"
-	FloatingIPrefModel.FQName = []string{"test", "customer_attachment_floating_ip_ref_uuid1"}
-	_, err = db.CreateFloatingIP(ctx, &models.CreateFloatingIPRequest{
-		FloatingIP: FloatingIPrefModel,
-	})
-	FloatingIPrefModel.UUID = "customer_attachment_floating_ip_ref_uuid2"
-	FloatingIPrefModel.FQName = []string{"test", "customer_attachment_floating_ip_ref_uuid2"}
-	_, err = db.CreateFloatingIP(ctx, &models.CreateFloatingIPRequest{
-		FloatingIP: FloatingIPrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	FloatingIPcreateref = append(FloatingIPcreateref, &models.CustomerAttachmentFloatingIPRef{UUID: "customer_attachment_floating_ip_ref_uuid", To: []string{"test", "customer_attachment_floating_ip_ref_uuid"}})
-	FloatingIPcreateref = append(FloatingIPcreateref, &models.CustomerAttachmentFloatingIPRef{UUID: "customer_attachment_floating_ip_ref_uuid2", To: []string{"test", "customer_attachment_floating_ip_ref_uuid2"}})
-	model.FloatingIPRefs = FloatingIPcreateref
-
 	var VirtualMachineInterfacecreateref []*models.CustomerAttachmentVirtualMachineInterfaceRef
 	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
 	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
@@ -88,6 +63,31 @@ func TestCustomerAttachment(t *testing.T) {
 	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.CustomerAttachmentVirtualMachineInterfaceRef{UUID: "customer_attachment_virtual_machine_interface_ref_uuid", To: []string{"test", "customer_attachment_virtual_machine_interface_ref_uuid"}})
 	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.CustomerAttachmentVirtualMachineInterfaceRef{UUID: "customer_attachment_virtual_machine_interface_ref_uuid2", To: []string{"test", "customer_attachment_virtual_machine_interface_ref_uuid2"}})
 	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
+
+	var FloatingIPcreateref []*models.CustomerAttachmentFloatingIPRef
+	var FloatingIPrefModel *models.FloatingIP
+	FloatingIPrefModel = models.MakeFloatingIP()
+	FloatingIPrefModel.UUID = "customer_attachment_floating_ip_ref_uuid"
+	FloatingIPrefModel.FQName = []string{"test", "customer_attachment_floating_ip_ref_uuid"}
+	_, err = db.CreateFloatingIP(ctx, &models.CreateFloatingIPRequest{
+		FloatingIP: FloatingIPrefModel,
+	})
+	FloatingIPrefModel.UUID = "customer_attachment_floating_ip_ref_uuid1"
+	FloatingIPrefModel.FQName = []string{"test", "customer_attachment_floating_ip_ref_uuid1"}
+	_, err = db.CreateFloatingIP(ctx, &models.CreateFloatingIPRequest{
+		FloatingIP: FloatingIPrefModel,
+	})
+	FloatingIPrefModel.UUID = "customer_attachment_floating_ip_ref_uuid2"
+	FloatingIPrefModel.FQName = []string{"test", "customer_attachment_floating_ip_ref_uuid2"}
+	_, err = db.CreateFloatingIP(ctx, &models.CreateFloatingIPRequest{
+		FloatingIP: FloatingIPrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	FloatingIPcreateref = append(FloatingIPcreateref, &models.CustomerAttachmentFloatingIPRef{UUID: "customer_attachment_floating_ip_ref_uuid", To: []string{"test", "customer_attachment_floating_ip_ref_uuid"}})
+	FloatingIPcreateref = append(FloatingIPcreateref, &models.CustomerAttachmentFloatingIPRef{UUID: "customer_attachment_floating_ip_ref_uuid2", To: []string{"test", "customer_attachment_floating_ip_ref_uuid2"}})
+	model.FloatingIPRefs = FloatingIPcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -216,14 +216,6 @@ func TestCustomerAttachment(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var VirtualMachineInterfaceref []interface{}
-	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"customer_attachment_virtual_machine_interface_ref_uuid", "to": []string{"test", "customer_attachment_virtual_machine_interface_ref_uuid"}})
-	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"customer_attachment_virtual_machine_interface_ref_uuid1", "to": []string{"test", "customer_attachment_virtual_machine_interface_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
-	//
 	//    var FloatingIPref []interface{}
 	//    FloatingIPref = append(FloatingIPref, map[string]interface{}{"operation":"delete", "uuid":"customer_attachment_floating_ip_ref_uuid", "to": []string{"test", "customer_attachment_floating_ip_ref_uuid"}})
 	//    FloatingIPref = append(FloatingIPref, map[string]interface{}{"operation":"add", "uuid":"customer_attachment_floating_ip_ref_uuid1", "to": []string{"test", "customer_attachment_floating_ip_ref_uuid1"}})
@@ -231,6 +223,14 @@ func TestCustomerAttachment(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "FloatingIPRefs", ".", FloatingIPref)
+	//
+	//    var VirtualMachineInterfaceref []interface{}
+	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"customer_attachment_virtual_machine_interface_ref_uuid", "to": []string{"test", "customer_attachment_virtual_machine_interface_ref_uuid"}})
+	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"customer_attachment_virtual_machine_interface_ref_uuid1", "to": []string{"test", "customer_attachment_virtual_machine_interface_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
 	//
 	//
 	_, err = db.CreateCustomerAttachment(ctx,
@@ -250,41 +250,6 @@ func TestCustomerAttachment(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
-
-	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := common.GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_customer_attachment_virtual_machine_interface` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("customer_attachment_dummy_uuid", "customer_attachment_virtual_machine_interface_ref_uuid")
-		_, err = stmt.Exec("customer_attachment_dummy_uuid", "customer_attachment_virtual_machine_interface_ref_uuid1")
-		_, err = stmt.Exec("customer_attachment_dummy_uuid", "customer_attachment_virtual_machine_interface_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteVirtualMachineInterface(ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "customer_attachment_virtual_machine_interface_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref customer_attachment_virtual_machine_interface_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteVirtualMachineInterface(ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "customer_attachment_virtual_machine_interface_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref customer_attachment_virtual_machine_interface_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteVirtualMachineInterface(
-		ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "customer_attachment_virtual_machine_interface_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref customer_attachment_virtual_machine_interface_ref_uuid2 failed", err)
-	}
 
 	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := common.GetTransaction(ctx)
@@ -319,6 +284,41 @@ func TestCustomerAttachment(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref customer_attachment_floating_ip_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_customer_attachment_virtual_machine_interface` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
+		}
+		_, err = stmt.Exec("customer_attachment_dummy_uuid", "customer_attachment_virtual_machine_interface_ref_uuid")
+		_, err = stmt.Exec("customer_attachment_dummy_uuid", "customer_attachment_virtual_machine_interface_ref_uuid1")
+		_, err = stmt.Exec("customer_attachment_dummy_uuid", "customer_attachment_virtual_machine_interface_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteVirtualMachineInterface(ctx,
+		&models.DeleteVirtualMachineInterfaceRequest{
+			ID: "customer_attachment_virtual_machine_interface_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref customer_attachment_virtual_machine_interface_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteVirtualMachineInterface(ctx,
+		&models.DeleteVirtualMachineInterfaceRequest{
+			ID: "customer_attachment_virtual_machine_interface_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref customer_attachment_virtual_machine_interface_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteVirtualMachineInterface(
+		ctx,
+		&models.DeleteVirtualMachineInterfaceRequest{
+			ID: "customer_attachment_virtual_machine_interface_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref customer_attachment_virtual_machine_interface_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

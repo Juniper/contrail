@@ -66,11 +66,11 @@ var ServiceEndpointBackRefFields = map[string][]string{}
 // ServiceEndpointParentTypes is possible parents for ServiceEndpoint
 var ServiceEndpointParents = []string{}
 
-const insertServiceEndpointServiceConnectionModuleQuery = "insert into `ref_service_endpoint_service_connection_module` (`from`, `to` ) values (?, ?);"
-
 const insertServiceEndpointPhysicalRouterQuery = "insert into `ref_service_endpoint_physical_router` (`from`, `to` ) values (?, ?);"
 
 const insertServiceEndpointServiceObjectQuery = "insert into `ref_service_endpoint_service_object` (`from`, `to` ) values (?, ?);"
+
+const insertServiceEndpointServiceConnectionModuleQuery = "insert into `ref_service_endpoint_service_connection_module` (`from`, `to` ) values (?, ?);"
 
 // CreateServiceEndpoint inserts ServiceEndpoint to DB
 func (db *DB) createServiceEndpoint(

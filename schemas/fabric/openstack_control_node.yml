@@ -1,0 +1,27 @@
+description: Openstack Control Node
+extends:
+- base
+- has_status
+id: openstack_control_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this openstack_control node."
+      presence: "optional"
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this openstack_control node."
+    presence: "optional"
+plural: openstack_control_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: openstack_control_node
+title: openstack_control Node
+type: ""

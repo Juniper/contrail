@@ -39,31 +39,6 @@ func TestProject(t *testing.T) {
 
 	// Create referred objects
 
-	var AliasIPPoolcreateref []*models.ProjectAliasIPPoolRef
-	var AliasIPPoolrefModel *models.AliasIPPool
-	AliasIPPoolrefModel = models.MakeAliasIPPool()
-	AliasIPPoolrefModel.UUID = "project_alias_ip_pool_ref_uuid"
-	AliasIPPoolrefModel.FQName = []string{"test", "project_alias_ip_pool_ref_uuid"}
-	_, err = db.CreateAliasIPPool(ctx, &models.CreateAliasIPPoolRequest{
-		AliasIPPool: AliasIPPoolrefModel,
-	})
-	AliasIPPoolrefModel.UUID = "project_alias_ip_pool_ref_uuid1"
-	AliasIPPoolrefModel.FQName = []string{"test", "project_alias_ip_pool_ref_uuid1"}
-	_, err = db.CreateAliasIPPool(ctx, &models.CreateAliasIPPoolRequest{
-		AliasIPPool: AliasIPPoolrefModel,
-	})
-	AliasIPPoolrefModel.UUID = "project_alias_ip_pool_ref_uuid2"
-	AliasIPPoolrefModel.FQName = []string{"test", "project_alias_ip_pool_ref_uuid2"}
-	_, err = db.CreateAliasIPPool(ctx, &models.CreateAliasIPPoolRequest{
-		AliasIPPool: AliasIPPoolrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	AliasIPPoolcreateref = append(AliasIPPoolcreateref, &models.ProjectAliasIPPoolRef{UUID: "project_alias_ip_pool_ref_uuid", To: []string{"test", "project_alias_ip_pool_ref_uuid"}})
-	AliasIPPoolcreateref = append(AliasIPPoolcreateref, &models.ProjectAliasIPPoolRef{UUID: "project_alias_ip_pool_ref_uuid2", To: []string{"test", "project_alias_ip_pool_ref_uuid2"}})
-	model.AliasIPPoolRefs = AliasIPPoolcreateref
-
 	var Namespacecreateref []*models.ProjectNamespaceRef
 	var NamespacerefModel *models.Namespace
 	NamespacerefModel = models.MakeNamespace()
@@ -138,6 +113,31 @@ func TestProject(t *testing.T) {
 	FloatingIPPoolcreateref = append(FloatingIPPoolcreateref, &models.ProjectFloatingIPPoolRef{UUID: "project_floating_ip_pool_ref_uuid", To: []string{"test", "project_floating_ip_pool_ref_uuid"}})
 	FloatingIPPoolcreateref = append(FloatingIPPoolcreateref, &models.ProjectFloatingIPPoolRef{UUID: "project_floating_ip_pool_ref_uuid2", To: []string{"test", "project_floating_ip_pool_ref_uuid2"}})
 	model.FloatingIPPoolRefs = FloatingIPPoolcreateref
+
+	var AliasIPPoolcreateref []*models.ProjectAliasIPPoolRef
+	var AliasIPPoolrefModel *models.AliasIPPool
+	AliasIPPoolrefModel = models.MakeAliasIPPool()
+	AliasIPPoolrefModel.UUID = "project_alias_ip_pool_ref_uuid"
+	AliasIPPoolrefModel.FQName = []string{"test", "project_alias_ip_pool_ref_uuid"}
+	_, err = db.CreateAliasIPPool(ctx, &models.CreateAliasIPPoolRequest{
+		AliasIPPool: AliasIPPoolrefModel,
+	})
+	AliasIPPoolrefModel.UUID = "project_alias_ip_pool_ref_uuid1"
+	AliasIPPoolrefModel.FQName = []string{"test", "project_alias_ip_pool_ref_uuid1"}
+	_, err = db.CreateAliasIPPool(ctx, &models.CreateAliasIPPoolRequest{
+		AliasIPPool: AliasIPPoolrefModel,
+	})
+	AliasIPPoolrefModel.UUID = "project_alias_ip_pool_ref_uuid2"
+	AliasIPPoolrefModel.FQName = []string{"test", "project_alias_ip_pool_ref_uuid2"}
+	_, err = db.CreateAliasIPPool(ctx, &models.CreateAliasIPPoolRequest{
+		AliasIPPool: AliasIPPoolrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	AliasIPPoolcreateref = append(AliasIPPoolcreateref, &models.ProjectAliasIPPoolRef{UUID: "project_alias_ip_pool_ref_uuid", To: []string{"test", "project_alias_ip_pool_ref_uuid"}})
+	AliasIPPoolcreateref = append(AliasIPPoolcreateref, &models.ProjectAliasIPPoolRef{UUID: "project_alias_ip_pool_ref_uuid2", To: []string{"test", "project_alias_ip_pool_ref_uuid2"}})
+	model.AliasIPPoolRefs = AliasIPPoolcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -378,14 +378,6 @@ func TestProject(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var AliasIPPoolref []interface{}
-	//    AliasIPPoolref = append(AliasIPPoolref, map[string]interface{}{"operation":"delete", "uuid":"project_alias_ip_pool_ref_uuid", "to": []string{"test", "project_alias_ip_pool_ref_uuid"}})
-	//    AliasIPPoolref = append(AliasIPPoolref, map[string]interface{}{"operation":"add", "uuid":"project_alias_ip_pool_ref_uuid1", "to": []string{"test", "project_alias_ip_pool_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "AliasIPPoolRefs", ".", AliasIPPoolref)
-	//
 	//    var Namespaceref []interface{}
 	//    Namespaceref = append(Namespaceref, map[string]interface{}{"operation":"delete", "uuid":"project_namespace_ref_uuid", "to": []string{"test", "project_namespace_ref_uuid"}})
 	//    Namespaceref = append(Namespaceref, map[string]interface{}{"operation":"add", "uuid":"project_namespace_ref_uuid1", "to": []string{"test", "project_namespace_ref_uuid1"}})
@@ -394,11 +386,11 @@ func TestProject(t *testing.T) {
 	//
 	//
 	//
-	//    common.SetValueByPath(NamespaceAttr, ".IPPrefix", ".", "test")
-	//
-	//
-	//
 	//    common.SetValueByPath(NamespaceAttr, ".IPPrefixLen", ".", 1.0)
+	//
+	//
+	//
+	//    common.SetValueByPath(NamespaceAttr, ".IPPrefix", ".", "test")
 	//
 	//
 	//
@@ -421,6 +413,14 @@ func TestProject(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "FloatingIPPoolRefs", ".", FloatingIPPoolref)
+	//
+	//    var AliasIPPoolref []interface{}
+	//    AliasIPPoolref = append(AliasIPPoolref, map[string]interface{}{"operation":"delete", "uuid":"project_alias_ip_pool_ref_uuid", "to": []string{"test", "project_alias_ip_pool_ref_uuid"}})
+	//    AliasIPPoolref = append(AliasIPPoolref, map[string]interface{}{"operation":"add", "uuid":"project_alias_ip_pool_ref_uuid1", "to": []string{"test", "project_alias_ip_pool_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "AliasIPPoolRefs", ".", AliasIPPoolref)
 	//
 	//
 	_, err = db.CreateProject(ctx,

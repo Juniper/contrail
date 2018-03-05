@@ -4457,199 +4457,6 @@
                 }
             }
         },
-        "/contrail-controller-node/{id}": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Show resource",
-                        "schema": {
-                            "$ref": "#/definitions/ContrailControllerNodeAPISingleType"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "404": {
-                        "description": "Resource not found"
-                    },
-                    "500": {
-                        "description": "Server Side Error"
-                    }
-                }
-            },
-            "put": {
-                "parameters": [
-                    {
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/ContrailControllerNodeAPISingleType"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Update a resource",
-                        "schema": {
-                            "$ref": "#/definitions/ContrailControllerNodeAPISingleType"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "404": {
-                        "description": "Resource not found"
-                    },
-                    "409": {
-                        "description": "Data conflict"
-                    },
-                    "500": {
-                        "description": "Server Side Error"
-                    }
-                }
-            },
-            "delete": {
-                "responses": {
-                    "204": {
-                        "description": "Delete a resource"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "404": {
-                        "description": "Resource not found"
-                    },
-                    "409": {
-                        "description": "Data conflict"
-                    },
-                    "500": {
-                        "description": "Server Side Error"
-                    }
-                }
-            }
-        },
-        "/contrail-controller-nodes": {
-            "get": {
-                "parameters": [
-                    {
-                        "description": "parent_uuid",
-                        "name": "parent_id",
-                        "in": "query"
-                    },
-                    {
-                        "description": "parent’s fully-qualified name delimited by ‘:’",
-                        "name": "parent_fq_name_str",
-                        "in": "query"
-                    },
-                    {
-                        "description": "Commna separated object uuids \u003cexample1_uuid\u003e,\u003cexample2_uuid\u003e",
-                        "name": "pobj_uuids",
-                        "in": "query"
-                    },
-                    {
-                        "description": "True if you need detailed data",
-                        "name": "detail",
-                        "in": "query"
-                    },
-                    {
-                        "description": "back_ref_uuid",
-                        "name": "back_ref_id",
-                        "in": "query"
-                    },
-                    {
-                        "description": "Pagenation start marker",
-                        "name": "page_marker",
-                        "in": "query"
-                    },
-                    {
-                        "description": "Pagenation limit",
-                        "name": "page_limit",
-                        "in": "query"
-                    },
-                    {
-                        "description": "Return only resource counts",
-                        "name": "count",
-                        "in": "query"
-                    },
-                    {
-                        "description": " Comma separated object field list you are interested in",
-                        "name": "fields",
-                        "in": "query"
-                    },
-                    {
-                        "description": "Included shared object in reponse.",
-                        "name": "shared",
-                        "in": "query"
-                    },
-                    {
-                        "description": "Comma separated fileter list. Example check==a,check==b,name==Bob",
-                        "name": "filters",
-                        "in": "query"
-                    },
-                    {
-                        "name": "exclude_hrefs",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "list a resource",
-                        "schema": {
-                            "$ref": "#/definitions/ContrailControllerNodeAPIListType"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "404": {
-                        "description": "Resource not found"
-                    },
-                    "500": {
-                        "description": "Server Side Error"
-                    }
-                }
-            },
-            "post": {
-                "parameters": [
-                    {
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/ContrailControllerNodeAPISingleType"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Create a resource",
-                        "schema": {
-                            "$ref": "#/definitions/ContrailControllerNodeAPISingleType"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "404": {
-                        "description": "Resource not found"
-                    },
-                    "409": {
-                        "description": "Data conflict"
-                    },
-                    "500": {
-                        "description": "Server Side Error"
-                    }
-                }
-            }
-        },
         "/contrail-storage-node/{id}": {
             "get": {
                 "responses": {
@@ -5016,6 +4823,199 @@
                         "description": "Create a resource",
                         "schema": {
                             "$ref": "#/definitions/ContrailVrouterNodeAPISingleType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            }
+        },
+        "/contrail-webui-node/{id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Show resource",
+                        "schema": {
+                            "$ref": "#/definitions/ContrailWebuiNodeAPISingleType"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ContrailWebuiNodeAPISingleType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Update a resource",
+                        "schema": {
+                            "$ref": "#/definitions/ContrailWebuiNodeAPISingleType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "delete": {
+                "responses": {
+                    "204": {
+                        "description": "Delete a resource"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            }
+        },
+        "/contrail-webui-nodes": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "parent_uuid",
+                        "name": "parent_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "parent’s fully-qualified name delimited by ‘:’",
+                        "name": "parent_fq_name_str",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Commna separated object uuids \u003cexample1_uuid\u003e,\u003cexample2_uuid\u003e",
+                        "name": "pobj_uuids",
+                        "in": "query"
+                    },
+                    {
+                        "description": "True if you need detailed data",
+                        "name": "detail",
+                        "in": "query"
+                    },
+                    {
+                        "description": "back_ref_uuid",
+                        "name": "back_ref_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Pagenation start marker",
+                        "name": "page_marker",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Pagenation limit",
+                        "name": "page_limit",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Return only resource counts",
+                        "name": "count",
+                        "in": "query"
+                    },
+                    {
+                        "description": " Comma separated object field list you are interested in",
+                        "name": "fields",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Included shared object in reponse.",
+                        "name": "shared",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Comma separated fileter list. Example check==a,check==b,name==Bob",
+                        "name": "filters",
+                        "in": "query"
+                    },
+                    {
+                        "name": "exclude_hrefs",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "list a resource",
+                        "schema": {
+                            "$ref": "#/definitions/ContrailWebuiNodeAPIListType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ContrailWebuiNodeAPISingleType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Create a resource",
+                        "schema": {
+                            "$ref": "#/definitions/ContrailWebuiNodeAPISingleType"
                         }
                     },
                     "400": {
@@ -11578,6 +11578,971 @@
                         "description": "Create a resource",
                         "schema": {
                             "$ref": "#/definitions/NodeAPISingleType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            }
+        },
+        "/openstack-compute-node/{id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Show resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackComputeNodeAPISingleType"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackComputeNodeAPISingleType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Update a resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackComputeNodeAPISingleType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "delete": {
+                "responses": {
+                    "204": {
+                        "description": "Delete a resource"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            }
+        },
+        "/openstack-compute-nodes": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "parent_uuid",
+                        "name": "parent_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "parent’s fully-qualified name delimited by ‘:’",
+                        "name": "parent_fq_name_str",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Commna separated object uuids \u003cexample1_uuid\u003e,\u003cexample2_uuid\u003e",
+                        "name": "pobj_uuids",
+                        "in": "query"
+                    },
+                    {
+                        "description": "True if you need detailed data",
+                        "name": "detail",
+                        "in": "query"
+                    },
+                    {
+                        "description": "back_ref_uuid",
+                        "name": "back_ref_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Pagenation start marker",
+                        "name": "page_marker",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Pagenation limit",
+                        "name": "page_limit",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Return only resource counts",
+                        "name": "count",
+                        "in": "query"
+                    },
+                    {
+                        "description": " Comma separated object field list you are interested in",
+                        "name": "fields",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Included shared object in reponse.",
+                        "name": "shared",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Comma separated fileter list. Example check==a,check==b,name==Bob",
+                        "name": "filters",
+                        "in": "query"
+                    },
+                    {
+                        "name": "exclude_hrefs",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "list a resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackComputeNodeAPIListType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackComputeNodeAPISingleType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Create a resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackComputeNodeAPISingleType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            }
+        },
+        "/openstack-control-node/{id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Show resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackControlNodeAPISingleType"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackControlNodeAPISingleType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Update a resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackControlNodeAPISingleType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "delete": {
+                "responses": {
+                    "204": {
+                        "description": "Delete a resource"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            }
+        },
+        "/openstack-control-nodes": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "parent_uuid",
+                        "name": "parent_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "parent’s fully-qualified name delimited by ‘:’",
+                        "name": "parent_fq_name_str",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Commna separated object uuids \u003cexample1_uuid\u003e,\u003cexample2_uuid\u003e",
+                        "name": "pobj_uuids",
+                        "in": "query"
+                    },
+                    {
+                        "description": "True if you need detailed data",
+                        "name": "detail",
+                        "in": "query"
+                    },
+                    {
+                        "description": "back_ref_uuid",
+                        "name": "back_ref_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Pagenation start marker",
+                        "name": "page_marker",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Pagenation limit",
+                        "name": "page_limit",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Return only resource counts",
+                        "name": "count",
+                        "in": "query"
+                    },
+                    {
+                        "description": " Comma separated object field list you are interested in",
+                        "name": "fields",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Included shared object in reponse.",
+                        "name": "shared",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Comma separated fileter list. Example check==a,check==b,name==Bob",
+                        "name": "filters",
+                        "in": "query"
+                    },
+                    {
+                        "name": "exclude_hrefs",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "list a resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackControlNodeAPIListType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackControlNodeAPISingleType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Create a resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackControlNodeAPISingleType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            }
+        },
+        "/openstack-monitoring-node/{id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Show resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackMonitoringNodeAPISingleType"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackMonitoringNodeAPISingleType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Update a resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackMonitoringNodeAPISingleType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "delete": {
+                "responses": {
+                    "204": {
+                        "description": "Delete a resource"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            }
+        },
+        "/openstack-monitoring-nodes": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "parent_uuid",
+                        "name": "parent_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "parent’s fully-qualified name delimited by ‘:’",
+                        "name": "parent_fq_name_str",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Commna separated object uuids \u003cexample1_uuid\u003e,\u003cexample2_uuid\u003e",
+                        "name": "pobj_uuids",
+                        "in": "query"
+                    },
+                    {
+                        "description": "True if you need detailed data",
+                        "name": "detail",
+                        "in": "query"
+                    },
+                    {
+                        "description": "back_ref_uuid",
+                        "name": "back_ref_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Pagenation start marker",
+                        "name": "page_marker",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Pagenation limit",
+                        "name": "page_limit",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Return only resource counts",
+                        "name": "count",
+                        "in": "query"
+                    },
+                    {
+                        "description": " Comma separated object field list you are interested in",
+                        "name": "fields",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Included shared object in reponse.",
+                        "name": "shared",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Comma separated fileter list. Example check==a,check==b,name==Bob",
+                        "name": "filters",
+                        "in": "query"
+                    },
+                    {
+                        "name": "exclude_hrefs",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "list a resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackMonitoringNodeAPIListType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackMonitoringNodeAPISingleType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Create a resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackMonitoringNodeAPISingleType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            }
+        },
+        "/openstack-network-node/{id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Show resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackNetworkNodeAPISingleType"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackNetworkNodeAPISingleType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Update a resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackNetworkNodeAPISingleType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "delete": {
+                "responses": {
+                    "204": {
+                        "description": "Delete a resource"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            }
+        },
+        "/openstack-network-nodes": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "parent_uuid",
+                        "name": "parent_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "parent’s fully-qualified name delimited by ‘:’",
+                        "name": "parent_fq_name_str",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Commna separated object uuids \u003cexample1_uuid\u003e,\u003cexample2_uuid\u003e",
+                        "name": "pobj_uuids",
+                        "in": "query"
+                    },
+                    {
+                        "description": "True if you need detailed data",
+                        "name": "detail",
+                        "in": "query"
+                    },
+                    {
+                        "description": "back_ref_uuid",
+                        "name": "back_ref_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Pagenation start marker",
+                        "name": "page_marker",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Pagenation limit",
+                        "name": "page_limit",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Return only resource counts",
+                        "name": "count",
+                        "in": "query"
+                    },
+                    {
+                        "description": " Comma separated object field list you are interested in",
+                        "name": "fields",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Included shared object in reponse.",
+                        "name": "shared",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Comma separated fileter list. Example check==a,check==b,name==Bob",
+                        "name": "filters",
+                        "in": "query"
+                    },
+                    {
+                        "name": "exclude_hrefs",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "list a resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackNetworkNodeAPIListType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackNetworkNodeAPISingleType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Create a resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackNetworkNodeAPISingleType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            }
+        },
+        "/openstack-storage-node/{id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Show resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackStorageNodeAPISingleType"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackStorageNodeAPISingleType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Update a resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackStorageNodeAPISingleType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "delete": {
+                "responses": {
+                    "204": {
+                        "description": "Delete a resource"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            }
+        },
+        "/openstack-storage-nodes": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "parent_uuid",
+                        "name": "parent_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "parent’s fully-qualified name delimited by ‘:’",
+                        "name": "parent_fq_name_str",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Commna separated object uuids \u003cexample1_uuid\u003e,\u003cexample2_uuid\u003e",
+                        "name": "pobj_uuids",
+                        "in": "query"
+                    },
+                    {
+                        "description": "True if you need detailed data",
+                        "name": "detail",
+                        "in": "query"
+                    },
+                    {
+                        "description": "back_ref_uuid",
+                        "name": "back_ref_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Pagenation start marker",
+                        "name": "page_marker",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Pagenation limit",
+                        "name": "page_limit",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Return only resource counts",
+                        "name": "count",
+                        "in": "query"
+                    },
+                    {
+                        "description": " Comma separated object field list you are interested in",
+                        "name": "fields",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Included shared object in reponse.",
+                        "name": "shared",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Comma separated fileter list. Example check==a,check==b,name==Bob",
+                        "name": "filters",
+                        "in": "query"
+                    },
+                    {
+                        "name": "exclude_hrefs",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "list a resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackStorageNodeAPIListType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackStorageNodeAPISingleType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Create a resource",
+                        "schema": {
+                            "$ref": "#/definitions/OpenstackStorageNodeAPISingleType"
                         }
                     },
                     "400": {
@@ -21542,11 +22507,12 @@
                     "default": "2160",
                     "items": null
                 },
-                "contrail_analytics": {
-                    "id": "contrail_analytics",
+                "container_registry": {
+                    "id": "container_registry",
+                    "description": "Container registry to pull contrail containers",
                     "type": "string",
-                    "title": "Contrail Analytics",
-                    "default": "",
+                    "title": "Container Registry",
+                    "default": "opencontrailnightly",
                     "items": null
                 },
                 "contrail_analytics_database_nodes": {
@@ -21563,20 +22529,6 @@
                         "$ref": "#/definitions/ContrailAnalyticsNodeAPIType"
                     }
                 },
-                "contrail_analyticsdb": {
-                    "id": "contrail_analyticsdb",
-                    "type": "string",
-                    "title": "Contrail Analytics Database",
-                    "default": "",
-                    "items": null
-                },
-                "contrail_config": {
-                    "id": "contrail_config",
-                    "type": "string",
-                    "title": "Contrail Config",
-                    "default": "",
-                    "items": null
-                },
                 "contrail_config_database_nodes": {
                     "description": "Parent of this configdb node.",
                     "type": "array",
@@ -21591,32 +22543,11 @@
                         "$ref": "#/definitions/ContrailConfigNodeAPIType"
                     }
                 },
-                "contrail_configdb": {
-                    "id": "contrail_configdb",
-                    "type": "string",
-                    "title": "Contrail Config Database",
-                    "default": "",
-                    "items": null
-                },
-                "contrail_control": {
-                    "id": "contrail_control",
-                    "type": "string",
-                    "title": "Contrail Control",
-                    "default": "",
-                    "items": null
-                },
                 "contrail_control_nodes": {
                     "description": "Parent of this control node.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/ContrailControlNodeAPIType"
-                    }
-                },
-                "contrail_controller_nodes": {
-                    "description": "Parent of this webui node.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/ContrailControllerNodeAPIType"
                     }
                 },
                 "contrail_storage_nodes": {
@@ -21626,11 +22557,11 @@
                         "$ref": "#/definitions/ContrailStorageNodeAPIType"
                     }
                 },
-                "contrail_vrouter": {
-                    "id": "contrail_vrouter",
+                "contrail_version": {
+                    "id": "contrail_version",
+                    "description": "Version of contrail containers to be used.",
                     "type": "string",
-                    "title": "Contrail Vrouter",
-                    "default": "",
+                    "title": "Contrail Version",
                     "items": null
                 },
                 "contrail_vrouter_nodes": {
@@ -21640,20 +22571,12 @@
                         "$ref": "#/definitions/ContrailVrouterNodeAPIType"
                     }
                 },
-                "contrail_webui": {
-                    "id": "contrail_webui",
-                    "type": "string",
-                    "title": "Contrail WebUI",
-                    "default": "",
-                    "items": null
-                },
-                "data_ttl": {
-                    "id": "data_ttl",
-                    "description": "Data Retention Time in hours",
-                    "type": "string",
-                    "title": "Data Retention Time",
-                    "default": "48",
-                    "items": null
+                "contrail_webui_nodes": {
+                    "description": "Parent of this webui node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ContrailWebuiNodeAPIType"
+                    }
                 },
                 "default_gateway": {
                     "id": "default_gateway",
@@ -21706,20 +22629,6 @@
                     "description": "System maintained identity, time  and permissions data.",
                     "$ref": "#/definitions/IdPermsType"
                 },
-                "kubernetes": {
-                    "id": "kubernetes",
-                    "type": "string",
-                    "title": "Kubernetes",
-                    "default": "",
-                    "items": null
-                },
-                "kubernetes_master": {
-                    "id": "kubernetes_master",
-                    "type": "string",
-                    "title": "Kubernetes Master",
-                    "default": "",
-                    "items": null
-                },
                 "kubernetes_master_nodes": {
                     "description": "Parent of this kubernetes master node.",
                     "type": "array",
@@ -21734,12 +22643,76 @@
                         "$ref": "#/definitions/KubernetesNodeAPIType"
                     }
                 },
-                "openstack": {
-                    "id": "openstack",
+                "openstack_compute_nodes": {
+                    "description": "Parent of this openstack_compute node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OpenstackComputeNodeAPIType"
+                    }
+                },
+                "openstack_control_nodes": {
+                    "description": "Parent of this openstack_control node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OpenstackControlNodeAPIType"
+                    }
+                },
+                "openstack_enable_haproxy": {
+                    "id": "openstack_enable_haproxy",
+                    "description": "Configure haproxy in openstack control node",
                     "type": "string",
-                    "title": "Openstack",
-                    "default": "",
+                    "title": "Openstack Enable Haproxy",
+                    "default": "yes",
                     "items": null
+                },
+                "openstack_external_vip": {
+                    "id": "openstack_external_vip",
+                    "description": "VIP for openstack external network",
+                    "type": "string",
+                    "title": "Openstack External VIP",
+                    "items": null
+                },
+                "openstack_external_vip_interface": {
+                    "id": "openstack_external_vip_interface",
+                    "description": "Interface to configure VIP for openstack external network",
+                    "type": "string",
+                    "title": "Openstack External VIP Interface",
+                    "items": null
+                },
+                "openstack_internal_vip": {
+                    "id": "openstack_internal_vip",
+                    "description": "VIP for openstack internal network",
+                    "type": "string",
+                    "title": "Openstack Internal VIP",
+                    "items": null
+                },
+                "openstack_internal_vip_interface": {
+                    "id": "openstack_internal_vip_interface",
+                    "description": "VIP for openstack internal network",
+                    "type": "string",
+                    "title": "Openstack Internal VIP",
+                    "items": null
+                },
+                "openstack_monitoring_nodes": {
+                    "description": "Parent of this openstack_monitoring node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OpenstackMonitoringNodeAPIType"
+                    }
+                },
+                "openstack_network_nodes": {
+                    "description": "Parent of this openstack_network node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OpenstackNetworkNodeAPIType"
+                    }
+                },
+                "openstack_storage_nodes": {
+                    "description": "Parent of this openstack_storage node.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OpenstackStorageNodeAPIType"
+                    }
                 },
                 "orchestrator": {
                     "id": "orchestrator",
@@ -21811,6 +22784,14 @@
                     "type": "string",
                     "title": "Provisioning Status",
                     "default": "CREATED",
+                    "items": null
+                },
+                "rabbitmq_port": {
+                    "id": "rabbitmq_port",
+                    "description": "RabbitMQ port used to connect to RabbitMQ.",
+                    "type": "string",
+                    "title": "RabbitMQ Port",
+                    "default": 5672,
                     "items": null
                 },
                 "statistics_ttl": {
@@ -22195,128 +23176,6 @@
                 }
             }
         },
-        "ContrailControllerNodeAPIListType": {
-            "properties": {
-                "contrail-controller-nodes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/ContrailControllerNodeAPIType"
-                    }
-                }
-            }
-        },
-        "ContrailControllerNodeAPISingleType": {
-            "properties": {
-                "contrail-controller-node": {
-                    "$ref": "#/definitions/ContrailControllerNodeAPIType"
-                }
-            }
-        },
-        "ContrailControllerNodeAPIType": {
-            "type": "object",
-            "items": null,
-            "properties": {
-                "annotations": {
-                    "description": "Dictionary of arbitrary (key, value) on a resource.",
-                    "$ref": "#/definitions/KeyValuePairs"
-                },
-                "display_name": {
-                    "id": "display_name",
-                    "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
-                    "type": "string",
-                    "items": null
-                },
-                "fq_name": {
-                    "id": "fq_name",
-                    "description": "FQ Name of the object",
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "items": null
-                    }
-                },
-                "id_perms": {
-                    "description": "System maintained identity, time  and permissions data.",
-                    "$ref": "#/definitions/IdPermsType"
-                },
-                "node_ref": {
-                    "description": "Reference to node object for this webui node.",
-                    "properties": {
-                        "to": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "uuid": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "parent_type": {
-                    "id": "parent_type",
-                    "description": "Parent resource type",
-                    "type": "string",
-                    "items": null
-                },
-                "parent_uuid": {
-                    "id": "parent_uuid",
-                    "description": "UUID of the parent object",
-                    "type": "string",
-                    "items": null
-                },
-                "perms2": {
-                    "description": "Permissions data for role based access.",
-                    "$ref": "#/definitions/PermType2"
-                },
-                "provisioning_log": {
-                    "id": "provisioning_log",
-                    "description": "Provisioning Log",
-                    "type": "string",
-                    "title": "Provisioning Log",
-                    "default": "",
-                    "items": null
-                },
-                "provisioning_progress": {
-                    "id": "provisioning_progress",
-                    "description": "Provisioning progress 0 - 100%",
-                    "type": "integer",
-                    "title": "Provisioning Progress",
-                    "default": 0,
-                    "items": null
-                },
-                "provisioning_progress_stage": {
-                    "id": "provisioning_progress_stage",
-                    "description": "Provisioning Progress Stage",
-                    "type": "string",
-                    "title": "Provisioning Progress Stage",
-                    "default": "",
-                    "items": null
-                },
-                "provisioning_start_time": {
-                    "id": "provisioning_start_time",
-                    "description": "Time provisioning started",
-                    "type": "string",
-                    "title": "Time provisioning started",
-                    "default": "",
-                    "items": null
-                },
-                "provisioning_state": {
-                    "id": "provisioning_state",
-                    "description": "Provisioning Status",
-                    "type": "string",
-                    "title": "Provisioning Status",
-                    "default": "CREATED",
-                    "items": null
-                },
-                "uuid": {
-                    "id": "uuid",
-                    "description": "UUID of the object, system automatically allocates one if not provided",
-                    "type": "string",
-                    "items": null
-                }
-            }
-        },
         "ContrailStorageNodeAPIListType": {
             "properties": {
                 "contrail-storage-nodes": {
@@ -22620,6 +23479,128 @@
                     "type": "string",
                     "title": "vRouter Type",
                     "default": "kernel",
+                    "items": null
+                }
+            }
+        },
+        "ContrailWebuiNodeAPIListType": {
+            "properties": {
+                "contrail-webui-nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ContrailWebuiNodeAPIType"
+                    }
+                }
+            }
+        },
+        "ContrailWebuiNodeAPISingleType": {
+            "properties": {
+                "contrail-webui-node": {
+                    "$ref": "#/definitions/ContrailWebuiNodeAPIType"
+                }
+            }
+        },
+        "ContrailWebuiNodeAPIType": {
+            "type": "object",
+            "items": null,
+            "properties": {
+                "annotations": {
+                    "description": "Dictionary of arbitrary (key, value) on a resource.",
+                    "$ref": "#/definitions/KeyValuePairs"
+                },
+                "display_name": {
+                    "id": "display_name",
+                    "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
+                    "type": "string",
+                    "items": null
+                },
+                "fq_name": {
+                    "id": "fq_name",
+                    "description": "FQ Name of the object",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "items": null
+                    }
+                },
+                "id_perms": {
+                    "description": "System maintained identity, time  and permissions data.",
+                    "$ref": "#/definitions/IdPermsType"
+                },
+                "node_ref": {
+                    "description": "Reference to node object for this webui node.",
+                    "properties": {
+                        "to": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "uuid": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "parent_type": {
+                    "id": "parent_type",
+                    "description": "Parent resource type",
+                    "type": "string",
+                    "items": null
+                },
+                "parent_uuid": {
+                    "id": "parent_uuid",
+                    "description": "UUID of the parent object",
+                    "type": "string",
+                    "items": null
+                },
+                "perms2": {
+                    "description": "Permissions data for role based access.",
+                    "$ref": "#/definitions/PermType2"
+                },
+                "provisioning_log": {
+                    "id": "provisioning_log",
+                    "description": "Provisioning Log",
+                    "type": "string",
+                    "title": "Provisioning Log",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_progress": {
+                    "id": "provisioning_progress",
+                    "description": "Provisioning progress 0 - 100%",
+                    "type": "integer",
+                    "title": "Provisioning Progress",
+                    "default": 0,
+                    "items": null
+                },
+                "provisioning_progress_stage": {
+                    "id": "provisioning_progress_stage",
+                    "description": "Provisioning Progress Stage",
+                    "type": "string",
+                    "title": "Provisioning Progress Stage",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_start_time": {
+                    "id": "provisioning_start_time",
+                    "description": "Time provisioning started",
+                    "type": "string",
+                    "title": "Time provisioning started",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_state": {
+                    "id": "provisioning_state",
+                    "description": "Provisioning Status",
+                    "type": "string",
+                    "title": "Provisioning Status",
+                    "default": "CREATED",
+                    "items": null
+                },
+                "uuid": {
+                    "id": "uuid",
+                    "description": "UUID of the object, system automatically allocates one if not provided",
+                    "type": "string",
                     "items": null
                 }
             }
@@ -27898,6 +28879,616 @@
                 "type": {
                     "id": "type",
                     "description": "provides a hint as to the type of representation to expect when following the link",
+                    "type": "string",
+                    "items": null
+                }
+            }
+        },
+        "OpenstackComputeNodeAPIListType": {
+            "properties": {
+                "openstack-compute-nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OpenstackComputeNodeAPIType"
+                    }
+                }
+            }
+        },
+        "OpenstackComputeNodeAPISingleType": {
+            "properties": {
+                "openstack-compute-node": {
+                    "$ref": "#/definitions/OpenstackComputeNodeAPIType"
+                }
+            }
+        },
+        "OpenstackComputeNodeAPIType": {
+            "type": "object",
+            "items": null,
+            "properties": {
+                "annotations": {
+                    "description": "Dictionary of arbitrary (key, value) on a resource.",
+                    "$ref": "#/definitions/KeyValuePairs"
+                },
+                "display_name": {
+                    "id": "display_name",
+                    "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
+                    "type": "string",
+                    "items": null
+                },
+                "fq_name": {
+                    "id": "fq_name",
+                    "description": "FQ Name of the object",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "items": null
+                    }
+                },
+                "id_perms": {
+                    "description": "System maintained identity, time  and permissions data.",
+                    "$ref": "#/definitions/IdPermsType"
+                },
+                "node_ref": {
+                    "description": "Reference to node object for this openstack_compute node.",
+                    "properties": {
+                        "to": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "uuid": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "parent_type": {
+                    "id": "parent_type",
+                    "description": "Parent resource type",
+                    "type": "string",
+                    "items": null
+                },
+                "parent_uuid": {
+                    "id": "parent_uuid",
+                    "description": "UUID of the parent object",
+                    "type": "string",
+                    "items": null
+                },
+                "perms2": {
+                    "description": "Permissions data for role based access.",
+                    "$ref": "#/definitions/PermType2"
+                },
+                "provisioning_log": {
+                    "id": "provisioning_log",
+                    "description": "Provisioning Log",
+                    "type": "string",
+                    "title": "Provisioning Log",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_progress": {
+                    "id": "provisioning_progress",
+                    "description": "Provisioning progress 0 - 100%",
+                    "type": "integer",
+                    "title": "Provisioning Progress",
+                    "default": 0,
+                    "items": null
+                },
+                "provisioning_progress_stage": {
+                    "id": "provisioning_progress_stage",
+                    "description": "Provisioning Progress Stage",
+                    "type": "string",
+                    "title": "Provisioning Progress Stage",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_start_time": {
+                    "id": "provisioning_start_time",
+                    "description": "Time provisioning started",
+                    "type": "string",
+                    "title": "Time provisioning started",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_state": {
+                    "id": "provisioning_state",
+                    "description": "Provisioning Status",
+                    "type": "string",
+                    "title": "Provisioning Status",
+                    "default": "CREATED",
+                    "items": null
+                },
+                "uuid": {
+                    "id": "uuid",
+                    "description": "UUID of the object, system automatically allocates one if not provided",
+                    "type": "string",
+                    "items": null
+                }
+            }
+        },
+        "OpenstackControlNodeAPIListType": {
+            "properties": {
+                "openstack-control-nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OpenstackControlNodeAPIType"
+                    }
+                }
+            }
+        },
+        "OpenstackControlNodeAPISingleType": {
+            "properties": {
+                "openstack-control-node": {
+                    "$ref": "#/definitions/OpenstackControlNodeAPIType"
+                }
+            }
+        },
+        "OpenstackControlNodeAPIType": {
+            "type": "object",
+            "items": null,
+            "properties": {
+                "annotations": {
+                    "description": "Dictionary of arbitrary (key, value) on a resource.",
+                    "$ref": "#/definitions/KeyValuePairs"
+                },
+                "display_name": {
+                    "id": "display_name",
+                    "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
+                    "type": "string",
+                    "items": null
+                },
+                "fq_name": {
+                    "id": "fq_name",
+                    "description": "FQ Name of the object",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "items": null
+                    }
+                },
+                "id_perms": {
+                    "description": "System maintained identity, time  and permissions data.",
+                    "$ref": "#/definitions/IdPermsType"
+                },
+                "node_ref": {
+                    "description": "Reference to node object for this openstack_control node.",
+                    "properties": {
+                        "to": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "uuid": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "parent_type": {
+                    "id": "parent_type",
+                    "description": "Parent resource type",
+                    "type": "string",
+                    "items": null
+                },
+                "parent_uuid": {
+                    "id": "parent_uuid",
+                    "description": "UUID of the parent object",
+                    "type": "string",
+                    "items": null
+                },
+                "perms2": {
+                    "description": "Permissions data for role based access.",
+                    "$ref": "#/definitions/PermType2"
+                },
+                "provisioning_log": {
+                    "id": "provisioning_log",
+                    "description": "Provisioning Log",
+                    "type": "string",
+                    "title": "Provisioning Log",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_progress": {
+                    "id": "provisioning_progress",
+                    "description": "Provisioning progress 0 - 100%",
+                    "type": "integer",
+                    "title": "Provisioning Progress",
+                    "default": 0,
+                    "items": null
+                },
+                "provisioning_progress_stage": {
+                    "id": "provisioning_progress_stage",
+                    "description": "Provisioning Progress Stage",
+                    "type": "string",
+                    "title": "Provisioning Progress Stage",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_start_time": {
+                    "id": "provisioning_start_time",
+                    "description": "Time provisioning started",
+                    "type": "string",
+                    "title": "Time provisioning started",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_state": {
+                    "id": "provisioning_state",
+                    "description": "Provisioning Status",
+                    "type": "string",
+                    "title": "Provisioning Status",
+                    "default": "CREATED",
+                    "items": null
+                },
+                "uuid": {
+                    "id": "uuid",
+                    "description": "UUID of the object, system automatically allocates one if not provided",
+                    "type": "string",
+                    "items": null
+                }
+            }
+        },
+        "OpenstackMonitoringNodeAPIListType": {
+            "properties": {
+                "openstack-monitoring-nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OpenstackMonitoringNodeAPIType"
+                    }
+                }
+            }
+        },
+        "OpenstackMonitoringNodeAPISingleType": {
+            "properties": {
+                "openstack-monitoring-node": {
+                    "$ref": "#/definitions/OpenstackMonitoringNodeAPIType"
+                }
+            }
+        },
+        "OpenstackMonitoringNodeAPIType": {
+            "type": "object",
+            "items": null,
+            "properties": {
+                "annotations": {
+                    "description": "Dictionary of arbitrary (key, value) on a resource.",
+                    "$ref": "#/definitions/KeyValuePairs"
+                },
+                "display_name": {
+                    "id": "display_name",
+                    "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
+                    "type": "string",
+                    "items": null
+                },
+                "fq_name": {
+                    "id": "fq_name",
+                    "description": "FQ Name of the object",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "items": null
+                    }
+                },
+                "id_perms": {
+                    "description": "System maintained identity, time  and permissions data.",
+                    "$ref": "#/definitions/IdPermsType"
+                },
+                "node_ref": {
+                    "description": "Reference to node object for this openstack_monitoring node.",
+                    "properties": {
+                        "to": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "uuid": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "parent_type": {
+                    "id": "parent_type",
+                    "description": "Parent resource type",
+                    "type": "string",
+                    "items": null
+                },
+                "parent_uuid": {
+                    "id": "parent_uuid",
+                    "description": "UUID of the parent object",
+                    "type": "string",
+                    "items": null
+                },
+                "perms2": {
+                    "description": "Permissions data for role based access.",
+                    "$ref": "#/definitions/PermType2"
+                },
+                "provisioning_log": {
+                    "id": "provisioning_log",
+                    "description": "Provisioning Log",
+                    "type": "string",
+                    "title": "Provisioning Log",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_progress": {
+                    "id": "provisioning_progress",
+                    "description": "Provisioning progress 0 - 100%",
+                    "type": "integer",
+                    "title": "Provisioning Progress",
+                    "default": 0,
+                    "items": null
+                },
+                "provisioning_progress_stage": {
+                    "id": "provisioning_progress_stage",
+                    "description": "Provisioning Progress Stage",
+                    "type": "string",
+                    "title": "Provisioning Progress Stage",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_start_time": {
+                    "id": "provisioning_start_time",
+                    "description": "Time provisioning started",
+                    "type": "string",
+                    "title": "Time provisioning started",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_state": {
+                    "id": "provisioning_state",
+                    "description": "Provisioning Status",
+                    "type": "string",
+                    "title": "Provisioning Status",
+                    "default": "CREATED",
+                    "items": null
+                },
+                "uuid": {
+                    "id": "uuid",
+                    "description": "UUID of the object, system automatically allocates one if not provided",
+                    "type": "string",
+                    "items": null
+                }
+            }
+        },
+        "OpenstackNetworkNodeAPIListType": {
+            "properties": {
+                "openstack-network-nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OpenstackNetworkNodeAPIType"
+                    }
+                }
+            }
+        },
+        "OpenstackNetworkNodeAPISingleType": {
+            "properties": {
+                "openstack-network-node": {
+                    "$ref": "#/definitions/OpenstackNetworkNodeAPIType"
+                }
+            }
+        },
+        "OpenstackNetworkNodeAPIType": {
+            "type": "object",
+            "items": null,
+            "properties": {
+                "annotations": {
+                    "description": "Dictionary of arbitrary (key, value) on a resource.",
+                    "$ref": "#/definitions/KeyValuePairs"
+                },
+                "display_name": {
+                    "id": "display_name",
+                    "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
+                    "type": "string",
+                    "items": null
+                },
+                "fq_name": {
+                    "id": "fq_name",
+                    "description": "FQ Name of the object",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "items": null
+                    }
+                },
+                "id_perms": {
+                    "description": "System maintained identity, time  and permissions data.",
+                    "$ref": "#/definitions/IdPermsType"
+                },
+                "node_ref": {
+                    "description": "Reference to node object for this openstack_network node.",
+                    "properties": {
+                        "to": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "uuid": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "parent_type": {
+                    "id": "parent_type",
+                    "description": "Parent resource type",
+                    "type": "string",
+                    "items": null
+                },
+                "parent_uuid": {
+                    "id": "parent_uuid",
+                    "description": "UUID of the parent object",
+                    "type": "string",
+                    "items": null
+                },
+                "perms2": {
+                    "description": "Permissions data for role based access.",
+                    "$ref": "#/definitions/PermType2"
+                },
+                "provisioning_log": {
+                    "id": "provisioning_log",
+                    "description": "Provisioning Log",
+                    "type": "string",
+                    "title": "Provisioning Log",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_progress": {
+                    "id": "provisioning_progress",
+                    "description": "Provisioning progress 0 - 100%",
+                    "type": "integer",
+                    "title": "Provisioning Progress",
+                    "default": 0,
+                    "items": null
+                },
+                "provisioning_progress_stage": {
+                    "id": "provisioning_progress_stage",
+                    "description": "Provisioning Progress Stage",
+                    "type": "string",
+                    "title": "Provisioning Progress Stage",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_start_time": {
+                    "id": "provisioning_start_time",
+                    "description": "Time provisioning started",
+                    "type": "string",
+                    "title": "Time provisioning started",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_state": {
+                    "id": "provisioning_state",
+                    "description": "Provisioning Status",
+                    "type": "string",
+                    "title": "Provisioning Status",
+                    "default": "CREATED",
+                    "items": null
+                },
+                "uuid": {
+                    "id": "uuid",
+                    "description": "UUID of the object, system automatically allocates one if not provided",
+                    "type": "string",
+                    "items": null
+                }
+            }
+        },
+        "OpenstackStorageNodeAPIListType": {
+            "properties": {
+                "openstack-storage-nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OpenstackStorageNodeAPIType"
+                    }
+                }
+            }
+        },
+        "OpenstackStorageNodeAPISingleType": {
+            "properties": {
+                "openstack-storage-node": {
+                    "$ref": "#/definitions/OpenstackStorageNodeAPIType"
+                }
+            }
+        },
+        "OpenstackStorageNodeAPIType": {
+            "type": "object",
+            "items": null,
+            "properties": {
+                "annotations": {
+                    "description": "Dictionary of arbitrary (key, value) on a resource.",
+                    "$ref": "#/definitions/KeyValuePairs"
+                },
+                "display_name": {
+                    "id": "display_name",
+                    "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
+                    "type": "string",
+                    "items": null
+                },
+                "fq_name": {
+                    "id": "fq_name",
+                    "description": "FQ Name of the object",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "items": null
+                    }
+                },
+                "id_perms": {
+                    "description": "System maintained identity, time  and permissions data.",
+                    "$ref": "#/definitions/IdPermsType"
+                },
+                "node_ref": {
+                    "description": "Reference to node object for this openstack_storage node.",
+                    "properties": {
+                        "to": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "uuid": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "parent_type": {
+                    "id": "parent_type",
+                    "description": "Parent resource type",
+                    "type": "string",
+                    "items": null
+                },
+                "parent_uuid": {
+                    "id": "parent_uuid",
+                    "description": "UUID of the parent object",
+                    "type": "string",
+                    "items": null
+                },
+                "perms2": {
+                    "description": "Permissions data for role based access.",
+                    "$ref": "#/definitions/PermType2"
+                },
+                "provisioning_log": {
+                    "id": "provisioning_log",
+                    "description": "Provisioning Log",
+                    "type": "string",
+                    "title": "Provisioning Log",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_progress": {
+                    "id": "provisioning_progress",
+                    "description": "Provisioning progress 0 - 100%",
+                    "type": "integer",
+                    "title": "Provisioning Progress",
+                    "default": 0,
+                    "items": null
+                },
+                "provisioning_progress_stage": {
+                    "id": "provisioning_progress_stage",
+                    "description": "Provisioning Progress Stage",
+                    "type": "string",
+                    "title": "Provisioning Progress Stage",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_start_time": {
+                    "id": "provisioning_start_time",
+                    "description": "Time provisioning started",
+                    "type": "string",
+                    "title": "Time provisioning started",
+                    "default": "",
+                    "items": null
+                },
+                "provisioning_state": {
+                    "id": "provisioning_state",
+                    "description": "Provisioning Status",
+                    "type": "string",
+                    "title": "Provisioning Status",
+                    "default": "CREATED",
+                    "items": null
+                },
+                "uuid": {
+                    "id": "uuid",
+                    "description": "UUID of the object, system automatically allocates one if not provided",
                     "type": "string",
                     "items": null
                 }

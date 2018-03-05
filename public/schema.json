@@ -28120,9 +28120,10 @@
                         "minimum": 0,
                         "maximum": 0
                     },
-                    "contrail_analytics": {
-                        "title": "Contrail Analytics",
-                        "default": "",
+                    "container_registry": {
+                        "title": "Container Registry",
+                        "description": "Container registry to pull contrail containers",
+                        "default": "opencontrailnightly",
                         "type": "string",
                         "permission": [
                             "create",
@@ -28131,76 +28132,9 @@
                         "minimum": 0,
                         "maximum": 0
                     },
-                    "contrail_analyticsdb": {
-                        "title": "Contrail Analytics Database",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "contrail_config": {
-                        "title": "Contrail Config",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "contrail_configdb": {
-                        "title": "Contrail Config Database",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "contrail_control": {
-                        "title": "Contrail Control",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "contrail_vrouter": {
-                        "title": "Contrail Vrouter",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "contrail_webui": {
-                        "title": "Contrail WebUI",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "data_ttl": {
-                        "title": "Data Retention Time",
-                        "description": "Data Retention Time in hours",
-                        "default": "48",
+                    "contrail_version": {
+                        "title": "Contrail Version",
+                        "description": "Version of contrail containers to be used.",
                         "type": "string",
                         "permission": [
                             "create",
@@ -28351,9 +28285,10 @@
                         "minimum": 0,
                         "maximum": 0
                     },
-                    "kubernetes": {
-                        "title": "Kubernetes",
-                        "default": "",
+                    "openstack_enable_haproxy": {
+                        "title": "Openstack Enable Haproxy",
+                        "description": "Configure haproxy in openstack control node",
+                        "default": "yes",
                         "type": "string",
                         "permission": [
                             "create",
@@ -28362,9 +28297,9 @@
                         "minimum": 0,
                         "maximum": 0
                     },
-                    "kubernetes_master": {
-                        "title": "Kubernetes Master",
-                        "default": "",
+                    "openstack_external_vip": {
+                        "title": "Openstack External VIP",
+                        "description": "VIP for openstack external network",
                         "type": "string",
                         "permission": [
                             "create",
@@ -28373,9 +28308,31 @@
                         "minimum": 0,
                         "maximum": 0
                     },
-                    "openstack": {
-                        "title": "Openstack",
-                        "default": "",
+                    "openstack_external_vip_interface": {
+                        "title": "Openstack External VIP Interface",
+                        "description": "Interface to configure VIP for openstack external network",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "openstack_internal_vip": {
+                        "title": "Openstack Internal VIP",
+                        "description": "VIP for openstack internal network",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "openstack_internal_vip_interface": {
+                        "title": "Openstack Internal VIP",
+                        "description": "VIP for openstack internal network",
                         "type": "string",
                         "permission": [
                             "create",
@@ -28548,6 +28505,18 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "rabbitmq_port": {
+                        "title": "RabbitMQ Port",
+                        "description": "RabbitMQ port used to connect to RabbitMQ.",
+                        "default": 5672,
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "statistics_ttl": {
                         "title": "Statistics Data Retention Time",
                         "description": "Statistics Data Retention Time in hours",
@@ -28581,25 +28550,22 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "container_registry",
+                    "contrail_version",
+                    "rabbitmq_port",
                     "provisioner_type",
                     "orchestrator",
-                    "kubernetes",
-                    "kubernetes_master",
-                    "openstack",
                     "config_audit_ttl",
-                    "contrail_config",
-                    "contrail_configdb",
-                    "contrail_control",
-                    "contrail_webui",
-                    "contrail_analytics",
-                    "contrail_analyticsdb",
-                    "contrail_vrouter",
-                    "data_ttl",
                     "default_gateway",
                     "default_vrouter_bond_interface",
                     "default_vrouter_bond_interface_members",
                     "flow_ttl",
-                    "statistics_ttl"
+                    "statistics_ttl",
+                    "openstack_internal_vip",
+                    "openstack_external_vip",
+                    "openstack_internal_vip_interface",
+                    "openstack_external_vip_interface",
+                    "openstack_enable_haproxy"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -30274,10 +30240,10 @@
             ]
         },
         {
-            "id": "contrail_controller_node",
-            "plural": "contrail_controller_nodes",
-            "title": "Contrail Controller Node",
-            "description": "Contrail Controller Node",
+            "id": "contrail_webui_node",
+            "plural": "contrail_webui_nodes",
+            "title": "Contrail Webui Node",
+            "description": "Contrail Webui Node",
             "parents": {
                 "contrail_cluster": {
                     "description": "Parent of this webui node.",
@@ -33388,6 +33354,1561 @@
             },
             "extends": [
                 "base"
+            ]
+        },
+        {
+            "id": "openstack_compute_node",
+            "plural": "openstack_compute_nodes",
+            "title": "openstack_compute Node",
+            "description": "Openstack Compute Node",
+            "parents": {
+                "contrail_cluster": {
+                    "description": "Parent of this openstack_compute node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
+            "references": {
+                "node": {
+                    "description": "Reference to node object for this openstack_compute node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
+            "prefix": "/",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "annotations": {
+                        "description": "Dictionary of arbitrary (key, value) on a resource.",
+                        "type": "object",
+                        "properties": {
+                            "key_value_pair": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "display_name": {
+                        "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "fq_name": {
+                        "description": "FQ Name of the object",
+                        "type": "array",
+                        "minimum": 0,
+                        "maximum": 0,
+                        "items": {
+                            "type": "string",
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    },
+                    "id_perms": {
+                        "description": "System maintained identity, time  and permissions data.",
+                        "type": "object",
+                        "properties": {
+                            "created": {
+                                "description": "Time when this object was created",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "creator": {
+                                "description": "Id of tenant who created this object",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "description": {
+                                "description": "User provided text",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "enable": {
+                                "description": "Administratively Enable/Disable this object",
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "last_modified": {
+                                "description": "Time when this object was created",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "permissions": {
+                                "description": "No longer used, will be removed",
+                                "type": "object",
+                                "properties": {
+                                    "group": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "group_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "other_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    }
+                                },
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "user_visible": {
+                                "description": "System created internal objects will have this flag set and will not be visible",
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_type": {
+                        "description": "Parent resource type",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_uuid": {
+                        "description": "UUID of the parent object",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "perms2": {
+                        "description": "Permissions data for role based access.",
+                        "type": "object",
+                        "properties": {
+                            "global_access": {
+                                "description": "Globally(others) shared object and permissions for others of the object",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner": {
+                                "description": "Owner tenant of the object",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner_access": {
+                                "description": "Owner permissions of the object",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "share": {
+                                "description": "Selectively shared object, List of (tenant, permissions)",
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tenant": {
+                                            "description": "Name of tenant with whom the object is shared",
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "tenant_access": {
+                                            "description": "Allowed permissions in sharing",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_log": {
+                        "title": "Provisioning Log",
+                        "description": "Provisioning Log",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress": {
+                        "title": "Provisioning Progress",
+                        "description": "Provisioning progress 0 - 100%",
+                        "default": 0,
+                        "type": "integer",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress_stage": {
+                        "title": "Provisioning Progress Stage",
+                        "description": "Provisioning Progress Stage",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_start_time": {
+                        "title": "Time provisioning started",
+                        "description": "Time provisioning started",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_state": {
+                        "title": "Provisioning Status",
+                        "description": "Provisioning Status",
+                        "default": "CREATED",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "enum": [
+                            "CREATED",
+                            "IN_CREATE_PROGRESS",
+                            "UPDATED",
+                            "IN_UPDATE_PROGRESS",
+                            "DELETED",
+                            "IN_DELETE_PROGRESS",
+                            "ERROR"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "uuid": {
+                        "description": "UUID of the object, system automatically allocates one if not provided",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    }
+                },
+                "propertiesOrder": [
+                    "provisioning_log",
+                    "provisioning_progress",
+                    "provisioning_progress_stage",
+                    "provisioning_start_time",
+                    "provisioning_state",
+                    "uuid",
+                    "parent_uuid",
+                    "parent_type",
+                    "fq_name",
+                    "id_perms",
+                    "display_name",
+                    "annotations",
+                    "perms2"
+                ],
+                "minimum": 0,
+                "maximum": 0
+            },
+            "extends": [
+                "base",
+                "has_status"
+            ]
+        },
+        {
+            "id": "openstack_control_node",
+            "plural": "openstack_control_nodes",
+            "title": "openstack_control Node",
+            "description": "Openstack Control Node",
+            "parents": {
+                "contrail_cluster": {
+                    "description": "Parent of this openstack_control node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
+            "references": {
+                "node": {
+                    "description": "Reference to node object for this openstack_control node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
+            "prefix": "/",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "annotations": {
+                        "description": "Dictionary of arbitrary (key, value) on a resource.",
+                        "type": "object",
+                        "properties": {
+                            "key_value_pair": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "display_name": {
+                        "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "fq_name": {
+                        "description": "FQ Name of the object",
+                        "type": "array",
+                        "minimum": 0,
+                        "maximum": 0,
+                        "items": {
+                            "type": "string",
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    },
+                    "id_perms": {
+                        "description": "System maintained identity, time  and permissions data.",
+                        "type": "object",
+                        "properties": {
+                            "created": {
+                                "description": "Time when this object was created",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "creator": {
+                                "description": "Id of tenant who created this object",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "description": {
+                                "description": "User provided text",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "enable": {
+                                "description": "Administratively Enable/Disable this object",
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "last_modified": {
+                                "description": "Time when this object was created",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "permissions": {
+                                "description": "No longer used, will be removed",
+                                "type": "object",
+                                "properties": {
+                                    "group": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "group_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "other_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    }
+                                },
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "user_visible": {
+                                "description": "System created internal objects will have this flag set and will not be visible",
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_type": {
+                        "description": "Parent resource type",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_uuid": {
+                        "description": "UUID of the parent object",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "perms2": {
+                        "description": "Permissions data for role based access.",
+                        "type": "object",
+                        "properties": {
+                            "global_access": {
+                                "description": "Globally(others) shared object and permissions for others of the object",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner": {
+                                "description": "Owner tenant of the object",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner_access": {
+                                "description": "Owner permissions of the object",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "share": {
+                                "description": "Selectively shared object, List of (tenant, permissions)",
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tenant": {
+                                            "description": "Name of tenant with whom the object is shared",
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "tenant_access": {
+                                            "description": "Allowed permissions in sharing",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_log": {
+                        "title": "Provisioning Log",
+                        "description": "Provisioning Log",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress": {
+                        "title": "Provisioning Progress",
+                        "description": "Provisioning progress 0 - 100%",
+                        "default": 0,
+                        "type": "integer",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress_stage": {
+                        "title": "Provisioning Progress Stage",
+                        "description": "Provisioning Progress Stage",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_start_time": {
+                        "title": "Time provisioning started",
+                        "description": "Time provisioning started",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_state": {
+                        "title": "Provisioning Status",
+                        "description": "Provisioning Status",
+                        "default": "CREATED",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "enum": [
+                            "CREATED",
+                            "IN_CREATE_PROGRESS",
+                            "UPDATED",
+                            "IN_UPDATE_PROGRESS",
+                            "DELETED",
+                            "IN_DELETE_PROGRESS",
+                            "ERROR"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "uuid": {
+                        "description": "UUID of the object, system automatically allocates one if not provided",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    }
+                },
+                "propertiesOrder": [
+                    "provisioning_log",
+                    "provisioning_progress",
+                    "provisioning_progress_stage",
+                    "provisioning_start_time",
+                    "provisioning_state",
+                    "uuid",
+                    "parent_uuid",
+                    "parent_type",
+                    "fq_name",
+                    "id_perms",
+                    "display_name",
+                    "annotations",
+                    "perms2"
+                ],
+                "minimum": 0,
+                "maximum": 0
+            },
+            "extends": [
+                "base",
+                "has_status"
+            ]
+        },
+        {
+            "id": "openstack_monitoring_node",
+            "plural": "openstack_monitoring_nodes",
+            "title": "openstack_monitoring Node",
+            "description": "Openstack Monitoring Node",
+            "parents": {
+                "contrail_cluster": {
+                    "description": "Parent of this openstack_monitoring node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
+            "references": {
+                "node": {
+                    "description": "Reference to node object for this openstack_monitoring node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
+            "prefix": "/",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "annotations": {
+                        "description": "Dictionary of arbitrary (key, value) on a resource.",
+                        "type": "object",
+                        "properties": {
+                            "key_value_pair": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "display_name": {
+                        "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "fq_name": {
+                        "description": "FQ Name of the object",
+                        "type": "array",
+                        "minimum": 0,
+                        "maximum": 0,
+                        "items": {
+                            "type": "string",
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    },
+                    "id_perms": {
+                        "description": "System maintained identity, time  and permissions data.",
+                        "type": "object",
+                        "properties": {
+                            "created": {
+                                "description": "Time when this object was created",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "creator": {
+                                "description": "Id of tenant who created this object",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "description": {
+                                "description": "User provided text",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "enable": {
+                                "description": "Administratively Enable/Disable this object",
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "last_modified": {
+                                "description": "Time when this object was created",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "permissions": {
+                                "description": "No longer used, will be removed",
+                                "type": "object",
+                                "properties": {
+                                    "group": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "group_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "other_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    }
+                                },
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "user_visible": {
+                                "description": "System created internal objects will have this flag set and will not be visible",
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_type": {
+                        "description": "Parent resource type",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_uuid": {
+                        "description": "UUID of the parent object",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "perms2": {
+                        "description": "Permissions data for role based access.",
+                        "type": "object",
+                        "properties": {
+                            "global_access": {
+                                "description": "Globally(others) shared object and permissions for others of the object",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner": {
+                                "description": "Owner tenant of the object",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner_access": {
+                                "description": "Owner permissions of the object",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "share": {
+                                "description": "Selectively shared object, List of (tenant, permissions)",
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tenant": {
+                                            "description": "Name of tenant with whom the object is shared",
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "tenant_access": {
+                                            "description": "Allowed permissions in sharing",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_log": {
+                        "title": "Provisioning Log",
+                        "description": "Provisioning Log",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress": {
+                        "title": "Provisioning Progress",
+                        "description": "Provisioning progress 0 - 100%",
+                        "default": 0,
+                        "type": "integer",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress_stage": {
+                        "title": "Provisioning Progress Stage",
+                        "description": "Provisioning Progress Stage",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_start_time": {
+                        "title": "Time provisioning started",
+                        "description": "Time provisioning started",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_state": {
+                        "title": "Provisioning Status",
+                        "description": "Provisioning Status",
+                        "default": "CREATED",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "enum": [
+                            "CREATED",
+                            "IN_CREATE_PROGRESS",
+                            "UPDATED",
+                            "IN_UPDATE_PROGRESS",
+                            "DELETED",
+                            "IN_DELETE_PROGRESS",
+                            "ERROR"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "uuid": {
+                        "description": "UUID of the object, system automatically allocates one if not provided",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    }
+                },
+                "propertiesOrder": [
+                    "provisioning_log",
+                    "provisioning_progress",
+                    "provisioning_progress_stage",
+                    "provisioning_start_time",
+                    "provisioning_state",
+                    "uuid",
+                    "parent_uuid",
+                    "parent_type",
+                    "fq_name",
+                    "id_perms",
+                    "display_name",
+                    "annotations",
+                    "perms2"
+                ],
+                "minimum": 0,
+                "maximum": 0
+            },
+            "extends": [
+                "base",
+                "has_status"
+            ]
+        },
+        {
+            "id": "openstack_network_node",
+            "plural": "openstack_network_nodes",
+            "title": "openstack_network Node",
+            "description": "Openstack Network Node",
+            "parents": {
+                "contrail_cluster": {
+                    "description": "Parent of this openstack_network node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
+            "references": {
+                "node": {
+                    "description": "Reference to node object for this openstack_network node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
+            "prefix": "/",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "annotations": {
+                        "description": "Dictionary of arbitrary (key, value) on a resource.",
+                        "type": "object",
+                        "properties": {
+                            "key_value_pair": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "display_name": {
+                        "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "fq_name": {
+                        "description": "FQ Name of the object",
+                        "type": "array",
+                        "minimum": 0,
+                        "maximum": 0,
+                        "items": {
+                            "type": "string",
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    },
+                    "id_perms": {
+                        "description": "System maintained identity, time  and permissions data.",
+                        "type": "object",
+                        "properties": {
+                            "created": {
+                                "description": "Time when this object was created",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "creator": {
+                                "description": "Id of tenant who created this object",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "description": {
+                                "description": "User provided text",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "enable": {
+                                "description": "Administratively Enable/Disable this object",
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "last_modified": {
+                                "description": "Time when this object was created",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "permissions": {
+                                "description": "No longer used, will be removed",
+                                "type": "object",
+                                "properties": {
+                                    "group": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "group_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "other_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    }
+                                },
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "user_visible": {
+                                "description": "System created internal objects will have this flag set and will not be visible",
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_type": {
+                        "description": "Parent resource type",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_uuid": {
+                        "description": "UUID of the parent object",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "perms2": {
+                        "description": "Permissions data for role based access.",
+                        "type": "object",
+                        "properties": {
+                            "global_access": {
+                                "description": "Globally(others) shared object and permissions for others of the object",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner": {
+                                "description": "Owner tenant of the object",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner_access": {
+                                "description": "Owner permissions of the object",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "share": {
+                                "description": "Selectively shared object, List of (tenant, permissions)",
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tenant": {
+                                            "description": "Name of tenant with whom the object is shared",
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "tenant_access": {
+                                            "description": "Allowed permissions in sharing",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_log": {
+                        "title": "Provisioning Log",
+                        "description": "Provisioning Log",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress": {
+                        "title": "Provisioning Progress",
+                        "description": "Provisioning progress 0 - 100%",
+                        "default": 0,
+                        "type": "integer",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress_stage": {
+                        "title": "Provisioning Progress Stage",
+                        "description": "Provisioning Progress Stage",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_start_time": {
+                        "title": "Time provisioning started",
+                        "description": "Time provisioning started",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_state": {
+                        "title": "Provisioning Status",
+                        "description": "Provisioning Status",
+                        "default": "CREATED",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "enum": [
+                            "CREATED",
+                            "IN_CREATE_PROGRESS",
+                            "UPDATED",
+                            "IN_UPDATE_PROGRESS",
+                            "DELETED",
+                            "IN_DELETE_PROGRESS",
+                            "ERROR"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "uuid": {
+                        "description": "UUID of the object, system automatically allocates one if not provided",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    }
+                },
+                "propertiesOrder": [
+                    "provisioning_log",
+                    "provisioning_progress",
+                    "provisioning_progress_stage",
+                    "provisioning_start_time",
+                    "provisioning_state",
+                    "uuid",
+                    "parent_uuid",
+                    "parent_type",
+                    "fq_name",
+                    "id_perms",
+                    "display_name",
+                    "annotations",
+                    "perms2"
+                ],
+                "minimum": 0,
+                "maximum": 0
+            },
+            "extends": [
+                "base",
+                "has_status"
+            ]
+        },
+        {
+            "id": "openstack_storage_node",
+            "plural": "openstack_storage_nodes",
+            "title": "openstack_storage Node",
+            "description": "Openstack Storage Node",
+            "parents": {
+                "contrail_cluster": {
+                    "description": "Parent of this openstack_storage node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
+            "references": {
+                "node": {
+                    "description": "Reference to node object for this openstack_storage node.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
+            "prefix": "/",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "annotations": {
+                        "description": "Dictionary of arbitrary (key, value) on a resource.",
+                        "type": "object",
+                        "properties": {
+                            "key_value_pair": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "display_name": {
+                        "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "fq_name": {
+                        "description": "FQ Name of the object",
+                        "type": "array",
+                        "minimum": 0,
+                        "maximum": 0,
+                        "items": {
+                            "type": "string",
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    },
+                    "id_perms": {
+                        "description": "System maintained identity, time  and permissions data.",
+                        "type": "object",
+                        "properties": {
+                            "created": {
+                                "description": "Time when this object was created",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "creator": {
+                                "description": "Id of tenant who created this object",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "description": {
+                                "description": "User provided text",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "enable": {
+                                "description": "Administratively Enable/Disable this object",
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "last_modified": {
+                                "description": "Time when this object was created",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "permissions": {
+                                "description": "No longer used, will be removed",
+                                "type": "object",
+                                "properties": {
+                                    "group": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "group_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "other_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    }
+                                },
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "user_visible": {
+                                "description": "System created internal objects will have this flag set and will not be visible",
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_type": {
+                        "description": "Parent resource type",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_uuid": {
+                        "description": "UUID of the parent object",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "perms2": {
+                        "description": "Permissions data for role based access.",
+                        "type": "object",
+                        "properties": {
+                            "global_access": {
+                                "description": "Globally(others) shared object and permissions for others of the object",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner": {
+                                "description": "Owner tenant of the object",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner_access": {
+                                "description": "Owner permissions of the object",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "share": {
+                                "description": "Selectively shared object, List of (tenant, permissions)",
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tenant": {
+                                            "description": "Name of tenant with whom the object is shared",
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "tenant_access": {
+                                            "description": "Allowed permissions in sharing",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_log": {
+                        "title": "Provisioning Log",
+                        "description": "Provisioning Log",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress": {
+                        "title": "Provisioning Progress",
+                        "description": "Provisioning progress 0 - 100%",
+                        "default": 0,
+                        "type": "integer",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_progress_stage": {
+                        "title": "Provisioning Progress Stage",
+                        "description": "Provisioning Progress Stage",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_start_time": {
+                        "title": "Time provisioning started",
+                        "description": "Time provisioning started",
+                        "default": "",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "provisioning_state": {
+                        "title": "Provisioning Status",
+                        "description": "Provisioning Status",
+                        "default": "CREATED",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "enum": [
+                            "CREATED",
+                            "IN_CREATE_PROGRESS",
+                            "UPDATED",
+                            "IN_UPDATE_PROGRESS",
+                            "DELETED",
+                            "IN_DELETE_PROGRESS",
+                            "ERROR"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "uuid": {
+                        "description": "UUID of the object, system automatically allocates one if not provided",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    }
+                },
+                "propertiesOrder": [
+                    "provisioning_log",
+                    "provisioning_progress",
+                    "provisioning_progress_stage",
+                    "provisioning_start_time",
+                    "provisioning_state",
+                    "uuid",
+                    "parent_uuid",
+                    "parent_type",
+                    "fq_name",
+                    "id_perms",
+                    "display_name",
+                    "annotations",
+                    "perms2"
+                ],
+                "minimum": 0,
+                "maximum": 0
+            },
+            "extends": [
+                "base",
+                "has_status"
             ]
         },
         {

@@ -72,17 +72,6 @@ var ProjectFields = []string{
 // ProjectRefFields is db reference fields for Project
 var ProjectRefFields = map[string][]string{
 
-	"alias_ip_pool": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"namespace": []string{
-		// <schema.Schema Value>
-		"ip_prefix",
-		"ip_prefix_len",
-	},
-
 	"application_policy_set": []string{
 	// <schema.Schema Value>
 
@@ -91,6 +80,17 @@ var ProjectRefFields = map[string][]string{
 	"floating_ip_pool": []string{
 	// <schema.Schema Value>
 
+	},
+
+	"alias_ip_pool": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"namespace": []string{
+		// <schema.Schema Value>
+		"ip_prefix_len",
+		"ip_prefix",
 	},
 }
 
@@ -1049,7 +1049,7 @@ var ProjectParents = []string{
 
 const insertProjectAliasIPPoolQuery = "insert into `ref_project_alias_ip_pool` (`from`, `to` ) values (?, ?);"
 
-const insertProjectNamespaceQuery = "insert into `ref_project_namespace` (`from`, `to` ,`ip_prefix`,`ip_prefix_len`) values (?, ?,?,?);"
+const insertProjectNamespaceQuery = "insert into `ref_project_namespace` (`from`, `to` ,`ip_prefix_len`,`ip_prefix`) values (?, ?,?,?);"
 
 const insertProjectApplicationPolicySetQuery = "insert into `ref_project_application_policy_set` (`from`, `to` ) values (?, ?);"
 
@@ -1148,8 +1148,8 @@ func (db *DB) createProject(
 			ref.Attr = &models.SubnetType{}
 		}
 
-		_, err = stmtNamespaceRef.ExecContext(ctx, model.UUID, ref.UUID, string(ref.Attr.GetIPPrefix()),
-			int(ref.Attr.GetIPPrefixLen()))
+		_, err = stmtNamespaceRef.ExecContext(ctx, model.UUID, ref.UUID, int(ref.Attr.GetIPPrefixLen()),
+			string(ref.Attr.GetIPPrefix()))
 		if err != nil {
 			return errors.Wrap(err, "NamespaceRefs create failed")
 		}

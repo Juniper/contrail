@@ -2707,6 +2707,7 @@ create table contrail_analytics_node (
 create table contrail_cluster (
     `uuid` varchar(255),
     `statistics_ttl` varchar(255),
+    `rabbitmq_port` varchar(255),
     `provisioning_state` varchar(255),
     `provisioning_start_time` varchar(255),
     `provisioning_progress_stage` varchar(255),
@@ -2720,9 +2721,11 @@ create table contrail_cluster (
     `parent_uuid` varchar(255),
     `parent_type` varchar(255),
     `orchestrator` varchar(255),
-    `openstack` varchar(255),
-    `kubernetes_master` varchar(255),
-    `kubernetes` varchar(255),
+    `openstack_internal_vip_interface` varchar(255),
+    `openstack_internal_vip` varchar(255),
+    `openstack_external_vip_interface` varchar(255),
+    `openstack_external_vip` varchar(255),
+    `openstack_enable_haproxy` varchar(255),
     `user_visible` bool,
     `permissions_owner_access` int,
     `permissions_owner` varchar(255),
@@ -2740,14 +2743,8 @@ create table contrail_cluster (
     `default_vrouter_bond_interface_members` varchar(255),
     `default_vrouter_bond_interface` varchar(255),
     `default_gateway` varchar(255),
-    `data_ttl` varchar(255),
-    `contrail_webui` varchar(255),
-    `contrail_vrouter` varchar(255),
-    `contrail_control` varchar(255),
-    `contrail_configdb` varchar(255),
-    `contrail_config` varchar(255),
-    `contrail_analyticsdb` varchar(255),
-    `contrail_analytics` varchar(255),
+    `contrail_version` varchar(255),
+    `container_registry` varchar(255),
     `config_audit_ttl` varchar(255),
     `key_value_pair` json,
      primary key(`uuid`),
@@ -2923,7 +2920,7 @@ create table contrail_vrouter_node (
     ) CHARACTER SET utf8mb4;
 
 
-create table contrail_controller_node (
+create table contrail_webui_node (
     `uuid` varchar(255),
     `provisioning_state` varchar(255),
     `provisioning_start_time` varchar(255),
@@ -3258,6 +3255,166 @@ create table node (
     ) CHARACTER SET utf8mb4;
 
 
+create table openstack_compute_node (
+    `uuid` varchar(255),
+    `provisioning_state` varchar(255),
+    `provisioning_start_time` varchar(255),
+    `provisioning_progress_stage` varchar(255),
+    `provisioning_progress` int,
+    `provisioning_log` text,
+    `share` json,
+    `owner_access` int,
+    `owner` varchar(255),
+    `global_access` int,
+    `parent_uuid` varchar(255),
+    `parent_type` varchar(255),
+    `user_visible` bool,
+    `permissions_owner_access` int,
+    `permissions_owner` varchar(255),
+    `other_access` int,
+    `group_access` int,
+    `group` varchar(255),
+    `last_modified` varchar(255),
+    `enable` bool,
+    `description` varchar(255),
+    `creator` varchar(255),
+    `created` varchar(255),
+    `fq_name` json,
+    `display_name` varchar(255),
+    `key_value_pair` json,
+     primary key(`uuid`),
+    index parent_uuid_index (`parent_uuid`)
+    ) CHARACTER SET utf8mb4;
+
+
+create table openstack_control_node (
+    `uuid` varchar(255),
+    `provisioning_state` varchar(255),
+    `provisioning_start_time` varchar(255),
+    `provisioning_progress_stage` varchar(255),
+    `provisioning_progress` int,
+    `provisioning_log` text,
+    `share` json,
+    `owner_access` int,
+    `owner` varchar(255),
+    `global_access` int,
+    `parent_uuid` varchar(255),
+    `parent_type` varchar(255),
+    `user_visible` bool,
+    `permissions_owner_access` int,
+    `permissions_owner` varchar(255),
+    `other_access` int,
+    `group_access` int,
+    `group` varchar(255),
+    `last_modified` varchar(255),
+    `enable` bool,
+    `description` varchar(255),
+    `creator` varchar(255),
+    `created` varchar(255),
+    `fq_name` json,
+    `display_name` varchar(255),
+    `key_value_pair` json,
+     primary key(`uuid`),
+    index parent_uuid_index (`parent_uuid`)
+    ) CHARACTER SET utf8mb4;
+
+
+create table openstack_monitoring_node (
+    `uuid` varchar(255),
+    `provisioning_state` varchar(255),
+    `provisioning_start_time` varchar(255),
+    `provisioning_progress_stage` varchar(255),
+    `provisioning_progress` int,
+    `provisioning_log` text,
+    `share` json,
+    `owner_access` int,
+    `owner` varchar(255),
+    `global_access` int,
+    `parent_uuid` varchar(255),
+    `parent_type` varchar(255),
+    `user_visible` bool,
+    `permissions_owner_access` int,
+    `permissions_owner` varchar(255),
+    `other_access` int,
+    `group_access` int,
+    `group` varchar(255),
+    `last_modified` varchar(255),
+    `enable` bool,
+    `description` varchar(255),
+    `creator` varchar(255),
+    `created` varchar(255),
+    `fq_name` json,
+    `display_name` varchar(255),
+    `key_value_pair` json,
+     primary key(`uuid`),
+    index parent_uuid_index (`parent_uuid`)
+    ) CHARACTER SET utf8mb4;
+
+
+create table openstack_network_node (
+    `uuid` varchar(255),
+    `provisioning_state` varchar(255),
+    `provisioning_start_time` varchar(255),
+    `provisioning_progress_stage` varchar(255),
+    `provisioning_progress` int,
+    `provisioning_log` text,
+    `share` json,
+    `owner_access` int,
+    `owner` varchar(255),
+    `global_access` int,
+    `parent_uuid` varchar(255),
+    `parent_type` varchar(255),
+    `user_visible` bool,
+    `permissions_owner_access` int,
+    `permissions_owner` varchar(255),
+    `other_access` int,
+    `group_access` int,
+    `group` varchar(255),
+    `last_modified` varchar(255),
+    `enable` bool,
+    `description` varchar(255),
+    `creator` varchar(255),
+    `created` varchar(255),
+    `fq_name` json,
+    `display_name` varchar(255),
+    `key_value_pair` json,
+     primary key(`uuid`),
+    index parent_uuid_index (`parent_uuid`)
+    ) CHARACTER SET utf8mb4;
+
+
+create table openstack_storage_node (
+    `uuid` varchar(255),
+    `provisioning_state` varchar(255),
+    `provisioning_start_time` varchar(255),
+    `provisioning_progress_stage` varchar(255),
+    `provisioning_progress` int,
+    `provisioning_log` text,
+    `share` json,
+    `owner_access` int,
+    `owner` varchar(255),
+    `global_access` int,
+    `parent_uuid` varchar(255),
+    `parent_type` varchar(255),
+    `user_visible` bool,
+    `permissions_owner_access` int,
+    `permissions_owner` varchar(255),
+    `other_access` int,
+    `group_access` int,
+    `group` varchar(255),
+    `last_modified` varchar(255),
+    `enable` bool,
+    `description` varchar(255),
+    `creator` varchar(255),
+    `created` varchar(255),
+    `fq_name` json,
+    `display_name` varchar(255),
+    `key_value_pair` json,
+     primary key(`uuid`),
+    index parent_uuid_index (`parent_uuid`)
+    ) CHARACTER SET utf8mb4;
+
+
 create table server (
     `uuid` varchar(255),
     `user_id` int,
@@ -3479,20 +3636,20 @@ create table domain_share_alias_ip_pool (
 
 
 
-create table ref_alias_ip_project (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-     foreign key (`from`) references alias_ip(uuid) on delete cascade, 
-    foreign key (`to`) references project(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
 create table ref_alias_ip_virtual_machine_interface (
     `from` varchar(255),
     `to` varchar(255),
     primary key (`from`,`to`),
      foreign key (`from`) references alias_ip(uuid) on delete cascade, 
     foreign key (`to`) references virtual_machine_interface(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+create table ref_alias_ip_project (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references alias_ip(uuid) on delete cascade, 
+    foreign key (`to`) references project(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 
@@ -3616,20 +3773,20 @@ create table domain_share_application_policy_set (
 
 
 
-create table ref_bgp_as_a_service_virtual_machine_interface (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-     foreign key (`from`) references bgp_as_a_service(uuid) on delete cascade, 
-    foreign key (`to`) references virtual_machine_interface(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
 create table ref_bgp_as_a_service_service_health_check (
     `from` varchar(255),
     `to` varchar(255),
     primary key (`from`,`to`),
      foreign key (`from`) references bgp_as_a_service(uuid) on delete cascade, 
     foreign key (`to`) references service_health_check(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+create table ref_bgp_as_a_service_virtual_machine_interface (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references bgp_as_a_service(uuid) on delete cascade, 
+    foreign key (`to`) references virtual_machine_interface(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 
@@ -4027,6 +4184,14 @@ create table domain_share_firewall_policy (
 
 
 
+create table ref_firewall_rule_virtual_network (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references firewall_rule(uuid) on delete cascade, 
+    foreign key (`to`) references virtual_network(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
 create table ref_firewall_rule_service_group (
     `from` varchar(255),
     `to` varchar(255),
@@ -4049,14 +4214,6 @@ create table ref_firewall_rule_security_logging_object (
     primary key (`from`,`to`),
      foreign key (`from`) references firewall_rule(uuid) on delete cascade, 
     foreign key (`to`) references security_logging_object(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_firewall_rule_virtual_network (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-     foreign key (`from`) references firewall_rule(uuid) on delete cascade, 
-    foreign key (`to`) references virtual_network(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 
@@ -4526,6 +4683,14 @@ create table domain_share_loadbalancer_pool (
 
 
 
+create table ref_loadbalancer_service_appliance_set (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references loadbalancer(uuid) on delete cascade, 
+    foreign key (`to`) references service_appliance_set(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
 create table ref_loadbalancer_virtual_machine_interface (
     `from` varchar(255),
     `to` varchar(255),
@@ -4540,14 +4705,6 @@ create table ref_loadbalancer_service_instance (
     primary key (`from`,`to`),
      foreign key (`from`) references loadbalancer(uuid) on delete cascade, 
     foreign key (`to`) references service_instance(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_loadbalancer_service_appliance_set (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-     foreign key (`from`) references loadbalancer(uuid) on delete cascade, 
-    foreign key (`to`) references service_appliance_set(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 
@@ -4610,6 +4767,14 @@ create table domain_share_logical_interface (
 
 
 
+create table ref_logical_router_route_table (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references logical_router(uuid) on delete cascade, 
+    foreign key (`to`) references route_table(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
 create table ref_logical_router_virtual_network (
     `from` varchar(255),
     `to` varchar(255),
@@ -4656,14 +4821,6 @@ create table ref_logical_router_service_instance (
     primary key (`from`,`to`),
      foreign key (`from`) references logical_router(uuid) on delete cascade, 
     foreign key (`to`) references service_instance(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_logical_router_route_table (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-     foreign key (`from`) references logical_router(uuid) on delete cascade, 
-    foreign key (`to`) references route_table(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 
@@ -4986,8 +5143,8 @@ create table ref_project_namespace (
     `from` varchar(255),
     `to` varchar(255),
     primary key (`from`,`to`),
-    `ip_prefix` varchar(255),
     `ip_prefix_len` int,
+    `ip_prefix` varchar(255),
      foreign key (`from`) references project(uuid) on delete cascade, 
     foreign key (`to`) references namespace(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
@@ -5442,14 +5599,6 @@ create table domain_share_service_connection_module (
 
 
 
-create table ref_service_endpoint_physical_router (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-     foreign key (`from`) references service_endpoint(uuid) on delete cascade, 
-    foreign key (`to`) references physical_router(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
 create table ref_service_endpoint_service_object (
     `from` varchar(255),
     `to` varchar(255),
@@ -5464,6 +5613,14 @@ create table ref_service_endpoint_service_connection_module (
     primary key (`from`,`to`),
      foreign key (`from`) references service_endpoint(uuid) on delete cascade, 
     foreign key (`to`) references service_connection_module(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+create table ref_service_endpoint_physical_router (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references service_endpoint(uuid) on delete cascade, 
+    foreign key (`to`) references physical_router(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 
@@ -5870,61 +6027,12 @@ create table domain_share_virtual_ip (
 
 
 
-create table ref_virtual_machine_interface_bridge_domain (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-    `vlan_tag` int,
-     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references bridge_domain(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
 create table ref_virtual_machine_interface_virtual_machine_interface (
     `from` varchar(255),
     `to` varchar(255),
     primary key (`from`,`to`),
      foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
     foreign key (`to`) references virtual_machine_interface(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_virtual_machine_interface_interface_route_table (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references interface_route_table(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_virtual_machine_interface_security_group (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references security_group(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_virtual_machine_interface_physical_interface (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references physical_interface(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_virtual_machine_interface_virtual_network (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references virtual_network(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_virtual_machine_interface_virtual_machine (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references virtual_machine(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 create table ref_virtual_machine_interface_qos_config (
@@ -5943,28 +6051,69 @@ create table ref_virtual_machine_interface_port_tuple (
     foreign key (`to`) references port_tuple(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
+create table ref_virtual_machine_interface_physical_interface (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
+    foreign key (`to`) references physical_interface(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+create table ref_virtual_machine_interface_security_group (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
+    foreign key (`to`) references security_group(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+create table ref_virtual_machine_interface_virtual_machine (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
+    foreign key (`to`) references virtual_machine(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+create table ref_virtual_machine_interface_interface_route_table (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
+    foreign key (`to`) references interface_route_table(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+create table ref_virtual_machine_interface_virtual_network (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
+    foreign key (`to`) references virtual_network(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+create table ref_virtual_machine_interface_bridge_domain (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+    `vlan_tag` int,
+     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
+    foreign key (`to`) references bridge_domain(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+create table ref_virtual_machine_interface_service_endpoint (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
+    foreign key (`to`) references service_endpoint(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
 create table ref_virtual_machine_interface_bgp_router (
     `from` varchar(255),
     `to` varchar(255),
     primary key (`from`,`to`),
      foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
     foreign key (`to`) references bgp_router(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_virtual_machine_interface_routing_instance (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-    `ipv6_service_chain_address` varchar(255),
-    `direction` varchar(255),
-    `mpls_label` int,
-    `vlan_tag` int,
-    `src_mac` varchar(255),
-    `service_chain_address` varchar(255),
-    `dst_mac` varchar(255),
-    `protocol` varchar(255),
-     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references routing_instance(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 create table ref_virtual_machine_interface_security_logging_object (
@@ -5975,20 +6124,28 @@ create table ref_virtual_machine_interface_security_logging_object (
     foreign key (`to`) references security_logging_object(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
+create table ref_virtual_machine_interface_routing_instance (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+    `mpls_label` int,
+    `vlan_tag` int,
+    `src_mac` varchar(255),
+    `service_chain_address` varchar(255),
+    `dst_mac` varchar(255),
+    `protocol` varchar(255),
+    `ipv6_service_chain_address` varchar(255),
+    `direction` varchar(255),
+     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
+    foreign key (`to`) references routing_instance(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
 create table ref_virtual_machine_interface_service_health_check (
     `from` varchar(255),
     `to` varchar(255),
     primary key (`from`,`to`),
      foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
     foreign key (`to`) references service_health_check(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_virtual_machine_interface_service_endpoint (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-     foreign key (`from`) references virtual_machine_interface(uuid) on delete cascade, 
-    foreign key (`to`) references service_endpoint(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 
@@ -6051,48 +6208,14 @@ create table domain_share_virtual_machine (
 
 
 
-create table ref_virtual_network_virtual_network (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-     foreign key (`from`) references virtual_network(uuid) on delete cascade, 
-    foreign key (`to`) references virtual_network(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_virtual_network_bgpvpn (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-     foreign key (`from`) references virtual_network(uuid) on delete cascade, 
-    foreign key (`to`) references bgpvpn(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_virtual_network_network_ipam (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-    `ipam_subnets` json,
-    `route` json,
-     foreign key (`from`) references virtual_network(uuid) on delete cascade, 
-    foreign key (`to`) references network_ipam(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
-create table ref_virtual_network_security_logging_object (
-    `from` varchar(255),
-    `to` varchar(255),
-    primary key (`from`,`to`),
-     foreign key (`from`) references virtual_network(uuid) on delete cascade, 
-    foreign key (`to`) references security_logging_object(uuid),
-    index from_index (`from`)) CHARACTER SET utf8mb4;
-
 create table ref_virtual_network_network_policy (
     `from` varchar(255),
     `to` varchar(255),
     primary key (`from`,`to`),
-    `end_time` varchar(255),
-    `start_time` varchar(255),
     `off_interval` varchar(255),
     `on_interval` varchar(255),
+    `end_time` varchar(255),
+    `start_time` varchar(255),
     `major` int,
     `minor` int,
      foreign key (`from`) references virtual_network(uuid) on delete cascade, 
@@ -6113,6 +6236,40 @@ create table ref_virtual_network_route_table (
     primary key (`from`,`to`),
      foreign key (`from`) references virtual_network(uuid) on delete cascade, 
     foreign key (`to`) references route_table(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+create table ref_virtual_network_virtual_network (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references virtual_network(uuid) on delete cascade, 
+    foreign key (`to`) references virtual_network(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+create table ref_virtual_network_bgpvpn (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references virtual_network(uuid) on delete cascade, 
+    foreign key (`to`) references bgpvpn(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+create table ref_virtual_network_network_ipam (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+    `route` json,
+    `ipam_subnets` json,
+     foreign key (`from`) references virtual_network(uuid) on delete cascade, 
+    foreign key (`to`) references network_ipam(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+create table ref_virtual_network_security_logging_object (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references virtual_network(uuid) on delete cascade, 
+    foreign key (`to`) references security_logging_object(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 
@@ -6535,32 +6692,32 @@ create table domain_share_contrail_vrouter_node (
 
 
 
-create table ref_contrail_controller_node_node (
+create table ref_contrail_webui_node_node (
     `from` varchar(255),
     `to` varchar(255),
     primary key (`from`,`to`),
-     foreign key (`from`) references contrail_controller_node(uuid) on delete cascade, 
+     foreign key (`from`) references contrail_webui_node(uuid) on delete cascade, 
     foreign key (`to`) references node(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 
 
-create table tenant_share_contrail_controller_node (
+create table tenant_share_contrail_webui_node (
     `uuid` varchar(255),
     `to` varchar(255),
     primary key (`uuid`,`to`),
     `access` integer,
-    foreign key (`uuid`) references contrail_controller_node(uuid) on delete cascade,
+    foreign key (`uuid`) references contrail_webui_node(uuid) on delete cascade,
     foreign key (`to`) references project(uuid) on delete cascade,
     index uuid_index (`uuid`),
     index to_index (`to`)
     ) CHARACTER SET utf8mb4;
 
-create table domain_share_contrail_controller_node (
+create table domain_share_contrail_webui_node (
     `uuid` varchar(255),
     `to` varchar(255),
     primary key (`uuid`,`to`),
     `access` integer,
-    foreign key (`uuid`) references contrail_controller_node(uuid) on delete cascade,
+    foreign key (`uuid`) references contrail_webui_node(uuid) on delete cascade,
     foreign key (`to`) references domain(uuid) on delete cascade,
     index uuid_index (`uuid`),
     index to_index (`to`)
@@ -6785,6 +6942,176 @@ create table domain_share_node (
     primary key (`uuid`,`to`),
     `access` integer,
     foreign key (`uuid`) references node(uuid) on delete cascade,
+    foreign key (`to`) references domain(uuid) on delete cascade,
+    index uuid_index (`uuid`),
+    index to_index (`to`)
+    ) CHARACTER SET utf8mb4;
+
+
+
+
+create table ref_openstack_compute_node_node (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references openstack_compute_node(uuid) on delete cascade, 
+    foreign key (`to`) references node(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+
+create table tenant_share_openstack_compute_node (
+    `uuid` varchar(255),
+    `to` varchar(255),
+    primary key (`uuid`,`to`),
+    `access` integer,
+    foreign key (`uuid`) references openstack_compute_node(uuid) on delete cascade,
+    foreign key (`to`) references project(uuid) on delete cascade,
+    index uuid_index (`uuid`),
+    index to_index (`to`)
+    ) CHARACTER SET utf8mb4;
+
+create table domain_share_openstack_compute_node (
+    `uuid` varchar(255),
+    `to` varchar(255),
+    primary key (`uuid`,`to`),
+    `access` integer,
+    foreign key (`uuid`) references openstack_compute_node(uuid) on delete cascade,
+    foreign key (`to`) references domain(uuid) on delete cascade,
+    index uuid_index (`uuid`),
+    index to_index (`to`)
+    ) CHARACTER SET utf8mb4;
+
+
+
+
+create table ref_openstack_control_node_node (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references openstack_control_node(uuid) on delete cascade, 
+    foreign key (`to`) references node(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+
+create table tenant_share_openstack_control_node (
+    `uuid` varchar(255),
+    `to` varchar(255),
+    primary key (`uuid`,`to`),
+    `access` integer,
+    foreign key (`uuid`) references openstack_control_node(uuid) on delete cascade,
+    foreign key (`to`) references project(uuid) on delete cascade,
+    index uuid_index (`uuid`),
+    index to_index (`to`)
+    ) CHARACTER SET utf8mb4;
+
+create table domain_share_openstack_control_node (
+    `uuid` varchar(255),
+    `to` varchar(255),
+    primary key (`uuid`,`to`),
+    `access` integer,
+    foreign key (`uuid`) references openstack_control_node(uuid) on delete cascade,
+    foreign key (`to`) references domain(uuid) on delete cascade,
+    index uuid_index (`uuid`),
+    index to_index (`to`)
+    ) CHARACTER SET utf8mb4;
+
+
+
+
+create table ref_openstack_monitoring_node_node (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references openstack_monitoring_node(uuid) on delete cascade, 
+    foreign key (`to`) references node(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+
+create table tenant_share_openstack_monitoring_node (
+    `uuid` varchar(255),
+    `to` varchar(255),
+    primary key (`uuid`,`to`),
+    `access` integer,
+    foreign key (`uuid`) references openstack_monitoring_node(uuid) on delete cascade,
+    foreign key (`to`) references project(uuid) on delete cascade,
+    index uuid_index (`uuid`),
+    index to_index (`to`)
+    ) CHARACTER SET utf8mb4;
+
+create table domain_share_openstack_monitoring_node (
+    `uuid` varchar(255),
+    `to` varchar(255),
+    primary key (`uuid`,`to`),
+    `access` integer,
+    foreign key (`uuid`) references openstack_monitoring_node(uuid) on delete cascade,
+    foreign key (`to`) references domain(uuid) on delete cascade,
+    index uuid_index (`uuid`),
+    index to_index (`to`)
+    ) CHARACTER SET utf8mb4;
+
+
+
+
+create table ref_openstack_network_node_node (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references openstack_network_node(uuid) on delete cascade, 
+    foreign key (`to`) references node(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+
+create table tenant_share_openstack_network_node (
+    `uuid` varchar(255),
+    `to` varchar(255),
+    primary key (`uuid`,`to`),
+    `access` integer,
+    foreign key (`uuid`) references openstack_network_node(uuid) on delete cascade,
+    foreign key (`to`) references project(uuid) on delete cascade,
+    index uuid_index (`uuid`),
+    index to_index (`to`)
+    ) CHARACTER SET utf8mb4;
+
+create table domain_share_openstack_network_node (
+    `uuid` varchar(255),
+    `to` varchar(255),
+    primary key (`uuid`,`to`),
+    `access` integer,
+    foreign key (`uuid`) references openstack_network_node(uuid) on delete cascade,
+    foreign key (`to`) references domain(uuid) on delete cascade,
+    index uuid_index (`uuid`),
+    index to_index (`to`)
+    ) CHARACTER SET utf8mb4;
+
+
+
+
+create table ref_openstack_storage_node_node (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+     foreign key (`from`) references openstack_storage_node(uuid) on delete cascade, 
+    foreign key (`to`) references node(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+
+
+create table tenant_share_openstack_storage_node (
+    `uuid` varchar(255),
+    `to` varchar(255),
+    primary key (`uuid`,`to`),
+    `access` integer,
+    foreign key (`uuid`) references openstack_storage_node(uuid) on delete cascade,
+    foreign key (`to`) references project(uuid) on delete cascade,
+    index uuid_index (`uuid`),
+    index to_index (`to`)
+    ) CHARACTER SET utf8mb4;
+
+create table domain_share_openstack_storage_node (
+    `uuid` varchar(255),
+    `to` varchar(255),
+    primary key (`uuid`,`to`),
+    `access` integer,
+    foreign key (`uuid`) references openstack_storage_node(uuid) on delete cascade,
     foreign key (`to`) references domain(uuid) on delete cascade,
     index uuid_index (`uuid`),
     index to_index (`to`)

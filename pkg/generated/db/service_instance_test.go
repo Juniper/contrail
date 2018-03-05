@@ -39,31 +39,6 @@ func TestServiceInstance(t *testing.T) {
 
 	// Create referred objects
 
-	var ServiceTemplatecreateref []*models.ServiceInstanceServiceTemplateRef
-	var ServiceTemplaterefModel *models.ServiceTemplate
-	ServiceTemplaterefModel = models.MakeServiceTemplate()
-	ServiceTemplaterefModel.UUID = "service_instance_service_template_ref_uuid"
-	ServiceTemplaterefModel.FQName = []string{"test", "service_instance_service_template_ref_uuid"}
-	_, err = db.CreateServiceTemplate(ctx, &models.CreateServiceTemplateRequest{
-		ServiceTemplate: ServiceTemplaterefModel,
-	})
-	ServiceTemplaterefModel.UUID = "service_instance_service_template_ref_uuid1"
-	ServiceTemplaterefModel.FQName = []string{"test", "service_instance_service_template_ref_uuid1"}
-	_, err = db.CreateServiceTemplate(ctx, &models.CreateServiceTemplateRequest{
-		ServiceTemplate: ServiceTemplaterefModel,
-	})
-	ServiceTemplaterefModel.UUID = "service_instance_service_template_ref_uuid2"
-	ServiceTemplaterefModel.FQName = []string{"test", "service_instance_service_template_ref_uuid2"}
-	_, err = db.CreateServiceTemplate(ctx, &models.CreateServiceTemplateRequest{
-		ServiceTemplate: ServiceTemplaterefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	ServiceTemplatecreateref = append(ServiceTemplatecreateref, &models.ServiceInstanceServiceTemplateRef{UUID: "service_instance_service_template_ref_uuid", To: []string{"test", "service_instance_service_template_ref_uuid"}})
-	ServiceTemplatecreateref = append(ServiceTemplatecreateref, &models.ServiceInstanceServiceTemplateRef{UUID: "service_instance_service_template_ref_uuid2", To: []string{"test", "service_instance_service_template_ref_uuid2"}})
-	model.ServiceTemplateRefs = ServiceTemplatecreateref
-
 	var InstanceIPcreateref []*models.ServiceInstanceInstanceIPRef
 	var InstanceIPrefModel *models.InstanceIP
 	InstanceIPrefModel = models.MakeInstanceIP()
@@ -88,6 +63,31 @@ func TestServiceInstance(t *testing.T) {
 	InstanceIPcreateref = append(InstanceIPcreateref, &models.ServiceInstanceInstanceIPRef{UUID: "service_instance_instance_ip_ref_uuid", To: []string{"test", "service_instance_instance_ip_ref_uuid"}})
 	InstanceIPcreateref = append(InstanceIPcreateref, &models.ServiceInstanceInstanceIPRef{UUID: "service_instance_instance_ip_ref_uuid2", To: []string{"test", "service_instance_instance_ip_ref_uuid2"}})
 	model.InstanceIPRefs = InstanceIPcreateref
+
+	var ServiceTemplatecreateref []*models.ServiceInstanceServiceTemplateRef
+	var ServiceTemplaterefModel *models.ServiceTemplate
+	ServiceTemplaterefModel = models.MakeServiceTemplate()
+	ServiceTemplaterefModel.UUID = "service_instance_service_template_ref_uuid"
+	ServiceTemplaterefModel.FQName = []string{"test", "service_instance_service_template_ref_uuid"}
+	_, err = db.CreateServiceTemplate(ctx, &models.CreateServiceTemplateRequest{
+		ServiceTemplate: ServiceTemplaterefModel,
+	})
+	ServiceTemplaterefModel.UUID = "service_instance_service_template_ref_uuid1"
+	ServiceTemplaterefModel.FQName = []string{"test", "service_instance_service_template_ref_uuid1"}
+	_, err = db.CreateServiceTemplate(ctx, &models.CreateServiceTemplateRequest{
+		ServiceTemplate: ServiceTemplaterefModel,
+	})
+	ServiceTemplaterefModel.UUID = "service_instance_service_template_ref_uuid2"
+	ServiceTemplaterefModel.FQName = []string{"test", "service_instance_service_template_ref_uuid2"}
+	_, err = db.CreateServiceTemplate(ctx, &models.CreateServiceTemplateRequest{
+		ServiceTemplate: ServiceTemplaterefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	ServiceTemplatecreateref = append(ServiceTemplatecreateref, &models.ServiceInstanceServiceTemplateRef{UUID: "service_instance_service_template_ref_uuid", To: []string{"test", "service_instance_service_template_ref_uuid"}})
+	ServiceTemplatecreateref = append(ServiceTemplatecreateref, &models.ServiceInstanceServiceTemplateRef{UUID: "service_instance_service_template_ref_uuid2", To: []string{"test", "service_instance_service_template_ref_uuid2"}})
+	model.ServiceTemplateRefs = ServiceTemplatecreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()

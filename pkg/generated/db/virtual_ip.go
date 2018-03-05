@@ -54,12 +54,12 @@ var VirtualIPFields = []string{
 // VirtualIPRefFields is db reference fields for VirtualIP
 var VirtualIPRefFields = map[string][]string{
 
-	"loadbalancer_pool": []string{
+	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
 	},
 
-	"virtual_machine_interface": []string{
+	"loadbalancer_pool": []string{
 	// <schema.Schema Value>
 
 	},
@@ -129,19 +129,6 @@ func (db *DB) createVirtualIP(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtLoadbalancerPoolRef, err := tx.Prepare(insertVirtualIPLoadbalancerPoolQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing LoadbalancerPoolRefs create statement failed")
-	}
-	defer stmtLoadbalancerPoolRef.Close()
-	for _, ref := range model.LoadbalancerPoolRefs {
-
-		_, err = stmtLoadbalancerPoolRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "LoadbalancerPoolRefs create failed")
-		}
-	}
-
 	stmtVirtualMachineInterfaceRef, err := tx.Prepare(insertVirtualIPVirtualMachineInterfaceQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs create statement failed")
@@ -152,6 +139,19 @@ func (db *DB) createVirtualIP(
 		_, err = stmtVirtualMachineInterfaceRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
+	}
+
+	stmtLoadbalancerPoolRef, err := tx.Prepare(insertVirtualIPLoadbalancerPoolQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing LoadbalancerPoolRefs create statement failed")
+	}
+	defer stmtLoadbalancerPoolRef.Close()
+	for _, ref := range model.LoadbalancerPoolRefs {
+
+		_, err = stmtLoadbalancerPoolRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "LoadbalancerPoolRefs create failed")
 		}
 	}
 

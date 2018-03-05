@@ -55,12 +55,12 @@
     - [ContrailConfigNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.ContrailConfigNodeNodeRef)
     - [ContrailControlNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailControlNode)
     - [ContrailControlNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.ContrailControlNodeNodeRef)
-    - [ContrailControllerNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailControllerNode)
-    - [ContrailControllerNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.ContrailControllerNodeNodeRef)
     - [ContrailStorageNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailStorageNode)
     - [ContrailStorageNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.ContrailStorageNodeNodeRef)
     - [ContrailVrouterNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailVrouterNode)
     - [ContrailVrouterNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.ContrailVrouterNodeNodeRef)
+    - [ContrailWebuiNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailWebuiNode)
+    - [ContrailWebuiNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.ContrailWebuiNodeNodeRef)
     - [ControlTrafficDscpType](#github.com.Juniper.contrail.pkg.generated.models.ControlTrafficDscpType)
     - [CreateAPIAccessListRequest](#github.com.Juniper.contrail.pkg.generated.models.CreateAPIAccessListRequest)
     - [CreateAPIAccessListResponse](#github.com.Juniper.contrail.pkg.generated.models.CreateAPIAccessListResponse)
@@ -108,12 +108,12 @@
     - [CreateContrailConfigNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.CreateContrailConfigNodeResponse)
     - [CreateContrailControlNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.CreateContrailControlNodeRequest)
     - [CreateContrailControlNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.CreateContrailControlNodeResponse)
-    - [CreateContrailControllerNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.CreateContrailControllerNodeRequest)
-    - [CreateContrailControllerNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.CreateContrailControllerNodeResponse)
     - [CreateContrailStorageNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.CreateContrailStorageNodeRequest)
     - [CreateContrailStorageNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.CreateContrailStorageNodeResponse)
     - [CreateContrailVrouterNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.CreateContrailVrouterNodeRequest)
     - [CreateContrailVrouterNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.CreateContrailVrouterNodeResponse)
+    - [CreateContrailWebuiNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.CreateContrailWebuiNodeRequest)
+    - [CreateContrailWebuiNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.CreateContrailWebuiNodeResponse)
     - [CreateCustomerAttachmentRequest](#github.com.Juniper.contrail.pkg.generated.models.CreateCustomerAttachmentRequest)
     - [CreateCustomerAttachmentResponse](#github.com.Juniper.contrail.pkg.generated.models.CreateCustomerAttachmentResponse)
     - [CreateDashboardRequest](#github.com.Juniper.contrail.pkg.generated.models.CreateDashboardRequest)
@@ -182,6 +182,16 @@
     - [CreateNetworkPolicyResponse](#github.com.Juniper.contrail.pkg.generated.models.CreateNetworkPolicyResponse)
     - [CreateNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.CreateNodeRequest)
     - [CreateNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.CreateNodeResponse)
+    - [CreateOpenstackComputeNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackComputeNodeRequest)
+    - [CreateOpenstackComputeNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackComputeNodeResponse)
+    - [CreateOpenstackControlNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackControlNodeRequest)
+    - [CreateOpenstackControlNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackControlNodeResponse)
+    - [CreateOpenstackMonitoringNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackMonitoringNodeRequest)
+    - [CreateOpenstackMonitoringNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackMonitoringNodeResponse)
+    - [CreateOpenstackNetworkNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackNetworkNodeRequest)
+    - [CreateOpenstackNetworkNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackNetworkNodeResponse)
+    - [CreateOpenstackStorageNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackStorageNodeRequest)
+    - [CreateOpenstackStorageNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackStorageNodeResponse)
     - [CreateOsImageRequest](#github.com.Juniper.contrail.pkg.generated.models.CreateOsImageRequest)
     - [CreateOsImageResponse](#github.com.Juniper.contrail.pkg.generated.models.CreateOsImageResponse)
     - [CreatePeeringPolicyRequest](#github.com.Juniper.contrail.pkg.generated.models.CreatePeeringPolicyRequest)
@@ -313,12 +323,12 @@
     - [DeleteContrailConfigNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.DeleteContrailConfigNodeResponse)
     - [DeleteContrailControlNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.DeleteContrailControlNodeRequest)
     - [DeleteContrailControlNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.DeleteContrailControlNodeResponse)
-    - [DeleteContrailControllerNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.DeleteContrailControllerNodeRequest)
-    - [DeleteContrailControllerNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.DeleteContrailControllerNodeResponse)
     - [DeleteContrailStorageNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.DeleteContrailStorageNodeRequest)
     - [DeleteContrailStorageNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.DeleteContrailStorageNodeResponse)
     - [DeleteContrailVrouterNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.DeleteContrailVrouterNodeRequest)
     - [DeleteContrailVrouterNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.DeleteContrailVrouterNodeResponse)
+    - [DeleteContrailWebuiNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.DeleteContrailWebuiNodeRequest)
+    - [DeleteContrailWebuiNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.DeleteContrailWebuiNodeResponse)
     - [DeleteCustomerAttachmentRequest](#github.com.Juniper.contrail.pkg.generated.models.DeleteCustomerAttachmentRequest)
     - [DeleteCustomerAttachmentResponse](#github.com.Juniper.contrail.pkg.generated.models.DeleteCustomerAttachmentResponse)
     - [DeleteDashboardRequest](#github.com.Juniper.contrail.pkg.generated.models.DeleteDashboardRequest)
@@ -387,6 +397,16 @@
     - [DeleteNetworkPolicyResponse](#github.com.Juniper.contrail.pkg.generated.models.DeleteNetworkPolicyResponse)
     - [DeleteNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.DeleteNodeRequest)
     - [DeleteNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.DeleteNodeResponse)
+    - [DeleteOpenstackComputeNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackComputeNodeRequest)
+    - [DeleteOpenstackComputeNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackComputeNodeResponse)
+    - [DeleteOpenstackControlNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackControlNodeRequest)
+    - [DeleteOpenstackControlNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackControlNodeResponse)
+    - [DeleteOpenstackMonitoringNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackMonitoringNodeRequest)
+    - [DeleteOpenstackMonitoringNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackMonitoringNodeResponse)
+    - [DeleteOpenstackNetworkNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackNetworkNodeRequest)
+    - [DeleteOpenstackNetworkNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackNetworkNodeResponse)
+    - [DeleteOpenstackStorageNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackStorageNodeRequest)
+    - [DeleteOpenstackStorageNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackStorageNodeResponse)
     - [DeleteOsImageRequest](#github.com.Juniper.contrail.pkg.generated.models.DeleteOsImageRequest)
     - [DeleteOsImageResponse](#github.com.Juniper.contrail.pkg.generated.models.DeleteOsImageResponse)
     - [DeletePeeringPolicyRequest](#github.com.Juniper.contrail.pkg.generated.models.DeletePeeringPolicyRequest)
@@ -553,12 +573,12 @@
     - [GetContrailConfigNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.GetContrailConfigNodeResponse)
     - [GetContrailControlNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.GetContrailControlNodeRequest)
     - [GetContrailControlNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.GetContrailControlNodeResponse)
-    - [GetContrailControllerNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.GetContrailControllerNodeRequest)
-    - [GetContrailControllerNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.GetContrailControllerNodeResponse)
     - [GetContrailStorageNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.GetContrailStorageNodeRequest)
     - [GetContrailStorageNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.GetContrailStorageNodeResponse)
     - [GetContrailVrouterNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.GetContrailVrouterNodeRequest)
     - [GetContrailVrouterNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.GetContrailVrouterNodeResponse)
+    - [GetContrailWebuiNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.GetContrailWebuiNodeRequest)
+    - [GetContrailWebuiNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.GetContrailWebuiNodeResponse)
     - [GetCustomerAttachmentRequest](#github.com.Juniper.contrail.pkg.generated.models.GetCustomerAttachmentRequest)
     - [GetCustomerAttachmentResponse](#github.com.Juniper.contrail.pkg.generated.models.GetCustomerAttachmentResponse)
     - [GetDashboardRequest](#github.com.Juniper.contrail.pkg.generated.models.GetDashboardRequest)
@@ -627,6 +647,16 @@
     - [GetNetworkPolicyResponse](#github.com.Juniper.contrail.pkg.generated.models.GetNetworkPolicyResponse)
     - [GetNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.GetNodeRequest)
     - [GetNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.GetNodeResponse)
+    - [GetOpenstackComputeNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.GetOpenstackComputeNodeRequest)
+    - [GetOpenstackComputeNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.GetOpenstackComputeNodeResponse)
+    - [GetOpenstackControlNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.GetOpenstackControlNodeRequest)
+    - [GetOpenstackControlNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.GetOpenstackControlNodeResponse)
+    - [GetOpenstackMonitoringNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.GetOpenstackMonitoringNodeRequest)
+    - [GetOpenstackMonitoringNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.GetOpenstackMonitoringNodeResponse)
+    - [GetOpenstackNetworkNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.GetOpenstackNetworkNodeRequest)
+    - [GetOpenstackNetworkNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.GetOpenstackNetworkNodeResponse)
+    - [GetOpenstackStorageNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.GetOpenstackStorageNodeRequest)
+    - [GetOpenstackStorageNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.GetOpenstackStorageNodeResponse)
     - [GetOsImageRequest](#github.com.Juniper.contrail.pkg.generated.models.GetOsImageRequest)
     - [GetOsImageResponse](#github.com.Juniper.contrail.pkg.generated.models.GetOsImageResponse)
     - [GetPeeringPolicyRequest](#github.com.Juniper.contrail.pkg.generated.models.GetPeeringPolicyRequest)
@@ -784,12 +814,12 @@
     - [ListContrailConfigNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.ListContrailConfigNodeResponse)
     - [ListContrailControlNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.ListContrailControlNodeRequest)
     - [ListContrailControlNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.ListContrailControlNodeResponse)
-    - [ListContrailControllerNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.ListContrailControllerNodeRequest)
-    - [ListContrailControllerNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.ListContrailControllerNodeResponse)
     - [ListContrailStorageNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.ListContrailStorageNodeRequest)
     - [ListContrailStorageNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.ListContrailStorageNodeResponse)
     - [ListContrailVrouterNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.ListContrailVrouterNodeRequest)
     - [ListContrailVrouterNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.ListContrailVrouterNodeResponse)
+    - [ListContrailWebuiNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.ListContrailWebuiNodeRequest)
+    - [ListContrailWebuiNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.ListContrailWebuiNodeResponse)
     - [ListCustomerAttachmentRequest](#github.com.Juniper.contrail.pkg.generated.models.ListCustomerAttachmentRequest)
     - [ListCustomerAttachmentResponse](#github.com.Juniper.contrail.pkg.generated.models.ListCustomerAttachmentResponse)
     - [ListDashboardRequest](#github.com.Juniper.contrail.pkg.generated.models.ListDashboardRequest)
@@ -858,6 +888,16 @@
     - [ListNetworkPolicyResponse](#github.com.Juniper.contrail.pkg.generated.models.ListNetworkPolicyResponse)
     - [ListNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.ListNodeRequest)
     - [ListNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.ListNodeResponse)
+    - [ListOpenstackComputeNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.ListOpenstackComputeNodeRequest)
+    - [ListOpenstackComputeNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.ListOpenstackComputeNodeResponse)
+    - [ListOpenstackControlNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.ListOpenstackControlNodeRequest)
+    - [ListOpenstackControlNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.ListOpenstackControlNodeResponse)
+    - [ListOpenstackMonitoringNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.ListOpenstackMonitoringNodeRequest)
+    - [ListOpenstackMonitoringNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.ListOpenstackMonitoringNodeResponse)
+    - [ListOpenstackNetworkNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.ListOpenstackNetworkNodeRequest)
+    - [ListOpenstackNetworkNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.ListOpenstackNetworkNodeResponse)
+    - [ListOpenstackStorageNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.ListOpenstackStorageNodeRequest)
+    - [ListOpenstackStorageNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.ListOpenstackStorageNodeResponse)
     - [ListOsImageRequest](#github.com.Juniper.contrail.pkg.generated.models.ListOsImageRequest)
     - [ListOsImageResponse](#github.com.Juniper.contrail.pkg.generated.models.ListOsImageResponse)
     - [ListPeeringPolicyRequest](#github.com.Juniper.contrail.pkg.generated.models.ListPeeringPolicyRequest)
@@ -987,6 +1027,16 @@
     - [OpenStackFlavorProperty](#github.com.Juniper.contrail.pkg.generated.models.OpenStackFlavorProperty)
     - [OpenStackImageProperty](#github.com.Juniper.contrail.pkg.generated.models.OpenStackImageProperty)
     - [OpenStackLink](#github.com.Juniper.contrail.pkg.generated.models.OpenStackLink)
+    - [OpenstackComputeNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackComputeNode)
+    - [OpenstackComputeNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.OpenstackComputeNodeNodeRef)
+    - [OpenstackControlNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackControlNode)
+    - [OpenstackControlNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.OpenstackControlNodeNodeRef)
+    - [OpenstackMonitoringNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackMonitoringNode)
+    - [OpenstackMonitoringNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.OpenstackMonitoringNodeNodeRef)
+    - [OpenstackNetworkNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackNetworkNode)
+    - [OpenstackNetworkNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.OpenstackNetworkNodeNodeRef)
+    - [OpenstackStorageNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackStorageNode)
+    - [OpenstackStorageNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.OpenstackStorageNodeNodeRef)
     - [OsImage](#github.com.Juniper.contrail.pkg.generated.models.OsImage)
     - [PeeringPolicy](#github.com.Juniper.contrail.pkg.generated.models.PeeringPolicy)
     - [PermType](#github.com.Juniper.contrail.pkg.generated.models.PermType)
@@ -1129,12 +1179,12 @@
     - [UpdateContrailConfigNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.UpdateContrailConfigNodeResponse)
     - [UpdateContrailControlNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.UpdateContrailControlNodeRequest)
     - [UpdateContrailControlNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.UpdateContrailControlNodeResponse)
-    - [UpdateContrailControllerNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.UpdateContrailControllerNodeRequest)
-    - [UpdateContrailControllerNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.UpdateContrailControllerNodeResponse)
     - [UpdateContrailStorageNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.UpdateContrailStorageNodeRequest)
     - [UpdateContrailStorageNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.UpdateContrailStorageNodeResponse)
     - [UpdateContrailVrouterNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.UpdateContrailVrouterNodeRequest)
     - [UpdateContrailVrouterNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.UpdateContrailVrouterNodeResponse)
+    - [UpdateContrailWebuiNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.UpdateContrailWebuiNodeRequest)
+    - [UpdateContrailWebuiNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.UpdateContrailWebuiNodeResponse)
     - [UpdateCustomerAttachmentRequest](#github.com.Juniper.contrail.pkg.generated.models.UpdateCustomerAttachmentRequest)
     - [UpdateCustomerAttachmentResponse](#github.com.Juniper.contrail.pkg.generated.models.UpdateCustomerAttachmentResponse)
     - [UpdateDashboardRequest](#github.com.Juniper.contrail.pkg.generated.models.UpdateDashboardRequest)
@@ -1203,6 +1253,16 @@
     - [UpdateNetworkPolicyResponse](#github.com.Juniper.contrail.pkg.generated.models.UpdateNetworkPolicyResponse)
     - [UpdateNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.UpdateNodeRequest)
     - [UpdateNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.UpdateNodeResponse)
+    - [UpdateOpenstackComputeNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackComputeNodeRequest)
+    - [UpdateOpenstackComputeNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackComputeNodeResponse)
+    - [UpdateOpenstackControlNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackControlNodeRequest)
+    - [UpdateOpenstackControlNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackControlNodeResponse)
+    - [UpdateOpenstackMonitoringNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackMonitoringNodeRequest)
+    - [UpdateOpenstackMonitoringNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackMonitoringNodeResponse)
+    - [UpdateOpenstackNetworkNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackNetworkNodeRequest)
+    - [UpdateOpenstackNetworkNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackNetworkNodeResponse)
+    - [UpdateOpenstackStorageNodeRequest](#github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackStorageNodeRequest)
+    - [UpdateOpenstackStorageNodeResponse](#github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackStorageNodeResponse)
     - [UpdateOsImageRequest](#github.com.Juniper.contrail.pkg.generated.models.UpdateOsImageRequest)
     - [UpdateOsImageResponse](#github.com.Juniper.contrail.pkg.generated.models.UpdateOsImageResponse)
     - [UpdatePeeringPolicyRequest](#github.com.Juniper.contrail.pkg.generated.models.UpdatePeeringPolicyRequest)
@@ -1602,8 +1662,8 @@
 | perms2 | [PermType2](#github.com.Juniper.contrail.pkg.generated.models.PermType2) |  | Permissions data for role based access. |
 | alias_ip_address | [string](#string) |  | Alias ip address. |
 | alias_ip_address_family | [string](#string) |  | Ip address family of the alias ip, IpV4 or IpV6 |
-| project_refs | [AliasIPProjectRef](#github.com.Juniper.contrail.pkg.generated.models.AliasIPProjectRef) | repeated | Reference to project from which this alias ip was allocated. |
 | virtual_machine_interface_refs | [AliasIPVirtualMachineInterfaceRef](#github.com.Juniper.contrail.pkg.generated.models.AliasIPVirtualMachineInterfaceRef) | repeated | Reference to virtual machine interface to which this alias ip is attached. |
+| project_refs | [AliasIPProjectRef](#github.com.Juniper.contrail.pkg.generated.models.AliasIPProjectRef) | repeated | Reference to project from which this alias ip was allocated. |
 
 
 
@@ -2279,25 +2339,22 @@
 | display_name | [string](#string) |  | Display name user configured string(name) that can be updated any time. Used as openstack name. |
 | annotations | [KeyValuePairs](#github.com.Juniper.contrail.pkg.generated.models.KeyValuePairs) |  | Dictionary of arbitrary (key, value) on a resource. |
 | perms2 | [PermType2](#github.com.Juniper.contrail.pkg.generated.models.PermType2) |  | Permissions data for role based access. |
+| container_registry | [string](#string) |  | Container registry to pull contrail containers |
+| contrail_version | [string](#string) |  | Version of contrail containers to be used. |
+| rabbitmq_port | [string](#string) |  | RabbitMQ port used to connect to RabbitMQ. |
 | provisioner_type | [string](#string) |  | Tool to be used to provision the cluster |
 | orchestrator | [string](#string) |  | Orchestrator to use with contrrail |
-| kubernetes | [string](#string) |  |  |
-| kubernetes_master | [string](#string) |  |  |
-| openstack | [string](#string) |  |  |
 | config_audit_ttl | [string](#string) |  | Configuration Audit Retention Time in hours |
-| contrail_config | [string](#string) |  |  |
-| contrail_configdb | [string](#string) |  |  |
-| contrail_control | [string](#string) |  |  |
-| contrail_webui | [string](#string) |  |  |
-| contrail_analytics | [string](#string) |  |  |
-| contrail_analyticsdb | [string](#string) |  |  |
-| contrail_vrouter | [string](#string) |  |  |
-| data_ttl | [string](#string) |  | Data Retention Time in hours |
 | default_gateway | [string](#string) |  | Default Gateway |
 | default_vrouter_bond_interface | [string](#string) |  | vRouter Bond Interface |
 | default_vrouter_bond_interface_members | [string](#string) |  | vRouter Bond Interface Members |
 | flow_ttl | [string](#string) |  | Flow Data Retention Time in hours |
 | statistics_ttl | [string](#string) |  | Statistics Data Retention Time in hours |
+| openstack_internal_vip | [string](#string) |  | VIP for openstack internal network |
+| openstack_external_vip | [string](#string) |  | VIP for openstack external network |
+| openstack_internal_vip_interface | [string](#string) |  | VIP for openstack internal network |
+| openstack_external_vip_interface | [string](#string) |  | Interface to configure VIP for openstack external network |
+| openstack_enable_haproxy | [string](#string) |  | Configure haproxy in openstack control node |
 | appformix_nodes | [AppformixNode](#github.com.Juniper.contrail.pkg.generated.models.AppformixNode) | repeated | Parent of this appformix node. |
 | contrail_analytics_database_nodes | [ContrailAnalyticsDatabaseNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailAnalyticsDatabaseNode) | repeated | Parent of this analyticsdb node. |
 | contrail_analytics_nodes | [ContrailAnalyticsNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailAnalyticsNode) | repeated | Parent of this analytics node. |
@@ -2306,9 +2363,14 @@
 | contrail_control_nodes | [ContrailControlNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailControlNode) | repeated | Parent of this control node. |
 | contrail_storage_nodes | [ContrailStorageNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailStorageNode) | repeated | Parent of this storage node. |
 | contrail_vrouter_nodes | [ContrailVrouterNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailVrouterNode) | repeated | Parent of this vrouter node. |
-| contrail_controller_nodes | [ContrailControllerNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailControllerNode) | repeated | Parent of this webui node. |
+| contrail_webui_nodes | [ContrailWebuiNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailWebuiNode) | repeated | Parent of this webui node. |
 | kubernetes_master_nodes | [KubernetesMasterNode](#github.com.Juniper.contrail.pkg.generated.models.KubernetesMasterNode) | repeated | Parent of this kubernetes master node. |
 | kubernetes_nodes | [KubernetesNode](#github.com.Juniper.contrail.pkg.generated.models.KubernetesNode) | repeated | Parent of this kubernetes node. |
+| openstack_compute_nodes | [OpenstackComputeNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackComputeNode) | repeated | Parent of this openstack_compute node. |
+| openstack_control_nodes | [OpenstackControlNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackControlNode) | repeated | Parent of this openstack_control node. |
+| openstack_monitoring_nodes | [OpenstackMonitoringNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackMonitoringNode) | repeated | Parent of this openstack_monitoring node. |
+| openstack_network_nodes | [OpenstackNetworkNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackNetworkNode) | repeated | Parent of this openstack_network node. |
+| openstack_storage_nodes | [OpenstackStorageNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackStorageNode) | repeated | Parent of this openstack_storage node. |
 
 
 
@@ -2447,50 +2509,6 @@
 
 
 
-<a name="github.com.Juniper.contrail.pkg.generated.models.ContrailControllerNode"/>
-
-### ContrailControllerNode
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| provisioning_log | [string](#string) |  | Provisioning Log |
-| provisioning_progress | [int64](#int64) |  | Provisioning progress 0 - 100% |
-| provisioning_progress_stage | [string](#string) |  | Provisioning Progress Stage |
-| provisioning_start_time | [string](#string) |  | Time provisioning started |
-| provisioning_state | [string](#string) |  | Provisioning Status |
-| uuid | [string](#string) |  | UUID of the object, system automatically allocates one if not provided |
-| parent_uuid | [string](#string) |  | UUID of the parent object |
-| parent_type | [string](#string) |  | Parent resource type |
-| fq_name | [string](#string) | repeated | FQ Name of the object |
-| id_perms | [IdPermsType](#github.com.Juniper.contrail.pkg.generated.models.IdPermsType) |  | System maintained identity, time and permissions data. |
-| display_name | [string](#string) |  | Display name user configured string(name) that can be updated any time. Used as openstack name. |
-| annotations | [KeyValuePairs](#github.com.Juniper.contrail.pkg.generated.models.KeyValuePairs) |  | Dictionary of arbitrary (key, value) on a resource. |
-| perms2 | [PermType2](#github.com.Juniper.contrail.pkg.generated.models.PermType2) |  | Permissions data for role based access. |
-| node_refs | [ContrailControllerNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.ContrailControllerNodeNodeRef) | repeated | Reference to node object for this webui node. |
-
-
-
-
-
-
-<a name="github.com.Juniper.contrail.pkg.generated.models.ContrailControllerNodeNodeRef"/>
-
-### ContrailControllerNodeNodeRef
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| uuid | [string](#string) |  |  |
-| to | [string](#string) | repeated |  |
-
-
-
-
-
-
 <a name="github.com.Juniper.contrail.pkg.generated.models.ContrailStorageNode"/>
 
 ### ContrailStorageNode
@@ -2574,6 +2592,50 @@
 <a name="github.com.Juniper.contrail.pkg.generated.models.ContrailVrouterNodeNodeRef"/>
 
 ### ContrailVrouterNodeNodeRef
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+| to | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.ContrailWebuiNode"/>
+
+### ContrailWebuiNode
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| provisioning_log | [string](#string) |  | Provisioning Log |
+| provisioning_progress | [int64](#int64) |  | Provisioning progress 0 - 100% |
+| provisioning_progress_stage | [string](#string) |  | Provisioning Progress Stage |
+| provisioning_start_time | [string](#string) |  | Time provisioning started |
+| provisioning_state | [string](#string) |  | Provisioning Status |
+| uuid | [string](#string) |  | UUID of the object, system automatically allocates one if not provided |
+| parent_uuid | [string](#string) |  | UUID of the parent object |
+| parent_type | [string](#string) |  | Parent resource type |
+| fq_name | [string](#string) | repeated | FQ Name of the object |
+| id_perms | [IdPermsType](#github.com.Juniper.contrail.pkg.generated.models.IdPermsType) |  | System maintained identity, time and permissions data. |
+| display_name | [string](#string) |  | Display name user configured string(name) that can be updated any time. Used as openstack name. |
+| annotations | [KeyValuePairs](#github.com.Juniper.contrail.pkg.generated.models.KeyValuePairs) |  | Dictionary of arbitrary (key, value) on a resource. |
+| perms2 | [PermType2](#github.com.Juniper.contrail.pkg.generated.models.PermType2) |  | Permissions data for role based access. |
+| node_refs | [ContrailWebuiNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.ContrailWebuiNodeNodeRef) | repeated | Reference to node object for this webui node. |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.ContrailWebuiNodeNodeRef"/>
+
+### ContrailWebuiNodeNodeRef
 
 
 
@@ -3294,36 +3356,6 @@
 
 
 
-<a name="github.com.Juniper.contrail.pkg.generated.models.CreateContrailControllerNodeRequest"/>
-
-### CreateContrailControllerNodeRequest
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| contrail_controller_node | [ContrailControllerNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailControllerNode) |  |  |
-
-
-
-
-
-
-<a name="github.com.Juniper.contrail.pkg.generated.models.CreateContrailControllerNodeResponse"/>
-
-### CreateContrailControllerNodeResponse
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| contrail_controller_node | [ContrailControllerNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailControllerNode) |  |  |
-
-
-
-
-
-
 <a name="github.com.Juniper.contrail.pkg.generated.models.CreateContrailStorageNodeRequest"/>
 
 ### CreateContrailStorageNodeRequest
@@ -3378,6 +3410,36 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | contrail_vrouter_node | [ContrailVrouterNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailVrouterNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.CreateContrailWebuiNodeRequest"/>
+
+### CreateContrailWebuiNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| contrail_webui_node | [ContrailWebuiNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailWebuiNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.CreateContrailWebuiNodeResponse"/>
+
+### CreateContrailWebuiNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| contrail_webui_node | [ContrailWebuiNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailWebuiNode) |  |  |
 
 
 
@@ -4398,6 +4460,156 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | node | [Node](#github.com.Juniper.contrail.pkg.generated.models.Node) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackComputeNodeRequest"/>
+
+### CreateOpenstackComputeNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_compute_node | [OpenstackComputeNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackComputeNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackComputeNodeResponse"/>
+
+### CreateOpenstackComputeNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_compute_node | [OpenstackComputeNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackComputeNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackControlNodeRequest"/>
+
+### CreateOpenstackControlNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_control_node | [OpenstackControlNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackControlNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackControlNodeResponse"/>
+
+### CreateOpenstackControlNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_control_node | [OpenstackControlNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackControlNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackMonitoringNodeRequest"/>
+
+### CreateOpenstackMonitoringNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_monitoring_node | [OpenstackMonitoringNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackMonitoringNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackMonitoringNodeResponse"/>
+
+### CreateOpenstackMonitoringNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_monitoring_node | [OpenstackMonitoringNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackMonitoringNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackNetworkNodeRequest"/>
+
+### CreateOpenstackNetworkNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_network_node | [OpenstackNetworkNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackNetworkNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackNetworkNodeResponse"/>
+
+### CreateOpenstackNetworkNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_network_node | [OpenstackNetworkNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackNetworkNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackStorageNodeRequest"/>
+
+### CreateOpenstackStorageNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_storage_node | [OpenstackStorageNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackStorageNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.CreateOpenstackStorageNodeResponse"/>
+
+### CreateOpenstackStorageNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_storage_node | [OpenstackStorageNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackStorageNode) |  |  |
 
 
 
@@ -6396,36 +6608,6 @@
 
 
 
-<a name="github.com.Juniper.contrail.pkg.generated.models.DeleteContrailControllerNodeRequest"/>
-
-### DeleteContrailControllerNodeRequest
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| id | [string](#string) |  |  |
-
-
-
-
-
-
-<a name="github.com.Juniper.contrail.pkg.generated.models.DeleteContrailControllerNodeResponse"/>
-
-### DeleteContrailControllerNodeResponse
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| id | [string](#string) |  |  |
-
-
-
-
-
-
 <a name="github.com.Juniper.contrail.pkg.generated.models.DeleteContrailStorageNodeRequest"/>
 
 ### DeleteContrailStorageNodeRequest
@@ -6474,6 +6656,36 @@
 <a name="github.com.Juniper.contrail.pkg.generated.models.DeleteContrailVrouterNodeResponse"/>
 
 ### DeleteContrailVrouterNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.DeleteContrailWebuiNodeRequest"/>
+
+### DeleteContrailWebuiNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.DeleteContrailWebuiNodeResponse"/>
+
+### DeleteContrailWebuiNodeResponse
 
 
 
@@ -7494,6 +7706,156 @@
 <a name="github.com.Juniper.contrail.pkg.generated.models.DeleteNodeResponse"/>
 
 ### DeleteNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackComputeNodeRequest"/>
+
+### DeleteOpenstackComputeNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackComputeNodeResponse"/>
+
+### DeleteOpenstackComputeNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackControlNodeRequest"/>
+
+### DeleteOpenstackControlNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackControlNodeResponse"/>
+
+### DeleteOpenstackControlNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackMonitoringNodeRequest"/>
+
+### DeleteOpenstackMonitoringNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackMonitoringNodeResponse"/>
+
+### DeleteOpenstackMonitoringNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackNetworkNodeRequest"/>
+
+### DeleteOpenstackNetworkNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackNetworkNodeResponse"/>
+
+### DeleteOpenstackNetworkNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackStorageNodeRequest"/>
+
+### DeleteOpenstackStorageNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.DeleteOpenstackStorageNodeResponse"/>
+
+### DeleteOpenstackStorageNodeResponse
 
 
 
@@ -10157,36 +10519,6 @@
 
 
 
-<a name="github.com.Juniper.contrail.pkg.generated.models.GetContrailControllerNodeRequest"/>
-
-### GetContrailControllerNodeRequest
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| id | [string](#string) |  |  |
-
-
-
-
-
-
-<a name="github.com.Juniper.contrail.pkg.generated.models.GetContrailControllerNodeResponse"/>
-
-### GetContrailControllerNodeResponse
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| contrail_controller_node | [ContrailControllerNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailControllerNode) |  |  |
-
-
-
-
-
-
 <a name="github.com.Juniper.contrail.pkg.generated.models.GetContrailStorageNodeRequest"/>
 
 ### GetContrailStorageNodeRequest
@@ -10241,6 +10573,36 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | contrail_vrouter_node | [ContrailVrouterNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailVrouterNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.GetContrailWebuiNodeRequest"/>
+
+### GetContrailWebuiNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.GetContrailWebuiNodeResponse"/>
+
+### GetContrailWebuiNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| contrail_webui_node | [ContrailWebuiNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailWebuiNode) |  |  |
 
 
 
@@ -11261,6 +11623,156 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | node | [Node](#github.com.Juniper.contrail.pkg.generated.models.Node) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.GetOpenstackComputeNodeRequest"/>
+
+### GetOpenstackComputeNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.GetOpenstackComputeNodeResponse"/>
+
+### GetOpenstackComputeNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_compute_node | [OpenstackComputeNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackComputeNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.GetOpenstackControlNodeRequest"/>
+
+### GetOpenstackControlNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.GetOpenstackControlNodeResponse"/>
+
+### GetOpenstackControlNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_control_node | [OpenstackControlNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackControlNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.GetOpenstackMonitoringNodeRequest"/>
+
+### GetOpenstackMonitoringNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.GetOpenstackMonitoringNodeResponse"/>
+
+### GetOpenstackMonitoringNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_monitoring_node | [OpenstackMonitoringNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackMonitoringNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.GetOpenstackNetworkNodeRequest"/>
+
+### GetOpenstackNetworkNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.GetOpenstackNetworkNodeResponse"/>
+
+### GetOpenstackNetworkNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_network_node | [OpenstackNetworkNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackNetworkNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.GetOpenstackStorageNodeRequest"/>
+
+### GetOpenstackStorageNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.GetOpenstackStorageNodeResponse"/>
+
+### GetOpenstackStorageNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_storage_node | [OpenstackStorageNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackStorageNode) |  |  |
 
 
 
@@ -12652,11 +13164,11 @@
 | service_instance_ip | [bool](#bool) |  | This instance ip is used as service chain next hop |
 | instance_ip_local_ip | [bool](#bool) |  | This instance ip is local to compute and will not be exported to other nodes. |
 | instance_ip_secondary | [bool](#bool) |  | This instance ip is secondary ip of the interface. |
+| network_ipam_refs | [InstanceIPNetworkIpamRef](#github.com.Juniper.contrail.pkg.generated.models.InstanceIPNetworkIpamRef) | repeated | Reference to network ipam of this instance ip. |
 | virtual_network_refs | [InstanceIPVirtualNetworkRef](#github.com.Juniper.contrail.pkg.generated.models.InstanceIPVirtualNetworkRef) | repeated | Reference to virtual network of this instance ip. |
 | virtual_machine_interface_refs | [InstanceIPVirtualMachineInterfaceRef](#github.com.Juniper.contrail.pkg.generated.models.InstanceIPVirtualMachineInterfaceRef) | repeated | Reference to virtual machine interface to which this instance ip is attached. |
 | physical_router_refs | [InstanceIPPhysicalRouterRef](#github.com.Juniper.contrail.pkg.generated.models.InstanceIPPhysicalRouterRef) | repeated | This instance ip is used as IRB address on the referenced physical router (e.g.MX), In case of OVSDB TOR usecase this address will be used as default gateway for Host behind the TOR. |
 | virtual_router_refs | [InstanceIPVirtualRouterRef](#github.com.Juniper.contrail.pkg.generated.models.InstanceIPVirtualRouterRef) | repeated | Reference to virtual router of this instance ip. |
-| network_ipam_refs | [InstanceIPNetworkIpamRef](#github.com.Juniper.contrail.pkg.generated.models.InstanceIPNetworkIpamRef) | repeated | Reference to network ipam of this instance ip. |
 | floating_ips | [FloatingIP](#github.com.Juniper.contrail.pkg.generated.models.FloatingIP) | repeated | floating-ip can be child of instance-ip. By doing so instance-ip can be used as floating-ip. |
 
 
@@ -13801,36 +14313,6 @@
 
 
 
-<a name="github.com.Juniper.contrail.pkg.generated.models.ListContrailControllerNodeRequest"/>
-
-### ListContrailControllerNodeRequest
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| spec | [ListSpec](#github.com.Juniper.contrail.pkg.generated.models.ListSpec) |  |  |
-
-
-
-
-
-
-<a name="github.com.Juniper.contrail.pkg.generated.models.ListContrailControllerNodeResponse"/>
-
-### ListContrailControllerNodeResponse
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| contrail_controller_nodes | [ContrailControllerNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailControllerNode) | repeated |  |
-
-
-
-
-
-
 <a name="github.com.Juniper.contrail.pkg.generated.models.ListContrailStorageNodeRequest"/>
 
 ### ListContrailStorageNodeRequest
@@ -13885,6 +14367,36 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | contrail_vrouter_nodes | [ContrailVrouterNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailVrouterNode) | repeated |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.ListContrailWebuiNodeRequest"/>
+
+### ListContrailWebuiNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| spec | [ListSpec](#github.com.Juniper.contrail.pkg.generated.models.ListSpec) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.ListContrailWebuiNodeResponse"/>
+
+### ListContrailWebuiNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| contrail_webui_nodes | [ContrailWebuiNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailWebuiNode) | repeated |  |
 
 
 
@@ -14905,6 +15417,156 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | nodes | [Node](#github.com.Juniper.contrail.pkg.generated.models.Node) | repeated |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.ListOpenstackComputeNodeRequest"/>
+
+### ListOpenstackComputeNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| spec | [ListSpec](#github.com.Juniper.contrail.pkg.generated.models.ListSpec) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.ListOpenstackComputeNodeResponse"/>
+
+### ListOpenstackComputeNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_compute_nodes | [OpenstackComputeNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackComputeNode) | repeated |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.ListOpenstackControlNodeRequest"/>
+
+### ListOpenstackControlNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| spec | [ListSpec](#github.com.Juniper.contrail.pkg.generated.models.ListSpec) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.ListOpenstackControlNodeResponse"/>
+
+### ListOpenstackControlNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_control_nodes | [OpenstackControlNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackControlNode) | repeated |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.ListOpenstackMonitoringNodeRequest"/>
+
+### ListOpenstackMonitoringNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| spec | [ListSpec](#github.com.Juniper.contrail.pkg.generated.models.ListSpec) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.ListOpenstackMonitoringNodeResponse"/>
+
+### ListOpenstackMonitoringNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_monitoring_nodes | [OpenstackMonitoringNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackMonitoringNode) | repeated |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.ListOpenstackNetworkNodeRequest"/>
+
+### ListOpenstackNetworkNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| spec | [ListSpec](#github.com.Juniper.contrail.pkg.generated.models.ListSpec) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.ListOpenstackNetworkNodeResponse"/>
+
+### ListOpenstackNetworkNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_network_nodes | [OpenstackNetworkNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackNetworkNode) | repeated |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.ListOpenstackStorageNodeRequest"/>
+
+### ListOpenstackStorageNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| spec | [ListSpec](#github.com.Juniper.contrail.pkg.generated.models.ListSpec) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.ListOpenstackStorageNodeResponse"/>
+
+### ListOpenstackStorageNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_storage_nodes | [OpenstackStorageNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackStorageNode) | repeated |  |
 
 
 
@@ -16640,13 +17302,13 @@
 | perms2 | [PermType2](#github.com.Juniper.contrail.pkg.generated.models.PermType2) |  | Permissions data for role based access. |
 | vxlan_network_identifier | [string](#string) |  | The VNI that needs to be associated with the internal VN if vxlan_routing mode is enabled. |
 | configured_route_target_list | [RouteTargetList](#github.com.Juniper.contrail.pkg.generated.models.RouteTargetList) |  | List of route targets that represent this logical router, all virtual networks connected to this logical router will have this as their route target list. |
+| virtual_machine_interface_refs | [LogicalRouterVirtualMachineInterfaceRef](#github.com.Juniper.contrail.pkg.generated.models.LogicalRouterVirtualMachineInterfaceRef) | repeated | Reference to the interface attached to this logical router. By attaching a interface to logical network all subnets in the virtual network of the interface has this router. |
 | service_instance_refs | [LogicalRouterServiceInstanceRef](#github.com.Juniper.contrail.pkg.generated.models.LogicalRouterServiceInstanceRef) | repeated | Reference to service instance doing SNAT functionality for external gateway. |
 | route_table_refs | [LogicalRouterRouteTableRef](#github.com.Juniper.contrail.pkg.generated.models.LogicalRouterRouteTableRef) | repeated | Reference to the route table attached to this logical router. By attaching route table, system will create static routes with the route target only of route targets linked to this logical router |
 | virtual_network_refs | [LogicalRouterVirtualNetworkRef](#github.com.Juniper.contrail.pkg.generated.models.LogicalRouterVirtualNetworkRef) | repeated | Reference to virtual network used as external gateway for this logical network. This link will cause a SNAT being spawned between all networks connected to logical router and external network. |
 | physical_router_refs | [LogicalRouterPhysicalRouterRef](#github.com.Juniper.contrail.pkg.generated.models.LogicalRouterPhysicalRouterRef) | repeated | Reference to physical router, when this link is present device manager configures logical router associated route targets/interfaces on the Physical Router. |
 | bgpvpn_refs | [LogicalRouterBGPVPNRef](#github.com.Juniper.contrail.pkg.generated.models.LogicalRouterBGPVPNRef) | repeated | Back reference to logical router associated to the BGP VPN resource |
 | route_target_refs | [LogicalRouterRouteTargetRef](#github.com.Juniper.contrail.pkg.generated.models.LogicalRouterRouteTargetRef) | repeated | Route target that represent this logical router. |
-| virtual_machine_interface_refs | [LogicalRouterVirtualMachineInterfaceRef](#github.com.Juniper.contrail.pkg.generated.models.LogicalRouterVirtualMachineInterfaceRef) | repeated | Reference to the interface attached to this logical router. By attaching a interface to logical network all subnets in the virtual network of the interface has this router. |
 
 
 
@@ -17102,6 +17764,226 @@
 
 
 
+<a name="github.com.Juniper.contrail.pkg.generated.models.OpenstackComputeNode"/>
+
+### OpenstackComputeNode
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| provisioning_log | [string](#string) |  | Provisioning Log |
+| provisioning_progress | [int64](#int64) |  | Provisioning progress 0 - 100% |
+| provisioning_progress_stage | [string](#string) |  | Provisioning Progress Stage |
+| provisioning_start_time | [string](#string) |  | Time provisioning started |
+| provisioning_state | [string](#string) |  | Provisioning Status |
+| uuid | [string](#string) |  | UUID of the object, system automatically allocates one if not provided |
+| parent_uuid | [string](#string) |  | UUID of the parent object |
+| parent_type | [string](#string) |  | Parent resource type |
+| fq_name | [string](#string) | repeated | FQ Name of the object |
+| id_perms | [IdPermsType](#github.com.Juniper.contrail.pkg.generated.models.IdPermsType) |  | System maintained identity, time and permissions data. |
+| display_name | [string](#string) |  | Display name user configured string(name) that can be updated any time. Used as openstack name. |
+| annotations | [KeyValuePairs](#github.com.Juniper.contrail.pkg.generated.models.KeyValuePairs) |  | Dictionary of arbitrary (key, value) on a resource. |
+| perms2 | [PermType2](#github.com.Juniper.contrail.pkg.generated.models.PermType2) |  | Permissions data for role based access. |
+| node_refs | [OpenstackComputeNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.OpenstackComputeNodeNodeRef) | repeated | Reference to node object for this openstack_compute node. |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.OpenstackComputeNodeNodeRef"/>
+
+### OpenstackComputeNodeNodeRef
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+| to | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.OpenstackControlNode"/>
+
+### OpenstackControlNode
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| provisioning_log | [string](#string) |  | Provisioning Log |
+| provisioning_progress | [int64](#int64) |  | Provisioning progress 0 - 100% |
+| provisioning_progress_stage | [string](#string) |  | Provisioning Progress Stage |
+| provisioning_start_time | [string](#string) |  | Time provisioning started |
+| provisioning_state | [string](#string) |  | Provisioning Status |
+| uuid | [string](#string) |  | UUID of the object, system automatically allocates one if not provided |
+| parent_uuid | [string](#string) |  | UUID of the parent object |
+| parent_type | [string](#string) |  | Parent resource type |
+| fq_name | [string](#string) | repeated | FQ Name of the object |
+| id_perms | [IdPermsType](#github.com.Juniper.contrail.pkg.generated.models.IdPermsType) |  | System maintained identity, time and permissions data. |
+| display_name | [string](#string) |  | Display name user configured string(name) that can be updated any time. Used as openstack name. |
+| annotations | [KeyValuePairs](#github.com.Juniper.contrail.pkg.generated.models.KeyValuePairs) |  | Dictionary of arbitrary (key, value) on a resource. |
+| perms2 | [PermType2](#github.com.Juniper.contrail.pkg.generated.models.PermType2) |  | Permissions data for role based access. |
+| node_refs | [OpenstackControlNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.OpenstackControlNodeNodeRef) | repeated | Reference to node object for this openstack_control node. |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.OpenstackControlNodeNodeRef"/>
+
+### OpenstackControlNodeNodeRef
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+| to | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.OpenstackMonitoringNode"/>
+
+### OpenstackMonitoringNode
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| provisioning_log | [string](#string) |  | Provisioning Log |
+| provisioning_progress | [int64](#int64) |  | Provisioning progress 0 - 100% |
+| provisioning_progress_stage | [string](#string) |  | Provisioning Progress Stage |
+| provisioning_start_time | [string](#string) |  | Time provisioning started |
+| provisioning_state | [string](#string) |  | Provisioning Status |
+| uuid | [string](#string) |  | UUID of the object, system automatically allocates one if not provided |
+| parent_uuid | [string](#string) |  | UUID of the parent object |
+| parent_type | [string](#string) |  | Parent resource type |
+| fq_name | [string](#string) | repeated | FQ Name of the object |
+| id_perms | [IdPermsType](#github.com.Juniper.contrail.pkg.generated.models.IdPermsType) |  | System maintained identity, time and permissions data. |
+| display_name | [string](#string) |  | Display name user configured string(name) that can be updated any time. Used as openstack name. |
+| annotations | [KeyValuePairs](#github.com.Juniper.contrail.pkg.generated.models.KeyValuePairs) |  | Dictionary of arbitrary (key, value) on a resource. |
+| perms2 | [PermType2](#github.com.Juniper.contrail.pkg.generated.models.PermType2) |  | Permissions data for role based access. |
+| node_refs | [OpenstackMonitoringNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.OpenstackMonitoringNodeNodeRef) | repeated | Reference to node object for this openstack_monitoring node. |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.OpenstackMonitoringNodeNodeRef"/>
+
+### OpenstackMonitoringNodeNodeRef
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+| to | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.OpenstackNetworkNode"/>
+
+### OpenstackNetworkNode
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| provisioning_log | [string](#string) |  | Provisioning Log |
+| provisioning_progress | [int64](#int64) |  | Provisioning progress 0 - 100% |
+| provisioning_progress_stage | [string](#string) |  | Provisioning Progress Stage |
+| provisioning_start_time | [string](#string) |  | Time provisioning started |
+| provisioning_state | [string](#string) |  | Provisioning Status |
+| uuid | [string](#string) |  | UUID of the object, system automatically allocates one if not provided |
+| parent_uuid | [string](#string) |  | UUID of the parent object |
+| parent_type | [string](#string) |  | Parent resource type |
+| fq_name | [string](#string) | repeated | FQ Name of the object |
+| id_perms | [IdPermsType](#github.com.Juniper.contrail.pkg.generated.models.IdPermsType) |  | System maintained identity, time and permissions data. |
+| display_name | [string](#string) |  | Display name user configured string(name) that can be updated any time. Used as openstack name. |
+| annotations | [KeyValuePairs](#github.com.Juniper.contrail.pkg.generated.models.KeyValuePairs) |  | Dictionary of arbitrary (key, value) on a resource. |
+| perms2 | [PermType2](#github.com.Juniper.contrail.pkg.generated.models.PermType2) |  | Permissions data for role based access. |
+| node_refs | [OpenstackNetworkNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.OpenstackNetworkNodeNodeRef) | repeated | Reference to node object for this openstack_network node. |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.OpenstackNetworkNodeNodeRef"/>
+
+### OpenstackNetworkNodeNodeRef
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+| to | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.OpenstackStorageNode"/>
+
+### OpenstackStorageNode
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| provisioning_log | [string](#string) |  | Provisioning Log |
+| provisioning_progress | [int64](#int64) |  | Provisioning progress 0 - 100% |
+| provisioning_progress_stage | [string](#string) |  | Provisioning Progress Stage |
+| provisioning_start_time | [string](#string) |  | Time provisioning started |
+| provisioning_state | [string](#string) |  | Provisioning Status |
+| uuid | [string](#string) |  | UUID of the object, system automatically allocates one if not provided |
+| parent_uuid | [string](#string) |  | UUID of the parent object |
+| parent_type | [string](#string) |  | Parent resource type |
+| fq_name | [string](#string) | repeated | FQ Name of the object |
+| id_perms | [IdPermsType](#github.com.Juniper.contrail.pkg.generated.models.IdPermsType) |  | System maintained identity, time and permissions data. |
+| display_name | [string](#string) |  | Display name user configured string(name) that can be updated any time. Used as openstack name. |
+| annotations | [KeyValuePairs](#github.com.Juniper.contrail.pkg.generated.models.KeyValuePairs) |  | Dictionary of arbitrary (key, value) on a resource. |
+| perms2 | [PermType2](#github.com.Juniper.contrail.pkg.generated.models.PermType2) |  | Permissions data for role based access. |
+| node_refs | [OpenstackStorageNodeNodeRef](#github.com.Juniper.contrail.pkg.generated.models.OpenstackStorageNodeNodeRef) | repeated | Reference to node object for this openstack_storage node. |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.OpenstackStorageNodeNodeRef"/>
+
+### OpenstackStorageNodeNodeRef
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| uuid | [string](#string) |  |  |
+| to | [string](#string) | repeated |  |
+
+
+
+
+
+
 <a name="github.com.Juniper.contrail.pkg.generated.models.OsImage"/>
 
 ### OsImage
@@ -17543,10 +18425,10 @@
 | vxlan_routing | [bool](#bool) |  | When this knob is enabled for a project, an internal system VN (VN-Int) is created for every logical router in the project. |
 | alarm_enable | [bool](#bool) |  | Flag to enable/disable alarms configured under global-system-config. True, if not set. |
 | quota | [QuotaType](#github.com.Juniper.contrail.pkg.generated.models.QuotaType) |  | Max instances limits for various objects under project. |
-| application_policy_set_refs | [ProjectApplicationPolicySetRef](#github.com.Juniper.contrail.pkg.generated.models.ProjectApplicationPolicySetRef) | repeated | Reference to default application-policy-set is automatically createdby system for default socped application policy sets. Needed by vrouter to identify default application-policy-set rules of a virtual machine interface |
 | floating_ip_pool_refs | [ProjectFloatingIPPoolRef](#github.com.Juniper.contrail.pkg.generated.models.ProjectFloatingIPPoolRef) | repeated | Reference to floating ip pool in this project. |
 | alias_ip_pool_refs | [ProjectAliasIPPoolRef](#github.com.Juniper.contrail.pkg.generated.models.ProjectAliasIPPoolRef) | repeated | Reference to alias ip pool in this project. |
 | namespace_refs | [ProjectNamespaceRef](#github.com.Juniper.contrail.pkg.generated.models.ProjectNamespaceRef) | repeated | Reference to network namespace of this project. |
+| application_policy_set_refs | [ProjectApplicationPolicySetRef](#github.com.Juniper.contrail.pkg.generated.models.ProjectApplicationPolicySetRef) | repeated | Reference to default application-policy-set is automatically createdby system for default socped application policy sets. Needed by vrouter to identify default application-policy-set rules of a virtual machine interface |
 | address_groups | [AddressGroup](#github.com.Juniper.contrail.pkg.generated.models.AddressGroup) | repeated | Project level address Group object |
 | alarms | [Alarm](#github.com.Juniper.contrail.pkg.generated.models.Alarm) | repeated | List of alarms that are applicable to objects anchored under the project. |
 | api_access_lists | [APIAccessList](#github.com.Juniper.contrail.pkg.generated.models.APIAccessList) | repeated | API access list is list of rules that define role based access to each API and its properties at project level. |
@@ -19781,37 +20663,6 @@
 
 
 
-<a name="github.com.Juniper.contrail.pkg.generated.models.UpdateContrailControllerNodeRequest"/>
-
-### UpdateContrailControllerNodeRequest
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| contrail_controller_node | [ContrailControllerNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailControllerNode) |  |  |
-| field_mask | [google.protobuf.FieldMask](#google.protobuf.FieldMask) |  |  |
-
-
-
-
-
-
-<a name="github.com.Juniper.contrail.pkg.generated.models.UpdateContrailControllerNodeResponse"/>
-
-### UpdateContrailControllerNodeResponse
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| contrail_controller_node | [ContrailControllerNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailControllerNode) |  |  |
-
-
-
-
-
-
 <a name="github.com.Juniper.contrail.pkg.generated.models.UpdateContrailStorageNodeRequest"/>
 
 ### UpdateContrailStorageNodeRequest
@@ -19868,6 +20719,37 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | contrail_vrouter_node | [ContrailVrouterNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailVrouterNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.UpdateContrailWebuiNodeRequest"/>
+
+### UpdateContrailWebuiNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| contrail_webui_node | [ContrailWebuiNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailWebuiNode) |  |  |
+| field_mask | [google.protobuf.FieldMask](#google.protobuf.FieldMask) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.UpdateContrailWebuiNodeResponse"/>
+
+### UpdateContrailWebuiNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| contrail_webui_node | [ContrailWebuiNode](#github.com.Juniper.contrail.pkg.generated.models.ContrailWebuiNode) |  |  |
 
 
 
@@ -20922,6 +21804,161 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | node | [Node](#github.com.Juniper.contrail.pkg.generated.models.Node) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackComputeNodeRequest"/>
+
+### UpdateOpenstackComputeNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_compute_node | [OpenstackComputeNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackComputeNode) |  |  |
+| field_mask | [google.protobuf.FieldMask](#google.protobuf.FieldMask) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackComputeNodeResponse"/>
+
+### UpdateOpenstackComputeNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_compute_node | [OpenstackComputeNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackComputeNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackControlNodeRequest"/>
+
+### UpdateOpenstackControlNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_control_node | [OpenstackControlNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackControlNode) |  |  |
+| field_mask | [google.protobuf.FieldMask](#google.protobuf.FieldMask) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackControlNodeResponse"/>
+
+### UpdateOpenstackControlNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_control_node | [OpenstackControlNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackControlNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackMonitoringNodeRequest"/>
+
+### UpdateOpenstackMonitoringNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_monitoring_node | [OpenstackMonitoringNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackMonitoringNode) |  |  |
+| field_mask | [google.protobuf.FieldMask](#google.protobuf.FieldMask) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackMonitoringNodeResponse"/>
+
+### UpdateOpenstackMonitoringNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_monitoring_node | [OpenstackMonitoringNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackMonitoringNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackNetworkNodeRequest"/>
+
+### UpdateOpenstackNetworkNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_network_node | [OpenstackNetworkNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackNetworkNode) |  |  |
+| field_mask | [google.protobuf.FieldMask](#google.protobuf.FieldMask) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackNetworkNodeResponse"/>
+
+### UpdateOpenstackNetworkNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_network_node | [OpenstackNetworkNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackNetworkNode) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackStorageNodeRequest"/>
+
+### UpdateOpenstackStorageNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_storage_node | [OpenstackStorageNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackStorageNode) |  |  |
+| field_mask | [google.protobuf.FieldMask](#google.protobuf.FieldMask) |  |  |
+
+
+
+
+
+
+<a name="github.com.Juniper.contrail.pkg.generated.models.UpdateOpenstackStorageNodeResponse"/>
+
+### UpdateOpenstackStorageNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| openstack_storage_node | [OpenstackStorageNode](#github.com.Juniper.contrail.pkg.generated.models.OpenstackStorageNode) |  |  |
 
 
 
@@ -22521,20 +23558,20 @@
 | vrf_assign_table | [VrfAssignTableType](#github.com.Juniper.contrail.pkg.generated.models.VrfAssignTableType) |  | VRF assignment policy for this interface, automatically generated by system. |
 | port_security_enabled | [bool](#bool) |  | Port security status on the network |
 | virtual_machine_interface_properties | [VirtualMachineInterfacePropertiesType](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfacePropertiesType) |  | Virtual Machine Interface miscellaneous configurations. |
-| security_group_refs | [VirtualMachineInterfaceSecurityGroupRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceSecurityGroupRef) | repeated | Interface ACL, Automatically generated by system based on security groups attached to this interface. |
-| bridge_domain_refs | [VirtualMachineInterfaceBridgeDomainRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceBridgeDomainRef) | repeated | Virtual Machine interface maps to a bridge-domain by defaultor based on in coming 802.1Q vlan tag |
-| virtual_machine_interface_refs | [VirtualMachineInterfaceVirtualMachineInterfaceRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceVirtualMachineInterfaceRef) | repeated | List of references to the sub interfaces of this interface. |
+| virtual_machine_refs | [VirtualMachineInterfaceVirtualMachineRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceVirtualMachineRef) | repeated | This interface belongs to the referenced virtual machine. |
 | interface_route_table_refs | [VirtualMachineInterfaceInterfaceRouteTableRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceInterfaceRouteTableRef) | repeated | Reference to the interface route table attached to this interface. |
+| virtual_network_refs | [VirtualMachineInterfaceVirtualNetworkRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceVirtualNetworkRef) | repeated | This interface is member of the referenced virtual network. |
+| bridge_domain_refs | [VirtualMachineInterfaceBridgeDomainRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceBridgeDomainRef) | repeated | Virtual Machine interface maps to a bridge-domain by defaultor based on in coming 802.1Q vlan tag |
+| service_endpoint_refs | [VirtualMachineInterfaceServiceEndpointRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceServiceEndpointRef) | repeated | Links the access endpoint i.e virtual-machine-interface to service endpoint. |
+| bgp_router_refs | [VirtualMachineInterfaceBGPRouterRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceBGPRouterRef) | repeated | Reference to bgp-router from the virtual machine interface. |
+| security_logging_object_refs | [VirtualMachineInterfaceSecurityLoggingObjectRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceSecurityLoggingObjectRef) | repeated | Reference to security logging object for this virtual machine interface |
+| routing_instance_refs | [VirtualMachineInterfaceRoutingInstanceRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceRoutingInstanceRef) | repeated | Automatically generated Forwarding policy. This will be deprecated in future in favour of VRF assign rules. |
+| service_health_check_refs | [VirtualMachineInterfaceServiceHealthCheckRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceServiceHealthCheckRef) | repeated | Reference to health check object attached to this interface. |
+| virtual_machine_interface_refs | [VirtualMachineInterfaceVirtualMachineInterfaceRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceVirtualMachineInterfaceRef) | repeated | List of references to the sub interfaces of this interface. |
+| qos_config_refs | [VirtualMachineInterfaceQosConfigRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceQosConfigRef) | repeated | Reference to QoS config for this virtual machine interface. |
 | port_tuple_refs | [VirtualMachineInterfacePortTupleRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfacePortTupleRef) | repeated |  |
 | physical_interface_refs | [VirtualMachineInterfacePhysicalInterfaceRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfacePhysicalInterfaceRef) | repeated | Reference to the physical interface of service appliance this service interface represents. |
-| virtual_network_refs | [VirtualMachineInterfaceVirtualNetworkRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceVirtualNetworkRef) | repeated | This interface is member of the referenced virtual network. |
-| virtual_machine_refs | [VirtualMachineInterfaceVirtualMachineRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceVirtualMachineRef) | repeated | This interface belongs to the referenced virtual machine. |
-| qos_config_refs | [VirtualMachineInterfaceQosConfigRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceQosConfigRef) | repeated | Reference to QoS config for this virtual machine interface. |
-| bgp_router_refs | [VirtualMachineInterfaceBGPRouterRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceBGPRouterRef) | repeated | Reference to bgp-router from the virtual machine interface. |
-| routing_instance_refs | [VirtualMachineInterfaceRoutingInstanceRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceRoutingInstanceRef) | repeated | Automatically generated Forwarding policy. This will be deprecated in future in favour of VRF assign rules. |
-| service_endpoint_refs | [VirtualMachineInterfaceServiceEndpointRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceServiceEndpointRef) | repeated | Links the access endpoint i.e virtual-machine-interface to service endpoint. |
-| security_logging_object_refs | [VirtualMachineInterfaceSecurityLoggingObjectRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceSecurityLoggingObjectRef) | repeated | Reference to security logging object for this virtual machine interface |
-| service_health_check_refs | [VirtualMachineInterfaceServiceHealthCheckRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceServiceHealthCheckRef) | repeated | Reference to health check object attached to this interface. |
+| security_group_refs | [VirtualMachineInterfaceSecurityGroupRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualMachineInterfaceSecurityGroupRef) | repeated | Interface ACL, Automatically generated by system based on security groups attached to this interface. |
 
 
 
@@ -22838,13 +23875,13 @@
 | multi_policy_service_chains_enabled | [bool](#bool) |  |  |
 | mac_limit_control | [MACLimitControlType](#github.com.Juniper.contrail.pkg.generated.models.MACLimitControlType) |  | MAC limit control on the network |
 | is_shared | [bool](#bool) |  | When true, this virtual network is shared with all tenants. |
+| bgpvpn_refs | [VirtualNetworkBGPVPNRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkBGPVPNRef) | repeated | Back reference to virtual network associated to the BGP VPN resource |
+| network_ipam_refs | [VirtualNetworkNetworkIpamRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkNetworkIpamRef) | repeated | Reference to network-ipam this network is using. It has list of subnets that are being used as property of the reference. |
+| security_logging_object_refs | [VirtualNetworkSecurityLoggingObjectRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkSecurityLoggingObjectRef) | repeated | Reference to security logging object for this virtual network. |
 | network_policy_refs | [VirtualNetworkNetworkPolicyRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkNetworkPolicyRef) | repeated | Reference to network-policy attached to this network. It has sequence number to specify attachment order. |
 | qos_config_refs | [VirtualNetworkQosConfigRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkQosConfigRef) | repeated | Reference to QoS configuration for this virtual network. |
 | route_table_refs | [VirtualNetworkRouteTableRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkRouteTableRef) | repeated | Reference to route table attached to this virtual network. |
 | virtual_network_refs | [VirtualNetworkVirtualNetworkRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkVirtualNetworkRef) | repeated | Reference to a virtual network which is the provider network for the given virtual network. Traffic forwarding happens in the routing instance of the provider network. |
-| bgpvpn_refs | [VirtualNetworkBGPVPNRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkBGPVPNRef) | repeated | Back reference to virtual network associated to the BGP VPN resource |
-| network_ipam_refs | [VirtualNetworkNetworkIpamRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkNetworkIpamRef) | repeated | Reference to network-ipam this network is using. It has list of subnets that are being used as property of the reference. |
-| security_logging_object_refs | [VirtualNetworkSecurityLoggingObjectRef](#github.com.Juniper.contrail.pkg.generated.models.VirtualNetworkSecurityLoggingObjectRef) | repeated | Reference to security logging object for this virtual network. |
 | access_control_lists | [AccessControlList](#github.com.Juniper.contrail.pkg.generated.models.AccessControlList) | repeated | Virtual network access control list are automatically derived from all the network policies attached to virtual network. |
 | alias_ip_pools | [AliasIPPool](#github.com.Juniper.contrail.pkg.generated.models.AliasIPPool) | repeated | Alias ip pool is set of addresses that are carved out of a given network. Ip(s) from this set can be assigned to virtual-machine-interface so that they become members of this network |
 | bridge_domains | [BridgeDomain](#github.com.Juniper.contrail.pkg.generated.models.BridgeDomain) | repeated | bridge-domains configured in a virtual network |

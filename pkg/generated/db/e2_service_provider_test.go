@@ -39,31 +39,6 @@ func TestE2ServiceProvider(t *testing.T) {
 
 	// Create referred objects
 
-	var PhysicalRoutercreateref []*models.E2ServiceProviderPhysicalRouterRef
-	var PhysicalRouterrefModel *models.PhysicalRouter
-	PhysicalRouterrefModel = models.MakePhysicalRouter()
-	PhysicalRouterrefModel.UUID = "e2_service_provider_physical_router_ref_uuid"
-	PhysicalRouterrefModel.FQName = []string{"test", "e2_service_provider_physical_router_ref_uuid"}
-	_, err = db.CreatePhysicalRouter(ctx, &models.CreatePhysicalRouterRequest{
-		PhysicalRouter: PhysicalRouterrefModel,
-	})
-	PhysicalRouterrefModel.UUID = "e2_service_provider_physical_router_ref_uuid1"
-	PhysicalRouterrefModel.FQName = []string{"test", "e2_service_provider_physical_router_ref_uuid1"}
-	_, err = db.CreatePhysicalRouter(ctx, &models.CreatePhysicalRouterRequest{
-		PhysicalRouter: PhysicalRouterrefModel,
-	})
-	PhysicalRouterrefModel.UUID = "e2_service_provider_physical_router_ref_uuid2"
-	PhysicalRouterrefModel.FQName = []string{"test", "e2_service_provider_physical_router_ref_uuid2"}
-	_, err = db.CreatePhysicalRouter(ctx, &models.CreatePhysicalRouterRequest{
-		PhysicalRouter: PhysicalRouterrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	PhysicalRoutercreateref = append(PhysicalRoutercreateref, &models.E2ServiceProviderPhysicalRouterRef{UUID: "e2_service_provider_physical_router_ref_uuid", To: []string{"test", "e2_service_provider_physical_router_ref_uuid"}})
-	PhysicalRoutercreateref = append(PhysicalRoutercreateref, &models.E2ServiceProviderPhysicalRouterRef{UUID: "e2_service_provider_physical_router_ref_uuid2", To: []string{"test", "e2_service_provider_physical_router_ref_uuid2"}})
-	model.PhysicalRouterRefs = PhysicalRoutercreateref
-
 	var PeeringPolicycreateref []*models.E2ServiceProviderPeeringPolicyRef
 	var PeeringPolicyrefModel *models.PeeringPolicy
 	PeeringPolicyrefModel = models.MakePeeringPolicy()
@@ -88,6 +63,31 @@ func TestE2ServiceProvider(t *testing.T) {
 	PeeringPolicycreateref = append(PeeringPolicycreateref, &models.E2ServiceProviderPeeringPolicyRef{UUID: "e2_service_provider_peering_policy_ref_uuid", To: []string{"test", "e2_service_provider_peering_policy_ref_uuid"}})
 	PeeringPolicycreateref = append(PeeringPolicycreateref, &models.E2ServiceProviderPeeringPolicyRef{UUID: "e2_service_provider_peering_policy_ref_uuid2", To: []string{"test", "e2_service_provider_peering_policy_ref_uuid2"}})
 	model.PeeringPolicyRefs = PeeringPolicycreateref
+
+	var PhysicalRoutercreateref []*models.E2ServiceProviderPhysicalRouterRef
+	var PhysicalRouterrefModel *models.PhysicalRouter
+	PhysicalRouterrefModel = models.MakePhysicalRouter()
+	PhysicalRouterrefModel.UUID = "e2_service_provider_physical_router_ref_uuid"
+	PhysicalRouterrefModel.FQName = []string{"test", "e2_service_provider_physical_router_ref_uuid"}
+	_, err = db.CreatePhysicalRouter(ctx, &models.CreatePhysicalRouterRequest{
+		PhysicalRouter: PhysicalRouterrefModel,
+	})
+	PhysicalRouterrefModel.UUID = "e2_service_provider_physical_router_ref_uuid1"
+	PhysicalRouterrefModel.FQName = []string{"test", "e2_service_provider_physical_router_ref_uuid1"}
+	_, err = db.CreatePhysicalRouter(ctx, &models.CreatePhysicalRouterRequest{
+		PhysicalRouter: PhysicalRouterrefModel,
+	})
+	PhysicalRouterrefModel.UUID = "e2_service_provider_physical_router_ref_uuid2"
+	PhysicalRouterrefModel.FQName = []string{"test", "e2_service_provider_physical_router_ref_uuid2"}
+	_, err = db.CreatePhysicalRouter(ctx, &models.CreatePhysicalRouterRequest{
+		PhysicalRouter: PhysicalRouterrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	PhysicalRoutercreateref = append(PhysicalRoutercreateref, &models.E2ServiceProviderPhysicalRouterRef{UUID: "e2_service_provider_physical_router_ref_uuid", To: []string{"test", "e2_service_provider_physical_router_ref_uuid"}})
+	PhysicalRoutercreateref = append(PhysicalRoutercreateref, &models.E2ServiceProviderPhysicalRouterRef{UUID: "e2_service_provider_physical_router_ref_uuid2", To: []string{"test", "e2_service_provider_physical_router_ref_uuid2"}})
+	model.PhysicalRouterRefs = PhysicalRoutercreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()

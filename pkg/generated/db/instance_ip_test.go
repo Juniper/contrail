@@ -39,31 +39,6 @@ func TestInstanceIP(t *testing.T) {
 
 	// Create referred objects
 
-	var VirtualRoutercreateref []*models.InstanceIPVirtualRouterRef
-	var VirtualRouterrefModel *models.VirtualRouter
-	VirtualRouterrefModel = models.MakeVirtualRouter()
-	VirtualRouterrefModel.UUID = "instance_ip_virtual_router_ref_uuid"
-	VirtualRouterrefModel.FQName = []string{"test", "instance_ip_virtual_router_ref_uuid"}
-	_, err = db.CreateVirtualRouter(ctx, &models.CreateVirtualRouterRequest{
-		VirtualRouter: VirtualRouterrefModel,
-	})
-	VirtualRouterrefModel.UUID = "instance_ip_virtual_router_ref_uuid1"
-	VirtualRouterrefModel.FQName = []string{"test", "instance_ip_virtual_router_ref_uuid1"}
-	_, err = db.CreateVirtualRouter(ctx, &models.CreateVirtualRouterRequest{
-		VirtualRouter: VirtualRouterrefModel,
-	})
-	VirtualRouterrefModel.UUID = "instance_ip_virtual_router_ref_uuid2"
-	VirtualRouterrefModel.FQName = []string{"test", "instance_ip_virtual_router_ref_uuid2"}
-	_, err = db.CreateVirtualRouter(ctx, &models.CreateVirtualRouterRequest{
-		VirtualRouter: VirtualRouterrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	VirtualRoutercreateref = append(VirtualRoutercreateref, &models.InstanceIPVirtualRouterRef{UUID: "instance_ip_virtual_router_ref_uuid", To: []string{"test", "instance_ip_virtual_router_ref_uuid"}})
-	VirtualRoutercreateref = append(VirtualRoutercreateref, &models.InstanceIPVirtualRouterRef{UUID: "instance_ip_virtual_router_ref_uuid2", To: []string{"test", "instance_ip_virtual_router_ref_uuid2"}})
-	model.VirtualRouterRefs = VirtualRoutercreateref
-
 	var NetworkIpamcreateref []*models.InstanceIPNetworkIpamRef
 	var NetworkIpamrefModel *models.NetworkIpam
 	NetworkIpamrefModel = models.MakeNetworkIpam()
@@ -163,6 +138,31 @@ func TestInstanceIP(t *testing.T) {
 	PhysicalRoutercreateref = append(PhysicalRoutercreateref, &models.InstanceIPPhysicalRouterRef{UUID: "instance_ip_physical_router_ref_uuid", To: []string{"test", "instance_ip_physical_router_ref_uuid"}})
 	PhysicalRoutercreateref = append(PhysicalRoutercreateref, &models.InstanceIPPhysicalRouterRef{UUID: "instance_ip_physical_router_ref_uuid2", To: []string{"test", "instance_ip_physical_router_ref_uuid2"}})
 	model.PhysicalRouterRefs = PhysicalRoutercreateref
+
+	var VirtualRoutercreateref []*models.InstanceIPVirtualRouterRef
+	var VirtualRouterrefModel *models.VirtualRouter
+	VirtualRouterrefModel = models.MakeVirtualRouter()
+	VirtualRouterrefModel.UUID = "instance_ip_virtual_router_ref_uuid"
+	VirtualRouterrefModel.FQName = []string{"test", "instance_ip_virtual_router_ref_uuid"}
+	_, err = db.CreateVirtualRouter(ctx, &models.CreateVirtualRouterRequest{
+		VirtualRouter: VirtualRouterrefModel,
+	})
+	VirtualRouterrefModel.UUID = "instance_ip_virtual_router_ref_uuid1"
+	VirtualRouterrefModel.FQName = []string{"test", "instance_ip_virtual_router_ref_uuid1"}
+	_, err = db.CreateVirtualRouter(ctx, &models.CreateVirtualRouterRequest{
+		VirtualRouter: VirtualRouterrefModel,
+	})
+	VirtualRouterrefModel.UUID = "instance_ip_virtual_router_ref_uuid2"
+	VirtualRouterrefModel.FQName = []string{"test", "instance_ip_virtual_router_ref_uuid2"}
+	_, err = db.CreateVirtualRouter(ctx, &models.CreateVirtualRouterRequest{
+		VirtualRouter: VirtualRouterrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	VirtualRoutercreateref = append(VirtualRoutercreateref, &models.InstanceIPVirtualRouterRef{UUID: "instance_ip_virtual_router_ref_uuid", To: []string{"test", "instance_ip_virtual_router_ref_uuid"}})
+	VirtualRoutercreateref = append(VirtualRoutercreateref, &models.InstanceIPVirtualRouterRef{UUID: "instance_ip_virtual_router_ref_uuid2", To: []string{"test", "instance_ip_virtual_router_ref_uuid2"}})
+	model.VirtualRouterRefs = VirtualRoutercreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -331,6 +331,14 @@ func TestInstanceIP(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
+	//    var NetworkIpamref []interface{}
+	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"delete", "uuid":"instance_ip_network_ipam_ref_uuid", "to": []string{"test", "instance_ip_network_ipam_ref_uuid"}})
+	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"add", "uuid":"instance_ip_network_ipam_ref_uuid1", "to": []string{"test", "instance_ip_network_ipam_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "NetworkIpamRefs", ".", NetworkIpamref)
+	//
 	//    var VirtualNetworkref []interface{}
 	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"delete", "uuid":"instance_ip_virtual_network_ref_uuid", "to": []string{"test", "instance_ip_virtual_network_ref_uuid"}})
 	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"add", "uuid":"instance_ip_virtual_network_ref_uuid1", "to": []string{"test", "instance_ip_virtual_network_ref_uuid1"}})
@@ -363,14 +371,6 @@ func TestInstanceIP(t *testing.T) {
 	//
 	//    common.SetValueByPath(updateMap, "VirtualRouterRefs", ".", VirtualRouterref)
 	//
-	//    var NetworkIpamref []interface{}
-	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"delete", "uuid":"instance_ip_network_ipam_ref_uuid", "to": []string{"test", "instance_ip_network_ipam_ref_uuid"}})
-	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"add", "uuid":"instance_ip_network_ipam_ref_uuid1", "to": []string{"test", "instance_ip_network_ipam_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "NetworkIpamRefs", ".", NetworkIpamref)
-	//
 	//
 	_, err = db.CreateInstanceIP(ctx,
 		&models.CreateInstanceIPRequest{
@@ -389,76 +389,6 @@ func TestInstanceIP(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
-
-	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := common.GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_instance_ip_network_ipam` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing NetworkIpamRefs delete statement failed")
-		}
-		_, err = stmt.Exec("instance_ip_dummy_uuid", "instance_ip_network_ipam_ref_uuid")
-		_, err = stmt.Exec("instance_ip_dummy_uuid", "instance_ip_network_ipam_ref_uuid1")
-		_, err = stmt.Exec("instance_ip_dummy_uuid", "instance_ip_network_ipam_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "NetworkIpamRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteNetworkIpam(ctx,
-		&models.DeleteNetworkIpamRequest{
-			ID: "instance_ip_network_ipam_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref instance_ip_network_ipam_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteNetworkIpam(ctx,
-		&models.DeleteNetworkIpamRequest{
-			ID: "instance_ip_network_ipam_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref instance_ip_network_ipam_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteNetworkIpam(
-		ctx,
-		&models.DeleteNetworkIpamRequest{
-			ID: "instance_ip_network_ipam_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref instance_ip_network_ipam_ref_uuid2 failed", err)
-	}
-
-	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := common.GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_instance_ip_virtual_network` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing VirtualNetworkRefs delete statement failed")
-		}
-		_, err = stmt.Exec("instance_ip_dummy_uuid", "instance_ip_virtual_network_ref_uuid")
-		_, err = stmt.Exec("instance_ip_dummy_uuid", "instance_ip_virtual_network_ref_uuid1")
-		_, err = stmt.Exec("instance_ip_dummy_uuid", "instance_ip_virtual_network_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteVirtualNetwork(ctx,
-		&models.DeleteVirtualNetworkRequest{
-			ID: "instance_ip_virtual_network_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref instance_ip_virtual_network_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteVirtualNetwork(ctx,
-		&models.DeleteVirtualNetworkRequest{
-			ID: "instance_ip_virtual_network_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref instance_ip_virtual_network_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteVirtualNetwork(
-		ctx,
-		&models.DeleteVirtualNetworkRequest{
-			ID: "instance_ip_virtual_network_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref instance_ip_virtual_network_ref_uuid2 failed", err)
-	}
 
 	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := common.GetTransaction(ctx)
@@ -563,6 +493,76 @@ func TestInstanceIP(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref instance_ip_virtual_router_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_instance_ip_network_ipam` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing NetworkIpamRefs delete statement failed")
+		}
+		_, err = stmt.Exec("instance_ip_dummy_uuid", "instance_ip_network_ipam_ref_uuid")
+		_, err = stmt.Exec("instance_ip_dummy_uuid", "instance_ip_network_ipam_ref_uuid1")
+		_, err = stmt.Exec("instance_ip_dummy_uuid", "instance_ip_network_ipam_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "NetworkIpamRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteNetworkIpam(ctx,
+		&models.DeleteNetworkIpamRequest{
+			ID: "instance_ip_network_ipam_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref instance_ip_network_ipam_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteNetworkIpam(ctx,
+		&models.DeleteNetworkIpamRequest{
+			ID: "instance_ip_network_ipam_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref instance_ip_network_ipam_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteNetworkIpam(
+		ctx,
+		&models.DeleteNetworkIpamRequest{
+			ID: "instance_ip_network_ipam_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref instance_ip_network_ipam_ref_uuid2 failed", err)
+	}
+
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_instance_ip_virtual_network` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing VirtualNetworkRefs delete statement failed")
+		}
+		_, err = stmt.Exec("instance_ip_dummy_uuid", "instance_ip_virtual_network_ref_uuid")
+		_, err = stmt.Exec("instance_ip_dummy_uuid", "instance_ip_virtual_network_ref_uuid1")
+		_, err = stmt.Exec("instance_ip_dummy_uuid", "instance_ip_virtual_network_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteVirtualNetwork(ctx,
+		&models.DeleteVirtualNetworkRequest{
+			ID: "instance_ip_virtual_network_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref instance_ip_virtual_network_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteVirtualNetwork(ctx,
+		&models.DeleteVirtualNetworkRequest{
+			ID: "instance_ip_virtual_network_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref instance_ip_virtual_network_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteVirtualNetwork(
+		ctx,
+		&models.DeleteVirtualNetworkRequest{
+			ID: "instance_ip_virtual_network_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref instance_ip_virtual_network_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

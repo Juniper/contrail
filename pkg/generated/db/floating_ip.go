@@ -341,26 +341,6 @@ func scanFloatingIP(values map[string]interface{}) (*models.FloatingIP, error) {
 
 	}
 
-	if value, ok := values["ref_project"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.FloatingIPProjectRef{}
-			referenceModel.UUID = uuid
-			m.ProjectRefs = append(m.ProjectRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -377,6 +357,26 @@ func scanFloatingIP(values map[string]interface{}) (*models.FloatingIP, error) {
 			referenceModel := &models.FloatingIPVirtualMachineInterfaceRef{}
 			referenceModel.UUID = uuid
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_project"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.FloatingIPProjectRef{}
+			referenceModel.UUID = uuid
+			m.ProjectRefs = append(m.ProjectRefs, referenceModel)
 
 		}
 	}

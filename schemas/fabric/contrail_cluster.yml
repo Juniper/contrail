@@ -11,6 +11,44 @@ plural: contrail_clusters
 prefix: /
 schema:
   properties:
+    container_registry:
+      default: opencontrailnightly
+      description: Container registry to pull contrail containers
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Container Registry
+      type: string
+      view:
+      - create
+      - detail
+    contrail_version:
+      description: Version of contrail containers to be used.
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Contrail Version
+      type: string
+      view:
+      - create
+      - detail
+    rabbitmq_port:
+      default: 5672
+      description: RabbitMQ port used to connect to RabbitMQ.
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: RabbitMQ Port
+      type: string
+      view:
+      - create
+      - detail
     provisioner_type:
       default: ansible
       description: Tool to be used to provision the cluster
@@ -42,36 +80,6 @@ schema:
       view:
       - create
       - detail
-    kubernetes:
-      default: ""
-      description: ""
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Kubernetes
-      type: string
-    kubernetes_master:
-      default: ""
-      description: ""
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Kubernetes Master
-      type: string
-    openstack:
-      default: ""
-      description: ""
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Openstack
-      type: string
     config_audit_ttl:
       default: "2160"
       description: Configuration Audit Retention Time in hours
@@ -85,84 +93,6 @@ schema:
       view:
       - create
       - detail
-    contrail_config:
-      default: ""
-      description: ""
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Contrail Config
-      type: string
-    contrail_configdb:
-      default: ""
-      description: ""
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Contrail Config Database
-      type: string
-    contrail_control:
-      default: ""
-      description: ""
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Contrail Control
-      type: string
-    contrail_webui:
-      default: ""
-      description: ""
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Contrail WebUI
-      type: string
-    contrail_analytics:
-      default: ""
-      description: ""
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Contrail Analytics
-      type: string
-    contrail_analyticsdb:
-      default: ""
-      description: ""
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Contrail Analytics Database
-      type: string
-    contrail_vrouter:
-      default: ""
-      description: ""
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Contrail Vrouter
-      type: string
-    data_ttl:
-      default: "48"
-      description: Data Retention Time in hours
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
       title: Data Retention Time
       type: string
       view:
@@ -228,6 +158,67 @@ schema:
       - update
       sql: ""
       title: Statistics Data Retention Time
+      type: string
+      view:
+      - create
+      - detail
+    openstack_internal_vip:
+      description: VIP for openstack internal network
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Openstack Internal VIP
+      type: string
+      view:
+      - create
+      - detail
+    openstack_external_vip:
+      description: VIP for openstack external network
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Openstack External VIP
+      type: string
+      view:
+      - create
+      - detail
+    openstack_internal_vip_interface:
+      description: VIP for openstack internal network
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Openstack Internal VIP
+      type: string
+      view:
+      - create
+      - detail
+    openstack_external_vip_interface:
+      description: Interface to configure VIP for openstack external network
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Openstack External VIP Interface
+      type: string
+      view:
+      - create
+      - detail
+    openstack_enable_haproxy:
+      description: Configure haproxy in openstack control node
+      default: "yes"
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Openstack Enable Haproxy
       type: string
       view:
       - create

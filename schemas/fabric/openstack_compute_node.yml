@@ -1,0 +1,27 @@
+description: Openstack Compute Node
+extends:
+- base
+- has_status
+id: openstack_compute_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this openstack_compute node."
+      presence: "optional"
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this openstack_compute node."
+    presence: "optional"
+plural: openstack_compute_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: openstack_compute_node
+title: openstack_compute Node
+type: ""
