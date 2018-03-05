@@ -20,6 +20,7 @@ func MakeAccessControlList() *AccessControlList {
 		DisplayName:              "",
 		Annotations:              MakeKeyValuePairs(),
 		Perms2:                   MakePermType2(),
+		ConfigurationVersion:     0,
 		AccessControlListHash:    0,
 		AccessControlListEntries: MakeAclEntriesType(),
 	}
@@ -43,6 +44,7 @@ func InterfaceToAccessControlList(i interface{}) *AccessControlList {
 		DisplayName:              common.InterfaceToString(m["display_name"]),
 		Annotations:              InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:                   InterfaceToPermType2(m["perms2"]),
+		ConfigurationVersion:     common.InterfaceToInt64(m["configuration_version"]),
 		AccessControlListHash:    common.InterfaceToInt64(m["access_control_list_hash"]),
 		AccessControlListEntries: InterfaceToAclEntriesType(m["access_control_list_entries"]),
 	}

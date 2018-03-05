@@ -42,31 +42,6 @@ func TestFirewallPolicy(t *testing.T) {
 
 	// Create referred objects
 
-	var FirewallRulecreateref []*models.FirewallPolicyFirewallRuleRef
-	var FirewallRulerefModel *models.FirewallRule
-	FirewallRulerefModel = models.MakeFirewallRule()
-	FirewallRulerefModel.UUID = "firewall_policy_firewall_rule_ref_uuid"
-	FirewallRulerefModel.FQName = []string{"test", "firewall_policy_firewall_rule_ref_uuid"}
-	_, err = db.CreateFirewallRule(ctx, &models.CreateFirewallRuleRequest{
-		FirewallRule: FirewallRulerefModel,
-	})
-	FirewallRulerefModel.UUID = "firewall_policy_firewall_rule_ref_uuid1"
-	FirewallRulerefModel.FQName = []string{"test", "firewall_policy_firewall_rule_ref_uuid1"}
-	_, err = db.CreateFirewallRule(ctx, &models.CreateFirewallRuleRequest{
-		FirewallRule: FirewallRulerefModel,
-	})
-	FirewallRulerefModel.UUID = "firewall_policy_firewall_rule_ref_uuid2"
-	FirewallRulerefModel.FQName = []string{"test", "firewall_policy_firewall_rule_ref_uuid2"}
-	_, err = db.CreateFirewallRule(ctx, &models.CreateFirewallRuleRequest{
-		FirewallRule: FirewallRulerefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	FirewallRulecreateref = append(FirewallRulecreateref, &models.FirewallPolicyFirewallRuleRef{UUID: "firewall_policy_firewall_rule_ref_uuid", To: []string{"test", "firewall_policy_firewall_rule_ref_uuid"}})
-	FirewallRulecreateref = append(FirewallRulecreateref, &models.FirewallPolicyFirewallRuleRef{UUID: "firewall_policy_firewall_rule_ref_uuid2", To: []string{"test", "firewall_policy_firewall_rule_ref_uuid2"}})
-	model.FirewallRuleRefs = FirewallRulecreateref
-
 	var SecurityLoggingObjectcreateref []*models.FirewallPolicySecurityLoggingObjectRef
 	var SecurityLoggingObjectrefModel *models.SecurityLoggingObject
 	SecurityLoggingObjectrefModel = models.MakeSecurityLoggingObject()
@@ -91,6 +66,31 @@ func TestFirewallPolicy(t *testing.T) {
 	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.FirewallPolicySecurityLoggingObjectRef{UUID: "firewall_policy_security_logging_object_ref_uuid", To: []string{"test", "firewall_policy_security_logging_object_ref_uuid"}})
 	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.FirewallPolicySecurityLoggingObjectRef{UUID: "firewall_policy_security_logging_object_ref_uuid2", To: []string{"test", "firewall_policy_security_logging_object_ref_uuid2"}})
 	model.SecurityLoggingObjectRefs = SecurityLoggingObjectcreateref
+
+	var FirewallRulecreateref []*models.FirewallPolicyFirewallRuleRef
+	var FirewallRulerefModel *models.FirewallRule
+	FirewallRulerefModel = models.MakeFirewallRule()
+	FirewallRulerefModel.UUID = "firewall_policy_firewall_rule_ref_uuid"
+	FirewallRulerefModel.FQName = []string{"test", "firewall_policy_firewall_rule_ref_uuid"}
+	_, err = db.CreateFirewallRule(ctx, &models.CreateFirewallRuleRequest{
+		FirewallRule: FirewallRulerefModel,
+	})
+	FirewallRulerefModel.UUID = "firewall_policy_firewall_rule_ref_uuid1"
+	FirewallRulerefModel.FQName = []string{"test", "firewall_policy_firewall_rule_ref_uuid1"}
+	_, err = db.CreateFirewallRule(ctx, &models.CreateFirewallRuleRequest{
+		FirewallRule: FirewallRulerefModel,
+	})
+	FirewallRulerefModel.UUID = "firewall_policy_firewall_rule_ref_uuid2"
+	FirewallRulerefModel.FQName = []string{"test", "firewall_policy_firewall_rule_ref_uuid2"}
+	_, err = db.CreateFirewallRule(ctx, &models.CreateFirewallRuleRequest{
+		FirewallRule: FirewallRulerefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	FirewallRulecreateref = append(FirewallRulecreateref, &models.FirewallPolicyFirewallRuleRef{UUID: "firewall_policy_firewall_rule_ref_uuid", To: []string{"test", "firewall_policy_firewall_rule_ref_uuid"}})
+	FirewallRulecreateref = append(FirewallRulecreateref, &models.FirewallPolicyFirewallRuleRef{UUID: "firewall_policy_firewall_rule_ref_uuid2", To: []string{"test", "firewall_policy_firewall_rule_ref_uuid2"}})
+	model.FirewallRuleRefs = FirewallRulecreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -204,6 +204,10 @@ func TestFirewallPolicy(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(updateMap, ".ConfigurationVersion", ".", 1.0)
+	//
+	//
+	//
 	//    if ".Annotations.KeyValuePair" == ".Perms2.Share" {
 	//        var share []interface{}
 	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
@@ -218,14 +222,6 @@ func TestFirewallPolicy(t *testing.T) {
 	//    common.SetValueByPath(updateMap, "perms2.owner", ".", "admin")
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
-	//
-	//    var SecurityLoggingObjectref []interface{}
-	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"firewall_policy_security_logging_object_ref_uuid", "to": []string{"test", "firewall_policy_security_logging_object_ref_uuid"}})
-	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"firewall_policy_security_logging_object_ref_uuid1", "to": []string{"test", "firewall_policy_security_logging_object_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "SecurityLoggingObjectRefs", ".", SecurityLoggingObjectref)
 	//
 	//    var FirewallRuleref []interface{}
 	//    FirewallRuleref = append(FirewallRuleref, map[string]interface{}{"operation":"delete", "uuid":"firewall_policy_firewall_rule_ref_uuid", "to": []string{"test", "firewall_policy_firewall_rule_ref_uuid"}})
@@ -242,6 +238,14 @@ func TestFirewallPolicy(t *testing.T) {
 	//    FirewallRuleref = append(FirewallRuleref, map[string]interface{}{"operation":"update", "uuid":"firewall_policy_firewall_rule_ref_uuid2", "to": []string{"test", "firewall_policy_firewall_rule_ref_uuid2"}, "attr": FirewallRuleAttr})
 	//
 	//    common.SetValueByPath(updateMap, "FirewallRuleRefs", ".", FirewallRuleref)
+	//
+	//    var SecurityLoggingObjectref []interface{}
+	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"firewall_policy_security_logging_object_ref_uuid", "to": []string{"test", "firewall_policy_security_logging_object_ref_uuid"}})
+	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"firewall_policy_security_logging_object_ref_uuid1", "to": []string{"test", "firewall_policy_security_logging_object_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "SecurityLoggingObjectRefs", ".", SecurityLoggingObjectref)
 	//
 	//
 	_, err = db.CreateFirewallPolicy(ctx,

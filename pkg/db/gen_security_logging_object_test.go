@@ -218,6 +218,10 @@ func TestSecurityLoggingObject(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(updateMap, ".ConfigurationVersion", ".", 1.0)
+	//
+	//
+	//
 	//    if ".Annotations.KeyValuePair" == ".Perms2.Share" {
 	//        var share []interface{}
 	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
@@ -286,41 +290,6 @@ func TestSecurityLoggingObject(t *testing.T) {
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_security_logging_object_security_group` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing SecurityGroupRefs delete statement failed")
-		}
-		_, err = stmt.Exec("security_logging_object_dummy_uuid", "security_logging_object_security_group_ref_uuid")
-		_, err = stmt.Exec("security_logging_object_dummy_uuid", "security_logging_object_security_group_ref_uuid1")
-		_, err = stmt.Exec("security_logging_object_dummy_uuid", "security_logging_object_security_group_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "SecurityGroupRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteSecurityGroup(ctx,
-		&models.DeleteSecurityGroupRequest{
-			ID: "security_logging_object_security_group_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref security_logging_object_security_group_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteSecurityGroup(ctx,
-		&models.DeleteSecurityGroupRequest{
-			ID: "security_logging_object_security_group_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref security_logging_object_security_group_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteSecurityGroup(
-		ctx,
-		&models.DeleteSecurityGroupRequest{
-			ID: "security_logging_object_security_group_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref security_logging_object_security_group_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_security_logging_object_network_policy` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing NetworkPolicyRefs delete statement failed")
@@ -352,6 +321,41 @@ func TestSecurityLoggingObject(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref security_logging_object_network_policy_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_security_logging_object_security_group` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing SecurityGroupRefs delete statement failed")
+		}
+		_, err = stmt.Exec("security_logging_object_dummy_uuid", "security_logging_object_security_group_ref_uuid")
+		_, err = stmt.Exec("security_logging_object_dummy_uuid", "security_logging_object_security_group_ref_uuid1")
+		_, err = stmt.Exec("security_logging_object_dummy_uuid", "security_logging_object_security_group_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "SecurityGroupRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteSecurityGroup(ctx,
+		&models.DeleteSecurityGroupRequest{
+			ID: "security_logging_object_security_group_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref security_logging_object_security_group_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteSecurityGroup(ctx,
+		&models.DeleteSecurityGroupRequest{
+			ID: "security_logging_object_security_group_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref security_logging_object_security_group_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteSecurityGroup(
+		ctx,
+		&models.DeleteSecurityGroupRequest{
+			ID: "security_logging_object_security_group_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref security_logging_object_security_group_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

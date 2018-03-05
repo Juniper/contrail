@@ -204,6 +204,10 @@ func TestApplicationPolicySet(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(updateMap, ".ConfigurationVersion", ".", 1.0)
+	//
+	//
+	//
 	//    if ".Annotations.KeyValuePair" == ".Perms2.Share" {
 	//        var share []interface{}
 	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
@@ -268,41 +272,6 @@ func TestApplicationPolicySet(t *testing.T) {
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_application_policy_set_global_vrouter_config` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing GlobalVrouterConfigRefs delete statement failed")
-		}
-		_, err = stmt.Exec("application_policy_set_dummy_uuid", "application_policy_set_global_vrouter_config_ref_uuid")
-		_, err = stmt.Exec("application_policy_set_dummy_uuid", "application_policy_set_global_vrouter_config_ref_uuid1")
-		_, err = stmt.Exec("application_policy_set_dummy_uuid", "application_policy_set_global_vrouter_config_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "GlobalVrouterConfigRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteGlobalVrouterConfig(ctx,
-		&models.DeleteGlobalVrouterConfigRequest{
-			ID: "application_policy_set_global_vrouter_config_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref application_policy_set_global_vrouter_config_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteGlobalVrouterConfig(ctx,
-		&models.DeleteGlobalVrouterConfigRequest{
-			ID: "application_policy_set_global_vrouter_config_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref application_policy_set_global_vrouter_config_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteGlobalVrouterConfig(
-		ctx,
-		&models.DeleteGlobalVrouterConfigRequest{
-			ID: "application_policy_set_global_vrouter_config_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref application_policy_set_global_vrouter_config_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_application_policy_set_firewall_policy` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing FirewallPolicyRefs delete statement failed")
@@ -334,6 +303,41 @@ func TestApplicationPolicySet(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref application_policy_set_firewall_policy_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_application_policy_set_global_vrouter_config` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing GlobalVrouterConfigRefs delete statement failed")
+		}
+		_, err = stmt.Exec("application_policy_set_dummy_uuid", "application_policy_set_global_vrouter_config_ref_uuid")
+		_, err = stmt.Exec("application_policy_set_dummy_uuid", "application_policy_set_global_vrouter_config_ref_uuid1")
+		_, err = stmt.Exec("application_policy_set_dummy_uuid", "application_policy_set_global_vrouter_config_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "GlobalVrouterConfigRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteGlobalVrouterConfig(ctx,
+		&models.DeleteGlobalVrouterConfigRequest{
+			ID: "application_policy_set_global_vrouter_config_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref application_policy_set_global_vrouter_config_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteGlobalVrouterConfig(ctx,
+		&models.DeleteGlobalVrouterConfigRequest{
+			ID: "application_policy_set_global_vrouter_config_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref application_policy_set_global_vrouter_config_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteGlobalVrouterConfig(
+		ctx,
+		&models.DeleteGlobalVrouterConfigRequest{
+			ID: "application_policy_set_global_vrouter_config_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref application_policy_set_global_vrouter_config_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

@@ -43,6 +43,7 @@ var BaremetalPortFields = []string{
 	"fq_name",
 	"display_name",
 	"created_at",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -91,6 +92,7 @@ func (db *DB) createBaremetalPort(
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
 		string(model.GetCreatedAt()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -283,6 +285,12 @@ func scanBaremetalPort(values map[string]interface{}) (*models.BaremetalPort, er
 	if value, ok := values["created_at"]; ok {
 
 		m.CreatedAt = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

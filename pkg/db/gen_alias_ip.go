@@ -35,6 +35,7 @@ var AliasIPFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 	"alias_ip_address_family",
 	"alias_ip_address",
@@ -43,12 +44,12 @@ var AliasIPFields = []string{
 // AliasIPRefFields is db reference fields for AliasIP
 var AliasIPRefFields = map[string][]string{
 
-	"project": []string{
+	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
 	},
 
-	"virtual_machine_interface": []string{
+	"project": []string{
 	// <schema.Schema Value>
 
 	},
@@ -91,6 +92,7 @@ func (db *DB) createAliasIP(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()),
 		string(model.GetAliasIPAddressFamily()),
 		string(model.GetAliasIPAddress()))
@@ -98,19 +100,19 @@ func (db *DB) createAliasIP(
 		return errors.Wrap(err, "create failed")
 	}
 
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
 	for _, ref := range model.ProjectRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("project"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ProjectRefs create failed")
+		}
+	}
+
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
 	}
 
@@ -253,6 +255,12 @@ func scanAliasIP(values map[string]interface{}) (*models.AliasIP, error) {
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

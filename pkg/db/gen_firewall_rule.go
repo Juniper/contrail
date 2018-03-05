@@ -58,6 +58,7 @@ var FirewallRuleFields = []string{
 	"endpoint_1_address_group",
 	"display_name",
 	"direction",
+	"configuration_version",
 	"key_value_pair",
 	"simple_action",
 	"qos_action",
@@ -167,6 +168,7 @@ func (db *DB) createFirewallRule(
 		string(model.GetEndpoint1().GetAddressGroup()),
 		string(model.GetDisplayName()),
 		string(model.GetDirection()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()),
 		string(model.GetActionList().GetSimpleAction()),
 		string(model.GetActionList().GetQosAction()),
@@ -501,6 +503,12 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 	if value, ok := values["direction"]; ok {
 
 		m.Direction = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

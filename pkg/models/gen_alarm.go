@@ -12,17 +12,18 @@ var _ = common.OPERATION
 func MakeAlarm() *Alarm {
 	return &Alarm{
 		//TODO(nati): Apply default
-		UUID:          "",
-		ParentUUID:    "",
-		ParentType:    "",
-		FQName:        []string{},
-		IDPerms:       MakeIdPermsType(),
-		DisplayName:   "",
-		Annotations:   MakeKeyValuePairs(),
-		Perms2:        MakePermType2(),
-		AlarmRules:    MakeAlarmOrList(),
-		UveKeys:       MakeUveKeysType(),
-		AlarmSeverity: 0,
+		UUID:                 "",
+		ParentUUID:           "",
+		ParentType:           "",
+		FQName:               []string{},
+		IDPerms:              MakeIdPermsType(),
+		DisplayName:          "",
+		Annotations:          MakeKeyValuePairs(),
+		Perms2:               MakePermType2(),
+		ConfigurationVersion: 0,
+		AlarmRules:           MakeAlarmOrList(),
+		UveKeys:              MakeUveKeysType(),
+		AlarmSeverity:        0,
 	}
 }
 
@@ -36,17 +37,18 @@ func InterfaceToAlarm(i interface{}) *Alarm {
 	}
 	return &Alarm{
 		//TODO(nati): Apply default
-		UUID:          common.InterfaceToString(m["uuid"]),
-		ParentUUID:    common.InterfaceToString(m["parent_uuid"]),
-		ParentType:    common.InterfaceToString(m["parent_type"]),
-		FQName:        common.InterfaceToStringList(m["fq_name"]),
-		IDPerms:       InterfaceToIdPermsType(m["id_perms"]),
-		DisplayName:   common.InterfaceToString(m["display_name"]),
-		Annotations:   InterfaceToKeyValuePairs(m["annotations"]),
-		Perms2:        InterfaceToPermType2(m["perms2"]),
-		AlarmRules:    InterfaceToAlarmOrList(m["alarm_rules"]),
-		UveKeys:       InterfaceToUveKeysType(m["uve_keys"]),
-		AlarmSeverity: common.InterfaceToInt64(m["alarm_severity"]),
+		UUID:                 common.InterfaceToString(m["uuid"]),
+		ParentUUID:           common.InterfaceToString(m["parent_uuid"]),
+		ParentType:           common.InterfaceToString(m["parent_type"]),
+		FQName:               common.InterfaceToStringList(m["fq_name"]),
+		IDPerms:              InterfaceToIdPermsType(m["id_perms"]),
+		DisplayName:          common.InterfaceToString(m["display_name"]),
+		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
+		Perms2:               InterfaceToPermType2(m["perms2"]),
+		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
+		AlarmRules:           InterfaceToAlarmOrList(m["alarm_rules"]),
+		UveKeys:              InterfaceToUveKeysType(m["uve_keys"]),
+		AlarmSeverity:        common.InterfaceToInt64(m["alarm_severity"]),
 	}
 }
 

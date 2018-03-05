@@ -184,6 +184,10 @@ func TestBGPVPN(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(updateMap, ".ConfigurationVersion", ".", 1.0)
+	//
+	//
+	//
 	//    common.SetValueByPath(updateMap, ".BGPVPNType", ".", "test")
 	//
 	//

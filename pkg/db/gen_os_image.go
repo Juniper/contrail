@@ -52,6 +52,7 @@ var OsImageFields = []string{
 	"disk_format",
 	"created_at",
 	"container_format",
+	"configuration_version",
 	"checksum",
 	"key_value_pair",
 }
@@ -110,6 +111,7 @@ func (db *DB) createOsImage(
 		string(model.GetDiskFormat()),
 		string(model.GetCreatedAt()),
 		string(model.GetContainerFormat()),
+		int(model.GetConfigurationVersion()),
 		string(model.GetChecksum()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
@@ -357,6 +359,12 @@ func scanOsImage(values map[string]interface{}) (*models.OsImage, error) {
 	if value, ok := values["container_format"]; ok {
 
 		m.ContainerFormat = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

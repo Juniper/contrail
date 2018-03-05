@@ -49,6 +49,7 @@ var NodeFields = []string{
 	"gcp_image",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"aws_instance_type",
 	"aws_ami",
 	"key_value_pair",
@@ -111,6 +112,7 @@ func (db *DB) createNode(
 		string(model.GetGCPImage()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		string(model.GetAwsInstanceType()),
 		string(model.GetAwsAmi()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
@@ -349,6 +351,12 @@ func scanNode(values map[string]interface{}) (*models.Node, error) {
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

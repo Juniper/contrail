@@ -20314,6 +20314,12 @@
                     "description": "List of rules e.g network.* =\u003e admin:CRUD (admin can perform all ops on networks).",
                     "$ref": "#/definitions/RbacRuleEntriesType"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -20391,6 +20397,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -20569,6 +20581,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -20684,6 +20702,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -20846,6 +20870,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -20948,6 +20978,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -21073,6 +21109,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -21140,6 +21182,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -21269,6 +21317,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -21406,6 +21460,12 @@
                     "type": "boolean",
                     "items": null
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -21502,6 +21562,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -21573,6 +21639,12 @@
                 "bgpvpn_type": {
                     "description": "BGP VPN type selection between IP VPN (l3) and Ethernet VPN (l2) (default: l3).",
                     "$ref": "#/definitions/VpnType"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -21669,6 +21741,12 @@
                 "bm_properties": {
                     "description": "Details of baremetal hardware for scheduler",
                     "$ref": "#/definitions/BaremetalProperties"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "console_enabled": {
                     "id": "console_enabled",
@@ -21818,6 +21896,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "created_at": {
                     "id": "created_at",
                     "description": "The UTC date and time when the resource was created, ISO 8601 format",
@@ -21951,6 +22035,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -22072,6 +22162,12 @@
                     "description": "Ip address of the config node, set while provisioning.",
                     "$ref": "#/definitions/IpAddressType"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -22139,6 +22235,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -22247,6 +22349,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -22369,6 +22477,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -22505,6 +22619,12 @@
                     "type": "string",
                     "title": "Configuration Audit Retention Time",
                     "default": "2160",
+                    "items": null
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
                     "items": null
                 },
                 "container_registry": {
@@ -22835,6 +22955,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -22956,6 +23082,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -23079,6 +23211,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -23200,6 +23338,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -23355,6 +23499,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "default_gateway": {
                     "id": "default_gateway",
                     "description": "Default Gateway",
@@ -23508,6 +23658,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -23648,6 +23804,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -23744,6 +23906,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "container_config": {
                     "id": "container_config",
                     "type": "string",
@@ -23817,6 +23985,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "database_node_ip_address": {
                     "description": "Ip address of the database node, set while provisioning.",
@@ -23960,6 +24134,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -24071,6 +24251,12 @@
                     "items": {
                         "$ref": "#/definitions/APIAccessListAPIType"
                     }
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -24236,6 +24422,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -24311,6 +24503,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -24498,6 +24696,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -24614,6 +24818,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "direction": {
                     "description": "Direction in the rule",
@@ -24877,6 +25087,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "disk": {
                     "id": "disk",
                     "description": "The size of the root disk that will be created in GiB",
@@ -25011,6 +25227,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -25139,6 +25361,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -25273,6 +25501,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -25379,6 +25613,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "control_traffic_dscp": {
                     "description": "DSCP value of IP header for control traffic",
@@ -25541,6 +25781,12 @@
                     "type": "string",
                     "items": null
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "database_nodes": {
                     "description": "Database node is object representing a logical node in system which host Cassandra DB and Zookeeper.",
                     "type": "array",
@@ -25683,6 +25929,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -25892,6 +26144,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -26154,6 +26412,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -26454,6 +26718,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -26534,6 +26804,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -26656,6 +26932,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -26842,6 +27124,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -26960,6 +27248,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -27085,6 +27379,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -27206,6 +27506,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -27321,6 +27627,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -27620,6 +27932,12 @@
                     "default": "10.0.0.0/16",
                     "items": null
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -27876,6 +28194,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -27984,6 +28308,12 @@
                             "type": "string"
                         }
                     }
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "configured_route_target_list": {
                     "description": "List of route targets that represent this logical router, all virtual networks connected to this logical router will have this as their route target list.",
@@ -28331,6 +28661,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -28402,6 +28738,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -28484,6 +28826,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -28579,6 +28927,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -28663,6 +29017,12 @@
                     "type": "string",
                     "title": "Instance Type",
                     "default": "t2.micro",
+                    "items": null
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
                     "items": null
                 },
                 "display_name": {
@@ -28924,6 +29284,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -29045,6 +29411,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -29168,6 +29540,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -29290,6 +29668,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -29411,6 +29795,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -29538,6 +29928,12 @@
                     "id": "checksum",
                     "description": "Hash that is used over the image data",
                     "type": "string",
+                    "items": null
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
                     "items": null
                 },
                 "container_format": {
@@ -29707,6 +30103,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -29836,6 +30238,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -29944,6 +30352,12 @@
                             "type": "string"
                         }
                     }
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -30233,6 +30647,12 @@
                         "$ref": "#/definitions/ApplicationPolicySetAPIType"
                     }
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -30441,6 +30861,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -30596,6 +31022,12 @@
                     "items": {
                         "$ref": "#/definitions/BGPVPNAPIType"
                     }
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -30889,6 +31321,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -30984,6 +31422,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "default_forwarding_class_id": {
                     "description": "Default forwarding class used for all non-specified QOS bits",
@@ -31118,6 +31562,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -31424,6 +31874,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -31513,6 +31969,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -31598,6 +32060,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -31705,6 +32173,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -31772,6 +32246,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -31976,6 +32456,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "configured_security_group_id": {
                     "description": "Unique 32 bit user defined ID assigned to this security group [1, 8M - 1].",
                     "$ref": "#/definitions/ConfiguredSecurityGroupIdType"
@@ -32059,6 +32545,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -32243,6 +32735,12 @@
                     "type": "boolean",
                     "items": null
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "created": {
                     "id": "created",
                     "description": "The date and time when the resource was created. The date and time stamp format is ISO 8601",
@@ -32385,6 +32883,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -32491,6 +32995,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -32581,6 +33091,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -32675,6 +33191,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -32786,6 +33308,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -32857,6 +33385,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -33014,6 +33548,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -33235,6 +33775,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -33320,6 +33866,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -33554,6 +34106,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -33673,6 +34231,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -33770,6 +34334,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -33925,6 +34495,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -34082,6 +34658,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -34216,6 +34798,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -34294,6 +34882,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -34454,6 +35048,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -34612,6 +35212,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -34731,6 +35337,12 @@
                             "type": "string"
                         }
                     }
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "display_name": {
                     "id": "display_name",
@@ -35098,6 +35710,12 @@
                         "$ref": "#/definitions/BridgeDomainAPIType"
                     }
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -35428,6 +36046,12 @@
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
                 },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
@@ -35648,6 +36272,12 @@
                 "annotations": {
                     "description": "Dictionary of arbitrary (key, value) on a resource.",
                     "$ref": "#/definitions/KeyValuePairs"
+                },
+                "configuration_version": {
+                    "id": "configuration_version",
+                    "description": "Configuration Version for the object.",
+                    "type": "integer",
+                    "items": null
                 },
                 "container_config": {
                     "id": "container_config",

@@ -48,6 +48,7 @@ var FlavorFields = []string{
 	"ephemeral",
 	"display_name",
 	"disk",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -101,6 +102,7 @@ func (db *DB) createFlavor(
 		int(model.GetEphemeral()),
 		string(model.GetDisplayName()),
 		int(model.GetDisk()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -323,6 +325,12 @@ func scanFlavor(values map[string]interface{}) (*models.Flavor, error) {
 	if value, ok := values["disk"]; ok {
 
 		m.Disk = common.InterfaceToInt64(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

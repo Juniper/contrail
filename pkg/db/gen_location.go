@@ -58,6 +58,7 @@ var LocationFields = []string{
 	"gcp_account_info",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"aws_subnet",
 	"aws_secret_key",
 	"aws_region",
@@ -125,6 +126,7 @@ var LocationBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 }
@@ -183,6 +185,7 @@ func (db *DB) createLocation(
 		string(model.GetGCPAccountInfo()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		string(model.GetAwsSubnet()),
 		string(model.GetAwsSecretKey()),
 		string(model.GetAwsRegion()),
@@ -469,6 +472,12 @@ func scanLocation(values map[string]interface{}) (*models.Location, error) {
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 
@@ -833,6 +842,12 @@ func scanLocation(values map[string]interface{}) (*models.Location, error) {
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 

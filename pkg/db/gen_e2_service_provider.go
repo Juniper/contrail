@@ -36,6 +36,7 @@ var E2ServiceProviderFields = []string{
 	"fq_name",
 	"e2_service_provider_promiscuous",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -88,6 +89,7 @@ func (db *DB) createE2ServiceProvider(
 		common.MustJSON(model.GetFQName()),
 		bool(model.GetE2ServiceProviderPromiscuous()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -257,30 +259,16 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 
 	}
 
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
+
+	}
+
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
-	}
-
-	if value, ok := values["ref_peering_policy"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.E2ServiceProviderPeeringPolicyRef{}
-			referenceModel.UUID = uuid
-			m.PeeringPolicyRefs = append(m.PeeringPolicyRefs, referenceModel)
-
-		}
 	}
 
 	if value, ok := values["ref_physical_router"]; ok {
@@ -299,6 +287,26 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 			referenceModel := &models.E2ServiceProviderPhysicalRouterRef{}
 			referenceModel.UUID = uuid
 			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_peering_policy"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.E2ServiceProviderPeeringPolicyRef{}
+			referenceModel.UUID = uuid
+			m.PeeringPolicyRefs = append(m.PeeringPolicyRefs, referenceModel)
 
 		}
 	}

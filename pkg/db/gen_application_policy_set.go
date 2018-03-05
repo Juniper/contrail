@@ -35,6 +35,7 @@ var ApplicationPolicySetFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 	"all_applications",
 }
@@ -42,14 +43,14 @@ var ApplicationPolicySetFields = []string{
 // ApplicationPolicySetRefFields is db reference fields for ApplicationPolicySet
 var ApplicationPolicySetRefFields = map[string][]string{
 
-	"firewall_policy": []string{
-		// <schema.Schema Value>
-		"sequence",
-	},
-
 	"global_vrouter_config": []string{
 	// <schema.Schema Value>
 
+	},
+
+	"firewall_policy": []string{
+		// <schema.Schema Value>
+		"sequence",
 	},
 }
 
@@ -92,10 +93,19 @@ func (db *DB) createApplicationPolicySet(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()),
 		bool(model.GetAllApplications()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
+	}
+
+	for _, ref := range model.GlobalVrouterConfigRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("global_vrouter_config"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "GlobalVrouterConfigRefs create failed")
+		}
 	}
 
 	for _, ref := range model.FirewallPolicyRefs {
@@ -107,14 +117,6 @@ func (db *DB) createApplicationPolicySet(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("firewall_policy"), model.UUID, ref.UUID, string(ref.Attr.GetSequence()))
 		if err != nil {
 			return errors.Wrap(err, "FirewallPolicyRefs create failed")
-		}
-	}
-
-	for _, ref := range model.GlobalVrouterConfigRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("global_vrouter_config"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "GlobalVrouterConfigRefs create failed")
 		}
 	}
 
@@ -257,6 +259,12 @@ func scanApplicationPolicySet(values map[string]interface{}) (*models.Applicatio
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

@@ -53,6 +53,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -251,7 +257,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -808,6 +815,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -981,8 +994,9 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "access_control_list_hash",
-                    "access_control_list_entries"
+                    "configuration_version",
+                    "container_config",
+                    "content_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -1079,6 +1093,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -1252,7 +1272,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "address_group_prefix"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -1409,6 +1430,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -1607,9 +1634,10 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "alarm_rules",
-                    "uve_keys",
-                    "alarm_severity"
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -1660,6 +1688,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -1835,7 +1869,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -1919,6 +1954,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -2092,8 +2133,9 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "alias_ip_address",
-                    "alias_ip_address_family"
+                    "configuration_version",
+                    "container_config",
+                    "content_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -2153,6 +2195,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -2326,7 +2374,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "analytics_node_ip_address"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -2457,6 +2506,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -2630,7 +2685,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "api_access_list_entries"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -2726,6 +2782,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -2899,7 +2961,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "all_applications"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -3004,6 +3067,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -3177,12 +3246,13 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "bgpaas_shared",
-                    "bgpaas_session_attributes",
-                    "bgpaas_suppress_route_advertisement",
-                    "bgpaas_ipv4_mapped_ipv6_nexthop",
-                    "bgpaas_ip_address",
-                    "autonomous_system"
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config",
+                    "vrouter_type",
+                    "pxe_enabled",
+                    "local_link_connection"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -3225,6 +3295,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -3400,7 +3476,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -3462,6 +3539,12 @@
                             "l2",
                             "l3"
                         ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -3701,10 +3784,11 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "route_target_list",
-                    "import_route_target_list",
-                    "export_route_target_list",
-                    "bgpvpn_type"
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config",
+                    "vrouter_type"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -3755,6 +3839,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -4018,11 +4108,12 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "mac_aging_time",
-                    "isid",
-                    "mac_learning_enabled",
-                    "mac_move_control",
-                    "mac_limit_control"
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config",
+                    "vrouter_type",
+                    "pxe_enabled"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -4079,6 +4170,12 @@
                     "config_node_ip_address": {
                         "description": "Ip address of the config node, set while provisioning.",
                         "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -4255,7 +4352,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "config_node_ip_address"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -4306,6 +4404,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -4481,7 +4585,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -4541,6 +4646,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -4713,7 +4824,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -4764,6 +4876,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -4946,7 +5064,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "database_node_ip_address"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -4989,6 +5108,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -5164,7 +5289,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -5215,6 +5341,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -5422,7 +5554,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "domain_limits"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -5473,6 +5606,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -5770,7 +5909,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "dsa_rule_entry"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -5827,6 +5967,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -6009,7 +6155,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "e2_service_provider_promiscuous"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -6095,6 +6242,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -6270,7 +6423,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -6538,6 +6692,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -6993,13 +7153,14 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "endpoint_1",
-                    "endpoint_2",
-                    "action_list",
-                    "service",
-                    "direction",
-                    "match_tag_types",
-                    "match_tags"
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config",
+                    "vrouter_type",
+                    "pxe_enabled",
+                    "local_link_connection",
+                    "floating_ip_traffic_direction"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -7050,6 +7211,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -7248,7 +7415,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "floating_ip_pool_subnets"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -7319,6 +7487,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -7585,12 +7759,13 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "floating_ip_address_family",
-                    "floating_ip_port_mappings",
-                    "floating_ip_is_virtual_ip",
-                    "floating_ip_address",
-                    "floating_ip_port_mappings_enable",
-                    "floating_ip_fixed_ip_address",
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config",
+                    "vrouter_type",
+                    "pxe_enabled",
+                    "local_link_connection",
                     "floating_ip_traffic_direction"
                 ],
                 "minimum": 0,
@@ -7650,6 +7825,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -7851,10 +8032,11 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "forwarding_class_dscp",
-                    "forwarding_class_vlan_priority",
-                    "forwarding_class_mpls_exp",
-                    "forwarding_class_id"
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config",
+                    "vrouter_type"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -7905,6 +8087,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -8112,7 +8300,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "control_traffic_dscp"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -8217,6 +8406,12 @@
                     "config_version": {
                         "description": "Version of OpenContrail software that generated this config.",
                         "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -8639,6 +8834,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "config_version",
                     "bgpaas_parameters",
                     "alarm_enable",
@@ -8702,6 +8898,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -9097,6 +9299,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "ecmp_hashing_include_fields",
                     "flow_aging_timeout_list",
                     "forwarding_mode",
@@ -9179,6 +9382,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -9437,6 +9646,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "service_health_check_ip",
                     "secondary_ip_tracking_ip",
                     "instance_ip_address",
@@ -9519,6 +9729,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -9758,7 +9974,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "interface_route_table_routes"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -9809,6 +10026,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -10057,7 +10280,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "loadbalancer_healthmonitor_properties"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -10115,6 +10339,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -10348,7 +10578,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "loadbalancer_listener_properties"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -10399,6 +10630,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -10627,7 +10864,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "loadbalancer_member_properties"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -10709,6 +10947,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -11011,9 +11255,10 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "loadbalancer_pool_properties",
-                    "loadbalancer_pool_custom_attributes",
-                    "loadbalancer_pool_provider"
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -11083,6 +11328,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -11317,8 +11568,9 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "loadbalancer_properties",
-                    "loadbalancer_provider"
+                    "configuration_version",
+                    "container_config",
+                    "content_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -11383,6 +11635,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -11574,8 +11832,9 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "logical_interface_vlan_tag",
-                    "logical_interface_type"
+                    "configuration_version",
+                    "container_config",
+                    "content_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -11670,6 +11929,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -11873,8 +12138,9 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "vxlan_network_identifier",
-                    "configured_route_target_list"
+                    "configuration_version",
+                    "container_config",
+                    "content_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -11925,6 +12191,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -12123,7 +12395,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "namespace_cidr"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -12174,6 +12447,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -12349,7 +12628,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -12408,6 +12688,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -13036,9 +13322,10 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "network_ipam_mgmt",
-                    "ipam_subnets",
-                    "ipam_subnet_method"
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -13089,6 +13376,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -13722,7 +14015,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "network_policy_entries"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -13765,6 +14059,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -13950,7 +14250,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "peering_service"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -14009,6 +14310,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -14191,7 +14498,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "ethernet_segment_identifier"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -14268,6 +14576,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -14722,6 +15036,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "physical_router_management_ip",
                     "physical_router_snmp_credentials",
                     "physical_router_role",
@@ -14781,6 +15096,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -14953,7 +15274,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -15006,6 +15328,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -15178,7 +15506,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -15282,6 +15611,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -15656,9 +15991,10 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "vxlan_routing",
-                    "alarm_enable",
-                    "quota"
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -15709,6 +16045,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -15884,7 +16226,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -15948,6 +16291,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -16259,11 +16608,12 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "qos_config_type",
-                    "mpls_exp_entries",
-                    "vlan_priority_entries",
-                    "default_forwarding_class_id",
-                    "dscp_entries"
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config",
+                    "vrouter_type",
+                    "pxe_enabled"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -16314,6 +16664,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -16508,9 +16864,10 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "qos_queue_identifier",
-                    "max_bandwidth",
-                    "min_bandwidth"
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -16584,6 +16941,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -16759,7 +17122,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -16810,6 +17174,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -17049,7 +17419,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "routes"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -17092,6 +17463,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -17267,7 +17644,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -17321,6 +17699,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -17493,7 +17877,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -17576,6 +17961,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -17748,7 +18139,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -17799,6 +18191,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -18445,9 +18843,10 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "security_group_entries",
-                    "configured_security_group_id",
-                    "security_group_id"
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -18596,6 +18995,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -18819,8 +19224,9 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "security_logging_object_rules",
-                    "security_logging_object_rate"
+                    "configuration_version",
+                    "container_config",
+                    "content_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -18894,6 +19300,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -19135,9 +19547,10 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "service_appliance_user_credentials",
-                    "service_appliance_ip_address",
-                    "service_appliance_properties"
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -19187,6 +19600,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -19412,9 +19831,10 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "service_appliance_set_properties",
-                    "service_appliance_ha_mode",
-                    "service_appliance_driver"
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -19465,6 +19885,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -19664,8 +20090,9 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "service_type",
-                    "e2_service"
+                    "configuration_version",
+                    "container_config",
+                    "content_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -19728,6 +20155,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -19903,7 +20336,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -19960,6 +20394,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -20213,7 +20653,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "service_group_firewall_service_list"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -20287,6 +20728,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -20560,7 +21007,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "service_health_check_properties"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -20640,6 +21088,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -21093,8 +21547,9 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "service_instance_bindings",
-                    "service_instance_properties"
+                    "configuration_version",
+                    "container_config",
+                    "content_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -21137,6 +21592,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -21312,7 +21773,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -21371,6 +21833,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -21691,7 +22159,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "service_template_properties"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -21742,6 +22211,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -21940,7 +22415,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "subnet_ip_prefix"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -22005,6 +22481,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -22199,9 +22681,10 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "tag_type_name",
-                    "tag_id",
-                    "tag_value"
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -22244,6 +22727,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -22426,7 +22915,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "tag_type_id"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -22493,6 +22983,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -22675,7 +23171,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "password"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -22726,6 +23223,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -22964,7 +23467,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "virtual_DNS_record_data"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -23015,6 +23519,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -23268,7 +23778,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "virtual_DNS_data"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -23333,6 +23844,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -23601,7 +24118,8 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "virtual_ip_properties"
+                    "configuration_version",
+                    "container_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -23828,6 +24346,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -24756,6 +25280,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "ecmp_hashing_include_fields",
                     "virtual_machine_interface_host_routes",
                     "virtual_machine_interface_mac_addresses",
@@ -24819,6 +25344,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -24994,7 +25525,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -25474,6 +26006,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -25992,6 +26530,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "virtual_network_properties",
                     "ecmp_hashing_include_fields",
                     "virtual_network_network_id",
@@ -26148,6 +26687,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -26347,9 +26892,10 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "virtual_router_dpdk_enabled",
-                    "virtual_router_type",
-                    "virtual_router_ip_address"
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -26410,6 +26956,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -26659,7 +27211,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -26745,6 +27298,12 @@
                             "disk_gb",
                             "memory_mb"
                         ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -27132,6 +27691,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "name",
                     "driver_info",
                     "bm_properties",
@@ -27192,6 +27752,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -27433,10 +27999,11 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "mac_address",
-                    "created_at",
-                    "updated_at",
-                    "node",
+                    "configuration_version",
+                    "container_config",
+                    "content_config",
+                    "layout_config",
+                    "vrouter_type",
                     "pxe_enabled",
                     "local_link_connection"
                 ],
@@ -27502,6 +28069,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -27748,7 +28321,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -27813,6 +28387,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -28059,7 +28639,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -28117,6 +28698,12 @@
                             "create",
                             "update"
                         ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -28550,6 +29137,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "container_registry",
                     "contrail_version",
                     "rabbitmq_port",
@@ -28631,6 +29219,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -28877,7 +29471,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -28942,6 +29537,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -29188,7 +29789,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -29253,6 +29855,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -29499,7 +30107,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -29561,6 +30170,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -29859,6 +30474,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "journal_drives",
                     "osd_drives",
                     "storage_access_bond_interface_members",
@@ -29924,6 +30540,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -30226,6 +30848,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "default_gateway",
                     "vrouter_bond_interface",
                     "vrouter_bond_interface_members",
@@ -30291,6 +30914,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -30540,7 +31169,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -30586,6 +31216,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -30772,6 +31408,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "container_config"
                 ],
                 "minimum": 0,
@@ -30818,6 +31455,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -31092,6 +31735,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "name",
                     "disk",
                     "vcpus",
@@ -31154,6 +31798,12 @@
                     "checksum": {
                         "description": "Hash that is used over the image data",
                         "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -31457,6 +32107,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "name",
                     "owner",
                     "id",
@@ -31519,6 +32170,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -31715,8 +32372,9 @@
                     "display_name",
                     "annotations",
                     "perms2",
-                    "name",
-                    "public_key"
+                    "configuration_version",
+                    "container_config",
+                    "content_config"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -31777,6 +32435,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -32026,7 +32690,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -32091,6 +32756,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -32337,7 +33008,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -32426,6 +33098,12 @@
                             "create",
                             "update"
                         ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -32893,6 +33571,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "type",
                     "private_dns_servers",
                     "private_ntp_hosts",
@@ -32990,6 +33669,12 @@
                             "create",
                             "update"
                         ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -33342,6 +34027,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "hostname",
                     "ip_address",
                     "mac_address",
@@ -33421,6 +34107,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -33667,7 +34359,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -33732,6 +34425,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -33978,7 +34677,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -34043,6 +34743,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -34289,7 +34995,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -34354,6 +35061,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -34600,7 +35313,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -34665,6 +35379,12 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
@@ -34911,7 +35631,8 @@
                     "id_perms",
                     "display_name",
                     "annotations",
-                    "perms2"
+                    "perms2",
+                    "configuration_version"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -34993,6 +35714,12 @@
                     "config_drive": {
                         "description": "Indicates whether or not a config drive was used for this server",
                         "type": "boolean",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -35343,6 +36070,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "created",
                     "hostId",
                     "id",
@@ -35412,6 +36140,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -35670,6 +36404,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "type"
                 ],
                 "minimum": 0,
@@ -35716,6 +36451,12 @@
                                 }
                             }
                         },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "configuration_version": {
+                        "description": "Configuration Version for the object.",
+                        "type": "integer",
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -35922,6 +36663,7 @@
                     "display_name",
                     "annotations",
                     "perms2",
+                    "configuration_version",
                     "container_config",
                     "content_config",
                     "layout_config"
