@@ -42,31 +42,6 @@ func TestFirewallPolicy(t *testing.T) {
 
 	// Create referred objects
 
-	var SecurityLoggingObjectcreateref []*models.FirewallPolicySecurityLoggingObjectRef
-	var SecurityLoggingObjectrefModel *models.SecurityLoggingObject
-	SecurityLoggingObjectrefModel = models.MakeSecurityLoggingObject()
-	SecurityLoggingObjectrefModel.UUID = "firewall_policy_security_logging_object_ref_uuid"
-	SecurityLoggingObjectrefModel.FQName = []string{"test", "firewall_policy_security_logging_object_ref_uuid"}
-	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
-		SecurityLoggingObject: SecurityLoggingObjectrefModel,
-	})
-	SecurityLoggingObjectrefModel.UUID = "firewall_policy_security_logging_object_ref_uuid1"
-	SecurityLoggingObjectrefModel.FQName = []string{"test", "firewall_policy_security_logging_object_ref_uuid1"}
-	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
-		SecurityLoggingObject: SecurityLoggingObjectrefModel,
-	})
-	SecurityLoggingObjectrefModel.UUID = "firewall_policy_security_logging_object_ref_uuid2"
-	SecurityLoggingObjectrefModel.FQName = []string{"test", "firewall_policy_security_logging_object_ref_uuid2"}
-	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
-		SecurityLoggingObject: SecurityLoggingObjectrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.FirewallPolicySecurityLoggingObjectRef{UUID: "firewall_policy_security_logging_object_ref_uuid", To: []string{"test", "firewall_policy_security_logging_object_ref_uuid"}})
-	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.FirewallPolicySecurityLoggingObjectRef{UUID: "firewall_policy_security_logging_object_ref_uuid2", To: []string{"test", "firewall_policy_security_logging_object_ref_uuid2"}})
-	model.SecurityLoggingObjectRefs = SecurityLoggingObjectcreateref
-
 	var FirewallRulecreateref []*models.FirewallPolicyFirewallRuleRef
 	var FirewallRulerefModel *models.FirewallRule
 	FirewallRulerefModel = models.MakeFirewallRule()
@@ -91,6 +66,31 @@ func TestFirewallPolicy(t *testing.T) {
 	FirewallRulecreateref = append(FirewallRulecreateref, &models.FirewallPolicyFirewallRuleRef{UUID: "firewall_policy_firewall_rule_ref_uuid", To: []string{"test", "firewall_policy_firewall_rule_ref_uuid"}})
 	FirewallRulecreateref = append(FirewallRulecreateref, &models.FirewallPolicyFirewallRuleRef{UUID: "firewall_policy_firewall_rule_ref_uuid2", To: []string{"test", "firewall_policy_firewall_rule_ref_uuid2"}})
 	model.FirewallRuleRefs = FirewallRulecreateref
+
+	var SecurityLoggingObjectcreateref []*models.FirewallPolicySecurityLoggingObjectRef
+	var SecurityLoggingObjectrefModel *models.SecurityLoggingObject
+	SecurityLoggingObjectrefModel = models.MakeSecurityLoggingObject()
+	SecurityLoggingObjectrefModel.UUID = "firewall_policy_security_logging_object_ref_uuid"
+	SecurityLoggingObjectrefModel.FQName = []string{"test", "firewall_policy_security_logging_object_ref_uuid"}
+	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
+		SecurityLoggingObject: SecurityLoggingObjectrefModel,
+	})
+	SecurityLoggingObjectrefModel.UUID = "firewall_policy_security_logging_object_ref_uuid1"
+	SecurityLoggingObjectrefModel.FQName = []string{"test", "firewall_policy_security_logging_object_ref_uuid1"}
+	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
+		SecurityLoggingObject: SecurityLoggingObjectrefModel,
+	})
+	SecurityLoggingObjectrefModel.UUID = "firewall_policy_security_logging_object_ref_uuid2"
+	SecurityLoggingObjectrefModel.FQName = []string{"test", "firewall_policy_security_logging_object_ref_uuid2"}
+	_, err = db.CreateSecurityLoggingObject(ctx, &models.CreateSecurityLoggingObjectRequest{
+		SecurityLoggingObject: SecurityLoggingObjectrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.FirewallPolicySecurityLoggingObjectRef{UUID: "firewall_policy_security_logging_object_ref_uuid", To: []string{"test", "firewall_policy_security_logging_object_ref_uuid"}})
+	SecurityLoggingObjectcreateref = append(SecurityLoggingObjectcreateref, &models.FirewallPolicySecurityLoggingObjectRef{UUID: "firewall_policy_security_logging_object_ref_uuid2", To: []string{"test", "firewall_policy_security_logging_object_ref_uuid2"}})
+	model.SecurityLoggingObjectRefs = SecurityLoggingObjectcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -204,6 +204,10 @@ func TestFirewallPolicy(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(updateMap, ".ConfigurationVersion", ".", 1.0)
+	//
+	//
+	//
 	//    if ".Annotations.KeyValuePair" == ".Perms2.Share" {
 	//        var share []interface{}
 	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
@@ -264,41 +268,6 @@ func TestFirewallPolicy(t *testing.T) {
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_firewall_policy_firewall_rule` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing FirewallRuleRefs delete statement failed")
-		}
-		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_firewall_rule_ref_uuid")
-		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_firewall_rule_ref_uuid1")
-		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_firewall_rule_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "FirewallRuleRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteFirewallRule(ctx,
-		&models.DeleteFirewallRuleRequest{
-			ID: "firewall_policy_firewall_rule_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref firewall_policy_firewall_rule_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteFirewallRule(ctx,
-		&models.DeleteFirewallRuleRequest{
-			ID: "firewall_policy_firewall_rule_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref firewall_policy_firewall_rule_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteFirewallRule(
-		ctx,
-		&models.DeleteFirewallRuleRequest{
-			ID: "firewall_policy_firewall_rule_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref firewall_policy_firewall_rule_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_firewall_policy_security_logging_object` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing SecurityLoggingObjectRefs delete statement failed")
@@ -330,6 +299,41 @@ func TestFirewallPolicy(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref firewall_policy_security_logging_object_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_firewall_policy_firewall_rule` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing FirewallRuleRefs delete statement failed")
+		}
+		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_firewall_rule_ref_uuid")
+		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_firewall_rule_ref_uuid1")
+		_, err = stmt.Exec("firewall_policy_dummy_uuid", "firewall_policy_firewall_rule_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "FirewallRuleRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteFirewallRule(ctx,
+		&models.DeleteFirewallRuleRequest{
+			ID: "firewall_policy_firewall_rule_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref firewall_policy_firewall_rule_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteFirewallRule(ctx,
+		&models.DeleteFirewallRuleRequest{
+			ID: "firewall_policy_firewall_rule_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref firewall_policy_firewall_rule_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteFirewallRule(
+		ctx,
+		&models.DeleteFirewallRuleRequest{
+			ID: "firewall_policy_firewall_rule_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref firewall_policy_firewall_rule_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

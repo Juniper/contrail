@@ -51,6 +51,7 @@ var NodeFields = []string{
 	"deploy_ramdisk",
 	"deploy_kernel",
 	"display_name",
+	"configuration_version",
 	"memory_mb",
 	"disk_gb",
 	"cpu_count",
@@ -99,6 +100,7 @@ var NodeBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 }
@@ -150,6 +152,7 @@ func (db *DB) createNode(
 		string(model.GetDriverInfo().GetDeployRamdisk()),
 		string(model.GetDriverInfo().GetDeployKernel()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		int(model.GetBMProperties().GetMemoryMB()),
 		int(model.GetBMProperties().GetDiskGB()),
 		int(model.GetBMProperties().GetCPUCount()),
@@ -407,6 +410,12 @@ func scanNode(values map[string]interface{}) (*models.Node, error) {
 
 	}
 
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
+
+	}
+
 	if value, ok := values["memory_mb"]; ok {
 
 		m.BMProperties.MemoryMB = common.InterfaceToInt64(value)
@@ -638,6 +647,12 @@ func scanNode(values map[string]interface{}) (*models.Node, error) {
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 

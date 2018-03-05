@@ -35,6 +35,7 @@ var AliasIPFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 	"alias_ip_address_family",
 	"alias_ip_address",
@@ -91,6 +92,7 @@ func (db *DB) createAliasIP(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()),
 		string(model.GetAliasIPAddressFamily()),
 		string(model.GetAliasIPAddress()))
@@ -253,6 +255,12 @@ func scanAliasIP(values map[string]interface{}) (*models.AliasIP, error) {
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

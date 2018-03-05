@@ -36,6 +36,7 @@ var FloatingIPPoolFields = []string{
 	"fq_name",
 	"subnet_uuid",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -73,6 +74,7 @@ var FloatingIPPoolBackRefFields = map[string][]string{
 		"floating_ip_address_family",
 		"floating_ip_address",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 }
@@ -112,6 +114,7 @@ func (db *DB) createFloatingIPPool(
 		common.MustJSON(model.GetFQName()),
 		common.MustJSON(model.GetFloatingIPPoolSubnets().GetSubnetUUID()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -262,6 +265,12 @@ func scanFloatingIPPool(values map[string]interface{}) (*models.FloatingIPPool, 
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 
@@ -446,6 +455,12 @@ func scanFloatingIPPool(values map[string]interface{}) (*models.FloatingIPPool, 
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 

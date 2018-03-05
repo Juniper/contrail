@@ -20,6 +20,7 @@ func MakeLogicalInterface() *LogicalInterface {
 		DisplayName:             "",
 		Annotations:             MakeKeyValuePairs(),
 		Perms2:                  MakePermType2(),
+		ConfigurationVersion:    0,
 		LogicalInterfaceVlanTag: 0,
 		LogicalInterfaceType:    "",
 	}
@@ -43,6 +44,7 @@ func InterfaceToLogicalInterface(i interface{}) *LogicalInterface {
 		DisplayName:             common.InterfaceToString(m["display_name"]),
 		Annotations:             InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:                  InterfaceToPermType2(m["perms2"]),
+		ConfigurationVersion:    common.InterfaceToInt64(m["configuration_version"]),
 		LogicalInterfaceVlanTag: common.InterfaceToInt64(m["logical_interface_vlan_tag"]),
 		LogicalInterfaceType:    common.InterfaceToString(m["logical_interface_type"]),
 	}

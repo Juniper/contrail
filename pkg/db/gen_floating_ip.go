@@ -42,18 +42,19 @@ var FloatingIPFields = []string{
 	"floating_ip_address_family",
 	"floating_ip_address",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 }
 
 // FloatingIPRefFields is db reference fields for FloatingIP
 var FloatingIPRefFields = map[string][]string{
 
-	"project": []string{
+	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
 	},
 
-	"virtual_machine_interface": []string{
+	"project": []string{
 	// <schema.Schema Value>
 
 	},
@@ -105,6 +106,7 @@ func (db *DB) createFloatingIP(
 		string(model.GetFloatingIPAddressFamily()),
 		string(model.GetFloatingIPAddress()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -307,6 +309,12 @@ func scanFloatingIP(values map[string]interface{}) (*models.FloatingIP, error) {
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

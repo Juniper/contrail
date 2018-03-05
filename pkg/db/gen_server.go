@@ -54,6 +54,7 @@ var ServerFields = []string{
 	"flavor_id",
 	"display_name",
 	"_created",
+	"configuration_version",
 	"config_drive",
 	"key_value_pair",
 	"addr",
@@ -117,6 +118,7 @@ func (db *DB) createServer(
 		string(model.GetFlavor().GetID()),
 		string(model.GetDisplayName()),
 		string(model.GetCreated()),
+		int(model.GetConfigurationVersion()),
 		bool(model.GetConfigDrive()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()),
 		string(model.GetAddresses().GetAddr()),
@@ -379,6 +381,12 @@ func scanServer(values map[string]interface{}) (*models.Server, error) {
 	if value, ok := values["_created"]; ok {
 
 		m.Created = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

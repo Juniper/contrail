@@ -35,6 +35,7 @@ var PolicyManagementFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -65,6 +66,7 @@ var PolicyManagementBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 		"subnet",
 	},
@@ -90,6 +92,7 @@ var PolicyManagementBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 		"all_applications",
 	},
@@ -115,6 +118,7 @@ var PolicyManagementBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 
@@ -162,6 +166,7 @@ var PolicyManagementBackRefFields = map[string][]string{
 		"endpoint_1_address_group",
 		"display_name",
 		"direction",
+		"configuration_version",
 		"key_value_pair",
 		"simple_action",
 		"qos_action",
@@ -207,6 +212,7 @@ var PolicyManagementBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 }
@@ -242,6 +248,7 @@ func (db *DB) createPolicyManagement(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -389,6 +396,12 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 
 	}
 
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
+
+	}
+
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
@@ -528,6 +541,12 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 
@@ -682,6 +701,12 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 
 			}
 
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
+
+			}
+
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
 				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
@@ -830,6 +855,12 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 
@@ -1116,6 +1147,12 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 
 			}
 
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
+
+			}
+
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
 				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
@@ -1384,6 +1421,12 @@ func scanPolicyManagement(values map[string]interface{}) (*models.PolicyManageme
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 

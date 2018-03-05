@@ -45,18 +45,19 @@ var VirtualIPFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 }
 
 // VirtualIPRefFields is db reference fields for VirtualIP
 var VirtualIPRefFields = map[string][]string{
 
-	"virtual_machine_interface": []string{
+	"loadbalancer_pool": []string{
 	// <schema.Schema Value>
 
 	},
 
-	"loadbalancer_pool": []string{
+	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
 	},
@@ -109,6 +110,7 @@ func (db *DB) createVirtualIP(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -332,30 +334,16 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 
 	}
 
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
+
+	}
+
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
-	}
-
-	if value, ok := values["ref_loadbalancer_pool"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualIPLoadbalancerPoolRef{}
-			referenceModel.UUID = uuid
-			m.LoadbalancerPoolRefs = append(m.LoadbalancerPoolRefs, referenceModel)
-
-		}
 	}
 
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
@@ -374,6 +362,26 @@ func scanVirtualIP(values map[string]interface{}) (*models.VirtualIP, error) {
 			referenceModel := &models.VirtualIPVirtualMachineInterfaceRef{}
 			referenceModel.UUID = uuid
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_loadbalancer_pool"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualIPLoadbalancerPoolRef{}
+			referenceModel.UUID = uuid
+			m.LoadbalancerPoolRefs = append(m.LoadbalancerPoolRefs, referenceModel)
 
 		}
 	}

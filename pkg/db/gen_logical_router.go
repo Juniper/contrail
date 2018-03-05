@@ -37,21 +37,12 @@ var LogicalRouterFields = []string{
 	"fq_name",
 	"display_name",
 	"route_target",
+	"configuration_version",
 	"key_value_pair",
 }
 
 // LogicalRouterRefFields is db reference fields for LogicalRouter
 var LogicalRouterRefFields = map[string][]string{
-
-	"route_target": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"virtual_machine_interface": []string{
-	// <schema.Schema Value>
-
-	},
 
 	"service_instance": []string{
 	// <schema.Schema Value>
@@ -74,6 +65,16 @@ var LogicalRouterRefFields = map[string][]string{
 	},
 
 	"bgpvpn": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"route_target": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
 	},
@@ -118,9 +119,26 @@ func (db *DB) createLogicalRouter(
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
 		common.MustJSON(model.GetConfiguredRouteTargetList().GetRouteTarget()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
+	}
+
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
+	}
+
+	for _, ref := range model.ServiceInstanceRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_instance"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceInstanceRefs create failed")
+		}
 	}
 
 	for _, ref := range model.RouteTableRefs {
@@ -160,22 +178,6 @@ func (db *DB) createLogicalRouter(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("route_target"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "RouteTargetRefs create failed")
-		}
-	}
-
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
-	for _, ref := range model.ServiceInstanceRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_instance"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceInstanceRefs create failed")
 		}
 	}
 
@@ -330,6 +332,12 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 	if value, ok := values["route_target"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.ConfiguredRouteTargetList.RouteTarget)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

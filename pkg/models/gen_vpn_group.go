@@ -25,6 +25,7 @@ func MakeVPNGroup() *VPNGroup {
 		DisplayName:               "",
 		Annotations:               MakeKeyValuePairs(),
 		Perms2:                    MakePermType2(),
+		ConfigurationVersion:      0,
 		Type:                      "",
 	}
 }
@@ -52,6 +53,7 @@ func InterfaceToVPNGroup(i interface{}) *VPNGroup {
 		DisplayName:               common.InterfaceToString(m["display_name"]),
 		Annotations:               InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:                    InterfaceToPermType2(m["perms2"]),
+		ConfigurationVersion:      common.InterfaceToInt64(m["configuration_version"]),
 		Type:                      common.InterfaceToString(m["type"]),
 	}
 }

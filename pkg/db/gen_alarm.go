@@ -36,6 +36,7 @@ var AlarmFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 	"alarm_severity",
 	"or_list",
@@ -84,6 +85,7 @@ func (db *DB) createAlarm(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()),
 		int(model.GetAlarmSeverity()),
 		common.MustJSON(model.GetAlarmRules().GetOrList()))
@@ -236,6 +238,12 @@ func scanAlarm(values map[string]interface{}) (*models.Alarm, error) {
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

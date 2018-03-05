@@ -48,6 +48,7 @@ var ServiceInstanceFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"annotations_key_value_pair",
 }
 
@@ -89,6 +90,7 @@ var ServiceInstanceBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 }
@@ -140,6 +142,7 @@ func (db *DB) createServiceInstance(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -385,6 +388,12 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 
 	}
 
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
+
+	}
+
 	if value, ok := values["annotations_key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
@@ -567,6 +576,12 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 

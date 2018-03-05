@@ -20,6 +20,7 @@ func MakeServiceInstance() *ServiceInstance {
 		DisplayName:               "",
 		Annotations:               MakeKeyValuePairs(),
 		Perms2:                    MakePermType2(),
+		ConfigurationVersion:      0,
 		ServiceInstanceBindings:   MakeKeyValuePairs(),
 		ServiceInstanceProperties: MakeServiceInstanceType(),
 	}
@@ -43,6 +44,7 @@ func InterfaceToServiceInstance(i interface{}) *ServiceInstance {
 		DisplayName:               common.InterfaceToString(m["display_name"]),
 		Annotations:               InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:                    InterfaceToPermType2(m["perms2"]),
+		ConfigurationVersion:      common.InterfaceToInt64(m["configuration_version"]),
 		ServiceInstanceBindings:   InterfaceToKeyValuePairs(m["service_instance_bindings"]),
 		ServiceInstanceProperties: InterfaceToServiceInstanceType(m["service_instance_properties"]),
 	}

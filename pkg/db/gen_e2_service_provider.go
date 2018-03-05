@@ -36,6 +36,7 @@ var E2ServiceProviderFields = []string{
 	"fq_name",
 	"e2_service_provider_promiscuous",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -88,17 +89,10 @@ func (db *DB) createE2ServiceProvider(
 		common.MustJSON(model.GetFQName()),
 		bool(model.GetE2ServiceProviderPromiscuous()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
-	}
-
-	for _, ref := range model.PhysicalRouterRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("physical_router"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "PhysicalRouterRefs create failed")
-		}
 	}
 
 	for _, ref := range model.PeeringPolicyRefs {
@@ -106,6 +100,14 @@ func (db *DB) createE2ServiceProvider(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("peering_policy"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PeeringPolicyRefs create failed")
+		}
+	}
+
+	for _, ref := range model.PhysicalRouterRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("physical_router"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "PhysicalRouterRefs create failed")
 		}
 	}
 
@@ -254,6 +256,12 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

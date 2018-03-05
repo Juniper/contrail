@@ -38,6 +38,7 @@ var DomainFields = []string{
 	"security_group_limit",
 	"project_limit",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -68,6 +69,7 @@ var DomainBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"rbac_rule",
 		"key_value_pair",
 	},
@@ -95,6 +97,7 @@ var DomainBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 
@@ -146,6 +149,7 @@ var DomainBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 		"alarm_enable",
 	},
@@ -183,6 +187,7 @@ var DomainBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 
@@ -215,6 +220,7 @@ var DomainBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 }
@@ -256,6 +262,7 @@ func (db *DB) createDomain(
 		int(model.GetDomainLimits().GetSecurityGroupLimit()),
 		int(model.GetDomainLimits().GetProjectLimit()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -421,6 +428,12 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 	}
 
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
+
+	}
+
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
@@ -560,6 +573,12 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 
@@ -723,6 +742,12 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 
@@ -1033,6 +1058,12 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 			}
 
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
+
+			}
+
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
 				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
@@ -1256,6 +1287,12 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 
 			}
 
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
+
+			}
+
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
 				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
@@ -1446,6 +1483,12 @@ func scanDomain(values map[string]interface{}) (*models.Domain, error) {
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 

@@ -45,16 +45,12 @@ var LoadbalancerPoolFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"annotations_key_value_pair",
 }
 
 // LoadbalancerPoolRefFields is db reference fields for LoadbalancerPool
 var LoadbalancerPoolRefFields = map[string][]string{
-
-	"service_appliance_set": []string{
-	// <schema.Schema Value>
-
-	},
 
 	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
@@ -72,6 +68,11 @@ var LoadbalancerPoolRefFields = map[string][]string{
 	},
 
 	"loadbalancer_healthmonitor": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"service_appliance_set": []string{
 	// <schema.Schema Value>
 
 	},
@@ -107,6 +108,7 @@ var LoadbalancerPoolBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 }
@@ -155,25 +157,10 @@ func (db *DB) createLoadbalancerPool(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
-	}
-
-	for _, ref := range model.ServiceInstanceRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_instance"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceInstanceRefs create failed")
-		}
-	}
-
-	for _, ref := range model.LoadbalancerHealthmonitorRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("loadbalancer_healthmonitor"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "LoadbalancerHealthmonitorRefs create failed")
-		}
 	}
 
 	for _, ref := range model.ServiceApplianceSetRefs {
@@ -197,6 +184,22 @@ func (db *DB) createLoadbalancerPool(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("loadbalancer_listener"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "LoadbalancerListenerRefs create failed")
+		}
+	}
+
+	for _, ref := range model.ServiceInstanceRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_instance"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceInstanceRefs create failed")
+		}
+	}
+
+	for _, ref := range model.LoadbalancerHealthmonitorRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("loadbalancer_healthmonitor"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "LoadbalancerHealthmonitorRefs create failed")
 		}
 	}
 
@@ -399,6 +402,12 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 
@@ -677,6 +686,12 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 

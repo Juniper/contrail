@@ -38,6 +38,7 @@ var BGPVPNFields = []string{
 	"fq_name",
 	"export_route_target_list_route_target",
 	"display_name",
+	"configuration_version",
 	"bgpvpn_type",
 	"key_value_pair",
 }
@@ -85,6 +86,7 @@ func (db *DB) createBGPVPN(
 		common.MustJSON(model.GetFQName()),
 		common.MustJSON(model.GetExportRouteTargetList().GetRouteTarget()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		string(model.GetBGPVPNType()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
@@ -248,6 +250,12 @@ func scanBGPVPN(values map[string]interface{}) (*models.BGPVPN, error) {
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

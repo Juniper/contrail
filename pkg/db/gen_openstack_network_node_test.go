@@ -199,6 +199,10 @@ func TestOpenstackNetworkNode(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(updateMap, ".ConfigurationVersion", ".", 1.0)
+	//
+	//
+	//
 	//    if ".Annotations.KeyValuePair" == ".Perms2.Share" {
 	//        var share []interface{}
 	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})

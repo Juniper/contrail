@@ -38,6 +38,7 @@ var GlobalQosConfigFields = []string{
 	"dns",
 	"control",
 	"analytics",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -72,6 +73,7 @@ var GlobalQosConfigBackRefFields = map[string][]string{
 		"forwarding_class_id",
 		"forwarding_class_dscp",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 
@@ -101,6 +103,7 @@ var GlobalQosConfigBackRefFields = map[string][]string{
 		"dscp_entries_qos_id_forwarding_class_pair",
 		"display_name",
 		"default_forwarding_class_id",
+		"configuration_version",
 		"key_value_pair",
 	},
 
@@ -128,6 +131,7 @@ var GlobalQosConfigBackRefFields = map[string][]string{
 		"created",
 		"fq_name",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 }
@@ -169,6 +173,7 @@ func (db *DB) createGlobalQosConfig(
 		int(model.GetControlTrafficDSCP().GetDNS()),
 		int(model.GetControlTrafficDSCP().GetControl()),
 		int(model.GetControlTrafficDSCP().GetAnalytics()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -331,6 +336,12 @@ func scanGlobalQosConfig(values map[string]interface{}) (*models.GlobalQosConfig
 	if value, ok := values["analytics"]; ok {
 
 		m.ControlTrafficDSCP.Analytics = common.InterfaceToInt64(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 
@@ -497,6 +508,12 @@ func scanGlobalQosConfig(values map[string]interface{}) (*models.GlobalQosConfig
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 
@@ -675,6 +692,12 @@ func scanGlobalQosConfig(values map[string]interface{}) (*models.GlobalQosConfig
 
 			}
 
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
+
+			}
+
 			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
 
 				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
@@ -835,6 +858,12 @@ func scanGlobalQosConfig(values map[string]interface{}) (*models.GlobalQosConfig
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 

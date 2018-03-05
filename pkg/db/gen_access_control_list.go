@@ -35,6 +35,7 @@ var AccessControlListFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 	"access_control_list_hash",
 	"dynamic",
@@ -50,9 +51,9 @@ var AccessControlListBackRefFields = map[string][]string{}
 // AccessControlListParentTypes is possible parents for AccessControlList
 var AccessControlListParents = []string{
 
-	"virtual_network",
-
 	"security_group",
+
+	"virtual_network",
 }
 
 // CreateAccessControlList inserts AccessControlList to DB
@@ -83,6 +84,7 @@ func (db *DB) createAccessControlList(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()),
 		int(model.GetAccessControlListHash()),
 		bool(model.GetAccessControlListEntries().GetDynamic()),
@@ -230,6 +232,12 @@ func scanAccessControlList(values map[string]interface{}) (*models.AccessControl
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

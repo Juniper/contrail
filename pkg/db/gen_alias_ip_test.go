@@ -204,6 +204,10 @@ func TestAliasIP(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(updateMap, ".ConfigurationVersion", ".", 1.0)
+	//
+	//
+	//
 	//    if ".Annotations.KeyValuePair" == ".Perms2.Share" {
 	//        var share []interface{}
 	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
@@ -227,14 +231,6 @@ func TestAliasIP(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var Projectref []interface{}
-	//    Projectref = append(Projectref, map[string]interface{}{"operation":"delete", "uuid":"alias_ip_project_ref_uuid", "to": []string{"test", "alias_ip_project_ref_uuid"}})
-	//    Projectref = append(Projectref, map[string]interface{}{"operation":"add", "uuid":"alias_ip_project_ref_uuid1", "to": []string{"test", "alias_ip_project_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ProjectRefs", ".", Projectref)
-	//
 	//    var VirtualMachineInterfaceref []interface{}
 	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"alias_ip_virtual_machine_interface_ref_uuid", "to": []string{"test", "alias_ip_virtual_machine_interface_ref_uuid"}})
 	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"alias_ip_virtual_machine_interface_ref_uuid1", "to": []string{"test", "alias_ip_virtual_machine_interface_ref_uuid1"}})
@@ -242,6 +238,14 @@ func TestAliasIP(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
+	//
+	//    var Projectref []interface{}
+	//    Projectref = append(Projectref, map[string]interface{}{"operation":"delete", "uuid":"alias_ip_project_ref_uuid", "to": []string{"test", "alias_ip_project_ref_uuid"}})
+	//    Projectref = append(Projectref, map[string]interface{}{"operation":"add", "uuid":"alias_ip_project_ref_uuid1", "to": []string{"test", "alias_ip_project_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "ProjectRefs", ".", Projectref)
 	//
 	//
 	_, err = db.CreateAliasIP(ctx,

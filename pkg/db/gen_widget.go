@@ -38,6 +38,7 @@ var WidgetFields = []string{
 	"display_name",
 	"content_config",
 	"container_config",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -81,6 +82,7 @@ func (db *DB) createWidget(
 		string(model.GetDisplayName()),
 		string(model.GetContentConfig()),
 		string(model.GetContainerConfig()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -243,6 +245,12 @@ func scanWidget(values map[string]interface{}) (*models.Widget, error) {
 	if value, ok := values["container_config"]; ok {
 
 		m.ContainerConfig = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

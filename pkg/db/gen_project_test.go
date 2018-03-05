@@ -362,6 +362,10 @@ func TestProject(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(updateMap, ".ConfigurationVersion", ".", 1.0)
+	//
+	//
+	//
 	//    if ".Annotations.KeyValuePair" == ".Perms2.Share" {
 	//        var share []interface{}
 	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
@@ -380,14 +384,6 @@ func TestProject(t *testing.T) {
 	//    common.SetValueByPath(updateMap, "perms2.owner", ".", "admin")
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
-	//
-	//    var AliasIPPoolref []interface{}
-	//    AliasIPPoolref = append(AliasIPPoolref, map[string]interface{}{"operation":"delete", "uuid":"project_alias_ip_pool_ref_uuid", "to": []string{"test", "project_alias_ip_pool_ref_uuid"}})
-	//    AliasIPPoolref = append(AliasIPPoolref, map[string]interface{}{"operation":"add", "uuid":"project_alias_ip_pool_ref_uuid1", "to": []string{"test", "project_alias_ip_pool_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "AliasIPPoolRefs", ".", AliasIPPoolref)
 	//
 	//    var Namespaceref []interface{}
 	//    Namespaceref = append(Namespaceref, map[string]interface{}{"operation":"delete", "uuid":"project_namespace_ref_uuid", "to": []string{"test", "project_namespace_ref_uuid"}})
@@ -425,6 +421,14 @@ func TestProject(t *testing.T) {
 	//
 	//    common.SetValueByPath(updateMap, "FloatingIPPoolRefs", ".", FloatingIPPoolref)
 	//
+	//    var AliasIPPoolref []interface{}
+	//    AliasIPPoolref = append(AliasIPPoolref, map[string]interface{}{"operation":"delete", "uuid":"project_alias_ip_pool_ref_uuid", "to": []string{"test", "project_alias_ip_pool_ref_uuid"}})
+	//    AliasIPPoolref = append(AliasIPPoolref, map[string]interface{}{"operation":"add", "uuid":"project_alias_ip_pool_ref_uuid1", "to": []string{"test", "project_alias_ip_pool_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "AliasIPPoolRefs", ".", AliasIPPoolref)
+	//
 	//
 	_, err = db.CreateProject(ctx,
 		&models.CreateProjectRequest{
@@ -443,41 +447,6 @@ func TestProject(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_project_floating_ip_pool` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing FloatingIPPoolRefs delete statement failed")
-		}
-		_, err = stmt.Exec("project_dummy_uuid", "project_floating_ip_pool_ref_uuid")
-		_, err = stmt.Exec("project_dummy_uuid", "project_floating_ip_pool_ref_uuid1")
-		_, err = stmt.Exec("project_dummy_uuid", "project_floating_ip_pool_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "FloatingIPPoolRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteFloatingIPPool(ctx,
-		&models.DeleteFloatingIPPoolRequest{
-			ID: "project_floating_ip_pool_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref project_floating_ip_pool_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteFloatingIPPool(ctx,
-		&models.DeleteFloatingIPPoolRequest{
-			ID: "project_floating_ip_pool_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref project_floating_ip_pool_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteFloatingIPPool(
-		ctx,
-		&models.DeleteFloatingIPPoolRequest{
-			ID: "project_floating_ip_pool_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref project_floating_ip_pool_ref_uuid2 failed", err)
-	}
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
@@ -582,6 +551,41 @@ func TestProject(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref project_application_policy_set_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_project_floating_ip_pool` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing FloatingIPPoolRefs delete statement failed")
+		}
+		_, err = stmt.Exec("project_dummy_uuid", "project_floating_ip_pool_ref_uuid")
+		_, err = stmt.Exec("project_dummy_uuid", "project_floating_ip_pool_ref_uuid1")
+		_, err = stmt.Exec("project_dummy_uuid", "project_floating_ip_pool_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "FloatingIPPoolRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteFloatingIPPool(ctx,
+		&models.DeleteFloatingIPPoolRequest{
+			ID: "project_floating_ip_pool_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref project_floating_ip_pool_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteFloatingIPPool(ctx,
+		&models.DeleteFloatingIPPoolRequest{
+			ID: "project_floating_ip_pool_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref project_floating_ip_pool_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteFloatingIPPool(
+		ctx,
+		&models.DeleteFloatingIPPoolRequest{
+			ID: "project_floating_ip_pool_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref project_floating_ip_pool_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

@@ -20,6 +20,7 @@ func MakeVirtualDNSRecord() *VirtualDNSRecord {
 		DisplayName:          "",
 		Annotations:          MakeKeyValuePairs(),
 		Perms2:               MakePermType2(),
+		ConfigurationVersion: 0,
 		VirtualDNSRecordData: MakeVirtualDnsRecordType(),
 	}
 }
@@ -42,6 +43,7 @@ func InterfaceToVirtualDNSRecord(i interface{}) *VirtualDNSRecord {
 		DisplayName:          common.InterfaceToString(m["display_name"]),
 		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:               InterfaceToPermType2(m["perms2"]),
+		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
 		VirtualDNSRecordData: InterfaceToVirtualDnsRecordType(m["virtual_DNS_record_data"]),
 	}
 }
