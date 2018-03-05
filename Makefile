@@ -1,4 +1,4 @@
-all: deps lint test build integration
+all: deps lint test build
 
 deps: ## Setup the go dependencies
 	./tools/deps.sh
