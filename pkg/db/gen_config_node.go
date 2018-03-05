@@ -35,6 +35,7 @@ var ConfigNodeFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"config_node_ip_address",
 	"key_value_pair",
 }
@@ -79,6 +80,7 @@ func (db *DB) createConfigNode(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		string(model.GetConfigNodeIPAddress()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
@@ -224,6 +226,12 @@ func scanConfigNode(values map[string]interface{}) (*models.ConfigNode, error) {
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

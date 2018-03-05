@@ -61,6 +61,7 @@ var BaremetalNodeFields = []string{
 	"_display_name",
 	"created_at",
 	"console_enabled",
+	"configuration_version",
 	"bm_properties_memory_mb",
 	"disk_gb",
 	"cpu_count",
@@ -131,6 +132,7 @@ func (db *DB) createBaremetalNode(
 		string(model.GetDisplayName()),
 		string(model.GetCreatedAt()),
 		bool(model.GetConsoleEnabled()),
+		int(model.GetConfigurationVersion()),
 		int(model.GetBMProperties().GetMemoryMB()),
 		int(model.GetBMProperties().GetDiskGB()),
 		int(model.GetBMProperties().GetCPUCount()),
@@ -435,6 +437,12 @@ func scanBaremetalNode(values map[string]interface{}) (*models.BaremetalNode, er
 	if value, ok := values["console_enabled"]; ok {
 
 		m.ConsoleEnabled = common.InterfaceToBool(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

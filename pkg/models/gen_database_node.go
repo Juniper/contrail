@@ -20,6 +20,7 @@ func MakeDatabaseNode() *DatabaseNode {
 		DisplayName:           "",
 		Annotations:           MakeKeyValuePairs(),
 		Perms2:                MakePermType2(),
+		ConfigurationVersion:  0,
 		DatabaseNodeIPAddress: "",
 	}
 }
@@ -42,6 +43,7 @@ func InterfaceToDatabaseNode(i interface{}) *DatabaseNode {
 		DisplayName:           common.InterfaceToString(m["display_name"]),
 		Annotations:           InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:                InterfaceToPermType2(m["perms2"]),
+		ConfigurationVersion:  common.InterfaceToInt64(m["configuration_version"]),
 		DatabaseNodeIPAddress: common.InterfaceToString(m["database_node_ip_address"]),
 	}
 }

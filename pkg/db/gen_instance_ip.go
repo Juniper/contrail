@@ -45,11 +45,17 @@ var InstanceIPFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 }
 
 // InstanceIPRefFields is db reference fields for InstanceIP
 var InstanceIPRefFields = map[string][]string{
+
+	"physical_router": []string{
+	// <schema.Schema Value>
+
+	},
 
 	"virtual_router": []string{
 	// <schema.Schema Value>
@@ -67,11 +73,6 @@ var InstanceIPRefFields = map[string][]string{
 	},
 
 	"virtual_machine_interface": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"physical_router": []string{
 	// <schema.Schema Value>
 
 	},
@@ -108,6 +109,7 @@ var InstanceIPBackRefFields = map[string][]string{
 		"floating_ip_address_family",
 		"floating_ip_address",
 		"display_name",
+		"configuration_version",
 		"key_value_pair",
 	},
 }
@@ -153,6 +155,7 @@ func (db *DB) createInstanceIP(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -400,10 +403,56 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 
 	}
 
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
+
+	}
+
 	if value, ok := values["key_value_pair"]; ok {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
+	}
+
+	if value, ok := values["ref_network_ipam"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.InstanceIPNetworkIpamRef{}
+			referenceModel.UUID = uuid
+			m.NetworkIpamRefs = append(m.NetworkIpamRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_network"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.InstanceIPVirtualNetworkRef{}
+			referenceModel.UUID = uuid
+			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
+
+		}
 	}
 
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
@@ -462,46 +511,6 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 			referenceModel := &models.InstanceIPVirtualRouterRef{}
 			referenceModel.UUID = uuid
 			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_network_ipam"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.InstanceIPNetworkIpamRef{}
-			referenceModel.UUID = uuid
-			m.NetworkIpamRefs = append(m.NetworkIpamRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_virtual_network"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.InstanceIPVirtualNetworkRef{}
-			referenceModel.UUID = uuid
-			m.VirtualNetworkRefs = append(m.VirtualNetworkRefs, referenceModel)
 
 		}
 	}
@@ -681,6 +690,12 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
 
 				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["configuration_version"]; ok && propertyValue != nil {
+
+				childModel.ConfigurationVersion = common.InterfaceToInt64(propertyValue)
 
 			}
 

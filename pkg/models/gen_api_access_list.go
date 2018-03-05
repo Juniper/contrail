@@ -20,6 +20,7 @@ func MakeAPIAccessList() *APIAccessList {
 		DisplayName:          "",
 		Annotations:          MakeKeyValuePairs(),
 		Perms2:               MakePermType2(),
+		ConfigurationVersion: 0,
 		APIAccessListEntries: MakeRbacRuleEntriesType(),
 	}
 }
@@ -42,6 +43,7 @@ func InterfaceToAPIAccessList(i interface{}) *APIAccessList {
 		DisplayName:          common.InterfaceToString(m["display_name"]),
 		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:               InterfaceToPermType2(m["perms2"]),
+		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
 		APIAccessListEntries: InterfaceToRbacRuleEntriesType(m["api_access_list_entries"]),
 	}
 }

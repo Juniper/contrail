@@ -36,6 +36,7 @@ var DatabaseNodeFields = []string{
 	"fq_name",
 	"display_name",
 	"database_node_ip_address",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -80,6 +81,7 @@ func (db *DB) createDatabaseNode(
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
 		string(model.GetDatabaseNodeIPAddress()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -230,6 +232,12 @@ func scanDatabaseNode(values map[string]interface{}) (*models.DatabaseNode, erro
 	if value, ok := values["database_node_ip_address"]; ok {
 
 		m.DatabaseNodeIPAddress = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

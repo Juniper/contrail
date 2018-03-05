@@ -35,6 +35,7 @@ var APIAccessListFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"rbac_rule",
 	"key_value_pair",
 }
@@ -48,11 +49,11 @@ var APIAccessListBackRefFields = map[string][]string{}
 // APIAccessListParentTypes is possible parents for APIAccessList
 var APIAccessListParents = []string{
 
-	"project",
-
 	"global_system_config",
 
 	"domain",
+
+	"project",
 }
 
 // CreateAPIAccessList inserts APIAccessList to DB
@@ -83,6 +84,7 @@ func (db *DB) createAPIAccessList(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAPIAccessListEntries().GetRbacRule()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
@@ -228,6 +230,12 @@ func scanAPIAccessList(values map[string]interface{}) (*models.APIAccessList, er
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

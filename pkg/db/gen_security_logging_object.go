@@ -37,6 +37,7 @@ var SecurityLoggingObjectFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -60,9 +61,9 @@ var SecurityLoggingObjectBackRefFields = map[string][]string{}
 // SecurityLoggingObjectParentTypes is possible parents for SecurityLoggingObject
 var SecurityLoggingObjectParents = []string{
 
-	"global_vrouter_config",
-
 	"project",
+
+	"global_vrouter_config",
 }
 
 // CreateSecurityLoggingObject inserts SecurityLoggingObject to DB
@@ -95,6 +96,7 @@ func (db *DB) createSecurityLoggingObject(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -275,6 +277,12 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

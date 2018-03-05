@@ -35,6 +35,7 @@ var ApplicationPolicySetFields = []string{
 	"created",
 	"fq_name",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 	"all_applications",
 }
@@ -42,14 +43,14 @@ var ApplicationPolicySetFields = []string{
 // ApplicationPolicySetRefFields is db reference fields for ApplicationPolicySet
 var ApplicationPolicySetRefFields = map[string][]string{
 
-	"global_vrouter_config": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"firewall_policy": []string{
 		// <schema.Schema Value>
 		"sequence",
+	},
+
+	"global_vrouter_config": []string{
+	// <schema.Schema Value>
+
 	},
 }
 
@@ -92,6 +93,7 @@ func (db *DB) createApplicationPolicySet(
 		string(model.GetIDPerms().GetCreated()),
 		common.MustJSON(model.GetFQName()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()),
 		bool(model.GetAllApplications()))
 	if err != nil {
@@ -257,6 +259,12 @@ func scanApplicationPolicySet(values map[string]interface{}) (*models.Applicatio
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

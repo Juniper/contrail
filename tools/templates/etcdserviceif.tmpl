@@ -1,0 +1,51 @@
+package etcdifservice
+
+import (
+    "context"
+    "github.com/Juniper/contrail/pkg/models"
+)
+
+type EtcdIfService struct{
+    serviceif.BaseService
+}
+
+func (service *EtcdIfService) Next() Service {
+    return service.next
+}
+
+func (service *EtcdIfService) SetNext(next Service) {
+    service.next = next
+}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+func (service *EtcdIfService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (service *EtcdIfService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Update{{ schema.JSONSchema.GoName }}Request) (*models.Update{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (service *EtcdIfService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Delete{{ schema.JSONSchema.GoName }}Request) (*models.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (service *EtcdIfService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Get{{ schema.JSONSchema.GoName }}Request) (*models.Get{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().Get{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (service *EtcdIfService) List{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.List{{ schema.JSONSchema.GoName }}Request) (*models.List{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().List{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+{% endif%}{% endfor %}

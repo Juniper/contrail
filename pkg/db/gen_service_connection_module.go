@@ -37,6 +37,7 @@ var ServiceConnectionModuleFields = []string{
 	"fq_name",
 	"e2_service",
 	"display_name",
+	"configuration_version",
 	"key_value_pair",
 }
 
@@ -85,6 +86,7 @@ func (db *DB) createServiceConnectionModule(
 		common.MustJSON(model.GetFQName()),
 		string(model.GetE2Service()),
 		string(model.GetDisplayName()),
+		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
@@ -249,6 +251,12 @@ func scanServiceConnectionModule(values map[string]interface{}) (*models.Service
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["configuration_version"]; ok {
+
+		m.ConfigurationVersion = common.InterfaceToInt64(value)
 
 	}
 

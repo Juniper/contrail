@@ -20,6 +20,7 @@ func MakeLogicalRouter() *LogicalRouter {
 		DisplayName:               "",
 		Annotations:               MakeKeyValuePairs(),
 		Perms2:                    MakePermType2(),
+		ConfigurationVersion:      0,
 		VxlanNetworkIdentifier:    "",
 		ConfiguredRouteTargetList: MakeRouteTargetList(),
 	}
@@ -43,6 +44,7 @@ func InterfaceToLogicalRouter(i interface{}) *LogicalRouter {
 		DisplayName:               common.InterfaceToString(m["display_name"]),
 		Annotations:               InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:                    InterfaceToPermType2(m["perms2"]),
+		ConfigurationVersion:      common.InterfaceToInt64(m["configuration_version"]),
 		VxlanNetworkIdentifier:    common.InterfaceToString(m["vxlan_network_identifier"]),
 		ConfiguredRouteTargetList: InterfaceToRouteTargetList(m["configured_route_target_list"]),
 	}
