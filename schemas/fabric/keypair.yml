@@ -1,11 +1,12 @@
-description: SSH KeyPair for Openstack
+description: SSH KeyPairs
 extends:
 - base
 id: keypair
 plural: keypairs
-prefix: /openstack
+prefix: /
 schema:
   properties:
+
     name:
       description: A name for the keypair which will be used to reference it later
       type: string
@@ -13,11 +14,16 @@ schema:
       permission:
       - create
     public_key:
-      description: The public ssh key to import
-      type: string
+      description: SSH Public Key
       nullable: false
       permission:
       - create
+      - update
+      sql: tinytext
+      title: SSH public key
+      type: string
+      view:
+      - detail
   required: []
   type: object
 singular: keypair

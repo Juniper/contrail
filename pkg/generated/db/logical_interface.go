@@ -58,9 +58,9 @@ var LogicalInterfaceBackRefFields = map[string][]string{}
 // LogicalInterfaceParentTypes is possible parents for LogicalInterface
 var LogicalInterfaceParents = []string{
 
-	"physical_router",
-
 	"physical_interface",
+
+	"physical_router",
 }
 
 const insertLogicalInterfaceVirtualMachineInterfaceQuery = "insert into `ref_logical_interface_virtual_machine_interface` (`from`, `to` ) values (?, ?);"

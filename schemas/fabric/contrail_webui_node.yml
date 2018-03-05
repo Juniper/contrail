@@ -1,8 +1,8 @@
-description: Contrail Controller Node
+description: Contrail Webui Node
 extends:
 - base
 - has_status
-id: contrail_controller_node
+id: contrail_webui_node
 metadata:
   category: cluster
 references:
@@ -15,13 +15,13 @@ parents:
     operations: "CRUD"
     description: "Parent of this webui node."
     presence: "optional"
-plural: contrail_controller_nodes
+plural: contrail_webui_nodes
 prefix: /
 schema:
   properties: {}
   propertiesOrder: []
   required: []
   type: object
-singular: contrail_controller_node
-title: Contrail Controller Node
+singular: contrail_webui_node
+title: Contrail Webui Node
 type: ""

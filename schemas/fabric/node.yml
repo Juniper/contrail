@@ -3,6 +3,11 @@ extends:
 - base
 id: node
 parent: ""
+references:
+    keypair:
+      operations: "CRUD"
+      description: "Reference to keypair object to import."
+      presence: "optional"
 plural: nodes
 prefix: /
 schema:
@@ -75,17 +80,6 @@ schema:
       type: string
       view:
       - create
-      - detail
-    ssh_key:
-      description: SSH Public Key
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: tinytext
-      title: SSH public key
-      type: string
-      view:
       - detail
     username:
       default: ADMIN

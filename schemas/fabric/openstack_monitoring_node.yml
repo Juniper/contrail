@@ -1,0 +1,27 @@
+description: Openstack Monitoring Node
+extends:
+- base
+- has_status
+id: openstack_monitoring_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this openstack_monitoring node."
+      presence: "optional"
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this openstack_monitoring node."
+    presence: "optional"
+plural: openstack_monitoring_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: openstack_monitoring_node
+title: openstack_monitoring Node
+type: ""

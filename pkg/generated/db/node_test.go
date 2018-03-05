@@ -39,6 +39,31 @@ func TestNode(t *testing.T) {
 
 	// Create referred objects
 
+	var Keypaircreateref []*models.NodeKeypairRef
+	var KeypairrefModel *models.Keypair
+	KeypairrefModel = models.MakeKeypair()
+	KeypairrefModel.UUID = "node_keypair_ref_uuid"
+	KeypairrefModel.FQName = []string{"test", "node_keypair_ref_uuid"}
+	_, err = db.CreateKeypair(ctx, &models.CreateKeypairRequest{
+		Keypair: KeypairrefModel,
+	})
+	KeypairrefModel.UUID = "node_keypair_ref_uuid1"
+	KeypairrefModel.FQName = []string{"test", "node_keypair_ref_uuid1"}
+	_, err = db.CreateKeypair(ctx, &models.CreateKeypairRequest{
+		Keypair: KeypairrefModel,
+	})
+	KeypairrefModel.UUID = "node_keypair_ref_uuid2"
+	KeypairrefModel.FQName = []string{"test", "node_keypair_ref_uuid2"}
+	_, err = db.CreateKeypair(ctx, &models.CreateKeypairRequest{
+		Keypair: KeypairrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	Keypaircreateref = append(Keypaircreateref, &models.NodeKeypairRef{UUID: "node_keypair_ref_uuid", To: []string{"test", "node_keypair_ref_uuid"}})
+	Keypaircreateref = append(Keypaircreateref, &models.NodeKeypairRef{UUID: "node_keypair_ref_uuid2", To: []string{"test", "node_keypair_ref_uuid2"}})
+	model.KeypairRefs = Keypaircreateref
+
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
 	projectModel.UUID = "node_admin_project_uuid"
@@ -68,10 +93,6 @@ func TestNode(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, ".Type", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".SSHKey", ".", "test")
 	//
 	//
 	//
@@ -230,6 +251,14 @@ func TestNode(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
+	//    var Keypairref []interface{}
+	//    Keypairref = append(Keypairref, map[string]interface{}{"operation":"delete", "uuid":"node_keypair_ref_uuid", "to": []string{"test", "node_keypair_ref_uuid"}})
+	//    Keypairref = append(Keypairref, map[string]interface{}{"operation":"add", "uuid":"node_keypair_ref_uuid1", "to": []string{"test", "node_keypair_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "KeypairRefs", ".", Keypairref)
+	//
 	//
 	_, err = db.CreateNode(ctx,
 		&models.CreateNodeRequest{
@@ -248,6 +277,41 @@ func TestNode(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
+
+	err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := common.GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_node_keypair` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing KeypairRefs delete statement failed")
+		}
+		_, err = stmt.Exec("node_dummy_uuid", "node_keypair_ref_uuid")
+		_, err = stmt.Exec("node_dummy_uuid", "node_keypair_ref_uuid1")
+		_, err = stmt.Exec("node_dummy_uuid", "node_keypair_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "KeypairRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteKeypair(ctx,
+		&models.DeleteKeypairRequest{
+			ID: "node_keypair_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref node_keypair_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteKeypair(ctx,
+		&models.DeleteKeypairRequest{
+			ID: "node_keypair_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref node_keypair_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteKeypair(
+		ctx,
+		&models.DeleteKeypairRequest{
+			ID: "node_keypair_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref node_keypair_ref_uuid2 failed", err)
+	}
 
 	//Delete the project created for sharing
 	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{

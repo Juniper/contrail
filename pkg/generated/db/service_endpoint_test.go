@@ -39,31 +39,6 @@ func TestServiceEndpoint(t *testing.T) {
 
 	// Create referred objects
 
-	var ServiceObjectcreateref []*models.ServiceEndpointServiceObjectRef
-	var ServiceObjectrefModel *models.ServiceObject
-	ServiceObjectrefModel = models.MakeServiceObject()
-	ServiceObjectrefModel.UUID = "service_endpoint_service_object_ref_uuid"
-	ServiceObjectrefModel.FQName = []string{"test", "service_endpoint_service_object_ref_uuid"}
-	_, err = db.CreateServiceObject(ctx, &models.CreateServiceObjectRequest{
-		ServiceObject: ServiceObjectrefModel,
-	})
-	ServiceObjectrefModel.UUID = "service_endpoint_service_object_ref_uuid1"
-	ServiceObjectrefModel.FQName = []string{"test", "service_endpoint_service_object_ref_uuid1"}
-	_, err = db.CreateServiceObject(ctx, &models.CreateServiceObjectRequest{
-		ServiceObject: ServiceObjectrefModel,
-	})
-	ServiceObjectrefModel.UUID = "service_endpoint_service_object_ref_uuid2"
-	ServiceObjectrefModel.FQName = []string{"test", "service_endpoint_service_object_ref_uuid2"}
-	_, err = db.CreateServiceObject(ctx, &models.CreateServiceObjectRequest{
-		ServiceObject: ServiceObjectrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	ServiceObjectcreateref = append(ServiceObjectcreateref, &models.ServiceEndpointServiceObjectRef{UUID: "service_endpoint_service_object_ref_uuid", To: []string{"test", "service_endpoint_service_object_ref_uuid"}})
-	ServiceObjectcreateref = append(ServiceObjectcreateref, &models.ServiceEndpointServiceObjectRef{UUID: "service_endpoint_service_object_ref_uuid2", To: []string{"test", "service_endpoint_service_object_ref_uuid2"}})
-	model.ServiceObjectRefs = ServiceObjectcreateref
-
 	var ServiceConnectionModulecreateref []*models.ServiceEndpointServiceConnectionModuleRef
 	var ServiceConnectionModulerefModel *models.ServiceConnectionModule
 	ServiceConnectionModulerefModel = models.MakeServiceConnectionModule()
@@ -113,6 +88,31 @@ func TestServiceEndpoint(t *testing.T) {
 	PhysicalRoutercreateref = append(PhysicalRoutercreateref, &models.ServiceEndpointPhysicalRouterRef{UUID: "service_endpoint_physical_router_ref_uuid", To: []string{"test", "service_endpoint_physical_router_ref_uuid"}})
 	PhysicalRoutercreateref = append(PhysicalRoutercreateref, &models.ServiceEndpointPhysicalRouterRef{UUID: "service_endpoint_physical_router_ref_uuid2", To: []string{"test", "service_endpoint_physical_router_ref_uuid2"}})
 	model.PhysicalRouterRefs = PhysicalRoutercreateref
+
+	var ServiceObjectcreateref []*models.ServiceEndpointServiceObjectRef
+	var ServiceObjectrefModel *models.ServiceObject
+	ServiceObjectrefModel = models.MakeServiceObject()
+	ServiceObjectrefModel.UUID = "service_endpoint_service_object_ref_uuid"
+	ServiceObjectrefModel.FQName = []string{"test", "service_endpoint_service_object_ref_uuid"}
+	_, err = db.CreateServiceObject(ctx, &models.CreateServiceObjectRequest{
+		ServiceObject: ServiceObjectrefModel,
+	})
+	ServiceObjectrefModel.UUID = "service_endpoint_service_object_ref_uuid1"
+	ServiceObjectrefModel.FQName = []string{"test", "service_endpoint_service_object_ref_uuid1"}
+	_, err = db.CreateServiceObject(ctx, &models.CreateServiceObjectRequest{
+		ServiceObject: ServiceObjectrefModel,
+	})
+	ServiceObjectrefModel.UUID = "service_endpoint_service_object_ref_uuid2"
+	ServiceObjectrefModel.FQName = []string{"test", "service_endpoint_service_object_ref_uuid2"}
+	_, err = db.CreateServiceObject(ctx, &models.CreateServiceObjectRequest{
+		ServiceObject: ServiceObjectrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	ServiceObjectcreateref = append(ServiceObjectcreateref, &models.ServiceEndpointServiceObjectRef{UUID: "service_endpoint_service_object_ref_uuid", To: []string{"test", "service_endpoint_service_object_ref_uuid"}})
+	ServiceObjectcreateref = append(ServiceObjectcreateref, &models.ServiceEndpointServiceObjectRef{UUID: "service_endpoint_service_object_ref_uuid2", To: []string{"test", "service_endpoint_service_object_ref_uuid2"}})
+	model.ServiceObjectRefs = ServiceObjectcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()

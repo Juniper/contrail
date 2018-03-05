@@ -39,31 +39,6 @@ func TestCustomerAttachment(t *testing.T) {
 
 	// Create referred objects
 
-	var FloatingIPcreateref []*models.CustomerAttachmentFloatingIPRef
-	var FloatingIPrefModel *models.FloatingIP
-	FloatingIPrefModel = models.MakeFloatingIP()
-	FloatingIPrefModel.UUID = "customer_attachment_floating_ip_ref_uuid"
-	FloatingIPrefModel.FQName = []string{"test", "customer_attachment_floating_ip_ref_uuid"}
-	_, err = db.CreateFloatingIP(ctx, &models.CreateFloatingIPRequest{
-		FloatingIP: FloatingIPrefModel,
-	})
-	FloatingIPrefModel.UUID = "customer_attachment_floating_ip_ref_uuid1"
-	FloatingIPrefModel.FQName = []string{"test", "customer_attachment_floating_ip_ref_uuid1"}
-	_, err = db.CreateFloatingIP(ctx, &models.CreateFloatingIPRequest{
-		FloatingIP: FloatingIPrefModel,
-	})
-	FloatingIPrefModel.UUID = "customer_attachment_floating_ip_ref_uuid2"
-	FloatingIPrefModel.FQName = []string{"test", "customer_attachment_floating_ip_ref_uuid2"}
-	_, err = db.CreateFloatingIP(ctx, &models.CreateFloatingIPRequest{
-		FloatingIP: FloatingIPrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	FloatingIPcreateref = append(FloatingIPcreateref, &models.CustomerAttachmentFloatingIPRef{UUID: "customer_attachment_floating_ip_ref_uuid", To: []string{"test", "customer_attachment_floating_ip_ref_uuid"}})
-	FloatingIPcreateref = append(FloatingIPcreateref, &models.CustomerAttachmentFloatingIPRef{UUID: "customer_attachment_floating_ip_ref_uuid2", To: []string{"test", "customer_attachment_floating_ip_ref_uuid2"}})
-	model.FloatingIPRefs = FloatingIPcreateref
-
 	var VirtualMachineInterfacecreateref []*models.CustomerAttachmentVirtualMachineInterfaceRef
 	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
 	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
@@ -88,6 +63,31 @@ func TestCustomerAttachment(t *testing.T) {
 	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.CustomerAttachmentVirtualMachineInterfaceRef{UUID: "customer_attachment_virtual_machine_interface_ref_uuid", To: []string{"test", "customer_attachment_virtual_machine_interface_ref_uuid"}})
 	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.CustomerAttachmentVirtualMachineInterfaceRef{UUID: "customer_attachment_virtual_machine_interface_ref_uuid2", To: []string{"test", "customer_attachment_virtual_machine_interface_ref_uuid2"}})
 	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
+
+	var FloatingIPcreateref []*models.CustomerAttachmentFloatingIPRef
+	var FloatingIPrefModel *models.FloatingIP
+	FloatingIPrefModel = models.MakeFloatingIP()
+	FloatingIPrefModel.UUID = "customer_attachment_floating_ip_ref_uuid"
+	FloatingIPrefModel.FQName = []string{"test", "customer_attachment_floating_ip_ref_uuid"}
+	_, err = db.CreateFloatingIP(ctx, &models.CreateFloatingIPRequest{
+		FloatingIP: FloatingIPrefModel,
+	})
+	FloatingIPrefModel.UUID = "customer_attachment_floating_ip_ref_uuid1"
+	FloatingIPrefModel.FQName = []string{"test", "customer_attachment_floating_ip_ref_uuid1"}
+	_, err = db.CreateFloatingIP(ctx, &models.CreateFloatingIPRequest{
+		FloatingIP: FloatingIPrefModel,
+	})
+	FloatingIPrefModel.UUID = "customer_attachment_floating_ip_ref_uuid2"
+	FloatingIPrefModel.FQName = []string{"test", "customer_attachment_floating_ip_ref_uuid2"}
+	_, err = db.CreateFloatingIP(ctx, &models.CreateFloatingIPRequest{
+		FloatingIP: FloatingIPrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	FloatingIPcreateref = append(FloatingIPcreateref, &models.CustomerAttachmentFloatingIPRef{UUID: "customer_attachment_floating_ip_ref_uuid", To: []string{"test", "customer_attachment_floating_ip_ref_uuid"}})
+	FloatingIPcreateref = append(FloatingIPcreateref, &models.CustomerAttachmentFloatingIPRef{UUID: "customer_attachment_floating_ip_ref_uuid2", To: []string{"test", "customer_attachment_floating_ip_ref_uuid2"}})
+	model.FloatingIPRefs = FloatingIPcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()

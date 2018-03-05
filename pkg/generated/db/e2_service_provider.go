@@ -45,12 +45,12 @@ var E2ServiceProviderFields = []string{
 // E2ServiceProviderRefFields is db reference fields for E2ServiceProvider
 var E2ServiceProviderRefFields = map[string][]string{
 
-	"physical_router": []string{
+	"peering_policy": []string{
 	// <schema.Schema Value>
 
 	},
 
-	"peering_policy": []string{
+	"physical_router": []string{
 	// <schema.Schema Value>
 
 	},
@@ -108,19 +108,6 @@ func (db *DB) createE2ServiceProvider(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtPhysicalRouterRef, err := tx.Prepare(insertE2ServiceProviderPhysicalRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing PhysicalRouterRefs create statement failed")
-	}
-	defer stmtPhysicalRouterRef.Close()
-	for _, ref := range model.PhysicalRouterRefs {
-
-		_, err = stmtPhysicalRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "PhysicalRouterRefs create failed")
-		}
-	}
-
 	stmtPeeringPolicyRef, err := tx.Prepare(insertE2ServiceProviderPeeringPolicyQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing PeeringPolicyRefs create statement failed")
@@ -131,6 +118,19 @@ func (db *DB) createE2ServiceProvider(
 		_, err = stmtPeeringPolicyRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PeeringPolicyRefs create failed")
+		}
+	}
+
+	stmtPhysicalRouterRef, err := tx.Prepare(insertE2ServiceProviderPhysicalRouterQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing PhysicalRouterRefs create statement failed")
+	}
+	defer stmtPhysicalRouterRef.Close()
+	for _, ref := range model.PhysicalRouterRefs {
+
+		_, err = stmtPhysicalRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "PhysicalRouterRefs create failed")
 		}
 	}
 
@@ -288,26 +288,6 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 
 	}
 
-	if value, ok := values["ref_physical_router"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.E2ServiceProviderPhysicalRouterRef{}
-			referenceModel.UUID = uuid
-			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_peering_policy"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -324,6 +304,26 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 			referenceModel := &models.E2ServiceProviderPeeringPolicyRef{}
 			referenceModel.UUID = uuid
 			m.PeeringPolicyRefs = append(m.PeeringPolicyRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_physical_router"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.E2ServiceProviderPhysicalRouterRef{}
+			referenceModel.UUID = uuid
+			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
 
 		}
 	}

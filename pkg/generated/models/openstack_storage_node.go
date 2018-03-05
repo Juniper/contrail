@@ -7,9 +7,9 @@ import (
 //To skip import error.
 var _ = schema.Version
 
-// MakeContrailControllerNode makes ContrailControllerNode
-func MakeContrailControllerNode() *ContrailControllerNode {
-	return &ContrailControllerNode{
+// MakeOpenstackStorageNode makes OpenstackStorageNode
+func MakeOpenstackStorageNode() *OpenstackStorageNode {
+	return &OpenstackStorageNode{
 		//TODO(nati): Apply default
 		ProvisioningLog:           "",
 		ProvisioningProgress:      0,
@@ -27,14 +27,14 @@ func MakeContrailControllerNode() *ContrailControllerNode {
 	}
 }
 
-// MakeContrailControllerNode makes ContrailControllerNode
-func InterfaceToContrailControllerNode(i interface{}) *ContrailControllerNode {
+// MakeOpenstackStorageNode makes OpenstackStorageNode
+func InterfaceToOpenstackStorageNode(i interface{}) *OpenstackStorageNode {
 	m, ok := i.(map[string]interface{})
 	_ = m
 	if !ok {
 		return nil
 	}
-	return &ContrailControllerNode{
+	return &OpenstackStorageNode{
 		//TODO(nati): Apply default
 		ProvisioningLog:           schema.InterfaceToString(m["provisioning_log"]),
 		ProvisioningProgress:      schema.InterfaceToInt64(m["provisioning_progress"]),
@@ -52,20 +52,20 @@ func InterfaceToContrailControllerNode(i interface{}) *ContrailControllerNode {
 	}
 }
 
-// MakeContrailControllerNodeSlice() makes a slice of ContrailControllerNode
-func MakeContrailControllerNodeSlice() []*ContrailControllerNode {
-	return []*ContrailControllerNode{}
+// MakeOpenstackStorageNodeSlice() makes a slice of OpenstackStorageNode
+func MakeOpenstackStorageNodeSlice() []*OpenstackStorageNode {
+	return []*OpenstackStorageNode{}
 }
 
-// InterfaceToContrailControllerNodeSlice() makes a slice of ContrailControllerNode
-func InterfaceToContrailControllerNodeSlice(i interface{}) []*ContrailControllerNode {
+// InterfaceToOpenstackStorageNodeSlice() makes a slice of OpenstackStorageNode
+func InterfaceToOpenstackStorageNodeSlice(i interface{}) []*OpenstackStorageNode {
 	list := schema.InterfaceToInterfaceList(i)
 	if list == nil {
 		return nil
 	}
-	result := []*ContrailControllerNode{}
+	result := []*OpenstackStorageNode{}
 	for _, item := range list {
-		result = append(result, InterfaceToContrailControllerNode(item))
+		result = append(result, InterfaceToOpenstackStorageNode(item))
 	}
 	return result
 }

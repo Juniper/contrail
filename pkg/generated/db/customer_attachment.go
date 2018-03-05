@@ -44,12 +44,12 @@ var CustomerAttachmentFields = []string{
 // CustomerAttachmentRefFields is db reference fields for CustomerAttachment
 var CustomerAttachmentRefFields = map[string][]string{
 
-	"virtual_machine_interface": []string{
+	"floating_ip": []string{
 	// <schema.Schema Value>
 
 	},
 
-	"floating_ip": []string{
+	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
 	},
@@ -61,9 +61,9 @@ var CustomerAttachmentBackRefFields = map[string][]string{}
 // CustomerAttachmentParentTypes is possible parents for CustomerAttachment
 var CustomerAttachmentParents = []string{}
 
-const insertCustomerAttachmentVirtualMachineInterfaceQuery = "insert into `ref_customer_attachment_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
-
 const insertCustomerAttachmentFloatingIPQuery = "insert into `ref_customer_attachment_floating_ip` (`from`, `to` ) values (?, ?);"
+
+const insertCustomerAttachmentVirtualMachineInterfaceQuery = "insert into `ref_customer_attachment_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateCustomerAttachment inserts CustomerAttachment to DB
 func (db *DB) createCustomerAttachment(
@@ -280,26 +280,6 @@ func scanCustomerAttachment(values map[string]interface{}) (*models.CustomerAtta
 
 	}
 
-	if value, ok := values["ref_floating_ip"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.CustomerAttachmentFloatingIPRef{}
-			referenceModel.UUID = uuid
-			m.FloatingIPRefs = append(m.FloatingIPRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -316,6 +296,26 @@ func scanCustomerAttachment(values map[string]interface{}) (*models.CustomerAtta
 			referenceModel := &models.CustomerAttachmentVirtualMachineInterfaceRef{}
 			referenceModel.UUID = uuid
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_floating_ip"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.CustomerAttachmentFloatingIPRef{}
+			referenceModel.UUID = uuid
+			m.FloatingIPRefs = append(m.FloatingIPRefs, referenceModel)
 
 		}
 	}

@@ -54,11 +54,6 @@ var InstanceIPFields = []string{
 // InstanceIPRefFields is db reference fields for InstanceIP
 var InstanceIPRefFields = map[string][]string{
 
-	"virtual_network": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
@@ -75,6 +70,11 @@ var InstanceIPRefFields = map[string][]string{
 	},
 
 	"network_ipam": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"virtual_network": []string{
 	// <schema.Schema Value>
 
 	},
@@ -179,6 +179,19 @@ func (db *DB) createInstanceIP(
 		return errors.Wrap(err, "create failed")
 	}
 
+	stmtVirtualRouterRef, err := tx.Prepare(insertInstanceIPVirtualRouterQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing VirtualRouterRefs create statement failed")
+	}
+	defer stmtVirtualRouterRef.Close()
+	for _, ref := range model.VirtualRouterRefs {
+
+		_, err = stmtVirtualRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualRouterRefs create failed")
+		}
+	}
+
 	stmtNetworkIpamRef, err := tx.Prepare(insertInstanceIPNetworkIpamQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing NetworkIpamRefs create statement failed")
@@ -228,19 +241,6 @@ func (db *DB) createInstanceIP(
 		_, err = stmtPhysicalRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PhysicalRouterRefs create failed")
-		}
-	}
-
-	stmtVirtualRouterRef, err := tx.Prepare(insertInstanceIPVirtualRouterQuery)
-	if err != nil {
-		return errors.Wrap(err, "preparing VirtualRouterRefs create statement failed")
-	}
-	defer stmtVirtualRouterRef.Close()
-	for _, ref := range model.VirtualRouterRefs {
-
-		_, err = stmtVirtualRouterRef.ExecContext(ctx, model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualRouterRefs create failed")
 		}
 	}
 

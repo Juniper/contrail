@@ -50,12 +50,12 @@ var BGPAsAServiceFields = []string{
 // BGPAsAServiceRefFields is db reference fields for BGPAsAService
 var BGPAsAServiceRefFields = map[string][]string{
 
-	"virtual_machine_interface": []string{
+	"service_health_check": []string{
 	// <schema.Schema Value>
 
 	},
 
-	"service_health_check": []string{
+	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
 	},
@@ -70,9 +70,9 @@ var BGPAsAServiceParents = []string{
 	"project",
 }
 
-const insertBGPAsAServiceVirtualMachineInterfaceQuery = "insert into `ref_bgp_as_a_service_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
-
 const insertBGPAsAServiceServiceHealthCheckQuery = "insert into `ref_bgp_as_a_service_service_health_check` (`from`, `to` ) values (?, ?);"
+
+const insertBGPAsAServiceVirtualMachineInterfaceQuery = "insert into `ref_bgp_as_a_service_virtual_machine_interface` (`from`, `to` ) values (?, ?);"
 
 // CreateBGPAsAService inserts BGPAsAService to DB
 func (db *DB) createBGPAsAService(
@@ -331,26 +331,6 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 
 	}
 
-	if value, ok := values["ref_service_health_check"]; ok {
-		var references []interface{}
-		stringValue := schema.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := schema.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.BGPAsAServiceServiceHealthCheckRef{}
-			referenceModel.UUID = uuid
-			m.ServiceHealthCheckRefs = append(m.ServiceHealthCheckRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := schema.InterfaceToString(value)
@@ -367,6 +347,26 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 			referenceModel := &models.BGPAsAServiceVirtualMachineInterfaceRef{}
 			referenceModel.UUID = uuid
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_service_health_check"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.BGPAsAServiceServiceHealthCheckRef{}
+			referenceModel.UUID = uuid
+			m.ServiceHealthCheckRefs = append(m.ServiceHealthCheckRefs, referenceModel)
 
 		}
 	}

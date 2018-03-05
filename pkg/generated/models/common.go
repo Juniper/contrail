@@ -536,11 +536,11 @@ type Service interface {
 	GetContrailVrouterNode(context.Context, *GetContrailVrouterNodeRequest) (*GetContrailVrouterNodeResponse, error)
 	ListContrailVrouterNode(context.Context, *ListContrailVrouterNodeRequest) (*ListContrailVrouterNodeResponse, error)
 
-	CreateContrailControllerNode(context.Context, *CreateContrailControllerNodeRequest) (*CreateContrailControllerNodeResponse, error)
-	UpdateContrailControllerNode(context.Context, *UpdateContrailControllerNodeRequest) (*UpdateContrailControllerNodeResponse, error)
-	DeleteContrailControllerNode(context.Context, *DeleteContrailControllerNodeRequest) (*DeleteContrailControllerNodeResponse, error)
-	GetContrailControllerNode(context.Context, *GetContrailControllerNodeRequest) (*GetContrailControllerNodeResponse, error)
-	ListContrailControllerNode(context.Context, *ListContrailControllerNodeRequest) (*ListContrailControllerNodeResponse, error)
+	CreateContrailWebuiNode(context.Context, *CreateContrailWebuiNodeRequest) (*CreateContrailWebuiNodeResponse, error)
+	UpdateContrailWebuiNode(context.Context, *UpdateContrailWebuiNodeRequest) (*UpdateContrailWebuiNodeResponse, error)
+	DeleteContrailWebuiNode(context.Context, *DeleteContrailWebuiNodeRequest) (*DeleteContrailWebuiNodeResponse, error)
+	GetContrailWebuiNode(context.Context, *GetContrailWebuiNodeRequest) (*GetContrailWebuiNodeResponse, error)
+	ListContrailWebuiNode(context.Context, *ListContrailWebuiNodeRequest) (*ListContrailWebuiNodeResponse, error)
 
 	CreateDashboard(context.Context, *CreateDashboardRequest) (*CreateDashboardResponse, error)
 	UpdateDashboard(context.Context, *UpdateDashboardRequest) (*UpdateDashboardResponse, error)
@@ -589,6 +589,36 @@ type Service interface {
 	DeleteNode(context.Context, *DeleteNodeRequest) (*DeleteNodeResponse, error)
 	GetNode(context.Context, *GetNodeRequest) (*GetNodeResponse, error)
 	ListNode(context.Context, *ListNodeRequest) (*ListNodeResponse, error)
+
+	CreateOpenstackComputeNode(context.Context, *CreateOpenstackComputeNodeRequest) (*CreateOpenstackComputeNodeResponse, error)
+	UpdateOpenstackComputeNode(context.Context, *UpdateOpenstackComputeNodeRequest) (*UpdateOpenstackComputeNodeResponse, error)
+	DeleteOpenstackComputeNode(context.Context, *DeleteOpenstackComputeNodeRequest) (*DeleteOpenstackComputeNodeResponse, error)
+	GetOpenstackComputeNode(context.Context, *GetOpenstackComputeNodeRequest) (*GetOpenstackComputeNodeResponse, error)
+	ListOpenstackComputeNode(context.Context, *ListOpenstackComputeNodeRequest) (*ListOpenstackComputeNodeResponse, error)
+
+	CreateOpenstackControlNode(context.Context, *CreateOpenstackControlNodeRequest) (*CreateOpenstackControlNodeResponse, error)
+	UpdateOpenstackControlNode(context.Context, *UpdateOpenstackControlNodeRequest) (*UpdateOpenstackControlNodeResponse, error)
+	DeleteOpenstackControlNode(context.Context, *DeleteOpenstackControlNodeRequest) (*DeleteOpenstackControlNodeResponse, error)
+	GetOpenstackControlNode(context.Context, *GetOpenstackControlNodeRequest) (*GetOpenstackControlNodeResponse, error)
+	ListOpenstackControlNode(context.Context, *ListOpenstackControlNodeRequest) (*ListOpenstackControlNodeResponse, error)
+
+	CreateOpenstackMonitoringNode(context.Context, *CreateOpenstackMonitoringNodeRequest) (*CreateOpenstackMonitoringNodeResponse, error)
+	UpdateOpenstackMonitoringNode(context.Context, *UpdateOpenstackMonitoringNodeRequest) (*UpdateOpenstackMonitoringNodeResponse, error)
+	DeleteOpenstackMonitoringNode(context.Context, *DeleteOpenstackMonitoringNodeRequest) (*DeleteOpenstackMonitoringNodeResponse, error)
+	GetOpenstackMonitoringNode(context.Context, *GetOpenstackMonitoringNodeRequest) (*GetOpenstackMonitoringNodeResponse, error)
+	ListOpenstackMonitoringNode(context.Context, *ListOpenstackMonitoringNodeRequest) (*ListOpenstackMonitoringNodeResponse, error)
+
+	CreateOpenstackNetworkNode(context.Context, *CreateOpenstackNetworkNodeRequest) (*CreateOpenstackNetworkNodeResponse, error)
+	UpdateOpenstackNetworkNode(context.Context, *UpdateOpenstackNetworkNodeRequest) (*UpdateOpenstackNetworkNodeResponse, error)
+	DeleteOpenstackNetworkNode(context.Context, *DeleteOpenstackNetworkNodeRequest) (*DeleteOpenstackNetworkNodeResponse, error)
+	GetOpenstackNetworkNode(context.Context, *GetOpenstackNetworkNodeRequest) (*GetOpenstackNetworkNodeResponse, error)
+	ListOpenstackNetworkNode(context.Context, *ListOpenstackNetworkNodeRequest) (*ListOpenstackNetworkNodeResponse, error)
+
+	CreateOpenstackStorageNode(context.Context, *CreateOpenstackStorageNodeRequest) (*CreateOpenstackStorageNodeResponse, error)
+	UpdateOpenstackStorageNode(context.Context, *UpdateOpenstackStorageNodeRequest) (*UpdateOpenstackStorageNodeResponse, error)
+	DeleteOpenstackStorageNode(context.Context, *DeleteOpenstackStorageNodeRequest) (*DeleteOpenstackStorageNodeResponse, error)
+	GetOpenstackStorageNode(context.Context, *GetOpenstackStorageNodeRequest) (*GetOpenstackStorageNodeResponse, error)
+	ListOpenstackStorageNode(context.Context, *ListOpenstackStorageNodeRequest) (*ListOpenstackStorageNodeResponse, error)
 
 	CreateServer(context.Context, *CreateServerRequest) (*CreateServerResponse, error)
 	UpdateServer(context.Context, *UpdateServerRequest) (*UpdateServerResponse, error)
@@ -3362,35 +3392,35 @@ func (service *BaseService) ListContrailVrouterNode(ctx context.Context, request
 	return service.Next().ListContrailVrouterNode(ctx, request)
 }
 
-func (service *BaseService) CreateContrailControllerNode(ctx context.Context, request *CreateContrailControllerNodeRequest) (*CreateContrailControllerNodeResponse, error) {
+func (service *BaseService) CreateContrailWebuiNode(ctx context.Context, request *CreateContrailWebuiNodeRequest) (*CreateContrailWebuiNodeResponse, error) {
 	if service.next == nil {
 		return nil, nil
 	}
-	return service.Next().CreateContrailControllerNode(ctx, request)
+	return service.Next().CreateContrailWebuiNode(ctx, request)
 }
-func (service *BaseService) UpdateContrailControllerNode(ctx context.Context, request *UpdateContrailControllerNodeRequest) (*UpdateContrailControllerNodeResponse, error) {
+func (service *BaseService) UpdateContrailWebuiNode(ctx context.Context, request *UpdateContrailWebuiNodeRequest) (*UpdateContrailWebuiNodeResponse, error) {
 	if service.next == nil {
 		return nil, nil
 	}
-	return service.Next().UpdateContrailControllerNode(ctx, request)
+	return service.Next().UpdateContrailWebuiNode(ctx, request)
 }
-func (service *BaseService) DeleteContrailControllerNode(ctx context.Context, request *DeleteContrailControllerNodeRequest) (*DeleteContrailControllerNodeResponse, error) {
+func (service *BaseService) DeleteContrailWebuiNode(ctx context.Context, request *DeleteContrailWebuiNodeRequest) (*DeleteContrailWebuiNodeResponse, error) {
 	if service.next == nil {
 		return nil, nil
 	}
-	return service.Next().DeleteContrailControllerNode(ctx, request)
+	return service.Next().DeleteContrailWebuiNode(ctx, request)
 }
-func (service *BaseService) GetContrailControllerNode(ctx context.Context, request *GetContrailControllerNodeRequest) (*GetContrailControllerNodeResponse, error) {
+func (service *BaseService) GetContrailWebuiNode(ctx context.Context, request *GetContrailWebuiNodeRequest) (*GetContrailWebuiNodeResponse, error) {
 	if service.next == nil {
 		return nil, nil
 	}
-	return service.Next().GetContrailControllerNode(ctx, request)
+	return service.Next().GetContrailWebuiNode(ctx, request)
 }
-func (service *BaseService) ListContrailControllerNode(ctx context.Context, request *ListContrailControllerNodeRequest) (*ListContrailControllerNodeResponse, error) {
+func (service *BaseService) ListContrailWebuiNode(ctx context.Context, request *ListContrailWebuiNodeRequest) (*ListContrailWebuiNodeResponse, error) {
 	if service.next == nil {
 		return nil, nil
 	}
-	return service.Next().ListContrailControllerNode(ctx, request)
+	return service.Next().ListContrailWebuiNode(ctx, request)
 }
 
 func (service *BaseService) CreateDashboard(ctx context.Context, request *CreateDashboardRequest) (*CreateDashboardResponse, error) {
@@ -3639,6 +3669,161 @@ func (service *BaseService) ListNode(ctx context.Context, request *ListNodeReque
 		return nil, nil
 	}
 	return service.Next().ListNode(ctx, request)
+}
+
+func (service *BaseService) CreateOpenstackComputeNode(ctx context.Context, request *CreateOpenstackComputeNodeRequest) (*CreateOpenstackComputeNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().CreateOpenstackComputeNode(ctx, request)
+}
+func (service *BaseService) UpdateOpenstackComputeNode(ctx context.Context, request *UpdateOpenstackComputeNodeRequest) (*UpdateOpenstackComputeNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().UpdateOpenstackComputeNode(ctx, request)
+}
+func (service *BaseService) DeleteOpenstackComputeNode(ctx context.Context, request *DeleteOpenstackComputeNodeRequest) (*DeleteOpenstackComputeNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().DeleteOpenstackComputeNode(ctx, request)
+}
+func (service *BaseService) GetOpenstackComputeNode(ctx context.Context, request *GetOpenstackComputeNodeRequest) (*GetOpenstackComputeNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().GetOpenstackComputeNode(ctx, request)
+}
+func (service *BaseService) ListOpenstackComputeNode(ctx context.Context, request *ListOpenstackComputeNodeRequest) (*ListOpenstackComputeNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().ListOpenstackComputeNode(ctx, request)
+}
+
+func (service *BaseService) CreateOpenstackControlNode(ctx context.Context, request *CreateOpenstackControlNodeRequest) (*CreateOpenstackControlNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().CreateOpenstackControlNode(ctx, request)
+}
+func (service *BaseService) UpdateOpenstackControlNode(ctx context.Context, request *UpdateOpenstackControlNodeRequest) (*UpdateOpenstackControlNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().UpdateOpenstackControlNode(ctx, request)
+}
+func (service *BaseService) DeleteOpenstackControlNode(ctx context.Context, request *DeleteOpenstackControlNodeRequest) (*DeleteOpenstackControlNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().DeleteOpenstackControlNode(ctx, request)
+}
+func (service *BaseService) GetOpenstackControlNode(ctx context.Context, request *GetOpenstackControlNodeRequest) (*GetOpenstackControlNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().GetOpenstackControlNode(ctx, request)
+}
+func (service *BaseService) ListOpenstackControlNode(ctx context.Context, request *ListOpenstackControlNodeRequest) (*ListOpenstackControlNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().ListOpenstackControlNode(ctx, request)
+}
+
+func (service *BaseService) CreateOpenstackMonitoringNode(ctx context.Context, request *CreateOpenstackMonitoringNodeRequest) (*CreateOpenstackMonitoringNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().CreateOpenstackMonitoringNode(ctx, request)
+}
+func (service *BaseService) UpdateOpenstackMonitoringNode(ctx context.Context, request *UpdateOpenstackMonitoringNodeRequest) (*UpdateOpenstackMonitoringNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().UpdateOpenstackMonitoringNode(ctx, request)
+}
+func (service *BaseService) DeleteOpenstackMonitoringNode(ctx context.Context, request *DeleteOpenstackMonitoringNodeRequest) (*DeleteOpenstackMonitoringNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().DeleteOpenstackMonitoringNode(ctx, request)
+}
+func (service *BaseService) GetOpenstackMonitoringNode(ctx context.Context, request *GetOpenstackMonitoringNodeRequest) (*GetOpenstackMonitoringNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().GetOpenstackMonitoringNode(ctx, request)
+}
+func (service *BaseService) ListOpenstackMonitoringNode(ctx context.Context, request *ListOpenstackMonitoringNodeRequest) (*ListOpenstackMonitoringNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().ListOpenstackMonitoringNode(ctx, request)
+}
+
+func (service *BaseService) CreateOpenstackNetworkNode(ctx context.Context, request *CreateOpenstackNetworkNodeRequest) (*CreateOpenstackNetworkNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().CreateOpenstackNetworkNode(ctx, request)
+}
+func (service *BaseService) UpdateOpenstackNetworkNode(ctx context.Context, request *UpdateOpenstackNetworkNodeRequest) (*UpdateOpenstackNetworkNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().UpdateOpenstackNetworkNode(ctx, request)
+}
+func (service *BaseService) DeleteOpenstackNetworkNode(ctx context.Context, request *DeleteOpenstackNetworkNodeRequest) (*DeleteOpenstackNetworkNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().DeleteOpenstackNetworkNode(ctx, request)
+}
+func (service *BaseService) GetOpenstackNetworkNode(ctx context.Context, request *GetOpenstackNetworkNodeRequest) (*GetOpenstackNetworkNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().GetOpenstackNetworkNode(ctx, request)
+}
+func (service *BaseService) ListOpenstackNetworkNode(ctx context.Context, request *ListOpenstackNetworkNodeRequest) (*ListOpenstackNetworkNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().ListOpenstackNetworkNode(ctx, request)
+}
+
+func (service *BaseService) CreateOpenstackStorageNode(ctx context.Context, request *CreateOpenstackStorageNodeRequest) (*CreateOpenstackStorageNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().CreateOpenstackStorageNode(ctx, request)
+}
+func (service *BaseService) UpdateOpenstackStorageNode(ctx context.Context, request *UpdateOpenstackStorageNodeRequest) (*UpdateOpenstackStorageNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().UpdateOpenstackStorageNode(ctx, request)
+}
+func (service *BaseService) DeleteOpenstackStorageNode(ctx context.Context, request *DeleteOpenstackStorageNodeRequest) (*DeleteOpenstackStorageNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().DeleteOpenstackStorageNode(ctx, request)
+}
+func (service *BaseService) GetOpenstackStorageNode(ctx context.Context, request *GetOpenstackStorageNodeRequest) (*GetOpenstackStorageNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().GetOpenstackStorageNode(ctx, request)
+}
+func (service *BaseService) ListOpenstackStorageNode(ctx context.Context, request *ListOpenstackStorageNodeRequest) (*ListOpenstackStorageNodeResponse, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().ListOpenstackStorageNode(ctx, request)
 }
 
 func (service *BaseService) CreateServer(ctx context.Context, request *CreateServerRequest) (*CreateServerResponse, error) {

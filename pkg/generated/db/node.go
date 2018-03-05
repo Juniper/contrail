@@ -13,7 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertNodeQuery = "insert into `node` (`uuid`,`username`,`type`,`ssh_key`,`private_machine_state`,`private_machine_properties`,`share`,`owner_access`,`owner`,`global_access`,`password`,`parent_uuid`,`parent_type`,`mac_address`,`ipmi_username`,`ipmi_password`,`ipmi_address`,`ip_address`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`hostname`,`gcp_machine_type`,`gcp_image`,`fq_name`,`display_name`,`aws_instance_type`,`aws_ami`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const insertNodeQuery = "insert into `node` (`uuid`,`username`,`type`,`private_machine_state`,`private_machine_properties`,`share`,`owner_access`,`owner`,`global_access`,`password`,`parent_uuid`,`parent_type`,`mac_address`,`ipmi_username`,`ipmi_password`,`ipmi_address`,`ip_address`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`hostname`,`gcp_machine_type`,`gcp_image`,`fq_name`,`display_name`,`aws_instance_type`,`aws_ami`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
 const deleteNodeQuery = "delete from `node` where uuid = ?"
 
 // NodeFields is db columns for Node
@@ -21,7 +21,6 @@ var NodeFields = []string{
 	"uuid",
 	"username",
 	"type",
-	"ssh_key",
 	"private_machine_state",
 	"private_machine_properties",
 	"share",
@@ -58,13 +57,21 @@ var NodeFields = []string{
 }
 
 // NodeRefFields is db reference fields for Node
-var NodeRefFields = map[string][]string{}
+var NodeRefFields = map[string][]string{
+
+	"keypair": []string{
+	// <schema.Schema Value>
+
+	},
+}
 
 // NodeBackRefFields is db back reference fields for Node
 var NodeBackRefFields = map[string][]string{}
 
 // NodeParentTypes is possible parents for Node
 var NodeParents = []string{}
+
+const insertNodeKeypairQuery = "insert into `ref_node_keypair` (`from`, `to` ) values (?, ?);"
 
 // CreateNode inserts Node to DB
 func (db *DB) createNode(
@@ -85,7 +92,6 @@ func (db *DB) createNode(
 	_, err = stmt.ExecContext(ctx, string(model.GetUUID()),
 		string(model.GetUsername()),
 		string(model.GetType()),
-		string(model.GetSSHKey()),
 		string(model.GetPrivateMachineState()),
 		string(model.GetPrivateMachineProperties()),
 		common.MustJSON(model.GetPerms2().GetShare()),
@@ -121,6 +127,19 @@ func (db *DB) createNode(
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
+	}
+
+	stmtKeypairRef, err := tx.Prepare(insertNodeKeypairQuery)
+	if err != nil {
+		return errors.Wrap(err, "preparing KeypairRefs create statement failed")
+	}
+	defer stmtKeypairRef.Close()
+	for _, ref := range model.KeypairRefs {
+
+		_, err = stmtKeypairRef.ExecContext(ctx, model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "KeypairRefs create failed")
+		}
 	}
 
 	metaData := &common.MetaData{
@@ -160,12 +179,6 @@ func scanNode(values map[string]interface{}) (*models.Node, error) {
 	if value, ok := values["type"]; ok {
 
 		m.Type = schema.InterfaceToString(value)
-
-	}
-
-	if value, ok := values["ssh_key"]; ok {
-
-		m.SSHKey = schema.InterfaceToString(value)
 
 	}
 
@@ -365,6 +378,26 @@ func scanNode(values map[string]interface{}) (*models.Node, error) {
 
 		json.Unmarshal(value.([]byte), &m.Annotations.KeyValuePair)
 
+	}
+
+	if value, ok := values["ref_keypair"]; ok {
+		var references []interface{}
+		stringValue := schema.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := schema.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.NodeKeypairRef{}
+			referenceModel.UUID = uuid
+			m.KeypairRefs = append(m.KeypairRefs, referenceModel)
+
+		}
 	}
 
 	return m, nil

@@ -13,11 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const insertContrailControllerNodeQuery = "insert into `contrail_controller_node` (`uuid`,`provisioning_state`,`provisioning_start_time`,`provisioning_progress_stage`,`provisioning_progress`,`provisioning_log`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-const deleteContrailControllerNodeQuery = "delete from `contrail_controller_node` where uuid = ?"
+const insertContrailWebuiNodeQuery = "insert into `contrail_webui_node` (`uuid`,`provisioning_state`,`provisioning_start_time`,`provisioning_progress_stage`,`provisioning_progress`,`provisioning_log`,`share`,`owner_access`,`owner`,`global_access`,`parent_uuid`,`parent_type`,`user_visible`,`permissions_owner_access`,`permissions_owner`,`other_access`,`group_access`,`group`,`last_modified`,`enable`,`description`,`creator`,`created`,`fq_name`,`display_name`,`key_value_pair`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+const deleteContrailWebuiNodeQuery = "delete from `contrail_webui_node` where uuid = ?"
 
-// ContrailControllerNodeFields is db columns for ContrailControllerNode
-var ContrailControllerNodeFields = []string{
+// ContrailWebuiNodeFields is db columns for ContrailWebuiNode
+var ContrailWebuiNodeFields = []string{
 	"uuid",
 	"provisioning_state",
 	"provisioning_start_time",
@@ -46,8 +46,8 @@ var ContrailControllerNodeFields = []string{
 	"key_value_pair",
 }
 
-// ContrailControllerNodeRefFields is db reference fields for ContrailControllerNode
-var ContrailControllerNodeRefFields = map[string][]string{
+// ContrailWebuiNodeRefFields is db reference fields for ContrailWebuiNode
+var ContrailWebuiNodeRefFields = map[string][]string{
 
 	"node": []string{
 	// <schema.Schema Value>
@@ -55,32 +55,32 @@ var ContrailControllerNodeRefFields = map[string][]string{
 	},
 }
 
-// ContrailControllerNodeBackRefFields is db back reference fields for ContrailControllerNode
-var ContrailControllerNodeBackRefFields = map[string][]string{}
+// ContrailWebuiNodeBackRefFields is db back reference fields for ContrailWebuiNode
+var ContrailWebuiNodeBackRefFields = map[string][]string{}
 
-// ContrailControllerNodeParentTypes is possible parents for ContrailControllerNode
-var ContrailControllerNodeParents = []string{
+// ContrailWebuiNodeParentTypes is possible parents for ContrailWebuiNode
+var ContrailWebuiNodeParents = []string{
 
 	"contrail_cluster",
 }
 
-const insertContrailControllerNodeNodeQuery = "insert into `ref_contrail_controller_node_node` (`from`, `to` ) values (?, ?);"
+const insertContrailWebuiNodeNodeQuery = "insert into `ref_contrail_webui_node_node` (`from`, `to` ) values (?, ?);"
 
-// CreateContrailControllerNode inserts ContrailControllerNode to DB
-func (db *DB) createContrailControllerNode(
+// CreateContrailWebuiNode inserts ContrailWebuiNode to DB
+func (db *DB) createContrailWebuiNode(
 	ctx context.Context,
-	request *models.CreateContrailControllerNodeRequest) error {
+	request *models.CreateContrailWebuiNodeRequest) error {
 	tx := common.GetTransaction(ctx)
-	model := request.ContrailControllerNode
+	model := request.ContrailWebuiNode
 	// Prepare statement for inserting data
-	stmt, err := tx.Prepare(insertContrailControllerNodeQuery)
+	stmt, err := tx.Prepare(insertContrailWebuiNodeQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing create statement failed")
 	}
 	defer stmt.Close()
 	log.WithFields(log.Fields{
 		"model": model,
-		"query": insertContrailControllerNodeQuery,
+		"query": insertContrailWebuiNodeQuery,
 	}).Debug("create query")
 	_, err = stmt.ExecContext(ctx, string(model.GetUUID()),
 		string(model.GetProvisioningState()),
@@ -112,7 +112,7 @@ func (db *DB) createContrailControllerNode(
 		return errors.Wrap(err, "create failed")
 	}
 
-	stmtNodeRef, err := tx.Prepare(insertContrailControllerNodeNodeQuery)
+	stmtNodeRef, err := tx.Prepare(insertContrailWebuiNodeNodeQuery)
 	if err != nil {
 		return errors.Wrap(err, "preparing NodeRefs create statement failed")
 	}
@@ -127,14 +127,14 @@ func (db *DB) createContrailControllerNode(
 
 	metaData := &common.MetaData{
 		UUID:   model.UUID,
-		Type:   "contrail_controller_node",
+		Type:   "contrail_webui_node",
 		FQName: model.FQName,
 	}
 	err = common.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = common.CreateSharing(tx, "contrail_controller_node", model.UUID, model.GetPerms2().GetShare())
+	err = common.CreateSharing(tx, "contrail_webui_node", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -144,8 +144,8 @@ func (db *DB) createContrailControllerNode(
 	return nil
 }
 
-func scanContrailControllerNode(values map[string]interface{}) (*models.ContrailControllerNode, error) {
-	m := models.MakeContrailControllerNode()
+func scanContrailWebuiNode(values map[string]interface{}) (*models.ContrailWebuiNode, error) {
+	m := models.MakeContrailWebuiNode()
 
 	if value, ok := values["uuid"]; ok {
 
@@ -316,7 +316,7 @@ func scanContrailControllerNode(values map[string]interface{}) (*models.Contrail
 			if uuid == "" {
 				continue
 			}
-			referenceModel := &models.ContrailControllerNodeNodeRef{}
+			referenceModel := &models.ContrailWebuiNodeNodeRef{}
 			referenceModel.UUID = uuid
 			m.NodeRefs = append(m.NodeRefs, referenceModel)
 
@@ -326,19 +326,19 @@ func scanContrailControllerNode(values map[string]interface{}) (*models.Contrail
 	return m, nil
 }
 
-// ListContrailControllerNode lists ContrailControllerNode with list spec.
-func (db *DB) listContrailControllerNode(ctx context.Context, request *models.ListContrailControllerNodeRequest) (response *models.ListContrailControllerNodeResponse, err error) {
+// ListContrailWebuiNode lists ContrailWebuiNode with list spec.
+func (db *DB) listContrailWebuiNode(ctx context.Context, request *models.ListContrailWebuiNodeRequest) (response *models.ListContrailWebuiNodeResponse, err error) {
 	var rows *sql.Rows
 	tx := common.GetTransaction(ctx)
 	qb := &common.ListQueryBuilder{}
 	qb.Auth = common.GetAuthCTX(ctx)
 	spec := request.Spec
 	qb.Spec = spec
-	qb.Table = "contrail_controller_node"
-	qb.Fields = ContrailControllerNodeFields
-	qb.RefFields = ContrailControllerNodeRefFields
-	qb.BackRefFields = ContrailControllerNodeBackRefFields
-	result := []*models.ContrailControllerNode{}
+	qb.Table = "contrail_webui_node"
+	qb.Fields = ContrailWebuiNodeFields
+	qb.RefFields = ContrailWebuiNodeRefFields
+	qb.BackRefFields = ContrailWebuiNodeBackRefFields
+	result := []*models.ContrailWebuiNode{}
 
 	if spec.ParentFQName != nil {
 		parentMetaData, err := common.GetMetaData(tx, "", spec.ParentFQName)
@@ -378,33 +378,33 @@ func (db *DB) listContrailControllerNode(ctx context.Context, request *models.Li
 			val := valuesPointers[index].(*interface{})
 			valuesMap[column] = *val
 		}
-		m, err := scanContrailControllerNode(valuesMap)
+		m, err := scanContrailWebuiNode(valuesMap)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan row failed")
 		}
 		result = append(result, m)
 	}
-	response = &models.ListContrailControllerNodeResponse{
-		ContrailControllerNodes: result,
+	response = &models.ListContrailWebuiNodeResponse{
+		ContrailWebuiNodes: result,
 	}
 	return response, nil
 }
 
-// UpdateContrailControllerNode updates a resource
-func (db *DB) updateContrailControllerNode(
+// UpdateContrailWebuiNode updates a resource
+func (db *DB) updateContrailWebuiNode(
 	ctx context.Context,
-	request *models.UpdateContrailControllerNodeRequest,
+	request *models.UpdateContrailWebuiNodeRequest,
 ) error {
 	//TODO
 	return nil
 }
 
-// DeleteContrailControllerNode deletes a resource
-func (db *DB) deleteContrailControllerNode(
+// DeleteContrailWebuiNode deletes a resource
+func (db *DB) deleteContrailWebuiNode(
 	ctx context.Context,
-	request *models.DeleteContrailControllerNodeRequest) error {
-	deleteQuery := deleteContrailControllerNodeQuery
-	selectQuery := "select count(uuid) from contrail_controller_node where uuid = ?"
+	request *models.DeleteContrailWebuiNodeRequest) error {
+	deleteQuery := deleteContrailWebuiNodeQuery
+	selectQuery := "select count(uuid) from contrail_webui_node where uuid = ?"
 	var err error
 	var count int
 	uuid := request.ID
@@ -445,11 +445,11 @@ func (db *DB) deleteContrailControllerNode(
 	return err
 }
 
-//CreateContrailControllerNode handle a Create API
-func (db *DB) CreateContrailControllerNode(
+//CreateContrailWebuiNode handle a Create API
+func (db *DB) CreateContrailWebuiNode(
 	ctx context.Context,
-	request *models.CreateContrailControllerNodeRequest) (*models.CreateContrailControllerNodeResponse, error) {
-	model := request.ContrailControllerNode
+	request *models.CreateContrailWebuiNodeRequest) (*models.CreateContrailWebuiNodeResponse, error) {
+	model := request.ContrailWebuiNode
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
@@ -457,24 +457,24 @@ func (db *DB) CreateContrailControllerNode(
 		ctx,
 		db.DB,
 		func(ctx context.Context) error {
-			return db.createContrailControllerNode(ctx, request)
+			return db.createContrailWebuiNode(ctx, request)
 		}); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
-			"resource": "contrail_controller_node",
+			"resource": "contrail_webui_node",
 		}).Debug("db create failed on create")
 		return nil, common.ErrorInternal
 	}
-	return &models.CreateContrailControllerNodeResponse{
-		ContrailControllerNode: request.ContrailControllerNode,
+	return &models.CreateContrailWebuiNodeResponse{
+		ContrailWebuiNode: request.ContrailWebuiNode,
 	}, nil
 }
 
-//UpdateContrailControllerNode handles a Update request.
-func (db *DB) UpdateContrailControllerNode(
+//UpdateContrailWebuiNode handles a Update request.
+func (db *DB) UpdateContrailWebuiNode(
 	ctx context.Context,
-	request *models.UpdateContrailControllerNodeRequest) (*models.UpdateContrailControllerNodeResponse, error) {
-	model := request.ContrailControllerNode
+	request *models.UpdateContrailWebuiNodeRequest) (*models.UpdateContrailWebuiNodeResponse, error) {
+	model := request.ContrailWebuiNode
 	if model == nil {
 		return nil, common.ErrorBadRequest("Update body is empty")
 	}
@@ -482,37 +482,37 @@ func (db *DB) UpdateContrailControllerNode(
 		ctx,
 		db.DB,
 		func(ctx context.Context) error {
-			return db.updateContrailControllerNode(ctx, request)
+			return db.updateContrailWebuiNode(ctx, request)
 		}); err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
-			"resource": "contrail_controller_node",
+			"resource": "contrail_webui_node",
 		}).Debug("db update failed")
 		return nil, common.ErrorInternal
 	}
-	return &models.UpdateContrailControllerNodeResponse{
-		ContrailControllerNode: model,
+	return &models.UpdateContrailWebuiNodeResponse{
+		ContrailWebuiNode: model,
 	}, nil
 }
 
-//DeleteContrailControllerNode delete a resource.
-func (db *DB) DeleteContrailControllerNode(ctx context.Context, request *models.DeleteContrailControllerNodeRequest) (*models.DeleteContrailControllerNodeResponse, error) {
+//DeleteContrailWebuiNode delete a resource.
+func (db *DB) DeleteContrailWebuiNode(ctx context.Context, request *models.DeleteContrailWebuiNodeRequest) (*models.DeleteContrailWebuiNodeResponse, error) {
 	if err := common.DoInTransaction(
 		ctx,
 		db.DB,
 		func(ctx context.Context) error {
-			return db.deleteContrailControllerNode(ctx, request)
+			return db.deleteContrailWebuiNode(ctx, request)
 		}); err != nil {
 		log.WithField("err", err).Debug("error deleting a resource")
 		return nil, common.ErrorInternal
 	}
-	return &models.DeleteContrailControllerNodeResponse{
+	return &models.DeleteContrailWebuiNodeResponse{
 		ID: request.ID,
 	}, nil
 }
 
-//GetContrailControllerNode a Get request.
-func (db *DB) GetContrailControllerNode(ctx context.Context, request *models.GetContrailControllerNodeRequest) (response *models.GetContrailControllerNodeResponse, err error) {
+//GetContrailWebuiNode a Get request.
+func (db *DB) GetContrailWebuiNode(ctx context.Context, request *models.GetContrailWebuiNodeRequest) (response *models.GetContrailWebuiNodeResponse, err error) {
 	spec := &models.ListSpec{
 		Limit:  1,
 		Detail: true,
@@ -523,37 +523,37 @@ func (db *DB) GetContrailControllerNode(ctx context.Context, request *models.Get
 			},
 		},
 	}
-	listRequest := &models.ListContrailControllerNodeRequest{
+	listRequest := &models.ListContrailWebuiNodeRequest{
 		Spec: spec,
 	}
-	var result *models.ListContrailControllerNodeResponse
+	var result *models.ListContrailWebuiNodeResponse
 	if err := common.DoInTransaction(
 		ctx,
 		db.DB,
 		func(ctx context.Context) error {
-			result, err = db.listContrailControllerNode(ctx, listRequest)
+			result, err = db.listContrailWebuiNode(ctx, listRequest)
 			return err
 		}); err != nil {
 		return nil, common.ErrorInternal
 	}
-	if len(result.ContrailControllerNodes) == 0 {
+	if len(result.ContrailWebuiNodes) == 0 {
 		return nil, common.ErrorNotFound
 	}
-	response = &models.GetContrailControllerNodeResponse{
-		ContrailControllerNode: result.ContrailControllerNodes[0],
+	response = &models.GetContrailWebuiNodeResponse{
+		ContrailWebuiNode: result.ContrailWebuiNodes[0],
 	}
 	return response, nil
 }
 
-//ListContrailControllerNode handles a List service Request.
-func (db *DB) ListContrailControllerNode(
+//ListContrailWebuiNode handles a List service Request.
+func (db *DB) ListContrailWebuiNode(
 	ctx context.Context,
-	request *models.ListContrailControllerNodeRequest) (response *models.ListContrailControllerNodeResponse, err error) {
+	request *models.ListContrailWebuiNodeRequest) (response *models.ListContrailWebuiNodeResponse, err error) {
 	if err := common.DoInTransaction(
 		ctx,
 		db.DB,
 		func(ctx context.Context) error {
-			response, err = db.listContrailControllerNode(ctx, request)
+			response, err = db.listContrailWebuiNode(ctx, request)
 			return err
 		}); err != nil {
 		return nil, common.ErrorInternal

@@ -67,6 +67,10 @@ func TestContrailCluster(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(updateMap, ".RabbitmqPort", ".", "test")
+	//
+	//
+	//
 	//    common.SetValueByPath(updateMap, ".ProvisioningState", ".", "test")
 	//
 	//
@@ -125,15 +129,23 @@ func TestContrailCluster(t *testing.T) {
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".Openstack", ".", "test")
+	//    common.SetValueByPath(updateMap, ".OpenstackInternalVipInterface", ".", "test")
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".KubernetesMaster", ".", "test")
+	//    common.SetValueByPath(updateMap, ".OpenstackInternalVip", ".", "test")
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".Kubernetes", ".", "test")
+	//    common.SetValueByPath(updateMap, ".OpenstackExternalVipInterface", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".OpenstackExternalVip", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".OpenstackEnableHaproxy", ".", "test")
 	//
 	//
 	//
@@ -211,35 +223,11 @@ func TestContrailCluster(t *testing.T) {
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".DataTTL", ".", "test")
+	//    common.SetValueByPath(updateMap, ".ContrailVersion", ".", "test")
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".ContrailWebui", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ContrailVrouter", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ContrailControl", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ContrailConfigdb", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ContrailConfig", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ContrailAnalyticsdb", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ContrailAnalytics", ".", "test")
+	//    common.SetValueByPath(updateMap, ".ContainerRegistry", ".", "test")
 	//
 	//
 	//

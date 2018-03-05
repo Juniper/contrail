@@ -62,9 +62,9 @@ var ApplicationPolicySetBackRefFields = map[string][]string{}
 // ApplicationPolicySetParentTypes is possible parents for ApplicationPolicySet
 var ApplicationPolicySetParents = []string{
 
-	"project",
-
 	"policy_management",
+
+	"project",
 }
 
 const insertApplicationPolicySetFirewallPolicyQuery = "insert into `ref_application_policy_set_firewall_policy` (`from`, `to` ,`sequence`) values (?, ?,?);"

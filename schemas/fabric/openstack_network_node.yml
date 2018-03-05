@@ -1,0 +1,27 @@
+description: Openstack Network Node
+extends:
+- base
+- has_status
+id: openstack_network_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this openstack_network node."
+      presence: "optional"
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this openstack_network node."
+    presence: "optional"
+plural: openstack_network_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: openstack_network_node
+title: openstack_network Node
+type: ""
