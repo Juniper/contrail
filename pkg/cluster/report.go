@@ -20,7 +20,7 @@ func (r *Reporter) reportStatus(status string) {
 	//TODO(ijohnson) Implement status update
 }
 
-func (r *Reporter) reportLog(stdout io.ReadCloser) {
+func (r *Reporter) reportLog(stdout io.Reader) {
 	var output bytes.Buffer
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {

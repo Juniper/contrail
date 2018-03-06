@@ -76,8 +76,10 @@ func commandHandler(handler handler, task *task, context map[string]interface{})
 
 	var output bytes.Buffer
 	stdout, _ := cmd.StdoutPipe()
-	cmd.Start()
-
+	err = cmd.Start()
+	if err != nil {
+		return "", err
+	}
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
 		m := scanner.Text()
@@ -85,7 +87,10 @@ func commandHandler(handler handler, task *task, context map[string]interface{})
 		log.Debug(m)
 	}
 
-	cmd.Wait()
+	err = cmd.Wait()
+	if err != nil {
+		return "", err
+	}
 	return output.String(), nil
 }
 
