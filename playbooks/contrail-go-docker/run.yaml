@@ -15,6 +15,20 @@
       with_items: # Insert tasks here
         - name: Install deps
           command: make deps
+        - name: install mysql client
+          command: sudo apt install mysql-client
+        - name: show files 
+          command: |
+            sudo apt-get install -y tree;
+            pwd;
+            echo $GOPATH
+            tree;
+        - name: make lint
+          command: make lint
+        - name: reset db
+          command: make reset_db
+        - name: make test
+          command: make test
         - name: Install packaging tools
           command: |
             sudo apt-get install -y zip build-essential rpm rubygems ruby-dev curl;
