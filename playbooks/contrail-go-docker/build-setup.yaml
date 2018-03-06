@@ -14,7 +14,7 @@
 - name: Pretend we're using github
   file: 
     src: "review.opencontrail.org"
-    path: "{{ ansible_env.HOME}}/src/github.com"
+    path: "{{ sourcedir }}/src/github.com"
     state: link
 
 - name: "Start runner docker container in background"
@@ -26,7 +26,7 @@
     network_mode: host
     command: sleep infinity
     volumes:
-      - "{{ ansible_env.HOME }}:/go"
+      - "{{ sourcedir }}:/go"
   become: yes
   become_user: root
 

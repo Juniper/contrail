@@ -1,9 +1,10 @@
-- hosts: all
+- hosts: builder
   name: Build and test Juniper/contrail
   roles:
     - install-docker-daemon
   vars:
     workdir: /go/src/github.com/Juniper/contrail
+    sourcedir: "{{ ansible_env.HOME }}"
   tasks:
     - include: build-setup.yaml
 
@@ -21,3 +22,10 @@
         - name: Make package
           command: make build binaries package
 
+    - name: Fix files ownerships
+      file:
+        name: "{{ sourcedir }}"
+        recurse: yes
+        owner: "{{ ansible_env.USER }}"
+      become: yes
+      become_user: root
