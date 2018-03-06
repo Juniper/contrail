@@ -33,7 +33,7 @@ gometalinter \
 	--tests \
 	--aggregate \
 	--sort path \
-	--deadline 1m \
+	--deadline 10m \
 	--concurrency 1 \
 	--line-length 120 \
 	--dupl-threshold=70 \
@@ -55,7 +55,7 @@ gometalinter \
 	--tests \
 	--aggregate \
 	--sort path \
-	--deadline 1m \
+	--deadline 10m \
 	--concurrency 1 \
 	--line-length 120 \
 	--dupl-threshold=70 \
