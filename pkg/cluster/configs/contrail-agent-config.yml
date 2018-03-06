@@ -1,0 +1,26 @@
+id: bob
+password: bob_password
+project_id: demo
+auth_url: http://localhost:9091/v3
+endpoint: http://localhost:9091
+insecure: true
+backend: file
+watcher: polling
+schema_root: /public
+tasks:
+- schema_id: contrail_cluster
+  common:
+  - vars:
+      dir: "/opt/cluster/{{ resource.schema_id }}/{{ resource.uuid }}"
+  on_create:
+  - command: mkdir -p "{{ dir }}"
+  - template:
+      src: "./pkg/cluster/configs/contrail-cluster-config.tmpl"
+      dest: "{{ dir }}/contrail-cluster-config.yml"
+  - command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
+    #- command: "go run cmd/contrail/main.go cluster -c {{ dir }}/contrail-cluster-config.yml"
+  on_update:
+  - command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
+    #- command: "go run cmd/contrail/main.go cluster -c {{ dir }}/contrail-cluster-config.yml"
+  on_delete:
+  - command: "rm -rf  {{ dir }}"
