@@ -15,6 +15,14 @@
       with_items: # Insert tasks here
         - name: Install deps
           command: make deps
+        - name: show files 
+          command: |
+            sudo apt-get install -y tree;
+            tree;
+        - name: make lint
+          command: make lint
+        - name: make test
+          command: make test
         - name: Install packaging tools
           command: |
             sudo apt-get install -y zip build-essential rpm rubygems ruby-dev curl;
