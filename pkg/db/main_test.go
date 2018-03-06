@@ -12,6 +12,7 @@ import (
 )
 
 var testDB *sql.DB
+var db *DB
 
 func TestMain(m *testing.M) {
 	common.InitConfig()
@@ -22,6 +23,12 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 	defer testDB.Close()
+	db = &DB{
+		DB:      testDB,
+		Dialect: NewDialect("mysql"),
+	}
+	db.initQueryBuilders()
+
 	log.Info("starting test")
 	code := m.Run()
 	log.Info("finished test")

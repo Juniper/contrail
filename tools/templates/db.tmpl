@@ -251,7 +251,83 @@ func (db *DB) update{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *models.Update{{ schema.JSONSchema.GoName }}Request,
     ) error {
-    //TODO
+    tx := GetTransaction(ctx)
+    qb := db.queryBuilders["{{ schema.ID }}"]
+    model := request.{{ schema.JSONSchema.GoName }}
+
+    err := db.Check{{ schema.JSONSchema.GoName }}Policy(ctx, model.UUID)
+    if err != nil {
+        return err
+    }
+
+    columns := []string{}
+    values := []interface{}{}
+    for _, updatedPath := range request.FieldMask.Paths {
+        switch (updatedPath) {
+            {% for column in schema.Columns %}
+            case "{{ column.UpdatePath }}":
+                columns = append(columns, "{{ column.Column }}")
+                values = append(values, {% if column.Bind == "json" %}common.MustJSON(model{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.GetPath }}){% else %}model{{ column.GetPath }}{% endif %} )
+            {% endfor %}
+            {% for linkTo, reference in schema.References %}
+            case "{{ linkTo }}_refs":
+                _, err = tx.ExecContext(ctx, qb.DeleteRefQuery("{{ linkTo }}"), model.UUID)
+                if err != nil {
+                    return errors.Wrap(err,"{{ reference.GoName }}Refs update failed")
+                }
+                for _, ref := range model.{{ reference.GoName }}Refs {
+                    {% if reference.RefType  %}
+                    if ref.Attr == nil {
+                        ref.Attr = &models.{{ reference.RefType }}{}
+                    }
+                    {% endif %}
+                    _, err = tx.ExecContext(ctx, qb.CreateRefQuery("{{ linkTo }}"), model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
+                {% endif %}{% endfor %})
+                    if err != nil {
+                        return errors.Wrap(err,"{{ reference.GoName }}Refs create failed")
+                    }
+                }
+            {% endfor %}
+        }
+    }
+    values = append(values, model.UUID)
+    _, err = tx.ExecContext(ctx, qb.UpdateQuery(columns), values...)
+    return err
+}
+
+//Check{{ schema.JSONSchema.GoName }}Policy check ownership of resources.
+func (db *DB) Check{{ schema.JSONSchema.GoName }}Policy(
+    ctx context.Context,
+    uuid string) error {
+    qb := db.queryBuilders["{{ schema.ID }}"]
+
+    selectQuery := qb.SelectAuthQuery()
+    var err error
+    var count int
+
+    tx := GetTransaction(ctx)
+    auth := common.GetAuthCTX(ctx)
+
+    if auth.IsAdmin() {
+        row := tx.QueryRowContext(ctx, selectQuery, uuid)
+        if err != nil {
+            return errors.Wrap(err, "not found")
+        }
+        row.Scan(&count)
+        if count == 0 {
+           return common.ErrorNotFound
+        }
+    }else{
+        selectQuery += " and owner = ?"
+        row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID() )
+        if err != nil {
+            return common.ErrorNotFound
+        }
+        row.Scan(&count)
+        if count == 0 {
+           return common.ErrorNotFound
+        }
+    }
     return nil
 }
 
@@ -261,35 +337,19 @@ func (db *DB) delete{{ schema.JSONSchema.GoName }}(
     request *models.Delete{{ schema.JSONSchema.GoName }}Request) error {
     qb := db.queryBuilders["{{ schema.ID }}"]
 
-    selectQuery := qb.SelectForDeleteQuery()
     deleteQuery := qb.DeleteQuery()
-
-    var err error
-    var count int
+    err := db.Check{{ schema.JSONSchema.GoName }}Policy(ctx, request.ID)
+    if err != nil {
+        return err
+    }
     uuid := request.ID
     tx := GetTransaction(ctx)
     auth := common.GetAuthCTX(ctx)
+
     if auth.IsAdmin() {
-        row := tx.QueryRowContext(ctx, selectQuery, uuid)
-        if err != nil {
-            return errors.Wrap(err, "not found")
-        }
-        row.Scan(&count)
-        if count == 0 {
-           return errors.New("Not found")
-        }
         _, err = tx.ExecContext(ctx, deleteQuery, uuid)
     }else{
         deleteQuery += " and owner = ?"
-        selectQuery += " and owner = ?"
-        row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID() )
-        if err != nil {
-            return errors.Wrap(err, "not found")
-        }
-        row.Scan(&count)
-        if count == 0 {
-           return errors.New("Not found")
-        }
         _, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID() )
     }
 

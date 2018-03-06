@@ -22,17 +22,17 @@ const (
 	vnSchemaID       = "virtual_network"
 	metadataSchemaID = "metadata"
 
-	virtualNetworkSchema  = "testdata/virtual_network_schema.yml"
-	virtualNetwork        = "testdata/virtual_network.yml"
-	virtualNetworkListed  = "testdata/virtual_network_listed.yml"
-	virtualNetworkShowed  = "testdata/virtual_network_showed.yml"
-	virtualNetworks       = "testdata/virtual_networks.yml"
-	virtualNetworksListed = "testdata/virtual_networks_listed.yml"
-	// virtualNetworksSetOutput = "testdata/virtual_networks_set_output.yml"
-	// virtualNetworksSetListed = "testdata/virtual_networks_set_listed.yml"
-	// virtualNetworksUpdate        = "testdata/virtual_networks_update.yml"
-	// virtualNetworksUpdateOutput  = "testdata/virtual_networks_update_output.yml"
-	// virtualNetworksUpdatedListed = "testdata/virtual_networks_updated_listed.yml"
+	virtualNetworkSchema         = "testdata/virtual_network_schema.yml"
+	virtualNetwork               = "testdata/virtual_network.yml"
+	virtualNetworkListed         = "testdata/virtual_network_listed.yml"
+	virtualNetworkShowed         = "testdata/virtual_network_showed.yml"
+	virtualNetworks              = "testdata/virtual_networks.yml"
+	virtualNetworksListed        = "testdata/virtual_networks_listed.yml"
+	virtualNetworksSetOutput     = "testdata/virtual_networks_set_output.yml"
+	virtualNetworksSetListed     = "testdata/virtual_networks_set_listed.yml"
+	virtualNetworksUpdate        = "testdata/virtual_networks_update.yml"
+	virtualNetworksUpdateOutput  = "testdata/virtual_networks_update_output.yml"
+	virtualNetworksUpdatedListed = "testdata/virtual_networks_updated_listed.yml"
 	virtualNetworksDeletedListed = "testdata/virtual_networks_deleted_listed.yml"
 )
 
@@ -103,47 +103,52 @@ func TestCLICreateListAndShowVirtualNetworks(t *testing.T) {
 	checkDataEqual(t, virtualNetworkShowed, o)
 }
 
-//TODO(nati) Skip until update implemented
-// func TestCLISetVirtualNetworks(t *testing.T) {
-// 	s := integration.NewServer(t)
-// 	defer s.Close(t)
-// 	integration.LockAndClearTables(s.Database(), metadataSchemaId, vnSchemaId)
-// 	defer integration.ClearAndUnlockTables(s.Database(), metadataSchemaId, vnSchemaId)
-// 	a := givenLoggedInAgent(t, s.URL())
+func TestCLISetVirtualNetworks(t *testing.T) {
+	s := integration.NewServer(t)
+	defer s.Close(t)
 
-// 	o, err := a.CreateCLI(virtualNetworks)
-// 	assert.NoError(t, err)
-// 	checkDataEqual(t, virtualNetworks, o)
+	mutexMetaData := common.UseTable(s.Database(), metadataSchemaID)
+	defer mutexMetaData.Unlock()
 
-// 	o, err = a.SetCLI(vnSchemaId, "first-uuid", "external_ipam: true")
-// 	assert.NoError(t, err)
-// 	checkDataEqual(t, virtualNetworksSetOutput, o)
+	mutexTable := common.UseTable(s.Database(), vnSchemaID)
+	defer mutexTable.Unlock()
+	a := givenLoggedInAgent(t, s.URL())
 
-// 	o, err = a.ListCLI(vnSchemaId, nil)
-// 	assert.NoError(t, err)
-// 	checkDataEqual(t, virtualNetworksSetListed, o)
-// }
+	o, err := a.CreateCLI(virtualNetworks)
+	assert.NoError(t, err)
+	checkDataEqual(t, virtualNetworks, o)
 
-//TODO(nati) Skip until update implemented
-// func TestCLIUpdateVirtualNetworks(t *testing.T) {
-// 	s := integration.NewServer(t)
-// 	defer s.Close(t)
-// 	integration.LockAndClearTables(s.Database(), metadataSchemaId, vnSchemaId)
-// 	defer integration.ClearAndUnlockTables(s.Database(), metadataSchemaId, vnSchemaId)
-// 	a := givenLoggedInAgent(t, s.URL())
+	o, err = a.SetCLI(vnSchemaID, "first-uuid", "external_ipam: true")
+	assert.NoError(t, err)
+	checkDataEqual(t, virtualNetworksSetOutput, o)
 
-// 	o, err := a.CreateCLI(virtualNetworks)
-// 	assert.NoError(t, err)
-// 	checkDataEqual(t, virtualNetworks, o)
+	o, err = a.ListCLI(vnSchemaID, nil)
+	assert.NoError(t, err)
+	checkDataEqual(t, virtualNetworksSetListed, o)
+}
 
-// 	o, err = a.UpdateCLI(virtualNetworksUpdate)
-// 	assert.NoError(t, err)
-// 	checkDataEqual(t, virtualNetworksUpdateOutput, o)
+func TestCLIUpdateVirtualNetworks(t *testing.T) {
+	s := integration.NewServer(t)
+	defer s.Close(t)
+	mutexMetaData := common.UseTable(s.Database(), metadataSchemaID)
+	defer mutexMetaData.Unlock()
 
-// 	o, err = a.ListCLI(vnSchemaId, nil)
-// 	assert.NoError(t, err)
-// 	checkDataEqual(t, virtualNetworksUpdatedListed, o)
-// }
+	mutexTable := common.UseTable(s.Database(), vnSchemaID)
+	defer mutexTable.Unlock()
+	a := givenLoggedInAgent(t, s.URL())
+
+	o, err := a.CreateCLI(virtualNetworks)
+	assert.NoError(t, err)
+	checkDataEqual(t, virtualNetworks, o)
+
+	o, err = a.UpdateCLI(virtualNetworksUpdate)
+	assert.NoError(t, err)
+	checkDataEqual(t, virtualNetworksUpdateOutput, o)
+
+	o, err = a.ListCLI(vnSchemaID, nil)
+	assert.NoError(t, err)
+	checkDataEqual(t, virtualNetworksUpdatedListed, o)
+}
 
 func TestCLISyncVirtualNetworks(t *testing.T) {
 	// TODO(daniel): Enable when API Server behavior is fixed: https://github.com/Juniper/contrail/issues/69
