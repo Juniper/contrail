@@ -11,6 +11,7 @@ import (
 	"github.com/Juniper/contrail/integration"
 	"github.com/Juniper/contrail/pkg/agent"
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/models"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -91,7 +92,7 @@ func TestCLICreateListAndShowVirtualNetworks(t *testing.T) {
 	checkDataEqual(t, virtualNetworksListed, o)
 
 	o, err = a.ListCLI(vnSchemaID, url.Values{
-		common.FiltersKey: []string{fmt.Sprintf("uuid==%s", "first-uuid")},
+		models.FiltersKey: []string{fmt.Sprintf("uuid==%s", "first-uuid")},
 	})
 	assert.NoError(t, err)
 	fmt.Println(o)

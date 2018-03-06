@@ -33286,6 +33286,17 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "ssh_key": {
+                        "title": "SSH public key",
+                        "description": "SSH Public Key",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "type": {
                         "title": "Machine Type",
                         "description": "Type of machine resource",
@@ -33336,6 +33347,7 @@
                     "mac_address",
                     "type",
                     "password",
+                    "ssh_key",
                     "username",
                     "aws_ami",
                     "aws_instance_type",

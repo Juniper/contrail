@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/flosch/pongo2"
 )
 
@@ -22,7 +23,7 @@ func ensureDir(path string) {
 
 func (config *TemplateConfig) load(base string) (*pongo2.Template, error) {
 	path := filepath.Join(base, config.TemplatePath)
-	templateCode, err := GetContent(path)
+	templateCode, err := common.GetContent(path)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +54,7 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 				return err
 			}
 			err = ioutil.WriteFile(
-				strings.Replace(config.OutputPath, "__resource__", CamelToSnake(typeName), 1),
+				strings.Replace(config.OutputPath, "__resource__", common.CamelToSnake(typeName), 1),
 				[]byte(output), 0644)
 			if err != nil {
 				return err
@@ -72,7 +73,7 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 				return err
 			}
 			err = ioutil.WriteFile(
-				strings.Replace(config.OutputPath, "__resource__", CamelToSnake(typeName), 1),
+				strings.Replace(config.OutputPath, "__resource__", common.CamelToSnake(typeName), 1),
 				[]byte(output), 0644)
 			if err != nil {
 				return err
@@ -102,7 +103,7 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 //LoadTemplates loads templates from config path.
 func LoadTemplates(path string) ([]*TemplateConfig, error) {
 	var config []*TemplateConfig
-	err := LoadFile(path, &config)
+	err := common.LoadFile(path, &config)
 	return config, err
 }
 

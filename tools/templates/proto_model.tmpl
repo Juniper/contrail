@@ -1,5 +1,5 @@
 syntax = "proto3";
-package github.com.Juniper.contrail.pkg.generated.models;
+package github.com.Juniper.contrail.pkg.models;
 
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 import "google/protobuf/field_mask.proto";
@@ -43,7 +43,7 @@ message Filter {
 
 message {{ schema.JSONSchema.GoName }} {
 {% for property in schema.JSONSchema.OrderedProperties %}
-    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}"]; // {{ property.Description }}{% endfor %} 
+    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}"]; // {{ property.Description }}{% endfor %}
 {% for linkTo, reference in schema.References %}
     repeated {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ linkTo }}_refs = {{ reference.Index }} [(gogoproto.customname) = "{{ reference.GoName }}Refs"];// {{ reference.Description }} {% endfor %}
 {% for backref in schema.Children %}
@@ -108,7 +108,7 @@ message Get{{ schema.JSONSchema.GoName }}Response {
 {% if definition.Type == "object" %}
 message {{ type }} {
 {% for property in definition.OrderedProperties %}
-    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}"]; // {{ property.Description }}{% endfor %} 
+    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}"]; // {{ property.Description }}{% endfor %}
 }
 {% endif %}
 {% endfor %}

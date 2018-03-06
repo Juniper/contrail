@@ -7,7 +7,7 @@ echo "mode: count" > $TOP/profile.cov
 
 cd $TOP
 
-for dir in $(find . -maxdepth 10 -not -path './vendor/*' -not -path './cmd/*' -not -path '*/.git/*' -not -path '*/test_data/*' -not -path '*/generated/models' -not -path '*/generated/services' -type d);
+for dir in $(find . -maxdepth 10 -not -path './vendor/*' -not -path './cmd/*' -not -path '*/.git/*' -not -path '*/test_data/*' -not -path '*/models' -not -path '*/services' -type d);
 do
 cd $TOP
 

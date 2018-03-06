@@ -45,8 +45,8 @@ func noAuthMiddleware() echo.MiddlewareFunc {
 	}
 }
 
-func proxyMiddleware(prefix, target string, insecure bool) func(next echo.HandlerFunc) echo.HandlerFunc {
-	u, _ := url.Parse(target)
+func proxyMiddleware(target string, insecure bool) func(next echo.HandlerFunc) echo.HandlerFunc {
+	u, _ := url.Parse(target) // nolint
 	server := httputil.NewSingleHostReverseProxy(u)
 	if u.Scheme == "https" {
 		server.Transport = &http.Transport{
@@ -54,7 +54,7 @@ func proxyMiddleware(prefix, target string, insecure bool) func(next echo.Handle
 				Timeout:   30 * time.Second,
 				KeepAlive: 30 * time.Second,
 			}).Dial,
-			TLSClientConfig:     &tls.Config{InsecureSkipVerify: insecure},
+			TLSClientConfig:     &tls.Config{InsecureSkipVerify: insecure}, // nolint
 			TLSHandshakeTimeout: 10 * time.Second,
 		}
 	}

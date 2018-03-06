@@ -1,3 +1,4 @@
+// nolint
 package db
 
 import (
@@ -6,7 +7,7 @@ import (
         "testing"
 
         "github.com/Juniper/contrail/pkg/common"
-        "github.com/Juniper/contrail/pkg/generated/models"
+        "github.com/Juniper/contrail/pkg/models"
         "github.com/pkg/errors"
         )
 
@@ -17,13 +18,15 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
     // t.Parallel()
     db := &DB{
         DB: testDB,
+        Dialect: NewDialect("mysql"),
     }
+	db.initQueryBuilders()
     ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
     defer cancel()
 
     mutexMetadata := common.UseTable(db.DB, "metadata")
     mutexTable := common.UseTable(db.DB, "{{ schema.ID }}")
-    // mutexProject := common.UseTable(db.DB, "{{ schema.ID }}")
+    // mutexProject := UseTable(db.DB, "{{ schema.ID }}")
     defer func(){
         mutexTable.Unlock()
         mutexMetadata.Unlock()
@@ -151,8 +154,8 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
 
     //Delete ref entries, referred objects
     {% for linkTo, reference in schema.References %}
-    err = common.DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-        tx := common.GetTransaction(ctx)
+    err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+        tx := GetTransaction(ctx)
         stmt, err := tx.Prepare("delete from `ref_{{ schema.ID }}_{{ linkTo }}` where `from` = ? AND `to` = ?;")
         if err != nil {
             return errors.Wrap(err, "preparing {{ reference.GoName }}Refs delete statement failed")
