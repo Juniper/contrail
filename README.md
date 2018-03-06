@@ -1,8 +1,5 @@
 # Go code base for contrail projects
 
-![CircleCI](https://circleci.com/gh/Juniper/contrail.svg?style=svg&circle-token=b744fe7f84003a898e897e0e4fe335e1e69944fd)
-[![Coverage Status](https://coveralls.io/repos/github/Juniper/contrail/badge.svg?t=kKzcsv)](https://coveralls.io/github/Juniper/contrail)
-
 ## Important principal
 
 - Apply lint tools
@@ -63,7 +60,7 @@ It is expected that the root password is 'contrail123', you can set this on an e
 from the mysql prompt as follows:
 
 ``` shell
-MariaDB [(none)]> ALTER USER 'root'@'localhost' IDENTIFIED BY 'contrail123';
+[(none)]> ALTER USER 'root'@'localhost' IDENTIFIED BY 'contrail123';
 ```
 
 Executing the script below, will drop the contrail_test schema if it exists, recreate it and initialise this schema
@@ -87,7 +84,7 @@ make integration
 ## Commands
 
 Repository holds source code for following CLI applications:
-- `contrail` - contains API Server, [Agent](doc/agent.md) and [API Server command line client][cli] 
+- `contrail` - contains API Server, [Agent](doc/agent.md) and [API Server command line client][cli]
 - `contrailcli` - contains [API Server command line client][cli]
 - `contrailutil` - contains development utilities
 

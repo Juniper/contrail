@@ -131,7 +131,7 @@ func createPackage(options linuxPackageOptions) {
 	// copy json schema
 	runPrint("cp", "-rp", filepath.Join(wd, "public"), homeDir)
 	// default config
-	runPrint("cp", "-p", filepath.Join(wd, "tools", "init.sql"), homeDir)
+	runPrint("cp", "-p", filepath.Join(wd, "tools", "init_mysql.sql"), homeDir)
 	runPrint("cp", "-p", filepath.Join(wd, "packaging", "apisrv.yml"), homeDir)
 	// remove bin path
 	runPrint("rm", "-rf", filepath.Join(packageRoot, options.homeDir, "bin"))

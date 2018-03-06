@@ -17,6 +17,7 @@
     mac_limit_control:  #  (object)
     router_external:  #  (boolean)
     uuid:  #  (string)
+    configuration_version:  #  (integer)
     mac_learning_enabled: False #  (boolean)
     address_allocation_mode:  #  (string)
     pbb_etree_enable: False #  (boolean)

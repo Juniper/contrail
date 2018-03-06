@@ -26,6 +26,19 @@ generate: ## Run the source code generator
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package
 
+reset_gen:
+	git checkout master pkg/models/gen_*
+	git checkout master pkg/services/gen_*
+	git checkout master pkg/db/gen_*
+	git checkout master doc/proto_model.md
+	git checkout master doc/proto_service.md
+	git checkout master public
+	git checkout master proto
+	git checkout master tools/init_mysql.sql
+	git checkout master tools/init_psql.sql
+	git checkout master pkg/serviceif/serviceif.go
+
+
 reset_db: ## Reset Database with latest schema.
 	./tools/reset_db.sh
 
