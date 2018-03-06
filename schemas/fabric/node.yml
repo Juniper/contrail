@@ -56,8 +56,7 @@ schema:
       description: Type of machine resource
       enum:
       - private
-      - virtual
-      - container
+      - baremetal
       nullable: false
       permission:
       - create
@@ -174,45 +173,14 @@ schema:
       type: string
       view:
       - detail
-    ipmi_address:
-      default: ""
-      description: IP address used for power management (IPMI)
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Power Management IP
-      type: string
-      view:
-      - create
-      - detail
-    ipmi_password:
-      default: ADMIN
-      description: UserPassword for PowerManagement
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Power Management UserPassword
-      type: string
-      view:
-      - create
-      - detail
-    ipmi_username:
-      default: ADMIN
-      description: User Name for PowerManagement
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Power Management User Name
-      type: string
-      view:
-      - create
-      - detail
+    driver_info:
+      presence: "optional"
+      description: "Details of the driver for power management"
+      $ref: "openstack_types.json#/definitions/DriverInfo"
+    bm_properties:
+      presence: "optional"
+      description: "Details of baremetal hardware for scheduler"
+      $ref: "openstack_types.json#/definitions/BaremetalProperties"
   required: []
   type: object
 singular: node

@@ -1,0 +1,36 @@
+description: Ports of node
+extends:
+- base
+id: port
+parents:
+  node:
+    operations: "CRUD"
+    description: "Parent of this port."
+    presence: "optional"
+plural: ports
+prefix: /
+schema:
+  properties:
+    mac_address:
+      description: Mac Address of the NIC in Node
+      type: string
+      format: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
+      nullable: false
+      permission:
+      - create
+      - detail
+    node_uuid:
+      description: UUID of the parent node where this port is connected
+      type: string
+    pxe_enabled:
+      description: Indicates whether PXE is enabled or disabled on the Port.
+      type: boolean
+    local_link_connection:
+      presence: "true"
+      description: "The Port binding profile"
+      $ref: "openstack_types.json#/definitions/LocalLinkConnection"
+  required: []
+  type: object
+singular: port
+title: Node Port
+type: "object" 
