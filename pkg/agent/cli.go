@@ -262,10 +262,17 @@ func (a *Agent) UpdateCLI(dataPath string) (string, error) {
 // TODO(daniel): FIXME duplication
 // nolint: dupl
 func (a *Agent) SyncCLI(dataPath string) (string, error) {
-	var request *services.RESTSyncRequest
-	err := common.LoadFile(dataPath, &request)
+	var resources []*services.RESTResource
+	err := common.LoadFile(dataPath, &resources)
 	if err != nil {
 		return "", err
+	}
+
+	request := &services.RESTSyncRequest{
+		Resources: resources,
+	}
+	for _, resource := range resources {
+		resource.Data = common.YAMLtoJSONCompat(resource.Data)
 	}
 	response, err := a.resourceSync(request)
 	if err != nil {

@@ -42,17 +42,43 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
         switch(resource.Kind) {
         {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
         case "{{ schema.ID }}":
-            request := &models.Create{{ schema.JSONSchema.GoName }}Request{
-                {{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(resource.Data),
+            model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(resource.Data)
+            update := false
+            if model.UUID != "" {
+               _, err := service.Get{{ schema.JSONSchema.GoName }}(ctx, 
+                   &models.Get{{ schema.JSONSchema.GoName }}Request{
+                        ID: model.UUID,        
+               }) 
+               if err == nil {
+                   update = true
+               }
             }
-            response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, request)
-            if err != nil {
-                return common.ToHTTPError(err)
+            if update {
+                 request := &models.Update{{ schema.JSONSchema.GoName }}Request{
+                     {{ schema.JSONSchema.GoName }}: model,
+                     FieldMask: MapToFieldMask(resource.Data.(map[string]interface{})),
+                 }
+                 response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, request)
+                 if err != nil {
+                     return common.ToHTTPError(err)
+                 }
+                 responses = append(responses, &RESTResource{
+                     Kind: resource.Kind,
+                     Data: response.{{ schema.JSONSchema.GoName }},
+                 })
+            }else{
+                 request := &models.Create{{ schema.JSONSchema.GoName }}Request{
+                     {{ schema.JSONSchema.GoName }}: model,
+                 }
+                 response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, request)
+                 if err != nil {
+                     return common.ToHTTPError(err)
+                 }
+                 responses = append(responses, &RESTResource{
+                     Kind: resource.Kind,
+                     Data: response.{{ schema.JSONSchema.GoName }},
+                 })    
             }
-            responses = append(responses, &RESTResource{
-                Kind: resource.Kind,
-                Data: response.{{ schema.JSONSchema.GoName }},
-            })
         {% endif%}{% endfor %}
         }
     }

@@ -58,7 +58,11 @@ func DoInTransaction(ctx context.Context, db *sql.DB, do func(context.Context) e
 	if tx != nil {
 		return do(ctx)
 	}
-	tx, err = db.Begin()
+	conn, err := db.Conn(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to start transaction")
+	}
+	tx, err = conn.BeginTx(ctx, nil)
 	if err != nil {
 		return errors.Wrap(err, "failed to start transaction")
 	}
@@ -66,15 +70,24 @@ func DoInTransaction(ctx context.Context, db *sql.DB, do func(context.Context) e
 		if p := recover(); p != nil {
 			tx.Rollback()
 			panic(p)
-		} else if err != nil {
-			log.Error(err)
-			tx.Rollback()
-		} else {
-			tx.Commit()
 		}
+		conn.Close()
 	}()
 	newCTX := context.WithValue(ctx, Transaction, tx)
-	return do(newCTX)
+	err = do(newCTX)
+	if err != nil {
+		log.Error(err)
+		tx.Rollback()
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.Error(err)
+		tx.Rollback()
+		return err
+	}
+	return nil
 }
 
 //ConnectDB connect to the db based on viper configuration.

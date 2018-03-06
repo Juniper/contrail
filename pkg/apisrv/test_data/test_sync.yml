@@ -33,6 +33,17 @@ test_data:
     virtual_network_network_id: 50
     network_policy_refs:
     - uuid: network_policy_uuid
+  vn_blue2: &vn_blue2
+    fq_name: ["default", "admin", "vn_blue"]
+    uuid: vn_blue
+    display_name: blue2
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    route_target_list:
+       route_target: ["100:200"]
+    virtual_network_network_id: 50
+    network_policy_refs:
+    - uuid: network_policy_uuid
 clients:
   default:
     id: alice
@@ -90,3 +101,42 @@ workflow:
   expect:
     virtual-networks:
     - *vn_blue
+- name: create project
+  request:
+    path: /sync
+    method: POST
+    expected:
+    - 201
+    data:
+      resources:
+      - kind: project
+        data: *admin_project
+      - kind: network_policy
+        data: *network_policy1
+      - kind: virtual_network
+        data: *vn_blue2
+  expect:
+    - kind: project
+      data: *admin_project
+    - kind: network_policy
+      data: *network_policy1
+    - kind: virtual_network
+      data: *vn_blue2
+- name: list project
+  request:
+    path: /projects?detail=true
+    method: GET
+    expected:
+    - 200
+  expect:
+    projects:
+    - *admin_project
+- name: list virtual networks with detail
+  request:
+    path: /virtual-networks?detail=true
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - *vn_blue2

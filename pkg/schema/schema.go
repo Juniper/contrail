@@ -45,6 +45,7 @@ type API struct {
 type ColumnConfig struct {
 	Path         string
 	GetPath      string
+	UpdatePath   string
 	Type         string
 	GoType       string
 	Bind         string
@@ -283,7 +284,7 @@ func (s *JSONSchema) Walk(do func(s2 *JSONSchema) error) error {
 
 func (s *JSONSchema) resolveSQL(
 	parentColumn []string, columnName string,
-	goPath string, getPath string, columns *ColumnConfigs) error {
+	goPath string, getPath string, updatePath string, columns *ColumnConfigs) error {
 	if s == nil {
 		return nil
 	}
@@ -299,6 +300,7 @@ func (s *JSONSchema) resolveSQL(
 		*columns = append(*columns, &ColumnConfig{
 			Path:         goPath,
 			GetPath:      getPath,
+			UpdatePath:   updatePath,
 			GoType:       s.GoType,
 			Bind:         bind,
 			Type:         s.SQL,
@@ -313,9 +315,14 @@ func (s *JSONSchema) resolveSQL(
 		nextParentColumn := make([]string, len(parentColumn))
 		copy(nextParentColumn, parentColumn)
 		nextParentColumn = append(nextParentColumn, columnName)
+
+		newUpdatePath := name
+		if updatePath != "" {
+			newUpdatePath = updatePath + "." + name
+		}
 		err := property.resolveSQL(nextParentColumn,
 			name, goPath+"."+property.GoName,
-			getPath+".Get"+property.GoName+"()", columns)
+			getPath+".Get"+property.GoName+"()", newUpdatePath, columns)
 		if err != nil {
 			return err
 		}
@@ -488,7 +495,7 @@ func (api *API) resolveAllRef() error {
 
 func (api *API) resolveAllSQL() error {
 	for _, s := range api.Schemas {
-		err := s.JSONSchema.resolveSQL([]string{}, "", "", "", &s.Columns)
+		err := s.JSONSchema.resolveSQL([]string{}, "", "", "", "", &s.Columns)
 		if err != nil {
 			return err
 		}
@@ -520,7 +527,7 @@ func (api *API) resolveRelation(linkTo string, reference *Reference) error {
 	if err != nil {
 		return err
 	}
-	err = definition.resolveSQL([]string{}, "", "", "", &reference.Columns)
+	err = definition.resolveSQL([]string{}, "", "", "", "", &reference.Columns)
 	if err != nil {
 		return err
 	}
