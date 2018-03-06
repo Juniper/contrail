@@ -3,8 +3,10 @@ password: alice_password
 project_id: admin
 auth_url: http://localhost:9091/v3
 endpoint: http://localhost:9091
+insecure: true
 backend: file
 watcher: polling
+schema_root: /public
 tasks:
 - schema_id: private_cloud_
   common:

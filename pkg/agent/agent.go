@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -17,7 +18,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const serverSchemaPath = "/public/schema.json"
+const serverSchemaRoot = "/public/"
+const serverSchemaFile = "schema.json"
 
 // Config represents Agent configuration.
 type Config struct {
@@ -31,6 +33,10 @@ type Config struct {
 	AuthURL string `yaml:"auth_url"`
 	// Endpoint of API Server.
 	Endpoint string `yaml:"endpoint"`
+	// InSecure https connection to endpoint
+	InSecure bool `yaml:"insecure"`
+	// Server schema path
+	SchemaRoot string `yaml:"schema_root"`
 	// Backend specifies backend to be used (values: "file").
 	Backend string `yaml:"backend"`
 	// Watcher specifies resource event watching strategy to be used (values: "polling").
@@ -68,19 +74,28 @@ func NewAgentByFile(configPath string) (*Agent, error) {
 
 // NewAgent creates Agent with given configuration.
 func NewAgent(c *Config) (*Agent, error) {
-	s := apisrv.NewClient(
-		c.Endpoint,
-		c.AuthURL,
-		c.ID,
-		c.Password,
-		&keystone.Scope{
+	s := &apisrv.Client{
+		Endpoint: c.Endpoint,
+		InSecure: c.InSecure,
+	}
+	// auth enabled
+	if c.AuthURL != "" {
+		s.AuthURL = c.AuthURL
+		s.ID = c.ID
+		s.Password = c.Password
+		s.Scope = &keystone.Scope{
 			Project: &keystone.Project{
 				ID: c.ProjectID,
 			},
-		},
-	)
+		}
+	}
+	s.Init()
 
-	api, err := fetchServerAPI(s)
+	serverSchema := filepath.Join(serverSchemaRoot, serverSchemaFile)
+	if c.SchemaRoot != "" {
+		serverSchema = filepath.Join(c.SchemaRoot, serverSchemaFile)
+	}
+	api, err := fetchServerAPI(s, serverSchema)
 	if err != nil {
 		return nil, err
 	}
@@ -100,9 +115,9 @@ func NewAgent(c *Config) (*Agent, error) {
 	}, nil
 }
 
-func fetchServerAPI(server *apisrv.Client) (*schema.API, error) {
+func fetchServerAPI(server *apisrv.Client, serverSchema string) (*schema.API, error) {
 	var api schema.API
-	_, err := server.Read(serverSchemaPath, &api)
+	_, err := server.Read(serverSchema, &api)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to fetch API Server schemas")
 	}
@@ -124,9 +139,11 @@ func buildSchemaMapping(schemas []*schema.Schema) map[string]*schema.Schema {
 // Watch starts watching for events on API Server resources.
 func (a *Agent) Watch() error {
 	a.log.Info("Starting watching for events")
-	err := a.APIServer.Login()
-	if err != nil {
-		return fmt.Errorf("login to API Server failed: %s", err)
+	if a.config.AuthURL != "" {
+		err := a.APIServer.Login()
+		if err != nil {
+			return fmt.Errorf("login to API Server failed: %s", err)
+		}
 	}
 
 	var wg sync.WaitGroup
