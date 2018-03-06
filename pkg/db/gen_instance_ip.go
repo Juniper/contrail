@@ -51,6 +51,11 @@ var InstanceIPFields = []string{
 // InstanceIPRefFields is db reference fields for InstanceIP
 var InstanceIPRefFields = map[string][]string{
 
+	"virtual_machine_interface": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"physical_router": []string{
 	// <schema.Schema Value>
 
@@ -67,11 +72,6 @@ var InstanceIPRefFields = map[string][]string{
 	},
 
 	"virtual_network": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
 	},
@@ -158,22 +158,6 @@ func (db *DB) createInstanceIP(
 		return errors.Wrap(err, "create failed")
 	}
 
-	for _, ref := range model.NetworkIpamRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("network_ipam"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "NetworkIpamRefs create failed")
-		}
-	}
-
-	for _, ref := range model.VirtualNetworkRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_network"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs create failed")
-		}
-	}
-
 	for _, ref := range model.VirtualMachineInterfaceRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
@@ -198,16 +182,32 @@ func (db *DB) createInstanceIP(
 		}
 	}
 
+	for _, ref := range model.NetworkIpamRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("network_ipam"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "NetworkIpamRefs create failed")
+		}
+	}
+
+	for _, ref := range model.VirtualNetworkRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_network"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs create failed")
+		}
+	}
+
 	metaData := &MetaData{
 		UUID:   model.UUID,
 		Type:   "instance_ip",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "instance_ip", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "instance_ip", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -406,6 +406,26 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 
 	}
 
+	if value, ok := values["ref_network_ipam"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.InstanceIPNetworkIpamRef{}
+			referenceModel.UUID = uuid
+			m.NetworkIpamRefs = append(m.NetworkIpamRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_virtual_network"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -482,26 +502,6 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 			referenceModel := &models.InstanceIPVirtualRouterRef{}
 			referenceModel.UUID = uuid
 			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_network_ipam"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.InstanceIPNetworkIpamRef{}
-			referenceModel.UUID = uuid
-			m.NetworkIpamRefs = append(m.NetworkIpamRefs, referenceModel)
 
 		}
 	}
@@ -708,7 +708,7 @@ func (db *DB) listInstanceIP(ctx context.Context, request *models.ListInstanceIP
 	result := []*models.InstanceIP{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -805,7 +805,7 @@ func (db *DB) deleteInstanceIP(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

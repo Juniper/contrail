@@ -43,11 +43,6 @@ var LogicalRouterFields = []string{
 // LogicalRouterRefFields is db reference fields for LogicalRouter
 var LogicalRouterRefFields = map[string][]string{
 
-	"bgpvpn": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"route_target": []string{
 	// <schema.Schema Value>
 
@@ -74,6 +69,11 @@ var LogicalRouterRefFields = map[string][]string{
 	},
 
 	"physical_router": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"bgpvpn": []string{
 	// <schema.Schema Value>
 
 	},
@@ -121,14 +121,6 @@ func (db *DB) createLogicalRouter(
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
 		return errors.Wrap(err, "create failed")
-	}
-
-	for _, ref := range model.VirtualNetworkRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_network"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs create failed")
-		}
 	}
 
 	for _, ref := range model.PhysicalRouterRefs {
@@ -179,16 +171,24 @@ func (db *DB) createLogicalRouter(
 		}
 	}
 
+	for _, ref := range model.VirtualNetworkRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_network"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs create failed")
+		}
+	}
+
 	metaData := &MetaData{
 		UUID:   model.UUID,
 		Type:   "logical_router",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "logical_router", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "logical_router", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -339,6 +339,26 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 
 	}
 
+	if value, ok := values["ref_route_target"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterRouteTargetRef{}
+			referenceModel.UUID = uuid
+			m.RouteTargetRefs = append(m.RouteTargetRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -459,26 +479,6 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 		}
 	}
 
-	if value, ok := values["ref_route_target"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LogicalRouterRouteTargetRef{}
-			referenceModel.UUID = uuid
-			m.RouteTargetRefs = append(m.RouteTargetRefs, referenceModel)
-
-		}
-	}
-
 	return m, nil
 }
 
@@ -494,7 +494,7 @@ func (db *DB) listLogicalRouter(ctx context.Context, request *models.ListLogical
 	result := []*models.LogicalRouter{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -591,7 +591,7 @@ func (db *DB) deleteLogicalRouter(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

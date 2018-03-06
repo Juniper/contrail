@@ -108,11 +108,11 @@ func (db *DB) createRoutingPolicy(
 		Type:   "routing_policy",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "routing_policy", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "routing_policy", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -289,7 +289,7 @@ func (db *DB) listRoutingPolicy(ctx context.Context, request *models.ListRouting
 	result := []*models.RoutingPolicy{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -386,7 +386,7 @@ func (db *DB) deleteRoutingPolicy(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

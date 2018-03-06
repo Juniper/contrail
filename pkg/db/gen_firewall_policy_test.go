@@ -219,6 +219,14 @@ func TestFirewallPolicy(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
+	//    var SecurityLoggingObjectref []interface{}
+	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"firewall_policy_security_logging_object_ref_uuid", "to": []string{"test", "firewall_policy_security_logging_object_ref_uuid"}})
+	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"firewall_policy_security_logging_object_ref_uuid1", "to": []string{"test", "firewall_policy_security_logging_object_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "SecurityLoggingObjectRefs", ".", SecurityLoggingObjectref)
+	//
 	//    var FirewallRuleref []interface{}
 	//    FirewallRuleref = append(FirewallRuleref, map[string]interface{}{"operation":"delete", "uuid":"firewall_policy_firewall_rule_ref_uuid", "to": []string{"test", "firewall_policy_firewall_rule_ref_uuid"}})
 	//    FirewallRuleref = append(FirewallRuleref, map[string]interface{}{"operation":"add", "uuid":"firewall_policy_firewall_rule_ref_uuid1", "to": []string{"test", "firewall_policy_firewall_rule_ref_uuid1"}})
@@ -234,14 +242,6 @@ func TestFirewallPolicy(t *testing.T) {
 	//    FirewallRuleref = append(FirewallRuleref, map[string]interface{}{"operation":"update", "uuid":"firewall_policy_firewall_rule_ref_uuid2", "to": []string{"test", "firewall_policy_firewall_rule_ref_uuid2"}, "attr": FirewallRuleAttr})
 	//
 	//    common.SetValueByPath(updateMap, "FirewallRuleRefs", ".", FirewallRuleref)
-	//
-	//    var SecurityLoggingObjectref []interface{}
-	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"delete", "uuid":"firewall_policy_security_logging_object_ref_uuid", "to": []string{"test", "firewall_policy_security_logging_object_ref_uuid"}})
-	//    SecurityLoggingObjectref = append(SecurityLoggingObjectref, map[string]interface{}{"operation":"add", "uuid":"firewall_policy_security_logging_object_ref_uuid1", "to": []string{"test", "firewall_policy_security_logging_object_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "SecurityLoggingObjectRefs", ".", SecurityLoggingObjectref)
 	//
 	//
 	_, err = db.CreateFirewallPolicy(ctx,

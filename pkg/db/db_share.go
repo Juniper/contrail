@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/common"
@@ -11,9 +10,9 @@ import (
 )
 
 //CreateSharing creates sharing information in DB.
-func CreateSharing(tx *sql.Tx, table string, uuid string, shares []*models.ShareType) error {
+func (db *DB) CreateSharing(tx *sql.Tx, table string, uuid string, shares []*models.ShareType) error {
 	for _, share := range shares {
-		err := createSharingEntry(tx, table, uuid, share.Tenant, int(share.TenantAccess))
+		err := db.createSharingEntry(tx, table, uuid, share.Tenant, int(share.TenantAccess))
 		if err != nil {
 			return err
 		}
@@ -22,22 +21,22 @@ func CreateSharing(tx *sql.Tx, table string, uuid string, shares []*models.Share
 }
 
 //UpdateSharing updates sharing data for a object by UUID.
-func UpdateSharing(tx *sql.Tx, table string, uuid string, shares []interface{}) error {
+func (db *DB) UpdateSharing(tx *sql.Tx, table string, uuid string, shares []interface{}) error {
 	if len(shares) == 0 {
 		return nil
 	}
 	_, err := tx.Exec(
-		fmt.Sprintf("delete from `domain_share_%s` where `uuid` = ?;", table), uuid)
+		"delete from "+db.Dialect.quote("domain_share_"+table)+" where uuid = ?;", uuid)
 	if err != nil {
 		return err
 	}
 	_, err = tx.Exec(
-		fmt.Sprintf("delete from `tenant_share_%s` where `uuid` = ?;", table), uuid)
+		"delete from "+db.Dialect.quote("tenant_share_"+table)+" where uuid = ?;", uuid)
 	if err != nil {
 		return err
 	}
 	for _, share := range shares {
-		err = createSharingEntry(tx, table, uuid, common.InterfaceToString(share.(map[string]interface{})["tenant"]),
+		err = db.createSharingEntry(tx, table, uuid, common.InterfaceToString(share.(map[string]interface{})["tenant"]),
 			common.InterfaceToInt(share.(map[string]interface{})["tenant_access"]))
 		if err != nil {
 			return err
@@ -46,19 +45,19 @@ func UpdateSharing(tx *sql.Tx, table string, uuid string, shares []interface{}) 
 	return nil
 }
 
-func createSharingEntry(tx *sql.Tx, table string, uuid string, tenant string, tenantAccess int) error {
+func (db *DB) createSharingEntry(tx *sql.Tx, table string, uuid string, tenant string, tenantAccess int) error {
 	shareParts := strings.Split(tenant, ":")
 	shareType := "domain"
 	if len(shareParts) > 1 {
 		shareType = "tenant"
 	}
-	resourceMetaData, err := GetMetaData(tx, "", shareParts)
+	resourceMetaData, err := db.GetMetaData(tx, "", shareParts)
 	if err != nil {
 		return errors.Wrap(err, "can't find resource")
 	}
 	to := resourceMetaData.UUID
 	_, err = tx.Exec(
-		fmt.Sprintf("insert into `%s_share_%s`(`uuid`, `access`, `to`) values (?,?,?);",
-			shareType, table), uuid, tenantAccess, to)
+		"insert into "+db.Dialect.quote(shareType+"_share_"+table)+" (uuid, access, "+db.Dialect.quote("to")+") values (?,?,?);", // nolint
+		uuid, tenantAccess, to)
 	return err
 }

@@ -131,11 +131,11 @@ func (db *DB) createPhysicalInterface(
 		Type:   "physical_interface",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "physical_interface", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "physical_interface", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -472,7 +472,7 @@ func (db *DB) listPhysicalInterface(ctx context.Context, request *models.ListPhy
 	result := []*models.PhysicalInterface{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -569,7 +569,7 @@ func (db *DB) deletePhysicalInterface(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

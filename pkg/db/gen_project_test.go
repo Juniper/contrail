@@ -446,76 +446,6 @@ func TestProject(t *testing.T) {
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_project_alias_ip_pool` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing AliasIPPoolRefs delete statement failed")
-		}
-		_, err = stmt.Exec("project_dummy_uuid", "project_alias_ip_pool_ref_uuid")
-		_, err = stmt.Exec("project_dummy_uuid", "project_alias_ip_pool_ref_uuid1")
-		_, err = stmt.Exec("project_dummy_uuid", "project_alias_ip_pool_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "AliasIPPoolRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteAliasIPPool(ctx,
-		&models.DeleteAliasIPPoolRequest{
-			ID: "project_alias_ip_pool_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref project_alias_ip_pool_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteAliasIPPool(ctx,
-		&models.DeleteAliasIPPoolRequest{
-			ID: "project_alias_ip_pool_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref project_alias_ip_pool_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteAliasIPPool(
-		ctx,
-		&models.DeleteAliasIPPoolRequest{
-			ID: "project_alias_ip_pool_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref project_alias_ip_pool_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_project_namespace` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing NamespaceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("project_dummy_uuid", "project_namespace_ref_uuid")
-		_, err = stmt.Exec("project_dummy_uuid", "project_namespace_ref_uuid1")
-		_, err = stmt.Exec("project_dummy_uuid", "project_namespace_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "NamespaceRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteNamespace(ctx,
-		&models.DeleteNamespaceRequest{
-			ID: "project_namespace_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref project_namespace_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteNamespace(ctx,
-		&models.DeleteNamespaceRequest{
-			ID: "project_namespace_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref project_namespace_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteNamespace(
-		ctx,
-		&models.DeleteNamespaceRequest{
-			ID: "project_namespace_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref project_namespace_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_project_application_policy_set` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing ApplicationPolicySetRefs delete statement failed")
@@ -582,6 +512,76 @@ func TestProject(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref project_floating_ip_pool_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_project_alias_ip_pool` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing AliasIPPoolRefs delete statement failed")
+		}
+		_, err = stmt.Exec("project_dummy_uuid", "project_alias_ip_pool_ref_uuid")
+		_, err = stmt.Exec("project_dummy_uuid", "project_alias_ip_pool_ref_uuid1")
+		_, err = stmt.Exec("project_dummy_uuid", "project_alias_ip_pool_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "AliasIPPoolRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteAliasIPPool(ctx,
+		&models.DeleteAliasIPPoolRequest{
+			ID: "project_alias_ip_pool_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref project_alias_ip_pool_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteAliasIPPool(ctx,
+		&models.DeleteAliasIPPoolRequest{
+			ID: "project_alias_ip_pool_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref project_alias_ip_pool_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteAliasIPPool(
+		ctx,
+		&models.DeleteAliasIPPoolRequest{
+			ID: "project_alias_ip_pool_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref project_alias_ip_pool_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_project_namespace` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing NamespaceRefs delete statement failed")
+		}
+		_, err = stmt.Exec("project_dummy_uuid", "project_namespace_ref_uuid")
+		_, err = stmt.Exec("project_dummy_uuid", "project_namespace_ref_uuid1")
+		_, err = stmt.Exec("project_dummy_uuid", "project_namespace_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "NamespaceRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteNamespace(ctx,
+		&models.DeleteNamespaceRequest{
+			ID: "project_namespace_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref project_namespace_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteNamespace(ctx,
+		&models.DeleteNamespaceRequest{
+			ID: "project_namespace_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref project_namespace_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteNamespace(
+		ctx,
+		&models.DeleteNamespaceRequest{
+			ID: "project_namespace_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref project_namespace_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

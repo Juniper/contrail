@@ -42,31 +42,6 @@ func TestAliasIP(t *testing.T) {
 
 	// Create referred objects
 
-	var VirtualMachineInterfacecreateref []*models.AliasIPVirtualMachineInterfaceRef
-	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
-	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
-	VirtualMachineInterfacerefModel.UUID = "alias_ip_virtual_machine_interface_ref_uuid"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "alias_ip_virtual_machine_interface_ref_uuid"}
-	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
-		VirtualMachineInterface: VirtualMachineInterfacerefModel,
-	})
-	VirtualMachineInterfacerefModel.UUID = "alias_ip_virtual_machine_interface_ref_uuid1"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "alias_ip_virtual_machine_interface_ref_uuid1"}
-	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
-		VirtualMachineInterface: VirtualMachineInterfacerefModel,
-	})
-	VirtualMachineInterfacerefModel.UUID = "alias_ip_virtual_machine_interface_ref_uuid2"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "alias_ip_virtual_machine_interface_ref_uuid2"}
-	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
-		VirtualMachineInterface: VirtualMachineInterfacerefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.AliasIPVirtualMachineInterfaceRef{UUID: "alias_ip_virtual_machine_interface_ref_uuid", To: []string{"test", "alias_ip_virtual_machine_interface_ref_uuid"}})
-	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.AliasIPVirtualMachineInterfaceRef{UUID: "alias_ip_virtual_machine_interface_ref_uuid2", To: []string{"test", "alias_ip_virtual_machine_interface_ref_uuid2"}})
-	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
-
 	var Projectcreateref []*models.AliasIPProjectRef
 	var ProjectrefModel *models.Project
 	ProjectrefModel = models.MakeProject()
@@ -91,6 +66,31 @@ func TestAliasIP(t *testing.T) {
 	Projectcreateref = append(Projectcreateref, &models.AliasIPProjectRef{UUID: "alias_ip_project_ref_uuid", To: []string{"test", "alias_ip_project_ref_uuid"}})
 	Projectcreateref = append(Projectcreateref, &models.AliasIPProjectRef{UUID: "alias_ip_project_ref_uuid2", To: []string{"test", "alias_ip_project_ref_uuid2"}})
 	model.ProjectRefs = Projectcreateref
+
+	var VirtualMachineInterfacecreateref []*models.AliasIPVirtualMachineInterfaceRef
+	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
+	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
+	VirtualMachineInterfacerefModel.UUID = "alias_ip_virtual_machine_interface_ref_uuid"
+	VirtualMachineInterfacerefModel.FQName = []string{"test", "alias_ip_virtual_machine_interface_ref_uuid"}
+	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: VirtualMachineInterfacerefModel,
+	})
+	VirtualMachineInterfacerefModel.UUID = "alias_ip_virtual_machine_interface_ref_uuid1"
+	VirtualMachineInterfacerefModel.FQName = []string{"test", "alias_ip_virtual_machine_interface_ref_uuid1"}
+	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: VirtualMachineInterfacerefModel,
+	})
+	VirtualMachineInterfacerefModel.UUID = "alias_ip_virtual_machine_interface_ref_uuid2"
+	VirtualMachineInterfacerefModel.FQName = []string{"test", "alias_ip_virtual_machine_interface_ref_uuid2"}
+	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: VirtualMachineInterfacerefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.AliasIPVirtualMachineInterfaceRef{UUID: "alias_ip_virtual_machine_interface_ref_uuid", To: []string{"test", "alias_ip_virtual_machine_interface_ref_uuid"}})
+	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.AliasIPVirtualMachineInterfaceRef{UUID: "alias_ip_virtual_machine_interface_ref_uuid2", To: []string{"test", "alias_ip_virtual_machine_interface_ref_uuid2"}})
+	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()

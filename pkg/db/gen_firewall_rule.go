@@ -84,11 +84,6 @@ var FirewallRuleFields = []string{
 // FirewallRuleRefFields is db reference fields for FirewallRule
 var FirewallRuleRefFields = map[string][]string{
 
-	"virtual_network": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"service_group": []string{
 	// <schema.Schema Value>
 
@@ -100,6 +95,11 @@ var FirewallRuleRefFields = map[string][]string{
 	},
 
 	"security_logging_object": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"virtual_network": []string{
 	// <schema.Schema Value>
 
 	},
@@ -192,14 +192,6 @@ func (db *DB) createFirewallRule(
 		return errors.Wrap(err, "create failed")
 	}
 
-	for _, ref := range model.VirtualNetworkRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_network"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs create failed")
-		}
-	}
-
 	for _, ref := range model.ServiceGroupRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_group"), model.UUID, ref.UUID)
@@ -224,16 +216,24 @@ func (db *DB) createFirewallRule(
 		}
 	}
 
+	for _, ref := range model.VirtualNetworkRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_network"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs create failed")
+		}
+	}
+
 	metaData := &MetaData{
 		UUID:   model.UUID,
 		Type:   "firewall_rule",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "firewall_rule", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "firewall_rule", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -630,6 +630,26 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	}
 
+	if value, ok := values["ref_service_group"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.FirewallRuleServiceGroupRef{}
+			referenceModel.UUID = uuid
+			m.ServiceGroupRefs = append(m.ServiceGroupRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_address_group"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -690,26 +710,6 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 		}
 	}
 
-	if value, ok := values["ref_service_group"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.FirewallRuleServiceGroupRef{}
-			referenceModel.UUID = uuid
-			m.ServiceGroupRefs = append(m.ServiceGroupRefs, referenceModel)
-
-		}
-	}
-
 	return m, nil
 }
 
@@ -725,7 +725,7 @@ func (db *DB) listFirewallRule(ctx context.Context, request *models.ListFirewall
 	result := []*models.FirewallRule{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -822,7 +822,7 @@ func (db *DB) deleteFirewallRule(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

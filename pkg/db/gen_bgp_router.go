@@ -85,11 +85,11 @@ func (db *DB) createBGPRouter(
 		Type:   "bgp_router",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "bgp_router", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "bgp_router", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -243,7 +243,7 @@ func (db *DB) listBGPRouter(ctx context.Context, request *models.ListBGPRouterRe
 	result := []*models.BGPRouter{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -340,7 +340,7 @@ func (db *DB) deleteBGPRouter(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

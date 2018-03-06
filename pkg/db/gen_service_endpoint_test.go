@@ -289,41 +289,6 @@ func TestServiceEndpoint(t *testing.T) {
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_service_endpoint_service_connection_module` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing ServiceConnectionModuleRefs delete statement failed")
-		}
-		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_connection_module_ref_uuid")
-		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_connection_module_ref_uuid1")
-		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_connection_module_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "ServiceConnectionModuleRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteServiceConnectionModule(ctx,
-		&models.DeleteServiceConnectionModuleRequest{
-			ID: "service_endpoint_service_connection_module_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref service_endpoint_service_connection_module_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteServiceConnectionModule(ctx,
-		&models.DeleteServiceConnectionModuleRequest{
-			ID: "service_endpoint_service_connection_module_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref service_endpoint_service_connection_module_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteServiceConnectionModule(
-		ctx,
-		&models.DeleteServiceConnectionModuleRequest{
-			ID: "service_endpoint_service_connection_module_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref service_endpoint_service_connection_module_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_service_endpoint_physical_router` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing PhysicalRouterRefs delete statement failed")
@@ -390,6 +355,41 @@ func TestServiceEndpoint(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref service_endpoint_service_object_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_service_endpoint_service_connection_module` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing ServiceConnectionModuleRefs delete statement failed")
+		}
+		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_connection_module_ref_uuid")
+		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_connection_module_ref_uuid1")
+		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_connection_module_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "ServiceConnectionModuleRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteServiceConnectionModule(ctx,
+		&models.DeleteServiceConnectionModuleRequest{
+			ID: "service_endpoint_service_connection_module_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref service_endpoint_service_connection_module_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteServiceConnectionModule(ctx,
+		&models.DeleteServiceConnectionModuleRequest{
+			ID: "service_endpoint_service_connection_module_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref service_endpoint_service_connection_module_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteServiceConnectionModule(
+		ctx,
+		&models.DeleteServiceConnectionModuleRequest{
+			ID: "service_endpoint_service_connection_module_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref service_endpoint_service_connection_module_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

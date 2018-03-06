@@ -114,11 +114,11 @@ func (db *DB) createLoadbalancerListener(
 		Type:   "loadbalancer_listener",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "loadbalancer_listener", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "loadbalancer_listener", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -328,7 +328,7 @@ func (db *DB) listLoadbalancerListener(ctx context.Context, request *models.List
 	result := []*models.LoadbalancerListener{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -425,7 +425,7 @@ func (db *DB) deleteLoadbalancerListener(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

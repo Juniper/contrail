@@ -76,11 +76,6 @@ var VirtualNetworkFields = []string{
 // VirtualNetworkRefFields is db reference fields for VirtualNetwork
 var VirtualNetworkRefFields = map[string][]string{
 
-	"route_table": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"virtual_network": []string{
 	// <schema.Schema Value>
 
@@ -104,15 +99,20 @@ var VirtualNetworkRefFields = map[string][]string{
 
 	"network_policy": []string{
 		// <schema.Schema Value>
-		"major",
-		"minor",
-		"start_time",
-		"off_interval",
 		"on_interval",
 		"end_time",
+		"start_time",
+		"off_interval",
+		"major",
+		"minor",
 	},
 
 	"qos_config": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"route_table": []string{
 	// <schema.Schema Value>
 
 	},
@@ -387,12 +387,12 @@ func (db *DB) createVirtualNetwork(
 			ref.Attr = &models.VirtualNetworkPolicyType{}
 		}
 
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("network_policy"), model.UUID, ref.UUID, int(ref.Attr.GetSequence().GetMajor()),
-			int(ref.Attr.GetSequence().GetMinor()),
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("network_policy"), model.UUID, ref.UUID, string(ref.Attr.GetTimer().GetOnInterval()),
+			string(ref.Attr.GetTimer().GetEndTime()),
 			string(ref.Attr.GetTimer().GetStartTime()),
 			string(ref.Attr.GetTimer().GetOffInterval()),
-			string(ref.Attr.GetTimer().GetOnInterval()),
-			string(ref.Attr.GetTimer().GetEndTime()))
+			int(ref.Attr.GetSequence().GetMajor()),
+			int(ref.Attr.GetSequence().GetMinor()))
 		if err != nil {
 			return errors.Wrap(err, "NetworkPolicyRefs create failed")
 		}
@@ -403,11 +403,11 @@ func (db *DB) createVirtualNetwork(
 		Type:   "virtual_network",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "virtual_network", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "virtual_network", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -1714,7 +1714,7 @@ func (db *DB) listVirtualNetwork(ctx context.Context, request *models.ListVirtua
 	result := []*models.VirtualNetwork{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -1811,7 +1811,7 @@ func (db *DB) deleteVirtualNetwork(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

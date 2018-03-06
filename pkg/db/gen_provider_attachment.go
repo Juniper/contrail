@@ -99,11 +99,11 @@ func (db *DB) createProviderAttachment(
 		Type:   "provider_attachment",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "provider_attachment", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "provider_attachment", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -277,7 +277,7 @@ func (db *DB) listProviderAttachment(ctx context.Context, request *models.ListPr
 	result := []*models.ProviderAttachment{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -374,7 +374,7 @@ func (db *DB) deleteProviderAttachment(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

@@ -112,11 +112,11 @@ func (db *DB) createContrailAnalyticsNode(
 		Type:   "contrail_analytics_node",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "contrail_analytics_node", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "contrail_analytics_node", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -320,7 +320,7 @@ func (db *DB) listContrailAnalyticsNode(ctx context.Context, request *models.Lis
 	result := []*models.ContrailAnalyticsNode{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -417,7 +417,7 @@ func (db *DB) deleteContrailAnalyticsNode(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

@@ -114,11 +114,11 @@ func (db *DB) createE2ServiceProvider(
 		Type:   "e2_service_provider",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "e2_service_provider", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "e2_service_provider", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -263,26 +263,6 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 
 	}
 
-	if value, ok := values["ref_physical_router"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.E2ServiceProviderPhysicalRouterRef{}
-			referenceModel.UUID = uuid
-			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_peering_policy"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -303,6 +283,26 @@ func scanE2ServiceProvider(values map[string]interface{}) (*models.E2ServiceProv
 		}
 	}
 
+	if value, ok := values["ref_physical_router"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.E2ServiceProviderPhysicalRouterRef{}
+			referenceModel.UUID = uuid
+			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
+
+		}
+	}
+
 	return m, nil
 }
 
@@ -318,7 +318,7 @@ func (db *DB) listE2ServiceProvider(ctx context.Context, request *models.ListE2S
 	result := []*models.E2ServiceProvider{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -415,7 +415,7 @@ func (db *DB) deleteE2ServiceProvider(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

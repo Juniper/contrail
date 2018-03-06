@@ -104,11 +104,11 @@ func (db *DB) createBridgeDomain(
 		Type:   "bridge_domain",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "bridge_domain", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "bridge_domain", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -310,7 +310,7 @@ func (db *DB) listBridgeDomain(ctx context.Context, request *models.ListBridgeDo
 	result := []*models.BridgeDomain{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -407,7 +407,7 @@ func (db *DB) deleteBridgeDomain(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

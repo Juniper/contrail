@@ -6,8 +6,8 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
-	"github.com/Juniper/contrail/pkg/generated/models"
 	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )

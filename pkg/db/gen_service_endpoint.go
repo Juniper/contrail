@@ -41,17 +41,17 @@ var ServiceEndpointFields = []string{
 // ServiceEndpointRefFields is db reference fields for ServiceEndpoint
 var ServiceEndpointRefFields = map[string][]string{
 
-	"service_object": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"service_connection_module": []string{
 	// <schema.Schema Value>
 
 	},
 
 	"physical_router": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"service_object": []string{
 	// <schema.Schema Value>
 
 	},
@@ -96,6 +96,14 @@ func (db *DB) createServiceEndpoint(
 		return errors.Wrap(err, "create failed")
 	}
 
+	for _, ref := range model.ServiceObjectRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_object"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceObjectRefs create failed")
+		}
+	}
+
 	for _, ref := range model.ServiceConnectionModuleRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_connection_module"), model.UUID, ref.UUID)
@@ -112,24 +120,16 @@ func (db *DB) createServiceEndpoint(
 		}
 	}
 
-	for _, ref := range model.ServiceObjectRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_object"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceObjectRefs create failed")
-		}
-	}
-
 	metaData := &MetaData{
 		UUID:   model.UUID,
 		Type:   "service_endpoint",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "service_endpoint", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "service_endpoint", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -343,7 +343,7 @@ func (db *DB) listServiceEndpoint(ctx context.Context, request *models.ListServi
 	result := []*models.ServiceEndpoint{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -440,7 +440,7 @@ func (db *DB) deleteServiceEndpoint(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

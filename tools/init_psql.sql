@@ -3634,15 +3634,6 @@ create index index_d_alias_ip_pool_to on domain_share_alias_ip_pool("to");
 
 
 
-create table ref_alias_ip_project (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "alias_ip"(uuid) on delete cascade, 
-    foreign key ("to") references "project"(uuid));
-
-create index index_alias_ip_project on ref_alias_ip_project ("from");
-
 create table ref_alias_ip_virtual_machine_interface (
     "from" varchar(255),
     "to" varchar(255),
@@ -3651,6 +3642,15 @@ create table ref_alias_ip_virtual_machine_interface (
     foreign key ("to") references "virtual_machine_interface"(uuid));
 
 create index index_alias_ip_virtual_machine_interface on ref_alias_ip_virtual_machine_interface ("from");
+
+create table ref_alias_ip_project (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "alias_ip"(uuid) on delete cascade, 
+    foreign key ("to") references "project"(uuid));
+
+create index index_alias_ip_project on ref_alias_ip_project ("from");
 
 
 create table tenant_share_alias_ip (
@@ -3730,15 +3730,6 @@ create index index_d_api_access_list_to on domain_share_api_access_list("to");
 
 
 
-create table ref_application_policy_set_global_vrouter_config (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "application_policy_set"(uuid) on delete cascade, 
-    foreign key ("to") references "global_vrouter_config"(uuid));
-
-create index index_application_policy_set_global_vrouter_config on ref_application_policy_set_global_vrouter_config ("from");
-
 create table ref_application_policy_set_firewall_policy (
     "from" varchar(255),
     "to" varchar(255),
@@ -3748,6 +3739,15 @@ create table ref_application_policy_set_firewall_policy (
     foreign key ("to") references "firewall_policy"(uuid));
 
 create index index_application_policy_set_firewall_policy on ref_application_policy_set_firewall_policy ("from");
+
+create table ref_application_policy_set_global_vrouter_config (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "application_policy_set"(uuid) on delete cascade, 
+    foreign key ("to") references "global_vrouter_config"(uuid));
+
+create index index_application_policy_set_global_vrouter_config on ref_application_policy_set_global_vrouter_config ("from");
 
 
 create table tenant_share_application_policy_set (
@@ -4195,24 +4195,6 @@ create index index_d_firewall_policy_to on domain_share_firewall_policy("to");
 
 
 
-create table ref_firewall_rule_security_logging_object (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "firewall_rule"(uuid) on delete cascade, 
-    foreign key ("to") references "security_logging_object"(uuid));
-
-create index index_firewall_rule_security_logging_object on ref_firewall_rule_security_logging_object ("from");
-
-create table ref_firewall_rule_virtual_network (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "firewall_rule"(uuid) on delete cascade, 
-    foreign key ("to") references "virtual_network"(uuid));
-
-create index index_firewall_rule_virtual_network on ref_firewall_rule_virtual_network ("from");
-
 create table ref_firewall_rule_service_group (
     "from" varchar(255),
     "to" varchar(255),
@@ -4230,6 +4212,24 @@ create table ref_firewall_rule_address_group (
     foreign key ("to") references "address_group"(uuid));
 
 create index index_firewall_rule_address_group on ref_firewall_rule_address_group ("from");
+
+create table ref_firewall_rule_security_logging_object (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "firewall_rule"(uuid) on delete cascade, 
+    foreign key ("to") references "security_logging_object"(uuid));
+
+create index index_firewall_rule_security_logging_object on ref_firewall_rule_security_logging_object ("from");
+
+create table ref_firewall_rule_virtual_network (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "firewall_rule"(uuid) on delete cascade, 
+    foreign key ("to") references "virtual_network"(uuid));
+
+create index index_firewall_rule_virtual_network on ref_firewall_rule_virtual_network ("from");
 
 
 create table tenant_share_firewall_rule (
@@ -4449,15 +4449,6 @@ create index index_d_global_vrouter_config_to on domain_share_global_vrouter_con
 
 
 
-create table ref_instance_ip_network_ipam (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "instance_ip"(uuid) on delete cascade, 
-    foreign key ("to") references "network_ipam"(uuid));
-
-create index index_instance_ip_network_ipam on ref_instance_ip_network_ipam ("from");
-
 create table ref_instance_ip_virtual_network (
     "from" varchar(255),
     "to" varchar(255),
@@ -4493,6 +4484,15 @@ create table ref_instance_ip_virtual_router (
     foreign key ("to") references "virtual_router"(uuid));
 
 create index index_instance_ip_virtual_router on ref_instance_ip_virtual_router ("from");
+
+create table ref_instance_ip_network_ipam (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "instance_ip"(uuid) on delete cascade, 
+    foreign key ("to") references "network_ipam"(uuid));
+
+create index index_instance_ip_network_ipam on ref_instance_ip_network_ipam ("from");
 
 
 create table tenant_share_instance_ip (
@@ -4643,24 +4643,6 @@ create index index_d_loadbalancer_member_to on domain_share_loadbalancer_member(
 
 
 
-create table ref_loadbalancer_pool_virtual_machine_interface (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "loadbalancer_pool"(uuid) on delete cascade, 
-    foreign key ("to") references "virtual_machine_interface"(uuid));
-
-create index index_loadbalancer_pool_virtual_machine_interface on ref_loadbalancer_pool_virtual_machine_interface ("from");
-
-create table ref_loadbalancer_pool_loadbalancer_listener (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "loadbalancer_pool"(uuid) on delete cascade, 
-    foreign key ("to") references "loadbalancer_listener"(uuid));
-
-create index index_loadbalancer_pool_loadbalancer_listener on ref_loadbalancer_pool_loadbalancer_listener ("from");
-
 create table ref_loadbalancer_pool_service_instance (
     "from" varchar(255),
     "to" varchar(255),
@@ -4688,6 +4670,24 @@ create table ref_loadbalancer_pool_service_appliance_set (
 
 create index index_loadbalancer_pool_service_appliance_set on ref_loadbalancer_pool_service_appliance_set ("from");
 
+create table ref_loadbalancer_pool_virtual_machine_interface (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "loadbalancer_pool"(uuid) on delete cascade, 
+    foreign key ("to") references "virtual_machine_interface"(uuid));
+
+create index index_loadbalancer_pool_virtual_machine_interface on ref_loadbalancer_pool_virtual_machine_interface ("from");
+
+create table ref_loadbalancer_pool_loadbalancer_listener (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "loadbalancer_pool"(uuid) on delete cascade, 
+    foreign key ("to") references "loadbalancer_listener"(uuid));
+
+create index index_loadbalancer_pool_loadbalancer_listener on ref_loadbalancer_pool_loadbalancer_listener ("from");
+
 
 create table tenant_share_loadbalancer_pool (
     "uuid" varchar(255),
@@ -4714,15 +4714,6 @@ create index index_d_loadbalancer_pool_to on domain_share_loadbalancer_pool("to"
 
 
 
-create table ref_loadbalancer_service_appliance_set (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "loadbalancer"(uuid) on delete cascade, 
-    foreign key ("to") references "service_appliance_set"(uuid));
-
-create index index_loadbalancer_service_appliance_set on ref_loadbalancer_service_appliance_set ("from");
-
 create table ref_loadbalancer_virtual_machine_interface (
     "from" varchar(255),
     "to" varchar(255),
@@ -4740,6 +4731,15 @@ create table ref_loadbalancer_service_instance (
     foreign key ("to") references "service_instance"(uuid));
 
 create index index_loadbalancer_service_instance on ref_loadbalancer_service_instance ("from");
+
+create table ref_loadbalancer_service_appliance_set (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "loadbalancer"(uuid) on delete cascade, 
+    foreign key ("to") references "service_appliance_set"(uuid));
+
+create index index_loadbalancer_service_appliance_set on ref_loadbalancer_service_appliance_set ("from");
 
 
 create table tenant_share_loadbalancer (
@@ -4802,24 +4802,6 @@ create index index_d_logical_interface_to on domain_share_logical_interface("to"
 
 
 
-create table ref_logical_router_physical_router (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "logical_router"(uuid) on delete cascade, 
-    foreign key ("to") references "physical_router"(uuid));
-
-create index index_logical_router_physical_router on ref_logical_router_physical_router ("from");
-
-create table ref_logical_router_bgpvpn (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "logical_router"(uuid) on delete cascade, 
-    foreign key ("to") references "bgpvpn"(uuid));
-
-create index index_logical_router_bgpvpn on ref_logical_router_bgpvpn ("from");
-
 create table ref_logical_router_route_target (
     "from" varchar(255),
     "to" varchar(255),
@@ -4864,6 +4846,24 @@ create table ref_logical_router_virtual_network (
     foreign key ("to") references "virtual_network"(uuid));
 
 create index index_logical_router_virtual_network on ref_logical_router_virtual_network ("from");
+
+create table ref_logical_router_physical_router (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "logical_router"(uuid) on delete cascade, 
+    foreign key ("to") references "physical_router"(uuid));
+
+create index index_logical_router_physical_router on ref_logical_router_physical_router ("from");
+
+create table ref_logical_router_bgpvpn (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "logical_router"(uuid) on delete cascade, 
+    foreign key ("to") references "bgpvpn"(uuid));
+
+create index index_logical_router_bgpvpn on ref_logical_router_bgpvpn ("from");
 
 
 create table tenant_share_logical_router (
@@ -5074,15 +5074,6 @@ create index index_d_physical_interface_to on domain_share_physical_interface("t
 
 
 
-create table ref_physical_router_virtual_router (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "physical_router"(uuid) on delete cascade, 
-    foreign key ("to") references "virtual_router"(uuid));
-
-create index index_physical_router_virtual_router on ref_physical_router_virtual_router ("from");
-
 create table ref_physical_router_virtual_network (
     "from" varchar(255),
     "to" varchar(255),
@@ -5100,6 +5091,15 @@ create table ref_physical_router_bgp_router (
     foreign key ("to") references "bgp_router"(uuid));
 
 create index index_physical_router_bgp_router on ref_physical_router_bgp_router ("from");
+
+create table ref_physical_router_virtual_router (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "physical_router"(uuid) on delete cascade, 
+    foreign key ("to") references "virtual_router"(uuid));
+
+create index index_physical_router_virtual_router on ref_physical_router_virtual_router ("from");
 
 
 create table tenant_share_physical_router (
@@ -5179,6 +5179,15 @@ create index index_d_port_tuple_to on domain_share_port_tuple("to");
 
 
 
+create table ref_project_alias_ip_pool (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "project"(uuid) on delete cascade, 
+    foreign key ("to") references "alias_ip_pool"(uuid));
+
+create index index_project_alias_ip_pool on ref_project_alias_ip_pool ("from");
+
 create table ref_project_namespace (
     "from" varchar(255),
     "to" varchar(255),
@@ -5207,15 +5216,6 @@ create table ref_project_floating_ip_pool (
     foreign key ("to") references "floating_ip_pool"(uuid));
 
 create index index_project_floating_ip_pool on ref_project_floating_ip_pool ("from");
-
-create table ref_project_alias_ip_pool (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "project"(uuid) on delete cascade, 
-    foreign key ("to") references "alias_ip_pool"(uuid));
-
-create index index_project_alias_ip_pool on ref_project_alias_ip_pool ("from");
 
 
 create table tenant_share_project (
@@ -5659,6 +5659,15 @@ create index index_d_service_connection_module_to on domain_share_service_connec
 
 
 
+create table ref_service_endpoint_service_connection_module (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "service_endpoint"(uuid) on delete cascade, 
+    foreign key ("to") references "service_connection_module"(uuid));
+
+create index index_service_endpoint_service_connection_module on ref_service_endpoint_service_connection_module ("from");
+
 create table ref_service_endpoint_physical_router (
     "from" varchar(255),
     "to" varchar(255),
@@ -5676,15 +5685,6 @@ create table ref_service_endpoint_service_object (
     foreign key ("to") references "service_object"(uuid));
 
 create index index_service_endpoint_service_object on ref_service_endpoint_service_object ("from");
-
-create table ref_service_endpoint_service_connection_module (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "service_endpoint"(uuid) on delete cascade, 
-    foreign key ("to") references "service_connection_module"(uuid));
-
-create index index_service_endpoint_service_connection_module on ref_service_endpoint_service_connection_module ("from");
 
 
 create table tenant_share_service_endpoint (
@@ -5774,15 +5774,6 @@ create index index_d_service_health_check_to on domain_share_service_health_chec
 
 
 
-create table ref_service_instance_service_template (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "service_instance"(uuid) on delete cascade, 
-    foreign key ("to") references "service_template"(uuid));
-
-create index index_service_instance_service_template on ref_service_instance_service_template ("from");
-
 create table ref_service_instance_instance_ip (
     "from" varchar(255),
     "to" varchar(255),
@@ -5792,6 +5783,15 @@ create table ref_service_instance_instance_ip (
     foreign key ("to") references "instance_ip"(uuid));
 
 create index index_service_instance_instance_ip on ref_service_instance_instance_ip ("from");
+
+create table ref_service_instance_service_template (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "service_instance"(uuid) on delete cascade, 
+    foreign key ("to") references "service_template"(uuid));
+
+create index index_service_instance_service_template on ref_service_instance_service_template ("from");
 
 
 create table tenant_share_service_instance (
@@ -6098,14 +6098,41 @@ create index index_d_virtual_ip_to on domain_share_virtual_ip("to");
 
 
 
-create table ref_virtual_machine_interface_bgp_router (
+create table ref_virtual_machine_interface_interface_route_table (
     "from" varchar(255),
     "to" varchar(255),
     primary key ("from","to"),
      foreign key ("from") references "virtual_machine_interface"(uuid) on delete cascade, 
-    foreign key ("to") references "bgp_router"(uuid));
+    foreign key ("to") references "interface_route_table"(uuid));
 
-create index index_virtual_machine_interface_bgp_router on ref_virtual_machine_interface_bgp_router ("from");
+create index index_virtual_machine_interface_interface_route_table on ref_virtual_machine_interface_interface_route_table ("from");
+
+create table ref_virtual_machine_interface_qos_config (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "virtual_machine_interface"(uuid) on delete cascade, 
+    foreign key ("to") references "qos_config"(uuid));
+
+create index index_virtual_machine_interface_qos_config on ref_virtual_machine_interface_qos_config ("from");
+
+create table ref_virtual_machine_interface_security_logging_object (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "virtual_machine_interface"(uuid) on delete cascade, 
+    foreign key ("to") references "security_logging_object"(uuid));
+
+create index index_virtual_machine_interface_security_logging_object on ref_virtual_machine_interface_security_logging_object ("from");
+
+create table ref_virtual_machine_interface_service_health_check (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "virtual_machine_interface"(uuid) on delete cascade, 
+    foreign key ("to") references "service_health_check"(uuid));
+
+create index index_virtual_machine_interface_service_health_check on ref_virtual_machine_interface_service_health_check ("from");
 
 create table ref_virtual_machine_interface_security_group (
     "from" varchar(255),
@@ -6126,41 +6153,40 @@ create table ref_virtual_machine_interface_bridge_domain (
 
 create index index_virtual_machine_interface_bridge_domain on ref_virtual_machine_interface_bridge_domain ("from");
 
-create table ref_virtual_machine_interface_service_endpoint (
+create table ref_virtual_machine_interface_virtual_machine (
     "from" varchar(255),
     "to" varchar(255),
     primary key ("from","to"),
      foreign key ("from") references "virtual_machine_interface"(uuid) on delete cascade, 
-    foreign key ("to") references "service_endpoint"(uuid));
+    foreign key ("to") references "virtual_machine"(uuid));
 
-create index index_virtual_machine_interface_service_endpoint on ref_virtual_machine_interface_service_endpoint ("from");
+create index index_virtual_machine_interface_virtual_machine on ref_virtual_machine_interface_virtual_machine ("from");
 
-create table ref_virtual_machine_interface_security_logging_object (
+create table ref_virtual_machine_interface_bgp_router (
     "from" varchar(255),
     "to" varchar(255),
     primary key ("from","to"),
      foreign key ("from") references "virtual_machine_interface"(uuid) on delete cascade, 
-    foreign key ("to") references "security_logging_object"(uuid));
+    foreign key ("to") references "bgp_router"(uuid));
 
-create index index_virtual_machine_interface_security_logging_object on ref_virtual_machine_interface_security_logging_object ("from");
+create index index_virtual_machine_interface_bgp_router on ref_virtual_machine_interface_bgp_router ("from");
 
-create table ref_virtual_machine_interface_service_health_check (
+create table ref_virtual_machine_interface_routing_instance (
     "from" varchar(255),
     "to" varchar(255),
     primary key ("from","to"),
+    "service_chain_address" varchar(255),
+    "dst_mac" varchar(255),
+    "protocol" varchar(255),
+    "ipv6_service_chain_address" varchar(255),
+    "direction" varchar(255),
+    "mpls_label" int,
+    "vlan_tag" int,
+    "src_mac" varchar(255),
      foreign key ("from") references "virtual_machine_interface"(uuid) on delete cascade, 
-    foreign key ("to") references "service_health_check"(uuid));
+    foreign key ("to") references "routing_instance"(uuid));
 
-create index index_virtual_machine_interface_service_health_check on ref_virtual_machine_interface_service_health_check ("from");
-
-create table ref_virtual_machine_interface_interface_route_table (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "virtual_machine_interface"(uuid) on delete cascade, 
-    foreign key ("to") references "interface_route_table"(uuid));
-
-create index index_virtual_machine_interface_interface_route_table on ref_virtual_machine_interface_interface_route_table ("from");
+create index index_virtual_machine_interface_routing_instance on ref_virtual_machine_interface_routing_instance ("from");
 
 create table ref_virtual_machine_interface_physical_interface (
     "from" varchar(255),
@@ -6180,6 +6206,15 @@ create table ref_virtual_machine_interface_virtual_network (
 
 create index index_virtual_machine_interface_virtual_network on ref_virtual_machine_interface_virtual_network ("from");
 
+create table ref_virtual_machine_interface_service_endpoint (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "virtual_machine_interface"(uuid) on delete cascade, 
+    foreign key ("to") references "service_endpoint"(uuid));
+
+create index index_virtual_machine_interface_service_endpoint on ref_virtual_machine_interface_service_endpoint ("from");
+
 create table ref_virtual_machine_interface_virtual_machine_interface (
     "from" varchar(255),
     "to" varchar(255),
@@ -6188,41 +6223,6 @@ create table ref_virtual_machine_interface_virtual_machine_interface (
     foreign key ("to") references "virtual_machine_interface"(uuid));
 
 create index index_virtual_machine_interface_virtual_machine_interface on ref_virtual_machine_interface_virtual_machine_interface ("from");
-
-create table ref_virtual_machine_interface_virtual_machine (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "virtual_machine_interface"(uuid) on delete cascade, 
-    foreign key ("to") references "virtual_machine"(uuid));
-
-create index index_virtual_machine_interface_virtual_machine on ref_virtual_machine_interface_virtual_machine ("from");
-
-create table ref_virtual_machine_interface_routing_instance (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-    "ipv6_service_chain_address" varchar(255),
-    "direction" varchar(255),
-    "mpls_label" int,
-    "vlan_tag" int,
-    "src_mac" varchar(255),
-    "service_chain_address" varchar(255),
-    "dst_mac" varchar(255),
-    "protocol" varchar(255),
-     foreign key ("from") references "virtual_machine_interface"(uuid) on delete cascade, 
-    foreign key ("to") references "routing_instance"(uuid));
-
-create index index_virtual_machine_interface_routing_instance on ref_virtual_machine_interface_routing_instance ("from");
-
-create table ref_virtual_machine_interface_qos_config (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "virtual_machine_interface"(uuid) on delete cascade, 
-    foreign key ("to") references "qos_config"(uuid));
-
-create index index_virtual_machine_interface_qos_config on ref_virtual_machine_interface_qos_config ("from");
 
 create table ref_virtual_machine_interface_port_tuple (
     "from" varchar(255),
@@ -6294,24 +6294,6 @@ create index index_d_virtual_machine_to on domain_share_virtual_machine("to");
 
 
 
-create table ref_virtual_network_qos_config (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "virtual_network"(uuid) on delete cascade, 
-    foreign key ("to") references "qos_config"(uuid));
-
-create index index_virtual_network_qos_config on ref_virtual_network_qos_config ("from");
-
-create table ref_virtual_network_route_table (
-    "from" varchar(255),
-    "to" varchar(255),
-    primary key ("from","to"),
-     foreign key ("from") references "virtual_network"(uuid) on delete cascade, 
-    foreign key ("to") references "route_table"(uuid));
-
-create index index_virtual_network_route_table on ref_virtual_network_route_table ("from");
-
 create table ref_virtual_network_virtual_network (
     "from" varchar(255),
     "to" varchar(255),
@@ -6354,16 +6336,34 @@ create table ref_virtual_network_network_policy (
     "from" varchar(255),
     "to" varchar(255),
     primary key ("from","to"),
-    "major" int,
-    "minor" int,
-    "start_time" varchar(255),
-    "off_interval" varchar(255),
     "on_interval" varchar(255),
     "end_time" varchar(255),
+    "start_time" varchar(255),
+    "off_interval" varchar(255),
+    "major" int,
+    "minor" int,
      foreign key ("from") references "virtual_network"(uuid) on delete cascade, 
     foreign key ("to") references "network_policy"(uuid));
 
 create index index_virtual_network_network_policy on ref_virtual_network_network_policy ("from");
+
+create table ref_virtual_network_qos_config (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "virtual_network"(uuid) on delete cascade, 
+    foreign key ("to") references "qos_config"(uuid));
+
+create index index_virtual_network_qos_config on ref_virtual_network_qos_config ("from");
+
+create table ref_virtual_network_route_table (
+    "from" varchar(255),
+    "to" varchar(255),
+    primary key ("from","to"),
+     foreign key ("from") references "virtual_network"(uuid) on delete cascade, 
+    foreign key ("to") references "route_table"(uuid));
+
+create index index_virtual_network_route_table on ref_virtual_network_route_table ("from");
 
 
 create table tenant_share_virtual_network (

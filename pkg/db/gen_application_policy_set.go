@@ -59,9 +59,9 @@ var ApplicationPolicySetBackRefFields = map[string][]string{}
 // ApplicationPolicySetParentTypes is possible parents for ApplicationPolicySet
 var ApplicationPolicySetParents = []string{
 
-	"policy_management",
-
 	"project",
+
+	"policy_management",
 }
 
 // CreateApplicationPolicySet inserts ApplicationPolicySet to DB
@@ -123,11 +123,11 @@ func (db *DB) createApplicationPolicySet(
 		Type:   "application_policy_set",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "application_policy_set", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "application_policy_set", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -330,7 +330,7 @@ func (db *DB) listApplicationPolicySet(ctx context.Context, request *models.List
 	result := []*models.ApplicationPolicySet{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -427,7 +427,7 @@ func (db *DB) deleteApplicationPolicySet(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

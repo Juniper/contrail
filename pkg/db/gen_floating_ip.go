@@ -65,9 +65,9 @@ var FloatingIPBackRefFields = map[string][]string{}
 // FloatingIPParentTypes is possible parents for FloatingIP
 var FloatingIPParents = []string{
 
-	"instance_ip",
-
 	"floating_ip_pool",
+
+	"instance_ip",
 }
 
 // CreateFloatingIP inserts FloatingIP to DB
@@ -131,11 +131,11 @@ func (db *DB) createFloatingIP(
 		Type:   "floating_ip",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "floating_ip", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "floating_ip", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -371,7 +371,7 @@ func (db *DB) listFloatingIP(ctx context.Context, request *models.ListFloatingIP
 	result := []*models.FloatingIP{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -468,7 +468,7 @@ func (db *DB) deleteFloatingIP(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

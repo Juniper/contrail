@@ -127,11 +127,11 @@ func (db *DB) createBGPAsAService(
 		Type:   "bgp_as_a_service",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "bgp_as_a_service", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "bgp_as_a_service", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -306,26 +306,6 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 
 	}
 
-	if value, ok := values["ref_virtual_machine_interface"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.BGPAsAServiceVirtualMachineInterfaceRef{}
-			referenceModel.UUID = uuid
-			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_service_health_check"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -346,6 +326,26 @@ func scanBGPAsAService(values map[string]interface{}) (*models.BGPAsAService, er
 		}
 	}
 
+	if value, ok := values["ref_virtual_machine_interface"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.BGPAsAServiceVirtualMachineInterfaceRef{}
+			referenceModel.UUID = uuid
+			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
 	return m, nil
 }
 
@@ -361,7 +361,7 @@ func (db *DB) listBGPAsAService(ctx context.Context, request *models.ListBGPAsAS
 	result := []*models.BGPAsAService{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -458,7 +458,7 @@ func (db *DB) deleteBGPAsAService(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

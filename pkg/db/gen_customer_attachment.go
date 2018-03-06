@@ -112,11 +112,11 @@ func (db *DB) createCustomerAttachment(
 		Type:   "customer_attachment",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "customer_attachment", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "customer_attachment", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -310,7 +310,7 @@ func (db *DB) listCustomerAttachment(ctx context.Context, request *models.ListCu
 	result := []*models.CustomerAttachment{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -407,7 +407,7 @@ func (db *DB) deleteCustomerAttachment(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

@@ -96,11 +96,11 @@ func (db *DB) createAlarm(
 		Type:   "alarm",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "alarm", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "alarm", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -272,7 +272,7 @@ func (db *DB) listAlarm(ctx context.Context, request *models.ListAlarmRequest) (
 	result := []*models.Alarm{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -369,7 +369,7 @@ func (db *DB) deleteAlarm(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

@@ -16,7 +16,7 @@ func (r *Reporter) reportStatus(status string) {
 	//TODO(ijohnson) Implement status update
 }
 
-func (r *Reporter) reportLog(logMsg string) error {
-	//TODO(ijohnson) Implement status update
-	return nil
-}
+// func (r *Reporter) reportLog(logMsg string) error {
+// 	//TODO(ijohnson) Implement status update
+// 	return nil
+//}

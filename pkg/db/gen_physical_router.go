@@ -219,14 +219,6 @@ func (db *DB) createPhysicalRouter(
 		return errors.Wrap(err, "create failed")
 	}
 
-	for _, ref := range model.VirtualRouterRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_router"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualRouterRefs create failed")
-		}
-	}
-
 	for _, ref := range model.VirtualNetworkRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_network"), model.UUID, ref.UUID)
@@ -243,16 +235,24 @@ func (db *DB) createPhysicalRouter(
 		}
 	}
 
+	for _, ref := range model.VirtualRouterRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_router"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualRouterRefs create failed")
+		}
+	}
+
 	metaData := &MetaData{
 		UUID:   model.UUID,
 		Type:   "physical_router",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "physical_router", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "physical_router", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -972,7 +972,7 @@ func (db *DB) listPhysicalRouter(ctx context.Context, request *models.ListPhysic
 	result := []*models.PhysicalRouter{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -1069,7 +1069,7 @@ func (db *DB) deletePhysicalRouter(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

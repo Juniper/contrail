@@ -103,11 +103,11 @@ func (db *DB) createServiceConnectionModule(
 		Type:   "service_connection_module",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "service_connection_module", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "service_connection_module", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -293,7 +293,7 @@ func (db *DB) listServiceConnectionModule(ctx context.Context, request *models.L
 	result := []*models.ServiceConnectionModule{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -390,7 +390,7 @@ func (db *DB) deleteServiceConnectionModule(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

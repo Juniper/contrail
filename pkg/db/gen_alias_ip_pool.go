@@ -115,11 +115,11 @@ func (db *DB) createAliasIPPool(
 		Type:   "alias_ip_pool",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "alias_ip_pool", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "alias_ip_pool", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -430,7 +430,7 @@ func (db *DB) listAliasIPPool(ctx context.Context, request *models.ListAliasIPPo
 	result := []*models.AliasIPPool{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -527,7 +527,7 @@ func (db *DB) deleteAliasIPPool(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

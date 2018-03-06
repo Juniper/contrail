@@ -24,16 +24,16 @@ func FQNameToString(fqName []string) string {
 }
 
 //CreateMetaData creates fqname, uuid pair with type.
-func CreateMetaData(tx *sql.Tx, metaData *MetaData) error {
-	_, err := tx.Exec("insert into `metadata` (`uuid`,`type`,`fq_name`) values (?,?,?);",
+func (db *DB) CreateMetaData(tx *sql.Tx, metaData *MetaData) error {
+	_, err := tx.Exec("insert into metadata (uuid,type,fq_name) values (?,?,?);",
 		metaData.UUID, metaData.Type, FQNameToString(metaData.FQName))
 	return errors.Wrap(err, "failed to create metadata")
 }
 
 //GetMetaData gets metadata from database.
-func GetMetaData(tx *sql.Tx, uuid string, fqName []string) (*MetaData, error) {
+func (db *DB) GetMetaData(tx *sql.Tx, uuid string, fqName []string) (*MetaData, error) {
 	var query bytes.Buffer
-	query.WriteString("select `uuid`,`type`,`fq_name` from `metadata` where ")
+	query.WriteString("select uuid,type,fq_name from metadata where ")
 	var row *sql.Row
 
 	log.Debug(fqName)
@@ -55,7 +55,7 @@ func GetMetaData(tx *sql.Tx, uuid string, fqName []string) (*MetaData, error) {
 }
 
 //DeleteMetaData deltes metadata by uuid.
-func DeleteMetaData(tx *sql.Tx, uuid string) error {
-	_, err := tx.Exec("delete from `metadata` where uuid = ?", uuid)
+func (db *DB) DeleteMetaData(tx *sql.Tx, uuid string) error {
+	_, err := tx.Exec("delete from metadata where uuid = ?", uuid)
 	return errors.Wrap(err, "failed to delete metadata")
 }

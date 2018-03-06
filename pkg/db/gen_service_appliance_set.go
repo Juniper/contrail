@@ -123,11 +123,11 @@ func (db *DB) createServiceApplianceSet(
 		Type:   "service_appliance_set",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "service_appliance_set", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "service_appliance_set", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -468,7 +468,7 @@ func (db *DB) listServiceApplianceSet(ctx context.Context, request *models.ListS
 	result := []*models.ServiceApplianceSet{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -565,7 +565,7 @@ func (db *DB) deleteServiceApplianceSet(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

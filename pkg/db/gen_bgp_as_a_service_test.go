@@ -243,14 +243,6 @@ func TestBGPAsAService(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var ServiceHealthCheckref []interface{}
-	//    ServiceHealthCheckref = append(ServiceHealthCheckref, map[string]interface{}{"operation":"delete", "uuid":"bgp_as_a_service_service_health_check_ref_uuid", "to": []string{"test", "bgp_as_a_service_service_health_check_ref_uuid"}})
-	//    ServiceHealthCheckref = append(ServiceHealthCheckref, map[string]interface{}{"operation":"add", "uuid":"bgp_as_a_service_service_health_check_ref_uuid1", "to": []string{"test", "bgp_as_a_service_service_health_check_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ServiceHealthCheckRefs", ".", ServiceHealthCheckref)
-	//
 	//    var VirtualMachineInterfaceref []interface{}
 	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"bgp_as_a_service_virtual_machine_interface_ref_uuid", "to": []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid"}})
 	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"bgp_as_a_service_virtual_machine_interface_ref_uuid1", "to": []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid1"}})
@@ -258,6 +250,14 @@ func TestBGPAsAService(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
+	//
+	//    var ServiceHealthCheckref []interface{}
+	//    ServiceHealthCheckref = append(ServiceHealthCheckref, map[string]interface{}{"operation":"delete", "uuid":"bgp_as_a_service_service_health_check_ref_uuid", "to": []string{"test", "bgp_as_a_service_service_health_check_ref_uuid"}})
+	//    ServiceHealthCheckref = append(ServiceHealthCheckref, map[string]interface{}{"operation":"add", "uuid":"bgp_as_a_service_service_health_check_ref_uuid1", "to": []string{"test", "bgp_as_a_service_service_health_check_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "ServiceHealthCheckRefs", ".", ServiceHealthCheckref)
 	//
 	//
 	_, err = db.CreateBGPAsAService(ctx,
@@ -277,41 +277,6 @@ func TestBGPAsAService(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_bgp_as_a_service_virtual_machine_interface` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_virtual_machine_interface_ref_uuid")
-		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_virtual_machine_interface_ref_uuid1")
-		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_virtual_machine_interface_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteVirtualMachineInterface(ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref bgp_as_a_service_virtual_machine_interface_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteVirtualMachineInterface(ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref bgp_as_a_service_virtual_machine_interface_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteVirtualMachineInterface(
-		ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref bgp_as_a_service_virtual_machine_interface_ref_uuid2 failed", err)
-	}
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
@@ -346,6 +311,41 @@ func TestBGPAsAService(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref bgp_as_a_service_service_health_check_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_bgp_as_a_service_virtual_machine_interface` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
+		}
+		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_virtual_machine_interface_ref_uuid")
+		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_virtual_machine_interface_ref_uuid1")
+		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_virtual_machine_interface_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteVirtualMachineInterface(ctx,
+		&models.DeleteVirtualMachineInterfaceRequest{
+			ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref bgp_as_a_service_virtual_machine_interface_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteVirtualMachineInterface(ctx,
+		&models.DeleteVirtualMachineInterfaceRequest{
+			ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref bgp_as_a_service_virtual_machine_interface_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteVirtualMachineInterface(
+		ctx,
+		&models.DeleteVirtualMachineInterfaceRequest{
+			ID: "bgp_as_a_service_virtual_machine_interface_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref bgp_as_a_service_virtual_machine_interface_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

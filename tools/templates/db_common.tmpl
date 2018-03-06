@@ -3,6 +3,7 @@ package db
 func (db *DB) initQueryBuilders() {
     queryBuilders := map[string]*QueryBuilder{}
     db.queryBuilders = queryBuilders
+
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     queryBuilders["{{ schema.ID }}"] = NewQueryBuilder(db.Dialect,
        "{{ schema.ID }}", {{ schema.JSONSchema.GoName }}Fields,

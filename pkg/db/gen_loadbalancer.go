@@ -48,17 +48,17 @@ var LoadbalancerFields = []string{
 // LoadbalancerRefFields is db reference fields for Loadbalancer
 var LoadbalancerRefFields = map[string][]string{
 
+	"service_appliance_set": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
 	},
 
 	"service_instance": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"service_appliance_set": []string{
 	// <schema.Schema Value>
 
 	},
@@ -113,14 +113,6 @@ func (db *DB) createLoadbalancer(
 		return errors.Wrap(err, "create failed")
 	}
 
-	for _, ref := range model.ServiceApplianceSetRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_appliance_set"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
-		}
-	}
-
 	for _, ref := range model.VirtualMachineInterfaceRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
@@ -137,16 +129,24 @@ func (db *DB) createLoadbalancer(
 		}
 	}
 
+	for _, ref := range model.ServiceApplianceSetRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_appliance_set"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
+		}
+	}
+
 	metaData := &MetaData{
 		UUID:   model.UUID,
 		Type:   "loadbalancer",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "loadbalancer", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "loadbalancer", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -327,6 +327,26 @@ func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, erro
 
 	}
 
+	if value, ok := values["ref_service_instance"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LoadbalancerServiceInstanceRef{}
+			referenceModel.UUID = uuid
+			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_service_appliance_set"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -367,26 +387,6 @@ func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, erro
 		}
 	}
 
-	if value, ok := values["ref_service_instance"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LoadbalancerServiceInstanceRef{}
-			referenceModel.UUID = uuid
-			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
-
-		}
-	}
-
 	return m, nil
 }
 
@@ -402,7 +402,7 @@ func (db *DB) listLoadbalancer(ctx context.Context, request *models.ListLoadbala
 	result := []*models.Loadbalancer{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -499,7 +499,7 @@ func (db *DB) deleteLoadbalancer(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/generated/models"
-	"github.com/Juniper/contrail/pkg/schema"
+	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/models"
 )
 
 func (c *Cluster) getResource(resPath string, resID string) (map[string]interface{}, error) {
@@ -45,10 +45,10 @@ func (c *Cluster) interfaceToVrouterNode(vrouterNodes interface{}) ([]*models.Co
 				}
 				nodeInfo := &models.ContrailVrouterNodeNodeRef{}
 				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = schema.InterfaceToString(uuid)
+					nodeInfo.UUID = common.InterfaceToString(uuid)
 				}
 				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = schema.InterfaceToStringList(to)
+					nodeInfo.To = common.InterfaceToStringList(to)
 				}
 				nodesData = append(nodesData, nodeInfo)
 			}
@@ -58,7 +58,8 @@ func (c *Cluster) interfaceToVrouterNode(vrouterNodes interface{}) ([]*models.Co
 	}
 	return vrouterNodesData, nil
 }
-func (c *Cluster) interfaceToAnalyticsDBNode(analyticsDBNodes interface{}) ([]*models.ContrailAnalyticsDatabaseNode, error) {
+func (c *Cluster) interfaceToAnalyticsDBNode(
+	analyticsDBNodes interface{}) ([]*models.ContrailAnalyticsDatabaseNode, error) {
 	var analyticsDBNodesData []*models.ContrailAnalyticsDatabaseNode
 	for _, analyticsDBNode := range analyticsDBNodes.([]interface{}) {
 		analyticsDBNodeInfo := models.InterfaceToContrailAnalyticsDatabaseNode(analyticsDBNode.(map[string]interface{}))
@@ -78,10 +79,10 @@ func (c *Cluster) interfaceToAnalyticsDBNode(analyticsDBNodes interface{}) ([]*m
 				}
 				nodeInfo := &models.ContrailAnalyticsDatabaseNodeNodeRef{}
 				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = schema.InterfaceToString(uuid)
+					nodeInfo.UUID = common.InterfaceToString(uuid)
 				}
 				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = schema.InterfaceToStringList(to)
+					nodeInfo.To = common.InterfaceToStringList(to)
 				}
 				nodesData = append(nodesData, nodeInfo)
 			}
@@ -111,10 +112,10 @@ func (c *Cluster) interfaceToAnalyticsNode(analyticsNodes interface{}) ([]*model
 				}
 				nodeInfo := &models.ContrailAnalyticsNodeNodeRef{}
 				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = schema.InterfaceToString(uuid)
+					nodeInfo.UUID = common.InterfaceToString(uuid)
 				}
 				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = schema.InterfaceToStringList(to)
+					nodeInfo.To = common.InterfaceToStringList(to)
 				}
 				nodesData = append(nodesData, nodeInfo)
 			}
@@ -181,10 +182,10 @@ func (c *Cluster) interfaceToControlNode(controlNodes interface{}) ([]*models.Co
 				}
 				nodeInfo := &models.ContrailControlNodeNodeRef{}
 				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = schema.InterfaceToString(uuid)
+					nodeInfo.UUID = common.InterfaceToString(uuid)
 				}
 				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = schema.InterfaceToStringList(to)
+					nodeInfo.To = common.InterfaceToStringList(to)
 				}
 				nodesData = append(nodesData, nodeInfo)
 			}
@@ -215,10 +216,10 @@ func (c *Cluster) interfaceToConfigDBNode(configDBNodes interface{}) ([]*models.
 				}
 				nodeInfo := &models.ContrailConfigDatabaseNodeNodeRef{}
 				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = schema.InterfaceToString(uuid)
+					nodeInfo.UUID = common.InterfaceToString(uuid)
 				}
 				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = schema.InterfaceToStringList(to)
+					nodeInfo.To = common.InterfaceToStringList(to)
 				}
 				nodesData = append(nodesData, nodeInfo)
 			}
@@ -249,10 +250,10 @@ func (c *Cluster) interfaceToConfigNode(configNodes interface{}) ([]*models.Cont
 				}
 				nodeInfo := &models.ContrailConfigNodeNodeRef{}
 				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = schema.InterfaceToString(uuid)
+					nodeInfo.UUID = common.InterfaceToString(uuid)
 				}
 				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = schema.InterfaceToStringList(to)
+					nodeInfo.To = common.InterfaceToStringList(to)
 				}
 				nodesData = append(nodesData, nodeInfo)
 			}

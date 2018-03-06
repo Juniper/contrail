@@ -69,16 +69,6 @@ var ProjectFields = []string{
 // ProjectRefFields is db reference fields for Project
 var ProjectRefFields = map[string][]string{
 
-	"application_policy_set": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"floating_ip_pool": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"alias_ip_pool": []string{
 	// <schema.Schema Value>
 
@@ -88,6 +78,16 @@ var ProjectRefFields = map[string][]string{
 		// <schema.Schema Value>
 		"ip_prefix",
 		"ip_prefix_len",
+	},
+
+	"application_policy_set": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"floating_ip_pool": []string{
+	// <schema.Schema Value>
+
 	},
 }
 
@@ -1105,14 +1105,6 @@ func (db *DB) createProject(
 		return errors.Wrap(err, "create failed")
 	}
 
-	for _, ref := range model.FloatingIPPoolRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("floating_ip_pool"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "FloatingIPPoolRefs create failed")
-		}
-	}
-
 	for _, ref := range model.AliasIPPoolRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("alias_ip_pool"), model.UUID, ref.UUID)
@@ -1142,16 +1134,24 @@ func (db *DB) createProject(
 		}
 	}
 
+	for _, ref := range model.FloatingIPPoolRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("floating_ip_pool"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "FloatingIPPoolRefs create failed")
+		}
+	}
+
 	metaData := &MetaData{
 		UUID:   model.UUID,
 		Type:   "project",
 		FQName: model.FQName,
 	}
-	err = CreateMetaData(tx, metaData)
+	err = db.CreateMetaData(tx, metaData)
 	if err != nil {
 		return err
 	}
-	err = CreateSharing(tx, "project", model.UUID, model.GetPerms2().GetShare())
+	err = db.CreateSharing(tx, "project", model.UUID, model.GetPerms2().GetShare())
 	if err != nil {
 		return err
 	}
@@ -7244,7 +7244,7 @@ func (db *DB) listProject(ctx context.Context, request *models.ListProjectReques
 	result := []*models.Project{}
 
 	if spec.ParentFQName != nil {
-		parentMetaData, err := GetMetaData(tx, "", spec.ParentFQName)
+		parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't find parents")
 		}
@@ -7341,7 +7341,7 @@ func (db *DB) deleteProject(
 		return errors.Wrap(err, "delete failed")
 	}
 
-	err = DeleteMetaData(tx, uuid)
+	err = db.DeleteMetaData(tx, uuid)
 	log.WithFields(log.Fields{
 		"uuid": uuid,
 	}).Debug("deleted")
