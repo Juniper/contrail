@@ -51,12 +51,12 @@ var VirtualIPFields = []string{
 // VirtualIPRefFields is db reference fields for VirtualIP
 var VirtualIPRefFields = map[string][]string{
 
-	"loadbalancer_pool": []string{
+	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
 	},
 
-	"virtual_machine_interface": []string{
+	"loadbalancer_pool": []string{
 	// <schema.Schema Value>
 
 	},

@@ -621,6 +621,12 @@ type Service interface {
     GetOpenstackStorageNode(context.Context, *models.GetOpenstackStorageNodeRequest) (*models.GetOpenstackStorageNodeResponse, error)
     ListOpenstackStorageNode(context.Context, *models.ListOpenstackStorageNodeRequest) (*models.ListOpenstackStorageNodeResponse, error)
 
+    CreatePort(context.Context, *models.CreatePortRequest) (*models.CreatePortResponse, error)
+    UpdatePort(context.Context, *models.UpdatePortRequest) (*models.UpdatePortResponse, error)
+    DeletePort(context.Context, *models.DeletePortRequest) (*models.DeletePortResponse, error)
+    GetPort(context.Context, *models.GetPortRequest) (*models.GetPortResponse, error)
+    ListPort(context.Context, *models.ListPortRequest) (*models.ListPortResponse, error)
+
     CreateServer(context.Context, *models.CreateServerRequest) (*models.CreateServerResponse, error)
     UpdateServer(context.Context, *models.UpdateServerRequest) (*models.UpdateServerResponse, error)
     DeleteServer(context.Context, *models.DeleteServerRequest) (*models.DeleteServerResponse, error)
@@ -3827,6 +3833,37 @@ func (service *BaseService) ListOpenstackStorageNode(ctx context.Context, reques
         return nil, nil
     }
     return service.Next().ListOpenstackStorageNode(ctx, request)
+}
+
+func (service *BaseService) CreatePort(ctx context.Context, request *models.CreatePortRequest) (*models.CreatePortResponse, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().CreatePort(ctx, request)
+}
+func (service *BaseService) UpdatePort(ctx context.Context, request *models.UpdatePortRequest) (*models.UpdatePortResponse, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().UpdatePort(ctx, request)
+}
+func (service *BaseService) DeletePort(ctx context.Context, request *models.DeletePortRequest) (*models.DeletePortResponse, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().DeletePort(ctx, request)
+}
+func (service *BaseService) GetPort(ctx context.Context, request *models.GetPortRequest) (*models.GetPortResponse, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().GetPort(ctx, request)
+}
+func (service *BaseService) ListPort(ctx context.Context, request *models.ListPortRequest) (*models.ListPortResponse, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().ListPort(ctx, request)
 }
 
 func (service *BaseService) CreateServer(ctx context.Context, request *models.CreateServerRequest) (*models.CreateServerResponse, error) {

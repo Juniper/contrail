@@ -84,22 +84,22 @@ var FirewallRuleFields = []string{
 // FirewallRuleRefFields is db reference fields for FirewallRule
 var FirewallRuleRefFields = map[string][]string{
 
-	"service_group": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"address_group": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"security_logging_object": []string{
 	// <schema.Schema Value>
 
 	},
 
 	"virtual_network": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"service_group": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"address_group": []string{
 	// <schema.Schema Value>
 
 	},
@@ -192,6 +192,14 @@ func (db *DB) createFirewallRule(
 		return errors.Wrap(err, "create failed")
 	}
 
+	for _, ref := range model.VirtualNetworkRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_network"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs create failed")
+		}
+	}
+
 	for _, ref := range model.ServiceGroupRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_group"), model.UUID, ref.UUID)
@@ -213,14 +221,6 @@ func (db *DB) createFirewallRule(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("security_logging_object"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "SecurityLoggingObjectRefs create failed")
-		}
-	}
-
-	for _, ref := range model.VirtualNetworkRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_network"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs create failed")
 		}
 	}
 

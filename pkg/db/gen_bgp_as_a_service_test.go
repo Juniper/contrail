@@ -280,41 +280,6 @@ func TestBGPAsAService(t *testing.T) {
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_bgp_as_a_service_service_health_check` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing ServiceHealthCheckRefs delete statement failed")
-		}
-		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_service_health_check_ref_uuid")
-		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_service_health_check_ref_uuid1")
-		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_service_health_check_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "ServiceHealthCheckRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteServiceHealthCheck(ctx,
-		&models.DeleteServiceHealthCheckRequest{
-			ID: "bgp_as_a_service_service_health_check_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref bgp_as_a_service_service_health_check_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteServiceHealthCheck(ctx,
-		&models.DeleteServiceHealthCheckRequest{
-			ID: "bgp_as_a_service_service_health_check_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref bgp_as_a_service_service_health_check_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteServiceHealthCheck(
-		ctx,
-		&models.DeleteServiceHealthCheckRequest{
-			ID: "bgp_as_a_service_service_health_check_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref bgp_as_a_service_service_health_check_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_bgp_as_a_service_virtual_machine_interface` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
@@ -346,6 +311,41 @@ func TestBGPAsAService(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref bgp_as_a_service_virtual_machine_interface_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_bgp_as_a_service_service_health_check` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing ServiceHealthCheckRefs delete statement failed")
+		}
+		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_service_health_check_ref_uuid")
+		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_service_health_check_ref_uuid1")
+		_, err = stmt.Exec("bgp_as_a_service_dummy_uuid", "bgp_as_a_service_service_health_check_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "ServiceHealthCheckRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteServiceHealthCheck(ctx,
+		&models.DeleteServiceHealthCheckRequest{
+			ID: "bgp_as_a_service_service_health_check_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref bgp_as_a_service_service_health_check_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteServiceHealthCheck(ctx,
+		&models.DeleteServiceHealthCheckRequest{
+			ID: "bgp_as_a_service_service_health_check_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref bgp_as_a_service_service_health_check_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteServiceHealthCheck(
+		ctx,
+		&models.DeleteServiceHealthCheckRequest{
+			ID: "bgp_as_a_service_service_health_check_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref bgp_as_a_service_service_health_check_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

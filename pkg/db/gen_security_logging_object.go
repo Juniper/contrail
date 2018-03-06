@@ -60,9 +60,9 @@ var SecurityLoggingObjectBackRefFields = map[string][]string{}
 // SecurityLoggingObjectParentTypes is possible parents for SecurityLoggingObject
 var SecurityLoggingObjectParents = []string{
 
-	"project",
-
 	"global_vrouter_config",
+
+	"project",
 }
 
 // CreateSecurityLoggingObject inserts SecurityLoggingObject to DB

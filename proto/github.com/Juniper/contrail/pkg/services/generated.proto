@@ -622,6 +622,12 @@ rpc CreateOpenstackStorageNode (github.com.Juniper.contrail.pkg.models.CreateOpe
 rpc UpdateOpenstackStorageNode (github.com.Juniper.contrail.pkg.models.UpdateOpenstackStorageNodeRequest) returns (github.com.Juniper.contrail.pkg.models.UpdateOpenstackStorageNodeResponse);
 rpc DeleteOpenstackStorageNode (github.com.Juniper.contrail.pkg.models.DeleteOpenstackStorageNodeRequest) returns (github.com.Juniper.contrail.pkg.models.DeleteOpenstackStorageNodeResponse);
 
+rpc GetPort (github.com.Juniper.contrail.pkg.models.GetPortRequest) returns (github.com.Juniper.contrail.pkg.models.GetPortResponse);
+rpc ListPort (github.com.Juniper.contrail.pkg.models.ListPortRequest) returns (github.com.Juniper.contrail.pkg.models.ListPortResponse);
+rpc CreatePort (github.com.Juniper.contrail.pkg.models.CreatePortRequest) returns (github.com.Juniper.contrail.pkg.models.CreatePortResponse);
+rpc UpdatePort (github.com.Juniper.contrail.pkg.models.UpdatePortRequest) returns (github.com.Juniper.contrail.pkg.models.UpdatePortResponse);
+rpc DeletePort (github.com.Juniper.contrail.pkg.models.DeletePortRequest) returns (github.com.Juniper.contrail.pkg.models.DeletePortResponse);
+
 rpc GetServer (github.com.Juniper.contrail.pkg.models.GetServerRequest) returns (github.com.Juniper.contrail.pkg.models.GetServerResponse);
 rpc ListServer (github.com.Juniper.contrail.pkg.models.ListServerRequest) returns (github.com.Juniper.contrail.pkg.models.ListServerResponse);
 rpc CreateServer (github.com.Juniper.contrail.pkg.models.CreateServerRequest) returns (github.com.Juniper.contrail.pkg.models.CreateServerResponse);

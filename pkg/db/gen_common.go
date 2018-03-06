@@ -514,6 +514,11 @@ func (db *DB) initQueryBuilders() {
 		OpenstackStorageNodeRefFields,
 		OpenstackStorageNodeBackRefFields)
 
+	queryBuilders["port"] = NewQueryBuilder(db.Dialect,
+		"port", PortFields,
+		PortRefFields,
+		PortBackRefFields)
+
 	queryBuilders["server"] = NewQueryBuilder(db.Dialect,
 		"server", ServerFields,
 		ServerRefFields,

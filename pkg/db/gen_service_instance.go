@@ -54,14 +54,14 @@ var ServiceInstanceFields = []string{
 // ServiceInstanceRefFields is db reference fields for ServiceInstance
 var ServiceInstanceRefFields = map[string][]string{
 
-	"instance_ip": []string{
-		// <schema.Schema Value>
-		"interface_type",
-	},
-
 	"service_template": []string{
 	// <schema.Schema Value>
 
+	},
+
+	"instance_ip": []string{
+		// <schema.Schema Value>
+		"interface_type",
 	},
 }
 
@@ -145,14 +145,6 @@ func (db *DB) createServiceInstance(
 		return errors.Wrap(err, "create failed")
 	}
 
-	for _, ref := range model.ServiceTemplateRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_template"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceTemplateRefs create failed")
-		}
-	}
-
 	for _, ref := range model.InstanceIPRefs {
 
 		if ref.Attr == nil {
@@ -162,6 +154,14 @@ func (db *DB) createServiceInstance(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("instance_ip"), model.UUID, ref.UUID, string(ref.Attr.GetInterfaceType()))
 		if err != nil {
 			return errors.Wrap(err, "InstanceIPRefs create failed")
+		}
+	}
+
+	for _, ref := range model.ServiceTemplateRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_template"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceTemplateRefs create failed")
 		}
 	}
 

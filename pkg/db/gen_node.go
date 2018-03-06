@@ -29,9 +29,6 @@ var NodeFields = []string{
 	"parent_uuid",
 	"parent_type",
 	"mac_address",
-	"ipmi_username",
-	"ipmi_password",
-	"ipmi_address",
 	"ip_address",
 	"user_visible",
 	"permissions_owner_access",
@@ -48,7 +45,16 @@ var NodeFields = []string{
 	"gcp_machine_type",
 	"gcp_image",
 	"fq_name",
+	"ipmi_username",
+	"ipmi_password",
+	"ipmi_address",
+	"deploy_ramdisk",
+	"deploy_kernel",
 	"display_name",
+	"memory_mb",
+	"disk_gb",
+	"cpu_count",
+	"cpu_arch",
 	"aws_instance_type",
 	"aws_ami",
 	"key_value_pair",
@@ -64,7 +70,38 @@ var NodeRefFields = map[string][]string{
 }
 
 // NodeBackRefFields is db back reference fields for Node
-var NodeBackRefFields = map[string][]string{}
+var NodeBackRefFields = map[string][]string{
+
+	"port": []string{
+		"uuid",
+		"pxe_enabled",
+		"share",
+		"owner_access",
+		"owner",
+		"global_access",
+		"parent_uuid",
+		"parent_type",
+		"node_uuid",
+		"mac_address",
+		"switch_info",
+		"switch_id",
+		"port_id",
+		"user_visible",
+		"permissions_owner_access",
+		"permissions_owner",
+		"other_access",
+		"group_access",
+		"group",
+		"last_modified",
+		"enable",
+		"description",
+		"creator",
+		"created",
+		"fq_name",
+		"display_name",
+		"key_value_pair",
+	},
+}
 
 // NodeParentTypes is possible parents for Node
 var NodeParents = []string{}
@@ -91,9 +128,6 @@ func (db *DB) createNode(
 		string(model.GetParentUUID()),
 		string(model.GetParentType()),
 		string(model.GetMacAddress()),
-		string(model.GetIpmiUsername()),
-		string(model.GetIpmiPassword()),
-		string(model.GetIpmiAddress()),
 		string(model.GetIPAddress()),
 		bool(model.GetIDPerms().GetUserVisible()),
 		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
@@ -110,7 +144,16 @@ func (db *DB) createNode(
 		string(model.GetGCPMachineType()),
 		string(model.GetGCPImage()),
 		common.MustJSON(model.GetFQName()),
+		string(model.GetDriverInfo().GetIpmiUsername()),
+		string(model.GetDriverInfo().GetIpmiPassword()),
+		string(model.GetDriverInfo().GetIpmiAddress()),
+		string(model.GetDriverInfo().GetDeployRamdisk()),
+		string(model.GetDriverInfo().GetDeployKernel()),
 		string(model.GetDisplayName()),
+		int(model.GetBMProperties().GetMemoryMB()),
+		int(model.GetBMProperties().GetDiskGB()),
+		int(model.GetBMProperties().GetCPUCount()),
+		string(model.GetBMProperties().GetCPUArch()),
 		string(model.GetAwsInstanceType()),
 		string(model.GetAwsAmi()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
@@ -232,24 +275,6 @@ func scanNode(values map[string]interface{}) (*models.Node, error) {
 
 	}
 
-	if value, ok := values["ipmi_username"]; ok {
-
-		m.IpmiUsername = common.InterfaceToString(value)
-
-	}
-
-	if value, ok := values["ipmi_password"]; ok {
-
-		m.IpmiPassword = common.InterfaceToString(value)
-
-	}
-
-	if value, ok := values["ipmi_address"]; ok {
-
-		m.IpmiAddress = common.InterfaceToString(value)
-
-	}
-
 	if value, ok := values["ip_address"]; ok {
 
 		m.IPAddress = common.InterfaceToString(value)
@@ -346,9 +371,63 @@ func scanNode(values map[string]interface{}) (*models.Node, error) {
 
 	}
 
+	if value, ok := values["ipmi_username"]; ok {
+
+		m.DriverInfo.IpmiUsername = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["ipmi_password"]; ok {
+
+		m.DriverInfo.IpmiPassword = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["ipmi_address"]; ok {
+
+		m.DriverInfo.IpmiAddress = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["deploy_ramdisk"]; ok {
+
+		m.DriverInfo.DeployRamdisk = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["deploy_kernel"]; ok {
+
+		m.DriverInfo.DeployKernel = common.InterfaceToString(value)
+
+	}
+
 	if value, ok := values["display_name"]; ok {
 
 		m.DisplayName = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["memory_mb"]; ok {
+
+		m.BMProperties.MemoryMB = common.InterfaceToInt64(value)
+
+	}
+
+	if value, ok := values["disk_gb"]; ok {
+
+		m.BMProperties.DiskGB = common.InterfaceToInt64(value)
+
+	}
+
+	if value, ok := values["cpu_count"]; ok {
+
+		m.BMProperties.CPUCount = common.InterfaceToInt64(value)
+
+	}
+
+	if value, ok := values["cpu_arch"]; ok {
+
+		m.BMProperties.CPUArch = common.InterfaceToString(value)
 
 	}
 
@@ -386,6 +465,187 @@ func scanNode(values map[string]interface{}) (*models.Node, error) {
 			referenceModel := &models.NodeKeypairRef{}
 			referenceModel.UUID = uuid
 			m.KeypairRefs = append(m.KeypairRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["backref_port"]; ok {
+		var childResources []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &childResources)
+		for _, childResource := range childResources {
+			childResourceMap, ok := childResource.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(childResourceMap["uuid"])
+			if uuid == "" {
+				continue
+			}
+			childModel := models.MakePort()
+			m.Ports = append(m.Ports, childModel)
+
+			if propertyValue, ok := childResourceMap["uuid"]; ok && propertyValue != nil {
+
+				childModel.UUID = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["pxe_enabled"]; ok && propertyValue != nil {
+
+				childModel.PxeEnabled = common.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["share"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Perms2.Share)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.OwnerAccess = common.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["owner"]; ok && propertyValue != nil {
+
+				childModel.Perms2.Owner = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["global_access"]; ok && propertyValue != nil {
+
+				childModel.Perms2.GlobalAccess = common.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_uuid"]; ok && propertyValue != nil {
+
+				childModel.ParentUUID = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["parent_type"]; ok && propertyValue != nil {
+
+				childModel.ParentType = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["node_uuid"]; ok && propertyValue != nil {
+
+				childModel.NodeUUID = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["mac_address"]; ok && propertyValue != nil {
+
+				childModel.MacAddress = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["switch_info"]; ok && propertyValue != nil {
+
+				childModel.LocalLinkConnection.SwitchInfo = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["switch_id"]; ok && propertyValue != nil {
+
+				childModel.LocalLinkConnection.SwitchID = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["port_id"]; ok && propertyValue != nil {
+
+				childModel.LocalLinkConnection.PortID = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["user_visible"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.UserVisible = common.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OwnerAccess = common.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["permissions_owner"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Owner = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["other_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.OtherAccess = common.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group_access"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.GroupAccess = common.InterfaceToInt64(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["group"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Permissions.Group = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["last_modified"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.LastModified = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["enable"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Enable = common.InterfaceToBool(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["description"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Description = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["creator"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Creator = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["created"]; ok && propertyValue != nil {
+
+				childModel.IDPerms.Created = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["fq_name"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.FQName)
+
+			}
+
+			if propertyValue, ok := childResourceMap["display_name"]; ok && propertyValue != nil {
+
+				childModel.DisplayName = common.InterfaceToString(propertyValue)
+
+			}
+
+			if propertyValue, ok := childResourceMap["key_value_pair"]; ok && propertyValue != nil {
+
+				json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel.Annotations.KeyValuePair)
+
+			}
 
 		}
 	}

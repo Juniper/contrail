@@ -33,9 +33,8 @@ func MakeNode() *Node {
 		GCPMachineType:           "",
 		PrivateMachineProperties: "",
 		PrivateMachineState:      "",
-		IpmiAddress:              "",
-		IpmiPassword:             "",
-		IpmiUsername:             "",
+		DriverInfo:               MakeDriverInfo(),
+		BMProperties:             MakeBaremetalProperties(),
 	}
 }
 
@@ -70,9 +69,8 @@ func InterfaceToNode(i interface{}) *Node {
 		GCPMachineType:           common.InterfaceToString(m["gcp_machine_type"]),
 		PrivateMachineProperties: common.InterfaceToString(m["private_machine_properties"]),
 		PrivateMachineState:      common.InterfaceToString(m["private_machine_state"]),
-		IpmiAddress:              common.InterfaceToString(m["ipmi_address"]),
-		IpmiPassword:             common.InterfaceToString(m["ipmi_password"]),
-		IpmiUsername:             common.InterfaceToString(m["ipmi_username"]),
+		DriverInfo:               InterfaceToDriverInfo(m["driver_info"]),
+		BMProperties:             InterfaceToBaremetalProperties(m["bm_properties"]),
 	}
 }
 

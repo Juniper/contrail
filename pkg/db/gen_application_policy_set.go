@@ -42,14 +42,14 @@ var ApplicationPolicySetFields = []string{
 // ApplicationPolicySetRefFields is db reference fields for ApplicationPolicySet
 var ApplicationPolicySetRefFields = map[string][]string{
 
-	"firewall_policy": []string{
-		// <schema.Schema Value>
-		"sequence",
-	},
-
 	"global_vrouter_config": []string{
 	// <schema.Schema Value>
 
+	},
+
+	"firewall_policy": []string{
+		// <schema.Schema Value>
+		"sequence",
 	},
 }
 

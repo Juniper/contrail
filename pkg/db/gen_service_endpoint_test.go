@@ -42,31 +42,6 @@ func TestServiceEndpoint(t *testing.T) {
 
 	// Create referred objects
 
-	var ServiceConnectionModulecreateref []*models.ServiceEndpointServiceConnectionModuleRef
-	var ServiceConnectionModulerefModel *models.ServiceConnectionModule
-	ServiceConnectionModulerefModel = models.MakeServiceConnectionModule()
-	ServiceConnectionModulerefModel.UUID = "service_endpoint_service_connection_module_ref_uuid"
-	ServiceConnectionModulerefModel.FQName = []string{"test", "service_endpoint_service_connection_module_ref_uuid"}
-	_, err = db.CreateServiceConnectionModule(ctx, &models.CreateServiceConnectionModuleRequest{
-		ServiceConnectionModule: ServiceConnectionModulerefModel,
-	})
-	ServiceConnectionModulerefModel.UUID = "service_endpoint_service_connection_module_ref_uuid1"
-	ServiceConnectionModulerefModel.FQName = []string{"test", "service_endpoint_service_connection_module_ref_uuid1"}
-	_, err = db.CreateServiceConnectionModule(ctx, &models.CreateServiceConnectionModuleRequest{
-		ServiceConnectionModule: ServiceConnectionModulerefModel,
-	})
-	ServiceConnectionModulerefModel.UUID = "service_endpoint_service_connection_module_ref_uuid2"
-	ServiceConnectionModulerefModel.FQName = []string{"test", "service_endpoint_service_connection_module_ref_uuid2"}
-	_, err = db.CreateServiceConnectionModule(ctx, &models.CreateServiceConnectionModuleRequest{
-		ServiceConnectionModule: ServiceConnectionModulerefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	ServiceConnectionModulecreateref = append(ServiceConnectionModulecreateref, &models.ServiceEndpointServiceConnectionModuleRef{UUID: "service_endpoint_service_connection_module_ref_uuid", To: []string{"test", "service_endpoint_service_connection_module_ref_uuid"}})
-	ServiceConnectionModulecreateref = append(ServiceConnectionModulecreateref, &models.ServiceEndpointServiceConnectionModuleRef{UUID: "service_endpoint_service_connection_module_ref_uuid2", To: []string{"test", "service_endpoint_service_connection_module_ref_uuid2"}})
-	model.ServiceConnectionModuleRefs = ServiceConnectionModulecreateref
-
 	var PhysicalRoutercreateref []*models.ServiceEndpointPhysicalRouterRef
 	var PhysicalRouterrefModel *models.PhysicalRouter
 	PhysicalRouterrefModel = models.MakePhysicalRouter()
@@ -116,6 +91,31 @@ func TestServiceEndpoint(t *testing.T) {
 	ServiceObjectcreateref = append(ServiceObjectcreateref, &models.ServiceEndpointServiceObjectRef{UUID: "service_endpoint_service_object_ref_uuid", To: []string{"test", "service_endpoint_service_object_ref_uuid"}})
 	ServiceObjectcreateref = append(ServiceObjectcreateref, &models.ServiceEndpointServiceObjectRef{UUID: "service_endpoint_service_object_ref_uuid2", To: []string{"test", "service_endpoint_service_object_ref_uuid2"}})
 	model.ServiceObjectRefs = ServiceObjectcreateref
+
+	var ServiceConnectionModulecreateref []*models.ServiceEndpointServiceConnectionModuleRef
+	var ServiceConnectionModulerefModel *models.ServiceConnectionModule
+	ServiceConnectionModulerefModel = models.MakeServiceConnectionModule()
+	ServiceConnectionModulerefModel.UUID = "service_endpoint_service_connection_module_ref_uuid"
+	ServiceConnectionModulerefModel.FQName = []string{"test", "service_endpoint_service_connection_module_ref_uuid"}
+	_, err = db.CreateServiceConnectionModule(ctx, &models.CreateServiceConnectionModuleRequest{
+		ServiceConnectionModule: ServiceConnectionModulerefModel,
+	})
+	ServiceConnectionModulerefModel.UUID = "service_endpoint_service_connection_module_ref_uuid1"
+	ServiceConnectionModulerefModel.FQName = []string{"test", "service_endpoint_service_connection_module_ref_uuid1"}
+	_, err = db.CreateServiceConnectionModule(ctx, &models.CreateServiceConnectionModuleRequest{
+		ServiceConnectionModule: ServiceConnectionModulerefModel,
+	})
+	ServiceConnectionModulerefModel.UUID = "service_endpoint_service_connection_module_ref_uuid2"
+	ServiceConnectionModulerefModel.FQName = []string{"test", "service_endpoint_service_connection_module_ref_uuid2"}
+	_, err = db.CreateServiceConnectionModule(ctx, &models.CreateServiceConnectionModuleRequest{
+		ServiceConnectionModule: ServiceConnectionModulerefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	ServiceConnectionModulecreateref = append(ServiceConnectionModulecreateref, &models.ServiceEndpointServiceConnectionModuleRef{UUID: "service_endpoint_service_connection_module_ref_uuid", To: []string{"test", "service_endpoint_service_connection_module_ref_uuid"}})
+	ServiceConnectionModulecreateref = append(ServiceConnectionModulecreateref, &models.ServiceEndpointServiceConnectionModuleRef{UUID: "service_endpoint_service_connection_module_ref_uuid2", To: []string{"test", "service_endpoint_service_connection_module_ref_uuid2"}})
+	model.ServiceConnectionModuleRefs = ServiceConnectionModulecreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -244,14 +244,6 @@ func TestServiceEndpoint(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var ServiceConnectionModuleref []interface{}
-	//    ServiceConnectionModuleref = append(ServiceConnectionModuleref, map[string]interface{}{"operation":"delete", "uuid":"service_endpoint_service_connection_module_ref_uuid", "to": []string{"test", "service_endpoint_service_connection_module_ref_uuid"}})
-	//    ServiceConnectionModuleref = append(ServiceConnectionModuleref, map[string]interface{}{"operation":"add", "uuid":"service_endpoint_service_connection_module_ref_uuid1", "to": []string{"test", "service_endpoint_service_connection_module_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ServiceConnectionModuleRefs", ".", ServiceConnectionModuleref)
-	//
 	//    var PhysicalRouterref []interface{}
 	//    PhysicalRouterref = append(PhysicalRouterref, map[string]interface{}{"operation":"delete", "uuid":"service_endpoint_physical_router_ref_uuid", "to": []string{"test", "service_endpoint_physical_router_ref_uuid"}})
 	//    PhysicalRouterref = append(PhysicalRouterref, map[string]interface{}{"operation":"add", "uuid":"service_endpoint_physical_router_ref_uuid1", "to": []string{"test", "service_endpoint_physical_router_ref_uuid1"}})
@@ -267,6 +259,14 @@ func TestServiceEndpoint(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "ServiceObjectRefs", ".", ServiceObjectref)
+	//
+	//    var ServiceConnectionModuleref []interface{}
+	//    ServiceConnectionModuleref = append(ServiceConnectionModuleref, map[string]interface{}{"operation":"delete", "uuid":"service_endpoint_service_connection_module_ref_uuid", "to": []string{"test", "service_endpoint_service_connection_module_ref_uuid"}})
+	//    ServiceConnectionModuleref = append(ServiceConnectionModuleref, map[string]interface{}{"operation":"add", "uuid":"service_endpoint_service_connection_module_ref_uuid1", "to": []string{"test", "service_endpoint_service_connection_module_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "ServiceConnectionModuleRefs", ".", ServiceConnectionModuleref)
 	//
 	//
 	_, err = db.CreateServiceEndpoint(ctx,
@@ -286,6 +286,41 @@ func TestServiceEndpoint(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_service_endpoint_service_connection_module` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing ServiceConnectionModuleRefs delete statement failed")
+		}
+		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_connection_module_ref_uuid")
+		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_connection_module_ref_uuid1")
+		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_connection_module_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "ServiceConnectionModuleRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteServiceConnectionModule(ctx,
+		&models.DeleteServiceConnectionModuleRequest{
+			ID: "service_endpoint_service_connection_module_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref service_endpoint_service_connection_module_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteServiceConnectionModule(ctx,
+		&models.DeleteServiceConnectionModuleRequest{
+			ID: "service_endpoint_service_connection_module_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref service_endpoint_service_connection_module_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteServiceConnectionModule(
+		ctx,
+		&models.DeleteServiceConnectionModuleRequest{
+			ID: "service_endpoint_service_connection_module_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref service_endpoint_service_connection_module_ref_uuid2 failed", err)
+	}
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
@@ -355,41 +390,6 @@ func TestServiceEndpoint(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref service_endpoint_service_object_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_service_endpoint_service_connection_module` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing ServiceConnectionModuleRefs delete statement failed")
-		}
-		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_connection_module_ref_uuid")
-		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_connection_module_ref_uuid1")
-		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_connection_module_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "ServiceConnectionModuleRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteServiceConnectionModule(ctx,
-		&models.DeleteServiceConnectionModuleRequest{
-			ID: "service_endpoint_service_connection_module_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref service_endpoint_service_connection_module_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteServiceConnectionModule(ctx,
-		&models.DeleteServiceConnectionModuleRequest{
-			ID: "service_endpoint_service_connection_module_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref service_endpoint_service_connection_module_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteServiceConnectionModule(
-		ctx,
-		&models.DeleteServiceConnectionModuleRequest{
-			ID: "service_endpoint_service_connection_module_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref service_endpoint_service_connection_module_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

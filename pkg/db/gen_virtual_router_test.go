@@ -42,31 +42,6 @@ func TestVirtualRouter(t *testing.T) {
 
 	// Create referred objects
 
-	var NetworkIpamcreateref []*models.VirtualRouterNetworkIpamRef
-	var NetworkIpamrefModel *models.NetworkIpam
-	NetworkIpamrefModel = models.MakeNetworkIpam()
-	NetworkIpamrefModel.UUID = "virtual_router_network_ipam_ref_uuid"
-	NetworkIpamrefModel.FQName = []string{"test", "virtual_router_network_ipam_ref_uuid"}
-	_, err = db.CreateNetworkIpam(ctx, &models.CreateNetworkIpamRequest{
-		NetworkIpam: NetworkIpamrefModel,
-	})
-	NetworkIpamrefModel.UUID = "virtual_router_network_ipam_ref_uuid1"
-	NetworkIpamrefModel.FQName = []string{"test", "virtual_router_network_ipam_ref_uuid1"}
-	_, err = db.CreateNetworkIpam(ctx, &models.CreateNetworkIpamRequest{
-		NetworkIpam: NetworkIpamrefModel,
-	})
-	NetworkIpamrefModel.UUID = "virtual_router_network_ipam_ref_uuid2"
-	NetworkIpamrefModel.FQName = []string{"test", "virtual_router_network_ipam_ref_uuid2"}
-	_, err = db.CreateNetworkIpam(ctx, &models.CreateNetworkIpamRequest{
-		NetworkIpam: NetworkIpamrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	NetworkIpamcreateref = append(NetworkIpamcreateref, &models.VirtualRouterNetworkIpamRef{UUID: "virtual_router_network_ipam_ref_uuid", To: []string{"test", "virtual_router_network_ipam_ref_uuid"}})
-	NetworkIpamcreateref = append(NetworkIpamcreateref, &models.VirtualRouterNetworkIpamRef{UUID: "virtual_router_network_ipam_ref_uuid2", To: []string{"test", "virtual_router_network_ipam_ref_uuid2"}})
-	model.NetworkIpamRefs = NetworkIpamcreateref
-
 	var VirtualMachinecreateref []*models.VirtualRouterVirtualMachineRef
 	var VirtualMachinerefModel *models.VirtualMachine
 	VirtualMachinerefModel = models.MakeVirtualMachine()
@@ -91,6 +66,31 @@ func TestVirtualRouter(t *testing.T) {
 	VirtualMachinecreateref = append(VirtualMachinecreateref, &models.VirtualRouterVirtualMachineRef{UUID: "virtual_router_virtual_machine_ref_uuid", To: []string{"test", "virtual_router_virtual_machine_ref_uuid"}})
 	VirtualMachinecreateref = append(VirtualMachinecreateref, &models.VirtualRouterVirtualMachineRef{UUID: "virtual_router_virtual_machine_ref_uuid2", To: []string{"test", "virtual_router_virtual_machine_ref_uuid2"}})
 	model.VirtualMachineRefs = VirtualMachinecreateref
+
+	var NetworkIpamcreateref []*models.VirtualRouterNetworkIpamRef
+	var NetworkIpamrefModel *models.NetworkIpam
+	NetworkIpamrefModel = models.MakeNetworkIpam()
+	NetworkIpamrefModel.UUID = "virtual_router_network_ipam_ref_uuid"
+	NetworkIpamrefModel.FQName = []string{"test", "virtual_router_network_ipam_ref_uuid"}
+	_, err = db.CreateNetworkIpam(ctx, &models.CreateNetworkIpamRequest{
+		NetworkIpam: NetworkIpamrefModel,
+	})
+	NetworkIpamrefModel.UUID = "virtual_router_network_ipam_ref_uuid1"
+	NetworkIpamrefModel.FQName = []string{"test", "virtual_router_network_ipam_ref_uuid1"}
+	_, err = db.CreateNetworkIpam(ctx, &models.CreateNetworkIpamRequest{
+		NetworkIpam: NetworkIpamrefModel,
+	})
+	NetworkIpamrefModel.UUID = "virtual_router_network_ipam_ref_uuid2"
+	NetworkIpamrefModel.FQName = []string{"test", "virtual_router_network_ipam_ref_uuid2"}
+	_, err = db.CreateNetworkIpam(ctx, &models.CreateNetworkIpamRequest{
+		NetworkIpam: NetworkIpamrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	NetworkIpamcreateref = append(NetworkIpamcreateref, &models.VirtualRouterNetworkIpamRef{UUID: "virtual_router_network_ipam_ref_uuid", To: []string{"test", "virtual_router_network_ipam_ref_uuid"}})
+	NetworkIpamcreateref = append(NetworkIpamcreateref, &models.VirtualRouterNetworkIpamRef{UUID: "virtual_router_network_ipam_ref_uuid2", To: []string{"test", "virtual_router_network_ipam_ref_uuid2"}})
+	model.NetworkIpamRefs = NetworkIpamcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()

@@ -1367,6 +1367,19 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 				Data: response.OpenstackStorageNode,
 			})
 
+		case "port":
+			request := &models.CreatePortRequest{
+				Port: models.InterfaceToPort(resource.Data),
+			}
+			response, err := service.CreatePort(ctx, request)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			responses = append(responses, &RESTResource{
+				Kind: resource.Kind,
+				Data: response.Port,
+			})
+
 		case "server":
 			request := &models.CreateServerRequest{
 				Server: models.InterfaceToServer(resource.Data),
@@ -2026,6 +2039,12 @@ func (service *ContrailService) RegisterRESTAPI(e *echo.Echo) {
 	e.PUT("/openstack-storage-node/:id", service.RESTUpdateOpenstackStorageNode)
 	e.GET("/openstack-storage-node/:id", service.RESTGetOpenstackStorageNode)
 	e.DELETE("/openstack-storage-node/:id", service.RESTDeleteOpenstackStorageNode)
+
+	e.POST("/ports", service.RESTCreatePort)
+	e.GET("/ports", service.RESTListPort)
+	e.PUT("/port/:id", service.RESTUpdatePort)
+	e.GET("/port/:id", service.RESTGetPort)
+	e.DELETE("/port/:id", service.RESTDeletePort)
 
 	e.POST("/openserverservers", service.RESTCreateServer)
 	e.GET("/openserverservers", service.RESTListServer)

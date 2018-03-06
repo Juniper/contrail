@@ -32993,9 +32993,113 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "bm_properties": {
+                        "description": "Details of baremetal hardware for scheduler",
+                        "type": "object",
+                        "properties": {
+                            "cpu_arch": {
+                                "description": "Architecture of the baremetal server",
+                                "default": "x86_64",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "cpu_count": {
+                                "description": "Number of CPU cores on the baremetal",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "disk_gb": {
+                                "description": "Disk size of root device (in GB)",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "memory_mb": {
+                                "description": "RAM of the Baremetal server (in MB)",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "propertiesOrder": [
+                            "cpu_count",
+                            "cpu_arch",
+                            "disk_gb",
+                            "memory_mb"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "display_name": {
                         "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                         "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "driver_info": {
+                        "description": "Details of the driver for power management",
+                        "type": "object",
+                        "properties": {
+                            "deploy_kernel": {
+                                "description": "UUID of the deploy kernel",
+                                "type": "string",
+                                "permission": [
+                                    "create",
+                                    "update"
+                                ],
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "deploy_ramdisk": {
+                                "description": "UUID of the deploy initrd/ramdisk",
+                                "type": "string",
+                                "permission": [
+                                    "create",
+                                    "update"
+                                ],
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "ipmi_address": {
+                                "description": "IPMI address of the server to manage boot device and power management",
+                                "type": "string",
+                                "permission": [
+                                    "create",
+                                    "update"
+                                ],
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "ipmi_password": {
+                                "description": "Password to access IPMI",
+                                "type": "string",
+                                "permission": [
+                                    "create",
+                                    "update"
+                                ],
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "ipmi_username": {
+                                "description": "Username to access IPMI",
+                                "type": "string",
+                                "permission": [
+                                    "create",
+                                    "update"
+                                ],
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "propertiesOrder": [
+                            "ipmi_address",
+                            "ipmi_username",
+                            "ipmi_password",
+                            "deploy_kernel",
+                            "deploy_ramdisk"
+                        ],
                         "minimum": 0,
                         "maximum": 0
                     },
@@ -33125,42 +33229,6 @@
                         "title": "IP Address",
                         "description": "IP Address",
                         "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "ipmi_address": {
-                        "title": "Power Management IP",
-                        "description": "IP address used for power management (IPMI)",
-                        "default": "",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "ipmi_password": {
-                        "title": "Power Management UserPassword",
-                        "description": "UserPassword for PowerManagement",
-                        "default": "ADMIN",
-                        "type": "string",
-                        "permission": [
-                            "create",
-                            "update"
-                        ],
-                        "minimum": 0,
-                        "maximum": 0
-                    },
-                    "ipmi_username": {
-                        "title": "Power Management User Name",
-                        "description": "User Name for PowerManagement",
-                        "default": "ADMIN",
                         "type": "string",
                         "permission": [
                             "create",
@@ -33308,8 +33376,7 @@
                         ],
                         "enum": [
                             "private",
-                            "virtual",
-                            "container"
+                            "baremetal"
                         ],
                         "minimum": 0,
                         "maximum": 0
@@ -33355,9 +33422,8 @@
                     "gcp_machine_type",
                     "private_machine_properties",
                     "private_machine_state",
-                    "ipmi_address",
-                    "ipmi_password",
-                    "ipmi_username"
+                    "driver_info",
+                    "bm_properties"
                 ],
                 "minimum": 0,
                 "maximum": 0
@@ -34919,6 +34985,292 @@
             "extends": [
                 "base",
                 "has_status"
+            ]
+        },
+        {
+            "id": "port",
+            "plural": "ports",
+            "type": "object",
+            "title": "Node Port",
+            "description": "Ports of node",
+            "parents": {
+                "node": {
+                    "description": "Parent of this port.",
+                    "operations": "CRUD",
+                    "presence": "optional",
+                    "attr": null
+                }
+            },
+            "prefix": "/",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "annotations": {
+                        "description": "Dictionary of arbitrary (key, value) on a resource.",
+                        "type": "object",
+                        "properties": {
+                            "key_value_pair": {
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "display_name": {
+                        "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "fq_name": {
+                        "description": "FQ Name of the object",
+                        "type": "array",
+                        "minimum": 0,
+                        "maximum": 0,
+                        "items": {
+                            "type": "string",
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    },
+                    "id_perms": {
+                        "description": "System maintained identity, time  and permissions data.",
+                        "type": "object",
+                        "properties": {
+                            "created": {
+                                "description": "Time when this object was created",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "creator": {
+                                "description": "Id of tenant who created this object",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "description": {
+                                "description": "User provided text",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "enable": {
+                                "description": "Administratively Enable/Disable this object",
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "last_modified": {
+                                "description": "Time when this object was created",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "permissions": {
+                                "description": "No longer used, will be removed",
+                                "type": "object",
+                                "properties": {
+                                    "group": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "group_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "other_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner": {
+                                        "type": "string",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    },
+                                    "owner_access": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 0
+                                    }
+                                },
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "user_visible": {
+                                "description": "System created internal objects will have this flag set and will not be visible",
+                                "type": "boolean",
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "local_link_connection": {
+                        "description": "The Port binding profile",
+                        "type": "object",
+                        "properties": {
+                            "port_id": {
+                                "description": "Port ID of switch where Baremetal is connected",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "switch_id": {
+                                "description": "Switch hostname",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "switch_info": {
+                                "description": "UUID of the Physical-Port with contrail database",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            }
+                        },
+                        "propertiesOrder": [
+                            "switch_id",
+                            "port_id",
+                            "switch_info"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "mac_address": {
+                        "description": "Mac Address of the NIC in Node",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "detail"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "node_uuid": {
+                        "description": "UUID of the parent node where this port is connected",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_type": {
+                        "description": "Parent resource type",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "parent_uuid": {
+                        "description": "UUID of the parent object",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "perms2": {
+                        "description": "Permissions data for role based access.",
+                        "type": "object",
+                        "properties": {
+                            "global_access": {
+                                "description": "Globally(others) shared object and permissions for others of the object",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner": {
+                                "description": "Owner tenant of the object",
+                                "type": "string",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "owner_access": {
+                                "description": "Owner permissions of the object",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 0
+                            },
+                            "share": {
+                                "description": "Selectively shared object, List of (tenant, permissions)",
+                                "type": "array",
+                                "minimum": 0,
+                                "maximum": 0,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tenant": {
+                                            "description": "Name of tenant with whom the object is shared",
+                                            "type": "string",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        },
+                                        "tenant_access": {
+                                            "description": "Allowed permissions in sharing",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 0
+                                        }
+                                    },
+                                    "minimum": 0,
+                                    "maximum": 0
+                                }
+                            }
+                        },
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "pxe_enabled": {
+                        "description": "Indicates whether PXE is enabled or disabled on the Port.",
+                        "type": "boolean",
+                        "minimum": 0,
+                        "maximum": 0
+                    },
+                    "uuid": {
+                        "description": "UUID of the object, system automatically allocates one if not provided",
+                        "type": "string",
+                        "minimum": 0,
+                        "maximum": 0
+                    }
+                },
+                "propertiesOrder": [
+                    "uuid",
+                    "parent_uuid",
+                    "parent_type",
+                    "fq_name",
+                    "id_perms",
+                    "display_name",
+                    "annotations",
+                    "perms2",
+                    "mac_address",
+                    "node_uuid",
+                    "pxe_enabled",
+                    "local_link_connection"
+                ],
+                "minimum": 0,
+                "maximum": 0
+            },
+            "extends": [
+                "base"
             ]
         },
         {

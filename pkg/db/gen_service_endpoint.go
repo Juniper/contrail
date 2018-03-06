@@ -96,14 +96,6 @@ func (db *DB) createServiceEndpoint(
 		return errors.Wrap(err, "create failed")
 	}
 
-	for _, ref := range model.ServiceObjectRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_object"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceObjectRefs create failed")
-		}
-	}
-
 	for _, ref := range model.ServiceConnectionModuleRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_connection_module"), model.UUID, ref.UUID)
@@ -117,6 +109,14 @@ func (db *DB) createServiceEndpoint(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("physical_router"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PhysicalRouterRefs create failed")
+		}
+	}
+
+	for _, ref := range model.ServiceObjectRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_object"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceObjectRefs create failed")
 		}
 	}
 
@@ -268,26 +268,6 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 
 	}
 
-	if value, ok := values["ref_service_connection_module"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ServiceEndpointServiceConnectionModuleRef{}
-			referenceModel.UUID = uuid
-			m.ServiceConnectionModuleRefs = append(m.ServiceConnectionModuleRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_physical_router"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -324,6 +304,26 @@ func scanServiceEndpoint(values map[string]interface{}) (*models.ServiceEndpoint
 			referenceModel := &models.ServiceEndpointServiceObjectRef{}
 			referenceModel.UUID = uuid
 			m.ServiceObjectRefs = append(m.ServiceObjectRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_service_connection_module"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ServiceEndpointServiceConnectionModuleRef{}
+			referenceModel.UUID = uuid
+			m.ServiceConnectionModuleRefs = append(m.ServiceConnectionModuleRefs, referenceModel)
 
 		}
 	}

@@ -41,14 +41,14 @@ var FirewallPolicyFields = []string{
 // FirewallPolicyRefFields is db reference fields for FirewallPolicy
 var FirewallPolicyRefFields = map[string][]string{
 
-	"firewall_rule": []string{
-		// <schema.Schema Value>
-		"sequence",
-	},
-
 	"security_logging_object": []string{
 	// <schema.Schema Value>
 
+	},
+
+	"firewall_rule": []string{
+		// <schema.Schema Value>
+		"sequence",
 	},
 }
 

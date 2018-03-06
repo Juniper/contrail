@@ -13721,6 +13721,199 @@
                 }
             }
         },
+        "/port/{id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Show resource",
+                        "schema": {
+                            "$ref": "#/definitions/PortAPISingleType"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/PortAPISingleType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Update a resource",
+                        "schema": {
+                            "$ref": "#/definitions/PortAPISingleType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "delete": {
+                "responses": {
+                    "204": {
+                        "description": "Delete a resource"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            }
+        },
+        "/ports": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "parent_uuid",
+                        "name": "parent_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "parent’s fully-qualified name delimited by ‘:’",
+                        "name": "parent_fq_name_str",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Commna separated object uuids \u003cexample1_uuid\u003e,\u003cexample2_uuid\u003e",
+                        "name": "pobj_uuids",
+                        "in": "query"
+                    },
+                    {
+                        "description": "True if you need detailed data",
+                        "name": "detail",
+                        "in": "query"
+                    },
+                    {
+                        "description": "back_ref_uuid",
+                        "name": "back_ref_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Pagenation start marker",
+                        "name": "page_marker",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Pagenation limit",
+                        "name": "page_limit",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Return only resource counts",
+                        "name": "count",
+                        "in": "query"
+                    },
+                    {
+                        "description": " Comma separated object field list you are interested in",
+                        "name": "fields",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Included shared object in response.",
+                        "name": "shared",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Comma separated fileter list. Example check==a,check==b,name==Bob",
+                        "name": "filters",
+                        "in": "query"
+                    },
+                    {
+                        "name": "exclude_hrefs",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "list a resource",
+                        "schema": {
+                            "$ref": "#/definitions/PortAPIListType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/PortAPISingleType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Create a resource",
+                        "schema": {
+                            "$ref": "#/definitions/PortAPISingleType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Resource not found"
+                    },
+                    "409": {
+                        "description": "Data conflict"
+                    },
+                    "500": {
+                        "description": "Server Side Error"
+                    }
+                }
+            }
+        },
         "/project/{id}": {
             "get": {
                 "responses": {
@@ -28665,11 +28858,19 @@
                     "default": "t2.micro",
                     "items": null
                 },
+                "bm_properties": {
+                    "description": "Details of baremetal hardware for scheduler",
+                    "$ref": "#/definitions/BaremetalProperties"
+                },
                 "display_name": {
                     "id": "display_name",
                     "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
                     "type": "string",
                     "items": null
+                },
+                "driver_info": {
+                    "description": "Details of the driver for power management",
+                    "$ref": "#/definitions/DriverInfo"
                 },
                 "fq_name": {
                     "id": "fq_name",
@@ -28712,30 +28913,6 @@
                     "type": "string",
                     "title": "IP Address",
                     "default": "",
-                    "items": null
-                },
-                "ipmi_address": {
-                    "id": "ipmi_address",
-                    "description": "IP address used for power management (IPMI)",
-                    "type": "string",
-                    "title": "Power Management IP",
-                    "default": "",
-                    "items": null
-                },
-                "ipmi_password": {
-                    "id": "ipmi_password",
-                    "description": "UserPassword for PowerManagement",
-                    "type": "string",
-                    "title": "Power Management UserPassword",
-                    "default": "ADMIN",
-                    "items": null
-                },
-                "ipmi_username": {
-                    "id": "ipmi_username",
-                    "description": "User Name for PowerManagement",
-                    "type": "string",
-                    "title": "Power Management User Name",
-                    "default": "ADMIN",
                     "items": null
                 },
                 "keypair_ref": {
@@ -28783,6 +28960,13 @@
                 "perms2": {
                     "description": "Permissions data for role based access.",
                     "$ref": "#/definitions/PermType2"
+                },
+                "ports": {
+                    "description": "Parent of this port.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PortAPIType"
+                    }
                 },
                 "private_machine_properties": {
                     "id": "private_machine_properties",
@@ -30379,6 +30563,96 @@
                     "items": {
                         "$ref": "#/definitions/PortType"
                     }
+                }
+            }
+        },
+        "PortAPIListType": {
+            "properties": {
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PortAPIType"
+                    }
+                }
+            }
+        },
+        "PortAPISingleType": {
+            "properties": {
+                "port": {
+                    "$ref": "#/definitions/PortAPIType"
+                }
+            }
+        },
+        "PortAPIType": {
+            "type": "object",
+            "items": null,
+            "properties": {
+                "annotations": {
+                    "description": "Dictionary of arbitrary (key, value) on a resource.",
+                    "$ref": "#/definitions/KeyValuePairs"
+                },
+                "display_name": {
+                    "id": "display_name",
+                    "description": "Display name user configured string(name) that can be updated any time. Used as openstack name.",
+                    "type": "string",
+                    "items": null
+                },
+                "fq_name": {
+                    "id": "fq_name",
+                    "description": "FQ Name of the object",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "items": null
+                    }
+                },
+                "id_perms": {
+                    "description": "System maintained identity, time  and permissions data.",
+                    "$ref": "#/definitions/IdPermsType"
+                },
+                "local_link_connection": {
+                    "description": "The Port binding profile",
+                    "$ref": "#/definitions/LocalLinkConnection"
+                },
+                "mac_address": {
+                    "id": "mac_address",
+                    "description": "Mac Address of the NIC in Node",
+                    "type": "string",
+                    "items": null
+                },
+                "node_uuid": {
+                    "id": "node_uuid",
+                    "description": "UUID of the parent node where this port is connected",
+                    "type": "string",
+                    "items": null
+                },
+                "parent_type": {
+                    "id": "parent_type",
+                    "description": "Parent resource type",
+                    "type": "string",
+                    "items": null
+                },
+                "parent_uuid": {
+                    "id": "parent_uuid",
+                    "description": "UUID of the parent object",
+                    "type": "string",
+                    "items": null
+                },
+                "perms2": {
+                    "description": "Permissions data for role based access.",
+                    "$ref": "#/definitions/PermType2"
+                },
+                "pxe_enabled": {
+                    "id": "pxe_enabled",
+                    "description": "Indicates whether PXE is enabled or disabled on the Port.",
+                    "type": "boolean",
+                    "items": null
+                },
+                "uuid": {
+                    "id": "uuid",
+                    "description": "UUID of the object, system automatically allocates one if not provided",
+                    "type": "string",
+                    "items": null
                 }
             }
         },

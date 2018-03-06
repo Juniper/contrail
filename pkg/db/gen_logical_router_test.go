@@ -42,6 +42,31 @@ func TestLogicalRouter(t *testing.T) {
 
 	// Create referred objects
 
+	var BGPVPNcreateref []*models.LogicalRouterBGPVPNRef
+	var BGPVPNrefModel *models.BGPVPN
+	BGPVPNrefModel = models.MakeBGPVPN()
+	BGPVPNrefModel.UUID = "logical_router_bgpvpn_ref_uuid"
+	BGPVPNrefModel.FQName = []string{"test", "logical_router_bgpvpn_ref_uuid"}
+	_, err = db.CreateBGPVPN(ctx, &models.CreateBGPVPNRequest{
+		BGPVPN: BGPVPNrefModel,
+	})
+	BGPVPNrefModel.UUID = "logical_router_bgpvpn_ref_uuid1"
+	BGPVPNrefModel.FQName = []string{"test", "logical_router_bgpvpn_ref_uuid1"}
+	_, err = db.CreateBGPVPN(ctx, &models.CreateBGPVPNRequest{
+		BGPVPN: BGPVPNrefModel,
+	})
+	BGPVPNrefModel.UUID = "logical_router_bgpvpn_ref_uuid2"
+	BGPVPNrefModel.FQName = []string{"test", "logical_router_bgpvpn_ref_uuid2"}
+	_, err = db.CreateBGPVPN(ctx, &models.CreateBGPVPNRequest{
+		BGPVPN: BGPVPNrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	BGPVPNcreateref = append(BGPVPNcreateref, &models.LogicalRouterBGPVPNRef{UUID: "logical_router_bgpvpn_ref_uuid", To: []string{"test", "logical_router_bgpvpn_ref_uuid"}})
+	BGPVPNcreateref = append(BGPVPNcreateref, &models.LogicalRouterBGPVPNRef{UUID: "logical_router_bgpvpn_ref_uuid2", To: []string{"test", "logical_router_bgpvpn_ref_uuid2"}})
+	model.BGPVPNRefs = BGPVPNcreateref
+
 	var RouteTargetcreateref []*models.LogicalRouterRouteTargetRef
 	var RouteTargetrefModel *models.RouteTarget
 	RouteTargetrefModel = models.MakeRouteTarget()
@@ -191,31 +216,6 @@ func TestLogicalRouter(t *testing.T) {
 	PhysicalRoutercreateref = append(PhysicalRoutercreateref, &models.LogicalRouterPhysicalRouterRef{UUID: "logical_router_physical_router_ref_uuid", To: []string{"test", "logical_router_physical_router_ref_uuid"}})
 	PhysicalRoutercreateref = append(PhysicalRoutercreateref, &models.LogicalRouterPhysicalRouterRef{UUID: "logical_router_physical_router_ref_uuid2", To: []string{"test", "logical_router_physical_router_ref_uuid2"}})
 	model.PhysicalRouterRefs = PhysicalRoutercreateref
-
-	var BGPVPNcreateref []*models.LogicalRouterBGPVPNRef
-	var BGPVPNrefModel *models.BGPVPN
-	BGPVPNrefModel = models.MakeBGPVPN()
-	BGPVPNrefModel.UUID = "logical_router_bgpvpn_ref_uuid"
-	BGPVPNrefModel.FQName = []string{"test", "logical_router_bgpvpn_ref_uuid"}
-	_, err = db.CreateBGPVPN(ctx, &models.CreateBGPVPNRequest{
-		BGPVPN: BGPVPNrefModel,
-	})
-	BGPVPNrefModel.UUID = "logical_router_bgpvpn_ref_uuid1"
-	BGPVPNrefModel.FQName = []string{"test", "logical_router_bgpvpn_ref_uuid1"}
-	_, err = db.CreateBGPVPN(ctx, &models.CreateBGPVPNRequest{
-		BGPVPN: BGPVPNrefModel,
-	})
-	BGPVPNrefModel.UUID = "logical_router_bgpvpn_ref_uuid2"
-	BGPVPNrefModel.FQName = []string{"test", "logical_router_bgpvpn_ref_uuid2"}
-	_, err = db.CreateBGPVPN(ctx, &models.CreateBGPVPNRequest{
-		BGPVPN: BGPVPNrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	BGPVPNcreateref = append(BGPVPNcreateref, &models.LogicalRouterBGPVPNRef{UUID: "logical_router_bgpvpn_ref_uuid", To: []string{"test", "logical_router_bgpvpn_ref_uuid"}})
-	BGPVPNcreateref = append(BGPVPNcreateref, &models.LogicalRouterBGPVPNRef{UUID: "logical_router_bgpvpn_ref_uuid2", To: []string{"test", "logical_router_bgpvpn_ref_uuid2"}})
-	model.BGPVPNRefs = BGPVPNcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -435,76 +435,6 @@ func TestLogicalRouter(t *testing.T) {
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_logical_router_virtual_network` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing VirtualNetworkRefs delete statement failed")
-		}
-		_, err = stmt.Exec("logical_router_dummy_uuid", "logical_router_virtual_network_ref_uuid")
-		_, err = stmt.Exec("logical_router_dummy_uuid", "logical_router_virtual_network_ref_uuid1")
-		_, err = stmt.Exec("logical_router_dummy_uuid", "logical_router_virtual_network_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteVirtualNetwork(ctx,
-		&models.DeleteVirtualNetworkRequest{
-			ID: "logical_router_virtual_network_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref logical_router_virtual_network_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteVirtualNetwork(ctx,
-		&models.DeleteVirtualNetworkRequest{
-			ID: "logical_router_virtual_network_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref logical_router_virtual_network_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteVirtualNetwork(
-		ctx,
-		&models.DeleteVirtualNetworkRequest{
-			ID: "logical_router_virtual_network_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref logical_router_virtual_network_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_logical_router_physical_router` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing PhysicalRouterRefs delete statement failed")
-		}
-		_, err = stmt.Exec("logical_router_dummy_uuid", "logical_router_physical_router_ref_uuid")
-		_, err = stmt.Exec("logical_router_dummy_uuid", "logical_router_physical_router_ref_uuid1")
-		_, err = stmt.Exec("logical_router_dummy_uuid", "logical_router_physical_router_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "PhysicalRouterRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeletePhysicalRouter(ctx,
-		&models.DeletePhysicalRouterRequest{
-			ID: "logical_router_physical_router_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref logical_router_physical_router_ref_uuid  failed", err)
-	}
-	_, err = db.DeletePhysicalRouter(ctx,
-		&models.DeletePhysicalRouterRequest{
-			ID: "logical_router_physical_router_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref logical_router_physical_router_ref_uuid1  failed", err)
-	}
-	_, err = db.DeletePhysicalRouter(
-		ctx,
-		&models.DeletePhysicalRouterRequest{
-			ID: "logical_router_physical_router_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref logical_router_physical_router_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_logical_router_bgpvpn` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing BGPVPNRefs delete statement failed")
@@ -676,6 +606,76 @@ func TestLogicalRouter(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref logical_router_route_table_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_logical_router_virtual_network` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing VirtualNetworkRefs delete statement failed")
+		}
+		_, err = stmt.Exec("logical_router_dummy_uuid", "logical_router_virtual_network_ref_uuid")
+		_, err = stmt.Exec("logical_router_dummy_uuid", "logical_router_virtual_network_ref_uuid1")
+		_, err = stmt.Exec("logical_router_dummy_uuid", "logical_router_virtual_network_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteVirtualNetwork(ctx,
+		&models.DeleteVirtualNetworkRequest{
+			ID: "logical_router_virtual_network_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref logical_router_virtual_network_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteVirtualNetwork(ctx,
+		&models.DeleteVirtualNetworkRequest{
+			ID: "logical_router_virtual_network_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref logical_router_virtual_network_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteVirtualNetwork(
+		ctx,
+		&models.DeleteVirtualNetworkRequest{
+			ID: "logical_router_virtual_network_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref logical_router_virtual_network_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_logical_router_physical_router` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing PhysicalRouterRefs delete statement failed")
+		}
+		_, err = stmt.Exec("logical_router_dummy_uuid", "logical_router_physical_router_ref_uuid")
+		_, err = stmt.Exec("logical_router_dummy_uuid", "logical_router_physical_router_ref_uuid1")
+		_, err = stmt.Exec("logical_router_dummy_uuid", "logical_router_physical_router_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "PhysicalRouterRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeletePhysicalRouter(ctx,
+		&models.DeletePhysicalRouterRequest{
+			ID: "logical_router_physical_router_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref logical_router_physical_router_ref_uuid  failed", err)
+	}
+	_, err = db.DeletePhysicalRouter(ctx,
+		&models.DeletePhysicalRouterRequest{
+			ID: "logical_router_physical_router_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref logical_router_physical_router_ref_uuid1  failed", err)
+	}
+	_, err = db.DeletePhysicalRouter(
+		ctx,
+		&models.DeletePhysicalRouterRequest{
+			ID: "logical_router_physical_router_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref logical_router_physical_router_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

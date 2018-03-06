@@ -149,18 +149,6 @@ func TestNode(t *testing.T) {
 	//
 	//
 	//
-	//    common.SetValueByPath(updateMap, ".IpmiUsername", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IpmiPassword", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IpmiAddress", ".", "test")
-	//
-	//
-	//
 	//    common.SetValueByPath(updateMap, ".IPAddress", ".", "test")
 	//
 	//
@@ -231,7 +219,43 @@ func TestNode(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(updateMap, ".DriverInfo.IpmiUsername", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".DriverInfo.IpmiPassword", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".DriverInfo.IpmiAddress", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".DriverInfo.DeployRamdisk", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".DriverInfo.DeployKernel", ".", "test")
+	//
+	//
+	//
 	//    common.SetValueByPath(updateMap, ".DisplayName", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".BMProperties.MemoryMB", ".", 1.0)
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".BMProperties.DiskGB", ".", 1.0)
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".BMProperties.CPUCount", ".", 1.0)
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".BMProperties.CPUArch", ".", "test")
 	//
 	//
 	//
