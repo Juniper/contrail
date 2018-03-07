@@ -11,16 +11,28 @@ tasks:
 - schema_id: contrail_cluster
   common:
   - vars:
-      dir: "/opt/cluster/{{ resource.schema_id }}/{{ resource.uuid }}"
+      dir: "/home/ijohnson/cluster/{{ resource.schema_id }}/{{ resource.uuid }}"
   on_create:
+  - debug: "AGENT creating {{ dir }}"
   - command: mkdir -p "{{ dir }}"
+  - debug: "AGENT created {{ dir }}"
   - template:
       src: "./pkg/cluster/configs/contrail-cluster-config.tmpl"
       dest: "{{ dir }}/contrail-cluster-config.yml"
-  - command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
-    #- command: "go run cmd/contrail/main.go cluster -c {{ dir }}/contrail-cluster-config.yml"
+    #- command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
+  - debug: "AGENT creating cluster(contrail cluster -c {{ dir }}/contrail-cluster-config.yml)"
+  - command: "go run cmd/contrail/main.go cluster -c {{ dir }}/contrail-cluster-config.yml"
+  - debug: "AGENT cluster create complete"
   on_update:
-  - command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
-    #- command: "go run cmd/contrail/main.go cluster -c {{ dir }}/contrail-cluster-config.yml"
+  - debug: "AGENT updating cluster(contrail cluster -c {{ dir }}/contrail-cluster-config.yml)"
+      #- command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
+  - command: "go run cmd/contrail/main.go cluster -c {{ dir }}/contrail-cluster-config.yml"
+  - debug: "AGENT cluster update complete"
   on_delete:
+  - debug: "AGENT deleting cluster(contrail cluster -c {{ dir }}/contrail-cluster-config.yml)"
+      #- command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
+  - command: "go run cmd/contrail/main.go cluster -c {{ dir }}/contrail-cluster-config.yml"
+  - debug: "AGENT cluster delete complete"
+  - debug: "AGENT deleting {{ dir }}"
   - command: "rm -rf  {{ dir }}"
+  - debug: "AGENT deleted {{ dir }"

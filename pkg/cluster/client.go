@@ -12,7 +12,7 @@ import (
 func (c *Cluster) getResource(resPath string, resID string) (map[string]interface{}, error) {
 	var rawResInfo map[string]interface{}
 	resURI := fmt.Sprintf("%s/%s", resPath, resID)
-	c.log.Info("Reading: %s", resURI)
+	c.log.Infof("Reading: %s", resURI)
 	_, err := c.APIServer.Read(resURI, &rawResInfo)
 	if err != nil {
 		return nil, err

@@ -7,6 +7,7 @@ insecure: true
 backend: file
 watcher: polling
 schema_root: /public
+log_level: debug
 tasks:
 - schema_id: private_cloud_
   common:

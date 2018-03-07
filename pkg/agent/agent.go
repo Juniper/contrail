@@ -11,6 +11,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/common"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
@@ -37,6 +38,8 @@ type Config struct {
 	InSecure bool `yaml:"insecure"`
 	// Server schema path
 	SchemaRoot string `yaml:"schema_root"`
+	// Logging level
+	LogLevel string `yaml:"log_level"`
 	// Backend specifies backend to be used (values: "file").
 	Backend string `yaml:"backend"`
 	// Watcher specifies resource event watching strategy to be used (values: "polling").
@@ -90,7 +93,6 @@ func NewAgent(c *Config) (*Agent, error) {
 		}
 	}
 	s.Init()
-
 	serverSchema := filepath.Join(serverSchemaRoot, serverSchemaFile)
 	if c.SchemaRoot != "" {
 		serverSchema = filepath.Join(c.SchemaRoot, serverSchemaFile)
@@ -105,13 +107,17 @@ func NewAgent(c *Config) (*Agent, error) {
 		return nil, err
 	}
 
+	// create logger for agent
+	logger := pkglog.NewLogger("agent")
+	pkglog.SetLogLevel(logger, c.LogLevel)
+
 	return &Agent{
 		APIServer: s,
 		config:    c,
 		backend:   b,
 		serverAPI: api,
 		schemas:   buildSchemaMapping(api.Schemas),
-		log:       pkglog.NewLogger("agent"),
+		log:       logger,
 	}, nil
 }
 
@@ -138,6 +144,9 @@ func buildSchemaMapping(schemas []*schema.Schema) map[string]*schema.Schema {
 
 // Watch starts watching for events on API Server resources.
 func (a *Agent) Watch() error {
+	// configure global log level
+	common.SetLogLevel()
+
 	a.log.Info("Starting watching for events")
 	if a.config.AuthURL != "" {
 		err := a.APIServer.Login()

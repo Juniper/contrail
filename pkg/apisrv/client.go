@@ -193,6 +193,9 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 	if err != nil {
 		return nil, err
 	}
+	log.WithFields(log.Fields{
+		"data": output,
+	}).Debug("API Server output")
 	return resp, err
 }
 

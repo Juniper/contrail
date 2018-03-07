@@ -6,6 +6,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/common"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/sirupsen/logrus"
@@ -30,6 +31,8 @@ type Config struct {
 	ClusterID string `yaml:"cluster_id,omitempty"`
 	// Action to the performed with the cluster (values: create, update, delete).
 	Action string `yaml:"cluster_action,omitempty"`
+	// Logging level
+	LogLevel string `yaml:"log_level"`
 }
 
 // Cluster represents Cluster service.
@@ -91,16 +94,21 @@ func NewCluster(c *Config) (*Cluster, error) {
 		return nil, fmt.Errorf("Cluster ID not specified in the config for oneshot manager")
 	}
 
+	// create logger for cluster
+	logger := pkglog.NewLogger("cluster")
+	pkglog.SetLogLevel(logger, c.LogLevel)
+
 	return &Cluster{
 		managerType: t,
 		APIServer:   s,
 		config:      c,
-		log:         pkglog.NewLogger("cluster"),
+		log:         logger,
 	}, nil
 }
 
 // Manage starts managing the clusters.
 func (c *Cluster) Manage() error {
+	common.SetLogLevel()
 	c.log.Info("Start managing contrail clusters")
 	if c.config.AuthURL != "" {
 		err := c.APIServer.Login()

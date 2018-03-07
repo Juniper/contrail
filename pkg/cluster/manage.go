@@ -31,9 +31,13 @@ func (o *oneShotManager) manage() error {
 }
 
 func newOneShotManager(cluster *Cluster) (*oneShotManager, error) {
+	// create logger for oneshot manager
+	logger := pkglog.NewLogger("oneshot-manager")
+	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
+
 	return &oneShotManager{
 		cluster: cluster,
-		log:     pkglog.NewLogger("oneshot-manager"),
+		log:     logger,
 	}, nil
 }
 

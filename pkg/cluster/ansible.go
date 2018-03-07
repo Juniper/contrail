@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/flosch/pongo2"
 )
@@ -25,14 +26,15 @@ func (a *ansibleProvisioner) getAnsibleRepoDir() string {
 }
 
 func (a *ansibleProvisioner) cloneAnsibleDeployer() error {
-	a.log.Info("Clean working dir to clone %s", defaultAnsibleRepo)
+	a.log.Infof("Clean working dir to clone %s", defaultAnsibleRepo)
 	repoDir := a.getAnsibleRepoDir()
 	err := os.RemoveAll(repoDir)
 	if err != nil {
 		return err
 	}
-	a.log.Info("Cloning repo:%s", defaultAnsibleRepoURL)
-	cmd := exec.Command("git", "clone", defaultAnsibleRepoURL, repoDir)
+	a.log.Infof("Cloning repo:%s into %s", defaultAnsibleRepoURL, repoDir)
+	args := []string{"clone", defaultAnsibleRepoURL, repoDir}
+	cmd := exec.Command("git", args...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err
@@ -40,10 +42,11 @@ func (a *ansibleProvisioner) cloneAnsibleDeployer() error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
+	// Report progress log periodically to stdout/db
+	go a.reporter.reportLog(stdout)
 	if err := cmd.Wait(); err != nil {
 		return err
 	}
-	a.log.Info(stdout)
 	a.log.Info("Cloning completed")
 
 	return nil
@@ -69,12 +72,14 @@ func (a *ansibleProvisioner) createInventory() error {
 
 func (a *ansibleProvisioner) playBook() error {
 	repoDir := a.getAnsibleRepoDir()
-	a.log.Info("Playing instance provisioning playbook")
-	cmd := exec.Command(
-		"ansible-playbook",
-		"-i", "inventory/",
-		"config_file="+a.getInstanceFile(),
-		defaultInstanceProvPlay)
+	cmdline := "ansible-playbook"
+	args := []string{"-i", "inventory/", "-e",
+		"config_file=" + a.getInstanceFile(),
+		defaultInstanceProvPlay}
+
+	a.log.Infof("Playing instance provisioning playbook: %s %s",
+		cmdline, strings.Join(args, " "))
+	cmd := exec.Command(cmdline, args...)
 	cmd.Dir = repoDir
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -83,18 +88,20 @@ func (a *ansibleProvisioner) playBook() error {
 	if err = cmd.Start(); err != nil {
 		return err
 	}
+
+	// Report progress log periodically to stdout/db
+	go a.reporter.reportLog(stdout)
+
 	if err = cmd.Wait(); err != nil {
 		return err
 	}
-	a.log.Info(stdout)
 	a.log.Info("Instance provisioning play completed")
 
-	a.log.Info("Playing instance configuration playbook")
-	cmd = exec.Command(
-		"ansible-playbook",
-		"-i", "inventory/",
-		"config_file="+a.getInstanceFile(),
-		defaultInstanceConfPlay)
+	args = args[:len(args)-1]
+	args = append(args, defaultInstanceConfPlay)
+	a.log.Infof("Playing instance configuration playbook: %s %s",
+		cmdline, strings.Join(args, " "))
+	cmd = exec.Command(cmdline, args...)
 	cmd.Dir = repoDir
 	stdout, err = cmd.StdoutPipe()
 	if err != nil {
@@ -103,18 +110,20 @@ func (a *ansibleProvisioner) playBook() error {
 	if err = cmd.Start(); err != nil {
 		return err
 	}
+
+	// Report progress log periodically to stdout/db
+	go a.reporter.reportLog(stdout)
+
 	if err = cmd.Wait(); err != nil {
 		return err
 	}
-	a.log.Info(stdout)
 	a.log.Info("Instance configuration play completed")
 
-	a.log.Info("Playing contrail cluster provisioning playbook")
-	cmd = exec.Command(
-		"ansible-playbook",
-		"-i", "inventory/",
-		"config_file="+a.getInstanceFile(),
-		defaultClusterProvPlay)
+	args = args[:len(args)-1]
+	args = append(args, defaultClusterProvPlay)
+	a.log.Infof("Playing contrail cluster provisioning playbook: %s %s",
+		cmdline, strings.Join(args, " "))
+	cmd = exec.Command(cmdline, args...)
 	cmd.Dir = repoDir
 	stdout, err = cmd.StdoutPipe()
 	if err != nil {
@@ -123,16 +132,19 @@ func (a *ansibleProvisioner) playBook() error {
 	if err = cmd.Start(); err != nil {
 		return err
 	}
+
+	// Report progress log periodically to stdout/db
+	go a.reporter.reportLog(stdout)
+
 	if err = cmd.Wait(); err != nil {
 		return err
 	}
-	a.log.Info(stdout)
 	a.log.Info("Instance configuration play completed")
 	return nil
 }
 
 func (a *ansibleProvisioner) createCluster() error {
-	a.log.Info("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
+	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
 	a.reporter.reportStatus("Intializing")
 
 	err := a.createWorkingDir()
@@ -164,7 +176,7 @@ func (a *ansibleProvisioner) createCluster() error {
 }
 
 func (a *ansibleProvisioner) updateCluster() error {
-	a.log.Info("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
+	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
 	a.reporter.reportStatus("update_progress")
 	err := a.playBook()
 	if err != nil {
@@ -177,7 +189,7 @@ func (a *ansibleProvisioner) updateCluster() error {
 }
 
 func (a *ansibleProvisioner) deleteCluster() error {
-	a.log.Info("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
+	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
 	err := a.playBook()
 	if err != nil {
 		return err
