@@ -67,6 +67,9 @@ func (c *Client) Init() {
 
 // Login refreshes authentication token
 func (c *Client) Login() error {
+	if c.AuthURL == "" {
+		return nil
+	}
 	authURL := c.AuthURL + "/auth/tokens"
 	authRequest := &keystone.AuthRequest{
 		Auth: &keystone.Auth{

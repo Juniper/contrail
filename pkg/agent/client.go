@@ -7,10 +7,14 @@ import (
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/schema"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 )
 
-const uuidKey = "uuid"
+const (
+	uuidKey  = "uuid"
+	syncPath = "/sync"
+)
 
 func (a *Agent) show(schemaID, uuid string) (interface{}, error) {
 	s, ok := a.schemas[schemaID]
@@ -130,17 +134,10 @@ func (a *Agent) isCompoundProperty(propertyID string, value interface{}) bool {
 	return false
 }
 
-func (a *Agent) resourceSync(schemaID string, data interface{}) (interface{}, error) {
-	uuid, err := uuidFromRawProperties(data)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = a.show(schemaID, uuid)
-	if err == nil {
-		return a.update(schemaID, data)
-	}
-	return a.create(schemaID, data)
+func (a *Agent) resourceSync(request *services.RESTSyncRequest) (interface{}, error) {
+	var response interface{}
+	_, err := a.APIServer.Create(syncPath, request, &response)
+	return response, err
 }
 
 func uuidFromRawProperties(rawProperties interface{}) (string, error) {
