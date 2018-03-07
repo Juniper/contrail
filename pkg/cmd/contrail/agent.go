@@ -19,12 +19,17 @@ var agentCmd = &cobra.Command{
 }
 
 func startAgent() {
-	a, err := agent.NewAgentByFile(configFile)
+	config := configFile
+	if agentConfigFile != "" {
+		config = agentConfigFile
+	}
+	a, err := agent.NewAgentByFile(config)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	if err := a.Watch(); err != nil {
-		log.Fatal(err)
+	for {
+		if err := a.Watch(); err != nil {
+			log.Error(err)
+		}
 	}
 }

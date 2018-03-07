@@ -1,6 +1,8 @@
 package contrail
 
 import (
+	"sync"
+
 	"github.com/Juniper/contrail/pkg/apisrv"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -19,13 +21,26 @@ var apiServerCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+		wg := &sync.WaitGroup{}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err = server.Init(); err != nil {
+				log.Fatal(err)
+			}
 
-		if err = server.Init(); err != nil {
-			log.Fatal(err)
+			if err = server.Run(); err != nil {
+				log.Fatal(err)
+			}
+		}()
+		if agentConfigFile != "" {
+			wg.Add(1)
+			go func() {
+				startAgent()
+				wg.Done()
+			}()
 		}
-
-		if err = server.Run(); err != nil {
-			log.Fatal(err)
-		}
+		startAgent()
+		wg.Wait()
 	},
 }
