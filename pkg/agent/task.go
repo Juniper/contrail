@@ -74,6 +74,7 @@ func (task *task) action(action string, resource map[string]interface{}) error {
 		"project_id": task.agent.config.ProjectID,
 		"auth_url":   task.agent.config.AuthURL,
 		"endpoint":   task.agent.config.Endpoint,
+		"insecure":   task.agent.config.InSecure,
 	}
 	context := pongo2.Context{
 		"resource": resource,
