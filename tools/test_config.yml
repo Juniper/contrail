@@ -20,12 +20,12 @@ address: ":9091"
 
 # TLS Configuration
 tls:
-    enabled: true 
+    enabled: false
     key_file: tools/server.key
     cert_file: tools/server.crt
 
 # Enable GRPC or not
-enable_grpc: false 
+enable_grpc: false
 
 # Static file config
 # key: URL path

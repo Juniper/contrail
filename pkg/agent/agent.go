@@ -8,13 +8,14 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/schema"
-	"github.com/pkg/errors"
+	"github.com/labstack/gommon/log"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
@@ -123,9 +124,13 @@ func NewAgent(c *Config) (*Agent, error) {
 
 func fetchServerAPI(server *apisrv.Client, serverSchema string) (*schema.API, error) {
 	var api schema.API
-	_, err := server.Read(serverSchema, &api)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to fetch API Server schemas")
+	for {
+		_, err := server.Read(serverSchema, &api)
+		if err == nil {
+			break
+		}
+		log.Warn("failed to connect server %d. reconnecting...", err)
+		time.Sleep(time.Second)
 	}
 	return &api, nil
 }

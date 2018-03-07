@@ -8,10 +8,12 @@ import (
 )
 
 var configFile string
+var agentConfigFile string
 
 func init() {
 	cobra.OnInitialize(initConfig)
 	Contrail.PersistentFlags().StringVarP(&configFile, "config", "c", "", "Configuration File")
+	Contrail.PersistentFlags().StringVarP(&agentConfigFile, "agent", "a", "", "Agent Config File")
 }
 
 // Contrail defines root Contrail command.
