@@ -1,6 +1,8 @@
 package agent
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -72,15 +74,19 @@ func commandHandler(handler handler, task *task, context map[string]interface{})
 	}
 	cmd.Env = env
 
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return output, err
+	var output bytes.Buffer
+	stdout, _ := cmd.StdoutPipe()
+	cmd.Start()
+
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		m := scanner.Text()
+		output.WriteString(m) // nolint
+		log.Debug(m)
 	}
 
-	if len(output) > 0 {
-		log.WithField("output", string(output)).Info("Command output")
-	}
-	return string(output), nil
+	cmd.Wait()
+	return output.String(), nil
 }
 
 func getCommand(h handler, context map[string]interface{}) (string, error) {
