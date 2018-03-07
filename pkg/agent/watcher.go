@@ -105,12 +105,16 @@ func (w *pollingWatcher) watch() {
 }
 
 func newPollingWatcher(agent *Agent, task *task, schemaID string) (*pollingWatcher, error) {
+	// create logger for polling watcher
+	logger := pkglog.NewLogger("polling-watcher")
+	pkglog.SetLogLevel(logger, agent.config.LogLevel)
+
 	return &pollingWatcher{
 		agent:     agent,
 		conf:      task,
 		SchemaID:  schemaID,
 		resources: map[string]map[string]interface{}{},
-		log:       pkglog.NewLogger("polling-watcher"),
+		log:       logger,
 	}, nil
 }
 

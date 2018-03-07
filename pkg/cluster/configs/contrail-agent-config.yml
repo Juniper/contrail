@@ -11,7 +11,7 @@ tasks:
 - schema_id: contrail_cluster
   common:
   - vars:
-      dir: "/opt/cluster/{{ resource.schema_id }}/{{ resource.uuid }}"
+      dir: "/var/tmp/cluster/{{ resource.schema_id }}/{{ resource.uuid }}"
   on_create:
   - command: mkdir -p "{{ dir }}"
   - template:

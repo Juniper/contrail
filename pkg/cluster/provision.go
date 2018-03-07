@@ -78,11 +78,19 @@ func (p *provisionCommon) deleteWorkingDir() error {
 }
 
 func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
+	// create logger for reporter
+	logger := pkglog.NewLogger("reporter")
+	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
+
 	r := &Reporter{
 		api:      cluster.APIServer,
 		resource: fmt.Sprintf("%s/%s", defaultResourcePath, clusterID),
-		log:      pkglog.NewLogger("reporter"),
+		log:      logger,
 	}
+
+	// create logger for ansible provisioner
+	logger = pkglog.NewLogger("ansible-provisioner")
+	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
 	var p provisioner
 	p = &ansibleProvisioner{provisionCommon{
@@ -91,17 +99,25 @@ func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, acti
 		action:      action,
 		clusterData: cData,
 		reporter:    r,
-		log:         pkglog.NewLogger("ansible-provisioner"),
+		log:         logger,
 	}}
 	return p, nil
 }
 
 func newHelmProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
+	// create logger for reporter
+	logger := pkglog.NewLogger("reporter")
+	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
+
 	r := &Reporter{
 		api:      cluster.APIServer,
 		resource: fmt.Sprintf("%s/%s", defaultResourcePath, clusterID),
-		log:      pkglog.NewLogger("reporter"),
+		log:      logger,
 	}
+
+	// create logger for Helm provisioner
+	logger = pkglog.NewLogger("helm-provisioner")
+	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
 	var p provisioner
 	p = &helmProvisioner{provisionCommon{
@@ -110,7 +126,7 @@ func newHelmProvisioner(cluster *Cluster, cData *Data, clusterID string, action 
 		action:      action,
 		clusterData: cData,
 		reporter:    r,
-		log:         pkglog.NewLogger("helm-provisioner"),
+		log:         logger,
 	}}
 	return p, nil
 }

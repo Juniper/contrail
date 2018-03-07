@@ -44,3 +44,21 @@ func NewLogger(loggerName string) *logrus.Entry {
 	}
 	return l.WithField(loggerKey, loggerName)
 }
+
+// SetLogLevel configure any level for any logger
+func SetLogLevel(log *logrus.Entry, level string) {
+	switch level {
+	case "panic":
+		log.Logger.SetLevel(logrus.PanicLevel)
+	case "fatal":
+		log.Logger.SetLevel(logrus.FatalLevel)
+	case "error":
+		log.Logger.SetLevel(logrus.ErrorLevel)
+	case "warn":
+		log.Logger.SetLevel(logrus.WarnLevel)
+	case "debug":
+		log.Logger.SetLevel(logrus.DebugLevel)
+	default:
+		log.Logger.SetLevel(logrus.InfoLevel)
+	}
+}
