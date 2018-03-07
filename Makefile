@@ -38,6 +38,10 @@ reset_gen:
 	git checkout master tools/init_psql.sql
 	git checkout master pkg/serviceif/serviceif.go
 
+install:
+	go install ./cmd/contrail
+	go install ./cmd/contrailcli
+	go install ./cmd/contrailutil
 
 reset_db: ## Reset Database with latest schema.
 	./tools/reset_db.sh
