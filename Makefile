@@ -28,6 +28,8 @@ package: ## Generate the packages
 
 reset_gen:
 	git checkout master pkg/models/gen_*
+	git checkout master pkg/models/generated*
+	git checkout master pkg/services/generated*
 	git checkout master pkg/services/gen_*
 	git checkout master pkg/db/gen_*
 	git checkout master doc/proto_model.md
@@ -36,8 +38,23 @@ reset_gen:
 	git checkout master proto
 	git checkout master tools/init_mysql.sql
 	git checkout master tools/init_psql.sql
+	git checkout master tools/cleanup.sql
 	git checkout master pkg/serviceif/serviceif.go
 
+reset_local:
+	git checkout pkg/models/gen_*
+	git checkout pkg/models/generated*
+	git checkout pkg/services/generated*
+	git checkout pkg/services/gen_*
+	git checkout pkg/db/gen_*
+	git checkout doc/proto_model.md
+	git checkout doc/proto_service.md
+	git checkout public
+	git checkout proto
+	git checkout tools/init_mysql.sql
+	git checkout tools/init_psql.sql
+	git checkout tools/cleanup.sql
+	git checkout pkg/serviceif/serviceif.go
 
 reset_db: ## Reset Database with latest schema.
 	./tools/reset_db.sh

@@ -52,7 +52,7 @@ var {{ schema.JSONSchema.GoName }}Parents = []string{
 // nolint
 func (db *DB) create{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
-    request *models.Create{{ schema.JSONSchema.GoName }}Request) error {
+    request *models.Resource{{ schema.JSONSchema.GoName }}) error {
     qb := db.queryBuilders["{{ schema.ID }}"]
     tx := GetTransaction(ctx)
     model := request.{{ schema.JSONSchema.GoName }}
@@ -190,14 +190,13 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
 }
 
 // List{{ schema.JSONSchema.GoName }} lists {{ schema.JSONSchema.GoName }} with list spec.
-func (db *DB) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.List{{ schema.JSONSchema.GoName }}Request) (response *models.List{{ schema.JSONSchema.GoName }}Response, err error) {
+func (db *DB) list{{ schema.JSONSchema.GoName }}(ctx context.Context, spec *models.ListSpec) (response *models.ListResources{{ schema.JSONSchema.GoName }}, err error) {
     var rows *sql.Rows
     tx := GetTransaction(ctx)
 
     qb := db.queryBuilders["{{ schema.ID }}"]
 
     auth := common.GetAuthCTX(ctx)
-    spec := request.Spec
     result := []*models.{{ schema.JSONSchema.GoName }}{}
 
     if spec.ParentFQName != nil {
@@ -241,7 +240,7 @@ func (db *DB) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *m
             }
             result = append(result, m)
     }
-    response = &models.List{{ schema.JSONSchema.GoName }}Response{
+    response = &models.ListResources{{ schema.JSONSchema.GoName }}{
        {{ schema.JSONSchema.GoName }}s: result,
     }
     return response, nil
@@ -250,7 +249,7 @@ func (db *DB) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *m
 // Update{{ schema.JSONSchema.GoName }} updates a resource
 func (db *DB) update{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
-    request *models.Update{{ schema.JSONSchema.GoName }}Request,
+    request *models.ResourceUpdate{{ schema.JSONSchema.GoName }},
     ) error {
     //TODO
     return nil
@@ -259,7 +258,7 @@ func (db *DB) update{{ schema.JSONSchema.GoName }}(
 // Delete{{ schema.JSONSchema.GoName }} deletes a resource
 func (db *DB) delete{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
-    request *models.Delete{{ schema.JSONSchema.GoName }}Request) error {
+    request *models.ObjectID) error {
     qb := db.queryBuilders["{{ schema.ID }}"]
 
     selectQuery := qb.SelectForDeleteQuery()
@@ -309,7 +308,7 @@ func (db *DB) delete{{ schema.JSONSchema.GoName }}(
 // nolint
 func (db *DB) Create{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
-    request *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error) {
+    request *models.Resource{{ schema.JSONSchema.GoName }}) (*models.Resource{{ schema.JSONSchema.GoName }}, error) {
     model := request.{{ schema.JSONSchema.GoName }}
     if model == nil {
         return nil, common.ErrorBadRequest("Update body is empty")
@@ -326,7 +325,7 @@ func (db *DB) Create{{ schema.JSONSchema.GoName }}(
         }).Debug("db create failed on create")
        return nil, common.ErrorInternal
     }
-    return &models.Create{{ schema.JSONSchema.GoName }}Response{
+    return &models.Resource{{ schema.JSONSchema.GoName }}{
         {{ schema.JSONSchema.GoName }}: request.{{ schema.JSONSchema.GoName }},
     }, nil
 }
@@ -334,7 +333,7 @@ func (db *DB) Create{{ schema.JSONSchema.GoName }}(
 //Update{{ schema.JSONSchema.GoName }} handles a Update request.
 func (db *DB) Update{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
-    request *models.Update{{ schema.JSONSchema.GoName }}Request) (*models.Update{{ schema.JSONSchema.GoName }}Response, error) {
+    request *models.ResourceUpdate{{ schema.JSONSchema.GoName }}) (*models.Resource{{ schema.JSONSchema.GoName }}, error) {
     model := request.{{ schema.JSONSchema.GoName }}
     if model == nil {
         return nil, common.ErrorBadRequest("Update body is empty")
@@ -351,13 +350,13 @@ func (db *DB) Update{{ schema.JSONSchema.GoName }}(
         }).Debug("db update failed")
         return nil, common.ErrorInternal
     }
-    return &models.Update{{ schema.JSONSchema.GoName }}Response{
+    return &models.Resource{{ schema.JSONSchema.GoName }}{
         {{ schema.JSONSchema.GoName }}: model,
     }, nil
 }
 
 //Delete{{ schema.JSONSchema.GoName }} delete a resource.
-func (db *DB) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Delete{{ schema.JSONSchema.GoName }}Request) (*models.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+func (db *DB) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.ObjectID) (*models.ObjectID, error) {
     if err := DoInTransaction(
         ctx,
         db.DB,
@@ -367,14 +366,14 @@ func (db *DB) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request 
             log.WithField("err", err).Debug("error deleting a resource")
         return nil, common.ErrorInternal
     }
-    return &models.Delete{{ schema.JSONSchema.GoName }}Response{
+    return &models.ObjectID{
         ID: request.ID,
     }, nil
 }
 
 //Get{{ schema.JSONSchema.GoName }} a Get request.
-func (db *DB) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Get{{ schema.JSONSchema.GoName }}Request) (response *models.Get{{ schema.JSONSchema.GoName }}Response, err error) {
-    spec := &models.ListSpec{
+func (db *DB) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.ObjectID) (response *models.Resource{{ schema.JSONSchema.GoName }}, err error) {
+    listRequest := &models.ListSpec{
                 Limit: 1,
                 Detail: true,
                 Filters: []*models.Filter{
@@ -384,10 +383,7 @@ func (db *DB) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *mo
                     },
                 },
     }
-    listRequest := &models.List{{ schema.JSONSchema.GoName }}Request{
-        Spec: spec,
-    }
-    var result *models.List{{ schema.JSONSchema.GoName }}Response
+    var result *models.ListResources{{ schema.JSONSchema.GoName }}
     if err := DoInTransaction(
         ctx,
         db.DB,
@@ -400,7 +396,7 @@ func (db *DB) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *mo
     if len(result.{{ schema.JSONSchema.GoName }}s) == 0 {
         return nil, common.ErrorNotFound
     }
-    response = &models.Get{{ schema.JSONSchema.GoName }}Response{
+    response = &models.Resource{{ schema.JSONSchema.GoName }}{
        {{ schema.JSONSchema.GoName }}: result.{{ schema.JSONSchema.GoName }}s[0],
     }
     return response, nil
@@ -410,7 +406,7 @@ func (db *DB) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *mo
 // nolint
 func (db *DB) List{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
-    request *models.List{{ schema.JSONSchema.GoName }}Request) (response *models.List{{ schema.JSONSchema.GoName }}Response, err error) {
+    request *models.ListSpec) (response *models.ListResources{{ schema.JSONSchema.GoName }}, err error) {
     if err := DoInTransaction(
         ctx,
         db.DB,

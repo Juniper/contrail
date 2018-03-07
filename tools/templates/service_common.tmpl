@@ -42,7 +42,7 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
         switch(resource.Kind) {
         {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
         case "{{ schema.ID }}":
-            request := &models.Create{{ schema.JSONSchema.GoName }}Request{
+            request := &models.Resource{{ schema.JSONSchema.GoName }}{
                 {{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(resource.Data),
             }
             response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, request)

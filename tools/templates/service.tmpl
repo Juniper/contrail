@@ -14,7 +14,7 @@ import (
 //RESTCreate{{ schema.JSONSchema.GoName }} handle a Create REST service.
 // nolint
 func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
-    requestData := &models.Create{{ schema.JSONSchema.GoName }}Request{
+    requestData := &models.Resource{{ schema.JSONSchema.GoName }}{
     }
     if err := c.Bind(requestData); err != nil {
         log.WithFields(log.Fields{
@@ -35,7 +35,7 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
 // nolint
 func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
-    request *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error) {
+    request *models.Resource{{ schema.JSONSchema.GoName }}) (*models.Resource{{ schema.JSONSchema.GoName }}, error) {
     model := request.{{ schema.JSONSchema.GoName }}
     if model.UUID == "" {
         model.UUID = uuid.NewV4().String()
@@ -62,7 +62,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 // nolint
 func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
     //id := c.Param("id")
-    request := &models.Update{{ schema.JSONSchema.GoName }}Request{
+    request := &models.ResourceUpdate{{ schema.JSONSchema.GoName }}{
     }
     if err := c.Bind(request); err != nil {
             log.WithFields(log.Fields{
@@ -83,7 +83,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 // nolint
 func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
-    request *models.Update{{ schema.JSONSchema.GoName }}Request) (*models.Update{{ schema.JSONSchema.GoName }}Response, error) {
+    request *models.ResourceUpdate{{ schema.JSONSchema.GoName }}) (*models.Resource{{ schema.JSONSchema.GoName }}, error) {
     model := request.{{ schema.JSONSchema.GoName }}
     if model == nil {
         return nil, common.ErrorBadRequest("Update body is empty")
@@ -95,7 +95,7 @@ func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
 // nolint
 func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.Context) error {
     id := c.Param("id")
-    request := &models.Delete{{ schema.JSONSchema.GoName }}Request{
+    request := &models.ObjectID {
         ID: id,
     }
     ctx := c.Request().Context()
@@ -111,7 +111,7 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
 // nolint
 func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
     id := c.Param("id")
-    request := &models.Get{{ schema.JSONSchema.GoName }}Request{
+    request := &models.ObjectID{
         ID: id,
     }
     ctx := c.Request().Context()
@@ -127,11 +127,8 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
 func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
     var err error
     spec := models.GetListSpec(c)
-    request := &models.List{{ schema.JSONSchema.GoName }}Request{
-        Spec: spec,
-    }
     ctx := c.Request().Context()
-    response, err := service.List{{ schema.JSONSchema.GoName }}(ctx, request)
+    response, err := service.List{{ schema.JSONSchema.GoName }}(ctx, spec)
     if err != nil {
         return common.ToHTTPError(err)
     }

@@ -10,10 +10,10 @@ option go_package = "services";
 
 service ContrailService {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-rpc Get{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.Get{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.models.Get{{ schema.JSONSchema.GoName }}Response);
-rpc List{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.List{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.models.List{{ schema.JSONSchema.GoName }}Response);
-rpc Create{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.Create{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.models.Create{{ schema.JSONSchema.GoName }}Response);
-rpc Update{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.Update{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.models.Update{{ schema.JSONSchema.GoName }}Response);
-rpc Delete{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.Delete{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.models.Delete{{ schema.JSONSchema.GoName }}Response);
+rpc Get{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.ObjectID) returns (github.com.Juniper.contrail.pkg.models.Resource{{ schema.JSONSchema.GoName }});
+rpc List{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.ListSpec) returns (github.com.Juniper.contrail.pkg.models.ListResources{{ schema.JSONSchema.GoName }});
+rpc Create{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.Resource{{ schema.JSONSchema.GoName }}) returns (github.com.Juniper.contrail.pkg.models.Resource{{ schema.JSONSchema.GoName }});
+rpc Update{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.ResourceUpdate{{ schema.JSONSchema.GoName }}) returns (github.com.Juniper.contrail.pkg.models.Resource{{ schema.JSONSchema.GoName }});
+rpc Delete{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.ObjectID) returns (github.com.Juniper.contrail.pkg.models.ObjectID);
 {% endif %}{% endfor %}
 }
