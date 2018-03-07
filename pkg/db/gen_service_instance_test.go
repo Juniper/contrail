@@ -332,41 +332,6 @@ func TestServiceInstance(t *testing.T) {
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_service_instance_service_template` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing ServiceTemplateRefs delete statement failed")
-		}
-		_, err = stmt.Exec("service_instance_dummy_uuid", "service_instance_service_template_ref_uuid")
-		_, err = stmt.Exec("service_instance_dummy_uuid", "service_instance_service_template_ref_uuid1")
-		_, err = stmt.Exec("service_instance_dummy_uuid", "service_instance_service_template_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "ServiceTemplateRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteServiceTemplate(ctx,
-		&models.DeleteServiceTemplateRequest{
-			ID: "service_instance_service_template_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref service_instance_service_template_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteServiceTemplate(ctx,
-		&models.DeleteServiceTemplateRequest{
-			ID: "service_instance_service_template_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref service_instance_service_template_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteServiceTemplate(
-		ctx,
-		&models.DeleteServiceTemplateRequest{
-			ID: "service_instance_service_template_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref service_instance_service_template_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_service_instance_instance_ip` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing InstanceIPRefs delete statement failed")
@@ -398,6 +363,41 @@ func TestServiceInstance(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref service_instance_instance_ip_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_service_instance_service_template` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing ServiceTemplateRefs delete statement failed")
+		}
+		_, err = stmt.Exec("service_instance_dummy_uuid", "service_instance_service_template_ref_uuid")
+		_, err = stmt.Exec("service_instance_dummy_uuid", "service_instance_service_template_ref_uuid1")
+		_, err = stmt.Exec("service_instance_dummy_uuid", "service_instance_service_template_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "ServiceTemplateRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteServiceTemplate(ctx,
+		&models.DeleteServiceTemplateRequest{
+			ID: "service_instance_service_template_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref service_instance_service_template_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteServiceTemplate(ctx,
+		&models.DeleteServiceTemplateRequest{
+			ID: "service_instance_service_template_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref service_instance_service_template_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteServiceTemplate(
+		ctx,
+		&models.DeleteServiceTemplateRequest{
+			ID: "service_instance_service_template_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref service_instance_service_template_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

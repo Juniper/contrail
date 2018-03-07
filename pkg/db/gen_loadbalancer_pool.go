@@ -52,6 +52,11 @@ var LoadbalancerPoolFields = []string{
 // LoadbalancerPoolRefFields is db reference fields for LoadbalancerPool
 var LoadbalancerPoolRefFields = map[string][]string{
 
+	"service_appliance_set": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
@@ -68,11 +73,6 @@ var LoadbalancerPoolRefFields = map[string][]string{
 	},
 
 	"loadbalancer_healthmonitor": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"service_appliance_set": []string{
 	// <schema.Schema Value>
 
 	},

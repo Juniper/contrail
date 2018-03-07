@@ -60,9 +60,9 @@ var ApplicationPolicySetBackRefFields = map[string][]string{}
 // ApplicationPolicySetParentTypes is possible parents for ApplicationPolicySet
 var ApplicationPolicySetParents = []string{
 
-	"project",
-
 	"policy_management",
+
+	"project",
 }
 
 // CreateApplicationPolicySet inserts ApplicationPolicySet to DB
@@ -100,6 +100,14 @@ func (db *DB) createApplicationPolicySet(
 		return errors.Wrap(err, "create failed")
 	}
 
+	for _, ref := range model.GlobalVrouterConfigRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("global_vrouter_config"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "GlobalVrouterConfigRefs create failed")
+		}
+	}
+
 	for _, ref := range model.FirewallPolicyRefs {
 
 		if ref.Attr == nil {
@@ -109,14 +117,6 @@ func (db *DB) createApplicationPolicySet(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("firewall_policy"), model.UUID, ref.UUID, string(ref.Attr.GetSequence()))
 		if err != nil {
 			return errors.Wrap(err, "FirewallPolicyRefs create failed")
-		}
-	}
-
-	for _, ref := range model.GlobalVrouterConfigRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("global_vrouter_config"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "GlobalVrouterConfigRefs create failed")
 		}
 	}
 

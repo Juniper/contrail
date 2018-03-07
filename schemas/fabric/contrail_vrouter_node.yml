@@ -16,7 +16,7 @@ parents:
     description: "Parent of this vrouter node."
     presence: "optional"
 plural: contrail_vrouter_nodes
-prefix: /contrail
+prefix: /
 schema:
   properties:
     default_gateway:

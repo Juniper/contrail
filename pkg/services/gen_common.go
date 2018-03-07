@@ -1950,11 +1950,11 @@ func (service *ContrailService) RegisterRESTAPI(e *echo.Echo) {
 	e.GET("/contrail-storage-node/:id", service.RESTGetContrailStorageNode)
 	e.DELETE("/contrail-storage-node/:id", service.RESTDeleteContrailStorageNode)
 
-	e.POST("/contrailcontrail-vrouter-nodes", service.RESTCreateContrailVrouterNode)
-	e.GET("/contrailcontrail-vrouter-nodes", service.RESTListContrailVrouterNode)
-	e.PUT("/contrailcontrail-vrouter-node/:id", service.RESTUpdateContrailVrouterNode)
-	e.GET("/contrailcontrail-vrouter-node/:id", service.RESTGetContrailVrouterNode)
-	e.DELETE("/contrailcontrail-vrouter-node/:id", service.RESTDeleteContrailVrouterNode)
+	e.POST("/contrail-vrouter-nodes", service.RESTCreateContrailVrouterNode)
+	e.GET("/contrail-vrouter-nodes", service.RESTListContrailVrouterNode)
+	e.PUT("/contrail-vrouter-node/:id", service.RESTUpdateContrailVrouterNode)
+	e.GET("/contrail-vrouter-node/:id", service.RESTGetContrailVrouterNode)
+	e.DELETE("/contrail-vrouter-node/:id", service.RESTDeleteContrailVrouterNode)
 
 	e.POST("/contrail-webui-nodes", service.RESTCreateContrailWebuiNode)
 	e.GET("/contrail-webui-nodes", service.RESTListContrailWebuiNode)

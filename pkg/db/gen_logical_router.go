@@ -125,14 +125,6 @@ func (db *DB) createLogicalRouter(
 		return errors.Wrap(err, "create failed")
 	}
 
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
 	for _, ref := range model.ServiceInstanceRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_instance"), model.UUID, ref.UUID)
@@ -178,6 +170,14 @@ func (db *DB) createLogicalRouter(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("route_target"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "RouteTargetRefs create failed")
+		}
+	}
+
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
 	}
 

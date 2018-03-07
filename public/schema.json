@@ -30509,7 +30509,7 @@
                     "attr": null
                 }
             },
-            "prefix": "/contrail",
+            "prefix": "/",
             "schema": {
                 "type": "object",
                 "properties": {

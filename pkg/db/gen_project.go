@@ -70,6 +70,16 @@ var ProjectFields = []string{
 // ProjectRefFields is db reference fields for Project
 var ProjectRefFields = map[string][]string{
 
+	"application_policy_set": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"floating_ip_pool": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"alias_ip_pool": []string{
 	// <schema.Schema Value>
 
@@ -79,16 +89,6 @@ var ProjectRefFields = map[string][]string{
 		// <schema.Schema Value>
 		"ip_prefix",
 		"ip_prefix_len",
-	},
-
-	"application_policy_set": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"floating_ip_pool": []string{
-	// <schema.Schema Value>
-
 	},
 }
 
@@ -1137,14 +1137,6 @@ func (db *DB) createProject(
 		return errors.Wrap(err, "create failed")
 	}
 
-	for _, ref := range model.FloatingIPPoolRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("floating_ip_pool"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "FloatingIPPoolRefs create failed")
-		}
-	}
-
 	for _, ref := range model.AliasIPPoolRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("alias_ip_pool"), model.UUID, ref.UUID)
@@ -1171,6 +1163,14 @@ func (db *DB) createProject(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("application_policy_set"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ApplicationPolicySetRefs create failed")
+		}
+	}
+
+	for _, ref := range model.FloatingIPPoolRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("floating_ip_pool"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "FloatingIPPoolRefs create failed")
 		}
 	}
 
@@ -1496,6 +1496,29 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 
 	}
 
+	if value, ok := values["ref_namespace"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ProjectNamespaceRef{}
+			referenceModel.UUID = uuid
+			m.NamespaceRefs = append(m.NamespaceRefs, referenceModel)
+
+			attr := models.MakeSubnetType()
+			referenceModel.Attr = attr
+
+		}
+	}
+
 	if value, ok := values["ref_application_policy_set"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -1552,29 +1575,6 @@ func scanProject(values map[string]interface{}) (*models.Project, error) {
 			referenceModel := &models.ProjectAliasIPPoolRef{}
 			referenceModel.UUID = uuid
 			m.AliasIPPoolRefs = append(m.AliasIPPoolRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_namespace"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ProjectNamespaceRef{}
-			referenceModel.UUID = uuid
-			m.NamespaceRefs = append(m.NamespaceRefs, referenceModel)
-
-			attr := models.MakeSubnetType()
-			referenceModel.Attr = attr
 
 		}
 	}

@@ -42,17 +42,17 @@ var ServiceEndpointFields = []string{
 // ServiceEndpointRefFields is db reference fields for ServiceEndpoint
 var ServiceEndpointRefFields = map[string][]string{
 
+	"physical_router": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"service_object": []string{
 	// <schema.Schema Value>
 
 	},
 
 	"service_connection_module": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"physical_router": []string{
 	// <schema.Schema Value>
 
 	},

@@ -148,6 +148,14 @@ func (db *DB) createServiceInstance(
 		return errors.Wrap(err, "create failed")
 	}
 
+	for _, ref := range model.ServiceTemplateRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_template"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceTemplateRefs create failed")
+		}
+	}
+
 	for _, ref := range model.InstanceIPRefs {
 
 		if ref.Attr == nil {
@@ -157,14 +165,6 @@ func (db *DB) createServiceInstance(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("instance_ip"), model.UUID, ref.UUID, string(ref.Attr.GetInterfaceType()))
 		if err != nil {
 			return errors.Wrap(err, "InstanceIPRefs create failed")
-		}
-	}
-
-	for _, ref := range model.ServiceTemplateRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_template"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceTemplateRefs create failed")
 		}
 	}
 
@@ -400,26 +400,6 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 
 	}
 
-	if value, ok := values["ref_service_template"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ServiceInstanceServiceTemplateRef{}
-			referenceModel.UUID = uuid
-			m.ServiceTemplateRefs = append(m.ServiceTemplateRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_instance_ip"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -439,6 +419,26 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 
 			attr := models.MakeServiceInterfaceTag()
 			referenceModel.Attr = attr
+
+		}
+	}
+
+	if value, ok := values["ref_service_template"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ServiceInstanceServiceTemplateRef{}
+			referenceModel.UUID = uuid
+			m.ServiceTemplateRefs = append(m.ServiceTemplateRefs, referenceModel)
 
 		}
 	}
