@@ -51,9 +51,9 @@ var AlarmBackRefFields = map[string][]string{}
 // AlarmParentTypes is possible parents for Alarm
 var AlarmParents = []string{
 
-	"project",
-
 	"global_system_config",
+
+	"project",
 }
 
 // CreateAlarm inserts Alarm to DB
@@ -90,6 +90,9 @@ func (db *DB) createAlarm(
 		int(model.GetAlarmSeverity()),
 		common.MustJSON(model.GetAlarmRules().GetOrList()))
 	if err != nil {
+		log.WithFields(log.Fields{
+			"model": model,
+			"err":   err}).Debug("create failed")
 		return errors.Wrap(err, "create failed")
 	}
 
@@ -287,10 +290,6 @@ func (db *DB) listAlarm(ctx context.Context, request *models.ListAlarmRequest) (
 		spec.Filters = models.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 	query, columns, values := qb.ListQuery(auth, spec)
-	log.WithFields(log.Fields{
-		"listSpec": spec,
-		"query":    query,
-	}).Debug("select query")
 	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")

@@ -75,17 +75,17 @@ var PhysicalRouterFields = []string{
 // PhysicalRouterRefFields is db reference fields for PhysicalRouter
 var PhysicalRouterRefFields = map[string][]string{
 
+	"virtual_router": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"virtual_network": []string{
 	// <schema.Schema Value>
 
 	},
 
 	"bgp_router": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"virtual_router": []string{
 	// <schema.Schema Value>
 
 	},
@@ -220,6 +220,9 @@ func (db *DB) createPhysicalRouter(
 		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
+		log.WithFields(log.Fields{
+			"model": model,
+			"err":   err}).Debug("create failed")
 		return errors.Wrap(err, "create failed")
 	}
 
@@ -1001,10 +1004,6 @@ func (db *DB) listPhysicalRouter(ctx context.Context, request *models.ListPhysic
 		spec.Filters = models.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 	query, columns, values := qb.ListQuery(auth, spec)
-	log.WithFields(log.Fields{
-		"listSpec": spec,
-		"query":    query,
-	}).Debug("select query")
 	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")

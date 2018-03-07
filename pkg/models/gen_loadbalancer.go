@@ -48,11 +48,11 @@ func InterfaceToLoadbalancer(i interface{}) *Loadbalancer {
 		LoadbalancerProperties: InterfaceToLoadbalancerType(m["loadbalancer_properties"]),
 		LoadbalancerProvider:   common.InterfaceToString(m["loadbalancer_provider"]),
 
-		VirtualMachineInterfaceRefs: InterfaceToLoadbalancerVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
-
 		ServiceInstanceRefs: InterfaceToLoadbalancerServiceInstanceRefs(m["service_instance_refs"]),
 
 		ServiceApplianceSetRefs: InterfaceToLoadbalancerServiceApplianceSetRefs(m["service_appliance_set_refs"]),
+
+		VirtualMachineInterfaceRefs: InterfaceToLoadbalancerVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
 	}
 }
 

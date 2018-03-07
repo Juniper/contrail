@@ -3,6 +3,7 @@ package db
 
 import (
 	"context"
+	"github.com/satori/go.uuid"
 	"testing"
 	"time"
 
@@ -15,7 +16,7 @@ import (
 var _ = errors.New("")
 
 func TestLoadbalancerPool(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 	db := &DB{
 		DB:      testDB,
 		Dialect: NewDialect("mysql"),
@@ -24,156 +25,183 @@ func TestLoadbalancerPool(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db.DB, "metadata")
-	mutexTable := common.UseTable(db.DB, "loadbalancer_pool")
-	// mutexProject := UseTable(db.DB, "loadbalancer_pool")
-	defer func() {
-		mutexTable.Unlock()
-		mutexMetadata.Unlock()
-		if p := recover(); p != nil {
-			panic(p)
-		}
-	}()
 	model := models.MakeLoadbalancerPool()
-	model.UUID = "loadbalancer_pool_dummy_uuid"
-	model.FQName = []string{"default", "default-domain", "loadbalancer_pool_dummy"}
+	model.UUID = uuid.NewV4().String()
+	model.FQName = []string{"default", "default-domain", model.UUID}
 	model.Perms2.Owner = "admin"
 	var err error
 
 	// Create referred objects
 
-	var ServiceApplianceSetcreateref []*models.LoadbalancerPoolServiceApplianceSetRef
-	var ServiceApplianceSetrefModel *models.ServiceApplianceSet
-	ServiceApplianceSetrefModel = models.MakeServiceApplianceSet()
-	ServiceApplianceSetrefModel.UUID = "loadbalancer_pool_service_appliance_set_ref_uuid"
-	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid"}
+	var ServiceApplianceSetCreateRef []*models.LoadbalancerPoolServiceApplianceSetRef
+	var ServiceApplianceSetRefModel *models.ServiceApplianceSet
+
+	ServiceApplianceSetRefUUID := uuid.NewV4().String()
+	ServiceApplianceSetRefUUID1 := uuid.NewV4().String()
+	ServiceApplianceSetRefUUID2 := uuid.NewV4().String()
+
+	ServiceApplianceSetRefModel = models.MakeServiceApplianceSet()
+	ServiceApplianceSetRefModel.UUID = ServiceApplianceSetRefUUID
+	ServiceApplianceSetRefModel.FQName = []string{"test", ServiceApplianceSetRefUUID}
 	_, err = db.CreateServiceApplianceSet(ctx, &models.CreateServiceApplianceSetRequest{
-		ServiceApplianceSet: ServiceApplianceSetrefModel,
+		ServiceApplianceSet: ServiceApplianceSetRefModel,
 	})
-	ServiceApplianceSetrefModel.UUID = "loadbalancer_pool_service_appliance_set_ref_uuid1"
-	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid1"}
+	ServiceApplianceSetRefModel.UUID = ServiceApplianceSetRefUUID1
+	ServiceApplianceSetRefModel.FQName = []string{"test", ServiceApplianceSetRefUUID1}
 	_, err = db.CreateServiceApplianceSet(ctx, &models.CreateServiceApplianceSetRequest{
-		ServiceApplianceSet: ServiceApplianceSetrefModel,
+		ServiceApplianceSet: ServiceApplianceSetRefModel,
 	})
-	ServiceApplianceSetrefModel.UUID = "loadbalancer_pool_service_appliance_set_ref_uuid2"
-	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid2"}
+	ServiceApplianceSetRefModel.UUID = ServiceApplianceSetRefUUID2
+	ServiceApplianceSetRefModel.FQName = []string{"test", ServiceApplianceSetRefUUID2}
 	_, err = db.CreateServiceApplianceSet(ctx, &models.CreateServiceApplianceSetRequest{
-		ServiceApplianceSet: ServiceApplianceSetrefModel,
+		ServiceApplianceSet: ServiceApplianceSetRefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
 	}
-	ServiceApplianceSetcreateref = append(ServiceApplianceSetcreateref, &models.LoadbalancerPoolServiceApplianceSetRef{UUID: "loadbalancer_pool_service_appliance_set_ref_uuid", To: []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid"}})
-	ServiceApplianceSetcreateref = append(ServiceApplianceSetcreateref, &models.LoadbalancerPoolServiceApplianceSetRef{UUID: "loadbalancer_pool_service_appliance_set_ref_uuid2", To: []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid2"}})
-	model.ServiceApplianceSetRefs = ServiceApplianceSetcreateref
+	ServiceApplianceSetCreateRef = append(ServiceApplianceSetCreateRef,
+		&models.LoadbalancerPoolServiceApplianceSetRef{UUID: ServiceApplianceSetRefUUID, To: []string{"test", ServiceApplianceSetRefUUID}})
+	ServiceApplianceSetCreateRef = append(ServiceApplianceSetCreateRef,
+		&models.LoadbalancerPoolServiceApplianceSetRef{UUID: ServiceApplianceSetRefUUID2, To: []string{"test", ServiceApplianceSetRefUUID2}})
+	model.ServiceApplianceSetRefs = ServiceApplianceSetCreateRef
 
-	var VirtualMachineInterfacecreateref []*models.LoadbalancerPoolVirtualMachineInterfaceRef
-	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
-	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
-	VirtualMachineInterfacerefModel.UUID = "loadbalancer_pool_virtual_machine_interface_ref_uuid"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "loadbalancer_pool_virtual_machine_interface_ref_uuid"}
+	var VirtualMachineInterfaceCreateRef []*models.LoadbalancerPoolVirtualMachineInterfaceRef
+	var VirtualMachineInterfaceRefModel *models.VirtualMachineInterface
+
+	VirtualMachineInterfaceRefUUID := uuid.NewV4().String()
+	VirtualMachineInterfaceRefUUID1 := uuid.NewV4().String()
+	VirtualMachineInterfaceRefUUID2 := uuid.NewV4().String()
+
+	VirtualMachineInterfaceRefModel = models.MakeVirtualMachineInterface()
+	VirtualMachineInterfaceRefModel.UUID = VirtualMachineInterfaceRefUUID
+	VirtualMachineInterfaceRefModel.FQName = []string{"test", VirtualMachineInterfaceRefUUID}
 	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
-		VirtualMachineInterface: VirtualMachineInterfacerefModel,
+		VirtualMachineInterface: VirtualMachineInterfaceRefModel,
 	})
-	VirtualMachineInterfacerefModel.UUID = "loadbalancer_pool_virtual_machine_interface_ref_uuid1"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "loadbalancer_pool_virtual_machine_interface_ref_uuid1"}
+	VirtualMachineInterfaceRefModel.UUID = VirtualMachineInterfaceRefUUID1
+	VirtualMachineInterfaceRefModel.FQName = []string{"test", VirtualMachineInterfaceRefUUID1}
 	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
-		VirtualMachineInterface: VirtualMachineInterfacerefModel,
+		VirtualMachineInterface: VirtualMachineInterfaceRefModel,
 	})
-	VirtualMachineInterfacerefModel.UUID = "loadbalancer_pool_virtual_machine_interface_ref_uuid2"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "loadbalancer_pool_virtual_machine_interface_ref_uuid2"}
+	VirtualMachineInterfaceRefModel.UUID = VirtualMachineInterfaceRefUUID2
+	VirtualMachineInterfaceRefModel.FQName = []string{"test", VirtualMachineInterfaceRefUUID2}
 	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
-		VirtualMachineInterface: VirtualMachineInterfacerefModel,
+		VirtualMachineInterface: VirtualMachineInterfaceRefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
 	}
-	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.LoadbalancerPoolVirtualMachineInterfaceRef{UUID: "loadbalancer_pool_virtual_machine_interface_ref_uuid", To: []string{"test", "loadbalancer_pool_virtual_machine_interface_ref_uuid"}})
-	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.LoadbalancerPoolVirtualMachineInterfaceRef{UUID: "loadbalancer_pool_virtual_machine_interface_ref_uuid2", To: []string{"test", "loadbalancer_pool_virtual_machine_interface_ref_uuid2"}})
-	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
+	VirtualMachineInterfaceCreateRef = append(VirtualMachineInterfaceCreateRef,
+		&models.LoadbalancerPoolVirtualMachineInterfaceRef{UUID: VirtualMachineInterfaceRefUUID, To: []string{"test", VirtualMachineInterfaceRefUUID}})
+	VirtualMachineInterfaceCreateRef = append(VirtualMachineInterfaceCreateRef,
+		&models.LoadbalancerPoolVirtualMachineInterfaceRef{UUID: VirtualMachineInterfaceRefUUID2, To: []string{"test", VirtualMachineInterfaceRefUUID2}})
+	model.VirtualMachineInterfaceRefs = VirtualMachineInterfaceCreateRef
 
-	var LoadbalancerListenercreateref []*models.LoadbalancerPoolLoadbalancerListenerRef
-	var LoadbalancerListenerrefModel *models.LoadbalancerListener
-	LoadbalancerListenerrefModel = models.MakeLoadbalancerListener()
-	LoadbalancerListenerrefModel.UUID = "loadbalancer_pool_loadbalancer_listener_ref_uuid"
-	LoadbalancerListenerrefModel.FQName = []string{"test", "loadbalancer_pool_loadbalancer_listener_ref_uuid"}
-	_, err = db.CreateLoadbalancerListener(ctx, &models.CreateLoadbalancerListenerRequest{
-		LoadbalancerListener: LoadbalancerListenerrefModel,
-	})
-	LoadbalancerListenerrefModel.UUID = "loadbalancer_pool_loadbalancer_listener_ref_uuid1"
-	LoadbalancerListenerrefModel.FQName = []string{"test", "loadbalancer_pool_loadbalancer_listener_ref_uuid1"}
-	_, err = db.CreateLoadbalancerListener(ctx, &models.CreateLoadbalancerListenerRequest{
-		LoadbalancerListener: LoadbalancerListenerrefModel,
-	})
-	LoadbalancerListenerrefModel.UUID = "loadbalancer_pool_loadbalancer_listener_ref_uuid2"
-	LoadbalancerListenerrefModel.FQName = []string{"test", "loadbalancer_pool_loadbalancer_listener_ref_uuid2"}
-	_, err = db.CreateLoadbalancerListener(ctx, &models.CreateLoadbalancerListenerRequest{
-		LoadbalancerListener: LoadbalancerListenerrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	LoadbalancerListenercreateref = append(LoadbalancerListenercreateref, &models.LoadbalancerPoolLoadbalancerListenerRef{UUID: "loadbalancer_pool_loadbalancer_listener_ref_uuid", To: []string{"test", "loadbalancer_pool_loadbalancer_listener_ref_uuid"}})
-	LoadbalancerListenercreateref = append(LoadbalancerListenercreateref, &models.LoadbalancerPoolLoadbalancerListenerRef{UUID: "loadbalancer_pool_loadbalancer_listener_ref_uuid2", To: []string{"test", "loadbalancer_pool_loadbalancer_listener_ref_uuid2"}})
-	model.LoadbalancerListenerRefs = LoadbalancerListenercreateref
+	var LoadbalancerListenerCreateRef []*models.LoadbalancerPoolLoadbalancerListenerRef
+	var LoadbalancerListenerRefModel *models.LoadbalancerListener
 
-	var ServiceInstancecreateref []*models.LoadbalancerPoolServiceInstanceRef
-	var ServiceInstancerefModel *models.ServiceInstance
-	ServiceInstancerefModel = models.MakeServiceInstance()
-	ServiceInstancerefModel.UUID = "loadbalancer_pool_service_instance_ref_uuid"
-	ServiceInstancerefModel.FQName = []string{"test", "loadbalancer_pool_service_instance_ref_uuid"}
-	_, err = db.CreateServiceInstance(ctx, &models.CreateServiceInstanceRequest{
-		ServiceInstance: ServiceInstancerefModel,
-	})
-	ServiceInstancerefModel.UUID = "loadbalancer_pool_service_instance_ref_uuid1"
-	ServiceInstancerefModel.FQName = []string{"test", "loadbalancer_pool_service_instance_ref_uuid1"}
-	_, err = db.CreateServiceInstance(ctx, &models.CreateServiceInstanceRequest{
-		ServiceInstance: ServiceInstancerefModel,
-	})
-	ServiceInstancerefModel.UUID = "loadbalancer_pool_service_instance_ref_uuid2"
-	ServiceInstancerefModel.FQName = []string{"test", "loadbalancer_pool_service_instance_ref_uuid2"}
-	_, err = db.CreateServiceInstance(ctx, &models.CreateServiceInstanceRequest{
-		ServiceInstance: ServiceInstancerefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	ServiceInstancecreateref = append(ServiceInstancecreateref, &models.LoadbalancerPoolServiceInstanceRef{UUID: "loadbalancer_pool_service_instance_ref_uuid", To: []string{"test", "loadbalancer_pool_service_instance_ref_uuid"}})
-	ServiceInstancecreateref = append(ServiceInstancecreateref, &models.LoadbalancerPoolServiceInstanceRef{UUID: "loadbalancer_pool_service_instance_ref_uuid2", To: []string{"test", "loadbalancer_pool_service_instance_ref_uuid2"}})
-	model.ServiceInstanceRefs = ServiceInstancecreateref
+	LoadbalancerListenerRefUUID := uuid.NewV4().String()
+	LoadbalancerListenerRefUUID1 := uuid.NewV4().String()
+	LoadbalancerListenerRefUUID2 := uuid.NewV4().String()
 
-	var LoadbalancerHealthmonitorcreateref []*models.LoadbalancerPoolLoadbalancerHealthmonitorRef
-	var LoadbalancerHealthmonitorrefModel *models.LoadbalancerHealthmonitor
-	LoadbalancerHealthmonitorrefModel = models.MakeLoadbalancerHealthmonitor()
-	LoadbalancerHealthmonitorrefModel.UUID = "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid"
-	LoadbalancerHealthmonitorrefModel.FQName = []string{"test", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid"}
-	_, err = db.CreateLoadbalancerHealthmonitor(ctx, &models.CreateLoadbalancerHealthmonitorRequest{
-		LoadbalancerHealthmonitor: LoadbalancerHealthmonitorrefModel,
+	LoadbalancerListenerRefModel = models.MakeLoadbalancerListener()
+	LoadbalancerListenerRefModel.UUID = LoadbalancerListenerRefUUID
+	LoadbalancerListenerRefModel.FQName = []string{"test", LoadbalancerListenerRefUUID}
+	_, err = db.CreateLoadbalancerListener(ctx, &models.CreateLoadbalancerListenerRequest{
+		LoadbalancerListener: LoadbalancerListenerRefModel,
 	})
-	LoadbalancerHealthmonitorrefModel.UUID = "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1"
-	LoadbalancerHealthmonitorrefModel.FQName = []string{"test", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1"}
-	_, err = db.CreateLoadbalancerHealthmonitor(ctx, &models.CreateLoadbalancerHealthmonitorRequest{
-		LoadbalancerHealthmonitor: LoadbalancerHealthmonitorrefModel,
+	LoadbalancerListenerRefModel.UUID = LoadbalancerListenerRefUUID1
+	LoadbalancerListenerRefModel.FQName = []string{"test", LoadbalancerListenerRefUUID1}
+	_, err = db.CreateLoadbalancerListener(ctx, &models.CreateLoadbalancerListenerRequest{
+		LoadbalancerListener: LoadbalancerListenerRefModel,
 	})
-	LoadbalancerHealthmonitorrefModel.UUID = "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid2"
-	LoadbalancerHealthmonitorrefModel.FQName = []string{"test", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid2"}
-	_, err = db.CreateLoadbalancerHealthmonitor(ctx, &models.CreateLoadbalancerHealthmonitorRequest{
-		LoadbalancerHealthmonitor: LoadbalancerHealthmonitorrefModel,
+	LoadbalancerListenerRefModel.UUID = LoadbalancerListenerRefUUID2
+	LoadbalancerListenerRefModel.FQName = []string{"test", LoadbalancerListenerRefUUID2}
+	_, err = db.CreateLoadbalancerListener(ctx, &models.CreateLoadbalancerListenerRequest{
+		LoadbalancerListener: LoadbalancerListenerRefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
 	}
-	LoadbalancerHealthmonitorcreateref = append(LoadbalancerHealthmonitorcreateref, &models.LoadbalancerPoolLoadbalancerHealthmonitorRef{UUID: "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid", To: []string{"test", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid"}})
-	LoadbalancerHealthmonitorcreateref = append(LoadbalancerHealthmonitorcreateref, &models.LoadbalancerPoolLoadbalancerHealthmonitorRef{UUID: "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid2", To: []string{"test", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid2"}})
-	model.LoadbalancerHealthmonitorRefs = LoadbalancerHealthmonitorcreateref
+	LoadbalancerListenerCreateRef = append(LoadbalancerListenerCreateRef,
+		&models.LoadbalancerPoolLoadbalancerListenerRef{UUID: LoadbalancerListenerRefUUID, To: []string{"test", LoadbalancerListenerRefUUID}})
+	LoadbalancerListenerCreateRef = append(LoadbalancerListenerCreateRef,
+		&models.LoadbalancerPoolLoadbalancerListenerRef{UUID: LoadbalancerListenerRefUUID2, To: []string{"test", LoadbalancerListenerRefUUID2}})
+	model.LoadbalancerListenerRefs = LoadbalancerListenerCreateRef
+
+	var ServiceInstanceCreateRef []*models.LoadbalancerPoolServiceInstanceRef
+	var ServiceInstanceRefModel *models.ServiceInstance
+
+	ServiceInstanceRefUUID := uuid.NewV4().String()
+	ServiceInstanceRefUUID1 := uuid.NewV4().String()
+	ServiceInstanceRefUUID2 := uuid.NewV4().String()
+
+	ServiceInstanceRefModel = models.MakeServiceInstance()
+	ServiceInstanceRefModel.UUID = ServiceInstanceRefUUID
+	ServiceInstanceRefModel.FQName = []string{"test", ServiceInstanceRefUUID}
+	_, err = db.CreateServiceInstance(ctx, &models.CreateServiceInstanceRequest{
+		ServiceInstance: ServiceInstanceRefModel,
+	})
+	ServiceInstanceRefModel.UUID = ServiceInstanceRefUUID1
+	ServiceInstanceRefModel.FQName = []string{"test", ServiceInstanceRefUUID1}
+	_, err = db.CreateServiceInstance(ctx, &models.CreateServiceInstanceRequest{
+		ServiceInstance: ServiceInstanceRefModel,
+	})
+	ServiceInstanceRefModel.UUID = ServiceInstanceRefUUID2
+	ServiceInstanceRefModel.FQName = []string{"test", ServiceInstanceRefUUID2}
+	_, err = db.CreateServiceInstance(ctx, &models.CreateServiceInstanceRequest{
+		ServiceInstance: ServiceInstanceRefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	ServiceInstanceCreateRef = append(ServiceInstanceCreateRef,
+		&models.LoadbalancerPoolServiceInstanceRef{UUID: ServiceInstanceRefUUID, To: []string{"test", ServiceInstanceRefUUID}})
+	ServiceInstanceCreateRef = append(ServiceInstanceCreateRef,
+		&models.LoadbalancerPoolServiceInstanceRef{UUID: ServiceInstanceRefUUID2, To: []string{"test", ServiceInstanceRefUUID2}})
+	model.ServiceInstanceRefs = ServiceInstanceCreateRef
+
+	var LoadbalancerHealthmonitorCreateRef []*models.LoadbalancerPoolLoadbalancerHealthmonitorRef
+	var LoadbalancerHealthmonitorRefModel *models.LoadbalancerHealthmonitor
+
+	LoadbalancerHealthmonitorRefUUID := uuid.NewV4().String()
+	LoadbalancerHealthmonitorRefUUID1 := uuid.NewV4().String()
+	LoadbalancerHealthmonitorRefUUID2 := uuid.NewV4().String()
+
+	LoadbalancerHealthmonitorRefModel = models.MakeLoadbalancerHealthmonitor()
+	LoadbalancerHealthmonitorRefModel.UUID = LoadbalancerHealthmonitorRefUUID
+	LoadbalancerHealthmonitorRefModel.FQName = []string{"test", LoadbalancerHealthmonitorRefUUID}
+	_, err = db.CreateLoadbalancerHealthmonitor(ctx, &models.CreateLoadbalancerHealthmonitorRequest{
+		LoadbalancerHealthmonitor: LoadbalancerHealthmonitorRefModel,
+	})
+	LoadbalancerHealthmonitorRefModel.UUID = LoadbalancerHealthmonitorRefUUID1
+	LoadbalancerHealthmonitorRefModel.FQName = []string{"test", LoadbalancerHealthmonitorRefUUID1}
+	_, err = db.CreateLoadbalancerHealthmonitor(ctx, &models.CreateLoadbalancerHealthmonitorRequest{
+		LoadbalancerHealthmonitor: LoadbalancerHealthmonitorRefModel,
+	})
+	LoadbalancerHealthmonitorRefModel.UUID = LoadbalancerHealthmonitorRefUUID2
+	LoadbalancerHealthmonitorRefModel.FQName = []string{"test", LoadbalancerHealthmonitorRefUUID2}
+	_, err = db.CreateLoadbalancerHealthmonitor(ctx, &models.CreateLoadbalancerHealthmonitorRequest{
+		LoadbalancerHealthmonitor: LoadbalancerHealthmonitorRefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	LoadbalancerHealthmonitorCreateRef = append(LoadbalancerHealthmonitorCreateRef,
+		&models.LoadbalancerPoolLoadbalancerHealthmonitorRef{UUID: LoadbalancerHealthmonitorRefUUID, To: []string{"test", LoadbalancerHealthmonitorRefUUID}})
+	LoadbalancerHealthmonitorCreateRef = append(LoadbalancerHealthmonitorCreateRef,
+		&models.LoadbalancerPoolLoadbalancerHealthmonitorRef{UUID: LoadbalancerHealthmonitorRefUUID2, To: []string{"test", LoadbalancerHealthmonitorRefUUID2}})
+	model.LoadbalancerHealthmonitorRefs = LoadbalancerHealthmonitorCreateRef
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
-	projectModel.UUID = "loadbalancer_pool_admin_project_uuid"
-	projectModel.FQName = []string{"default-domain-test", "admin-test"}
+
+	projectModel.UUID = uuid.NewV4().String()
+	projectModel.FQName = []string{"default-domain-test", projectModel.UUID}
 	projectModel.Perms2.Owner = "admin"
+
 	var createShare []*models.ShareType
-	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
+	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:" + projectModel.UUID, TenantAccess: 7})
 	model.Perms2.Share = createShare
 
 	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
@@ -183,208 +211,6 @@ func TestLoadbalancerPool(t *testing.T) {
 		t.Fatal("project create failed", err)
 	}
 
-	//    //populate update map
-	//    updateMap := map[string]interface{}{}
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".UUID", ".", "test")
-	//
-	//
-	//
-	//    if ".Perms2.Share" == ".Perms2.Share" {
-	//        var share []interface{}
-	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
-	//        common.SetValueByPath(updateMap, ".Perms2.Share", ".", share)
-	//    } else {
-	//        common.SetValueByPath(updateMap, ".Perms2.Share", ".", `{"test": "test"}`)
-	//    }
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".Perms2.OwnerAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".Perms2.Owner", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".Perms2.GlobalAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ParentUUID", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ParentType", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".LoadbalancerPoolProvider", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".LoadbalancerPoolProperties.SubnetID", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".LoadbalancerPoolProperties.StatusDescription", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".LoadbalancerPoolProperties.Status", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".LoadbalancerPoolProperties.SessionPersistence", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".LoadbalancerPoolProperties.Protocol", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".LoadbalancerPoolProperties.PersistenceCookieName", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".LoadbalancerPoolProperties.LoadbalancerMethod", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".LoadbalancerPoolProperties.AdminState", ".", true)
-	//
-	//
-	//
-	//    if ".LoadbalancerPoolCustomAttributes.KeyValuePair" == ".Perms2.Share" {
-	//        var share []interface{}
-	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
-	//        common.SetValueByPath(updateMap, ".LoadbalancerPoolCustomAttributes.KeyValuePair", ".", share)
-	//    } else {
-	//        common.SetValueByPath(updateMap, ".LoadbalancerPoolCustomAttributes.KeyValuePair", ".", `{"test": "test"}`)
-	//    }
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.UserVisible", ".", true)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.OwnerAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.Owner", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.OtherAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.GroupAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.Group", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.LastModified", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Enable", ".", true)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Description", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Creator", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Created", ".", "test")
-	//
-	//
-	//
-	//    if ".FQName" == ".Perms2.Share" {
-	//        var share []interface{}
-	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
-	//        common.SetValueByPath(updateMap, ".FQName", ".", share)
-	//    } else {
-	//        common.SetValueByPath(updateMap, ".FQName", ".", `{"test": "test"}`)
-	//    }
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".DisplayName", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ConfigurationVersion", ".", 1.0)
-	//
-	//
-	//
-	//    if ".Annotations.KeyValuePair" == ".Perms2.Share" {
-	//        var share []interface{}
-	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
-	//        common.SetValueByPath(updateMap, ".Annotations.KeyValuePair", ".", share)
-	//    } else {
-	//        common.SetValueByPath(updateMap, ".Annotations.KeyValuePair", ".", `{"test": "test"}`)
-	//    }
-	//
-	//
-	//    common.SetValueByPath(updateMap, "uuid", ".", "loadbalancer_pool_dummy_uuid")
-	//    common.SetValueByPath(updateMap, "fq_name", ".", []string{"default", "default-domain", "access_control_list_dummy"})
-	//    common.SetValueByPath(updateMap, "perms2.owner", ".", "admin")
-	//
-	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
-	//
-	//    var ServiceApplianceSetref []interface{}
-	//    ServiceApplianceSetref = append(ServiceApplianceSetref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_pool_service_appliance_set_ref_uuid", "to": []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid"}})
-	//    ServiceApplianceSetref = append(ServiceApplianceSetref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_pool_service_appliance_set_ref_uuid1", "to": []string{"test", "loadbalancer_pool_service_appliance_set_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ServiceApplianceSetRefs", ".", ServiceApplianceSetref)
-	//
-	//    var VirtualMachineInterfaceref []interface{}
-	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_pool_virtual_machine_interface_ref_uuid", "to": []string{"test", "loadbalancer_pool_virtual_machine_interface_ref_uuid"}})
-	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_pool_virtual_machine_interface_ref_uuid1", "to": []string{"test", "loadbalancer_pool_virtual_machine_interface_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
-	//
-	//    var LoadbalancerListenerref []interface{}
-	//    LoadbalancerListenerref = append(LoadbalancerListenerref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_pool_loadbalancer_listener_ref_uuid", "to": []string{"test", "loadbalancer_pool_loadbalancer_listener_ref_uuid"}})
-	//    LoadbalancerListenerref = append(LoadbalancerListenerref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_pool_loadbalancer_listener_ref_uuid1", "to": []string{"test", "loadbalancer_pool_loadbalancer_listener_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "LoadbalancerListenerRefs", ".", LoadbalancerListenerref)
-	//
-	//    var ServiceInstanceref []interface{}
-	//    ServiceInstanceref = append(ServiceInstanceref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_pool_service_instance_ref_uuid", "to": []string{"test", "loadbalancer_pool_service_instance_ref_uuid"}})
-	//    ServiceInstanceref = append(ServiceInstanceref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_pool_service_instance_ref_uuid1", "to": []string{"test", "loadbalancer_pool_service_instance_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ServiceInstanceRefs", ".", ServiceInstanceref)
-	//
-	//    var LoadbalancerHealthmonitorref []interface{}
-	//    LoadbalancerHealthmonitorref = append(LoadbalancerHealthmonitorref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid", "to": []string{"test", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid"}})
-	//    LoadbalancerHealthmonitorref = append(LoadbalancerHealthmonitorref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1", "to": []string{"test", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "LoadbalancerHealthmonitorRefs", ".", LoadbalancerHealthmonitorref)
-	//
-	//
 	_, err = db.CreateLoadbalancerPool(ctx,
 		&models.CreateLoadbalancerPoolRequest{
 			LoadbalancerPool: model,
@@ -394,199 +220,15 @@ func TestLoadbalancerPool(t *testing.T) {
 		t.Fatal("create failed", err)
 	}
 
-	//    err = common.DoInTransaction(db, func (tx *sql.Tx) error {
-	//        return UpdateLoadbalancerPool(tx, model.UUID, updateMap)
-	//    })
-	//    if err != nil {
-	//        t.Fatal("update failed", err)
-	//    }
-
-	//Delete ref entries, referred objects
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_loadbalancer_pool_loadbalancer_healthmonitor` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing LoadbalancerHealthmonitorRefs delete statement failed")
-		}
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid")
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1")
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "LoadbalancerHealthmonitorRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteLoadbalancerHealthmonitor(ctx,
-		&models.DeleteLoadbalancerHealthmonitorRequest{
-			ID: "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteLoadbalancerHealthmonitor(ctx,
-		&models.DeleteLoadbalancerHealthmonitorRequest{
-			ID: "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteLoadbalancerHealthmonitor(
-		ctx,
-		&models.DeleteLoadbalancerHealthmonitorRequest{
-			ID: "loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_loadbalancer_healthmonitor_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_loadbalancer_pool_service_appliance_set` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing ServiceApplianceSetRefs delete statement failed")
-		}
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_appliance_set_ref_uuid")
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_appliance_set_ref_uuid1")
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_appliance_set_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "ServiceApplianceSetRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteServiceApplianceSet(ctx,
-		&models.DeleteServiceApplianceSetRequest{
-			ID: "loadbalancer_pool_service_appliance_set_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_service_appliance_set_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteServiceApplianceSet(ctx,
-		&models.DeleteServiceApplianceSetRequest{
-			ID: "loadbalancer_pool_service_appliance_set_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_service_appliance_set_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteServiceApplianceSet(
-		ctx,
-		&models.DeleteServiceApplianceSetRequest{
-			ID: "loadbalancer_pool_service_appliance_set_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_service_appliance_set_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_loadbalancer_pool_virtual_machine_interface` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_virtual_machine_interface_ref_uuid")
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_virtual_machine_interface_ref_uuid1")
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_virtual_machine_interface_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteVirtualMachineInterface(ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "loadbalancer_pool_virtual_machine_interface_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_virtual_machine_interface_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteVirtualMachineInterface(ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "loadbalancer_pool_virtual_machine_interface_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_virtual_machine_interface_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteVirtualMachineInterface(
-		ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "loadbalancer_pool_virtual_machine_interface_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_virtual_machine_interface_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_loadbalancer_pool_loadbalancer_listener` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing LoadbalancerListenerRefs delete statement failed")
-		}
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_loadbalancer_listener_ref_uuid")
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_loadbalancer_listener_ref_uuid1")
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_loadbalancer_listener_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "LoadbalancerListenerRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteLoadbalancerListener(ctx,
-		&models.DeleteLoadbalancerListenerRequest{
-			ID: "loadbalancer_pool_loadbalancer_listener_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_loadbalancer_listener_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteLoadbalancerListener(ctx,
-		&models.DeleteLoadbalancerListenerRequest{
-			ID: "loadbalancer_pool_loadbalancer_listener_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_loadbalancer_listener_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteLoadbalancerListener(
-		ctx,
-		&models.DeleteLoadbalancerListenerRequest{
-			ID: "loadbalancer_pool_loadbalancer_listener_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_loadbalancer_listener_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_loadbalancer_pool_service_instance` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing ServiceInstanceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_instance_ref_uuid")
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_instance_ref_uuid1")
-		_, err = stmt.Exec("loadbalancer_pool_dummy_uuid", "loadbalancer_pool_service_instance_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "ServiceInstanceRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteServiceInstance(ctx,
-		&models.DeleteServiceInstanceRequest{
-			ID: "loadbalancer_pool_service_instance_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_service_instance_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteServiceInstance(ctx,
-		&models.DeleteServiceInstanceRequest{
-			ID: "loadbalancer_pool_service_instance_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_service_instance_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteServiceInstance(
-		ctx,
-		&models.DeleteServiceInstanceRequest{
-			ID: "loadbalancer_pool_service_instance_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_pool_service_instance_ref_uuid2 failed", err)
-	}
-
-	//Delete the project created for sharing
-	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
-		ID: projectModel.UUID})
-	if err != nil {
-		t.Fatal("delete project failed", err)
-	}
-
 	response, err := db.ListLoadbalancerPool(ctx, &models.ListLoadbalancerPoolRequest{
-		Spec: &models.ListSpec{Limit: 1}})
+		Spec: &models.ListSpec{Limit: 1,
+			Filters: []*models.Filter{
+				&models.Filter{
+					Key:    "uuid",
+					Values: []string{model.UUID},
+				},
+			},
+		}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
@@ -617,13 +259,17 @@ func TestLoadbalancerPool(t *testing.T) {
 		t.Fatal("delete failed", err)
 	}
 
-	response, err = db.ListLoadbalancerPool(ctx, &models.ListLoadbalancerPoolRequest{
-		Spec: &models.ListSpec{Limit: 1}})
-	if err != nil {
-		t.Fatal("list failed", err)
+	_, err = db.GetLoadbalancerPool(ctx, &models.GetLoadbalancerPoolRequest{
+		ID: model.UUID})
+	if err == nil {
+		t.Fatal("expected not found error")
 	}
-	if len(response.LoadbalancerPools) != 0 {
-		t.Fatal("expected no element", err)
+
+	//Delete the project created for sharing
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
+	if err != nil {
+		t.Fatal("delete project failed", err)
 	}
 	return
 }

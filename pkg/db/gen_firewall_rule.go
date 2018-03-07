@@ -112,9 +112,9 @@ var FirewallRuleBackRefFields = map[string][]string{}
 // FirewallRuleParentTypes is possible parents for FirewallRule
 var FirewallRuleParents = []string{
 
-	"policy_management",
-
 	"project",
+
+	"policy_management",
 }
 
 // CreateFirewallRule inserts FirewallRule to DB
@@ -191,6 +191,9 @@ func (db *DB) createFirewallRule(
 		common.MustJSON(model.GetActionList().GetApplyService()),
 		bool(model.GetActionList().GetAlert()))
 	if err != nil {
+		log.WithFields(log.Fields{
+			"model": model,
+			"err":   err}).Debug("create failed")
 		return errors.Wrap(err, "create failed")
 	}
 
@@ -638,6 +641,26 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	}
 
+	if value, ok := values["ref_address_group"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.FirewallRuleAddressGroupRef{}
+			referenceModel.UUID = uuid
+			m.AddressGroupRefs = append(m.AddressGroupRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_security_logging_object"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -698,26 +721,6 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 		}
 	}
 
-	if value, ok := values["ref_address_group"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.FirewallRuleAddressGroupRef{}
-			referenceModel.UUID = uuid
-			m.AddressGroupRefs = append(m.AddressGroupRefs, referenceModel)
-
-		}
-	}
-
 	return m, nil
 }
 
@@ -740,10 +743,6 @@ func (db *DB) listFirewallRule(ctx context.Context, request *models.ListFirewall
 		spec.Filters = models.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 	query, columns, values := qb.ListQuery(auth, spec)
-	log.WithFields(log.Fields{
-		"listSpec": spec,
-		"query":    query,
-	}).Debug("select query")
 	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")

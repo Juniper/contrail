@@ -52,11 +52,6 @@ var InstanceIPFields = []string{
 // InstanceIPRefFields is db reference fields for InstanceIP
 var InstanceIPRefFields = map[string][]string{
 
-	"virtual_router": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"network_ipam": []string{
 	// <schema.Schema Value>
 
@@ -73,6 +68,11 @@ var InstanceIPRefFields = map[string][]string{
 	},
 
 	"physical_router": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"virtual_router": []string{
 	// <schema.Schema Value>
 
 	},
@@ -158,7 +158,26 @@ func (db *DB) createInstanceIP(
 		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
+		log.WithFields(log.Fields{
+			"model": model,
+			"err":   err}).Debug("create failed")
 		return errors.Wrap(err, "create failed")
+	}
+
+	for _, ref := range model.NetworkIpamRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("network_ipam"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "NetworkIpamRefs create failed")
+		}
+	}
+
+	for _, ref := range model.VirtualNetworkRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_network"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs create failed")
+		}
 	}
 
 	for _, ref := range model.VirtualMachineInterfaceRefs {
@@ -182,22 +201,6 @@ func (db *DB) createInstanceIP(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_router"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualRouterRefs create failed")
-		}
-	}
-
-	for _, ref := range model.NetworkIpamRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("network_ipam"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "NetworkIpamRefs create failed")
-		}
-	}
-
-	for _, ref := range model.VirtualNetworkRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_network"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs create failed")
 		}
 	}
 
@@ -415,26 +418,6 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 
 	}
 
-	if value, ok := values["ref_virtual_router"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.InstanceIPVirtualRouterRef{}
-			referenceModel.UUID = uuid
-			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_network_ipam"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -511,6 +494,26 @@ func scanInstanceIP(values map[string]interface{}) (*models.InstanceIP, error) {
 			referenceModel := &models.InstanceIPPhysicalRouterRef{}
 			referenceModel.UUID = uuid
 			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_router"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.InstanceIPVirtualRouterRef{}
+			referenceModel.UUID = uuid
+			m.VirtualRouterRefs = append(m.VirtualRouterRefs, referenceModel)
 
 		}
 	}
@@ -730,10 +733,6 @@ func (db *DB) listInstanceIP(ctx context.Context, request *models.ListInstanceIP
 		spec.Filters = models.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 	query, columns, values := qb.ListQuery(auth, spec)
-	log.WithFields(log.Fields{
-		"listSpec": spec,
-		"query":    query,
-	}).Debug("select query")
 	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")

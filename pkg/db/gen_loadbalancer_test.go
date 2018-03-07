@@ -3,6 +3,7 @@ package db
 
 import (
 	"context"
+	"github.com/satori/go.uuid"
 	"testing"
 	"time"
 
@@ -15,7 +16,7 @@ import (
 var _ = errors.New("")
 
 func TestLoadbalancer(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 	db := &DB{
 		DB:      testDB,
 		Dialect: NewDialect("mysql"),
@@ -24,106 +25,119 @@ func TestLoadbalancer(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db.DB, "metadata")
-	mutexTable := common.UseTable(db.DB, "loadbalancer")
-	// mutexProject := UseTable(db.DB, "loadbalancer")
-	defer func() {
-		mutexTable.Unlock()
-		mutexMetadata.Unlock()
-		if p := recover(); p != nil {
-			panic(p)
-		}
-	}()
 	model := models.MakeLoadbalancer()
-	model.UUID = "loadbalancer_dummy_uuid"
-	model.FQName = []string{"default", "default-domain", "loadbalancer_dummy"}
+	model.UUID = uuid.NewV4().String()
+	model.FQName = []string{"default", "default-domain", model.UUID}
 	model.Perms2.Owner = "admin"
 	var err error
 
 	// Create referred objects
 
-	var ServiceApplianceSetcreateref []*models.LoadbalancerServiceApplianceSetRef
-	var ServiceApplianceSetrefModel *models.ServiceApplianceSet
-	ServiceApplianceSetrefModel = models.MakeServiceApplianceSet()
-	ServiceApplianceSetrefModel.UUID = "loadbalancer_service_appliance_set_ref_uuid"
-	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_service_appliance_set_ref_uuid"}
-	_, err = db.CreateServiceApplianceSet(ctx, &models.CreateServiceApplianceSetRequest{
-		ServiceApplianceSet: ServiceApplianceSetrefModel,
-	})
-	ServiceApplianceSetrefModel.UUID = "loadbalancer_service_appliance_set_ref_uuid1"
-	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_service_appliance_set_ref_uuid1"}
-	_, err = db.CreateServiceApplianceSet(ctx, &models.CreateServiceApplianceSetRequest{
-		ServiceApplianceSet: ServiceApplianceSetrefModel,
-	})
-	ServiceApplianceSetrefModel.UUID = "loadbalancer_service_appliance_set_ref_uuid2"
-	ServiceApplianceSetrefModel.FQName = []string{"test", "loadbalancer_service_appliance_set_ref_uuid2"}
-	_, err = db.CreateServiceApplianceSet(ctx, &models.CreateServiceApplianceSetRequest{
-		ServiceApplianceSet: ServiceApplianceSetrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	ServiceApplianceSetcreateref = append(ServiceApplianceSetcreateref, &models.LoadbalancerServiceApplianceSetRef{UUID: "loadbalancer_service_appliance_set_ref_uuid", To: []string{"test", "loadbalancer_service_appliance_set_ref_uuid"}})
-	ServiceApplianceSetcreateref = append(ServiceApplianceSetcreateref, &models.LoadbalancerServiceApplianceSetRef{UUID: "loadbalancer_service_appliance_set_ref_uuid2", To: []string{"test", "loadbalancer_service_appliance_set_ref_uuid2"}})
-	model.ServiceApplianceSetRefs = ServiceApplianceSetcreateref
+	var ServiceApplianceSetCreateRef []*models.LoadbalancerServiceApplianceSetRef
+	var ServiceApplianceSetRefModel *models.ServiceApplianceSet
 
-	var VirtualMachineInterfacecreateref []*models.LoadbalancerVirtualMachineInterfaceRef
-	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
-	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
-	VirtualMachineInterfacerefModel.UUID = "loadbalancer_virtual_machine_interface_ref_uuid"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "loadbalancer_virtual_machine_interface_ref_uuid"}
-	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
-		VirtualMachineInterface: VirtualMachineInterfacerefModel,
-	})
-	VirtualMachineInterfacerefModel.UUID = "loadbalancer_virtual_machine_interface_ref_uuid1"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "loadbalancer_virtual_machine_interface_ref_uuid1"}
-	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
-		VirtualMachineInterface: VirtualMachineInterfacerefModel,
-	})
-	VirtualMachineInterfacerefModel.UUID = "loadbalancer_virtual_machine_interface_ref_uuid2"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "loadbalancer_virtual_machine_interface_ref_uuid2"}
-	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
-		VirtualMachineInterface: VirtualMachineInterfacerefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.LoadbalancerVirtualMachineInterfaceRef{UUID: "loadbalancer_virtual_machine_interface_ref_uuid", To: []string{"test", "loadbalancer_virtual_machine_interface_ref_uuid"}})
-	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.LoadbalancerVirtualMachineInterfaceRef{UUID: "loadbalancer_virtual_machine_interface_ref_uuid2", To: []string{"test", "loadbalancer_virtual_machine_interface_ref_uuid2"}})
-	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
+	ServiceApplianceSetRefUUID := uuid.NewV4().String()
+	ServiceApplianceSetRefUUID1 := uuid.NewV4().String()
+	ServiceApplianceSetRefUUID2 := uuid.NewV4().String()
 
-	var ServiceInstancecreateref []*models.LoadbalancerServiceInstanceRef
-	var ServiceInstancerefModel *models.ServiceInstance
-	ServiceInstancerefModel = models.MakeServiceInstance()
-	ServiceInstancerefModel.UUID = "loadbalancer_service_instance_ref_uuid"
-	ServiceInstancerefModel.FQName = []string{"test", "loadbalancer_service_instance_ref_uuid"}
-	_, err = db.CreateServiceInstance(ctx, &models.CreateServiceInstanceRequest{
-		ServiceInstance: ServiceInstancerefModel,
+	ServiceApplianceSetRefModel = models.MakeServiceApplianceSet()
+	ServiceApplianceSetRefModel.UUID = ServiceApplianceSetRefUUID
+	ServiceApplianceSetRefModel.FQName = []string{"test", ServiceApplianceSetRefUUID}
+	_, err = db.CreateServiceApplianceSet(ctx, &models.CreateServiceApplianceSetRequest{
+		ServiceApplianceSet: ServiceApplianceSetRefModel,
 	})
-	ServiceInstancerefModel.UUID = "loadbalancer_service_instance_ref_uuid1"
-	ServiceInstancerefModel.FQName = []string{"test", "loadbalancer_service_instance_ref_uuid1"}
-	_, err = db.CreateServiceInstance(ctx, &models.CreateServiceInstanceRequest{
-		ServiceInstance: ServiceInstancerefModel,
+	ServiceApplianceSetRefModel.UUID = ServiceApplianceSetRefUUID1
+	ServiceApplianceSetRefModel.FQName = []string{"test", ServiceApplianceSetRefUUID1}
+	_, err = db.CreateServiceApplianceSet(ctx, &models.CreateServiceApplianceSetRequest{
+		ServiceApplianceSet: ServiceApplianceSetRefModel,
 	})
-	ServiceInstancerefModel.UUID = "loadbalancer_service_instance_ref_uuid2"
-	ServiceInstancerefModel.FQName = []string{"test", "loadbalancer_service_instance_ref_uuid2"}
-	_, err = db.CreateServiceInstance(ctx, &models.CreateServiceInstanceRequest{
-		ServiceInstance: ServiceInstancerefModel,
+	ServiceApplianceSetRefModel.UUID = ServiceApplianceSetRefUUID2
+	ServiceApplianceSetRefModel.FQName = []string{"test", ServiceApplianceSetRefUUID2}
+	_, err = db.CreateServiceApplianceSet(ctx, &models.CreateServiceApplianceSetRequest{
+		ServiceApplianceSet: ServiceApplianceSetRefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
 	}
-	ServiceInstancecreateref = append(ServiceInstancecreateref, &models.LoadbalancerServiceInstanceRef{UUID: "loadbalancer_service_instance_ref_uuid", To: []string{"test", "loadbalancer_service_instance_ref_uuid"}})
-	ServiceInstancecreateref = append(ServiceInstancecreateref, &models.LoadbalancerServiceInstanceRef{UUID: "loadbalancer_service_instance_ref_uuid2", To: []string{"test", "loadbalancer_service_instance_ref_uuid2"}})
-	model.ServiceInstanceRefs = ServiceInstancecreateref
+	ServiceApplianceSetCreateRef = append(ServiceApplianceSetCreateRef,
+		&models.LoadbalancerServiceApplianceSetRef{UUID: ServiceApplianceSetRefUUID, To: []string{"test", ServiceApplianceSetRefUUID}})
+	ServiceApplianceSetCreateRef = append(ServiceApplianceSetCreateRef,
+		&models.LoadbalancerServiceApplianceSetRef{UUID: ServiceApplianceSetRefUUID2, To: []string{"test", ServiceApplianceSetRefUUID2}})
+	model.ServiceApplianceSetRefs = ServiceApplianceSetCreateRef
+
+	var VirtualMachineInterfaceCreateRef []*models.LoadbalancerVirtualMachineInterfaceRef
+	var VirtualMachineInterfaceRefModel *models.VirtualMachineInterface
+
+	VirtualMachineInterfaceRefUUID := uuid.NewV4().String()
+	VirtualMachineInterfaceRefUUID1 := uuid.NewV4().String()
+	VirtualMachineInterfaceRefUUID2 := uuid.NewV4().String()
+
+	VirtualMachineInterfaceRefModel = models.MakeVirtualMachineInterface()
+	VirtualMachineInterfaceRefModel.UUID = VirtualMachineInterfaceRefUUID
+	VirtualMachineInterfaceRefModel.FQName = []string{"test", VirtualMachineInterfaceRefUUID}
+	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: VirtualMachineInterfaceRefModel,
+	})
+	VirtualMachineInterfaceRefModel.UUID = VirtualMachineInterfaceRefUUID1
+	VirtualMachineInterfaceRefModel.FQName = []string{"test", VirtualMachineInterfaceRefUUID1}
+	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: VirtualMachineInterfaceRefModel,
+	})
+	VirtualMachineInterfaceRefModel.UUID = VirtualMachineInterfaceRefUUID2
+	VirtualMachineInterfaceRefModel.FQName = []string{"test", VirtualMachineInterfaceRefUUID2}
+	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: VirtualMachineInterfaceRefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	VirtualMachineInterfaceCreateRef = append(VirtualMachineInterfaceCreateRef,
+		&models.LoadbalancerVirtualMachineInterfaceRef{UUID: VirtualMachineInterfaceRefUUID, To: []string{"test", VirtualMachineInterfaceRefUUID}})
+	VirtualMachineInterfaceCreateRef = append(VirtualMachineInterfaceCreateRef,
+		&models.LoadbalancerVirtualMachineInterfaceRef{UUID: VirtualMachineInterfaceRefUUID2, To: []string{"test", VirtualMachineInterfaceRefUUID2}})
+	model.VirtualMachineInterfaceRefs = VirtualMachineInterfaceCreateRef
+
+	var ServiceInstanceCreateRef []*models.LoadbalancerServiceInstanceRef
+	var ServiceInstanceRefModel *models.ServiceInstance
+
+	ServiceInstanceRefUUID := uuid.NewV4().String()
+	ServiceInstanceRefUUID1 := uuid.NewV4().String()
+	ServiceInstanceRefUUID2 := uuid.NewV4().String()
+
+	ServiceInstanceRefModel = models.MakeServiceInstance()
+	ServiceInstanceRefModel.UUID = ServiceInstanceRefUUID
+	ServiceInstanceRefModel.FQName = []string{"test", ServiceInstanceRefUUID}
+	_, err = db.CreateServiceInstance(ctx, &models.CreateServiceInstanceRequest{
+		ServiceInstance: ServiceInstanceRefModel,
+	})
+	ServiceInstanceRefModel.UUID = ServiceInstanceRefUUID1
+	ServiceInstanceRefModel.FQName = []string{"test", ServiceInstanceRefUUID1}
+	_, err = db.CreateServiceInstance(ctx, &models.CreateServiceInstanceRequest{
+		ServiceInstance: ServiceInstanceRefModel,
+	})
+	ServiceInstanceRefModel.UUID = ServiceInstanceRefUUID2
+	ServiceInstanceRefModel.FQName = []string{"test", ServiceInstanceRefUUID2}
+	_, err = db.CreateServiceInstance(ctx, &models.CreateServiceInstanceRequest{
+		ServiceInstance: ServiceInstanceRefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	ServiceInstanceCreateRef = append(ServiceInstanceCreateRef,
+		&models.LoadbalancerServiceInstanceRef{UUID: ServiceInstanceRefUUID, To: []string{"test", ServiceInstanceRefUUID}})
+	ServiceInstanceCreateRef = append(ServiceInstanceCreateRef,
+		&models.LoadbalancerServiceInstanceRef{UUID: ServiceInstanceRefUUID2, To: []string{"test", ServiceInstanceRefUUID2}})
+	model.ServiceInstanceRefs = ServiceInstanceCreateRef
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
-	projectModel.UUID = "loadbalancer_admin_project_uuid"
-	projectModel.FQName = []string{"default-domain-test", "admin-test"}
+
+	projectModel.UUID = uuid.NewV4().String()
+	projectModel.FQName = []string{"default-domain-test", projectModel.UUID}
 	projectModel.Perms2.Owner = "admin"
+
 	var createShare []*models.ShareType
-	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
+	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:" + projectModel.UUID, TenantAccess: 7})
 	model.Perms2.Share = createShare
 
 	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
@@ -133,174 +147,6 @@ func TestLoadbalancer(t *testing.T) {
 		t.Fatal("project create failed", err)
 	}
 
-	//    //populate update map
-	//    updateMap := map[string]interface{}{}
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".UUID", ".", "test")
-	//
-	//
-	//
-	//    if ".Perms2.Share" == ".Perms2.Share" {
-	//        var share []interface{}
-	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
-	//        common.SetValueByPath(updateMap, ".Perms2.Share", ".", share)
-	//    } else {
-	//        common.SetValueByPath(updateMap, ".Perms2.Share", ".", `{"test": "test"}`)
-	//    }
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".Perms2.OwnerAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".Perms2.Owner", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".Perms2.GlobalAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ParentUUID", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ParentType", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".LoadbalancerProvider", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".LoadbalancerProperties.VipSubnetID", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".LoadbalancerProperties.VipAddress", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".LoadbalancerProperties.Status", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".LoadbalancerProperties.ProvisioningStatus", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".LoadbalancerProperties.OperatingStatus", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".LoadbalancerProperties.AdminState", ".", true)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.UserVisible", ".", true)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.OwnerAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.Owner", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.OtherAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.GroupAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.Group", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.LastModified", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Enable", ".", true)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Description", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Creator", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Created", ".", "test")
-	//
-	//
-	//
-	//    if ".FQName" == ".Perms2.Share" {
-	//        var share []interface{}
-	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
-	//        common.SetValueByPath(updateMap, ".FQName", ".", share)
-	//    } else {
-	//        common.SetValueByPath(updateMap, ".FQName", ".", `{"test": "test"}`)
-	//    }
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".DisplayName", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ConfigurationVersion", ".", 1.0)
-	//
-	//
-	//
-	//    if ".Annotations.KeyValuePair" == ".Perms2.Share" {
-	//        var share []interface{}
-	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
-	//        common.SetValueByPath(updateMap, ".Annotations.KeyValuePair", ".", share)
-	//    } else {
-	//        common.SetValueByPath(updateMap, ".Annotations.KeyValuePair", ".", `{"test": "test"}`)
-	//    }
-	//
-	//
-	//    common.SetValueByPath(updateMap, "uuid", ".", "loadbalancer_dummy_uuid")
-	//    common.SetValueByPath(updateMap, "fq_name", ".", []string{"default", "default-domain", "access_control_list_dummy"})
-	//    common.SetValueByPath(updateMap, "perms2.owner", ".", "admin")
-	//
-	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
-	//
-	//    var ServiceApplianceSetref []interface{}
-	//    ServiceApplianceSetref = append(ServiceApplianceSetref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_service_appliance_set_ref_uuid", "to": []string{"test", "loadbalancer_service_appliance_set_ref_uuid"}})
-	//    ServiceApplianceSetref = append(ServiceApplianceSetref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_service_appliance_set_ref_uuid1", "to": []string{"test", "loadbalancer_service_appliance_set_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ServiceApplianceSetRefs", ".", ServiceApplianceSetref)
-	//
-	//    var VirtualMachineInterfaceref []interface{}
-	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_virtual_machine_interface_ref_uuid", "to": []string{"test", "loadbalancer_virtual_machine_interface_ref_uuid"}})
-	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_virtual_machine_interface_ref_uuid1", "to": []string{"test", "loadbalancer_virtual_machine_interface_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
-	//
-	//    var ServiceInstanceref []interface{}
-	//    ServiceInstanceref = append(ServiceInstanceref, map[string]interface{}{"operation":"delete", "uuid":"loadbalancer_service_instance_ref_uuid", "to": []string{"test", "loadbalancer_service_instance_ref_uuid"}})
-	//    ServiceInstanceref = append(ServiceInstanceref, map[string]interface{}{"operation":"add", "uuid":"loadbalancer_service_instance_ref_uuid1", "to": []string{"test", "loadbalancer_service_instance_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ServiceInstanceRefs", ".", ServiceInstanceref)
-	//
-	//
 	_, err = db.CreateLoadbalancer(ctx,
 		&models.CreateLoadbalancerRequest{
 			Loadbalancer: model,
@@ -310,129 +156,15 @@ func TestLoadbalancer(t *testing.T) {
 		t.Fatal("create failed", err)
 	}
 
-	//    err = common.DoInTransaction(db, func (tx *sql.Tx) error {
-	//        return UpdateLoadbalancer(tx, model.UUID, updateMap)
-	//    })
-	//    if err != nil {
-	//        t.Fatal("update failed", err)
-	//    }
-
-	//Delete ref entries, referred objects
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_loadbalancer_service_appliance_set` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing ServiceApplianceSetRefs delete statement failed")
-		}
-		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_service_appliance_set_ref_uuid")
-		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_service_appliance_set_ref_uuid1")
-		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_service_appliance_set_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "ServiceApplianceSetRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteServiceApplianceSet(ctx,
-		&models.DeleteServiceApplianceSetRequest{
-			ID: "loadbalancer_service_appliance_set_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_service_appliance_set_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteServiceApplianceSet(ctx,
-		&models.DeleteServiceApplianceSetRequest{
-			ID: "loadbalancer_service_appliance_set_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_service_appliance_set_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteServiceApplianceSet(
-		ctx,
-		&models.DeleteServiceApplianceSetRequest{
-			ID: "loadbalancer_service_appliance_set_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_service_appliance_set_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_loadbalancer_virtual_machine_interface` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_virtual_machine_interface_ref_uuid")
-		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_virtual_machine_interface_ref_uuid1")
-		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_virtual_machine_interface_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteVirtualMachineInterface(ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "loadbalancer_virtual_machine_interface_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_virtual_machine_interface_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteVirtualMachineInterface(ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "loadbalancer_virtual_machine_interface_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_virtual_machine_interface_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteVirtualMachineInterface(
-		ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "loadbalancer_virtual_machine_interface_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_virtual_machine_interface_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_loadbalancer_service_instance` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing ServiceInstanceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_service_instance_ref_uuid")
-		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_service_instance_ref_uuid1")
-		_, err = stmt.Exec("loadbalancer_dummy_uuid", "loadbalancer_service_instance_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "ServiceInstanceRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteServiceInstance(ctx,
-		&models.DeleteServiceInstanceRequest{
-			ID: "loadbalancer_service_instance_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_service_instance_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteServiceInstance(ctx,
-		&models.DeleteServiceInstanceRequest{
-			ID: "loadbalancer_service_instance_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_service_instance_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteServiceInstance(
-		ctx,
-		&models.DeleteServiceInstanceRequest{
-			ID: "loadbalancer_service_instance_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref loadbalancer_service_instance_ref_uuid2 failed", err)
-	}
-
-	//Delete the project created for sharing
-	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
-		ID: projectModel.UUID})
-	if err != nil {
-		t.Fatal("delete project failed", err)
-	}
-
 	response, err := db.ListLoadbalancer(ctx, &models.ListLoadbalancerRequest{
-		Spec: &models.ListSpec{Limit: 1}})
+		Spec: &models.ListSpec{Limit: 1,
+			Filters: []*models.Filter{
+				&models.Filter{
+					Key:    "uuid",
+					Values: []string{model.UUID},
+				},
+			},
+		}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
@@ -463,13 +195,17 @@ func TestLoadbalancer(t *testing.T) {
 		t.Fatal("delete failed", err)
 	}
 
-	response, err = db.ListLoadbalancer(ctx, &models.ListLoadbalancerRequest{
-		Spec: &models.ListSpec{Limit: 1}})
-	if err != nil {
-		t.Fatal("list failed", err)
+	_, err = db.GetLoadbalancer(ctx, &models.GetLoadbalancerRequest{
+		ID: model.UUID})
+	if err == nil {
+		t.Fatal("expected not found error")
 	}
-	if len(response.Loadbalancers) != 0 {
-		t.Fatal("expected no element", err)
+
+	//Delete the project created for sharing
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
+	if err != nil {
+		t.Fatal("delete project failed", err)
 	}
 	return
 }

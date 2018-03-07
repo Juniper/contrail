@@ -47,8 +47,8 @@ var VirtualRouterRefFields = map[string][]string{
 
 	"network_ipam": []string{
 		// <schema.Schema Value>
-		"subnet",
 		"allocation_pools",
+		"subnet",
 	},
 
 	"virtual_machine": []string{
@@ -160,6 +160,9 @@ func (db *DB) createVirtualRouter(
 		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
+		log.WithFields(log.Fields{
+			"model": model,
+			"err":   err}).Debug("create failed")
 		return errors.Wrap(err, "create failed")
 	}
 
@@ -169,8 +172,8 @@ func (db *DB) createVirtualRouter(
 			ref.Attr = &models.VirtualRouterNetworkIpamType{}
 		}
 
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("network_ipam"), model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetSubnet()),
-			common.MustJSON(ref.Attr.GetAllocationPools()))
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("network_ipam"), model.UUID, ref.UUID, common.MustJSON(ref.Attr.GetAllocationPools()),
+			common.MustJSON(ref.Attr.GetSubnet()))
 		if err != nil {
 			return errors.Wrap(err, "NetworkIpamRefs create failed")
 		}
@@ -356,26 +359,6 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 
 	}
 
-	if value, ok := values["ref_virtual_machine"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.VirtualRouterVirtualMachineRef{}
-			referenceModel.UUID = uuid
-			m.VirtualMachineRefs = append(m.VirtualMachineRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_network_ipam"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -395,6 +378,26 @@ func scanVirtualRouter(values map[string]interface{}) (*models.VirtualRouter, er
 
 			attr := models.MakeVirtualRouterNetworkIpamType()
 			referenceModel.Attr = attr
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_machine"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.VirtualRouterVirtualMachineRef{}
+			referenceModel.UUID = uuid
+			m.VirtualMachineRefs = append(m.VirtualMachineRefs, referenceModel)
 
 		}
 	}
@@ -776,10 +779,6 @@ func (db *DB) listVirtualRouter(ctx context.Context, request *models.ListVirtual
 		spec.Filters = models.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 	query, columns, values := qb.ListQuery(auth, spec)
-	log.WithFields(log.Fields{
-		"listSpec": spec,
-		"query":    query,
-	}).Debug("select query")
 	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")

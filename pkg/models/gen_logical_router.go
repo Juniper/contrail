@@ -48,12 +48,6 @@ func InterfaceToLogicalRouter(i interface{}) *LogicalRouter {
 		VxlanNetworkIdentifier:    common.InterfaceToString(m["vxlan_network_identifier"]),
 		ConfiguredRouteTargetList: InterfaceToRouteTargetList(m["configured_route_target_list"]),
 
-		VirtualNetworkRefs: InterfaceToLogicalRouterVirtualNetworkRefs(m["virtual_network_refs"]),
-
-		PhysicalRouterRefs: InterfaceToLogicalRouterPhysicalRouterRefs(m["physical_router_refs"]),
-
-		BGPVPNRefs: InterfaceToLogicalRouterBGPVPNRefs(m["bgpvpn_refs"]),
-
 		RouteTargetRefs: InterfaceToLogicalRouterRouteTargetRefs(m["route_target_refs"]),
 
 		VirtualMachineInterfaceRefs: InterfaceToLogicalRouterVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
@@ -61,7 +55,34 @@ func InterfaceToLogicalRouter(i interface{}) *LogicalRouter {
 		ServiceInstanceRefs: InterfaceToLogicalRouterServiceInstanceRefs(m["service_instance_refs"]),
 
 		RouteTableRefs: InterfaceToLogicalRouterRouteTableRefs(m["route_table_refs"]),
+
+		VirtualNetworkRefs: InterfaceToLogicalRouterVirtualNetworkRefs(m["virtual_network_refs"]),
+
+		PhysicalRouterRefs: InterfaceToLogicalRouterPhysicalRouterRefs(m["physical_router_refs"]),
+
+		BGPVPNRefs: InterfaceToLogicalRouterBGPVPNRefs(m["bgpvpn_refs"]),
 	}
+}
+
+func InterfaceToLogicalRouterVirtualNetworkRefs(i interface{}) []*LogicalRouterVirtualNetworkRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*LogicalRouterVirtualNetworkRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &LogicalRouterVirtualNetworkRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 func InterfaceToLogicalRouterPhysicalRouterRefs(i interface{}) []*LogicalRouterPhysicalRouterRef {
@@ -182,27 +203,6 @@ func InterfaceToLogicalRouterRouteTableRefs(i interface{}) []*LogicalRouterRoute
 			return nil
 		}
 		result = append(result, &LogicalRouterRouteTableRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
-func InterfaceToLogicalRouterVirtualNetworkRefs(i interface{}) []*LogicalRouterVirtualNetworkRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*LogicalRouterVirtualNetworkRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &LogicalRouterVirtualNetworkRef{
 			UUID: common.InterfaceToString(m["uuid"]),
 			To:   common.InterfaceToStringList(m["to"]),
 		})

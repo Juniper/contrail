@@ -96,6 +96,9 @@ func (db *DB) createForwardingClass(
 		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
+		log.WithFields(log.Fields{
+			"model": model,
+			"err":   err}).Debug("create failed")
 		return errors.Wrap(err, "create failed")
 	}
 
@@ -327,10 +330,6 @@ func (db *DB) listForwardingClass(ctx context.Context, request *models.ListForwa
 		spec.Filters = models.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 	query, columns, values := qb.ListQuery(auth, spec)
-	log.WithFields(log.Fields{
-		"listSpec": spec,
-		"query":    query,
-	}).Debug("select query")
 	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")

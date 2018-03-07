@@ -44,6 +44,16 @@ var LogicalRouterFields = []string{
 // LogicalRouterRefFields is db reference fields for LogicalRouter
 var LogicalRouterRefFields = map[string][]string{
 
+	"physical_router": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"bgpvpn": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"route_target": []string{
 	// <schema.Schema Value>
 
@@ -65,16 +75,6 @@ var LogicalRouterRefFields = map[string][]string{
 	},
 
 	"virtual_network": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"physical_router": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"bgpvpn": []string{
 	// <schema.Schema Value>
 
 	},
@@ -122,23 +122,10 @@ func (db *DB) createLogicalRouter(
 		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
+		log.WithFields(log.Fields{
+			"model": model,
+			"err":   err}).Debug("create failed")
 		return errors.Wrap(err, "create failed")
-	}
-
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
-	for _, ref := range model.ServiceInstanceRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_instance"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceInstanceRefs create failed")
-		}
 	}
 
 	for _, ref := range model.RouteTableRefs {
@@ -178,6 +165,22 @@ func (db *DB) createLogicalRouter(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("route_target"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "RouteTargetRefs create failed")
+		}
+	}
+
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
+	}
+
+	for _, ref := range model.ServiceInstanceRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_instance"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceInstanceRefs create failed")
 		}
 	}
 
@@ -347,6 +350,46 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 
 	}
 
+	if value, ok := values["ref_physical_router"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterPhysicalRouterRef{}
+			referenceModel.UUID = uuid
+			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_bgpvpn"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterBGPVPNRef{}
+			referenceModel.UUID = uuid
+			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_route_target"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -447,46 +490,6 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 		}
 	}
 
-	if value, ok := values["ref_physical_router"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LogicalRouterPhysicalRouterRef{}
-			referenceModel.UUID = uuid
-			m.PhysicalRouterRefs = append(m.PhysicalRouterRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_bgpvpn"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LogicalRouterBGPVPNRef{}
-			referenceModel.UUID = uuid
-			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
-
-		}
-	}
-
 	return m, nil
 }
 
@@ -509,10 +512,6 @@ func (db *DB) listLogicalRouter(ctx context.Context, request *models.ListLogical
 		spec.Filters = models.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 	query, columns, values := qb.ListQuery(auth, spec)
-	log.WithFields(log.Fields{
-		"listSpec": spec,
-		"query":    query,
-	}).Debug("select query")
 	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")

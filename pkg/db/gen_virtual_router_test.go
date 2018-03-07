@@ -3,6 +3,7 @@ package db
 
 import (
 	"context"
+	"github.com/satori/go.uuid"
 	"testing"
 	"time"
 
@@ -15,7 +16,7 @@ import (
 var _ = errors.New("")
 
 func TestVirtualRouter(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 	db := &DB{
 		DB:      testDB,
 		Dialect: NewDialect("mysql"),
@@ -24,81 +25,87 @@ func TestVirtualRouter(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db.DB, "metadata")
-	mutexTable := common.UseTable(db.DB, "virtual_router")
-	// mutexProject := UseTable(db.DB, "virtual_router")
-	defer func() {
-		mutexTable.Unlock()
-		mutexMetadata.Unlock()
-		if p := recover(); p != nil {
-			panic(p)
-		}
-	}()
 	model := models.MakeVirtualRouter()
-	model.UUID = "virtual_router_dummy_uuid"
-	model.FQName = []string{"default", "default-domain", "virtual_router_dummy"}
+	model.UUID = uuid.NewV4().String()
+	model.FQName = []string{"default", "default-domain", model.UUID}
 	model.Perms2.Owner = "admin"
 	var err error
 
 	// Create referred objects
 
-	var NetworkIpamcreateref []*models.VirtualRouterNetworkIpamRef
-	var NetworkIpamrefModel *models.NetworkIpam
-	NetworkIpamrefModel = models.MakeNetworkIpam()
-	NetworkIpamrefModel.UUID = "virtual_router_network_ipam_ref_uuid"
-	NetworkIpamrefModel.FQName = []string{"test", "virtual_router_network_ipam_ref_uuid"}
-	_, err = db.CreateNetworkIpam(ctx, &models.CreateNetworkIpamRequest{
-		NetworkIpam: NetworkIpamrefModel,
-	})
-	NetworkIpamrefModel.UUID = "virtual_router_network_ipam_ref_uuid1"
-	NetworkIpamrefModel.FQName = []string{"test", "virtual_router_network_ipam_ref_uuid1"}
-	_, err = db.CreateNetworkIpam(ctx, &models.CreateNetworkIpamRequest{
-		NetworkIpam: NetworkIpamrefModel,
-	})
-	NetworkIpamrefModel.UUID = "virtual_router_network_ipam_ref_uuid2"
-	NetworkIpamrefModel.FQName = []string{"test", "virtual_router_network_ipam_ref_uuid2"}
-	_, err = db.CreateNetworkIpam(ctx, &models.CreateNetworkIpamRequest{
-		NetworkIpam: NetworkIpamrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	NetworkIpamcreateref = append(NetworkIpamcreateref, &models.VirtualRouterNetworkIpamRef{UUID: "virtual_router_network_ipam_ref_uuid", To: []string{"test", "virtual_router_network_ipam_ref_uuid"}})
-	NetworkIpamcreateref = append(NetworkIpamcreateref, &models.VirtualRouterNetworkIpamRef{UUID: "virtual_router_network_ipam_ref_uuid2", To: []string{"test", "virtual_router_network_ipam_ref_uuid2"}})
-	model.NetworkIpamRefs = NetworkIpamcreateref
+	var NetworkIpamCreateRef []*models.VirtualRouterNetworkIpamRef
+	var NetworkIpamRefModel *models.NetworkIpam
 
-	var VirtualMachinecreateref []*models.VirtualRouterVirtualMachineRef
-	var VirtualMachinerefModel *models.VirtualMachine
-	VirtualMachinerefModel = models.MakeVirtualMachine()
-	VirtualMachinerefModel.UUID = "virtual_router_virtual_machine_ref_uuid"
-	VirtualMachinerefModel.FQName = []string{"test", "virtual_router_virtual_machine_ref_uuid"}
-	_, err = db.CreateVirtualMachine(ctx, &models.CreateVirtualMachineRequest{
-		VirtualMachine: VirtualMachinerefModel,
+	NetworkIpamRefUUID := uuid.NewV4().String()
+	NetworkIpamRefUUID1 := uuid.NewV4().String()
+	NetworkIpamRefUUID2 := uuid.NewV4().String()
+
+	NetworkIpamRefModel = models.MakeNetworkIpam()
+	NetworkIpamRefModel.UUID = NetworkIpamRefUUID
+	NetworkIpamRefModel.FQName = []string{"test", NetworkIpamRefUUID}
+	_, err = db.CreateNetworkIpam(ctx, &models.CreateNetworkIpamRequest{
+		NetworkIpam: NetworkIpamRefModel,
 	})
-	VirtualMachinerefModel.UUID = "virtual_router_virtual_machine_ref_uuid1"
-	VirtualMachinerefModel.FQName = []string{"test", "virtual_router_virtual_machine_ref_uuid1"}
-	_, err = db.CreateVirtualMachine(ctx, &models.CreateVirtualMachineRequest{
-		VirtualMachine: VirtualMachinerefModel,
+	NetworkIpamRefModel.UUID = NetworkIpamRefUUID1
+	NetworkIpamRefModel.FQName = []string{"test", NetworkIpamRefUUID1}
+	_, err = db.CreateNetworkIpam(ctx, &models.CreateNetworkIpamRequest{
+		NetworkIpam: NetworkIpamRefModel,
 	})
-	VirtualMachinerefModel.UUID = "virtual_router_virtual_machine_ref_uuid2"
-	VirtualMachinerefModel.FQName = []string{"test", "virtual_router_virtual_machine_ref_uuid2"}
-	_, err = db.CreateVirtualMachine(ctx, &models.CreateVirtualMachineRequest{
-		VirtualMachine: VirtualMachinerefModel,
+	NetworkIpamRefModel.UUID = NetworkIpamRefUUID2
+	NetworkIpamRefModel.FQName = []string{"test", NetworkIpamRefUUID2}
+	_, err = db.CreateNetworkIpam(ctx, &models.CreateNetworkIpamRequest{
+		NetworkIpam: NetworkIpamRefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
 	}
-	VirtualMachinecreateref = append(VirtualMachinecreateref, &models.VirtualRouterVirtualMachineRef{UUID: "virtual_router_virtual_machine_ref_uuid", To: []string{"test", "virtual_router_virtual_machine_ref_uuid"}})
-	VirtualMachinecreateref = append(VirtualMachinecreateref, &models.VirtualRouterVirtualMachineRef{UUID: "virtual_router_virtual_machine_ref_uuid2", To: []string{"test", "virtual_router_virtual_machine_ref_uuid2"}})
-	model.VirtualMachineRefs = VirtualMachinecreateref
+	NetworkIpamCreateRef = append(NetworkIpamCreateRef,
+		&models.VirtualRouterNetworkIpamRef{UUID: NetworkIpamRefUUID, To: []string{"test", NetworkIpamRefUUID}})
+	NetworkIpamCreateRef = append(NetworkIpamCreateRef,
+		&models.VirtualRouterNetworkIpamRef{UUID: NetworkIpamRefUUID2, To: []string{"test", NetworkIpamRefUUID2}})
+	model.NetworkIpamRefs = NetworkIpamCreateRef
+
+	var VirtualMachineCreateRef []*models.VirtualRouterVirtualMachineRef
+	var VirtualMachineRefModel *models.VirtualMachine
+
+	VirtualMachineRefUUID := uuid.NewV4().String()
+	VirtualMachineRefUUID1 := uuid.NewV4().String()
+	VirtualMachineRefUUID2 := uuid.NewV4().String()
+
+	VirtualMachineRefModel = models.MakeVirtualMachine()
+	VirtualMachineRefModel.UUID = VirtualMachineRefUUID
+	VirtualMachineRefModel.FQName = []string{"test", VirtualMachineRefUUID}
+	_, err = db.CreateVirtualMachine(ctx, &models.CreateVirtualMachineRequest{
+		VirtualMachine: VirtualMachineRefModel,
+	})
+	VirtualMachineRefModel.UUID = VirtualMachineRefUUID1
+	VirtualMachineRefModel.FQName = []string{"test", VirtualMachineRefUUID1}
+	_, err = db.CreateVirtualMachine(ctx, &models.CreateVirtualMachineRequest{
+		VirtualMachine: VirtualMachineRefModel,
+	})
+	VirtualMachineRefModel.UUID = VirtualMachineRefUUID2
+	VirtualMachineRefModel.FQName = []string{"test", VirtualMachineRefUUID2}
+	_, err = db.CreateVirtualMachine(ctx, &models.CreateVirtualMachineRequest{
+		VirtualMachine: VirtualMachineRefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	VirtualMachineCreateRef = append(VirtualMachineCreateRef,
+		&models.VirtualRouterVirtualMachineRef{UUID: VirtualMachineRefUUID, To: []string{"test", VirtualMachineRefUUID}})
+	VirtualMachineCreateRef = append(VirtualMachineCreateRef,
+		&models.VirtualRouterVirtualMachineRef{UUID: VirtualMachineRefUUID2, To: []string{"test", VirtualMachineRefUUID2}})
+	model.VirtualMachineRefs = VirtualMachineCreateRef
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
-	projectModel.UUID = "virtual_router_admin_project_uuid"
-	projectModel.FQName = []string{"default-domain-test", "admin-test"}
+
+	projectModel.UUID = uuid.NewV4().String()
+	projectModel.FQName = []string{"default-domain-test", projectModel.UUID}
 	projectModel.Perms2.Owner = "admin"
+
 	var createShare []*models.ShareType
-	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
+	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:" + projectModel.UUID, TenantAccess: 7})
 	model.Perms2.Share = createShare
 
 	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
@@ -108,162 +115,6 @@ func TestVirtualRouter(t *testing.T) {
 		t.Fatal("project create failed", err)
 	}
 
-	//    //populate update map
-	//    updateMap := map[string]interface{}{}
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".VirtualRouterType", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".VirtualRouterIPAddress", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".VirtualRouterDPDKEnabled", ".", true)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".UUID", ".", "test")
-	//
-	//
-	//
-	//    if ".Perms2.Share" == ".Perms2.Share" {
-	//        var share []interface{}
-	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
-	//        common.SetValueByPath(updateMap, ".Perms2.Share", ".", share)
-	//    } else {
-	//        common.SetValueByPath(updateMap, ".Perms2.Share", ".", `{"test": "test"}`)
-	//    }
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".Perms2.OwnerAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".Perms2.Owner", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".Perms2.GlobalAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ParentUUID", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ParentType", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.UserVisible", ".", true)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.OwnerAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.Owner", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.OtherAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.GroupAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.Group", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.LastModified", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Enable", ".", true)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Description", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Creator", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Created", ".", "test")
-	//
-	//
-	//
-	//    if ".FQName" == ".Perms2.Share" {
-	//        var share []interface{}
-	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
-	//        common.SetValueByPath(updateMap, ".FQName", ".", share)
-	//    } else {
-	//        common.SetValueByPath(updateMap, ".FQName", ".", `{"test": "test"}`)
-	//    }
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".DisplayName", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ConfigurationVersion", ".", 1.0)
-	//
-	//
-	//
-	//    if ".Annotations.KeyValuePair" == ".Perms2.Share" {
-	//        var share []interface{}
-	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
-	//        common.SetValueByPath(updateMap, ".Annotations.KeyValuePair", ".", share)
-	//    } else {
-	//        common.SetValueByPath(updateMap, ".Annotations.KeyValuePair", ".", `{"test": "test"}`)
-	//    }
-	//
-	//
-	//    common.SetValueByPath(updateMap, "uuid", ".", "virtual_router_dummy_uuid")
-	//    common.SetValueByPath(updateMap, "fq_name", ".", []string{"default", "default-domain", "access_control_list_dummy"})
-	//    common.SetValueByPath(updateMap, "perms2.owner", ".", "admin")
-	//
-	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
-	//
-	//    var NetworkIpamref []interface{}
-	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"delete", "uuid":"virtual_router_network_ipam_ref_uuid", "to": []string{"test", "virtual_router_network_ipam_ref_uuid"}})
-	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"add", "uuid":"virtual_router_network_ipam_ref_uuid1", "to": []string{"test", "virtual_router_network_ipam_ref_uuid1"}})
-	//
-	//    NetworkIpamAttr := map[string]interface{}{}
-	//
-	//
-	//
-	//    common.SetValueByPath(NetworkIpamAttr, ".Subnet", ".", map[string]string{"test": "test"})
-	//
-	//
-	//
-	//    common.SetValueByPath(NetworkIpamAttr, ".AllocationPools", ".", map[string]string{"test": "test"})
-	//
-	//
-	//
-	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"update", "uuid":"virtual_router_network_ipam_ref_uuid2", "to": []string{"test", "virtual_router_network_ipam_ref_uuid2"}, "attr": NetworkIpamAttr})
-	//
-	//    common.SetValueByPath(updateMap, "NetworkIpamRefs", ".", NetworkIpamref)
-	//
-	//    var VirtualMachineref []interface{}
-	//    VirtualMachineref = append(VirtualMachineref, map[string]interface{}{"operation":"delete", "uuid":"virtual_router_virtual_machine_ref_uuid", "to": []string{"test", "virtual_router_virtual_machine_ref_uuid"}})
-	//    VirtualMachineref = append(VirtualMachineref, map[string]interface{}{"operation":"add", "uuid":"virtual_router_virtual_machine_ref_uuid1", "to": []string{"test", "virtual_router_virtual_machine_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualMachineRefs", ".", VirtualMachineref)
-	//
-	//
 	_, err = db.CreateVirtualRouter(ctx,
 		&models.CreateVirtualRouterRequest{
 			VirtualRouter: model,
@@ -273,94 +124,15 @@ func TestVirtualRouter(t *testing.T) {
 		t.Fatal("create failed", err)
 	}
 
-	//    err = common.DoInTransaction(db, func (tx *sql.Tx) error {
-	//        return UpdateVirtualRouter(tx, model.UUID, updateMap)
-	//    })
-	//    if err != nil {
-	//        t.Fatal("update failed", err)
-	//    }
-
-	//Delete ref entries, referred objects
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_virtual_router_virtual_machine` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing VirtualMachineRefs delete statement failed")
-		}
-		_, err = stmt.Exec("virtual_router_dummy_uuid", "virtual_router_virtual_machine_ref_uuid")
-		_, err = stmt.Exec("virtual_router_dummy_uuid", "virtual_router_virtual_machine_ref_uuid1")
-		_, err = stmt.Exec("virtual_router_dummy_uuid", "virtual_router_virtual_machine_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteVirtualMachine(ctx,
-		&models.DeleteVirtualMachineRequest{
-			ID: "virtual_router_virtual_machine_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref virtual_router_virtual_machine_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteVirtualMachine(ctx,
-		&models.DeleteVirtualMachineRequest{
-			ID: "virtual_router_virtual_machine_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref virtual_router_virtual_machine_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteVirtualMachine(
-		ctx,
-		&models.DeleteVirtualMachineRequest{
-			ID: "virtual_router_virtual_machine_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref virtual_router_virtual_machine_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_virtual_router_network_ipam` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing NetworkIpamRefs delete statement failed")
-		}
-		_, err = stmt.Exec("virtual_router_dummy_uuid", "virtual_router_network_ipam_ref_uuid")
-		_, err = stmt.Exec("virtual_router_dummy_uuid", "virtual_router_network_ipam_ref_uuid1")
-		_, err = stmt.Exec("virtual_router_dummy_uuid", "virtual_router_network_ipam_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "NetworkIpamRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteNetworkIpam(ctx,
-		&models.DeleteNetworkIpamRequest{
-			ID: "virtual_router_network_ipam_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref virtual_router_network_ipam_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteNetworkIpam(ctx,
-		&models.DeleteNetworkIpamRequest{
-			ID: "virtual_router_network_ipam_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref virtual_router_network_ipam_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteNetworkIpam(
-		ctx,
-		&models.DeleteNetworkIpamRequest{
-			ID: "virtual_router_network_ipam_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref virtual_router_network_ipam_ref_uuid2 failed", err)
-	}
-
-	//Delete the project created for sharing
-	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
-		ID: projectModel.UUID})
-	if err != nil {
-		t.Fatal("delete project failed", err)
-	}
-
 	response, err := db.ListVirtualRouter(ctx, &models.ListVirtualRouterRequest{
-		Spec: &models.ListSpec{Limit: 1}})
+		Spec: &models.ListSpec{Limit: 1,
+			Filters: []*models.Filter{
+				&models.Filter{
+					Key:    "uuid",
+					Values: []string{model.UUID},
+				},
+			},
+		}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
@@ -391,13 +163,17 @@ func TestVirtualRouter(t *testing.T) {
 		t.Fatal("delete failed", err)
 	}
 
-	response, err = db.ListVirtualRouter(ctx, &models.ListVirtualRouterRequest{
-		Spec: &models.ListSpec{Limit: 1}})
-	if err != nil {
-		t.Fatal("list failed", err)
+	_, err = db.GetVirtualRouter(ctx, &models.GetVirtualRouterRequest{
+		ID: model.UUID})
+	if err == nil {
+		t.Fatal("expected not found error")
 	}
-	if len(response.VirtualRouters) != 0 {
-		t.Fatal("expected no element", err)
+
+	//Delete the project created for sharing
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
+	if err != nil {
+		t.Fatal("delete project failed", err)
 	}
 	return
 }

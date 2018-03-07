@@ -52,6 +52,27 @@ func InterfaceToServiceEndpoint(i interface{}) *ServiceEndpoint {
 	}
 }
 
+func InterfaceToServiceEndpointPhysicalRouterRefs(i interface{}) []*ServiceEndpointPhysicalRouterRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ServiceEndpointPhysicalRouterRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ServiceEndpointPhysicalRouterRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
 func InterfaceToServiceEndpointServiceObjectRefs(i interface{}) []*ServiceEndpointServiceObjectRef {
 	list, ok := i.([]interface{})
 	if !ok {
@@ -86,27 +107,6 @@ func InterfaceToServiceEndpointServiceConnectionModuleRefs(i interface{}) []*Ser
 			return nil
 		}
 		result = append(result, &ServiceEndpointServiceConnectionModuleRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
-func InterfaceToServiceEndpointPhysicalRouterRefs(i interface{}) []*ServiceEndpointPhysicalRouterRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*ServiceEndpointPhysicalRouterRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &ServiceEndpointPhysicalRouterRef{
 			UUID: common.InterfaceToString(m["uuid"]),
 			To:   common.InterfaceToStringList(m["to"]),
 		})

@@ -105,15 +105,10 @@ func (db *DB) createBGPAsAService(
 		int(model.GetAutonomousSystem()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
+		log.WithFields(log.Fields{
+			"model": model,
+			"err":   err}).Debug("create failed")
 		return errors.Wrap(err, "create failed")
-	}
-
-	for _, ref := range model.ServiceHealthCheckRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_health_check"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceHealthCheckRefs create failed")
-		}
 	}
 
 	for _, ref := range model.VirtualMachineInterfaceRefs {
@@ -121,6 +116,14 @@ func (db *DB) createBGPAsAService(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
+	}
+
+	for _, ref := range model.ServiceHealthCheckRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_health_check"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceHealthCheckRefs create failed")
 		}
 	}
 
@@ -376,10 +379,6 @@ func (db *DB) listBGPAsAService(ctx context.Context, request *models.ListBGPAsAS
 		spec.Filters = models.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 	query, columns, values := qb.ListQuery(auth, spec)
-	log.WithFields(log.Fields{
-		"listSpec": spec,
-		"query":    query,
-	}).Debug("select query")
 	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")

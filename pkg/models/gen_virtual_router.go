@@ -50,10 +50,31 @@ func InterfaceToVirtualRouter(i interface{}) *VirtualRouter {
 		VirtualRouterType:        common.InterfaceToString(m["virtual_router_type"]),
 		VirtualRouterIPAddress:   common.InterfaceToString(m["virtual_router_ip_address"]),
 
-		VirtualMachineRefs: InterfaceToVirtualRouterVirtualMachineRefs(m["virtual_machine_refs"]),
-
 		NetworkIpamRefs: InterfaceToVirtualRouterNetworkIpamRefs(m["network_ipam_refs"]),
+
+		VirtualMachineRefs: InterfaceToVirtualRouterVirtualMachineRefs(m["virtual_machine_refs"]),
 	}
+}
+
+func InterfaceToVirtualRouterVirtualMachineRefs(i interface{}) []*VirtualRouterVirtualMachineRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualRouterVirtualMachineRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualRouterVirtualMachineRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 func InterfaceToVirtualRouterNetworkIpamRefs(i interface{}) []*VirtualRouterNetworkIpamRef {
@@ -73,27 +94,6 @@ func InterfaceToVirtualRouterNetworkIpamRefs(i interface{}) []*VirtualRouterNetw
 			To:   common.InterfaceToStringList(m["to"]),
 
 			Attr: InterfaceToVirtualRouterNetworkIpamType(m["attr"]),
-		})
-	}
-
-	return result
-}
-
-func InterfaceToVirtualRouterVirtualMachineRefs(i interface{}) []*VirtualRouterVirtualMachineRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*VirtualRouterVirtualMachineRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &VirtualRouterVirtualMachineRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
 		})
 	}
 

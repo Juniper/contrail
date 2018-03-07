@@ -3,6 +3,7 @@ package db
 
 import (
 	"context"
+	"github.com/satori/go.uuid"
 	"testing"
 	"time"
 
@@ -15,7 +16,7 @@ import (
 var _ = errors.New("")
 
 func TestServiceAppliance(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 	db := &DB{
 		DB:      testDB,
 		Dialect: NewDialect("mysql"),
@@ -24,56 +25,55 @@ func TestServiceAppliance(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	mutexMetadata := common.UseTable(db.DB, "metadata")
-	mutexTable := common.UseTable(db.DB, "service_appliance")
-	// mutexProject := UseTable(db.DB, "service_appliance")
-	defer func() {
-		mutexTable.Unlock()
-		mutexMetadata.Unlock()
-		if p := recover(); p != nil {
-			panic(p)
-		}
-	}()
 	model := models.MakeServiceAppliance()
-	model.UUID = "service_appliance_dummy_uuid"
-	model.FQName = []string{"default", "default-domain", "service_appliance_dummy"}
+	model.UUID = uuid.NewV4().String()
+	model.FQName = []string{"default", "default-domain", model.UUID}
 	model.Perms2.Owner = "admin"
 	var err error
 
 	// Create referred objects
 
-	var PhysicalInterfacecreateref []*models.ServiceAppliancePhysicalInterfaceRef
-	var PhysicalInterfacerefModel *models.PhysicalInterface
-	PhysicalInterfacerefModel = models.MakePhysicalInterface()
-	PhysicalInterfacerefModel.UUID = "service_appliance_physical_interface_ref_uuid"
-	PhysicalInterfacerefModel.FQName = []string{"test", "service_appliance_physical_interface_ref_uuid"}
+	var PhysicalInterfaceCreateRef []*models.ServiceAppliancePhysicalInterfaceRef
+	var PhysicalInterfaceRefModel *models.PhysicalInterface
+
+	PhysicalInterfaceRefUUID := uuid.NewV4().String()
+	PhysicalInterfaceRefUUID1 := uuid.NewV4().String()
+	PhysicalInterfaceRefUUID2 := uuid.NewV4().String()
+
+	PhysicalInterfaceRefModel = models.MakePhysicalInterface()
+	PhysicalInterfaceRefModel.UUID = PhysicalInterfaceRefUUID
+	PhysicalInterfaceRefModel.FQName = []string{"test", PhysicalInterfaceRefUUID}
 	_, err = db.CreatePhysicalInterface(ctx, &models.CreatePhysicalInterfaceRequest{
-		PhysicalInterface: PhysicalInterfacerefModel,
+		PhysicalInterface: PhysicalInterfaceRefModel,
 	})
-	PhysicalInterfacerefModel.UUID = "service_appliance_physical_interface_ref_uuid1"
-	PhysicalInterfacerefModel.FQName = []string{"test", "service_appliance_physical_interface_ref_uuid1"}
+	PhysicalInterfaceRefModel.UUID = PhysicalInterfaceRefUUID1
+	PhysicalInterfaceRefModel.FQName = []string{"test", PhysicalInterfaceRefUUID1}
 	_, err = db.CreatePhysicalInterface(ctx, &models.CreatePhysicalInterfaceRequest{
-		PhysicalInterface: PhysicalInterfacerefModel,
+		PhysicalInterface: PhysicalInterfaceRefModel,
 	})
-	PhysicalInterfacerefModel.UUID = "service_appliance_physical_interface_ref_uuid2"
-	PhysicalInterfacerefModel.FQName = []string{"test", "service_appliance_physical_interface_ref_uuid2"}
+	PhysicalInterfaceRefModel.UUID = PhysicalInterfaceRefUUID2
+	PhysicalInterfaceRefModel.FQName = []string{"test", PhysicalInterfaceRefUUID2}
 	_, err = db.CreatePhysicalInterface(ctx, &models.CreatePhysicalInterfaceRequest{
-		PhysicalInterface: PhysicalInterfacerefModel,
+		PhysicalInterface: PhysicalInterfaceRefModel,
 	})
 	if err != nil {
 		t.Fatal("ref create failed", err)
 	}
-	PhysicalInterfacecreateref = append(PhysicalInterfacecreateref, &models.ServiceAppliancePhysicalInterfaceRef{UUID: "service_appliance_physical_interface_ref_uuid", To: []string{"test", "service_appliance_physical_interface_ref_uuid"}})
-	PhysicalInterfacecreateref = append(PhysicalInterfacecreateref, &models.ServiceAppliancePhysicalInterfaceRef{UUID: "service_appliance_physical_interface_ref_uuid2", To: []string{"test", "service_appliance_physical_interface_ref_uuid2"}})
-	model.PhysicalInterfaceRefs = PhysicalInterfacecreateref
+	PhysicalInterfaceCreateRef = append(PhysicalInterfaceCreateRef,
+		&models.ServiceAppliancePhysicalInterfaceRef{UUID: PhysicalInterfaceRefUUID, To: []string{"test", PhysicalInterfaceRefUUID}})
+	PhysicalInterfaceCreateRef = append(PhysicalInterfaceCreateRef,
+		&models.ServiceAppliancePhysicalInterfaceRef{UUID: PhysicalInterfaceRefUUID2, To: []string{"test", PhysicalInterfaceRefUUID2}})
+	model.PhysicalInterfaceRefs = PhysicalInterfaceCreateRef
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
-	projectModel.UUID = "service_appliance_admin_project_uuid"
-	projectModel.FQName = []string{"default-domain-test", "admin-test"}
+
+	projectModel.UUID = uuid.NewV4().String()
+	projectModel.FQName = []string{"default-domain-test", projectModel.UUID}
 	projectModel.Perms2.Owner = "admin"
+
 	var createShare []*models.ShareType
-	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:admin-test", TenantAccess: 7})
+	createShare = append(createShare, &models.ShareType{Tenant: "default-domain-test:" + projectModel.UUID, TenantAccess: 7})
 	model.Perms2.Share = createShare
 
 	_, err = db.CreateProject(ctx, &models.CreateProjectRequest{
@@ -83,160 +83,6 @@ func TestServiceAppliance(t *testing.T) {
 		t.Fatal("project create failed", err)
 	}
 
-	//    //populate update map
-	//    updateMap := map[string]interface{}{}
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".UUID", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ServiceApplianceUserCredentials.Username", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ServiceApplianceUserCredentials.Password", ".", "test")
-	//
-	//
-	//
-	//    if ".ServiceApplianceProperties.KeyValuePair" == ".Perms2.Share" {
-	//        var share []interface{}
-	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
-	//        common.SetValueByPath(updateMap, ".ServiceApplianceProperties.KeyValuePair", ".", share)
-	//    } else {
-	//        common.SetValueByPath(updateMap, ".ServiceApplianceProperties.KeyValuePair", ".", `{"test": "test"}`)
-	//    }
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ServiceApplianceIPAddress", ".", "test")
-	//
-	//
-	//
-	//    if ".Perms2.Share" == ".Perms2.Share" {
-	//        var share []interface{}
-	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
-	//        common.SetValueByPath(updateMap, ".Perms2.Share", ".", share)
-	//    } else {
-	//        common.SetValueByPath(updateMap, ".Perms2.Share", ".", `{"test": "test"}`)
-	//    }
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".Perms2.OwnerAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".Perms2.Owner", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".Perms2.GlobalAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ParentUUID", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ParentType", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.UserVisible", ".", true)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.OwnerAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.Owner", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.OtherAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.GroupAccess", ".", 1.0)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Permissions.Group", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.LastModified", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Enable", ".", true)
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Description", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Creator", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".IDPerms.Created", ".", "test")
-	//
-	//
-	//
-	//    if ".FQName" == ".Perms2.Share" {
-	//        var share []interface{}
-	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
-	//        common.SetValueByPath(updateMap, ".FQName", ".", share)
-	//    } else {
-	//        common.SetValueByPath(updateMap, ".FQName", ".", `{"test": "test"}`)
-	//    }
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".DisplayName", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, ".ConfigurationVersion", ".", 1.0)
-	//
-	//
-	//
-	//    if ".Annotations.KeyValuePair" == ".Perms2.Share" {
-	//        var share []interface{}
-	//        share = append(share, map[string]interface{}{"tenant":"default-domain-test:admin-test", "tenant_access":7})
-	//        common.SetValueByPath(updateMap, ".Annotations.KeyValuePair", ".", share)
-	//    } else {
-	//        common.SetValueByPath(updateMap, ".Annotations.KeyValuePair", ".", `{"test": "test"}`)
-	//    }
-	//
-	//
-	//    common.SetValueByPath(updateMap, "uuid", ".", "service_appliance_dummy_uuid")
-	//    common.SetValueByPath(updateMap, "fq_name", ".", []string{"default", "default-domain", "access_control_list_dummy"})
-	//    common.SetValueByPath(updateMap, "perms2.owner", ".", "admin")
-	//
-	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
-	//
-	//    var PhysicalInterfaceref []interface{}
-	//    PhysicalInterfaceref = append(PhysicalInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"service_appliance_physical_interface_ref_uuid", "to": []string{"test", "service_appliance_physical_interface_ref_uuid"}})
-	//    PhysicalInterfaceref = append(PhysicalInterfaceref, map[string]interface{}{"operation":"add", "uuid":"service_appliance_physical_interface_ref_uuid1", "to": []string{"test", "service_appliance_physical_interface_ref_uuid1"}})
-	//
-	//    PhysicalInterfaceAttr := map[string]interface{}{}
-	//
-	//
-	//
-	//    common.SetValueByPath(PhysicalInterfaceAttr, ".InterfaceType", ".", "test")
-	//
-	//
-	//
-	//    PhysicalInterfaceref = append(PhysicalInterfaceref, map[string]interface{}{"operation":"update", "uuid":"service_appliance_physical_interface_ref_uuid2", "to": []string{"test", "service_appliance_physical_interface_ref_uuid2"}, "attr": PhysicalInterfaceAttr})
-	//
-	//    common.SetValueByPath(updateMap, "PhysicalInterfaceRefs", ".", PhysicalInterfaceref)
-	//
-	//
 	_, err = db.CreateServiceAppliance(ctx,
 		&models.CreateServiceApplianceRequest{
 			ServiceAppliance: model,
@@ -246,59 +92,15 @@ func TestServiceAppliance(t *testing.T) {
 		t.Fatal("create failed", err)
 	}
 
-	//    err = common.DoInTransaction(db, func (tx *sql.Tx) error {
-	//        return UpdateServiceAppliance(tx, model.UUID, updateMap)
-	//    })
-	//    if err != nil {
-	//        t.Fatal("update failed", err)
-	//    }
-
-	//Delete ref entries, referred objects
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_service_appliance_physical_interface` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing PhysicalInterfaceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("service_appliance_dummy_uuid", "service_appliance_physical_interface_ref_uuid")
-		_, err = stmt.Exec("service_appliance_dummy_uuid", "service_appliance_physical_interface_ref_uuid1")
-		_, err = stmt.Exec("service_appliance_dummy_uuid", "service_appliance_physical_interface_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "PhysicalInterfaceRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeletePhysicalInterface(ctx,
-		&models.DeletePhysicalInterfaceRequest{
-			ID: "service_appliance_physical_interface_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref service_appliance_physical_interface_ref_uuid  failed", err)
-	}
-	_, err = db.DeletePhysicalInterface(ctx,
-		&models.DeletePhysicalInterfaceRequest{
-			ID: "service_appliance_physical_interface_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref service_appliance_physical_interface_ref_uuid1  failed", err)
-	}
-	_, err = db.DeletePhysicalInterface(
-		ctx,
-		&models.DeletePhysicalInterfaceRequest{
-			ID: "service_appliance_physical_interface_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref service_appliance_physical_interface_ref_uuid2 failed", err)
-	}
-
-	//Delete the project created for sharing
-	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
-		ID: projectModel.UUID})
-	if err != nil {
-		t.Fatal("delete project failed", err)
-	}
-
 	response, err := db.ListServiceAppliance(ctx, &models.ListServiceApplianceRequest{
-		Spec: &models.ListSpec{Limit: 1}})
+		Spec: &models.ListSpec{Limit: 1,
+			Filters: []*models.Filter{
+				&models.Filter{
+					Key:    "uuid",
+					Values: []string{model.UUID},
+				},
+			},
+		}})
 	if err != nil {
 		t.Fatal("list failed", err)
 	}
@@ -329,13 +131,17 @@ func TestServiceAppliance(t *testing.T) {
 		t.Fatal("delete failed", err)
 	}
 
-	response, err = db.ListServiceAppliance(ctx, &models.ListServiceApplianceRequest{
-		Spec: &models.ListSpec{Limit: 1}})
-	if err != nil {
-		t.Fatal("list failed", err)
+	_, err = db.GetServiceAppliance(ctx, &models.GetServiceApplianceRequest{
+		ID: model.UUID})
+	if err == nil {
+		t.Fatal("expected not found error")
 	}
-	if len(response.ServiceAppliances) != 0 {
-		t.Fatal("expected no element", err)
+
+	//Delete the project created for sharing
+	_, err = db.DeleteProject(ctx, &models.DeleteProjectRequest{
+		ID: projectModel.UUID})
+	if err != nil {
+		t.Fatal("delete project failed", err)
 	}
 	return
 }

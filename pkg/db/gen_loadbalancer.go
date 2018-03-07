@@ -49,17 +49,17 @@ var LoadbalancerFields = []string{
 // LoadbalancerRefFields is db reference fields for Loadbalancer
 var LoadbalancerRefFields = map[string][]string{
 
-	"service_instance": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"service_appliance_set": []string{
 	// <schema.Schema Value>
 
 	},
 
 	"virtual_machine_interface": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"service_instance": []string{
 	// <schema.Schema Value>
 
 	},
@@ -112,6 +112,9 @@ func (db *DB) createLoadbalancer(
 		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
+		log.WithFields(log.Fields{
+			"model": model,
+			"err":   err}).Debug("create failed")
 		return errors.Wrap(err, "create failed")
 	}
 
@@ -335,26 +338,6 @@ func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, erro
 
 	}
 
-	if value, ok := values["ref_service_appliance_set"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LoadbalancerServiceApplianceSetRef{}
-			referenceModel.UUID = uuid
-			m.ServiceApplianceSetRefs = append(m.ServiceApplianceSetRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_machine_interface"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -395,6 +378,26 @@ func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, erro
 		}
 	}
 
+	if value, ok := values["ref_service_appliance_set"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LoadbalancerServiceApplianceSetRef{}
+			referenceModel.UUID = uuid
+			m.ServiceApplianceSetRefs = append(m.ServiceApplianceSetRefs, referenceModel)
+
+		}
+	}
+
 	return m, nil
 }
 
@@ -417,10 +420,6 @@ func (db *DB) listLoadbalancer(ctx context.Context, request *models.ListLoadbala
 		spec.Filters = models.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 	query, columns, values := qb.ListQuery(auth, spec)
-	log.WithFields(log.Fields{
-		"listSpec": spec,
-		"query":    query,
-	}).Debug("select query")
 	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")

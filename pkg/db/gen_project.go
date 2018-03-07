@@ -1134,7 +1134,18 @@ func (db *DB) createProject(
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()),
 		bool(model.GetAlarmEnable()))
 	if err != nil {
+		log.WithFields(log.Fields{
+			"model": model,
+			"err":   err}).Debug("create failed")
 		return errors.Wrap(err, "create failed")
+	}
+
+	for _, ref := range model.AliasIPPoolRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("alias_ip_pool"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "AliasIPPoolRefs create failed")
+		}
 	}
 
 	for _, ref := range model.NamespaceRefs {
@@ -1163,14 +1174,6 @@ func (db *DB) createProject(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("floating_ip_pool"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "FloatingIPPoolRefs create failed")
-		}
-	}
-
-	for _, ref := range model.AliasIPPoolRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("alias_ip_pool"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "AliasIPPoolRefs create failed")
 		}
 	}
 
@@ -7469,10 +7472,6 @@ func (db *DB) listProject(ctx context.Context, request *models.ListProjectReques
 		spec.Filters = models.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 	query, columns, values := qb.ListQuery(auth, spec)
-	log.WithFields(log.Fields{
-		"listSpec": spec,
-		"query":    query,
-	}).Debug("select query")
 	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")

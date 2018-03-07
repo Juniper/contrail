@@ -92,15 +92,10 @@ func (db *DB) createE2ServiceProvider(
 		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
+		log.WithFields(log.Fields{
+			"model": model,
+			"err":   err}).Debug("create failed")
 		return errors.Wrap(err, "create failed")
-	}
-
-	for _, ref := range model.PhysicalRouterRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("physical_router"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "PhysicalRouterRefs create failed")
-		}
 	}
 
 	for _, ref := range model.PeeringPolicyRefs {
@@ -108,6 +103,14 @@ func (db *DB) createE2ServiceProvider(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("peering_policy"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PeeringPolicyRefs create failed")
+		}
+	}
+
+	for _, ref := range model.PhysicalRouterRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("physical_router"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "PhysicalRouterRefs create failed")
 		}
 	}
 
@@ -333,10 +336,6 @@ func (db *DB) listE2ServiceProvider(ctx context.Context, request *models.ListE2S
 		spec.Filters = models.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 	query, columns, values := qb.ListQuery(auth, spec)
-	log.WithFields(log.Fields{
-		"listSpec": spec,
-		"query":    query,
-	}).Debug("select query")
 	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")

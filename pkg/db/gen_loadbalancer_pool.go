@@ -52,6 +52,16 @@ var LoadbalancerPoolFields = []string{
 // LoadbalancerPoolRefFields is db reference fields for LoadbalancerPool
 var LoadbalancerPoolRefFields = map[string][]string{
 
+	"loadbalancer_healthmonitor": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"service_appliance_set": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
@@ -63,16 +73,6 @@ var LoadbalancerPoolRefFields = map[string][]string{
 	},
 
 	"service_instance": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"loadbalancer_healthmonitor": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"service_appliance_set": []string{
 	// <schema.Schema Value>
 
 	},
@@ -160,7 +160,26 @@ func (db *DB) createLoadbalancerPool(
 		int(model.GetConfigurationVersion()),
 		common.MustJSON(model.GetAnnotations().GetKeyValuePair()))
 	if err != nil {
+		log.WithFields(log.Fields{
+			"model": model,
+			"err":   err}).Debug("create failed")
 		return errors.Wrap(err, "create failed")
+	}
+
+	for _, ref := range model.ServiceApplianceSetRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_appliance_set"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
+		}
+	}
+
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
 	}
 
 	for _, ref := range model.LoadbalancerListenerRefs {
@@ -184,22 +203,6 @@ func (db *DB) createLoadbalancerPool(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("loadbalancer_healthmonitor"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "LoadbalancerHealthmonitorRefs create failed")
-		}
-	}
-
-	for _, ref := range model.ServiceApplianceSetRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_appliance_set"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
-		}
-	}
-
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
 	}
 
@@ -726,10 +729,6 @@ func (db *DB) listLoadbalancerPool(ctx context.Context, request *models.ListLoad
 		spec.Filters = models.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
 	}
 	query, columns, values := qb.ListQuery(auth, spec)
-	log.WithFields(log.Fields{
-		"listSpec": spec,
-		"query":    query,
-	}).Debug("select query")
 	rows, err = tx.QueryContext(ctx, query, values...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select query failed")
