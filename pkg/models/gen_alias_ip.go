@@ -47,7 +47,53 @@ func InterfaceToAliasIP(i interface{}) *AliasIP {
 		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
 		AliasIPAddress:       common.InterfaceToString(m["alias_ip_address"]),
 		AliasIPAddressFamily: common.InterfaceToString(m["alias_ip_address_family"]),
+
+		ProjectRefs: InterfaceToAliasIPProjectRefs(m["project_refs"]),
+
+		VirtualMachineInterfaceRefs: InterfaceToAliasIPVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
 	}
+}
+
+func InterfaceToAliasIPProjectRefs(i interface{}) []*AliasIPProjectRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*AliasIPProjectRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &AliasIPProjectRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToAliasIPVirtualMachineInterfaceRefs(i interface{}) []*AliasIPVirtualMachineInterfaceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*AliasIPVirtualMachineInterfaceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &AliasIPVirtualMachineInterfaceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeAliasIPSlice() makes a slice of AliasIP

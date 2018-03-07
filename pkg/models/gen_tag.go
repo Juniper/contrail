@@ -49,7 +49,30 @@ func InterfaceToTag(i interface{}) *Tag {
 		TagTypeName:          common.InterfaceToString(m["tag_type_name"]),
 		TagID:                common.InterfaceToString(m["tag_id"]),
 		TagValue:             common.InterfaceToString(m["tag_value"]),
+
+		TagTypeRefs: InterfaceToTagTagTypeRefs(m["tag_type_refs"]),
 	}
+}
+
+func InterfaceToTagTagTypeRefs(i interface{}) []*TagTagTypeRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*TagTagTypeRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &TagTagTypeRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeTagSlice() makes a slice of Tag

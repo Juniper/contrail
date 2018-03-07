@@ -47,7 +47,57 @@ func InterfaceToSecurityLoggingObject(i interface{}) *SecurityLoggingObject {
 		ConfigurationVersion:       common.InterfaceToInt64(m["configuration_version"]),
 		SecurityLoggingObjectRules: InterfaceToSecurityLoggingObjectRuleListType(m["security_logging_object_rules"]),
 		SecurityLoggingObjectRate:  common.InterfaceToInt64(m["security_logging_object_rate"]),
+
+		SecurityGroupRefs: InterfaceToSecurityLoggingObjectSecurityGroupRefs(m["security_group_refs"]),
+
+		NetworkPolicyRefs: InterfaceToSecurityLoggingObjectNetworkPolicyRefs(m["network_policy_refs"]),
 	}
+}
+
+func InterfaceToSecurityLoggingObjectSecurityGroupRefs(i interface{}) []*SecurityLoggingObjectSecurityGroupRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*SecurityLoggingObjectSecurityGroupRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &SecurityLoggingObjectSecurityGroupRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+
+			Attr: InterfaceToSecurityLoggingObjectRuleListType(m["attr"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToSecurityLoggingObjectNetworkPolicyRefs(i interface{}) []*SecurityLoggingObjectNetworkPolicyRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*SecurityLoggingObjectNetworkPolicyRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &SecurityLoggingObjectNetworkPolicyRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+
+			Attr: InterfaceToSecurityLoggingObjectRuleListType(m["attr"]),
+		})
+	}
+
+	return result
 }
 
 // MakeSecurityLoggingObjectSlice() makes a slice of SecurityLoggingObject

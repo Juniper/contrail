@@ -49,7 +49,30 @@ func InterfaceToNetworkIpam(i interface{}) *NetworkIpam {
 		NetworkIpamMGMT:      InterfaceToIpamType(m["network_ipam_mgmt"]),
 		IpamSubnets:          InterfaceToIpamSubnets(m["ipam_subnets"]),
 		IpamSubnetMethod:     common.InterfaceToString(m["ipam_subnet_method"]),
+
+		VirtualDNSRefs: InterfaceToNetworkIpamVirtualDNSRefs(m["virtual_DNS_refs"]),
 	}
+}
+
+func InterfaceToNetworkIpamVirtualDNSRefs(i interface{}) []*NetworkIpamVirtualDNSRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*NetworkIpamVirtualDNSRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &NetworkIpamVirtualDNSRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeNetworkIpamSlice() makes a slice of NetworkIpam

@@ -73,7 +73,30 @@ func InterfaceToNode(i interface{}) *Node {
 		PrivateMachineState:      common.InterfaceToString(m["private_machine_state"]),
 		DriverInfo:               InterfaceToDriverInfo(m["driver_info"]),
 		BMProperties:             InterfaceToBaremetalProperties(m["bm_properties"]),
+
+		KeypairRefs: InterfaceToNodeKeypairRefs(m["keypair_refs"]),
 	}
+}
+
+func InterfaceToNodeKeypairRefs(i interface{}) []*NodeKeypairRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*NodeKeypairRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &NodeKeypairRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeNodeSlice() makes a slice of Node

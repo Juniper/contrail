@@ -53,7 +53,30 @@ func InterfaceToKubernetesNode(i interface{}) *KubernetesNode {
 		Annotations:               InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:                    InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion:      common.InterfaceToInt64(m["configuration_version"]),
+
+		NodeRefs: InterfaceToKubernetesNodeNodeRefs(m["node_refs"]),
 	}
+}
+
+func InterfaceToKubernetesNodeNodeRefs(i interface{}) []*KubernetesNodeNodeRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*KubernetesNodeNodeRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &KubernetesNodeNodeRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeKubernetesNodeSlice() makes a slice of KubernetesNode

@@ -43,7 +43,32 @@ func InterfaceToRoutingPolicy(i interface{}) *RoutingPolicy {
 		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:               InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
+
+		ServiceInstanceRefs: InterfaceToRoutingPolicyServiceInstanceRefs(m["service_instance_refs"]),
 	}
+}
+
+func InterfaceToRoutingPolicyServiceInstanceRefs(i interface{}) []*RoutingPolicyServiceInstanceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*RoutingPolicyServiceInstanceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &RoutingPolicyServiceInstanceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+
+			Attr: InterfaceToRoutingPolicyServiceInstanceType(m["attr"]),
+		})
+	}
+
+	return result
 }
 
 // MakeRoutingPolicySlice() makes a slice of RoutingPolicy

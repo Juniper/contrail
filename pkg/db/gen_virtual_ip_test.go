@@ -42,31 +42,6 @@ func TestVirtualIP(t *testing.T) {
 
 	// Create referred objects
 
-	var VirtualMachineInterfacecreateref []*models.VirtualIPVirtualMachineInterfaceRef
-	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
-	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
-	VirtualMachineInterfacerefModel.UUID = "virtual_ip_virtual_machine_interface_ref_uuid"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid"}
-	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
-		VirtualMachineInterface: VirtualMachineInterfacerefModel,
-	})
-	VirtualMachineInterfacerefModel.UUID = "virtual_ip_virtual_machine_interface_ref_uuid1"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid1"}
-	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
-		VirtualMachineInterface: VirtualMachineInterfacerefModel,
-	})
-	VirtualMachineInterfacerefModel.UUID = "virtual_ip_virtual_machine_interface_ref_uuid2"
-	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid2"}
-	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
-		VirtualMachineInterface: VirtualMachineInterfacerefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.VirtualIPVirtualMachineInterfaceRef{UUID: "virtual_ip_virtual_machine_interface_ref_uuid", To: []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid"}})
-	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.VirtualIPVirtualMachineInterfaceRef{UUID: "virtual_ip_virtual_machine_interface_ref_uuid2", To: []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid2"}})
-	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
-
 	var LoadbalancerPoolcreateref []*models.VirtualIPLoadbalancerPoolRef
 	var LoadbalancerPoolrefModel *models.LoadbalancerPool
 	LoadbalancerPoolrefModel = models.MakeLoadbalancerPool()
@@ -91,6 +66,31 @@ func TestVirtualIP(t *testing.T) {
 	LoadbalancerPoolcreateref = append(LoadbalancerPoolcreateref, &models.VirtualIPLoadbalancerPoolRef{UUID: "virtual_ip_loadbalancer_pool_ref_uuid", To: []string{"test", "virtual_ip_loadbalancer_pool_ref_uuid"}})
 	LoadbalancerPoolcreateref = append(LoadbalancerPoolcreateref, &models.VirtualIPLoadbalancerPoolRef{UUID: "virtual_ip_loadbalancer_pool_ref_uuid2", To: []string{"test", "virtual_ip_loadbalancer_pool_ref_uuid2"}})
 	model.LoadbalancerPoolRefs = LoadbalancerPoolcreateref
+
+	var VirtualMachineInterfacecreateref []*models.VirtualIPVirtualMachineInterfaceRef
+	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
+	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
+	VirtualMachineInterfacerefModel.UUID = "virtual_ip_virtual_machine_interface_ref_uuid"
+	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid"}
+	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: VirtualMachineInterfacerefModel,
+	})
+	VirtualMachineInterfacerefModel.UUID = "virtual_ip_virtual_machine_interface_ref_uuid1"
+	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid1"}
+	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: VirtualMachineInterfacerefModel,
+	})
+	VirtualMachineInterfacerefModel.UUID = "virtual_ip_virtual_machine_interface_ref_uuid2"
+	VirtualMachineInterfacerefModel.FQName = []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid2"}
+	_, err = db.CreateVirtualMachineInterface(ctx, &models.CreateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: VirtualMachineInterfacerefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.VirtualIPVirtualMachineInterfaceRef{UUID: "virtual_ip_virtual_machine_interface_ref_uuid", To: []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid"}})
+	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.VirtualIPVirtualMachineInterfaceRef{UUID: "virtual_ip_virtual_machine_interface_ref_uuid2", To: []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid2"}})
+	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -263,14 +263,6 @@ func TestVirtualIP(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var LoadbalancerPoolref []interface{}
-	//    LoadbalancerPoolref = append(LoadbalancerPoolref, map[string]interface{}{"operation":"delete", "uuid":"virtual_ip_loadbalancer_pool_ref_uuid", "to": []string{"test", "virtual_ip_loadbalancer_pool_ref_uuid"}})
-	//    LoadbalancerPoolref = append(LoadbalancerPoolref, map[string]interface{}{"operation":"add", "uuid":"virtual_ip_loadbalancer_pool_ref_uuid1", "to": []string{"test", "virtual_ip_loadbalancer_pool_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "LoadbalancerPoolRefs", ".", LoadbalancerPoolref)
-	//
 	//    var VirtualMachineInterfaceref []interface{}
 	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"virtual_ip_virtual_machine_interface_ref_uuid", "to": []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid"}})
 	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"virtual_ip_virtual_machine_interface_ref_uuid1", "to": []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid1"}})
@@ -278,6 +270,14 @@ func TestVirtualIP(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
+	//
+	//    var LoadbalancerPoolref []interface{}
+	//    LoadbalancerPoolref = append(LoadbalancerPoolref, map[string]interface{}{"operation":"delete", "uuid":"virtual_ip_loadbalancer_pool_ref_uuid", "to": []string{"test", "virtual_ip_loadbalancer_pool_ref_uuid"}})
+	//    LoadbalancerPoolref = append(LoadbalancerPoolref, map[string]interface{}{"operation":"add", "uuid":"virtual_ip_loadbalancer_pool_ref_uuid1", "to": []string{"test", "virtual_ip_loadbalancer_pool_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "LoadbalancerPoolRefs", ".", LoadbalancerPoolref)
 	//
 	//
 	_, err = db.CreateVirtualIP(ctx,

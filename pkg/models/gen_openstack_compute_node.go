@@ -53,7 +53,30 @@ func InterfaceToOpenstackComputeNode(i interface{}) *OpenstackComputeNode {
 		Annotations:               InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:                    InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion:      common.InterfaceToInt64(m["configuration_version"]),
+
+		NodeRefs: InterfaceToOpenstackComputeNodeNodeRefs(m["node_refs"]),
 	}
+}
+
+func InterfaceToOpenstackComputeNodeNodeRefs(i interface{}) []*OpenstackComputeNodeNodeRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*OpenstackComputeNodeNodeRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &OpenstackComputeNodeNodeRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeOpenstackComputeNodeSlice() makes a slice of OpenstackComputeNode

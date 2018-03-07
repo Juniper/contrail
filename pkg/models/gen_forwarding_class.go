@@ -51,7 +51,30 @@ func InterfaceToForwardingClass(i interface{}) *ForwardingClass {
 		ForwardingClassVlanPriority: common.InterfaceToInt64(m["forwarding_class_vlan_priority"]),
 		ForwardingClassMPLSExp:      common.InterfaceToInt64(m["forwarding_class_mpls_exp"]),
 		ForwardingClassID:           common.InterfaceToInt64(m["forwarding_class_id"]),
+
+		QosQueueRefs: InterfaceToForwardingClassQosQueueRefs(m["qos_queue_refs"]),
 	}
+}
+
+func InterfaceToForwardingClassQosQueueRefs(i interface{}) []*ForwardingClassQosQueueRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ForwardingClassQosQueueRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ForwardingClassQosQueueRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeForwardingClassSlice() makes a slice of ForwardingClass

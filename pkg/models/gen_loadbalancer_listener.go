@@ -45,7 +45,30 @@ func InterfaceToLoadbalancerListener(i interface{}) *LoadbalancerListener {
 		Perms2:                         InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion:           common.InterfaceToInt64(m["configuration_version"]),
 		LoadbalancerListenerProperties: InterfaceToLoadbalancerListenerType(m["loadbalancer_listener_properties"]),
+
+		LoadbalancerRefs: InterfaceToLoadbalancerListenerLoadbalancerRefs(m["loadbalancer_refs"]),
 	}
+}
+
+func InterfaceToLoadbalancerListenerLoadbalancerRefs(i interface{}) []*LoadbalancerListenerLoadbalancerRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*LoadbalancerListenerLoadbalancerRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &LoadbalancerListenerLoadbalancerRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeLoadbalancerListenerSlice() makes a slice of LoadbalancerListener

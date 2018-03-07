@@ -43,7 +43,30 @@ func InterfaceToVirtualMachine(i interface{}) *VirtualMachine {
 		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:               InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
+
+		ServiceInstanceRefs: InterfaceToVirtualMachineServiceInstanceRefs(m["service_instance_refs"]),
 	}
+}
+
+func InterfaceToVirtualMachineServiceInstanceRefs(i interface{}) []*VirtualMachineServiceInstanceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualMachineServiceInstanceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualMachineServiceInstanceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeVirtualMachineSlice() makes a slice of VirtualMachine

@@ -61,7 +61,122 @@ func InterfaceToInstanceIP(i interface{}) *InstanceIP {
 		ServiceInstanceIP:     common.InterfaceToBool(m["service_instance_ip"]),
 		InstanceIPLocalIP:     common.InterfaceToBool(m["instance_ip_local_ip"]),
 		InstanceIPSecondary:   common.InterfaceToBool(m["instance_ip_secondary"]),
+
+		VirtualMachineInterfaceRefs: InterfaceToInstanceIPVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
+
+		PhysicalRouterRefs: InterfaceToInstanceIPPhysicalRouterRefs(m["physical_router_refs"]),
+
+		VirtualRouterRefs: InterfaceToInstanceIPVirtualRouterRefs(m["virtual_router_refs"]),
+
+		NetworkIpamRefs: InterfaceToInstanceIPNetworkIpamRefs(m["network_ipam_refs"]),
+
+		VirtualNetworkRefs: InterfaceToInstanceIPVirtualNetworkRefs(m["virtual_network_refs"]),
 	}
+}
+
+func InterfaceToInstanceIPVirtualRouterRefs(i interface{}) []*InstanceIPVirtualRouterRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*InstanceIPVirtualRouterRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &InstanceIPVirtualRouterRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToInstanceIPNetworkIpamRefs(i interface{}) []*InstanceIPNetworkIpamRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*InstanceIPNetworkIpamRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &InstanceIPNetworkIpamRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToInstanceIPVirtualNetworkRefs(i interface{}) []*InstanceIPVirtualNetworkRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*InstanceIPVirtualNetworkRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &InstanceIPVirtualNetworkRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToInstanceIPVirtualMachineInterfaceRefs(i interface{}) []*InstanceIPVirtualMachineInterfaceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*InstanceIPVirtualMachineInterfaceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &InstanceIPVirtualMachineInterfaceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToInstanceIPPhysicalRouterRefs(i interface{}) []*InstanceIPPhysicalRouterRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*InstanceIPPhysicalRouterRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &InstanceIPPhysicalRouterRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeInstanceIPSlice() makes a slice of InstanceIP

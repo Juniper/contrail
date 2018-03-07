@@ -45,7 +45,32 @@ func InterfaceToServiceHealthCheck(i interface{}) *ServiceHealthCheck {
 		Perms2:                       InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion:         common.InterfaceToInt64(m["configuration_version"]),
 		ServiceHealthCheckProperties: InterfaceToServiceHealthCheckType(m["service_health_check_properties"]),
+
+		ServiceInstanceRefs: InterfaceToServiceHealthCheckServiceInstanceRefs(m["service_instance_refs"]),
 	}
+}
+
+func InterfaceToServiceHealthCheckServiceInstanceRefs(i interface{}) []*ServiceHealthCheckServiceInstanceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ServiceHealthCheckServiceInstanceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ServiceHealthCheckServiceInstanceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+
+			Attr: InterfaceToServiceInterfaceTag(m["attr"]),
+		})
+	}
+
+	return result
 }
 
 // MakeServiceHealthCheckSlice() makes a slice of ServiceHealthCheck

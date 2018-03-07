@@ -47,7 +47,30 @@ func InterfaceToServiceConnectionModule(i interface{}) *ServiceConnectionModule 
 		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
 		ServiceType:          common.InterfaceToString(m["service_type"]),
 		E2Service:            common.InterfaceToString(m["e2_service"]),
+
+		ServiceObjectRefs: InterfaceToServiceConnectionModuleServiceObjectRefs(m["service_object_refs"]),
 	}
+}
+
+func InterfaceToServiceConnectionModuleServiceObjectRefs(i interface{}) []*ServiceConnectionModuleServiceObjectRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ServiceConnectionModuleServiceObjectRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ServiceConnectionModuleServiceObjectRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeServiceConnectionModuleSlice() makes a slice of ServiceConnectionModule

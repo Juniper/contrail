@@ -53,7 +53,30 @@ func InterfaceToContrailAnalyticsDatabaseNode(i interface{}) *ContrailAnalyticsD
 		Annotations:               InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:                    InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion:      common.InterfaceToInt64(m["configuration_version"]),
+
+		NodeRefs: InterfaceToContrailAnalyticsDatabaseNodeNodeRefs(m["node_refs"]),
 	}
+}
+
+func InterfaceToContrailAnalyticsDatabaseNodeNodeRefs(i interface{}) []*ContrailAnalyticsDatabaseNodeNodeRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ContrailAnalyticsDatabaseNodeNodeRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ContrailAnalyticsDatabaseNodeNodeRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeContrailAnalyticsDatabaseNodeSlice() makes a slice of ContrailAnalyticsDatabaseNode
