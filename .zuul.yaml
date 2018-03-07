@@ -8,7 +8,7 @@
     name: contrail-go-docker
     description: |
       Job that builds and tests Juniper/contrail project.
-    voting: False
+    voting: True
     parent: contrail-src-publish-package-el-base
     required-projects:
       - Juniper/contrail
