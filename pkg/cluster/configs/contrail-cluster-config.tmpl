@@ -1,12 +1,11 @@
-{% if config.auth_url %}
-id: {{ config.id }}
-password: {{ config.password }}
-project_id: {{ config.project_id }}
-auth_url: {{ config.auth_url }}
+{% if config.AuthURL %}
+id: {{ config.ID }}
+password: {{ config.Password }}
+project_id: {{ config.ProjectID }}
+auth_url: {{ config.AuthURL }}
 {% endif %}
-endpoint: {{ config.endpoint }}
-insecure: {{ config.insecure }}
+endpoint: {{ config.Endpoint }}
+insecure: {{ config.InSecure }}
 cluster_id: {{ resource.uuid }}
 cluster_action: {{ action }}
 log_level: debug
-
