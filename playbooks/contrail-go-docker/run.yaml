@@ -17,6 +17,8 @@
           command: make deps
         - name: install mysql client
           command: sudo apt install mysql-client
+        - name: make generate
+          command: make generate
         - name: make lint
           command: make lint
         - name: reset db

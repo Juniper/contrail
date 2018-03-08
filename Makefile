@@ -16,9 +16,10 @@ generate: ## Run the source code generator
 	rm -rf pkg/models/gen_*
 	rm -rf pkg/services/gen_*
 	rm -rf pkg/db/gen_*
+	mkdir public || echo "ok"
 	go run cmd/contrailutil/main.go generate --schemas schemas --templates tools/templates/template_config.yaml --schema-output public/schema.json --openapi-output public/openapi.json
-	protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto_model.md  --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/models/generated.proto
-	protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto_service.md --gogo_out=plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/services/generated.proto
+	./bin/protoc -I $(GOPATH)/src/ -I $(GOPATH)/smakrc/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto_model.md  --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/models/generated.proto
+	./bin/protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto_service.md --gogo_out=plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/services/generated.proto
 	go fmt github.com/Juniper/contrail/pkg/db
 	go fmt github.com/Juniper/contrail/pkg/models
 	go fmt github.com/Juniper/contrail/pkg/services
@@ -27,16 +28,17 @@ package: ## Generate the packages
 	go run cmd/contrailutil/main.go package
 
 reset_gen:
-	git checkout master pkg/models/gen_*
-	git checkout master pkg/services/gen_*
-	git checkout master pkg/db/gen_*
-	git checkout master doc/proto_model.md
-	git checkout master doc/proto_service.md
-	git checkout master public
-	git checkout master proto
-	git checkout master tools/init_mysql.sql
-	git checkout master tools/init_psql.sql
-	git checkout master pkg/serviceif/serviceif.go
+	rm pkg/models/gen*
+	rm pkg/services/gen*
+	rm pkg/db/gen_*
+	rm doc/proto_model.md
+	rm doc/proto_service.md
+	rm -rf public/*
+	rm -rf proto/*
+	rm tools/init_mysql.sql
+	rm tools/init_psql.sql
+	rm tools/cleanup.sql
+	rm pkg/serviceif/serviceif.go
 
 install:
 	go install ./cmd/contrail
