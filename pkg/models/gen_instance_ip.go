@@ -74,27 +74,6 @@ func InterfaceToInstanceIP(i interface{}) *InstanceIP {
 	}
 }
 
-func InterfaceToInstanceIPVirtualRouterRefs(i interface{}) []*InstanceIPVirtualRouterRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*InstanceIPVirtualRouterRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &InstanceIPVirtualRouterRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
 func InterfaceToInstanceIPNetworkIpamRefs(i interface{}) []*InstanceIPNetworkIpamRef {
 	list, ok := i.([]interface{})
 	if !ok {
@@ -171,6 +150,27 @@ func InterfaceToInstanceIPPhysicalRouterRefs(i interface{}) []*InstanceIPPhysica
 			return nil
 		}
 		result = append(result, &InstanceIPPhysicalRouterRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToInstanceIPVirtualRouterRefs(i interface{}) []*InstanceIPVirtualRouterRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*InstanceIPVirtualRouterRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &InstanceIPVirtualRouterRef{
 			UUID: common.InterfaceToString(m["uuid"]),
 			To:   common.InterfaceToStringList(m["to"]),
 		})

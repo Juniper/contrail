@@ -66,9 +66,9 @@ var FloatingIPBackRefFields = map[string][]string{}
 // FloatingIPParentTypes is possible parents for FloatingIP
 var FloatingIPParents = []string{
 
-	"instance_ip",
-
 	"floating_ip_pool",
+
+	"instance_ip",
 }
 
 // CreateFloatingIP inserts FloatingIP to DB

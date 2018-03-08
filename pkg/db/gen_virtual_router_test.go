@@ -284,41 +284,6 @@ func TestVirtualRouter(t *testing.T) {
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_virtual_router_network_ipam` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing NetworkIpamRefs delete statement failed")
-		}
-		_, err = stmt.Exec("virtual_router_dummy_uuid", "virtual_router_network_ipam_ref_uuid")
-		_, err = stmt.Exec("virtual_router_dummy_uuid", "virtual_router_network_ipam_ref_uuid1")
-		_, err = stmt.Exec("virtual_router_dummy_uuid", "virtual_router_network_ipam_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "NetworkIpamRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteNetworkIpam(ctx,
-		&models.DeleteNetworkIpamRequest{
-			ID: "virtual_router_network_ipam_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref virtual_router_network_ipam_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteNetworkIpam(ctx,
-		&models.DeleteNetworkIpamRequest{
-			ID: "virtual_router_network_ipam_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref virtual_router_network_ipam_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteNetworkIpam(
-		ctx,
-		&models.DeleteNetworkIpamRequest{
-			ID: "virtual_router_network_ipam_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref virtual_router_network_ipam_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_virtual_router_virtual_machine` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing VirtualMachineRefs delete statement failed")
@@ -350,6 +315,41 @@ func TestVirtualRouter(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref virtual_router_virtual_machine_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_virtual_router_network_ipam` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing NetworkIpamRefs delete statement failed")
+		}
+		_, err = stmt.Exec("virtual_router_dummy_uuid", "virtual_router_network_ipam_ref_uuid")
+		_, err = stmt.Exec("virtual_router_dummy_uuid", "virtual_router_network_ipam_ref_uuid1")
+		_, err = stmt.Exec("virtual_router_dummy_uuid", "virtual_router_network_ipam_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "NetworkIpamRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteNetworkIpam(ctx,
+		&models.DeleteNetworkIpamRequest{
+			ID: "virtual_router_network_ipam_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref virtual_router_network_ipam_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteNetworkIpam(ctx,
+		&models.DeleteNetworkIpamRequest{
+			ID: "virtual_router_network_ipam_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref virtual_router_network_ipam_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteNetworkIpam(
+		ctx,
+		&models.DeleteNetworkIpamRequest{
+			ID: "virtual_router_network_ipam_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref virtual_router_network_ipam_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

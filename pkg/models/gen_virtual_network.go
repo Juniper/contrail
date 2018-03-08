@@ -86,6 +86,10 @@ func InterfaceToVirtualNetwork(i interface{}) *VirtualNetwork {
 		MacLimitControl:                 InterfaceToMACLimitControlType(m["mac_limit_control"]),
 		IsShared:                        common.InterfaceToBool(m["is_shared"]),
 
+		SecurityLoggingObjectRefs: InterfaceToVirtualNetworkSecurityLoggingObjectRefs(m["security_logging_object_refs"]),
+
+		NetworkPolicyRefs: InterfaceToVirtualNetworkNetworkPolicyRefs(m["network_policy_refs"]),
+
 		QosConfigRefs: InterfaceToVirtualNetworkQosConfigRefs(m["qos_config_refs"]),
 
 		RouteTableRefs: InterfaceToVirtualNetworkRouteTableRefs(m["route_table_refs"]),
@@ -95,11 +99,49 @@ func InterfaceToVirtualNetwork(i interface{}) *VirtualNetwork {
 		BGPVPNRefs: InterfaceToVirtualNetworkBGPVPNRefs(m["bgpvpn_refs"]),
 
 		NetworkIpamRefs: InterfaceToVirtualNetworkNetworkIpamRefs(m["network_ipam_refs"]),
-
-		SecurityLoggingObjectRefs: InterfaceToVirtualNetworkSecurityLoggingObjectRefs(m["security_logging_object_refs"]),
-
-		NetworkPolicyRefs: InterfaceToVirtualNetworkNetworkPolicyRefs(m["network_policy_refs"]),
 	}
+}
+
+func InterfaceToVirtualNetworkRouteTableRefs(i interface{}) []*VirtualNetworkRouteTableRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualNetworkRouteTableRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualNetworkRouteTableRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualNetworkVirtualNetworkRefs(i interface{}) []*VirtualNetworkVirtualNetworkRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualNetworkVirtualNetworkRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualNetworkVirtualNetworkRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 func InterfaceToVirtualNetworkBGPVPNRefs(i interface{}) []*VirtualNetworkBGPVPNRef {
@@ -203,48 +245,6 @@ func InterfaceToVirtualNetworkQosConfigRefs(i interface{}) []*VirtualNetworkQosC
 			return nil
 		}
 		result = append(result, &VirtualNetworkQosConfigRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
-func InterfaceToVirtualNetworkRouteTableRefs(i interface{}) []*VirtualNetworkRouteTableRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*VirtualNetworkRouteTableRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &VirtualNetworkRouteTableRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
-func InterfaceToVirtualNetworkVirtualNetworkRefs(i interface{}) []*VirtualNetworkVirtualNetworkRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*VirtualNetworkVirtualNetworkRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &VirtualNetworkVirtualNetworkRef{
 			UUID: common.InterfaceToString(m["uuid"]),
 			To:   common.InterfaceToStringList(m["to"]),
 		})

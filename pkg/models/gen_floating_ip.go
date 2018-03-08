@@ -64,27 +64,6 @@ func InterfaceToFloatingIP(i interface{}) *FloatingIP {
 	}
 }
 
-func InterfaceToFloatingIPProjectRefs(i interface{}) []*FloatingIPProjectRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*FloatingIPProjectRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &FloatingIPProjectRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
 func InterfaceToFloatingIPVirtualMachineInterfaceRefs(i interface{}) []*FloatingIPVirtualMachineInterfaceRef {
 	list, ok := i.([]interface{})
 	if !ok {
@@ -98,6 +77,27 @@ func InterfaceToFloatingIPVirtualMachineInterfaceRefs(i interface{}) []*Floating
 			return nil
 		}
 		result = append(result, &FloatingIPVirtualMachineInterfaceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToFloatingIPProjectRefs(i interface{}) []*FloatingIPProjectRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*FloatingIPProjectRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &FloatingIPProjectRef{
 			UUID: common.InterfaceToString(m["uuid"]),
 			To:   common.InterfaceToStringList(m["to"]),
 		})

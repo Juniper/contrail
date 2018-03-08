@@ -50,27 +50,6 @@ func InterfaceToFirewallPolicy(i interface{}) *FirewallPolicy {
 	}
 }
 
-func InterfaceToFirewallPolicySecurityLoggingObjectRefs(i interface{}) []*FirewallPolicySecurityLoggingObjectRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*FirewallPolicySecurityLoggingObjectRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &FirewallPolicySecurityLoggingObjectRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
 func InterfaceToFirewallPolicyFirewallRuleRefs(i interface{}) []*FirewallPolicyFirewallRuleRef {
 	list, ok := i.([]interface{})
 	if !ok {
@@ -88,6 +67,27 @@ func InterfaceToFirewallPolicyFirewallRuleRefs(i interface{}) []*FirewallPolicyF
 			To:   common.InterfaceToStringList(m["to"]),
 
 			Attr: InterfaceToFirewallSequence(m["attr"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToFirewallPolicySecurityLoggingObjectRefs(i interface{}) []*FirewallPolicySecurityLoggingObjectRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*FirewallPolicySecurityLoggingObjectRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &FirewallPolicySecurityLoggingObjectRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
 		})
 	}
 

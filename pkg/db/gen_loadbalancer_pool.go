@@ -52,11 +52,6 @@ var LoadbalancerPoolFields = []string{
 // LoadbalancerPoolRefFields is db reference fields for LoadbalancerPool
 var LoadbalancerPoolRefFields = map[string][]string{
 
-	"service_appliance_set": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
@@ -73,6 +68,11 @@ var LoadbalancerPoolRefFields = map[string][]string{
 	},
 
 	"loadbalancer_healthmonitor": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"service_appliance_set": []string{
 	// <schema.Schema Value>
 
 	},
@@ -163,14 +163,6 @@ func (db *DB) createLoadbalancerPool(
 		return errors.Wrap(err, "create failed")
 	}
 
-	for _, ref := range model.VirtualMachineInterfaceRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
-		}
-	}
-
 	for _, ref := range model.LoadbalancerListenerRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("loadbalancer_listener"), model.UUID, ref.UUID)
@@ -200,6 +192,14 @@ func (db *DB) createLoadbalancerPool(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_appliance_set"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "ServiceApplianceSetRefs create failed")
+		}
+	}
+
+	for _, ref := range model.VirtualMachineInterfaceRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
 		}
 	}
 
@@ -417,26 +417,6 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 
 	}
 
-	if value, ok := values["ref_loadbalancer_healthmonitor"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LoadbalancerPoolLoadbalancerHealthmonitorRef{}
-			referenceModel.UUID = uuid
-			m.LoadbalancerHealthmonitorRefs = append(m.LoadbalancerHealthmonitorRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_service_appliance_set"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -513,6 +493,26 @@ func scanLoadbalancerPool(values map[string]interface{}) (*models.LoadbalancerPo
 			referenceModel := &models.LoadbalancerPoolServiceInstanceRef{}
 			referenceModel.UUID = uuid
 			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_loadbalancer_healthmonitor"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LoadbalancerPoolLoadbalancerHealthmonitorRef{}
+			referenceModel.UUID = uuid
+			m.LoadbalancerHealthmonitorRefs = append(m.LoadbalancerHealthmonitorRefs, referenceModel)
 
 		}
 	}

@@ -60,27 +60,6 @@ func InterfaceToProject(i interface{}) *Project {
 	}
 }
 
-func InterfaceToProjectAliasIPPoolRefs(i interface{}) []*ProjectAliasIPPoolRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*ProjectAliasIPPoolRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &ProjectAliasIPPoolRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
 func InterfaceToProjectNamespaceRefs(i interface{}) []*ProjectNamespaceRef {
 	list, ok := i.([]interface{})
 	if !ok {
@@ -138,6 +117,27 @@ func InterfaceToProjectFloatingIPPoolRefs(i interface{}) []*ProjectFloatingIPPoo
 			return nil
 		}
 		result = append(result, &ProjectFloatingIPPoolRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToProjectAliasIPPoolRefs(i interface{}) []*ProjectAliasIPPoolRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ProjectAliasIPPoolRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ProjectAliasIPPoolRef{
 			UUID: common.InterfaceToString(m["uuid"]),
 			To:   common.InterfaceToStringList(m["to"]),
 		})

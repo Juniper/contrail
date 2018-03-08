@@ -44,8 +44,8 @@ var RoutingPolicyRefFields = map[string][]string{
 
 	"service_instance": []string{
 		// <schema.Schema Value>
-		"left_sequence",
 		"right_sequence",
+		"left_sequence",
 	},
 }
 
@@ -98,8 +98,8 @@ func (db *DB) createRoutingPolicy(
 			ref.Attr = &models.RoutingPolicyServiceInstanceType{}
 		}
 
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_instance"), model.UUID, ref.UUID, string(ref.Attr.GetLeftSequence()),
-			string(ref.Attr.GetRightSequence()))
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_instance"), model.UUID, ref.UUID, string(ref.Attr.GetRightSequence()),
+			string(ref.Attr.GetLeftSequence()))
 		if err != nil {
 			return errors.Wrap(err, "ServiceInstanceRefs create failed")
 		}

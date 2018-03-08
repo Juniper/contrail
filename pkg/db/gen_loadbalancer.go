@@ -335,26 +335,6 @@ func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, erro
 
 	}
 
-	if value, ok := values["ref_service_instance"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LoadbalancerServiceInstanceRef{}
-			referenceModel.UUID = uuid
-			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_service_appliance_set"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -391,6 +371,26 @@ func scanLoadbalancer(values map[string]interface{}) (*models.Loadbalancer, erro
 			referenceModel := &models.LoadbalancerVirtualMachineInterfaceRef{}
 			referenceModel.UUID = uuid
 			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_service_instance"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LoadbalancerServiceInstanceRef{}
+			referenceModel.UUID = uuid
+			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
 
 		}
 	}

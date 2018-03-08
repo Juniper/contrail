@@ -125,30 +125,6 @@ func (db *DB) createLogicalRouter(
 		return errors.Wrap(err, "create failed")
 	}
 
-	for _, ref := range model.PhysicalRouterRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("physical_router"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "PhysicalRouterRefs create failed")
-		}
-	}
-
-	for _, ref := range model.BGPVPNRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("bgpvpn"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "BGPVPNRefs create failed")
-		}
-	}
-
-	for _, ref := range model.RouteTargetRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("route_target"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "RouteTargetRefs create failed")
-		}
-	}
-
 	for _, ref := range model.VirtualMachineInterfaceRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
@@ -178,6 +154,30 @@ func (db *DB) createLogicalRouter(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_network"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualNetworkRefs create failed")
+		}
+	}
+
+	for _, ref := range model.PhysicalRouterRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("physical_router"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "PhysicalRouterRefs create failed")
+		}
+	}
+
+	for _, ref := range model.BGPVPNRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("bgpvpn"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "BGPVPNRefs create failed")
+		}
+	}
+
+	for _, ref := range model.RouteTargetRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("route_target"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "RouteTargetRefs create failed")
 		}
 	}
 

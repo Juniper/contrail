@@ -46,9 +46,9 @@ func InterfaceToApplicationPolicySet(i interface{}) *ApplicationPolicySet {
 		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
 		AllApplications:      common.InterfaceToBool(m["all_applications"]),
 
-		GlobalVrouterConfigRefs: InterfaceToApplicationPolicySetGlobalVrouterConfigRefs(m["global_vrouter_config_refs"]),
-
 		FirewallPolicyRefs: InterfaceToApplicationPolicySetFirewallPolicyRefs(m["firewall_policy_refs"]),
+
+		GlobalVrouterConfigRefs: InterfaceToApplicationPolicySetGlobalVrouterConfigRefs(m["global_vrouter_config_refs"]),
 	}
 }
 

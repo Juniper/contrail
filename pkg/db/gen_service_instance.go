@@ -400,6 +400,26 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 
 	}
 
+	if value, ok := values["ref_service_template"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ServiceInstanceServiceTemplateRef{}
+			referenceModel.UUID = uuid
+			m.ServiceTemplateRefs = append(m.ServiceTemplateRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_instance_ip"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -419,26 +439,6 @@ func scanServiceInstance(values map[string]interface{}) (*models.ServiceInstance
 
 			attr := models.MakeServiceInterfaceTag()
 			referenceModel.Attr = attr
-
-		}
-	}
-
-	if value, ok := values["ref_service_template"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ServiceInstanceServiceTemplateRef{}
-			referenceModel.UUID = uuid
-			m.ServiceTemplateRefs = append(m.ServiceTemplateRefs, referenceModel)
 
 		}
 	}

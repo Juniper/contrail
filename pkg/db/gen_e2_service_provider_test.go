@@ -227,14 +227,6 @@ func TestE2ServiceProvider(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var PeeringPolicyref []interface{}
-	//    PeeringPolicyref = append(PeeringPolicyref, map[string]interface{}{"operation":"delete", "uuid":"e2_service_provider_peering_policy_ref_uuid", "to": []string{"test", "e2_service_provider_peering_policy_ref_uuid"}})
-	//    PeeringPolicyref = append(PeeringPolicyref, map[string]interface{}{"operation":"add", "uuid":"e2_service_provider_peering_policy_ref_uuid1", "to": []string{"test", "e2_service_provider_peering_policy_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "PeeringPolicyRefs", ".", PeeringPolicyref)
-	//
 	//    var PhysicalRouterref []interface{}
 	//    PhysicalRouterref = append(PhysicalRouterref, map[string]interface{}{"operation":"delete", "uuid":"e2_service_provider_physical_router_ref_uuid", "to": []string{"test", "e2_service_provider_physical_router_ref_uuid"}})
 	//    PhysicalRouterref = append(PhysicalRouterref, map[string]interface{}{"operation":"add", "uuid":"e2_service_provider_physical_router_ref_uuid1", "to": []string{"test", "e2_service_provider_physical_router_ref_uuid1"}})
@@ -242,6 +234,14 @@ func TestE2ServiceProvider(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "PhysicalRouterRefs", ".", PhysicalRouterref)
+	//
+	//    var PeeringPolicyref []interface{}
+	//    PeeringPolicyref = append(PeeringPolicyref, map[string]interface{}{"operation":"delete", "uuid":"e2_service_provider_peering_policy_ref_uuid", "to": []string{"test", "e2_service_provider_peering_policy_ref_uuid"}})
+	//    PeeringPolicyref = append(PeeringPolicyref, map[string]interface{}{"operation":"add", "uuid":"e2_service_provider_peering_policy_ref_uuid1", "to": []string{"test", "e2_service_provider_peering_policy_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "PeeringPolicyRefs", ".", PeeringPolicyref)
 	//
 	//
 	_, err = db.CreateE2ServiceProvider(ctx,

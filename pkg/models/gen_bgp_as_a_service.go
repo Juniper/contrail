@@ -56,9 +56,9 @@ func InterfaceToBGPAsAService(i interface{}) *BGPAsAService {
 		BgpaasIPAddress:                  common.InterfaceToString(m["bgpaas_ip_address"]),
 		AutonomousSystem:                 common.InterfaceToInt64(m["autonomous_system"]),
 
-		VirtualMachineInterfaceRefs: InterfaceToBGPAsAServiceVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
-
 		ServiceHealthCheckRefs: InterfaceToBGPAsAServiceServiceHealthCheckRefs(m["service_health_check_refs"]),
+
+		VirtualMachineInterfaceRefs: InterfaceToBGPAsAServiceVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
 	}
 }
 

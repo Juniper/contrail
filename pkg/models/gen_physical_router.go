@@ -72,12 +72,33 @@ func InterfaceToPhysicalRouter(i interface{}) *PhysicalRouter {
 		PhysicalRouterDataplaneIP:       common.InterfaceToString(m["physical_router_dataplane_ip"]),
 		PhysicalRouterJunosServicePorts: InterfaceToJunosServicePorts(m["physical_router_junos_service_ports"]),
 
-		VirtualRouterRefs: InterfaceToPhysicalRouterVirtualRouterRefs(m["virtual_router_refs"]),
-
 		VirtualNetworkRefs: InterfaceToPhysicalRouterVirtualNetworkRefs(m["virtual_network_refs"]),
 
 		BGPRouterRefs: InterfaceToPhysicalRouterBGPRouterRefs(m["bgp_router_refs"]),
+
+		VirtualRouterRefs: InterfaceToPhysicalRouterVirtualRouterRefs(m["virtual_router_refs"]),
 	}
+}
+
+func InterfaceToPhysicalRouterVirtualRouterRefs(i interface{}) []*PhysicalRouterVirtualRouterRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*PhysicalRouterVirtualRouterRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &PhysicalRouterVirtualRouterRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 func InterfaceToPhysicalRouterVirtualNetworkRefs(i interface{}) []*PhysicalRouterVirtualNetworkRef {
@@ -114,27 +135,6 @@ func InterfaceToPhysicalRouterBGPRouterRefs(i interface{}) []*PhysicalRouterBGPR
 			return nil
 		}
 		result = append(result, &PhysicalRouterBGPRouterRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
-func InterfaceToPhysicalRouterVirtualRouterRefs(i interface{}) []*PhysicalRouterVirtualRouterRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*PhysicalRouterVirtualRouterRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &PhysicalRouterVirtualRouterRef{
 			UUID: common.InterfaceToString(m["uuid"]),
 			To:   common.InterfaceToStringList(m["to"]),
 		})

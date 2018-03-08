@@ -42,31 +42,6 @@ func TestApplicationPolicySet(t *testing.T) {
 
 	// Create referred objects
 
-	var GlobalVrouterConfigcreateref []*models.ApplicationPolicySetGlobalVrouterConfigRef
-	var GlobalVrouterConfigrefModel *models.GlobalVrouterConfig
-	GlobalVrouterConfigrefModel = models.MakeGlobalVrouterConfig()
-	GlobalVrouterConfigrefModel.UUID = "application_policy_set_global_vrouter_config_ref_uuid"
-	GlobalVrouterConfigrefModel.FQName = []string{"test", "application_policy_set_global_vrouter_config_ref_uuid"}
-	_, err = db.CreateGlobalVrouterConfig(ctx, &models.CreateGlobalVrouterConfigRequest{
-		GlobalVrouterConfig: GlobalVrouterConfigrefModel,
-	})
-	GlobalVrouterConfigrefModel.UUID = "application_policy_set_global_vrouter_config_ref_uuid1"
-	GlobalVrouterConfigrefModel.FQName = []string{"test", "application_policy_set_global_vrouter_config_ref_uuid1"}
-	_, err = db.CreateGlobalVrouterConfig(ctx, &models.CreateGlobalVrouterConfigRequest{
-		GlobalVrouterConfig: GlobalVrouterConfigrefModel,
-	})
-	GlobalVrouterConfigrefModel.UUID = "application_policy_set_global_vrouter_config_ref_uuid2"
-	GlobalVrouterConfigrefModel.FQName = []string{"test", "application_policy_set_global_vrouter_config_ref_uuid2"}
-	_, err = db.CreateGlobalVrouterConfig(ctx, &models.CreateGlobalVrouterConfigRequest{
-		GlobalVrouterConfig: GlobalVrouterConfigrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	GlobalVrouterConfigcreateref = append(GlobalVrouterConfigcreateref, &models.ApplicationPolicySetGlobalVrouterConfigRef{UUID: "application_policy_set_global_vrouter_config_ref_uuid", To: []string{"test", "application_policy_set_global_vrouter_config_ref_uuid"}})
-	GlobalVrouterConfigcreateref = append(GlobalVrouterConfigcreateref, &models.ApplicationPolicySetGlobalVrouterConfigRef{UUID: "application_policy_set_global_vrouter_config_ref_uuid2", To: []string{"test", "application_policy_set_global_vrouter_config_ref_uuid2"}})
-	model.GlobalVrouterConfigRefs = GlobalVrouterConfigcreateref
-
 	var FirewallPolicycreateref []*models.ApplicationPolicySetFirewallPolicyRef
 	var FirewallPolicyrefModel *models.FirewallPolicy
 	FirewallPolicyrefModel = models.MakeFirewallPolicy()
@@ -91,6 +66,31 @@ func TestApplicationPolicySet(t *testing.T) {
 	FirewallPolicycreateref = append(FirewallPolicycreateref, &models.ApplicationPolicySetFirewallPolicyRef{UUID: "application_policy_set_firewall_policy_ref_uuid", To: []string{"test", "application_policy_set_firewall_policy_ref_uuid"}})
 	FirewallPolicycreateref = append(FirewallPolicycreateref, &models.ApplicationPolicySetFirewallPolicyRef{UUID: "application_policy_set_firewall_policy_ref_uuid2", To: []string{"test", "application_policy_set_firewall_policy_ref_uuid2"}})
 	model.FirewallPolicyRefs = FirewallPolicycreateref
+
+	var GlobalVrouterConfigcreateref []*models.ApplicationPolicySetGlobalVrouterConfigRef
+	var GlobalVrouterConfigrefModel *models.GlobalVrouterConfig
+	GlobalVrouterConfigrefModel = models.MakeGlobalVrouterConfig()
+	GlobalVrouterConfigrefModel.UUID = "application_policy_set_global_vrouter_config_ref_uuid"
+	GlobalVrouterConfigrefModel.FQName = []string{"test", "application_policy_set_global_vrouter_config_ref_uuid"}
+	_, err = db.CreateGlobalVrouterConfig(ctx, &models.CreateGlobalVrouterConfigRequest{
+		GlobalVrouterConfig: GlobalVrouterConfigrefModel,
+	})
+	GlobalVrouterConfigrefModel.UUID = "application_policy_set_global_vrouter_config_ref_uuid1"
+	GlobalVrouterConfigrefModel.FQName = []string{"test", "application_policy_set_global_vrouter_config_ref_uuid1"}
+	_, err = db.CreateGlobalVrouterConfig(ctx, &models.CreateGlobalVrouterConfigRequest{
+		GlobalVrouterConfig: GlobalVrouterConfigrefModel,
+	})
+	GlobalVrouterConfigrefModel.UUID = "application_policy_set_global_vrouter_config_ref_uuid2"
+	GlobalVrouterConfigrefModel.FQName = []string{"test", "application_policy_set_global_vrouter_config_ref_uuid2"}
+	_, err = db.CreateGlobalVrouterConfig(ctx, &models.CreateGlobalVrouterConfigRequest{
+		GlobalVrouterConfig: GlobalVrouterConfigrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	GlobalVrouterConfigcreateref = append(GlobalVrouterConfigcreateref, &models.ApplicationPolicySetGlobalVrouterConfigRef{UUID: "application_policy_set_global_vrouter_config_ref_uuid", To: []string{"test", "application_policy_set_global_vrouter_config_ref_uuid"}})
+	GlobalVrouterConfigcreateref = append(GlobalVrouterConfigcreateref, &models.ApplicationPolicySetGlobalVrouterConfigRef{UUID: "application_policy_set_global_vrouter_config_ref_uuid2", To: []string{"test", "application_policy_set_global_vrouter_config_ref_uuid2"}})
+	model.GlobalVrouterConfigRefs = GlobalVrouterConfigcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
