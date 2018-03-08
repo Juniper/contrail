@@ -55,7 +55,53 @@ func InterfaceToBGPAsAService(i interface{}) *BGPAsAService {
 		BgpaasIpv4MappedIpv6Nexthop:      common.InterfaceToBool(m["bgpaas_ipv4_mapped_ipv6_nexthop"]),
 		BgpaasIPAddress:                  common.InterfaceToString(m["bgpaas_ip_address"]),
 		AutonomousSystem:                 common.InterfaceToInt64(m["autonomous_system"]),
+
+		VirtualMachineInterfaceRefs: InterfaceToBGPAsAServiceVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
+
+		ServiceHealthCheckRefs: InterfaceToBGPAsAServiceServiceHealthCheckRefs(m["service_health_check_refs"]),
 	}
+}
+
+func InterfaceToBGPAsAServiceVirtualMachineInterfaceRefs(i interface{}) []*BGPAsAServiceVirtualMachineInterfaceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*BGPAsAServiceVirtualMachineInterfaceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &BGPAsAServiceVirtualMachineInterfaceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToBGPAsAServiceServiceHealthCheckRefs(i interface{}) []*BGPAsAServiceServiceHealthCheckRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*BGPAsAServiceServiceHealthCheckRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &BGPAsAServiceServiceHealthCheckRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeBGPAsAServiceSlice() makes a slice of BGPAsAService

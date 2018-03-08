@@ -53,7 +53,30 @@ func InterfaceToAppformixNode(i interface{}) *AppformixNode {
 		Annotations:               InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:                    InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion:      common.InterfaceToInt64(m["configuration_version"]),
+
+		NodeRefs: InterfaceToAppformixNodeNodeRefs(m["node_refs"]),
 	}
+}
+
+func InterfaceToAppformixNodeNodeRefs(i interface{}) []*AppformixNodeNodeRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*AppformixNodeNodeRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &AppformixNodeNodeRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeAppformixNodeSlice() makes a slice of AppformixNode

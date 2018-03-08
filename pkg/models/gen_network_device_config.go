@@ -43,7 +43,30 @@ func InterfaceToNetworkDeviceConfig(i interface{}) *NetworkDeviceConfig {
 		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:               InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
+
+		PhysicalRouterRefs: InterfaceToNetworkDeviceConfigPhysicalRouterRefs(m["physical_router_refs"]),
 	}
+}
+
+func InterfaceToNetworkDeviceConfigPhysicalRouterRefs(i interface{}) []*NetworkDeviceConfigPhysicalRouterRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*NetworkDeviceConfigPhysicalRouterRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &NetworkDeviceConfigPhysicalRouterRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeNetworkDeviceConfigSlice() makes a slice of NetworkDeviceConfig

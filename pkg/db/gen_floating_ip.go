@@ -49,12 +49,12 @@ var FloatingIPFields = []string{
 // FloatingIPRefFields is db reference fields for FloatingIP
 var FloatingIPRefFields = map[string][]string{
 
-	"virtual_machine_interface": []string{
+	"project": []string{
 	// <schema.Schema Value>
 
 	},
 
-	"project": []string{
+	"virtual_machine_interface": []string{
 	// <schema.Schema Value>
 
 	},

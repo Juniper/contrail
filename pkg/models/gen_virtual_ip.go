@@ -45,7 +45,53 @@ func InterfaceToVirtualIP(i interface{}) *VirtualIP {
 		Perms2:               InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
 		VirtualIPProperties:  InterfaceToVirtualIpType(m["virtual_ip_properties"]),
+
+		LoadbalancerPoolRefs: InterfaceToVirtualIPLoadbalancerPoolRefs(m["loadbalancer_pool_refs"]),
+
+		VirtualMachineInterfaceRefs: InterfaceToVirtualIPVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
 	}
+}
+
+func InterfaceToVirtualIPLoadbalancerPoolRefs(i interface{}) []*VirtualIPLoadbalancerPoolRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualIPLoadbalancerPoolRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualIPLoadbalancerPoolRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualIPVirtualMachineInterfaceRefs(i interface{}) []*VirtualIPVirtualMachineInterfaceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualIPVirtualMachineInterfaceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualIPVirtualMachineInterfaceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeVirtualIPSlice() makes a slice of VirtualIP

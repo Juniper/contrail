@@ -45,7 +45,55 @@ func InterfaceToApplicationPolicySet(i interface{}) *ApplicationPolicySet {
 		Perms2:               InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
 		AllApplications:      common.InterfaceToBool(m["all_applications"]),
+
+		GlobalVrouterConfigRefs: InterfaceToApplicationPolicySetGlobalVrouterConfigRefs(m["global_vrouter_config_refs"]),
+
+		FirewallPolicyRefs: InterfaceToApplicationPolicySetFirewallPolicyRefs(m["firewall_policy_refs"]),
 	}
+}
+
+func InterfaceToApplicationPolicySetFirewallPolicyRefs(i interface{}) []*ApplicationPolicySetFirewallPolicyRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ApplicationPolicySetFirewallPolicyRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ApplicationPolicySetFirewallPolicyRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+
+			Attr: InterfaceToFirewallSequence(m["attr"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToApplicationPolicySetGlobalVrouterConfigRefs(i interface{}) []*ApplicationPolicySetGlobalVrouterConfigRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ApplicationPolicySetGlobalVrouterConfigRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ApplicationPolicySetGlobalVrouterConfigRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeApplicationPolicySetSlice() makes a slice of ApplicationPolicySet

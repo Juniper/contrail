@@ -71,7 +71,76 @@ func InterfaceToPhysicalRouter(i interface{}) *PhysicalRouter {
 		PhysicalRouterSNMP:              common.InterfaceToBool(m["physical_router_snmp"]),
 		PhysicalRouterDataplaneIP:       common.InterfaceToString(m["physical_router_dataplane_ip"]),
 		PhysicalRouterJunosServicePorts: InterfaceToJunosServicePorts(m["physical_router_junos_service_ports"]),
+
+		VirtualRouterRefs: InterfaceToPhysicalRouterVirtualRouterRefs(m["virtual_router_refs"]),
+
+		VirtualNetworkRefs: InterfaceToPhysicalRouterVirtualNetworkRefs(m["virtual_network_refs"]),
+
+		BGPRouterRefs: InterfaceToPhysicalRouterBGPRouterRefs(m["bgp_router_refs"]),
 	}
+}
+
+func InterfaceToPhysicalRouterVirtualNetworkRefs(i interface{}) []*PhysicalRouterVirtualNetworkRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*PhysicalRouterVirtualNetworkRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &PhysicalRouterVirtualNetworkRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToPhysicalRouterBGPRouterRefs(i interface{}) []*PhysicalRouterBGPRouterRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*PhysicalRouterBGPRouterRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &PhysicalRouterBGPRouterRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToPhysicalRouterVirtualRouterRefs(i interface{}) []*PhysicalRouterVirtualRouterRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*PhysicalRouterVirtualRouterRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &PhysicalRouterVirtualRouterRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakePhysicalRouterSlice() makes a slice of PhysicalRouter

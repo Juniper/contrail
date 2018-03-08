@@ -61,7 +61,30 @@ func InterfaceToContrailVrouterNode(i interface{}) *ContrailVrouterNode {
 		VrouterBondInterface:        common.InterfaceToString(m["vrouter_bond_interface"]),
 		VrouterBondInterfaceMembers: common.InterfaceToString(m["vrouter_bond_interface_members"]),
 		VrouterType:                 common.InterfaceToString(m["vrouter_type"]),
+
+		NodeRefs: InterfaceToContrailVrouterNodeNodeRefs(m["node_refs"]),
 	}
+}
+
+func InterfaceToContrailVrouterNodeNodeRefs(i interface{}) []*ContrailVrouterNodeNodeRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ContrailVrouterNodeNodeRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ContrailVrouterNodeNodeRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeContrailVrouterNodeSlice() makes a slice of ContrailVrouterNode

@@ -53,7 +53,30 @@ func InterfaceToOpenstackStorageNode(i interface{}) *OpenstackStorageNode {
 		Annotations:               InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:                    InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion:      common.InterfaceToInt64(m["configuration_version"]),
+
+		NodeRefs: InterfaceToOpenstackStorageNodeNodeRefs(m["node_refs"]),
 	}
+}
+
+func InterfaceToOpenstackStorageNodeNodeRefs(i interface{}) []*OpenstackStorageNodeNodeRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*OpenstackStorageNodeNodeRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &OpenstackStorageNodeNodeRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeOpenstackStorageNodeSlice() makes a slice of OpenstackStorageNode

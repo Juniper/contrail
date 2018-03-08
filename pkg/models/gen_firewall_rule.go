@@ -57,7 +57,99 @@ func InterfaceToFirewallRule(i interface{}) *FirewallRule {
 		Direction:            common.InterfaceToString(m["direction"]),
 		MatchTagTypes:        InterfaceToFirewallRuleMatchTagsTypeIdList(m["match_tag_types"]),
 		MatchTags:            InterfaceToFirewallRuleMatchTagsType(m["match_tags"]),
+
+		ServiceGroupRefs: InterfaceToFirewallRuleServiceGroupRefs(m["service_group_refs"]),
+
+		AddressGroupRefs: InterfaceToFirewallRuleAddressGroupRefs(m["address_group_refs"]),
+
+		SecurityLoggingObjectRefs: InterfaceToFirewallRuleSecurityLoggingObjectRefs(m["security_logging_object_refs"]),
+
+		VirtualNetworkRefs: InterfaceToFirewallRuleVirtualNetworkRefs(m["virtual_network_refs"]),
 	}
+}
+
+func InterfaceToFirewallRuleServiceGroupRefs(i interface{}) []*FirewallRuleServiceGroupRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*FirewallRuleServiceGroupRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &FirewallRuleServiceGroupRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToFirewallRuleAddressGroupRefs(i interface{}) []*FirewallRuleAddressGroupRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*FirewallRuleAddressGroupRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &FirewallRuleAddressGroupRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToFirewallRuleSecurityLoggingObjectRefs(i interface{}) []*FirewallRuleSecurityLoggingObjectRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*FirewallRuleSecurityLoggingObjectRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &FirewallRuleSecurityLoggingObjectRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToFirewallRuleVirtualNetworkRefs(i interface{}) []*FirewallRuleVirtualNetworkRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*FirewallRuleVirtualNetworkRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &FirewallRuleVirtualNetworkRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeFirewallRuleSlice() makes a slice of FirewallRule

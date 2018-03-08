@@ -43,7 +43,30 @@ func InterfaceToProviderAttachment(i interface{}) *ProviderAttachment {
 		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:               InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
+
+		VirtualRouterRefs: InterfaceToProviderAttachmentVirtualRouterRefs(m["virtual_router_refs"]),
 	}
+}
+
+func InterfaceToProviderAttachmentVirtualRouterRefs(i interface{}) []*ProviderAttachmentVirtualRouterRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ProviderAttachmentVirtualRouterRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ProviderAttachmentVirtualRouterRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeProviderAttachmentSlice() makes a slice of ProviderAttachment

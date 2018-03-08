@@ -49,7 +49,32 @@ func InterfaceToServiceAppliance(i interface{}) *ServiceAppliance {
 		ServiceApplianceUserCredentials: InterfaceToUserCredentials(m["service_appliance_user_credentials"]),
 		ServiceApplianceIPAddress:       common.InterfaceToString(m["service_appliance_ip_address"]),
 		ServiceApplianceProperties:      InterfaceToKeyValuePairs(m["service_appliance_properties"]),
+
+		PhysicalInterfaceRefs: InterfaceToServiceAppliancePhysicalInterfaceRefs(m["physical_interface_refs"]),
 	}
+}
+
+func InterfaceToServiceAppliancePhysicalInterfaceRefs(i interface{}) []*ServiceAppliancePhysicalInterfaceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ServiceAppliancePhysicalInterfaceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ServiceAppliancePhysicalInterfaceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+
+			Attr: InterfaceToServiceApplianceInterfaceType(m["attr"]),
+		})
+	}
+
+	return result
 }
 
 // MakeServiceApplianceSlice() makes a slice of ServiceAppliance

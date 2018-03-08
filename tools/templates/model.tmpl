@@ -62,8 +62,37 @@ func InterfaceTo{{ name }}(i interface{}) *{{name}}{
             {% endif %}
         {% else %}{{ property.GoName }}: InterfaceTo{{ property.GoType }}(m["{{ property.ID }}"]),
         {% endif %}{% endfor %}
+        {% for linkTo, reference in references %}
+            {{ reference.GoName }}Refs : InterfaceTo{{ type.GoName }}{{ reference.GoName }}Refs(m["{{ linkTo }}_refs"]),
+        {% endfor %}
     }
 }
+
+{% for linkTo, reference in references %}
+func InterfaceTo{{ type.GoName  }}{{ reference.GoName }}Refs(i interface{}) []*{{ name }}{{ reference.GoName }}Ref {
+    list, ok := i.([]interface{})
+    if !ok {
+        return nil
+    }
+    result := []*{{ type.GoName  }}{{ reference.GoName }}Ref{}
+    for _, item := range list {
+        m, ok := item.(map[string]interface{})
+        _ = m
+        if !ok {
+            return nil
+        }
+        result = append(result, &{{ type.GoName  }}{{ reference.GoName }}Ref{
+            UUID: common.InterfaceToString(m["uuid"]),
+            To: common.InterfaceToStringList(m["to"]),
+            {% if reference.RefType %}
+            Attr: InterfaceTo{{ reference.RefType }}(m["attr"]),
+            {% endif %}
+        })
+    }
+
+    return result
+}
+{% endfor %}
 
 // Make{{ name }}Slice() makes a slice of {{ name }}
 // nolint

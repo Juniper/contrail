@@ -257,14 +257,6 @@ func TestFloatingIP(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var Projectref []interface{}
-	//    Projectref = append(Projectref, map[string]interface{}{"operation":"delete", "uuid":"floating_ip_project_ref_uuid", "to": []string{"test", "floating_ip_project_ref_uuid"}})
-	//    Projectref = append(Projectref, map[string]interface{}{"operation":"add", "uuid":"floating_ip_project_ref_uuid1", "to": []string{"test", "floating_ip_project_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ProjectRefs", ".", Projectref)
-	//
 	//    var VirtualMachineInterfaceref []interface{}
 	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"floating_ip_virtual_machine_interface_ref_uuid", "to": []string{"test", "floating_ip_virtual_machine_interface_ref_uuid"}})
 	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"floating_ip_virtual_machine_interface_ref_uuid1", "to": []string{"test", "floating_ip_virtual_machine_interface_ref_uuid1"}})
@@ -272,6 +264,14 @@ func TestFloatingIP(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
+	//
+	//    var Projectref []interface{}
+	//    Projectref = append(Projectref, map[string]interface{}{"operation":"delete", "uuid":"floating_ip_project_ref_uuid", "to": []string{"test", "floating_ip_project_ref_uuid"}})
+	//    Projectref = append(Projectref, map[string]interface{}{"operation":"add", "uuid":"floating_ip_project_ref_uuid1", "to": []string{"test", "floating_ip_project_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "ProjectRefs", ".", Projectref)
 	//
 	//
 	_, err = db.CreateFloatingIP(ctx,
@@ -291,41 +291,6 @@ func TestFloatingIP(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_floating_ip_project` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing ProjectRefs delete statement failed")
-		}
-		_, err = stmt.Exec("floating_ip_dummy_uuid", "floating_ip_project_ref_uuid")
-		_, err = stmt.Exec("floating_ip_dummy_uuid", "floating_ip_project_ref_uuid1")
-		_, err = stmt.Exec("floating_ip_dummy_uuid", "floating_ip_project_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "ProjectRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteProject(ctx,
-		&models.DeleteProjectRequest{
-			ID: "floating_ip_project_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref floating_ip_project_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteProject(ctx,
-		&models.DeleteProjectRequest{
-			ID: "floating_ip_project_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref floating_ip_project_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteProject(
-		ctx,
-		&models.DeleteProjectRequest{
-			ID: "floating_ip_project_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref floating_ip_project_ref_uuid2 failed", err)
-	}
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
@@ -360,6 +325,41 @@ func TestFloatingIP(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref floating_ip_virtual_machine_interface_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_floating_ip_project` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing ProjectRefs delete statement failed")
+		}
+		_, err = stmt.Exec("floating_ip_dummy_uuid", "floating_ip_project_ref_uuid")
+		_, err = stmt.Exec("floating_ip_dummy_uuid", "floating_ip_project_ref_uuid1")
+		_, err = stmt.Exec("floating_ip_dummy_uuid", "floating_ip_project_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "ProjectRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteProject(ctx,
+		&models.DeleteProjectRequest{
+			ID: "floating_ip_project_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref floating_ip_project_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteProject(ctx,
+		&models.DeleteProjectRequest{
+			ID: "floating_ip_project_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref floating_ip_project_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteProject(
+		ctx,
+		&models.DeleteProjectRequest{
+			ID: "floating_ip_project_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref floating_ip_project_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

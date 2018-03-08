@@ -43,7 +43,55 @@ func InterfaceToFirewallPolicy(i interface{}) *FirewallPolicy {
 		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:               InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
+
+		FirewallRuleRefs: InterfaceToFirewallPolicyFirewallRuleRefs(m["firewall_rule_refs"]),
+
+		SecurityLoggingObjectRefs: InterfaceToFirewallPolicySecurityLoggingObjectRefs(m["security_logging_object_refs"]),
 	}
+}
+
+func InterfaceToFirewallPolicySecurityLoggingObjectRefs(i interface{}) []*FirewallPolicySecurityLoggingObjectRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*FirewallPolicySecurityLoggingObjectRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &FirewallPolicySecurityLoggingObjectRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToFirewallPolicyFirewallRuleRefs(i interface{}) []*FirewallPolicyFirewallRuleRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*FirewallPolicyFirewallRuleRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &FirewallPolicyFirewallRuleRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+
+			Attr: InterfaceToFirewallSequence(m["attr"]),
+		})
+	}
+
+	return result
 }
 
 // MakeFirewallPolicySlice() makes a slice of FirewallPolicy

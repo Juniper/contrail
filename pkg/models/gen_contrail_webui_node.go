@@ -53,7 +53,30 @@ func InterfaceToContrailWebuiNode(i interface{}) *ContrailWebuiNode {
 		Annotations:               InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:                    InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion:      common.InterfaceToInt64(m["configuration_version"]),
+
+		NodeRefs: InterfaceToContrailWebuiNodeNodeRefs(m["node_refs"]),
 	}
+}
+
+func InterfaceToContrailWebuiNodeNodeRefs(i interface{}) []*ContrailWebuiNodeNodeRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ContrailWebuiNodeNodeRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ContrailWebuiNodeNodeRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeContrailWebuiNodeSlice() makes a slice of ContrailWebuiNode

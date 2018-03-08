@@ -42,14 +42,14 @@ var FirewallPolicyFields = []string{
 // FirewallPolicyRefFields is db reference fields for FirewallPolicy
 var FirewallPolicyRefFields = map[string][]string{
 
-	"firewall_rule": []string{
-		// <schema.Schema Value>
-		"sequence",
-	},
-
 	"security_logging_object": []string{
 	// <schema.Schema Value>
 
+	},
+
+	"firewall_rule": []string{
+		// <schema.Schema Value>
+		"sequence",
 	},
 }
 
@@ -98,6 +98,14 @@ func (db *DB) createFirewallPolicy(
 		return errors.Wrap(err, "create failed")
 	}
 
+	for _, ref := range model.SecurityLoggingObjectRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("security_logging_object"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "SecurityLoggingObjectRefs create failed")
+		}
+	}
+
 	for _, ref := range model.FirewallRuleRefs {
 
 		if ref.Attr == nil {
@@ -107,14 +115,6 @@ func (db *DB) createFirewallPolicy(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("firewall_rule"), model.UUID, ref.UUID, string(ref.Attr.GetSequence()))
 		if err != nil {
 			return errors.Wrap(err, "FirewallRuleRefs create failed")
-		}
-	}
-
-	for _, ref := range model.SecurityLoggingObjectRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("security_logging_object"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "SecurityLoggingObjectRefs create failed")
 		}
 	}
 

@@ -85,7 +85,172 @@ func InterfaceToVirtualNetwork(i interface{}) *VirtualNetwork {
 		MultiPolicyServiceChainsEnabled: common.InterfaceToBool(m["multi_policy_service_chains_enabled"]),
 		MacLimitControl:                 InterfaceToMACLimitControlType(m["mac_limit_control"]),
 		IsShared:                        common.InterfaceToBool(m["is_shared"]),
+
+		QosConfigRefs: InterfaceToVirtualNetworkQosConfigRefs(m["qos_config_refs"]),
+
+		RouteTableRefs: InterfaceToVirtualNetworkRouteTableRefs(m["route_table_refs"]),
+
+		VirtualNetworkRefs: InterfaceToVirtualNetworkVirtualNetworkRefs(m["virtual_network_refs"]),
+
+		BGPVPNRefs: InterfaceToVirtualNetworkBGPVPNRefs(m["bgpvpn_refs"]),
+
+		NetworkIpamRefs: InterfaceToVirtualNetworkNetworkIpamRefs(m["network_ipam_refs"]),
+
+		SecurityLoggingObjectRefs: InterfaceToVirtualNetworkSecurityLoggingObjectRefs(m["security_logging_object_refs"]),
+
+		NetworkPolicyRefs: InterfaceToVirtualNetworkNetworkPolicyRefs(m["network_policy_refs"]),
 	}
+}
+
+func InterfaceToVirtualNetworkBGPVPNRefs(i interface{}) []*VirtualNetworkBGPVPNRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualNetworkBGPVPNRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualNetworkBGPVPNRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualNetworkNetworkIpamRefs(i interface{}) []*VirtualNetworkNetworkIpamRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualNetworkNetworkIpamRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualNetworkNetworkIpamRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+
+			Attr: InterfaceToVnSubnetsType(m["attr"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualNetworkSecurityLoggingObjectRefs(i interface{}) []*VirtualNetworkSecurityLoggingObjectRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualNetworkSecurityLoggingObjectRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualNetworkSecurityLoggingObjectRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualNetworkNetworkPolicyRefs(i interface{}) []*VirtualNetworkNetworkPolicyRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualNetworkNetworkPolicyRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualNetworkNetworkPolicyRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+
+			Attr: InterfaceToVirtualNetworkPolicyType(m["attr"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualNetworkQosConfigRefs(i interface{}) []*VirtualNetworkQosConfigRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualNetworkQosConfigRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualNetworkQosConfigRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualNetworkRouteTableRefs(i interface{}) []*VirtualNetworkRouteTableRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualNetworkRouteTableRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualNetworkRouteTableRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualNetworkVirtualNetworkRefs(i interface{}) []*VirtualNetworkVirtualNetworkRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualNetworkVirtualNetworkRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualNetworkVirtualNetworkRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeVirtualNetworkSlice() makes a slice of VirtualNetwork

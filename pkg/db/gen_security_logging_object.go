@@ -44,12 +44,12 @@ var SecurityLoggingObjectFields = []string{
 // SecurityLoggingObjectRefFields is db reference fields for SecurityLoggingObject
 var SecurityLoggingObjectRefFields = map[string][]string{
 
-	"network_policy": []string{
+	"security_group": []string{
 		// <schema.Schema Value>
 		"rule",
 	},
 
-	"security_group": []string{
+	"network_policy": []string{
 		// <schema.Schema Value>
 		"rule",
 	},
@@ -61,9 +61,9 @@ var SecurityLoggingObjectBackRefFields = map[string][]string{}
 // SecurityLoggingObjectParentTypes is possible parents for SecurityLoggingObject
 var SecurityLoggingObjectParents = []string{
 
-	"project",
-
 	"global_vrouter_config",
+
+	"project",
 }
 
 // CreateSecurityLoggingObject inserts SecurityLoggingObject to DB

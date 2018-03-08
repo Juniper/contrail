@@ -95,19 +95,19 @@ func (db *DB) createE2ServiceProvider(
 		return errors.Wrap(err, "create failed")
 	}
 
-	for _, ref := range model.PeeringPolicyRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("peering_policy"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "PeeringPolicyRefs create failed")
-		}
-	}
-
 	for _, ref := range model.PhysicalRouterRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("physical_router"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "PhysicalRouterRefs create failed")
+		}
+	}
+
+	for _, ref := range model.PeeringPolicyRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("peering_policy"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "PeeringPolicyRefs create failed")
 		}
 	}
 

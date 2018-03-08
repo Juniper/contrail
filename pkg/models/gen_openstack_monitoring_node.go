@@ -53,7 +53,30 @@ func InterfaceToOpenstackMonitoringNode(i interface{}) *OpenstackMonitoringNode 
 		Annotations:               InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:                    InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion:      common.InterfaceToInt64(m["configuration_version"]),
+
+		NodeRefs: InterfaceToOpenstackMonitoringNodeNodeRefs(m["node_refs"]),
 	}
+}
+
+func InterfaceToOpenstackMonitoringNodeNodeRefs(i interface{}) []*OpenstackMonitoringNodeNodeRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*OpenstackMonitoringNodeNodeRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &OpenstackMonitoringNodeNodeRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeOpenstackMonitoringNodeSlice() makes a slice of OpenstackMonitoringNode

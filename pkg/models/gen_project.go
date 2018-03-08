@@ -49,7 +49,101 @@ func InterfaceToProject(i interface{}) *Project {
 		VxlanRouting:         common.InterfaceToBool(m["vxlan_routing"]),
 		AlarmEnable:          common.InterfaceToBool(m["alarm_enable"]),
 		Quota:                InterfaceToQuotaType(m["quota"]),
+
+		ApplicationPolicySetRefs: InterfaceToProjectApplicationPolicySetRefs(m["application_policy_set_refs"]),
+
+		FloatingIPPoolRefs: InterfaceToProjectFloatingIPPoolRefs(m["floating_ip_pool_refs"]),
+
+		AliasIPPoolRefs: InterfaceToProjectAliasIPPoolRefs(m["alias_ip_pool_refs"]),
+
+		NamespaceRefs: InterfaceToProjectNamespaceRefs(m["namespace_refs"]),
 	}
+}
+
+func InterfaceToProjectAliasIPPoolRefs(i interface{}) []*ProjectAliasIPPoolRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ProjectAliasIPPoolRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ProjectAliasIPPoolRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToProjectNamespaceRefs(i interface{}) []*ProjectNamespaceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ProjectNamespaceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ProjectNamespaceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+
+			Attr: InterfaceToSubnetType(m["attr"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToProjectApplicationPolicySetRefs(i interface{}) []*ProjectApplicationPolicySetRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ProjectApplicationPolicySetRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ProjectApplicationPolicySetRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToProjectFloatingIPPoolRefs(i interface{}) []*ProjectFloatingIPPoolRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ProjectFloatingIPPoolRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ProjectFloatingIPPoolRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeProjectSlice() makes a slice of Project

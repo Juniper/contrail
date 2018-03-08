@@ -264,41 +264,6 @@ func TestE2ServiceProvider(t *testing.T) {
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_e2_service_provider_peering_policy` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing PeeringPolicyRefs delete statement failed")
-		}
-		_, err = stmt.Exec("e2_service_provider_dummy_uuid", "e2_service_provider_peering_policy_ref_uuid")
-		_, err = stmt.Exec("e2_service_provider_dummy_uuid", "e2_service_provider_peering_policy_ref_uuid1")
-		_, err = stmt.Exec("e2_service_provider_dummy_uuid", "e2_service_provider_peering_policy_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "PeeringPolicyRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeletePeeringPolicy(ctx,
-		&models.DeletePeeringPolicyRequest{
-			ID: "e2_service_provider_peering_policy_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref e2_service_provider_peering_policy_ref_uuid  failed", err)
-	}
-	_, err = db.DeletePeeringPolicy(ctx,
-		&models.DeletePeeringPolicyRequest{
-			ID: "e2_service_provider_peering_policy_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref e2_service_provider_peering_policy_ref_uuid1  failed", err)
-	}
-	_, err = db.DeletePeeringPolicy(
-		ctx,
-		&models.DeletePeeringPolicyRequest{
-			ID: "e2_service_provider_peering_policy_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref e2_service_provider_peering_policy_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_e2_service_provider_physical_router` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing PhysicalRouterRefs delete statement failed")
@@ -330,6 +295,41 @@ func TestE2ServiceProvider(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref e2_service_provider_physical_router_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_e2_service_provider_peering_policy` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing PeeringPolicyRefs delete statement failed")
+		}
+		_, err = stmt.Exec("e2_service_provider_dummy_uuid", "e2_service_provider_peering_policy_ref_uuid")
+		_, err = stmt.Exec("e2_service_provider_dummy_uuid", "e2_service_provider_peering_policy_ref_uuid1")
+		_, err = stmt.Exec("e2_service_provider_dummy_uuid", "e2_service_provider_peering_policy_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "PeeringPolicyRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeletePeeringPolicy(ctx,
+		&models.DeletePeeringPolicyRequest{
+			ID: "e2_service_provider_peering_policy_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref e2_service_provider_peering_policy_ref_uuid  failed", err)
+	}
+	_, err = db.DeletePeeringPolicy(ctx,
+		&models.DeletePeeringPolicyRequest{
+			ID: "e2_service_provider_peering_policy_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref e2_service_provider_peering_policy_ref_uuid1  failed", err)
+	}
+	_, err = db.DeletePeeringPolicy(
+		ctx,
+		&models.DeletePeeringPolicyRequest{
+			ID: "e2_service_provider_peering_policy_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref e2_service_provider_peering_policy_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

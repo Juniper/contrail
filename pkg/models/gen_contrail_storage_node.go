@@ -61,7 +61,30 @@ func InterfaceToContrailStorageNode(i interface{}) *ContrailStorageNode {
 		OsdDrives:                          common.InterfaceToString(m["osd_drives"]),
 		StorageAccessBondInterfaceMembers:  common.InterfaceToString(m["storage_access_bond_interface_members"]),
 		StorageBackendBondInterfaceMembers: common.InterfaceToString(m["storage_backend_bond_interface_members"]),
+
+		NodeRefs: InterfaceToContrailStorageNodeNodeRefs(m["node_refs"]),
 	}
+}
+
+func InterfaceToContrailStorageNodeNodeRefs(i interface{}) []*ContrailStorageNodeNodeRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ContrailStorageNodeNodeRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ContrailStorageNodeNodeRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeContrailStorageNodeSlice() makes a slice of ContrailStorageNode

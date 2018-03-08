@@ -43,7 +43,53 @@ func InterfaceToCustomerAttachment(i interface{}) *CustomerAttachment {
 		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:               InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
+
+		VirtualMachineInterfaceRefs: InterfaceToCustomerAttachmentVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
+
+		FloatingIPRefs: InterfaceToCustomerAttachmentFloatingIPRefs(m["floating_ip_refs"]),
 	}
+}
+
+func InterfaceToCustomerAttachmentVirtualMachineInterfaceRefs(i interface{}) []*CustomerAttachmentVirtualMachineInterfaceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*CustomerAttachmentVirtualMachineInterfaceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &CustomerAttachmentVirtualMachineInterfaceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToCustomerAttachmentFloatingIPRefs(i interface{}) []*CustomerAttachmentFloatingIPRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*CustomerAttachmentFloatingIPRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &CustomerAttachmentFloatingIPRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeCustomerAttachmentSlice() makes a slice of CustomerAttachment

@@ -45,7 +45,32 @@ func InterfaceToInterfaceRouteTable(i interface{}) *InterfaceRouteTable {
 		Perms2:                    InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion:      common.InterfaceToInt64(m["configuration_version"]),
 		InterfaceRouteTableRoutes: InterfaceToRouteTableType(m["interface_route_table_routes"]),
+
+		ServiceInstanceRefs: InterfaceToInterfaceRouteTableServiceInstanceRefs(m["service_instance_refs"]),
 	}
+}
+
+func InterfaceToInterfaceRouteTableServiceInstanceRefs(i interface{}) []*InterfaceRouteTableServiceInstanceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*InterfaceRouteTableServiceInstanceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &InterfaceRouteTableServiceInstanceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+
+			Attr: InterfaceToServiceInterfaceTag(m["attr"]),
+		})
+	}
+
+	return result
 }
 
 // MakeInterfaceRouteTableSlice() makes a slice of InterfaceRouteTable

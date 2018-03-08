@@ -43,7 +43,32 @@ func InterfaceToRouteAggregate(i interface{}) *RouteAggregate {
 		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:               InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
+
+		ServiceInstanceRefs: InterfaceToRouteAggregateServiceInstanceRefs(m["service_instance_refs"]),
 	}
+}
+
+func InterfaceToRouteAggregateServiceInstanceRefs(i interface{}) []*RouteAggregateServiceInstanceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*RouteAggregateServiceInstanceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &RouteAggregateServiceInstanceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+
+			Attr: InterfaceToServiceInterfaceTag(m["attr"]),
+		})
+	}
+
+	return result
 }
 
 // MakeRouteAggregateSlice() makes a slice of RouteAggregate

@@ -45,7 +45,30 @@ func InterfaceToPhysicalInterface(i interface{}) *PhysicalInterface {
 		Perms2:                    InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion:      common.InterfaceToInt64(m["configuration_version"]),
 		EthernetSegmentIdentifier: common.InterfaceToString(m["ethernet_segment_identifier"]),
+
+		PhysicalInterfaceRefs: InterfaceToPhysicalInterfacePhysicalInterfaceRefs(m["physical_interface_refs"]),
 	}
+}
+
+func InterfaceToPhysicalInterfacePhysicalInterfaceRefs(i interface{}) []*PhysicalInterfacePhysicalInterfaceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*PhysicalInterfacePhysicalInterfaceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &PhysicalInterfacePhysicalInterfaceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakePhysicalInterfaceSlice() makes a slice of PhysicalInterface

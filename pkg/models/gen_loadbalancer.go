@@ -47,7 +47,76 @@ func InterfaceToLoadbalancer(i interface{}) *Loadbalancer {
 		ConfigurationVersion:   common.InterfaceToInt64(m["configuration_version"]),
 		LoadbalancerProperties: InterfaceToLoadbalancerType(m["loadbalancer_properties"]),
 		LoadbalancerProvider:   common.InterfaceToString(m["loadbalancer_provider"]),
+
+		ServiceApplianceSetRefs: InterfaceToLoadbalancerServiceApplianceSetRefs(m["service_appliance_set_refs"]),
+
+		VirtualMachineInterfaceRefs: InterfaceToLoadbalancerVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
+
+		ServiceInstanceRefs: InterfaceToLoadbalancerServiceInstanceRefs(m["service_instance_refs"]),
 	}
+}
+
+func InterfaceToLoadbalancerServiceApplianceSetRefs(i interface{}) []*LoadbalancerServiceApplianceSetRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*LoadbalancerServiceApplianceSetRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &LoadbalancerServiceApplianceSetRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToLoadbalancerVirtualMachineInterfaceRefs(i interface{}) []*LoadbalancerVirtualMachineInterfaceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*LoadbalancerVirtualMachineInterfaceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &LoadbalancerVirtualMachineInterfaceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToLoadbalancerServiceInstanceRefs(i interface{}) []*LoadbalancerServiceInstanceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*LoadbalancerServiceInstanceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &LoadbalancerServiceInstanceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeLoadbalancerSlice() makes a slice of Loadbalancer

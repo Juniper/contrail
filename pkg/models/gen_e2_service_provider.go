@@ -45,7 +45,53 @@ func InterfaceToE2ServiceProvider(i interface{}) *E2ServiceProvider {
 		Perms2:                       InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion:         common.InterfaceToInt64(m["configuration_version"]),
 		E2ServiceProviderPromiscuous: common.InterfaceToBool(m["e2_service_provider_promiscuous"]),
+
+		PhysicalRouterRefs: InterfaceToE2ServiceProviderPhysicalRouterRefs(m["physical_router_refs"]),
+
+		PeeringPolicyRefs: InterfaceToE2ServiceProviderPeeringPolicyRefs(m["peering_policy_refs"]),
 	}
+}
+
+func InterfaceToE2ServiceProviderPhysicalRouterRefs(i interface{}) []*E2ServiceProviderPhysicalRouterRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*E2ServiceProviderPhysicalRouterRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &E2ServiceProviderPhysicalRouterRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToE2ServiceProviderPeeringPolicyRefs(i interface{}) []*E2ServiceProviderPeeringPolicyRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*E2ServiceProviderPeeringPolicyRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &E2ServiceProviderPeeringPolicyRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeE2ServiceProviderSlice() makes a slice of E2ServiceProvider

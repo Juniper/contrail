@@ -57,7 +57,53 @@ func InterfaceToFloatingIP(i interface{}) *FloatingIP {
 		FloatingIPPortMappingsEnable: common.InterfaceToBool(m["floating_ip_port_mappings_enable"]),
 		FloatingIPFixedIPAddress:     common.InterfaceToString(m["floating_ip_fixed_ip_address"]),
 		FloatingIPTrafficDirection:   common.InterfaceToString(m["floating_ip_traffic_direction"]),
+
+		ProjectRefs: InterfaceToFloatingIPProjectRefs(m["project_refs"]),
+
+		VirtualMachineInterfaceRefs: InterfaceToFloatingIPVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
 	}
+}
+
+func InterfaceToFloatingIPProjectRefs(i interface{}) []*FloatingIPProjectRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*FloatingIPProjectRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &FloatingIPProjectRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToFloatingIPVirtualMachineInterfaceRefs(i interface{}) []*FloatingIPVirtualMachineInterfaceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*FloatingIPVirtualMachineInterfaceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &FloatingIPVirtualMachineInterfaceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeFloatingIPSlice() makes a slice of FloatingIP

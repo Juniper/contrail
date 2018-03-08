@@ -45,15 +45,15 @@ var VirtualRouterFields = []string{
 // VirtualRouterRefFields is db reference fields for VirtualRouter
 var VirtualRouterRefFields = map[string][]string{
 
-	"virtual_machine": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"network_ipam": []string{
 		// <schema.Schema Value>
 		"subnet",
 		"allocation_pools",
+	},
+
+	"virtual_machine": []string{
+	// <schema.Schema Value>
+
 	},
 }
 

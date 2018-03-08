@@ -53,7 +53,30 @@ func InterfaceToQosConfig(i interface{}) *QosConfig {
 		VlanPriorityEntries:      InterfaceToQosIdForwardingClassPairs(m["vlan_priority_entries"]),
 		DefaultForwardingClassID: common.InterfaceToInt64(m["default_forwarding_class_id"]),
 		DSCPEntries:              InterfaceToQosIdForwardingClassPairs(m["dscp_entries"]),
+
+		GlobalSystemConfigRefs: InterfaceToQosConfigGlobalSystemConfigRefs(m["global_system_config_refs"]),
 	}
+}
+
+func InterfaceToQosConfigGlobalSystemConfigRefs(i interface{}) []*QosConfigGlobalSystemConfigRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*QosConfigGlobalSystemConfigRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &QosConfigGlobalSystemConfigRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeQosConfigSlice() makes a slice of QosConfig

@@ -22,6 +22,17 @@ test_data:
           rule_sequence:
             major: 4
             minor: 1
+  vn_blue: &vn_blue
+    fq_name: ["default", "admin", "vn_blue"]
+    uuid: vn_blue
+    display_name: blue
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    route_target_list:
+       route_target: ["100:200"]
+    virtual_network_network_id: 50
+    network_policy_refs:
+    - uuid: network_policy_uuid
 clients:
   default:
     id: alice
@@ -38,16 +49,20 @@ workflow:
     expected:
     - 201
     data:
-      resources: 
+      resources:
       - kind: project
         data: *admin_project
-      - kind: network_policy 
+      - kind: network_policy
         data: *network_policy1
+      - kind: virtual_network
+        data: *vn_blue
   expect:
     - kind: project
       data: *admin_project
-    - kind: network_policy 
+    - kind: network_policy
       data: *network_policy1
+    - kind: virtual_network
+      data: *vn_blue
 - name: list project
   request:
     path: /projects?detail=true
@@ -66,3 +81,12 @@ workflow:
   expect:
     network-policys:
     - *network_policy1
+- name: list virtual networks with detail
+  request:
+    path: /virtual-networks?detail=true
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - *vn_blue

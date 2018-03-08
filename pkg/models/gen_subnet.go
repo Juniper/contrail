@@ -45,7 +45,30 @@ func InterfaceToSubnet(i interface{}) *Subnet {
 		Perms2:               InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
 		SubnetIPPrefix:       InterfaceToSubnetType(m["subnet_ip_prefix"]),
+
+		VirtualMachineInterfaceRefs: InterfaceToSubnetVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
 	}
+}
+
+func InterfaceToSubnetVirtualMachineInterfaceRefs(i interface{}) []*SubnetVirtualMachineInterfaceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*SubnetVirtualMachineInterfaceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &SubnetVirtualMachineInterfaceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeSubnetSlice() makes a slice of Subnet

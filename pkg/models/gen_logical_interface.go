@@ -47,7 +47,30 @@ func InterfaceToLogicalInterface(i interface{}) *LogicalInterface {
 		ConfigurationVersion:    common.InterfaceToInt64(m["configuration_version"]),
 		LogicalInterfaceVlanTag: common.InterfaceToInt64(m["logical_interface_vlan_tag"]),
 		LogicalInterfaceType:    common.InterfaceToString(m["logical_interface_type"]),
+
+		VirtualMachineInterfaceRefs: InterfaceToLogicalInterfaceVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
 	}
+}
+
+func InterfaceToLogicalInterfaceVirtualMachineInterfaceRefs(i interface{}) []*LogicalInterfaceVirtualMachineInterfaceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*LogicalInterfaceVirtualMachineInterfaceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &LogicalInterfaceVirtualMachineInterfaceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeLogicalInterfaceSlice() makes a slice of LogicalInterface

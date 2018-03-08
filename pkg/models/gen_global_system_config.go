@@ -69,7 +69,30 @@ func InterfaceToGlobalSystemConfig(i interface{}) *GlobalSystemConfig {
 		IPFabricSubnets:           InterfaceToSubnetListType(m["ip_fabric_subnets"]),
 		AutonomousSystem:          common.InterfaceToInt64(m["autonomous_system"]),
 		MacLimitControl:           InterfaceToMACLimitControlType(m["mac_limit_control"]),
+
+		BGPRouterRefs: InterfaceToGlobalSystemConfigBGPRouterRefs(m["bgp_router_refs"]),
 	}
+}
+
+func InterfaceToGlobalSystemConfigBGPRouterRefs(i interface{}) []*GlobalSystemConfigBGPRouterRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*GlobalSystemConfigBGPRouterRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &GlobalSystemConfigBGPRouterRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeGlobalSystemConfigSlice() makes a slice of GlobalSystemConfig

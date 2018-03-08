@@ -43,7 +43,30 @@ func InterfaceToConfigRoot(i interface{}) *ConfigRoot {
 		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:               InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
+
+		TagRefs: InterfaceToConfigRootTagRefs(m["tag_refs"]),
 	}
+}
+
+func InterfaceToConfigRootTagRefs(i interface{}) []*ConfigRootTagRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ConfigRootTagRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ConfigRootTagRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeConfigRootSlice() makes a slice of ConfigRoot

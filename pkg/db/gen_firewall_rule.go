@@ -85,11 +85,6 @@ var FirewallRuleFields = []string{
 // FirewallRuleRefFields is db reference fields for FirewallRule
 var FirewallRuleRefFields = map[string][]string{
 
-	"virtual_network": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"service_group": []string{
 	// <schema.Schema Value>
 
@@ -101,6 +96,11 @@ var FirewallRuleRefFields = map[string][]string{
 	},
 
 	"security_logging_object": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"virtual_network": []string{
 	// <schema.Schema Value>
 
 	},

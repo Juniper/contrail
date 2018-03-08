@@ -43,7 +43,76 @@ func InterfaceToServiceEndpoint(i interface{}) *ServiceEndpoint {
 		Annotations:          InterfaceToKeyValuePairs(m["annotations"]),
 		Perms2:               InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion: common.InterfaceToInt64(m["configuration_version"]),
+
+		ServiceConnectionModuleRefs: InterfaceToServiceEndpointServiceConnectionModuleRefs(m["service_connection_module_refs"]),
+
+		PhysicalRouterRefs: InterfaceToServiceEndpointPhysicalRouterRefs(m["physical_router_refs"]),
+
+		ServiceObjectRefs: InterfaceToServiceEndpointServiceObjectRefs(m["service_object_refs"]),
 	}
+}
+
+func InterfaceToServiceEndpointServiceConnectionModuleRefs(i interface{}) []*ServiceEndpointServiceConnectionModuleRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ServiceEndpointServiceConnectionModuleRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ServiceEndpointServiceConnectionModuleRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToServiceEndpointPhysicalRouterRefs(i interface{}) []*ServiceEndpointPhysicalRouterRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ServiceEndpointPhysicalRouterRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ServiceEndpointPhysicalRouterRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToServiceEndpointServiceObjectRefs(i interface{}) []*ServiceEndpointServiceObjectRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ServiceEndpointServiceObjectRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ServiceEndpointServiceObjectRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeServiceEndpointSlice() makes a slice of ServiceEndpoint

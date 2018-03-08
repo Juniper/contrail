@@ -1137,6 +1137,14 @@ func (db *DB) createProject(
 		return errors.Wrap(err, "create failed")
 	}
 
+	for _, ref := range model.ApplicationPolicySetRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("application_policy_set"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ApplicationPolicySetRefs create failed")
+		}
+	}
+
 	for _, ref := range model.FloatingIPPoolRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("floating_ip_pool"), model.UUID, ref.UUID)
@@ -1163,14 +1171,6 @@ func (db *DB) createProject(
 			int(ref.Attr.GetIPPrefixLen()))
 		if err != nil {
 			return errors.Wrap(err, "NamespaceRefs create failed")
-		}
-	}
-
-	for _, ref := range model.ApplicationPolicySetRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("application_policy_set"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ApplicationPolicySetRefs create failed")
 		}
 	}
 

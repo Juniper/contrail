@@ -55,7 +55,30 @@ func InterfaceToVPNGroup(i interface{}) *VPNGroup {
 		Perms2:                    InterfaceToPermType2(m["perms2"]),
 		ConfigurationVersion:      common.InterfaceToInt64(m["configuration_version"]),
 		Type:                      common.InterfaceToString(m["type"]),
+
+		LocationRefs: InterfaceToVPNGroupLocationRefs(m["location_refs"]),
 	}
+}
+
+func InterfaceToVPNGroupLocationRefs(i interface{}) []*VPNGroupLocationRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VPNGroupLocationRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VPNGroupLocationRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 // MakeVPNGroupSlice() makes a slice of VPNGroup
