@@ -56,9 +56,9 @@ var LogicalInterfaceBackRefFields = map[string][]string{}
 // LogicalInterfaceParentTypes is possible parents for LogicalInterface
 var LogicalInterfaceParents = []string{
 
-	"physical_router",
-
 	"physical_interface",
+
+	"physical_router",
 }
 
 // CreateLogicalInterface inserts LogicalInterface to DB

@@ -50,9 +50,9 @@ func InterfaceToVirtualRouter(i interface{}) *VirtualRouter {
 		VirtualRouterType:        common.InterfaceToString(m["virtual_router_type"]),
 		VirtualRouterIPAddress:   common.InterfaceToString(m["virtual_router_ip_address"]),
 
-		VirtualMachineRefs: InterfaceToVirtualRouterVirtualMachineRefs(m["virtual_machine_refs"]),
-
 		NetworkIpamRefs: InterfaceToVirtualRouterNetworkIpamRefs(m["network_ipam_refs"]),
+
+		VirtualMachineRefs: InterfaceToVirtualRouterVirtualMachineRefs(m["virtual_machine_refs"]),
 	}
 }
 

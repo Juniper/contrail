@@ -28872,6 +28872,17 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "ntp_server": {
+                        "title": "NTPServer",
+                        "description": "NTP server ip address",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "openstack_enable_haproxy": {
                         "title": "Openstack Enable Haproxy",
                         "description": "Configure haproxy in openstack control node",
@@ -29116,6 +29127,17 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "sudo_password": {
+                        "title": "Sudo User Password",
+                        "description": "Sudo user password of the provisioning node",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "uuid": {
                         "description": "UUID of the object, system automatically allocates one if not provided",
                         "type": "string",
@@ -29153,7 +29175,9 @@
                     "openstack_external_vip",
                     "openstack_internal_vip_interface",
                     "openstack_external_vip_interface",
-                    "openstack_enable_haproxy"
+                    "openstack_enable_haproxy",
+                    "ntp_server",
+                    "sudo_password"
                 ],
                 "minimum": 0,
                 "maximum": 0
