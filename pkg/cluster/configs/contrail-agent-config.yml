@@ -29,10 +29,6 @@ tasks:
   - command: "go run cmd/contrail/main.go cluster -c {{ dir }}/contrail-cluster-config.yml"
   - debug: "AGENT cluster update complete"
   on_delete:
-  - debug: "AGENT deleting cluster(contrail cluster -c {{ dir }}/contrail-cluster-config.yml)"
-      #- command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
-  - command: "go run cmd/contrail/main.go cluster -c {{ dir }}/contrail-cluster-config.yml"
-  - debug: "AGENT cluster delete complete"
   - debug: "AGENT deleting {{ dir }}"
   - command: "rm -rf  {{ dir }}"
   - debug: "AGENT deleted {{ dir }"

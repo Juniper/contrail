@@ -70,248 +70,34 @@ func InterfaceToVirtualMachineInterface(i interface{}) *VirtualMachineInterface 
 		PortSecurityEnabled:                        common.InterfaceToBool(m["port_security_enabled"]),
 		VirtualMachineInterfaceProperties:          InterfaceToVirtualMachineInterfacePropertiesType(m["virtual_machine_interface_properties"]),
 
+		VirtualMachineRefs: InterfaceToVirtualMachineInterfaceVirtualMachineRefs(m["virtual_machine_refs"]),
+
+		QosConfigRefs: InterfaceToVirtualMachineInterfaceQosConfigRefs(m["qos_config_refs"]),
+
+		VirtualNetworkRefs: InterfaceToVirtualMachineInterfaceVirtualNetworkRefs(m["virtual_network_refs"]),
+
 		VirtualMachineInterfaceRefs: InterfaceToVirtualMachineInterfaceVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
 
 		PhysicalInterfaceRefs: InterfaceToVirtualMachineInterfacePhysicalInterfaceRefs(m["physical_interface_refs"]),
 
 		ServiceHealthCheckRefs: InterfaceToVirtualMachineInterfaceServiceHealthCheckRefs(m["service_health_check_refs"]),
 
-		ServiceEndpointRefs: InterfaceToVirtualMachineInterfaceServiceEndpointRefs(m["service_endpoint_refs"]),
+		SecurityGroupRefs: InterfaceToVirtualMachineInterfaceSecurityGroupRefs(m["security_group_refs"]),
 
 		BGPRouterRefs: InterfaceToVirtualMachineInterfaceBGPRouterRefs(m["bgp_router_refs"]),
-
-		QosConfigRefs: InterfaceToVirtualMachineInterfaceQosConfigRefs(m["qos_config_refs"]),
-
-		VirtualNetworkRefs: InterfaceToVirtualMachineInterfaceVirtualNetworkRefs(m["virtual_network_refs"]),
 
 		SecurityLoggingObjectRefs: InterfaceToVirtualMachineInterfaceSecurityLoggingObjectRefs(m["security_logging_object_refs"]),
 
 		InterfaceRouteTableRefs: InterfaceToVirtualMachineInterfaceInterfaceRouteTableRefs(m["interface_route_table_refs"]),
 
-		BridgeDomainRefs: InterfaceToVirtualMachineInterfaceBridgeDomainRefs(m["bridge_domain_refs"]),
-
-		VirtualMachineRefs: InterfaceToVirtualMachineInterfaceVirtualMachineRefs(m["virtual_machine_refs"]),
-
 		RoutingInstanceRefs: InterfaceToVirtualMachineInterfaceRoutingInstanceRefs(m["routing_instance_refs"]),
 
 		PortTupleRefs: InterfaceToVirtualMachineInterfacePortTupleRefs(m["port_tuple_refs"]),
 
-		SecurityGroupRefs: InterfaceToVirtualMachineInterfaceSecurityGroupRefs(m["security_group_refs"]),
+		BridgeDomainRefs: InterfaceToVirtualMachineInterfaceBridgeDomainRefs(m["bridge_domain_refs"]),
+
+		ServiceEndpointRefs: InterfaceToVirtualMachineInterfaceServiceEndpointRefs(m["service_endpoint_refs"]),
 	}
-}
-
-func InterfaceToVirtualMachineInterfaceBGPRouterRefs(i interface{}) []*VirtualMachineInterfaceBGPRouterRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*VirtualMachineInterfaceBGPRouterRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &VirtualMachineInterfaceBGPRouterRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
-func InterfaceToVirtualMachineInterfaceQosConfigRefs(i interface{}) []*VirtualMachineInterfaceQosConfigRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*VirtualMachineInterfaceQosConfigRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &VirtualMachineInterfaceQosConfigRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
-func InterfaceToVirtualMachineInterfaceVirtualNetworkRefs(i interface{}) []*VirtualMachineInterfaceVirtualNetworkRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*VirtualMachineInterfaceVirtualNetworkRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &VirtualMachineInterfaceVirtualNetworkRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
-func InterfaceToVirtualMachineInterfaceSecurityLoggingObjectRefs(i interface{}) []*VirtualMachineInterfaceSecurityLoggingObjectRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*VirtualMachineInterfaceSecurityLoggingObjectRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &VirtualMachineInterfaceSecurityLoggingObjectRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
-func InterfaceToVirtualMachineInterfaceInterfaceRouteTableRefs(i interface{}) []*VirtualMachineInterfaceInterfaceRouteTableRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*VirtualMachineInterfaceInterfaceRouteTableRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &VirtualMachineInterfaceInterfaceRouteTableRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
-func InterfaceToVirtualMachineInterfaceBridgeDomainRefs(i interface{}) []*VirtualMachineInterfaceBridgeDomainRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*VirtualMachineInterfaceBridgeDomainRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &VirtualMachineInterfaceBridgeDomainRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-
-			Attr: InterfaceToBridgeDomainMembershipType(m["attr"]),
-		})
-	}
-
-	return result
-}
-
-func InterfaceToVirtualMachineInterfaceVirtualMachineRefs(i interface{}) []*VirtualMachineInterfaceVirtualMachineRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*VirtualMachineInterfaceVirtualMachineRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &VirtualMachineInterfaceVirtualMachineRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
-func InterfaceToVirtualMachineInterfaceRoutingInstanceRefs(i interface{}) []*VirtualMachineInterfaceRoutingInstanceRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*VirtualMachineInterfaceRoutingInstanceRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &VirtualMachineInterfaceRoutingInstanceRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-
-			Attr: InterfaceToPolicyBasedForwardingRuleType(m["attr"]),
-		})
-	}
-
-	return result
-}
-
-func InterfaceToVirtualMachineInterfacePortTupleRefs(i interface{}) []*VirtualMachineInterfacePortTupleRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*VirtualMachineInterfacePortTupleRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &VirtualMachineInterfacePortTupleRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
-func InterfaceToVirtualMachineInterfaceSecurityGroupRefs(i interface{}) []*VirtualMachineInterfaceSecurityGroupRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*VirtualMachineInterfaceSecurityGroupRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &VirtualMachineInterfaceSecurityGroupRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
 }
 
 func InterfaceToVirtualMachineInterfaceVirtualMachineInterfaceRefs(i interface{}) []*VirtualMachineInterfaceVirtualMachineInterfaceRef {
@@ -377,6 +163,157 @@ func InterfaceToVirtualMachineInterfaceServiceHealthCheckRefs(i interface{}) []*
 	return result
 }
 
+func InterfaceToVirtualMachineInterfaceSecurityGroupRefs(i interface{}) []*VirtualMachineInterfaceSecurityGroupRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualMachineInterfaceSecurityGroupRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualMachineInterfaceSecurityGroupRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualMachineInterfaceBridgeDomainRefs(i interface{}) []*VirtualMachineInterfaceBridgeDomainRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualMachineInterfaceBridgeDomainRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualMachineInterfaceBridgeDomainRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+
+			Attr: InterfaceToBridgeDomainMembershipType(m["attr"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualMachineInterfaceBGPRouterRefs(i interface{}) []*VirtualMachineInterfaceBGPRouterRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualMachineInterfaceBGPRouterRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualMachineInterfaceBGPRouterRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualMachineInterfaceSecurityLoggingObjectRefs(i interface{}) []*VirtualMachineInterfaceSecurityLoggingObjectRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualMachineInterfaceSecurityLoggingObjectRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualMachineInterfaceSecurityLoggingObjectRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualMachineInterfaceInterfaceRouteTableRefs(i interface{}) []*VirtualMachineInterfaceInterfaceRouteTableRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualMachineInterfaceInterfaceRouteTableRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualMachineInterfaceInterfaceRouteTableRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualMachineInterfaceRoutingInstanceRefs(i interface{}) []*VirtualMachineInterfaceRoutingInstanceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualMachineInterfaceRoutingInstanceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualMachineInterfaceRoutingInstanceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+
+			Attr: InterfaceToPolicyBasedForwardingRuleType(m["attr"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualMachineInterfacePortTupleRefs(i interface{}) []*VirtualMachineInterfacePortTupleRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualMachineInterfacePortTupleRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualMachineInterfacePortTupleRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
 func InterfaceToVirtualMachineInterfaceServiceEndpointRefs(i interface{}) []*VirtualMachineInterfaceServiceEndpointRef {
 	list, ok := i.([]interface{})
 	if !ok {
@@ -390,6 +327,69 @@ func InterfaceToVirtualMachineInterfaceServiceEndpointRefs(i interface{}) []*Vir
 			return nil
 		}
 		result = append(result, &VirtualMachineInterfaceServiceEndpointRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualMachineInterfaceVirtualMachineRefs(i interface{}) []*VirtualMachineInterfaceVirtualMachineRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualMachineInterfaceVirtualMachineRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualMachineInterfaceVirtualMachineRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualMachineInterfaceQosConfigRefs(i interface{}) []*VirtualMachineInterfaceQosConfigRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualMachineInterfaceQosConfigRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualMachineInterfaceQosConfigRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToVirtualMachineInterfaceVirtualNetworkRefs(i interface{}) []*VirtualMachineInterfaceVirtualNetworkRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*VirtualMachineInterfaceVirtualNetworkRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &VirtualMachineInterfaceVirtualNetworkRef{
 			UUID: common.InterfaceToString(m["uuid"]),
 			To:   common.InterfaceToStringList(m["to"]),
 		})

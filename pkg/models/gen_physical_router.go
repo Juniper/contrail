@@ -80,27 +80,6 @@ func InterfaceToPhysicalRouter(i interface{}) *PhysicalRouter {
 	}
 }
 
-func InterfaceToPhysicalRouterVirtualRouterRefs(i interface{}) []*PhysicalRouterVirtualRouterRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*PhysicalRouterVirtualRouterRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &PhysicalRouterVirtualRouterRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
 func InterfaceToPhysicalRouterVirtualNetworkRefs(i interface{}) []*PhysicalRouterVirtualNetworkRef {
 	list, ok := i.([]interface{})
 	if !ok {
@@ -135,6 +114,27 @@ func InterfaceToPhysicalRouterBGPRouterRefs(i interface{}) []*PhysicalRouterBGPR
 			return nil
 		}
 		result = append(result, &PhysicalRouterBGPRouterRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToPhysicalRouterVirtualRouterRefs(i interface{}) []*PhysicalRouterVirtualRouterRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*PhysicalRouterVirtualRouterRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &PhysicalRouterVirtualRouterRef{
 			UUID: common.InterfaceToString(m["uuid"]),
 			To:   common.InterfaceToStringList(m["to"]),
 		})
