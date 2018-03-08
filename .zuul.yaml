@@ -5,7 +5,7 @@
         - contrail-go-docker
     gate:
       jobs:
-        - noop
+        - contrail-go-docker
 
 - job:
     name: contrail-go-docker
