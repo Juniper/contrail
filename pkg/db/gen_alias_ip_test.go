@@ -268,41 +268,6 @@ func TestAliasIP(t *testing.T) {
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_alias_ip_project` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing ProjectRefs delete statement failed")
-		}
-		_, err = stmt.Exec("alias_ip_dummy_uuid", "alias_ip_project_ref_uuid")
-		_, err = stmt.Exec("alias_ip_dummy_uuid", "alias_ip_project_ref_uuid1")
-		_, err = stmt.Exec("alias_ip_dummy_uuid", "alias_ip_project_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "ProjectRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteProject(ctx,
-		&models.DeleteProjectRequest{
-			ID: "alias_ip_project_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref alias_ip_project_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteProject(ctx,
-		&models.DeleteProjectRequest{
-			ID: "alias_ip_project_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref alias_ip_project_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteProject(
-		ctx,
-		&models.DeleteProjectRequest{
-			ID: "alias_ip_project_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref alias_ip_project_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_alias_ip_virtual_machine_interface` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
@@ -334,6 +299,41 @@ func TestAliasIP(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref alias_ip_virtual_machine_interface_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_alias_ip_project` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing ProjectRefs delete statement failed")
+		}
+		_, err = stmt.Exec("alias_ip_dummy_uuid", "alias_ip_project_ref_uuid")
+		_, err = stmt.Exec("alias_ip_dummy_uuid", "alias_ip_project_ref_uuid1")
+		_, err = stmt.Exec("alias_ip_dummy_uuid", "alias_ip_project_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "ProjectRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteProject(ctx,
+		&models.DeleteProjectRequest{
+			ID: "alias_ip_project_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref alias_ip_project_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteProject(ctx,
+		&models.DeleteProjectRequest{
+			ID: "alias_ip_project_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref alias_ip_project_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteProject(
+		ctx,
+		&models.DeleteProjectRequest{
+			ID: "alias_ip_project_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref alias_ip_project_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

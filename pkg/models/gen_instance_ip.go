@@ -62,6 +62,8 @@ func InterfaceToInstanceIP(i interface{}) *InstanceIP {
 		InstanceIPLocalIP:     common.InterfaceToBool(m["instance_ip_local_ip"]),
 		InstanceIPSecondary:   common.InterfaceToBool(m["instance_ip_secondary"]),
 
+		VirtualNetworkRefs: InterfaceToInstanceIPVirtualNetworkRefs(m["virtual_network_refs"]),
+
 		VirtualMachineInterfaceRefs: InterfaceToInstanceIPVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
 
 		PhysicalRouterRefs: InterfaceToInstanceIPPhysicalRouterRefs(m["physical_router_refs"]),
@@ -69,30 +71,7 @@ func InterfaceToInstanceIP(i interface{}) *InstanceIP {
 		VirtualRouterRefs: InterfaceToInstanceIPVirtualRouterRefs(m["virtual_router_refs"]),
 
 		NetworkIpamRefs: InterfaceToInstanceIPNetworkIpamRefs(m["network_ipam_refs"]),
-
-		VirtualNetworkRefs: InterfaceToInstanceIPVirtualNetworkRefs(m["virtual_network_refs"]),
 	}
-}
-
-func InterfaceToInstanceIPNetworkIpamRefs(i interface{}) []*InstanceIPNetworkIpamRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*InstanceIPNetworkIpamRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &InstanceIPNetworkIpamRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
 }
 
 func InterfaceToInstanceIPVirtualNetworkRefs(i interface{}) []*InstanceIPVirtualNetworkRef {
@@ -171,6 +150,27 @@ func InterfaceToInstanceIPVirtualRouterRefs(i interface{}) []*InstanceIPVirtualR
 			return nil
 		}
 		result = append(result, &InstanceIPVirtualRouterRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToInstanceIPNetworkIpamRefs(i interface{}) []*InstanceIPNetworkIpamRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*InstanceIPNetworkIpamRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &InstanceIPNetworkIpamRef{
 			UUID: common.InterfaceToString(m["uuid"]),
 			To:   common.InterfaceToStringList(m["to"]),
 		})

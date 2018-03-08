@@ -85,6 +85,11 @@ var FirewallRuleFields = []string{
 // FirewallRuleRefFields is db reference fields for FirewallRule
 var FirewallRuleRefFields = map[string][]string{
 
+	"service_group": []string{
+	// <schema.Schema Value>
+
+	},
+
 	"address_group": []string{
 	// <schema.Schema Value>
 
@@ -99,11 +104,6 @@ var FirewallRuleRefFields = map[string][]string{
 	// <schema.Schema Value>
 
 	},
-
-	"service_group": []string{
-	// <schema.Schema Value>
-
-	},
 }
 
 // FirewallRuleBackRefFields is db back reference fields for FirewallRule
@@ -112,9 +112,9 @@ var FirewallRuleBackRefFields = map[string][]string{}
 // FirewallRuleParentTypes is possible parents for FirewallRule
 var FirewallRuleParents = []string{
 
-	"policy_management",
-
 	"project",
+
+	"policy_management",
 }
 
 // CreateFirewallRule inserts FirewallRule to DB
@@ -638,26 +638,6 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 
 	}
 
-	if value, ok := values["ref_security_logging_object"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.FirewallRuleSecurityLoggingObjectRef{}
-			referenceModel.UUID = uuid
-			m.SecurityLoggingObjectRefs = append(m.SecurityLoggingObjectRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_virtual_network"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -714,6 +694,26 @@ func scanFirewallRule(values map[string]interface{}) (*models.FirewallRule, erro
 			referenceModel := &models.FirewallRuleAddressGroupRef{}
 			referenceModel.UUID = uuid
 			m.AddressGroupRefs = append(m.AddressGroupRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_security_logging_object"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.FirewallRuleSecurityLoggingObjectRef{}
+			referenceModel.UUID = uuid
+			m.SecurityLoggingObjectRefs = append(m.SecurityLoggingObjectRefs, referenceModel)
 
 		}
 	}

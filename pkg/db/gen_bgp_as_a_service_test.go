@@ -42,31 +42,6 @@ func TestBGPAsAService(t *testing.T) {
 
 	// Create referred objects
 
-	var ServiceHealthCheckcreateref []*models.BGPAsAServiceServiceHealthCheckRef
-	var ServiceHealthCheckrefModel *models.ServiceHealthCheck
-	ServiceHealthCheckrefModel = models.MakeServiceHealthCheck()
-	ServiceHealthCheckrefModel.UUID = "bgp_as_a_service_service_health_check_ref_uuid"
-	ServiceHealthCheckrefModel.FQName = []string{"test", "bgp_as_a_service_service_health_check_ref_uuid"}
-	_, err = db.CreateServiceHealthCheck(ctx, &models.CreateServiceHealthCheckRequest{
-		ServiceHealthCheck: ServiceHealthCheckrefModel,
-	})
-	ServiceHealthCheckrefModel.UUID = "bgp_as_a_service_service_health_check_ref_uuid1"
-	ServiceHealthCheckrefModel.FQName = []string{"test", "bgp_as_a_service_service_health_check_ref_uuid1"}
-	_, err = db.CreateServiceHealthCheck(ctx, &models.CreateServiceHealthCheckRequest{
-		ServiceHealthCheck: ServiceHealthCheckrefModel,
-	})
-	ServiceHealthCheckrefModel.UUID = "bgp_as_a_service_service_health_check_ref_uuid2"
-	ServiceHealthCheckrefModel.FQName = []string{"test", "bgp_as_a_service_service_health_check_ref_uuid2"}
-	_, err = db.CreateServiceHealthCheck(ctx, &models.CreateServiceHealthCheckRequest{
-		ServiceHealthCheck: ServiceHealthCheckrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	ServiceHealthCheckcreateref = append(ServiceHealthCheckcreateref, &models.BGPAsAServiceServiceHealthCheckRef{UUID: "bgp_as_a_service_service_health_check_ref_uuid", To: []string{"test", "bgp_as_a_service_service_health_check_ref_uuid"}})
-	ServiceHealthCheckcreateref = append(ServiceHealthCheckcreateref, &models.BGPAsAServiceServiceHealthCheckRef{UUID: "bgp_as_a_service_service_health_check_ref_uuid2", To: []string{"test", "bgp_as_a_service_service_health_check_ref_uuid2"}})
-	model.ServiceHealthCheckRefs = ServiceHealthCheckcreateref
-
 	var VirtualMachineInterfacecreateref []*models.BGPAsAServiceVirtualMachineInterfaceRef
 	var VirtualMachineInterfacerefModel *models.VirtualMachineInterface
 	VirtualMachineInterfacerefModel = models.MakeVirtualMachineInterface()
@@ -91,6 +66,31 @@ func TestBGPAsAService(t *testing.T) {
 	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.BGPAsAServiceVirtualMachineInterfaceRef{UUID: "bgp_as_a_service_virtual_machine_interface_ref_uuid", To: []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid"}})
 	VirtualMachineInterfacecreateref = append(VirtualMachineInterfacecreateref, &models.BGPAsAServiceVirtualMachineInterfaceRef{UUID: "bgp_as_a_service_virtual_machine_interface_ref_uuid2", To: []string{"test", "bgp_as_a_service_virtual_machine_interface_ref_uuid2"}})
 	model.VirtualMachineInterfaceRefs = VirtualMachineInterfacecreateref
+
+	var ServiceHealthCheckcreateref []*models.BGPAsAServiceServiceHealthCheckRef
+	var ServiceHealthCheckrefModel *models.ServiceHealthCheck
+	ServiceHealthCheckrefModel = models.MakeServiceHealthCheck()
+	ServiceHealthCheckrefModel.UUID = "bgp_as_a_service_service_health_check_ref_uuid"
+	ServiceHealthCheckrefModel.FQName = []string{"test", "bgp_as_a_service_service_health_check_ref_uuid"}
+	_, err = db.CreateServiceHealthCheck(ctx, &models.CreateServiceHealthCheckRequest{
+		ServiceHealthCheck: ServiceHealthCheckrefModel,
+	})
+	ServiceHealthCheckrefModel.UUID = "bgp_as_a_service_service_health_check_ref_uuid1"
+	ServiceHealthCheckrefModel.FQName = []string{"test", "bgp_as_a_service_service_health_check_ref_uuid1"}
+	_, err = db.CreateServiceHealthCheck(ctx, &models.CreateServiceHealthCheckRequest{
+		ServiceHealthCheck: ServiceHealthCheckrefModel,
+	})
+	ServiceHealthCheckrefModel.UUID = "bgp_as_a_service_service_health_check_ref_uuid2"
+	ServiceHealthCheckrefModel.FQName = []string{"test", "bgp_as_a_service_service_health_check_ref_uuid2"}
+	_, err = db.CreateServiceHealthCheck(ctx, &models.CreateServiceHealthCheckRequest{
+		ServiceHealthCheck: ServiceHealthCheckrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	ServiceHealthCheckcreateref = append(ServiceHealthCheckcreateref, &models.BGPAsAServiceServiceHealthCheckRef{UUID: "bgp_as_a_service_service_health_check_ref_uuid", To: []string{"test", "bgp_as_a_service_service_health_check_ref_uuid"}})
+	ServiceHealthCheckcreateref = append(ServiceHealthCheckcreateref, &models.BGPAsAServiceServiceHealthCheckRef{UUID: "bgp_as_a_service_service_health_check_ref_uuid2", To: []string{"test", "bgp_as_a_service_service_health_check_ref_uuid2"}})
+	model.ServiceHealthCheckRefs = ServiceHealthCheckcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()

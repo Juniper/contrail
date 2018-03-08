@@ -50,8 +50,6 @@ func InterfaceToLoadbalancerPool(i interface{}) *LoadbalancerPool {
 		LoadbalancerPoolCustomAttributes: InterfaceToKeyValuePairs(m["loadbalancer_pool_custom_attributes"]),
 		LoadbalancerPoolProvider:         common.InterfaceToString(m["loadbalancer_pool_provider"]),
 
-		ServiceApplianceSetRefs: InterfaceToLoadbalancerPoolServiceApplianceSetRefs(m["service_appliance_set_refs"]),
-
 		VirtualMachineInterfaceRefs: InterfaceToLoadbalancerPoolVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
 
 		LoadbalancerListenerRefs: InterfaceToLoadbalancerPoolLoadbalancerListenerRefs(m["loadbalancer_listener_refs"]),
@@ -59,7 +57,30 @@ func InterfaceToLoadbalancerPool(i interface{}) *LoadbalancerPool {
 		ServiceInstanceRefs: InterfaceToLoadbalancerPoolServiceInstanceRefs(m["service_instance_refs"]),
 
 		LoadbalancerHealthmonitorRefs: InterfaceToLoadbalancerPoolLoadbalancerHealthmonitorRefs(m["loadbalancer_healthmonitor_refs"]),
+
+		ServiceApplianceSetRefs: InterfaceToLoadbalancerPoolServiceApplianceSetRefs(m["service_appliance_set_refs"]),
 	}
+}
+
+func InterfaceToLoadbalancerPoolServiceApplianceSetRefs(i interface{}) []*LoadbalancerPoolServiceApplianceSetRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*LoadbalancerPoolServiceApplianceSetRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &LoadbalancerPoolServiceApplianceSetRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
 }
 
 func InterfaceToLoadbalancerPoolVirtualMachineInterfaceRefs(i interface{}) []*LoadbalancerPoolVirtualMachineInterfaceRef {
@@ -138,27 +159,6 @@ func InterfaceToLoadbalancerPoolLoadbalancerHealthmonitorRefs(i interface{}) []*
 			return nil
 		}
 		result = append(result, &LoadbalancerPoolLoadbalancerHealthmonitorRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
-func InterfaceToLoadbalancerPoolServiceApplianceSetRefs(i interface{}) []*LoadbalancerPoolServiceApplianceSetRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*LoadbalancerPoolServiceApplianceSetRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &LoadbalancerPoolServiceApplianceSetRef{
 			UUID: common.InterfaceToString(m["uuid"]),
 			To:   common.InterfaceToStringList(m["to"]),
 		})

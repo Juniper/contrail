@@ -28872,6 +28872,17 @@
                         "minimum": 0,
                         "maximum": 0
                     },
+                    "ntp_server": {
+                        "title": "NTPServer",
+                        "description": "NTP server ip address",
+                        "type": "string",
+                        "permission": [
+                            "create",
+                            "update"
+                        ],
+                        "minimum": 0,
+                        "maximum": 0
+                    },
                     "openstack_enable_haproxy": {
                         "title": "Openstack Enable Haproxy",
                         "description": "Configure haproxy in openstack control node",
@@ -29153,7 +29164,8 @@
                     "openstack_external_vip",
                     "openstack_internal_vip_interface",
                     "openstack_external_vip_interface",
-                    "openstack_enable_haproxy"
+                    "openstack_enable_haproxy",
+                    "ntp_server"
                 ],
                 "minimum": 0,
                 "maximum": 0

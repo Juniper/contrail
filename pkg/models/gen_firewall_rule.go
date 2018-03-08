@@ -58,13 +58,13 @@ func InterfaceToFirewallRule(i interface{}) *FirewallRule {
 		MatchTagTypes:        InterfaceToFirewallRuleMatchTagsTypeIdList(m["match_tag_types"]),
 		MatchTags:            InterfaceToFirewallRuleMatchTagsType(m["match_tags"]),
 
+		VirtualNetworkRefs: InterfaceToFirewallRuleVirtualNetworkRefs(m["virtual_network_refs"]),
+
 		ServiceGroupRefs: InterfaceToFirewallRuleServiceGroupRefs(m["service_group_refs"]),
 
 		AddressGroupRefs: InterfaceToFirewallRuleAddressGroupRefs(m["address_group_refs"]),
 
 		SecurityLoggingObjectRefs: InterfaceToFirewallRuleSecurityLoggingObjectRefs(m["security_logging_object_refs"]),
-
-		VirtualNetworkRefs: InterfaceToFirewallRuleVirtualNetworkRefs(m["virtual_network_refs"]),
 	}
 }
 

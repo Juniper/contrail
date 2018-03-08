@@ -50,37 +50,14 @@ func InterfaceToProject(i interface{}) *Project {
 		AlarmEnable:          common.InterfaceToBool(m["alarm_enable"]),
 		Quota:                InterfaceToQuotaType(m["quota"]),
 
+		NamespaceRefs: InterfaceToProjectNamespaceRefs(m["namespace_refs"]),
+
 		ApplicationPolicySetRefs: InterfaceToProjectApplicationPolicySetRefs(m["application_policy_set_refs"]),
 
 		FloatingIPPoolRefs: InterfaceToProjectFloatingIPPoolRefs(m["floating_ip_pool_refs"]),
 
 		AliasIPPoolRefs: InterfaceToProjectAliasIPPoolRefs(m["alias_ip_pool_refs"]),
-
-		NamespaceRefs: InterfaceToProjectNamespaceRefs(m["namespace_refs"]),
 	}
-}
-
-func InterfaceToProjectNamespaceRefs(i interface{}) []*ProjectNamespaceRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*ProjectNamespaceRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &ProjectNamespaceRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-
-			Attr: InterfaceToSubnetType(m["attr"]),
-		})
-	}
-
-	return result
 }
 
 func InterfaceToProjectApplicationPolicySetRefs(i interface{}) []*ProjectApplicationPolicySetRef {
@@ -140,6 +117,29 @@ func InterfaceToProjectAliasIPPoolRefs(i interface{}) []*ProjectAliasIPPoolRef {
 		result = append(result, &ProjectAliasIPPoolRef{
 			UUID: common.InterfaceToString(m["uuid"]),
 			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToProjectNamespaceRefs(i interface{}) []*ProjectNamespaceRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*ProjectNamespaceRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &ProjectNamespaceRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+
+			Attr: InterfaceToSubnetType(m["attr"]),
 		})
 	}
 

@@ -42,6 +42,81 @@ func TestVirtualNetwork(t *testing.T) {
 
 	// Create referred objects
 
+	var RouteTablecreateref []*models.VirtualNetworkRouteTableRef
+	var RouteTablerefModel *models.RouteTable
+	RouteTablerefModel = models.MakeRouteTable()
+	RouteTablerefModel.UUID = "virtual_network_route_table_ref_uuid"
+	RouteTablerefModel.FQName = []string{"test", "virtual_network_route_table_ref_uuid"}
+	_, err = db.CreateRouteTable(ctx, &models.CreateRouteTableRequest{
+		RouteTable: RouteTablerefModel,
+	})
+	RouteTablerefModel.UUID = "virtual_network_route_table_ref_uuid1"
+	RouteTablerefModel.FQName = []string{"test", "virtual_network_route_table_ref_uuid1"}
+	_, err = db.CreateRouteTable(ctx, &models.CreateRouteTableRequest{
+		RouteTable: RouteTablerefModel,
+	})
+	RouteTablerefModel.UUID = "virtual_network_route_table_ref_uuid2"
+	RouteTablerefModel.FQName = []string{"test", "virtual_network_route_table_ref_uuid2"}
+	_, err = db.CreateRouteTable(ctx, &models.CreateRouteTableRequest{
+		RouteTable: RouteTablerefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	RouteTablecreateref = append(RouteTablecreateref, &models.VirtualNetworkRouteTableRef{UUID: "virtual_network_route_table_ref_uuid", To: []string{"test", "virtual_network_route_table_ref_uuid"}})
+	RouteTablecreateref = append(RouteTablecreateref, &models.VirtualNetworkRouteTableRef{UUID: "virtual_network_route_table_ref_uuid2", To: []string{"test", "virtual_network_route_table_ref_uuid2"}})
+	model.RouteTableRefs = RouteTablecreateref
+
+	var VirtualNetworkcreateref []*models.VirtualNetworkVirtualNetworkRef
+	var VirtualNetworkrefModel *models.VirtualNetwork
+	VirtualNetworkrefModel = models.MakeVirtualNetwork()
+	VirtualNetworkrefModel.UUID = "virtual_network_virtual_network_ref_uuid"
+	VirtualNetworkrefModel.FQName = []string{"test", "virtual_network_virtual_network_ref_uuid"}
+	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
+		VirtualNetwork: VirtualNetworkrefModel,
+	})
+	VirtualNetworkrefModel.UUID = "virtual_network_virtual_network_ref_uuid1"
+	VirtualNetworkrefModel.FQName = []string{"test", "virtual_network_virtual_network_ref_uuid1"}
+	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
+		VirtualNetwork: VirtualNetworkrefModel,
+	})
+	VirtualNetworkrefModel.UUID = "virtual_network_virtual_network_ref_uuid2"
+	VirtualNetworkrefModel.FQName = []string{"test", "virtual_network_virtual_network_ref_uuid2"}
+	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
+		VirtualNetwork: VirtualNetworkrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.VirtualNetworkVirtualNetworkRef{UUID: "virtual_network_virtual_network_ref_uuid", To: []string{"test", "virtual_network_virtual_network_ref_uuid"}})
+	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.VirtualNetworkVirtualNetworkRef{UUID: "virtual_network_virtual_network_ref_uuid2", To: []string{"test", "virtual_network_virtual_network_ref_uuid2"}})
+	model.VirtualNetworkRefs = VirtualNetworkcreateref
+
+	var BGPVPNcreateref []*models.VirtualNetworkBGPVPNRef
+	var BGPVPNrefModel *models.BGPVPN
+	BGPVPNrefModel = models.MakeBGPVPN()
+	BGPVPNrefModel.UUID = "virtual_network_bgpvpn_ref_uuid"
+	BGPVPNrefModel.FQName = []string{"test", "virtual_network_bgpvpn_ref_uuid"}
+	_, err = db.CreateBGPVPN(ctx, &models.CreateBGPVPNRequest{
+		BGPVPN: BGPVPNrefModel,
+	})
+	BGPVPNrefModel.UUID = "virtual_network_bgpvpn_ref_uuid1"
+	BGPVPNrefModel.FQName = []string{"test", "virtual_network_bgpvpn_ref_uuid1"}
+	_, err = db.CreateBGPVPN(ctx, &models.CreateBGPVPNRequest{
+		BGPVPN: BGPVPNrefModel,
+	})
+	BGPVPNrefModel.UUID = "virtual_network_bgpvpn_ref_uuid2"
+	BGPVPNrefModel.FQName = []string{"test", "virtual_network_bgpvpn_ref_uuid2"}
+	_, err = db.CreateBGPVPN(ctx, &models.CreateBGPVPNRequest{
+		BGPVPN: BGPVPNrefModel,
+	})
+	if err != nil {
+		t.Fatal("ref create failed", err)
+	}
+	BGPVPNcreateref = append(BGPVPNcreateref, &models.VirtualNetworkBGPVPNRef{UUID: "virtual_network_bgpvpn_ref_uuid", To: []string{"test", "virtual_network_bgpvpn_ref_uuid"}})
+	BGPVPNcreateref = append(BGPVPNcreateref, &models.VirtualNetworkBGPVPNRef{UUID: "virtual_network_bgpvpn_ref_uuid2", To: []string{"test", "virtual_network_bgpvpn_ref_uuid2"}})
+	model.BGPVPNRefs = BGPVPNcreateref
+
 	var NetworkIpamcreateref []*models.VirtualNetworkNetworkIpamRef
 	var NetworkIpamrefModel *models.NetworkIpam
 	NetworkIpamrefModel = models.MakeNetworkIpam()
@@ -141,81 +216,6 @@ func TestVirtualNetwork(t *testing.T) {
 	QosConfigcreateref = append(QosConfigcreateref, &models.VirtualNetworkQosConfigRef{UUID: "virtual_network_qos_config_ref_uuid", To: []string{"test", "virtual_network_qos_config_ref_uuid"}})
 	QosConfigcreateref = append(QosConfigcreateref, &models.VirtualNetworkQosConfigRef{UUID: "virtual_network_qos_config_ref_uuid2", To: []string{"test", "virtual_network_qos_config_ref_uuid2"}})
 	model.QosConfigRefs = QosConfigcreateref
-
-	var RouteTablecreateref []*models.VirtualNetworkRouteTableRef
-	var RouteTablerefModel *models.RouteTable
-	RouteTablerefModel = models.MakeRouteTable()
-	RouteTablerefModel.UUID = "virtual_network_route_table_ref_uuid"
-	RouteTablerefModel.FQName = []string{"test", "virtual_network_route_table_ref_uuid"}
-	_, err = db.CreateRouteTable(ctx, &models.CreateRouteTableRequest{
-		RouteTable: RouteTablerefModel,
-	})
-	RouteTablerefModel.UUID = "virtual_network_route_table_ref_uuid1"
-	RouteTablerefModel.FQName = []string{"test", "virtual_network_route_table_ref_uuid1"}
-	_, err = db.CreateRouteTable(ctx, &models.CreateRouteTableRequest{
-		RouteTable: RouteTablerefModel,
-	})
-	RouteTablerefModel.UUID = "virtual_network_route_table_ref_uuid2"
-	RouteTablerefModel.FQName = []string{"test", "virtual_network_route_table_ref_uuid2"}
-	_, err = db.CreateRouteTable(ctx, &models.CreateRouteTableRequest{
-		RouteTable: RouteTablerefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	RouteTablecreateref = append(RouteTablecreateref, &models.VirtualNetworkRouteTableRef{UUID: "virtual_network_route_table_ref_uuid", To: []string{"test", "virtual_network_route_table_ref_uuid"}})
-	RouteTablecreateref = append(RouteTablecreateref, &models.VirtualNetworkRouteTableRef{UUID: "virtual_network_route_table_ref_uuid2", To: []string{"test", "virtual_network_route_table_ref_uuid2"}})
-	model.RouteTableRefs = RouteTablecreateref
-
-	var VirtualNetworkcreateref []*models.VirtualNetworkVirtualNetworkRef
-	var VirtualNetworkrefModel *models.VirtualNetwork
-	VirtualNetworkrefModel = models.MakeVirtualNetwork()
-	VirtualNetworkrefModel.UUID = "virtual_network_virtual_network_ref_uuid"
-	VirtualNetworkrefModel.FQName = []string{"test", "virtual_network_virtual_network_ref_uuid"}
-	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
-		VirtualNetwork: VirtualNetworkrefModel,
-	})
-	VirtualNetworkrefModel.UUID = "virtual_network_virtual_network_ref_uuid1"
-	VirtualNetworkrefModel.FQName = []string{"test", "virtual_network_virtual_network_ref_uuid1"}
-	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
-		VirtualNetwork: VirtualNetworkrefModel,
-	})
-	VirtualNetworkrefModel.UUID = "virtual_network_virtual_network_ref_uuid2"
-	VirtualNetworkrefModel.FQName = []string{"test", "virtual_network_virtual_network_ref_uuid2"}
-	_, err = db.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{
-		VirtualNetwork: VirtualNetworkrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.VirtualNetworkVirtualNetworkRef{UUID: "virtual_network_virtual_network_ref_uuid", To: []string{"test", "virtual_network_virtual_network_ref_uuid"}})
-	VirtualNetworkcreateref = append(VirtualNetworkcreateref, &models.VirtualNetworkVirtualNetworkRef{UUID: "virtual_network_virtual_network_ref_uuid2", To: []string{"test", "virtual_network_virtual_network_ref_uuid2"}})
-	model.VirtualNetworkRefs = VirtualNetworkcreateref
-
-	var BGPVPNcreateref []*models.VirtualNetworkBGPVPNRef
-	var BGPVPNrefModel *models.BGPVPN
-	BGPVPNrefModel = models.MakeBGPVPN()
-	BGPVPNrefModel.UUID = "virtual_network_bgpvpn_ref_uuid"
-	BGPVPNrefModel.FQName = []string{"test", "virtual_network_bgpvpn_ref_uuid"}
-	_, err = db.CreateBGPVPN(ctx, &models.CreateBGPVPNRequest{
-		BGPVPN: BGPVPNrefModel,
-	})
-	BGPVPNrefModel.UUID = "virtual_network_bgpvpn_ref_uuid1"
-	BGPVPNrefModel.FQName = []string{"test", "virtual_network_bgpvpn_ref_uuid1"}
-	_, err = db.CreateBGPVPN(ctx, &models.CreateBGPVPNRequest{
-		BGPVPN: BGPVPNrefModel,
-	})
-	BGPVPNrefModel.UUID = "virtual_network_bgpvpn_ref_uuid2"
-	BGPVPNrefModel.FQName = []string{"test", "virtual_network_bgpvpn_ref_uuid2"}
-	_, err = db.CreateBGPVPN(ctx, &models.CreateBGPVPNRequest{
-		BGPVPN: BGPVPNrefModel,
-	})
-	if err != nil {
-		t.Fatal("ref create failed", err)
-	}
-	BGPVPNcreateref = append(BGPVPNcreateref, &models.VirtualNetworkBGPVPNRef{UUID: "virtual_network_bgpvpn_ref_uuid", To: []string{"test", "virtual_network_bgpvpn_ref_uuid"}})
-	BGPVPNcreateref = append(BGPVPNcreateref, &models.VirtualNetworkBGPVPNRef{UUID: "virtual_network_bgpvpn_ref_uuid2", To: []string{"test", "virtual_network_bgpvpn_ref_uuid2"}})
-	model.BGPVPNRefs = BGPVPNcreateref
 
 	//create project to which resource is shared
 	projectModel := models.MakeProject()
@@ -506,22 +506,6 @@ func TestVirtualNetwork(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var VirtualNetworkref []interface{}
-	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_virtual_network_ref_uuid", "to": []string{"test", "virtual_network_virtual_network_ref_uuid"}})
-	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_virtual_network_ref_uuid1", "to": []string{"test", "virtual_network_virtual_network_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
-	//
-	//    var BGPVPNref []interface{}
-	//    BGPVPNref = append(BGPVPNref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_bgpvpn_ref_uuid", "to": []string{"test", "virtual_network_bgpvpn_ref_uuid"}})
-	//    BGPVPNref = append(BGPVPNref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_bgpvpn_ref_uuid1", "to": []string{"test", "virtual_network_bgpvpn_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "BGPVPNRefs", ".", BGPVPNref)
-	//
 	//    var NetworkIpamref []interface{}
 	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_network_ipam_ref_uuid", "to": []string{"test", "virtual_network_network_ipam_ref_uuid"}})
 	//    NetworkIpamref = append(NetworkIpamref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_network_ipam_ref_uuid1", "to": []string{"test", "virtual_network_network_ipam_ref_uuid1"}})
@@ -558,6 +542,10 @@ func TestVirtualNetwork(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(NetworkPolicyAttr, ".Timer.StartTime", ".", "test")
+	//
+	//
+	//
 	//    common.SetValueByPath(NetworkPolicyAttr, ".Timer.OffInterval", ".", "test")
 	//
 	//
@@ -567,10 +555,6 @@ func TestVirtualNetwork(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(NetworkPolicyAttr, ".Timer.EndTime", ".", "test")
-	//
-	//
-	//
-	//    common.SetValueByPath(NetworkPolicyAttr, ".Timer.StartTime", ".", "test")
 	//
 	//
 	//
@@ -602,6 +586,22 @@ func TestVirtualNetwork(t *testing.T) {
 	//
 	//    common.SetValueByPath(updateMap, "RouteTableRefs", ".", RouteTableref)
 	//
+	//    var VirtualNetworkref []interface{}
+	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_virtual_network_ref_uuid", "to": []string{"test", "virtual_network_virtual_network_ref_uuid"}})
+	//    VirtualNetworkref = append(VirtualNetworkref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_virtual_network_ref_uuid1", "to": []string{"test", "virtual_network_virtual_network_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "VirtualNetworkRefs", ".", VirtualNetworkref)
+	//
+	//    var BGPVPNref []interface{}
+	//    BGPVPNref = append(BGPVPNref, map[string]interface{}{"operation":"delete", "uuid":"virtual_network_bgpvpn_ref_uuid", "to": []string{"test", "virtual_network_bgpvpn_ref_uuid"}})
+	//    BGPVPNref = append(BGPVPNref, map[string]interface{}{"operation":"add", "uuid":"virtual_network_bgpvpn_ref_uuid1", "to": []string{"test", "virtual_network_bgpvpn_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "BGPVPNRefs", ".", BGPVPNref)
+	//
 	//
 	_, err = db.CreateVirtualNetwork(ctx,
 		&models.CreateVirtualNetworkRequest{
@@ -620,6 +620,76 @@ func TestVirtualNetwork(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_virtual_network_virtual_network` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing VirtualNetworkRefs delete statement failed")
+		}
+		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_virtual_network_ref_uuid")
+		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_virtual_network_ref_uuid1")
+		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_virtual_network_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "VirtualNetworkRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteVirtualNetwork(ctx,
+		&models.DeleteVirtualNetworkRequest{
+			ID: "virtual_network_virtual_network_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref virtual_network_virtual_network_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteVirtualNetwork(ctx,
+		&models.DeleteVirtualNetworkRequest{
+			ID: "virtual_network_virtual_network_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref virtual_network_virtual_network_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteVirtualNetwork(
+		ctx,
+		&models.DeleteVirtualNetworkRequest{
+			ID: "virtual_network_virtual_network_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref virtual_network_virtual_network_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_virtual_network_bgpvpn` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing BGPVPNRefs delete statement failed")
+		}
+		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_bgpvpn_ref_uuid")
+		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_bgpvpn_ref_uuid1")
+		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_bgpvpn_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "BGPVPNRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteBGPVPN(ctx,
+		&models.DeleteBGPVPNRequest{
+			ID: "virtual_network_bgpvpn_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref virtual_network_bgpvpn_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteBGPVPN(ctx,
+		&models.DeleteBGPVPNRequest{
+			ID: "virtual_network_bgpvpn_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref virtual_network_bgpvpn_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteBGPVPN(
+		ctx,
+		&models.DeleteBGPVPNRequest{
+			ID: "virtual_network_bgpvpn_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref virtual_network_bgpvpn_ref_uuid2 failed", err)
+	}
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
@@ -794,76 +864,6 @@ func TestVirtualNetwork(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref virtual_network_route_table_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_virtual_network_virtual_network` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing VirtualNetworkRefs delete statement failed")
-		}
-		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_virtual_network_ref_uuid")
-		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_virtual_network_ref_uuid1")
-		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_virtual_network_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "VirtualNetworkRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteVirtualNetwork(ctx,
-		&models.DeleteVirtualNetworkRequest{
-			ID: "virtual_network_virtual_network_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref virtual_network_virtual_network_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteVirtualNetwork(ctx,
-		&models.DeleteVirtualNetworkRequest{
-			ID: "virtual_network_virtual_network_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref virtual_network_virtual_network_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteVirtualNetwork(
-		ctx,
-		&models.DeleteVirtualNetworkRequest{
-			ID: "virtual_network_virtual_network_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref virtual_network_virtual_network_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_virtual_network_bgpvpn` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing BGPVPNRefs delete statement failed")
-		}
-		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_bgpvpn_ref_uuid")
-		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_bgpvpn_ref_uuid1")
-		_, err = stmt.Exec("virtual_network_dummy_uuid", "virtual_network_bgpvpn_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "BGPVPNRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteBGPVPN(ctx,
-		&models.DeleteBGPVPNRequest{
-			ID: "virtual_network_bgpvpn_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref virtual_network_bgpvpn_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteBGPVPN(ctx,
-		&models.DeleteBGPVPNRequest{
-			ID: "virtual_network_bgpvpn_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref virtual_network_bgpvpn_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteBGPVPN(
-		ctx,
-		&models.DeleteBGPVPNRequest{
-			ID: "virtual_network_bgpvpn_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref virtual_network_bgpvpn_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

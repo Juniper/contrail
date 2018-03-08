@@ -52,16 +52,6 @@ var LoadbalancerPoolFields = []string{
 // LoadbalancerPoolRefFields is db reference fields for LoadbalancerPool
 var LoadbalancerPoolRefFields = map[string][]string{
 
-	"virtual_machine_interface": []string{
-	// <schema.Schema Value>
-
-	},
-
-	"loadbalancer_listener": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"service_instance": []string{
 	// <schema.Schema Value>
 
@@ -73,6 +63,16 @@ var LoadbalancerPoolRefFields = map[string][]string{
 	},
 
 	"service_appliance_set": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"virtual_machine_interface": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"loadbalancer_listener": []string{
 	// <schema.Schema Value>
 
 	},
@@ -163,22 +163,6 @@ func (db *DB) createLoadbalancerPool(
 		return errors.Wrap(err, "create failed")
 	}
 
-	for _, ref := range model.LoadbalancerListenerRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("loadbalancer_listener"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "LoadbalancerListenerRefs create failed")
-		}
-	}
-
-	for _, ref := range model.ServiceInstanceRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_instance"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "ServiceInstanceRefs create failed")
-		}
-	}
-
 	for _, ref := range model.LoadbalancerHealthmonitorRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("loadbalancer_healthmonitor"), model.UUID, ref.UUID)
@@ -200,6 +184,22 @@ func (db *DB) createLoadbalancerPool(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualMachineInterfaceRefs create failed")
+		}
+	}
+
+	for _, ref := range model.LoadbalancerListenerRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("loadbalancer_listener"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "LoadbalancerListenerRefs create failed")
+		}
+	}
+
+	for _, ref := range model.ServiceInstanceRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("service_instance"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "ServiceInstanceRefs create failed")
 		}
 	}
 

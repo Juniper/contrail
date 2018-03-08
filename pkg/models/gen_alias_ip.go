@@ -48,9 +48,9 @@ func InterfaceToAliasIP(i interface{}) *AliasIP {
 		AliasIPAddress:       common.InterfaceToString(m["alias_ip_address"]),
 		AliasIPAddressFamily: common.InterfaceToString(m["alias_ip_address_family"]),
 
-		VirtualMachineInterfaceRefs: InterfaceToAliasIPVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
-
 		ProjectRefs: InterfaceToAliasIPProjectRefs(m["project_refs"]),
+
+		VirtualMachineInterfaceRefs: InterfaceToAliasIPVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
 	}
 }
 

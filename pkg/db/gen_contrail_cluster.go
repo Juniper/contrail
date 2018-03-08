@@ -36,6 +36,7 @@ var ContrailClusterFields = []string{
 	"openstack_external_vip_interface",
 	"openstack_external_vip",
 	"openstack_enable_haproxy",
+	"ntp_server",
 	"user_visible",
 	"permissions_owner_access",
 	"permissions_owner",
@@ -587,6 +588,7 @@ func (db *DB) createContrailCluster(
 		string(model.GetOpenstackExternalVipInterface()),
 		string(model.GetOpenstackExternalVip()),
 		string(model.GetOpenstackEnableHaproxy()),
+		string(model.GetNTPServer()),
 		bool(model.GetIDPerms().GetUserVisible()),
 		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
 		string(model.GetIDPerms().GetPermissions().GetOwner()),
@@ -758,6 +760,12 @@ func scanContrailCluster(values map[string]interface{}) (*models.ContrailCluster
 	if value, ok := values["openstack_enable_haproxy"]; ok {
 
 		m.OpenstackEnableHaproxy = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["ntp_server"]; ok {
+
+		m.NTPServer = common.InterfaceToString(value)
 
 	}
 

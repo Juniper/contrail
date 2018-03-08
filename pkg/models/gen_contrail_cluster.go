@@ -42,6 +42,7 @@ func MakeContrailCluster() *ContrailCluster {
 		OpenstackInternalVipInterface: "",
 		OpenstackExternalVipInterface: "",
 		OpenstackEnableHaproxy:        "",
+		NTPServer:                     "",
 	}
 }
 
@@ -85,6 +86,7 @@ func InterfaceToContrailCluster(i interface{}) *ContrailCluster {
 		OpenstackInternalVipInterface: common.InterfaceToString(m["openstack_internal_vip_interface"]),
 		OpenstackExternalVipInterface: common.InterfaceToString(m["openstack_external_vip_interface"]),
 		OpenstackEnableHaproxy:        common.InterfaceToString(m["openstack_enable_haproxy"]),
+		NTPServer:                     common.InterfaceToString(m["ntp_server"]),
 	}
 }
 

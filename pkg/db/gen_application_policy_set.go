@@ -43,14 +43,14 @@ var ApplicationPolicySetFields = []string{
 // ApplicationPolicySetRefFields is db reference fields for ApplicationPolicySet
 var ApplicationPolicySetRefFields = map[string][]string{
 
-	"firewall_policy": []string{
-		// <schema.Schema Value>
-		"sequence",
-	},
-
 	"global_vrouter_config": []string{
 	// <schema.Schema Value>
 
+	},
+
+	"firewall_policy": []string{
+		// <schema.Schema Value>
+		"sequence",
 	},
 }
 
@@ -280,6 +280,26 @@ func scanApplicationPolicySet(values map[string]interface{}) (*models.Applicatio
 
 	}
 
+	if value, ok := values["ref_global_vrouter_config"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.ApplicationPolicySetGlobalVrouterConfigRef{}
+			referenceModel.UUID = uuid
+			m.GlobalVrouterConfigRefs = append(m.GlobalVrouterConfigRefs, referenceModel)
+
+		}
+	}
+
 	if value, ok := values["ref_firewall_policy"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -299,26 +319,6 @@ func scanApplicationPolicySet(values map[string]interface{}) (*models.Applicatio
 
 			attr := models.MakeFirewallSequence()
 			referenceModel.Attr = attr
-
-		}
-	}
-
-	if value, ok := values["ref_global_vrouter_config"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.ApplicationPolicySetGlobalVrouterConfigRef{}
-			referenceModel.UUID = uuid
-			m.GlobalVrouterConfigRefs = append(m.GlobalVrouterConfigRefs, referenceModel)
 
 		}
 	}

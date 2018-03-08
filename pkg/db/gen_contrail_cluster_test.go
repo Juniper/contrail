@@ -152,6 +152,10 @@ func TestContrailCluster(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(updateMap, ".NTPServer", ".", "test")
+	//
+	//
+	//
 	//    common.SetValueByPath(updateMap, ".IDPerms.UserVisible", ".", true)
 	//
 	//

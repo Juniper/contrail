@@ -125,6 +125,30 @@ func (db *DB) createLogicalRouter(
 		return errors.Wrap(err, "create failed")
 	}
 
+	for _, ref := range model.PhysicalRouterRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("physical_router"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "PhysicalRouterRefs create failed")
+		}
+	}
+
+	for _, ref := range model.BGPVPNRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("bgpvpn"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "BGPVPNRefs create failed")
+		}
+	}
+
+	for _, ref := range model.RouteTargetRefs {
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("route_target"), model.UUID, ref.UUID)
+		if err != nil {
+			return errors.Wrap(err, "RouteTargetRefs create failed")
+		}
+	}
+
 	for _, ref := range model.VirtualMachineInterfaceRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_machine_interface"), model.UUID, ref.UUID)
@@ -154,30 +178,6 @@ func (db *DB) createLogicalRouter(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("virtual_network"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "VirtualNetworkRefs create failed")
-		}
-	}
-
-	for _, ref := range model.PhysicalRouterRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("physical_router"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "PhysicalRouterRefs create failed")
-		}
-	}
-
-	for _, ref := range model.BGPVPNRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("bgpvpn"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "BGPVPNRefs create failed")
-		}
-	}
-
-	for _, ref := range model.RouteTargetRefs {
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("route_target"), model.UUID, ref.UUID)
-		if err != nil {
-			return errors.Wrap(err, "RouteTargetRefs create failed")
 		}
 	}
 
@@ -347,66 +347,6 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 
 	}
 
-	if value, ok := values["ref_route_target"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LogicalRouterRouteTargetRef{}
-			referenceModel.UUID = uuid
-			m.RouteTargetRefs = append(m.RouteTargetRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_virtual_machine_interface"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LogicalRouterVirtualMachineInterfaceRef{}
-			referenceModel.UUID = uuid
-			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
-
-		}
-	}
-
-	if value, ok := values["ref_service_instance"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.LogicalRouterServiceInstanceRef{}
-			referenceModel.UUID = uuid
-			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
-
-		}
-	}
-
 	if value, ok := values["ref_route_table"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -483,6 +423,66 @@ func scanLogicalRouter(values map[string]interface{}) (*models.LogicalRouter, er
 			referenceModel := &models.LogicalRouterBGPVPNRef{}
 			referenceModel.UUID = uuid
 			m.BGPVPNRefs = append(m.BGPVPNRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_route_target"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterRouteTargetRef{}
+			referenceModel.UUID = uuid
+			m.RouteTargetRefs = append(m.RouteTargetRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_virtual_machine_interface"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterVirtualMachineInterfaceRef{}
+			referenceModel.UUID = uuid
+			m.VirtualMachineInterfaceRefs = append(m.VirtualMachineInterfaceRefs, referenceModel)
+
+		}
+	}
+
+	if value, ok := values["ref_service_instance"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.LogicalRouterServiceInstanceRef{}
+			referenceModel.UUID = uuid
+			m.ServiceInstanceRefs = append(m.ServiceInstanceRefs, referenceModel)
 
 		}
 	}

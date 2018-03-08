@@ -22956,6 +22956,13 @@
                         "$ref": "#/definitions/KubernetesNodeAPIType"
                     }
                 },
+                "ntp_server": {
+                    "id": "ntp_server",
+                    "description": "NTP server ip address",
+                    "type": "string",
+                    "title": "NTPServer",
+                    "items": null
+                },
                 "openstack_compute_nodes": {
                     "description": "Parent of this openstack_compute node.",
                     "type": "array",

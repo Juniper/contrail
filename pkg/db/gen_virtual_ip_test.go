@@ -263,14 +263,6 @@ func TestVirtualIP(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var LoadbalancerPoolref []interface{}
-	//    LoadbalancerPoolref = append(LoadbalancerPoolref, map[string]interface{}{"operation":"delete", "uuid":"virtual_ip_loadbalancer_pool_ref_uuid", "to": []string{"test", "virtual_ip_loadbalancer_pool_ref_uuid"}})
-	//    LoadbalancerPoolref = append(LoadbalancerPoolref, map[string]interface{}{"operation":"add", "uuid":"virtual_ip_loadbalancer_pool_ref_uuid1", "to": []string{"test", "virtual_ip_loadbalancer_pool_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "LoadbalancerPoolRefs", ".", LoadbalancerPoolref)
-	//
 	//    var VirtualMachineInterfaceref []interface{}
 	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"delete", "uuid":"virtual_ip_virtual_machine_interface_ref_uuid", "to": []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid"}})
 	//    VirtualMachineInterfaceref = append(VirtualMachineInterfaceref, map[string]interface{}{"operation":"add", "uuid":"virtual_ip_virtual_machine_interface_ref_uuid1", "to": []string{"test", "virtual_ip_virtual_machine_interface_ref_uuid1"}})
@@ -278,6 +270,14 @@ func TestVirtualIP(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "VirtualMachineInterfaceRefs", ".", VirtualMachineInterfaceref)
+	//
+	//    var LoadbalancerPoolref []interface{}
+	//    LoadbalancerPoolref = append(LoadbalancerPoolref, map[string]interface{}{"operation":"delete", "uuid":"virtual_ip_loadbalancer_pool_ref_uuid", "to": []string{"test", "virtual_ip_loadbalancer_pool_ref_uuid"}})
+	//    LoadbalancerPoolref = append(LoadbalancerPoolref, map[string]interface{}{"operation":"add", "uuid":"virtual_ip_loadbalancer_pool_ref_uuid1", "to": []string{"test", "virtual_ip_loadbalancer_pool_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "LoadbalancerPoolRefs", ".", LoadbalancerPoolref)
 	//
 	//
 	_, err = db.CreateVirtualIP(ctx,

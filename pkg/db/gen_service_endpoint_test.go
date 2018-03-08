@@ -248,14 +248,6 @@ func TestServiceEndpoint(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var ServiceObjectref []interface{}
-	//    ServiceObjectref = append(ServiceObjectref, map[string]interface{}{"operation":"delete", "uuid":"service_endpoint_service_object_ref_uuid", "to": []string{"test", "service_endpoint_service_object_ref_uuid"}})
-	//    ServiceObjectref = append(ServiceObjectref, map[string]interface{}{"operation":"add", "uuid":"service_endpoint_service_object_ref_uuid1", "to": []string{"test", "service_endpoint_service_object_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ServiceObjectRefs", ".", ServiceObjectref)
-	//
 	//    var ServiceConnectionModuleref []interface{}
 	//    ServiceConnectionModuleref = append(ServiceConnectionModuleref, map[string]interface{}{"operation":"delete", "uuid":"service_endpoint_service_connection_module_ref_uuid", "to": []string{"test", "service_endpoint_service_connection_module_ref_uuid"}})
 	//    ServiceConnectionModuleref = append(ServiceConnectionModuleref, map[string]interface{}{"operation":"add", "uuid":"service_endpoint_service_connection_module_ref_uuid1", "to": []string{"test", "service_endpoint_service_connection_module_ref_uuid1"}})
@@ -271,6 +263,14 @@ func TestServiceEndpoint(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "PhysicalRouterRefs", ".", PhysicalRouterref)
+	//
+	//    var ServiceObjectref []interface{}
+	//    ServiceObjectref = append(ServiceObjectref, map[string]interface{}{"operation":"delete", "uuid":"service_endpoint_service_object_ref_uuid", "to": []string{"test", "service_endpoint_service_object_ref_uuid"}})
+	//    ServiceObjectref = append(ServiceObjectref, map[string]interface{}{"operation":"add", "uuid":"service_endpoint_service_object_ref_uuid1", "to": []string{"test", "service_endpoint_service_object_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "ServiceObjectRefs", ".", ServiceObjectref)
 	//
 	//
 	_, err = db.CreateServiceEndpoint(ctx,
