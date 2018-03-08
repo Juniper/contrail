@@ -62,15 +62,15 @@ func InterfaceToInstanceIP(i interface{}) *InstanceIP {
 		InstanceIPLocalIP:     common.InterfaceToBool(m["instance_ip_local_ip"]),
 		InstanceIPSecondary:   common.InterfaceToBool(m["instance_ip_secondary"]),
 
+		NetworkIpamRefs: InterfaceToInstanceIPNetworkIpamRefs(m["network_ipam_refs"]),
+
+		VirtualNetworkRefs: InterfaceToInstanceIPVirtualNetworkRefs(m["virtual_network_refs"]),
+
 		VirtualMachineInterfaceRefs: InterfaceToInstanceIPVirtualMachineInterfaceRefs(m["virtual_machine_interface_refs"]),
 
 		PhysicalRouterRefs: InterfaceToInstanceIPPhysicalRouterRefs(m["physical_router_refs"]),
 
 		VirtualRouterRefs: InterfaceToInstanceIPVirtualRouterRefs(m["virtual_router_refs"]),
-
-		NetworkIpamRefs: InterfaceToInstanceIPNetworkIpamRefs(m["network_ipam_refs"]),
-
-		VirtualNetworkRefs: InterfaceToInstanceIPVirtualNetworkRefs(m["virtual_network_refs"]),
 	}
 }
 

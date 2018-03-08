@@ -52,27 +52,6 @@ func InterfaceToE2ServiceProvider(i interface{}) *E2ServiceProvider {
 	}
 }
 
-func InterfaceToE2ServiceProviderPeeringPolicyRefs(i interface{}) []*E2ServiceProviderPeeringPolicyRef {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
-	result := []*E2ServiceProviderPeeringPolicyRef{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
-		}
-		result = append(result, &E2ServiceProviderPeeringPolicyRef{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To:   common.InterfaceToStringList(m["to"]),
-		})
-	}
-
-	return result
-}
-
 func InterfaceToE2ServiceProviderPhysicalRouterRefs(i interface{}) []*E2ServiceProviderPhysicalRouterRef {
 	list, ok := i.([]interface{})
 	if !ok {
@@ -86,6 +65,27 @@ func InterfaceToE2ServiceProviderPhysicalRouterRefs(i interface{}) []*E2ServiceP
 			return nil
 		}
 		result = append(result, &E2ServiceProviderPhysicalRouterRef{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To:   common.InterfaceToStringList(m["to"]),
+		})
+	}
+
+	return result
+}
+
+func InterfaceToE2ServiceProviderPeeringPolicyRefs(i interface{}) []*E2ServiceProviderPeeringPolicyRef {
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*E2ServiceProviderPeeringPolicyRef{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &E2ServiceProviderPeeringPolicyRef{
 			UUID: common.InterfaceToString(m["uuid"]),
 			To:   common.InterfaceToStringList(m["to"]),
 		})

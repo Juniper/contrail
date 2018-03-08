@@ -44,12 +44,12 @@ var SecurityLoggingObjectFields = []string{
 // SecurityLoggingObjectRefFields is db reference fields for SecurityLoggingObject
 var SecurityLoggingObjectRefFields = map[string][]string{
 
-	"security_group": []string{
+	"network_policy": []string{
 		// <schema.Schema Value>
 		"rule",
 	},
 
-	"network_policy": []string{
+	"security_group": []string{
 		// <schema.Schema Value>
 		"rule",
 	},
@@ -292,29 +292,6 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 
 	}
 
-	if value, ok := values["ref_security_group"]; ok {
-		var references []interface{}
-		stringValue := common.InterfaceToString(value)
-		json.Unmarshal([]byte("["+stringValue+"]"), &references)
-		for _, reference := range references {
-			referenceMap, ok := reference.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			uuid := common.InterfaceToString(referenceMap["to"])
-			if uuid == "" {
-				continue
-			}
-			referenceModel := &models.SecurityLoggingObjectSecurityGroupRef{}
-			referenceModel.UUID = uuid
-			m.SecurityGroupRefs = append(m.SecurityGroupRefs, referenceModel)
-
-			attr := models.MakeSecurityLoggingObjectRuleListType()
-			referenceModel.Attr = attr
-
-		}
-	}
-
 	if value, ok := values["ref_network_policy"]; ok {
 		var references []interface{}
 		stringValue := common.InterfaceToString(value)
@@ -331,6 +308,29 @@ func scanSecurityLoggingObject(values map[string]interface{}) (*models.SecurityL
 			referenceModel := &models.SecurityLoggingObjectNetworkPolicyRef{}
 			referenceModel.UUID = uuid
 			m.NetworkPolicyRefs = append(m.NetworkPolicyRefs, referenceModel)
+
+			attr := models.MakeSecurityLoggingObjectRuleListType()
+			referenceModel.Attr = attr
+
+		}
+	}
+
+	if value, ok := values["ref_security_group"]; ok {
+		var references []interface{}
+		stringValue := common.InterfaceToString(value)
+		json.Unmarshal([]byte("["+stringValue+"]"), &references)
+		for _, reference := range references {
+			referenceMap, ok := reference.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			uuid := common.InterfaceToString(referenceMap["to"])
+			if uuid == "" {
+				continue
+			}
+			referenceModel := &models.SecurityLoggingObjectSecurityGroupRef{}
+			referenceModel.UUID = uuid
+			m.SecurityGroupRefs = append(m.SecurityGroupRefs, referenceModel)
 
 			attr := models.MakeSecurityLoggingObjectRuleListType()
 			referenceModel.Attr = attr

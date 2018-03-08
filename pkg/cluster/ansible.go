@@ -76,6 +76,10 @@ func (a *ansibleProvisioner) playBook() error {
 	args := []string{"-i", "inventory/", "-e",
 		"config_file=" + a.getInstanceFile(),
 		defaultInstanceProvPlay}
+	sudoPassword := a.getSudoUserPassword()
+	if sudoPassword != "" {
+		args = append(args, "-e ansible_sudo_pass="+sudoPassword)
+	}
 
 	a.log.Infof("Playing instance provisioning playbook: %s %s",
 		cmdline, strings.Join(args, " "))

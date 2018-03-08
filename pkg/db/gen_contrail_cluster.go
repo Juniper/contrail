@@ -16,6 +16,7 @@ import (
 // ContrailClusterFields is db columns for ContrailCluster
 var ContrailClusterFields = []string{
 	"uuid",
+	"sudo_password",
 	"statistics_ttl",
 	"rabbitmq_port",
 	"provisioning_state",
@@ -36,6 +37,7 @@ var ContrailClusterFields = []string{
 	"openstack_external_vip_interface",
 	"openstack_external_vip",
 	"openstack_enable_haproxy",
+	"ntp_server",
 	"user_visible",
 	"permissions_owner_access",
 	"permissions_owner",
@@ -567,6 +569,7 @@ func (db *DB) createContrailCluster(
 	tx := GetTransaction(ctx)
 	model := request.ContrailCluster
 	_, err := tx.ExecContext(ctx, qb.CreateQuery(), string(model.GetUUID()),
+		string(model.GetSudoPassword()),
 		string(model.GetStatisticsTTL()),
 		string(model.GetRabbitmqPort()),
 		string(model.GetProvisioningState()),
@@ -587,6 +590,7 @@ func (db *DB) createContrailCluster(
 		string(model.GetOpenstackExternalVipInterface()),
 		string(model.GetOpenstackExternalVip()),
 		string(model.GetOpenstackEnableHaproxy()),
+		string(model.GetNTPServer()),
 		bool(model.GetIDPerms().GetUserVisible()),
 		int(model.GetIDPerms().GetPermissions().GetOwnerAccess()),
 		string(model.GetIDPerms().GetPermissions().GetOwner()),
@@ -638,6 +642,12 @@ func scanContrailCluster(values map[string]interface{}) (*models.ContrailCluster
 	if value, ok := values["uuid"]; ok {
 
 		m.UUID = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["sudo_password"]; ok {
+
+		m.SudoPassword = common.InterfaceToString(value)
 
 	}
 
@@ -758,6 +768,12 @@ func scanContrailCluster(values map[string]interface{}) (*models.ContrailCluster
 	if value, ok := values["openstack_enable_haproxy"]; ok {
 
 		m.OpenstackEnableHaproxy = common.InterfaceToString(value)
+
+	}
+
+	if value, ok := values["ntp_server"]; ok {
+
+		m.NTPServer = common.InterfaceToString(value)
 
 	}
 
