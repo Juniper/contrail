@@ -237,22 +237,6 @@ func TestSecurityLoggingObject(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var NetworkPolicyref []interface{}
-	//    NetworkPolicyref = append(NetworkPolicyref, map[string]interface{}{"operation":"delete", "uuid":"security_logging_object_network_policy_ref_uuid", "to": []string{"test", "security_logging_object_network_policy_ref_uuid"}})
-	//    NetworkPolicyref = append(NetworkPolicyref, map[string]interface{}{"operation":"add", "uuid":"security_logging_object_network_policy_ref_uuid1", "to": []string{"test", "security_logging_object_network_policy_ref_uuid1"}})
-	//
-	//    NetworkPolicyAttr := map[string]interface{}{}
-	//
-	//
-	//
-	//    common.SetValueByPath(NetworkPolicyAttr, ".Rule", ".", map[string]string{"test": "test"})
-	//
-	//
-	//
-	//    NetworkPolicyref = append(NetworkPolicyref, map[string]interface{}{"operation":"update", "uuid":"security_logging_object_network_policy_ref_uuid2", "to": []string{"test", "security_logging_object_network_policy_ref_uuid2"}, "attr": NetworkPolicyAttr})
-	//
-	//    common.SetValueByPath(updateMap, "NetworkPolicyRefs", ".", NetworkPolicyref)
-	//
 	//    var SecurityGroupref []interface{}
 	//    SecurityGroupref = append(SecurityGroupref, map[string]interface{}{"operation":"delete", "uuid":"security_logging_object_security_group_ref_uuid", "to": []string{"test", "security_logging_object_security_group_ref_uuid"}})
 	//    SecurityGroupref = append(SecurityGroupref, map[string]interface{}{"operation":"add", "uuid":"security_logging_object_security_group_ref_uuid1", "to": []string{"test", "security_logging_object_security_group_ref_uuid1"}})
@@ -268,6 +252,22 @@ func TestSecurityLoggingObject(t *testing.T) {
 	//    SecurityGroupref = append(SecurityGroupref, map[string]interface{}{"operation":"update", "uuid":"security_logging_object_security_group_ref_uuid2", "to": []string{"test", "security_logging_object_security_group_ref_uuid2"}, "attr": SecurityGroupAttr})
 	//
 	//    common.SetValueByPath(updateMap, "SecurityGroupRefs", ".", SecurityGroupref)
+	//
+	//    var NetworkPolicyref []interface{}
+	//    NetworkPolicyref = append(NetworkPolicyref, map[string]interface{}{"operation":"delete", "uuid":"security_logging_object_network_policy_ref_uuid", "to": []string{"test", "security_logging_object_network_policy_ref_uuid"}})
+	//    NetworkPolicyref = append(NetworkPolicyref, map[string]interface{}{"operation":"add", "uuid":"security_logging_object_network_policy_ref_uuid1", "to": []string{"test", "security_logging_object_network_policy_ref_uuid1"}})
+	//
+	//    NetworkPolicyAttr := map[string]interface{}{}
+	//
+	//
+	//
+	//    common.SetValueByPath(NetworkPolicyAttr, ".Rule", ".", map[string]string{"test": "test"})
+	//
+	//
+	//
+	//    NetworkPolicyref = append(NetworkPolicyref, map[string]interface{}{"operation":"update", "uuid":"security_logging_object_network_policy_ref_uuid2", "to": []string{"test", "security_logging_object_network_policy_ref_uuid2"}, "attr": NetworkPolicyAttr})
+	//
+	//    common.SetValueByPath(updateMap, "NetworkPolicyRefs", ".", NetworkPolicyref)
 	//
 	//
 	_, err = db.CreateSecurityLoggingObject(ctx,

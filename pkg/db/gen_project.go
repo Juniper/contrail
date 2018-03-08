@@ -70,11 +70,6 @@ var ProjectFields = []string{
 // ProjectRefFields is db reference fields for Project
 var ProjectRefFields = map[string][]string{
 
-	"alias_ip_pool": []string{
-	// <schema.Schema Value>
-
-	},
-
 	"namespace": []string{
 		// <schema.Schema Value>
 		"ip_prefix",
@@ -87,6 +82,11 @@ var ProjectRefFields = map[string][]string{
 	},
 
 	"floating_ip_pool": []string{
+	// <schema.Schema Value>
+
+	},
+
+	"alias_ip_pool": []string{
 	// <schema.Schema Value>
 
 	},
@@ -1137,19 +1137,6 @@ func (db *DB) createProject(
 		return errors.Wrap(err, "create failed")
 	}
 
-	for _, ref := range model.NamespaceRefs {
-
-		if ref.Attr == nil {
-			ref.Attr = &models.SubnetType{}
-		}
-
-		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("namespace"), model.UUID, ref.UUID, string(ref.Attr.GetIPPrefix()),
-			int(ref.Attr.GetIPPrefixLen()))
-		if err != nil {
-			return errors.Wrap(err, "NamespaceRefs create failed")
-		}
-	}
-
 	for _, ref := range model.ApplicationPolicySetRefs {
 
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("application_policy_set"), model.UUID, ref.UUID)
@@ -1171,6 +1158,19 @@ func (db *DB) createProject(
 		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("alias_ip_pool"), model.UUID, ref.UUID)
 		if err != nil {
 			return errors.Wrap(err, "AliasIPPoolRefs create failed")
+		}
+	}
+
+	for _, ref := range model.NamespaceRefs {
+
+		if ref.Attr == nil {
+			ref.Attr = &models.SubnetType{}
+		}
+
+		_, err = tx.ExecContext(ctx, qb.CreateRefQuery("namespace"), model.UUID, ref.UUID, string(ref.Attr.GetIPPrefix()),
+			int(ref.Attr.GetIPPrefixLen()))
+		if err != nil {
+			return errors.Wrap(err, "NamespaceRefs create failed")
 		}
 	}
 

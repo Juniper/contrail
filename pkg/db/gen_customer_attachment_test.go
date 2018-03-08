@@ -260,41 +260,6 @@ func TestCustomerAttachment(t *testing.T) {
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_customer_attachment_virtual_machine_interface` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
-		}
-		_, err = stmt.Exec("customer_attachment_dummy_uuid", "customer_attachment_virtual_machine_interface_ref_uuid")
-		_, err = stmt.Exec("customer_attachment_dummy_uuid", "customer_attachment_virtual_machine_interface_ref_uuid1")
-		_, err = stmt.Exec("customer_attachment_dummy_uuid", "customer_attachment_virtual_machine_interface_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "VirtualMachineInterfaceRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteVirtualMachineInterface(ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "customer_attachment_virtual_machine_interface_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref customer_attachment_virtual_machine_interface_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteVirtualMachineInterface(ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "customer_attachment_virtual_machine_interface_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref customer_attachment_virtual_machine_interface_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteVirtualMachineInterface(
-		ctx,
-		&models.DeleteVirtualMachineInterfaceRequest{
-			ID: "customer_attachment_virtual_machine_interface_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref customer_attachment_virtual_machine_interface_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
 		stmt, err := tx.Prepare("delete from `ref_customer_attachment_floating_ip` where `from` = ? AND `to` = ?;")
 		if err != nil {
 			return errors.Wrap(err, "preparing FloatingIPRefs delete statement failed")
@@ -326,6 +291,41 @@ func TestCustomerAttachment(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref customer_attachment_floating_ip_ref_uuid2 failed", err)
+	}
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_customer_attachment_virtual_machine_interface` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing VirtualMachineInterfaceRefs delete statement failed")
+		}
+		_, err = stmt.Exec("customer_attachment_dummy_uuid", "customer_attachment_virtual_machine_interface_ref_uuid")
+		_, err = stmt.Exec("customer_attachment_dummy_uuid", "customer_attachment_virtual_machine_interface_ref_uuid1")
+		_, err = stmt.Exec("customer_attachment_dummy_uuid", "customer_attachment_virtual_machine_interface_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "VirtualMachineInterfaceRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteVirtualMachineInterface(ctx,
+		&models.DeleteVirtualMachineInterfaceRequest{
+			ID: "customer_attachment_virtual_machine_interface_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref customer_attachment_virtual_machine_interface_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteVirtualMachineInterface(ctx,
+		&models.DeleteVirtualMachineInterfaceRequest{
+			ID: "customer_attachment_virtual_machine_interface_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref customer_attachment_virtual_machine_interface_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteVirtualMachineInterface(
+		ctx,
+		&models.DeleteVirtualMachineInterfaceRequest{
+			ID: "customer_attachment_virtual_machine_interface_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref customer_attachment_virtual_machine_interface_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing

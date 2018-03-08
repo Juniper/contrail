@@ -66,6 +66,10 @@ func TestContrailCluster(t *testing.T) {
 	//
 	//
 	//
+	//    common.SetValueByPath(updateMap, ".SudoPassword", ".", "test")
+	//
+	//
+	//
 	//    common.SetValueByPath(updateMap, ".StatisticsTTL", ".", "test")
 	//
 	//
@@ -149,6 +153,10 @@ func TestContrailCluster(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, ".OpenstackEnableHaproxy", ".", "test")
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, ".NTPServer", ".", "test")
 	//
 	//
 	//

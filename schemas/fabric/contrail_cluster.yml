@@ -223,6 +223,30 @@ schema:
       view:
       - create
       - detail
+    ntp_server:
+      description: NTP server ip address
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: NTPServer
+      type: string
+      view:
+      - create
+      - detail
+    sudo_password:
+      description: Sudo user password of the provisioning node
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Sudo User Password
+      type: string
+      view:
+      - create
+      - detail
   required: []
   type: object
 singular: contrail_cluster

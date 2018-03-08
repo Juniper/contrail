@@ -248,14 +248,6 @@ func TestServiceEndpoint(t *testing.T) {
 	//
 	//    // Create Attr values for testing ref update(ADD,UPDATE,DELETE)
 	//
-	//    var ServiceObjectref []interface{}
-	//    ServiceObjectref = append(ServiceObjectref, map[string]interface{}{"operation":"delete", "uuid":"service_endpoint_service_object_ref_uuid", "to": []string{"test", "service_endpoint_service_object_ref_uuid"}})
-	//    ServiceObjectref = append(ServiceObjectref, map[string]interface{}{"operation":"add", "uuid":"service_endpoint_service_object_ref_uuid1", "to": []string{"test", "service_endpoint_service_object_ref_uuid1"}})
-	//
-	//
-	//
-	//    common.SetValueByPath(updateMap, "ServiceObjectRefs", ".", ServiceObjectref)
-	//
 	//    var ServiceConnectionModuleref []interface{}
 	//    ServiceConnectionModuleref = append(ServiceConnectionModuleref, map[string]interface{}{"operation":"delete", "uuid":"service_endpoint_service_connection_module_ref_uuid", "to": []string{"test", "service_endpoint_service_connection_module_ref_uuid"}})
 	//    ServiceConnectionModuleref = append(ServiceConnectionModuleref, map[string]interface{}{"operation":"add", "uuid":"service_endpoint_service_connection_module_ref_uuid1", "to": []string{"test", "service_endpoint_service_connection_module_ref_uuid1"}})
@@ -271,6 +263,14 @@ func TestServiceEndpoint(t *testing.T) {
 	//
 	//
 	//    common.SetValueByPath(updateMap, "PhysicalRouterRefs", ".", PhysicalRouterref)
+	//
+	//    var ServiceObjectref []interface{}
+	//    ServiceObjectref = append(ServiceObjectref, map[string]interface{}{"operation":"delete", "uuid":"service_endpoint_service_object_ref_uuid", "to": []string{"test", "service_endpoint_service_object_ref_uuid"}})
+	//    ServiceObjectref = append(ServiceObjectref, map[string]interface{}{"operation":"add", "uuid":"service_endpoint_service_object_ref_uuid1", "to": []string{"test", "service_endpoint_service_object_ref_uuid1"}})
+	//
+	//
+	//
+	//    common.SetValueByPath(updateMap, "ServiceObjectRefs", ".", ServiceObjectref)
 	//
 	//
 	_, err = db.CreateServiceEndpoint(ctx,
@@ -290,6 +290,41 @@ func TestServiceEndpoint(t *testing.T) {
 	//    }
 
 	//Delete ref entries, referred objects
+
+	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
+		tx := GetTransaction(ctx)
+		stmt, err := tx.Prepare("delete from `ref_service_endpoint_service_object` where `from` = ? AND `to` = ?;")
+		if err != nil {
+			return errors.Wrap(err, "preparing ServiceObjectRefs delete statement failed")
+		}
+		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_object_ref_uuid")
+		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_object_ref_uuid1")
+		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_object_ref_uuid2")
+		if err != nil {
+			return errors.Wrap(err, "ServiceObjectRefs delete failed")
+		}
+		return nil
+	})
+	_, err = db.DeleteServiceObject(ctx,
+		&models.DeleteServiceObjectRequest{
+			ID: "service_endpoint_service_object_ref_uuid"})
+	if err != nil {
+		t.Fatal("delete ref service_endpoint_service_object_ref_uuid  failed", err)
+	}
+	_, err = db.DeleteServiceObject(ctx,
+		&models.DeleteServiceObjectRequest{
+			ID: "service_endpoint_service_object_ref_uuid1"})
+	if err != nil {
+		t.Fatal("delete ref service_endpoint_service_object_ref_uuid1  failed", err)
+	}
+	_, err = db.DeleteServiceObject(
+		ctx,
+		&models.DeleteServiceObjectRequest{
+			ID: "service_endpoint_service_object_ref_uuid2",
+		})
+	if err != nil {
+		t.Fatal("delete ref service_endpoint_service_object_ref_uuid2 failed", err)
+	}
 
 	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
@@ -359,41 +394,6 @@ func TestServiceEndpoint(t *testing.T) {
 		})
 	if err != nil {
 		t.Fatal("delete ref service_endpoint_physical_router_ref_uuid2 failed", err)
-	}
-
-	err = DoInTransaction(ctx, db.DB, func(ctx context.Context) error {
-		tx := GetTransaction(ctx)
-		stmt, err := tx.Prepare("delete from `ref_service_endpoint_service_object` where `from` = ? AND `to` = ?;")
-		if err != nil {
-			return errors.Wrap(err, "preparing ServiceObjectRefs delete statement failed")
-		}
-		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_object_ref_uuid")
-		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_object_ref_uuid1")
-		_, err = stmt.Exec("service_endpoint_dummy_uuid", "service_endpoint_service_object_ref_uuid2")
-		if err != nil {
-			return errors.Wrap(err, "ServiceObjectRefs delete failed")
-		}
-		return nil
-	})
-	_, err = db.DeleteServiceObject(ctx,
-		&models.DeleteServiceObjectRequest{
-			ID: "service_endpoint_service_object_ref_uuid"})
-	if err != nil {
-		t.Fatal("delete ref service_endpoint_service_object_ref_uuid  failed", err)
-	}
-	_, err = db.DeleteServiceObject(ctx,
-		&models.DeleteServiceObjectRequest{
-			ID: "service_endpoint_service_object_ref_uuid1"})
-	if err != nil {
-		t.Fatal("delete ref service_endpoint_service_object_ref_uuid1  failed", err)
-	}
-	_, err = db.DeleteServiceObject(
-		ctx,
-		&models.DeleteServiceObjectRequest{
-			ID: "service_endpoint_service_object_ref_uuid2",
-		})
-	if err != nil {
-		t.Fatal("delete ref service_endpoint_service_object_ref_uuid2 failed", err)
 	}
 
 	//Delete the project created for sharing
