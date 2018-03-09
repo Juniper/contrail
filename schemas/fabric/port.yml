@@ -11,24 +11,35 @@ plural: ports
 prefix: /
 schema:
   properties:
-    mac_address:
-      description: Mac Address of the NIC in Node
-      type: string
-      format: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
+    name:
+      description: Name of the port
       nullable: false
       permission:
       - create
-      - detail
-    node_uuid:
-      description: UUID of the parent node where this port is connected
+      - update
+      sql: ""
+      title: Port Name
       type: string
-    pxe_enabled:
-      description: Indicates whether PXE is enabled or disabled on the Port.
-      type: boolean
-    local_link_connection:
-      presence: "true"
-      description: "The Port binding profile"
-      $ref: "openstack_types.json#/definitions/LocalLinkConnection"
+      view:
+      - create
+      - detail
+    ip_address:
+      default: ""
+      description: IP Address
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: IP Address
+      type: string
+      view:
+      - create
+      - detail
+    bms_port_info:
+      presence: "optional"
+      description: "Details of the baremetal server port"
+      $ref: "fabric_types.json#/definitions/BaremetalPortInfo"
   required: []
   type: object
 singular: port
