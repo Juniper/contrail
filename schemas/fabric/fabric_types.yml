@@ -1,0 +1,129 @@
+---
+  definitions:
+    DriverInfo:
+      type: "object"
+      properties:
+        ipmi_address:
+          description: IPMI address of the server to manage boot device and power management
+          type: string
+          format: ipv4
+          nullable: false
+          permission:
+          - create
+          - update
+        ipmi_username:
+          description: Username to access IPMI
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        ipmi_password:
+          description: Password to access IPMI
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        deploy_kernel:
+          description: UUID of the deploy kernel
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        deploy_ramdisk:
+          description: UUID of the deploy initrd/ramdisk
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+    BaremetalProperties:
+      type: "object"
+      properties:
+        cpus:
+          description: Number of CPU cores on the baremetal
+          type: integer
+        cpu_arch:
+          description: Architecture of the baremetal server
+          type: string
+          default: x86_64
+        local_gb:
+          description: Disk size of root device (in GB)
+          type: integer
+        memory_mb:
+          description: RAM of the Baremetal server (in MB)
+          type: integer
+        capabilities:
+          description: Boot option
+          type: string
+          default: "boot_option:local"
+    BaremetalServerInfo:
+      type: "object"
+      properties:
+        name:
+          description: Name of the Baremetal server
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        network_interface:
+          description: Networking interface
+          type: string
+          enum:
+          - neutron
+          nullable: false
+          permission:
+          - create
+          - update
+        driver:
+          description: IPMI driver
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        driver_info:
+          presence: "optional"
+          description: "Details of the driver for power management"
+          $ref: "fabric_types.json#/definitions/DriverInfo"
+        properties:
+          presence: "optional"
+          description: "Details of baremetal hardware for scheduler"
+          $ref: "fabric_types.json#/definitions/BaremetalProperties"
+    LocalLinkConnection:
+      type: "object"
+      properties:
+        switch_id:
+          description: Switch hostname 
+          type: string
+          format: hostname
+        port_id:
+          description: Port ID of switch where Baremetal is connected
+          type: string
+        switch_info:
+          description: UUID of the Physical-Port with contrail database
+          type: string
+    BaremetalPortInfo:
+      type: "object"
+      properties:
+        address:
+          description: Mac Address of the NIC in Node
+          type: string
+          format: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
+          nullable: false
+          permission:
+          - create
+          - detail
+        node_uuid:
+          description: UUID of the parent node where this port is connected
+          type: string
+        pxe_enabled:
+          description: Indicates whether PXE is enabled or disabled on the Port.
+          type: boolean
+        local_link_connection:
+          presence: "true"
+          description: "The Port binding profile"
+          $ref: "fabric_types.json#/definitions/LocalLinkConnection"
