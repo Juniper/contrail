@@ -36,6 +36,10 @@ type EtcdClient interface {
 
 	// Recursively Watches a Directory for changes
 	WatchRecursive(ctx context.Context, directory string, callback Callback) error
+
+	// Watches a Directory for changes after an index
+	WatchAfterIndex(ctx context.Context, afterIndex int64,
+		directory string, callback Callback) error
 }
 
 // IntentEtcdClient implements EtcdClient
@@ -121,6 +125,24 @@ func (etcdClient *IntentEtcdClient) WatchRecursive(ctx context.Context,
 				callback(etcdClient, wresp.Header.Revision, int32(ev.Type),
 					string(ev.Kv.Key[:]), string(ev.Kv.Value[:]))
 			}
+		}
+	}
+}
+
+// WatchAfterIndex Watches a Directory for changes After an Index
+func (etcdClient *IntentEtcdClient) WatchAfterIndex(ctx context.Context,
+	afterIndex int64, directory string, callback Callback) {
+
+	rchan := etcdClient.Etcd.Watch(ctx, directory,
+		client.WithPrefix(), client.WithRev(afterIndex))
+	for wresp := range rchan {
+		for _, ev := range wresp.Events {
+			afterIndex = wresp.Header.Revision
+			if callback == nil {
+				continue
+			}
+			callback(etcdClient, wresp.Header.Revision, int32(ev.Type),
+				string(ev.Kv.Key[:]), string(ev.Kv.Value[:]))
 		}
 	}
 }
