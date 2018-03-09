@@ -3,7 +3,6 @@
 ## Important principal
 
 - Apply lint tools
-- Go get must simply work
 - Follow best practices
   - comply to [Effective Go](https://golang.org/doc/effective_go.html)
   - comply to [Code review comments](https://github.com/golang/go/wiki/CodeReviewComments)
@@ -21,23 +20,12 @@ The following software is required to build this project:
   - Install [ruby](https://www.ruby-lang.org/en/documentation/installation/)
   - Install [rubygems](https://rubygems.org/pages/download)
 
-## Retrieve the code (using go get)
+## Development setup
+
+Clone this repo
 
 ``` shell
-go get github.com/Juniper/contrail
-```
-
-## Generate Code
-
-### Setup protoc
-
-see https://github.com/grpc/grpc/blob/master/INSTALL.md
-
-Install protoc for go code generation
-
-### Use make generate
-
-``` shell
+make deps
 make generate
 ```
 
@@ -108,7 +96,7 @@ API Server is shipped within `contrail` executable.
 You can run API server using following command:
 
 ``` shell
-go run cmd/contrail/main.go server -c packaging/apisrv.yml
+go run cmd/contrail/main.go server -c tools/test_config.yml
 ```
 
 ### Keystone Support
