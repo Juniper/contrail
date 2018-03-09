@@ -25,6 +25,9 @@ type provisionCommon struct {
 	reporter    *Reporter
 }
 
+func (p *provisionCommon) getSudoUserPassword() string {
+	return p.clusterData.clusterInfo.SudoPassword
+}
 func (p *provisionCommon) getTemplateRoot() string {
 	return defaultTemplateRoot
 }
