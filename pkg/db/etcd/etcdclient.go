@@ -16,7 +16,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Callback from WatchRecursive functions
+// Callback from Watch functions
 type Callback func(cl *IntentEtcdClient, index int64, oper int32, key,
 	newValue string)
 
@@ -34,8 +34,16 @@ type EtcdClient interface {
 	// Delete deletes a value in Etcd
 	Delete(ctx context.Context, key, value string) error
 
-	// Recursively Watches a Directory for changes
-	WatchRecursive(ctx context.Context, directory string, callback Callback) error
+	// Watches a key pattern for changes after an index
+	WatchAfterIndex(ctx context.Context, afterIndex int64,
+		keyPattern string, callback Callback) error
+
+	// Recursively Watches a key pattern for changes
+	WatchRecursive(ctx context.Context, keyPattern string, callback Callback) error
+
+	// Recursively Watches a key pattern for changes after an index
+	WatchRecursiveAfterIndex(ctx context.Context, afterIndex int64,
+		keyPattern string, callback Callback) error
 }
 
 // IntentEtcdClient implements EtcdClient
@@ -104,23 +112,38 @@ func (etcdClient *IntentEtcdClient) Delete(ctx context.Context, key string) erro
 	return err
 }
 
-// WatchRecursive Recursively Watches a Directory for changes After an Index
-func (etcdClient *IntentEtcdClient) WatchRecursive(ctx context.Context,
-	directory string, callback Callback) {
+// WatchAfterIndex Watches a key pattern for changes After an Index
+func (etcdClient *IntentEtcdClient) WatchAfterIndex(ctx context.Context,
+	afterIndex int64, keyPattern string, callback Callback) {
 
+	rchan := etcdClient.Etcd.Watch(ctx, keyPattern,
+		client.WithPrefix(), client.WithRev(afterIndex))
+	for wresp := range rchan {
+		for _, ev := range wresp.Events {
+			afterIndex = wresp.Header.Revision
+			if callback == nil {
+				continue
+			}
+			callback(etcdClient, wresp.Header.Revision, int32(ev.Type),
+				string(ev.Kv.Key[:]), string(ev.Kv.Value[:]))
+		}
+	}
+}
+
+// WatchRecursive Recursively Watches a key pattern for changes
+func (etcdClient *IntentEtcdClient) WatchRecursive(ctx context.Context,
+	keyPattern string, callback Callback) {
 	afterIndex := int64(0)
 	for {
-		rchan := etcdClient.Etcd.Watch(ctx, directory,
-			client.WithPrefix(), client.WithRev(afterIndex))
-		for wresp := range rchan {
-			for _, ev := range wresp.Events {
-				afterIndex = wresp.Header.Revision
-				if callback == nil {
-					continue
-				}
-				callback(etcdClient, wresp.Header.Revision, int32(ev.Type),
-					string(ev.Kv.Key[:]), string(ev.Kv.Value[:]))
-			}
-		}
+		etcdClient.WatchAfterIndex(ctx, afterIndex, keyPattern, callback)
+	}
+}
+
+// WatchRecursiveAfterIndex Recursively Watches a key pattern for changes
+//  After an Index
+func (etcdClient *IntentEtcdClient) WatchRecursiveAfterIndex(ctx context.Context,
+	afterIndex int64, keyPattern string, callback Callback) {
+	for {
+		etcdClient.WatchAfterIndex(ctx, afterIndex, keyPattern, callback)
 	}
 }
