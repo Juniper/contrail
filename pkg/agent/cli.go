@@ -5,6 +5,9 @@ import (
 	"io/ioutil"
 	"net/url"
 
+	"github.com/Juniper/contrail/pkg/services"
+
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
@@ -259,30 +262,16 @@ func (a *Agent) UpdateCLI(dataPath string) (string, error) {
 // TODO(daniel): FIXME duplication
 // nolint: dupl
 func (a *Agent) SyncCLI(dataPath string) (string, error) {
-	data, err := ioutil.ReadFile(dataPath)
+	var request *services.RESTSyncRequest
+	err := common.LoadFile(dataPath, &request)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to load datafile")
+		return "", err
 	}
-	resources, err := getInputResources(data)
+	response, err := a.resourceSync(request)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to parse data file")
+		return "", err
 	}
-	for _, resource := range resources {
-		list, ok := resource.Data.([]interface{})
-		if !ok {
-			list = []interface{}{resource.Data}
-		}
-		var updatedData []interface{}
-		for _, resourceData := range list {
-			data, sErr := a.resourceSync(resource.Kind, resourceData)
-			if sErr != nil {
-				return "", sErr
-			}
-			updatedData = append(updatedData, data)
-		}
-		resource.Data = updatedData
-	}
-	output, err := yaml.Marshal(&resources)
+	output, err := yaml.Marshal(&response)
 	if err != nil {
 		return "", err
 	}

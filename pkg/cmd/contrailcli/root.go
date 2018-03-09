@@ -26,7 +26,6 @@ func getAuthenticatedAgent(configFilePath string) (*agent.Agent, error) {
 	if err != nil {
 		return nil, fmt.Errorf("agent creation failed: %s", err)
 	}
-
 	err = a.APIServer.Login()
 	if err != nil {
 		return nil, fmt.Errorf("agent authentication failed: %s", err)
