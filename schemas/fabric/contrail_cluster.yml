@@ -223,6 +223,18 @@ schema:
       view:
       - create
       - detail
+    ntp_server:
+      description: NTP server ip address
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: NTPServer
+      type: string
+      view:
+      - create
+      - detail
   required: []
   type: object
 singular: contrail_cluster

@@ -71,7 +71,7 @@ func (task *task) action(action string, resource map[string]interface{}) error {
 	context := pongo2.Context{
 		"resource": resource,
 		"action":   action,
-		"config":   task.agent.config,
+		"input":    task.agent.config,
 	}
 	err := task.runHandlers(task.Common, context)
 	if err != nil {
