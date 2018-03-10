@@ -110,28 +110,15 @@ schema:
       type: string
       view:
       - detail
-    default_vrouter_bond_interface:
+    default_vrouter_interface:
       default: bond0
-      description: vRouter Bond Interface
+      description: Default vRouter vhost Interface
       nullable: false
       permission:
       - create
       - update
       sql: ""
-      title: Default vRouter Bond Interface
-      type: string
-      view:
-      - create
-      - detail
-    default_vrouter_bond_interface_members:
-      default: ens7f0,ens7f1
-      description: vRouter Bond Interface Members
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Default vRouter Bond Interface Members
+      title: Default vRouter Interface
       type: string
       view:
       - create

@@ -25,15 +25,28 @@ schema:
       view:
       - create
       - detail
-    ip_address:
-      default: ""
-      description: IP Address
+    interface_name:
+      default: eth0
+      description: Name of the Management interface
       nullable: false
       permission:
       - create
       - update
       sql: ""
-      title: IP Address
+      title: Management Interface Name
+      type: string
+      view:
+      - create
+      - detail
+    ip_address:
+      default: ""
+      description: IP Address of the Management interface
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Management IP Address
       type: string
       view:
       - create
