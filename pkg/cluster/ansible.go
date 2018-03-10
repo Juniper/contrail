@@ -76,6 +76,8 @@ func (a *ansibleProvisioner) playBook() error {
 	args := []string{"-i", "inventory/", "-e",
 		"config_file=" + a.getInstanceFile(),
 		defaultInstanceProvPlay}
+	args = append(args,
+		"-e orchestrator="+a.clusterData.clusterInfo.Orchestrator)
 
 	a.log.Infof("Playing instance provisioning playbook: %s %s",
 		cmdline, strings.Join(args, " "))
