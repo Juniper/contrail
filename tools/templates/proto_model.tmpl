@@ -4,24 +4,24 @@ package github.com.Juniper.contrail.pkg.models;
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 import "google/protobuf/field_mask.proto";
 
-option (gogoproto.gostring_all) = true;
+option (gogoproto.gostring_all) = false;
 option (gogoproto.equal_all) = true;
-option (gogoproto.verbose_equal_all) = true;
+option (gogoproto.verbose_equal_all) = false;
 option (gogoproto.goproto_stringer_all) = false;
 option (gogoproto.stringer_all) =  true;
-option (gogoproto.populate_all) = true;
-option (gogoproto.benchgen_all) = true;
-option (gogoproto.marshaler_all) = true;
+option (gogoproto.populate_all) = false;
+option (gogoproto.benchgen_all) = false;
+option (gogoproto.marshaler_all) = false;
 option (gogoproto.sizer_all) = true;
-option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.unmarshaler_all) = false;
 option (gogoproto.protosizer_all) = false;
 
 option go_package = "models";
 
 message ListSpec {
     repeated Filter filters = 1 [(gogoproto.customname) = "Filters"]; // QueryFilter
-	int64 limit = 2 [(gogoproto.customname) = "Limit", (gogoproto.casttype) = "int"]; // Number of items expected to be returned
-	int64 offset = 3 [(gogoproto.customname) = "Offset", (gogoproto.casttype) = "int"]; // Starting offset of items
+	int64 limit = 2 [(gogoproto.customname) = "Limit"]; // Number of items expected to be returned
+	int64 offset = 3 [(gogoproto.customname) = "Offset"]; // Starting offset of items
     bool detail = 4 [(gogoproto.customname) = "Detail"]; // Include detail informatoin or not
     bool count = 5 [(gogoproto.customname) = "Count"]; // TBD
     bool shared = 6 [(gogoproto.customname) = "Shared"]; // Include shared resources or not
