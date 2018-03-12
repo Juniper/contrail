@@ -34,3 +34,9 @@
 - type: all
   template_path: proto_service.tmpl
   output_path: proto/github.com/Juniper/contrail/pkg/services/generated.proto
+- type: all
+  template_path: terraform_common.tmpl
+  output_path: terraform/terraform-provider-contrail/contrail/gen_resources.go
+- type: resource
+  template_path: terraform.tmpl
+  output_path: terraform/terraform-provider-contrail/contrail/gen___resource__.go
