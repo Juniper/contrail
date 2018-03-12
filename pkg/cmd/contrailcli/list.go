@@ -32,7 +32,7 @@ func init() {
 		"Comma-separated filter parameters (e.g. check==a,check==b,name==Bob)")
 	ListCmd.Flags().IntVarP(&pageMarker, models.PageMarkerKey, "m", 0,
 		"Page marker that returned resources start from (i.e. offset)")
-	ListCmd.Flags().IntVarP(&pageLimit, models.PageLimitKey, "l", 0,
+	ListCmd.Flags().IntVarP(&pageLimit, models.PageLimitKey, "l", 100,
 		"Limit number of returned resources")
 	ListCmd.Flags().BoolVarP(&detail, models.DetailKey, "d", false,
 		"Detailed data in response")
@@ -41,7 +41,7 @@ func init() {
 	ListCmd.Flags().BoolVarP(&shared, models.SharedKey, "s", false,
 		"Include shared object in response")
 	ListCmd.Flags().BoolVarP(&excludeHRefs, models.ExcludeHRefsKey, "e", false,
-		"Exclude HRefs from response")
+		"Exclude hrefs from response")
 	ListCmd.Flags().StringVarP(&parentType, models.ParentTypeKey, "t", "",
 		"Parent's type")
 	ListCmd.Flags().StringVarP(&parentFQName, models.ParentFQNameKey, "n", "",
