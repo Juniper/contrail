@@ -26,7 +26,7 @@ tls:
     cert_file: tools/server.crt
 
 # Enable GRPC or not
-enable_grpc: false 
+enable_grpc: false
 
 # Static file config
 # key: URL path
