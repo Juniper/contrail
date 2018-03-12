@@ -3,6 +3,7 @@ database:
     connection: "root:contrail123@tcp(localhost:3306)/contrail_test"
     # Max Open Connections for MySQL Server
     max_open_conn: 100
+    dialect: mysql
 
 # Log Level
 log_level: debug
@@ -20,7 +21,7 @@ address: ":9091"
 
 # TLS Configuration
 tls:
-    enabled: true 
+    enabled: false 
     key_file: tools/server.key
     cert_file: tools/server.crt
 
@@ -52,4 +53,5 @@ keystone:
     authurl: http://localhost:9091/v3
 
 # disable authentication with no_auth true and comment out keystone configuraion.
-# no_auth: false
+
+# no_auth: true 
