@@ -24,7 +24,7 @@ const (
 	FieldsKey       = "fields"
 )
 
-func parsePositiveNumber(query string, defaultValue int) int {
+func parsePositiveNumber(query string, defaultValue int64) int64 {
 	i, err := strconv.Atoi(query)
 	if err != nil {
 		return defaultValue
@@ -32,7 +32,7 @@ func parsePositiveNumber(query string, defaultValue int) int {
 	if i < 0 {
 		return defaultValue
 	}
-	return i
+	return int64(i)
 }
 
 func parseBool(query string) bool {
