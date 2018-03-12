@@ -417,7 +417,8 @@ func (db *DB) List{{ schema.JSONSchema.GoName }}(
             response, err = db.list{{ schema.JSONSchema.GoName }}(ctx, request)
             return err
         }); err != nil {
-        return nil, common.ErrorInternal
+        log.Debug(err)
+        return nil, common.ErrorInternal 
     }
     return response, nil
 }
