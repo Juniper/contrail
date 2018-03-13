@@ -39,11 +39,16 @@ func (a *ansibleProvisioner) cloneAnsibleDeployer() error {
 	if err != nil {
 		return err
 	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
 	if err := cmd.Start(); err != nil {
 		return err
 	}
 	// Report progress log periodically to stdout/db
 	go a.reporter.reportLog(stdout)
+	go a.reporter.reportLog(stderr)
 	if err := cmd.Wait(); err != nil {
 		return err
 	}
@@ -87,12 +92,17 @@ func (a *ansibleProvisioner) playBook() error {
 	if err != nil {
 		return err
 	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
 	if err = cmd.Start(); err != nil {
 		return err
 	}
 
 	// Report progress log periodically to stdout/db
 	go a.reporter.reportLog(stdout)
+	go a.reporter.reportLog(stderr)
 
 	if err = cmd.Wait(); err != nil {
 		return err
@@ -109,12 +119,17 @@ func (a *ansibleProvisioner) playBook() error {
 	if err != nil {
 		return err
 	}
+	stderr, err = cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
 	if err = cmd.Start(); err != nil {
 		return err
 	}
 
 	// Report progress log periodically to stdout/db
 	go a.reporter.reportLog(stdout)
+	go a.reporter.reportLog(stderr)
 
 	if err = cmd.Wait(); err != nil {
 		return err
@@ -131,12 +146,17 @@ func (a *ansibleProvisioner) playBook() error {
 	if err != nil {
 		return err
 	}
+	stderr, err = cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
 	if err = cmd.Start(); err != nil {
 		return err
 	}
 
 	// Report progress log periodically to stdout/db
 	go a.reporter.reportLog(stdout)
+	go a.reporter.reportLog(stderr)
 
 	if err = cmd.Wait(); err != nil {
 		return err
