@@ -40,7 +40,6 @@ var apiServerCmd = &cobra.Command{
 				wg.Done()
 			}()
 		}
-		startAgent()
 		wg.Wait()
 	},
 }
