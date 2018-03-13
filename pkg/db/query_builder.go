@@ -26,7 +26,6 @@ type queryContext struct {
 	columnParts []string
 	where       []string
 	joins       []string
-	groupBy     []string
 	query       *bytes.Buffer
 	spec        *models.ListSpec
 }
@@ -40,7 +39,6 @@ func newQueryContext() *queryContext {
 		values:      []interface{}{},
 		where:       []string{},
 		joins:       []string{},
-		groupBy:     []string{},
 	}
 }
 
@@ -214,7 +212,6 @@ func (qb *QueryBuilder) buildAuthQuery(ctx *queryContext) {
 		for _, shareTable := range shareTables {
 			ctx.joins = append(ctx.joins,
 				qb.join(shareTable, "uuid", qb.Table))
-			ctx.groupBy = append(ctx.groupBy, qb.quote(qb.Table, "uuid"))
 			where = append(where, fmt.Sprintf("(%s.to = ? and %s.access >= 4)",
 				qb.quote(shareTable), qb.quote(shareTable)))
 		}
@@ -244,9 +241,9 @@ func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 		_, err = query.WriteString(" where ")
 		_, err = query.WriteString(strings.Join(ctx.where, " and "))
 	}
-	if len(ctx.groupBy) > 0 {
+	if spec.Detail && (len(qb.RefFields) > 0 || len(qb.BackRefFields) > 0) {
 		_, err = query.WriteString(" group by ")
-		_, err = query.WriteString(strings.Join(ctx.groupBy, ","))
+		_, err = query.WriteString(qb.quote(qb.Table, "uuid"))
 	}
 	_, err = query.WriteRune(' ')
 	pagenationQuery := fmt.Sprintf(" limit %d offset %d ", spec.Limit, spec.Offset)
@@ -272,7 +269,6 @@ func (qb *QueryBuilder) buildRefQuery(ctx *queryContext) {
 		ctx.columns["ref_"+linkTo] = len(ctx.columns)
 		ctx.joins = append(ctx.joins,
 			qb.join(refTable, "from", qb.Table))
-		ctx.groupBy = append(ctx.groupBy, qb.quote(refTable, "from"))
 	}
 }
 
@@ -289,7 +285,6 @@ func (qb *QueryBuilder) buildBackRefQuery(ctx *queryContext) {
 		if spec.Detail || len(spec.BackRefUUIDs) > 0 {
 			ctx.joins = append(ctx.joins,
 				qb.join(refTable, "parent_uuid", qb.Table))
-			ctx.groupBy = append(ctx.groupBy, qb.quote(refTable, "uuid"))
 		}
 	}
 
