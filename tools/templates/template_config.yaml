@@ -24,7 +24,10 @@
   output_path: pkg/services/gen_common.go
 - type: all
   template_path: serviceif.tmpl
-  output_path: pkg/serviceif/serviceif.go
+  output_path: pkg/serviceif/gen_serviceif.go
+- type: all
+  template_path: etcdserviceif.tmpl
+  output_path: pkg/db/etcd/gen_etcd_notifier_service.go
 - type: resource
   template_path: service.tmpl
   output_path: pkg/services/gen___resource__.go

@@ -19,6 +19,12 @@ server:
 # Bind addresss
 address: ":9091"
 
+# ETCD notifier configuration
+etcd_notifier:
+    enabled: false
+    servers: http://127.0.0.1:2379
+    path: contrail
+
 # TLS Configuration
 tls:
     enabled: false 

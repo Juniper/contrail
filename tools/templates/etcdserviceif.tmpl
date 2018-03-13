@@ -1,0 +1,179 @@
+// nolint
+package etcdclient
+
+import (
+    "context"
+    "encoding/json"
+    "errors"
+
+    "github.com/Juniper/contrail/pkg/common"
+    "github.com/Juniper/contrail/pkg/models"
+    "github.com/Juniper/contrail/pkg/serviceif"
+
+    log "github.com/sirupsen/logrus"
+)
+
+type EtcdNotifierService struct{
+    serviceif.BaseService
+    Path   string
+    Etcdcl *IntentEtcdClient
+}
+
+
+// NewEtcdNotifierService makes a etcdclient service.
+func NewEtcdNotifierService(servers []string, path string) (*EtcdNotifierService, error) {
+    etcdcl, err := Dial(servers)
+    if err != nil {
+        log.WithFields(log.Fields{
+            "err": err,
+        }).Debug("Cannot connect to ETCD server")
+        return nil, err
+    }
+    service := &EtcdNotifierService{
+        BaseService: serviceif.BaseService{},
+        Path: path,
+        Etcdcl: etcdcl,
+    }
+    return service, nil
+}
+
+// EtcdNotifierMarshal returns key/value string for given object
+func (service *EtcdNotifierService) EtcdNotifierMarshal(schemaID string, objUUID string, obj interface{}) (string, string) {
+    jsonBytes, err := json.Marshal(obj{{ schema.JSONSchema.GoName }})
+    if err != nil {
+        log.WithFields(log.Fields{
+            "err": err,
+            "resource": schemaID,
+        }).Debug("Create %s: Failed JSON Marshal", schemaID)
+        return "", ""
+    }
+
+    jsonStr := string(jsonBytes[:])
+    objKey := "/" + service.Path + "/" + schemaID + "/" + objUUID
+    return objKey, jsonStr
+}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+func (service *EtcdNotifierService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.Next() == nil {
+        return nil, nil
+    }
+    obj{{ schema.JSONSchema.GoName }}, err := service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
+    if err != nil {
+        err := errors.New("Cannot Get {{ schema.JSONSchema.GoName }}")
+        log.WithFields(log.Fields{
+            "err": err,
+            "resource": "{{ schema.ID }}",
+        }).Debug("Create {{ schema.JSONSchema.GoName }}: Cannot Get {{ schema.JSONSchema.GoName }}")
+        return nil, common.ErrorInternal
+    }
+
+    objUUID := obj{{ schema.JSONSchema.GoName }}.Get{{ schema.JSONSchema.GoName }}().UUID
+    objKey, jsonStr := service.EtcdNotifierMarshal("{{ schema.ID }}", objUUID,
+        obj{{ schema.JSONSchema.GoName }})
+    if objKey == "" {
+        return nil, common.ErrorInternal
+    }
+
+    err = service.Etcdcl.Set(ctx, objKey, jsonStr)
+    if err != nil {
+        log.WithFields(log.Fields{
+            "err": err,
+            "resource": "{{ schema.ID }}",
+        }).Debug("Create {{ schema.JSONSchema.GoName }}[%s]: Failed to Write to ETCD", objUUID)
+        return nil, common.ErrorInternal
+    }
+
+    log.WithFields(log.Fields{
+        "resource": "{{ schema.ID }}",
+    }).Debug("Create {{ schema.JSONSchema.GoName }}[%s]: Write to ETCD successful", objUUID)
+
+    return obj{{ schema.JSONSchema.GoName }}, err
+}
+
+func (service *EtcdNotifierService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Update{{ schema.JSONSchema.GoName }}Request) (*models.Update{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.Next() == nil {
+        return nil, nil
+    }
+    obj{{ schema.JSONSchema.GoName }}, err := service.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
+    if err != nil {
+        err := errors.New("Cannot Get {{ schema.JSONSchema.GoName }}")
+        log.WithFields(log.Fields{
+            "err": err,
+            "resource": "{{ schema.ID }}",
+        }).Debug("Update {{ schema.JSONSchema.GoName }}: Cannot Get {{ schema.JSONSchema.GoName }}")
+        return nil, common.ErrorInternal
+    }
+
+    objUUID := obj{{ schema.JSONSchema.GoName }}.Get{{ schema.JSONSchema.GoName }}().UUID
+    objKey, jsonStr := service.EtcdNotifierMarshal("{{ schema.ID }}", objUUID,
+        obj{{ schema.JSONSchema.GoName }})
+    if objKey == "" {
+        return nil, common.ErrorInternal
+    }
+
+    err = service.Etcdcl.Update(ctx, objKey, jsonStr)
+    if err != nil {
+        log.WithFields(log.Fields{
+            "err": err,
+            "resource": "{{ schema.ID }}",
+        }).Debug("Update {{ schema.JSONSchema.GoName }}[%s]: Failed to Write to ETCD", objUUID)
+        return nil, common.ErrorInternal
+    }
+
+    log.WithFields(log.Fields{
+        "resource": "{{ schema.ID }}",
+    }).Debug("Update {{ schema.JSONSchema.GoName }}[%s]: Write to ETCD successful", objUUID)
+
+    return obj{{ schema.JSONSchema.GoName }}, err
+}
+
+func (service *EtcdNotifierService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Delete{{ schema.JSONSchema.GoName }}Request) (*models.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.Next() == nil {
+        return nil, nil
+    }
+    obj{{ schema.JSONSchema.GoName }}, err := service.Next().Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+    if err != nil {
+        log.WithFields(log.Fields{
+            "resource": "{{ schema.ID }}",
+        }).Debug("Delete {{ schema.JSONSchema.GoName }}: Cannot Get {{ schema.JSONSchema.GoName }} UUID")
+        return nil, nil
+    }
+
+    objUUID := obj{{ schema.JSONSchema.GoName }}.GetID()
+    objKey, _ := service.EtcdNotifierMarshal("{{ schema.ID }}", objUUID,
+        obj{{ schema.JSONSchema.GoName }})
+    if objKey == "" {
+        return nil, common.ErrorInternal
+    }
+
+    err = service.Etcdcl.Delete(ctx, objKey)
+    if err != nil {
+        log.WithFields(log.Fields{
+            "err": err,
+            "resource": "{{ schema.ID }}",
+        }).Debug("Delete {{ schema.JSONSchema.GoName }}[%s]: Failed to Write to ETCD", objUUID)
+        return nil, common.ErrorInternal
+    }
+
+    log.WithFields(log.Fields{
+        "resource": "{{ schema.ID }}",
+    }).Debug("Delete {{ schema.JSONSchema.GoName }}[%s]: Write to ETCD successful", objUUID)
+
+    return obj{{ schema.JSONSchema.GoName }}, err
+}
+
+func (service *EtcdNotifierService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Get{{ schema.JSONSchema.GoName }}Request) (*models.Get{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.Next() == nil {
+        return nil, nil
+    }
+    return service.Next().Get{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (service *EtcdNotifierService) List{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.List{{ schema.JSONSchema.GoName }}Request) (*models.List{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.Next() == nil {
+        return nil, nil
+    }
+    return service.Next().List{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+{% endif%}{% endfor %}

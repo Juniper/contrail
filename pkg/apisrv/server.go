@@ -2,6 +2,7 @@ package apisrv
 
 import (
 	"database/sql"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo"
@@ -16,6 +17,7 @@ import (
 	"github.com/Juniper/contrail/pkg/serviceif"
 	"github.com/Juniper/contrail/pkg/services"
 
+	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -37,16 +39,30 @@ func NewServer() (*Server, error) {
 //Application with custom logics can embed server struct, and overwrite
 //this method.
 func (s *Server) SetupService() serviceif.Service {
+	var serviceChain []serviceif.Service
 	service := &services.ContrailService{
 		BaseService: serviceif.BaseService{},
 	}
-	service.RegisterRESTAPI(s.Echo)
-	dbService := db.NewService(s.DB, viper.GetString("database.dialect"))
 
-	serviceif.Chain([]serviceif.Service{
-		service,
-		dbService,
-	})
+	serviceChain = append(serviceChain, service)
+	service.RegisterRESTAPI(s.Echo)
+
+	etcdNotifierEnabled := viper.GetBool("etcd_notifier.enabled")
+	if etcdNotifierEnabled {
+		etcdNotifierServers := strings.Split(viper.GetString("etcd_notifier.servers"), ",")
+		etcdNotifierPath := viper.GetString("etcd_notifier.path")
+		etcdNotifierService, err := etcdclient.NewEtcdNotifierService(etcdNotifierServers, etcdNotifierPath)
+		if err == nil {
+			log.Println("Adding ETCD Notifier Service.")
+			serviceChain = append(serviceChain, etcdNotifierService)
+		}
+	}
+
+	// Put DB Service at the end
+	dbService := db.NewService(s.DB, viper.GetString("database.dialect"))
+	serviceChain = append(serviceChain, dbService)
+
+	serviceif.Chain(serviceChain)
 
 	return service
 }
