@@ -39,11 +39,16 @@ func (a *ansibleProvisioner) cloneAnsibleDeployer() error {
 	if err != nil {
 		return err
 	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
 	if err := cmd.Start(); err != nil {
 		return err
 	}
 	// Report progress log periodically to stdout/db
 	go a.reporter.reportLog(stdout)
+	go a.reporter.reportLog(stderr)
 	if err := cmd.Wait(); err != nil {
 		return err
 	}
@@ -79,11 +84,18 @@ func (a *ansibleProvisioner) playBook() error {
 	args = append(args,
 		"-e orchestrator="+a.clusterData.clusterInfo.Orchestrator)
 
+	args = append(args,
+		"-e ansible_sudo_pass=ijohnson123")
+
 	a.log.Infof("Playing instance provisioning playbook: %s %s",
 		cmdline, strings.Join(args, " "))
 	cmd := exec.Command(cmdline, args...)
 	cmd.Dir = repoDir
 	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		return err
 	}
@@ -93,6 +105,7 @@ func (a *ansibleProvisioner) playBook() error {
 
 	// Report progress log periodically to stdout/db
 	go a.reporter.reportLog(stdout)
+	go a.reporter.reportLog(stderr)
 
 	if err = cmd.Wait(); err != nil {
 		return err
@@ -109,12 +122,17 @@ func (a *ansibleProvisioner) playBook() error {
 	if err != nil {
 		return err
 	}
+	stderr, err = cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
 	if err = cmd.Start(); err != nil {
 		return err
 	}
 
 	// Report progress log periodically to stdout/db
 	go a.reporter.reportLog(stdout)
+	go a.reporter.reportLog(stderr)
 
 	if err = cmd.Wait(); err != nil {
 		return err
@@ -131,12 +149,17 @@ func (a *ansibleProvisioner) playBook() error {
 	if err != nil {
 		return err
 	}
+	stderr, err = cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
 	if err = cmd.Start(); err != nil {
 		return err
 	}
 
 	// Report progress log periodically to stdout/db
 	go a.reporter.reportLog(stdout)
+	go a.reporter.reportLog(stderr)
 
 	if err = cmd.Wait(); err != nil {
 		return err
