@@ -17,7 +17,7 @@
             "args": [
                 "server",
                 "-c",
-                "${workspaceRoot}/tools/test_config.yml"
+                "${workspaceRoot}/sample/server.yml"
             ],
             "showLog": true
         }
