@@ -52,7 +52,7 @@ keystone:
     local: true # Enable local keystone v3. This is only for testing now.
     assignment:
         type: static
-        file: tools/keystone.yml
+        file: sample/keystone.yml
     store:
         type: memory
         expire: 3600
