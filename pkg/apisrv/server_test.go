@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/stretchr/testify/assert"
@@ -17,33 +16,26 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	err := RunTest("./test_data/test_virtual_network.yml")
-	if err != nil {
-		t.Fatal(err)
-	}
+	CreateTestProject(server, "TestServer")
+	RunTest(t, "./test_data/test_virtual_network.yml")
 }
 
 func TestSync(t *testing.T) {
-	err := RunTest("./test_data/test_sync.yml")
-	if err != nil {
-		t.Fatal(err)
-	}
+	CreateTestProject(server, "TestSync")
+	RunTest(t, "./test_data/test_sync.yml")
 }
 
 func TestGRPC(t *testing.T) {
-	mutexMetadata := common.UseTable(server.DB, "metadata")
-	defer mutexMetadata.Unlock()
-	mutexTable := common.UseTable(server.DB, "project")
-	defer mutexTable.Unlock()
-
+	CreateTestProject(server, "TestGRPC")
 	restClient := NewClient(
 		testServer.URL,
 		testServer.URL+"/v3",
-		"alice",
-		"alice_password",
+		"TestGRPC",
+		"TestGRPC",
+		true,
 		&keystone.Scope{
 			Project: &keystone.Project{
-				ID: "admin",
+				ID: "TestGRPC",
 			},
 		},
 	)
@@ -64,8 +56,8 @@ func TestGRPC(t *testing.T) {
 	c := services.NewContrailServiceClient(conn)
 	assert.NoError(t, err)
 	project := models.MakeProject()
-	project.UUID = "test_project"
-	project.FQName = []string{"default-domain", "project", "test"}
+	project.UUID = "test_project_grpc"
+	project.FQName = []string{"default-domain", "project", "test_project_grpc"}
 	_, err = c.CreateProject(ctx, &models.CreateProjectRequest{
 		Project: project,
 	})

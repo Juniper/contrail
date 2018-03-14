@@ -1,7 +1,10 @@
 package common
 
 import (
+	"fmt"
 	"strconv"
+
+	"github.com/pkg/errors"
 )
 
 //InterfaceToInt makes an int from interface
@@ -117,6 +120,16 @@ func InterfaceToInterfaceMap(i interface{}) map[string]interface{} {
 //InterfaceToFloat makes a float.
 func InterfaceToFloat(i interface{}) float64 {
 	t, _ := i.(float64)
+	switch t := i.(type) {
+	case []byte:
+		return float64(t[0])
+	case int:
+		return float64(t)
+	case int64:
+		return float64(t)
+	case float64:
+		return t
+	}
 	return t
 }
 
@@ -129,4 +142,23 @@ func InterfaceToBytes(i interface{}) []byte {
 		return []byte(t)
 	}
 	return []byte{}
+}
+
+//GetUUIDFromInterface get a UUID from an interface.
+func GetUUIDFromInterface(rawProperties interface{}) (string, error) {
+	properties, ok := rawProperties.(map[string]interface{})
+	if !ok {
+		return "", fmt.Errorf("invalid data format: no properties mapping")
+	}
+
+	rawUUID, ok := properties["uuid"]
+	if !ok {
+		return "", errors.New("data does not contain required UUID property")
+	}
+
+	uuid, ok := rawUUID.(string)
+	if !ok {
+		return "", fmt.Errorf("UUID should be string instead of %T", uuid)
+	}
+	return uuid, nil
 }

@@ -1,12 +1,5 @@
 name: Virtual Network Test
 description:  basic virtual network test
-tables:
-- metadata
-- project
-- routing_instance
-- virtual_network
-- network_policy
-- network_ipam
 test_data:
   admin_project: &admin_project
     fq_name: ["default", "admin"]

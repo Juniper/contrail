@@ -1,6 +1,6 @@
-kind: virtual_network
-data:
-  virtual-network:
+resources:
+- kind: virtual_network
+  data:
     annotations: {}
     ecmp_hashing_include_fields: {}
     export_route_target_list: {}
@@ -12,7 +12,7 @@ data:
     mac_limit_control: {}
     mac_move_control: {}
     perms2:
-      owner: admin
+      owner: TestCLI
     provider_properties: {}
     route_target_list: {}
     uuid: first-uuid

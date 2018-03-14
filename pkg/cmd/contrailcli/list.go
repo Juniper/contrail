@@ -3,10 +3,14 @@ package contrailcli
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	yaml "gopkg.in/yaml.v2"
 )
 
 var (
@@ -24,6 +28,10 @@ var (
 	objectUUIDs  string
 	fields       string
 )
+
+const listHelpTemplate = `List command possible usages:
+{% for schema in schemas %}contrail list {{ schema.ID }}
+{% endfor %}`
 
 func init() {
 	ContrailCLI.AddCommand(ListCmd)
@@ -61,24 +69,17 @@ var ListCmd = &cobra.Command{
 	Use:   "list [SchemaID]",
 	Short: "List data of specified resources",
 	Long:  "Invoke command with empty SchemaID in order to show possible usages",
-	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		listResources(args)
+		schemaID := ""
+		if len(args) > 0 {
+			schemaID = args[0]
+		}
+		output, err := listResources(schemaID)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(output)
 	},
-}
-
-func listResources(args []string) {
-	a, err := getAuthenticatedAgent(configFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	output, err := a.ListCLI(args[0], queryParameters())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println(output)
 }
 
 func queryParameters() url.Values {
@@ -109,4 +110,49 @@ func queryParameters() url.Values {
 
 func isZeroValue(value interface{}) bool {
 	return value == "" || value == 0 || value == false
+}
+
+func dashedCase(schemaID string) string {
+	return strings.Replace(schemaID, "_", "-", -1)
+}
+
+func listResources(schemaID string) (string, error) {
+	if schemaID == "" {
+		return showHelp("", listHelpTemplate)
+	}
+	client, err := getClient()
+	if err != nil {
+		return "", nil
+	}
+	params := queryParameters()
+	if schemaID == "" {
+		//TODO
+		return "", nil
+	}
+	//TODO support all schema
+	resources := &services.RESTSyncRequest{
+		Resources: []*services.RESTResource{},
+	}
+	var response map[string][]interface{}
+	_, err = client.Read(
+		fmt.Sprintf("%s?%s", pluralPath(schemaID), params.Encode()), &response)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	for _, list := range response {
+		for _, d := range list {
+			resources.Resources = append(resources.Resources,
+				&services.RESTResource{
+					Kind: schemaID,
+					Data: d,
+				},
+			)
+		}
+	}
+	output, err := yaml.Marshal(resources)
+	if err != nil {
+		return "", err
+	}
+	return string(output), nil
 }

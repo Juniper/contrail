@@ -383,7 +383,7 @@ func (db *DB) Create{{ schema.JSONSchema.GoName }}(
             "err": err,
             "resource": "{{ schema.ID }}",
         }).Debug("db create failed on create")
-       return nil, common.ErrorInternal
+       return nil, err 
     }
     return &models.Create{{ schema.JSONSchema.GoName }}Response{
         {{ schema.JSONSchema.GoName }}: request.{{ schema.JSONSchema.GoName }},
@@ -408,7 +408,7 @@ func (db *DB) Update{{ schema.JSONSchema.GoName }}(
             "err": err,
             "resource": "{{ schema.ID }}",
         }).Debug("db update failed")
-        return nil, common.ErrorInternal
+        return nil, err 
     }
     return &models.Update{{ schema.JSONSchema.GoName }}Response{
         {{ schema.JSONSchema.GoName }}: model,
@@ -424,7 +424,7 @@ func (db *DB) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request 
             return db.delete{{ schema.JSONSchema.GoName }}(ctx, request)
         }); err != nil {
             log.WithField("err", err).Debug("error deleting a resource")
-        return nil, common.ErrorInternal
+        return nil, err 
     }
     return &models.Delete{{ schema.JSONSchema.GoName }}Response{
         ID: request.ID,

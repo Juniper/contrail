@@ -37,13 +37,14 @@ type Request struct {
 }
 
 // NewClient makes api srv client.
-func NewClient(endpoint, authURL, id, password string, scope *keystone.Scope) *Client {
+func NewClient(endpoint, authURL, id, password string, insecure bool, scope *keystone.Scope) *Client {
 	c := &Client{
 		ID:       id,
 		Password: password,
 		AuthURL:  authURL,
 		Endpoint: endpoint,
 		Scope:    scope,
+		InSecure: insecure,
 	}
 	c.Init()
 	return c
@@ -53,7 +54,7 @@ func NewClient(endpoint, authURL, id, password string, scope *keystone.Scope) *C
 func (c *Client) Init() {
 	tr := &http.Transport{
 		Dial: (&net.Dialer{
-		//Timeout: 5 * time.Second,
+			//Timeout: 5 * time.Second,
 		}).Dial,
 		//TLSHandshakeTimeout: 5 * time.Second,
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: c.InSecure},

@@ -425,7 +425,8 @@ func (api *API) definitionByFileName(fileName string) *Schema {
 	return nil
 }
 
-func (api *API) schemaByID(id string) *Schema {
+//SchemaByID return schema by ID.
+func (api *API) SchemaByID(id string) *Schema {
 	for _, s := range api.Schemas {
 		if s.ID == id {
 			return s
@@ -507,7 +508,7 @@ func (api *API) resolveAllSQL() error {
 func (api *API) resolveRelation(linkTo string, reference *Reference) error {
 	reference.GoName = common.SnakeToCamel(linkTo)
 	reference.Attr = mapSlice(reference.AttrSlice).JSONSchema()
-	linkToSchema := api.schemaByID(linkTo)
+	linkToSchema := api.SchemaByID(linkTo)
 	if linkToSchema == nil {
 		return fmt.Errorf("Can't find linked schema %s", linkTo)
 	}
@@ -558,7 +559,7 @@ func (api *API) resolveAllRelation() error {
 			if err := api.resolveRelation(linkTo, reference); err != nil {
 				return err
 			}
-			parentSchema := api.schemaByID(linkTo)
+			parentSchema := api.SchemaByID(linkTo)
 			if parentSchema == nil {
 				return fmt.Errorf("Parent schema %s not found", linkTo)
 			}
@@ -608,7 +609,7 @@ func (api *API) resolveAllGoName() error {
 func (api *API) resolveExtend() error {
 	for _, s := range api.Schemas {
 		for _, baseSchemaID := range s.Extends {
-			baseSchema := api.schemaByID(baseSchemaID)
+			baseSchema := api.SchemaByID(baseSchemaID)
 			if baseSchema == nil {
 				continue
 			}
