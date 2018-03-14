@@ -29,7 +29,7 @@ enable_grpc: true
 # key: URL path
 # value: file path. (absolute path recommended in production)
 static_files:
-    public: ../../public
+    public: ../../../public
 
 # API Proxy configuration
 # key: URL path

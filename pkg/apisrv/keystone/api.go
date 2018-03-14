@@ -21,7 +21,7 @@ type Keystone struct {
 
 //Init is used to initialize echo with Kesytone capability.
 //This function reads config from viper.
-func Init(e *echo.Echo) error {
+func Init(e *echo.Echo) (*Keystone, error) {
 	keystone := &Keystone{}
 	assignmentType := viper.GetString("keystone.assignment.type")
 	if assignmentType == "static" {
@@ -29,7 +29,7 @@ func Init(e *echo.Echo) error {
 		var staticAssignment StaticAssignment
 		err := common.LoadFile(filepath, &staticAssignment)
 		if err != nil {
-			return errors.Wrap(err, "Failed to load static assignment")
+			return nil, errors.Wrap(err, "Failed to load static assignment")
 		}
 		keystone.Assignment = &staticAssignment
 	}
@@ -40,7 +40,7 @@ func Init(e *echo.Echo) error {
 	}
 	e.POST("/v3/auth/tokens", keystone.CreateTokenAPI)
 	e.GET("/v3/auth/tokens", keystone.ValidateTokenAPI)
-	return nil
+	return keystone, nil
 }
 
 func filterProject(user *User, scope *Scope) (*Project, error) {

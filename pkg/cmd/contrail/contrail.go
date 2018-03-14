@@ -14,6 +14,8 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	Contrail.PersistentFlags().StringVarP(&configFile, "config", "c", "", "Configuration File")
 	Contrail.PersistentFlags().StringVarP(&agentConfigFile, "agent", "a", "", "Agent Config File")
+	viper.SetEnvPrefix("contrail")
+	viper.AutomaticEnv()
 }
 
 // Contrail defines root Contrail command.
@@ -26,6 +28,9 @@ var Contrail = &cobra.Command{
 }
 
 func initConfig() {
+	if configFile == "" {
+		configFile = viper.GetString("config")
+	}
 	if configFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(configFile)

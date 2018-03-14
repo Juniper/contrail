@@ -65,14 +65,15 @@ contrail -c sample/server.yml server
 - Run CLI
 
 ```
+export CONTRAIL_CONFIG=sample/cli.yml
 # Show Schema
-contrailcli -c sample/cli.yml schema virtual_network
+contrailcli schema virtual_network
 # Create resources
-contrailcli -c sample/cli.yml create sample/sample_resource.yml
+contrailcli sync sample/sample_resource.yml
 # List resources
-contrailcli -c sample/cli.yml list virtual_network --detail
+contrailcli list virtual_network --detail
 # Delete resources
-contrailcli -c sample/cli.yml delete sample/sample_resource.yml
+contrailcli delete sample/sample_resource.yml
 ```
 
 For more cli command see [CLI Usage](doc/cli.md),

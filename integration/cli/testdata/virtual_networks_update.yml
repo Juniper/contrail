@@ -1,5 +1,0 @@
-- kind: virtual_network
-  data:
-  - external_ipam: true
-    flood_unknown_unicast: true
-    uuid: first-uuid

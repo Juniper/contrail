@@ -78,7 +78,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
     model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     model.UUID = id
     response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, &models.Update{{ schema.JSONSchema.GoName }}Request{
-        {{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }}),
+        {{ schema.JSONSchema.GoName }}: model,
         FieldMask: MapToFieldMask(request.{{ schema.JSONSchema.GoName }}),
     })
     if err != nil {
