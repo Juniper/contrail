@@ -1,37 +1,75 @@
-# Go code base for contrail projects
+# [POC] Go code base for Contrail projects
 
-## Important principal
+This repository holds Go implementation for Contrail projects.
+The goal of this project is
+to realize Go-based implemenation & etcd based such as Kubernetes 
+in order to improve performance, scale and ease operation.
 
-- Apply lint tools
-- Follow best practices
-  - comply to [Effective Go](https://golang.org/doc/effective_go.html)
-  - comply to [Code review comments](https://github.com/golang/go/wiki/CodeReviewComments)
-  - keep `make lint` output clean
+We are planning to add following sub components. 
 
-## Build pre-requisites
+- API Server ( python based VNC API Server equivalent)
+- Sync (ifmap, rabbitMQ realated code equivalent but depends on etcd)
+- Agent (SchemaTransformer, Device Manager equivalent)
+- Code generation tool (generateDS equivalent)
 
-The following software is required to build this project:
-
-- Install [git](https://www.atlassian.com/git/tutorials/install-git)
-- Install [go](https://golang.org/doc/install)
-- Install [dep](https://github.com/golang/dep)
-- Install [mysql](https://dev.mysql.com/doc/en/installing.html)
-- Install [fpm](https://github.com/jordansissel/fpm), only required if building packages (described below)
-  - Install [ruby](https://www.ruby-lang.org/en/documentation/installation/)
-  - Install [rubygems](https://rubygems.org/pages/download)
+Currently, this project is 
+POC stage so any external/internal API or design subject to change up 
+to community discussion.
 
 ## Development setup
 
-Clone this repo
+### Step1. Install Go
+
+https://golang.org/doc/install
+
+### Step2. Go get contrailutil
+
+``` shell
+go get -u github.com/Juniper/contrail/cmd/contrailutil
+```
+
+Note that go get -u github.com/Juniper/contrail fails because we don't 
+commit genreated code.
+
+### Step3 Install dependency 
 
 ``` shell
 make deps
+```
+
+### Step4 Install MySQL5.7 with password contrail123
+
+```
+make reset_db
+```
+
+### Step5 Generate code
+
+``` shell
 make generate
 ```
 
-Templates are stored in [tools/templates](tools/templates)
-[Template configuration](tools/templates/template_config.yaml)
-You can add your template on template_config.yaml.
+### Step6 Install code
+
+``` shell
+make install
+```
+
+### Try
+
+- Run Server
+```
+contrail -c tools/test_config.yml
+```
+
+- Run CLI
+
+```
+contrailcli -c tools/test_cli_config.yml list virtual_networks
+```
+
+For more cli command see [CLI Usage](doc/cli.md),
+
 
 ## Schema Files
 
@@ -40,33 +78,14 @@ Developers should make sure download latest schema from http://github.com/Junipe
 
 JSON version stored in public/schema.json
 
+Templates for code generation based on this schema are stored in [tools/templates](tools/templates)
+[Template configuration](tools/templates/template_config.yaml)
+You can add your template on template_config.yaml.
+
 ## Testing
-
-You need to run a local mysql instance running with test configuration.
-
-It is expected that the root password is 'contrail123', you can set this on an existing installation
-from the mysql prompt as follows:
-
-``` shell
-[(none)]> ALTER USER 'root'@'localhost' IDENTIFIED BY 'contrail123';
-```
-
-Executing the script below, will drop the contrail_test schema if it exists, recreate it and initialise this schema
-
-``` shell
-./tools/reset_db.sh
-```
-
-At this point the tests can be executed:
 
 ``` shell
 make test
-```
-
-Run integration tests:
-
-``` shell
-make integration
 ```
 
 ## Commands
@@ -90,38 +109,43 @@ contrail <command> -h
 
 [cli]: doc/cli.md
 
-## API Server
 
-API Server is shipped within `contrail` executable.
-You can run API server using following command:
-
-``` shell
-go run cmd/contrail/main.go server -c tools/test_config.yml
-```
-
-### Keystone Support
+## Keystone Support
 
 API Server supports Keystone V3 authentication and RBAC.
 API Server has minimal Keystone API V3 support for standalone use case.
 See a configuration example in tools/test_config.yml
 
-### More
+## How to contribute
 
-Find out more about API Server:
-- [Authentication](doc/authentication.md)
-- [Policy](doc/policy.md)
-- [REST API](doc/rest_api.md)
+- Apply lint tools
+- Follow best practices
+  - comply to [Effective Go](https://golang.org/doc/effective_go.html)
+  - comply to [Code review comments](https://github.com/golang/go/wiki/CodeReviewComments)
+  - keep `make lint` output clean
 
-## Binary
+We follow openstack way of review. https://docs.openstack.org/infra/manual/developers.html
+This is our review system. https://review.opencontrail.org
 
-Deb, RPM and Binaries are stored in release page.
+### Step1.
 
-See [releases](https://github.com/Juniper/contrail/releases)
+Setup gerrit account. Sign CLA.
 
-## Packaging
+### Step2.
 
-Build the packages:
+Install git-review
 
-``` shell
-make package
 ```
+pip install git-review
+```
+
+### Step3.
+
+Send git review command.
+```
+git review
+```
+
+## Document
+
+see [docs](./docs) folder
