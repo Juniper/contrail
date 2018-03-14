@@ -11,6 +11,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type RESTUpdate{{ schema.JSONSchema.GoName }}Request struct{
+    {{ schema.JSONSchema.GoName }} map[string]interface{} `json:"{{ schema.Path }}"`
+}
+
 //RESTCreate{{ schema.JSONSchema.GoName }} handle a Create REST service.
 // nolint
 func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
@@ -61,9 +65,8 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 //RESTUpdate{{ schema.JSONSchema.GoName }} handles a REST Update request.
 // nolint
 func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
-    //id := c.Param("id")
-    request := &models.Update{{ schema.JSONSchema.GoName }}Request{
-    }
+    id := c.Param("id")
+    request := &RESTUpdate{{ schema.JSONSchema.GoName }}Request{}
     if err := c.Bind(request); err != nil {
             log.WithFields(log.Fields{
                 "err": err,
@@ -72,7 +75,12 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
             return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
     }
     ctx := c.Request().Context()
-    response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, request)
+    model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
+    model.UUID = id
+    response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, &models.Update{{ schema.JSONSchema.GoName }}Request{
+        {{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }}),
+        FieldMask: MapToFieldMask(request.{{ schema.JSONSchema.GoName }}),
+    })
     if err != nil {
         return common.ToHTTPError(err)
     }

@@ -362,7 +362,30 @@ func (qb *QueryBuilder) DeleteQuery() string {
 	return "delete from " + qb.quote(qb.Table) + " where uuid = ?"
 }
 
-//SelectForDeleteQuery makes sql query.
-func (qb *QueryBuilder) SelectForDeleteQuery() string {
+//DeleteRefQuery makes sql query.
+func (qb *QueryBuilder) DeleteRefQuery(linkto string) string {
+	return "delete from ref_" + qb.Table + "_" + linkto + " where " + qb.quote("from") + " = ?"
+}
+
+//SelectAuthQuery makes sql query.
+func (qb *QueryBuilder) SelectAuthQuery() string {
 	return "select count(uuid) from " + qb.quote(qb.Table) + " where uuid = ? "
+}
+
+//UpdateQuery makes sql query for update.
+// nolint
+func (qb *QueryBuilder) UpdateQuery(columns []string) string {
+	var query bytes.Buffer
+	query.WriteString("update ")
+	query.WriteString(qb.quote(qb.Table))
+	query.WriteString("set ")
+	for i, column := range columns {
+		query.WriteString(qb.quote(column))
+		query.WriteString(" = ? ")
+		if i < len(columns)-1 {
+			query.WriteString(", ")
+		}
+	}
+	query.WriteString("where uuid = ?;")
+	return query.String()
 }
