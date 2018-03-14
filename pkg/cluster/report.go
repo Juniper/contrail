@@ -20,9 +20,9 @@ func (r *Reporter) reportStatus(status string) {
 	//TODO(ijohnson) Implement status update
 }
 
-func (r *Reporter) reportLog(stdout io.Reader) {
+func (r *Reporter) reportLog(stdio io.Reader) {
 	var output bytes.Buffer
-	scanner := bufio.NewScanner(stdout)
+	scanner := bufio.NewScanner(stdio)
 	for scanner.Scan() {
 		m := scanner.Text()
 		output.WriteString(m) // nolint
