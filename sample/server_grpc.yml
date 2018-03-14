@@ -47,3 +47,5 @@ proxy:
 #         type: memory
 #         expire: 3600
 #     authurl: http://localhost:9091/v3
+
+no_auth: true
