@@ -21,7 +21,7 @@ address: ":9091"
 
 # ETCD notifier configuration
 etcd_notifier:
-    enabled: false
+    enabled: false 
     servers: http://127.0.0.1:2379
     path: contrail
 
@@ -52,7 +52,7 @@ keystone:
     local: true # Enable local keystone v3. This is only for testing now.
     assignment:
         type: static
-        file: tools/keystone.yml
+        file: sample/keystone.yml
     store:
         type: memory
         expire: 3600
