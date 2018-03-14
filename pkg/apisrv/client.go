@@ -37,13 +37,14 @@ type Request struct {
 }
 
 // NewClient makes api srv client.
-func NewClient(endpoint, authURL, id, password string, scope *keystone.Scope) *Client {
+func NewClient(endpoint, authURL, id, password string, insecure bool, scope *keystone.Scope) *Client {
 	c := &Client{
 		ID:       id,
 		Password: password,
 		AuthURL:  authURL,
 		Endpoint: endpoint,
 		Scope:    scope,
+		InSecure: insecure,
 	}
 	c.Init()
 	return c

@@ -23,8 +23,9 @@ import (
 
 //Server represents Intent API Server.
 type Server struct {
-	Echo *echo.Echo
-	DB   *sql.DB
+	Echo     *echo.Echo
+	DB       *sql.DB
+	Keystone *keystone.Keystone
 }
 
 // NewServer makes a server
@@ -129,10 +130,11 @@ func (s *Server) Init() error {
 	}
 	localKeystone := viper.GetBool("keystone.local")
 	if localKeystone {
-		err := keystone.Init(e)
+		keystone, err := keystone.Init(e)
 		if err != nil {
 			return errors.Wrap(err, "Failed to init local keystone server")
 		}
+		s.Keystone = keystone
 	}
 
 	if viper.GetBool("enable_grpc") {

@@ -2,6 +2,7 @@ package agent
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"path"
 	"strings"
@@ -164,6 +165,9 @@ func (a *Agent) delete(schemaID, uuid string) error {
 	if !ok {
 		return fmt.Errorf("%s is undefined in API", schemaID)
 	}
-	_, err := a.APIServer.Delete(path.Join(s.Path, uuid), &output)
+	response, err := a.APIServer.Delete(path.Join(s.Path, uuid), &output)
+	if response.StatusCode == http.StatusNotFound {
+		return nil
+	}
 	return errors.Wrap(err, "delete operation failed")
 }

@@ -3,35 +3,63 @@ package contrailcli
 import (
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/Juniper/contrail/pkg/common"
+	"github.com/ngaut/log"
 	"github.com/spf13/cobra"
+	yaml "gopkg.in/yaml.v2"
 )
 
 func init() {
 	ContrailCLI.AddCommand(SetCmd)
 }
 
+const setHelpTemplate = `Set command possible usages:
+{% for schema in schemas %}contrail set {{ schema.ID }} $UUID $YAML
+{% endfor %}`
+
 // SetCmd defines set command.
 var SetCmd = &cobra.Command{
 	Use:   "set [SchemaID] [UUID] [Properties to update in YAML format]",
 	Short: "Set properties of specified resource",
 	Long:  "Invoke command with empty SchemaID in order to show possible usages",
-	Args:  cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-		setResourceParameter(args)
+		schemaID := ""
+		uuid := ""
+		yaml := ""
+		if len(args) >= 3 {
+			schemaID = args[0]
+			uuid = args[1]
+			yaml = args[2]
+		}
+		output, err := setResourceParameter(schemaID, uuid, yaml)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(output)
 	},
 }
 
-func setResourceParameter(args []string) {
-	a, err := getAuthenticatedAgent(configFile)
+func setResourceParameter(schemaID, uuid, yamlString string) (string, error) {
+	if schemaID == "" || uuid == "" {
+		return showHelp(schemaID, setHelpTemplate)
+	}
+	client, err := getClient()
 	if err != nil {
-		log.Fatal(err)
+		return "", nil
 	}
 
-	output, err := a.SetCLI(args[0], args[1], args[2])
+	var data map[string]interface{}
+	err = yaml.Unmarshal([]byte(yamlString), &data)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
-	fmt.Println(output)
+	data["uuid"] = uuid
+	_, err = client.Update(path(schemaID, uuid), map[string]interface{}{
+		dashedCase(schemaID): common.YAMLtoJSONCompat(data),
+	}, nil)
+	if err != nil {
+		return "", err
+	}
+	return showResource(schemaID, uuid)
 }

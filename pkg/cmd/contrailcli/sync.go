@@ -3,8 +3,10 @@ package contrailcli
 import (
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/Juniper/contrail/pkg/services"
+	"github.com/ngaut/log"
 	"github.com/spf13/cobra"
+	yaml "gopkg.in/yaml.v2"
 )
 
 func init() {
@@ -20,20 +22,32 @@ Sync creates new resource for every not already existing resource
 Use resource format just like in 'schema' command output`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		synchronizeResources(args)
+		response, err := syncResources(args[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(response)
 	},
 }
 
-func synchronizeResources(args []string) {
-	a, err := getAuthenticatedAgent(configFile)
+func syncResources(dataPath string) (string, error) {
+	client, err := getClient()
 	if err != nil {
-		log.Fatal(err)
+		return "", nil
 	}
-
-	output, err := a.SyncCLI(args[0])
+	request, err := readResources(dataPath)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
-
-	fmt.Println(output)
+	response := &services.RESTSyncRequest{}
+	_, err = client.Create("/sync", request, &response.Resources)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	output, err := yaml.Marshal(&response)
+	if err != nil {
+		return "", err
+	}
+	return string(output), nil
 }

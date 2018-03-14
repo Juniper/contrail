@@ -14,7 +14,7 @@
       mac_limit_control: {}
       mac_move_control: {}
       perms2:
-        owner: admin
+        owner: TestCLI
       provider_properties: {}
       route_target_list: {}
       uuid: first-uuid
@@ -38,7 +38,7 @@
       pbb_etree_enable: true
       pbb_evpn_enable: true
       perms2:
-        owner: admin
+        owner: TestCLI
       port_security_enabled: true
       provider_properties: {}
       route_target_list: {}
