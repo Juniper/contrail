@@ -1,0 +1,11 @@
+resources:
+- kind: network_policy
+  data:
+    display_name: network_policy1
+    uuid: network_policy1
+- kind: virtual_network
+  data:
+    display_name: vn1_update
+    uuid: vn1
+    network_policy_refs:
+    - network_policy1

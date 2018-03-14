@@ -1,32 +1,60 @@
 package common
 
 import (
-	"database/sql"
-	"sync"
+	"fmt"
+	"strconv"
+	"testing"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
-var dbMutex *sync.Mutex
-var tableMutex = map[string]*sync.Mutex{}
-
-func init() {
-	dbMutex = new(sync.Mutex)
+//CheckDiff checks diff
+func CheckDiff(path string, expected, actual interface{}) error {
+	if expected == nil {
+		return nil
+	}
+	switch t := expected.(type) {
+	case map[string]interface{}:
+		actualMap, ok := actual.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("expected %s but actually we got %s for path %s", t, actual, path)
+		}
+		for key, value := range t {
+			err := CheckDiff(path+"."+key, value, actualMap[key])
+			if err != nil {
+				return err
+			}
+		}
+	case []interface{}:
+		actualList, ok := actual.([]interface{})
+		if !ok {
+			return fmt.Errorf("expected %s but actually we got %s for path %s", t, actual, path)
+		}
+		if len(t) != len(actualList) {
+			return fmt.Errorf("expected %s but actually we got %s for path %s", t, actual, path)
+		}
+		for index, value := range t {
+			err := CheckDiff(path+"."+strconv.Itoa(index), value, actualList[index])
+			if err != nil {
+				return err
+			}
+		}
+	case int:
+		if float64(t) != InterfaceToFloat(actual) {
+			return fmt.Errorf("ffff expected %d but actually we got %f for path %s", t, actual, path)
+		}
+	default:
+		if t != actual {
+			return fmt.Errorf("expected %s but actually we got %s for path %s", t, actual, path)
+		}
+	}
+	return nil
 }
 
-//UseTable lock and initialize a table for testing.
-func UseTable(db *sql.DB, table string) *sync.Mutex {
-	dbMutex.Lock()
-	mutex, ok := tableMutex[table]
-	if !ok {
-		mutex = &sync.Mutex{}
-		tableMutex[table] = new(sync.Mutex)
-	}
-	dbMutex.Unlock()
-	mutex.Lock()
-	_, err := db.Exec("delete from " + table)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return mutex
+//AssertEqual test if it is correct
+func AssertEqual(t *testing.T, expected, actual interface{}, message string) bool {
+	expected = YAMLtoJSONCompat(expected)
+	actual = YAMLtoJSONCompat(actual)
+	err := CheckDiff("", expected, actual)
+	return assert.NoError(t, err, message)
 }

@@ -22,7 +22,7 @@
           label: centos-7-4-builder
     vars:
       docker:
-        - image: circleci/golang:1.9.2
+        - image: circleci/golang:1.10
         - image: circleci/mysql:5.7
           environment:
             MYSQL_ROOT_PASSWORD: contrail123

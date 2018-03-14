@@ -1,20 +1,14 @@
-name: Virtual Network Test
-description:  basic virtual network test
-tables:
-- metadata
-- project
-- routing_instance
-- virtual_network
-- network_policy
+name: Sync test
+description: network sync test
 test_data:
   admin_project: &admin_project
-    fq_name: ["default", "admin"]
-    uuid: admin_project_uuid
+    fq_name: ["default", "admin_test_sync"]
+    uuid: admin_project_uuid_test_sync
   network_policy1: &network_policy1
-    fq_name: ["default", "admin", "policy1"]
-    uuid: network_policy_uuid
+    fq_name: ["default", "admin_test_sync", "policy1"]
+    uuid: network_policy_uuid_test_sync
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: admin_project_uuid_test_sync
     network_policy_entries:
       policy_rule:
         - direction: "<"
@@ -23,35 +17,35 @@ test_data:
             major: 4
             minor: 1
   vn_blue: &vn_blue
-    fq_name: ["default", "admin", "vn_blue"]
-    uuid: vn_blue
+    fq_name: ["default", "admin_test_sync", "vn_blue_test_sync"]
+    uuid: vn_blue_test_sync
     display_name: blue
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: admin_project_uuid_test_sync
     route_target_list:
        route_target: ["100:200"]
     virtual_network_network_id: 50
     network_policy_refs:
-    - uuid: network_policy_uuid
+    - uuid: network_policy_uuid_test_sync
   vn_blue2: &vn_blue2
-    fq_name: ["default", "admin", "vn_blue"]
-    uuid: vn_blue
+    fq_name: ["default", "admin_test_sync", "vn_blue_test_sync"]
+    uuid: vn_blue_test_sync
     display_name: blue2
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: admin_project_uuid_test_sync
     route_target_list:
        route_target: ["100:200"]
     virtual_network_network_id: 50
     network_policy_refs:
-    - uuid: network_policy_uuid
+    - uuid: network_policy_uuid_test_sync
 clients:
   default:
-    id: alice
-    password: alice_password
+    id: TestSync 
+    password: TestSync
     insecure: true
     scope:
       project:
-        id: admin
+        id: TestSync
 workflow:
 - name: create project
   request:

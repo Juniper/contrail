@@ -1,11 +1,15 @@
+resources:
 - kind: virtual_network
   data:
-  - fq_name:
+    fq_name:
     - vn-blue
     perms2:
-      owner: admin
+      owner: TestCLI
     uuid: first-uuid
-  - external_ipam: true
+    display_name: updated
+- kind: virtual_network
+  data:
+    external_ipam: true
     flood_unknown_unicast: true
     fq_name:
     - vn-red
@@ -16,7 +20,7 @@
     pbb_etree_enable: true
     pbb_evpn_enable: true
     perms2:
-      owner: admin
+      owner: TestCLI
     port_security_enabled: true
     router_external: true
     uuid: second-uuid

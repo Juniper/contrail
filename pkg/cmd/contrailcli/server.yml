@@ -29,7 +29,7 @@ enable_grpc: true
 # key: URL path
 # value: file path. (absolute path recommended in production)
 static_files:
-    public: ../../public
+    public: ../../../public
 
 # API Proxy configuration
 # key: URL path
@@ -43,7 +43,7 @@ keystone:
     local: true # Enable local keystone v3. This is only for testing now.
     assignment:
         type: static
-        file: ./test_data/keystone.yml
+        file: ../../apisrv/test_data/keystone.yml
     store:
         type: memory
         expire: 3600

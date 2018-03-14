@@ -5,15 +5,13 @@ import (
 	"fmt"
 	"net/http/httptest"
 	"os"
-	"strconv"
 	"testing"
 
-	"github.com/k0kubun/pp"
 	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/common"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -46,15 +44,9 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func RunTest(file string) error {
+func RunTest(t *testing.T, file string) {
 	testData, err := LoadTest(file)
-	if err != nil {
-		return errors.Wrap(err, "failed to load test data")
-	}
-	for _, table := range testData.Tables {
-		mutex := common.UseTable(server.DB, table)
-		defer mutex.Unlock()
-	}
+	assert.NoError(t, err, "failed to load test data")
 	clients := map[string]*Client{}
 	for key, client := range testData.Clients {
 		//Rewrite endpoint for test server
@@ -66,9 +58,7 @@ func RunTest(file string) error {
 		clients[key] = client
 
 		err := clients[key].Login()
-		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("client %s failed to login", key))
-		}
+		assert.NoError(t, err, "client failed to login")
 	}
 	for _, task := range testData.Workflow {
 		log.Debug("[Step] ", task.Name)
@@ -79,24 +69,10 @@ func RunTest(file string) error {
 		}
 		client := clients[clientID]
 		_, err := client.DoRequest(task.Request)
-		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("task %v failed", task))
-		}
+		assert.NoError(t, err, fmt.Sprintf("task %v failed", task))
 		task.Expect = common.YAMLtoJSONCompat(task.Expect)
-		err = checkDiff("", task.Expect, task.Request.Output)
-		if err != nil {
-			log.WithFields(
-				log.Fields{
-					"scenario": testData.Name,
-					"step":     task.Name,
-					"err":      err,
-				}).Debug("output mismatch")
-			pp.Println("expected", task.Expect)
-			pp.Println("actual", task.Request.Output)
-			return errors.Wrap(err, fmt.Sprintf("task %v failed", task))
-		}
+		common.AssertEqual(t, task.Expect, task.Request.Output, fmt.Sprintf("task %v failed", task))
 	}
-	return nil
 }
 
 func LoadTest(file string) (*TestScenario, error) {
@@ -118,46 +94,4 @@ type TestScenario struct {
 	Tables      []string           `yaml:"tables"`
 	Clients     map[string]*Client `yaml:"clients"`
 	Workflow    []*Task            `yaml:"workflow"`
-}
-
-func checkDiff(path string, expected, actual interface{}) error {
-	if expected == nil {
-		return nil
-	}
-	switch t := expected.(type) {
-	case map[string]interface{}:
-		actualMap, ok := actual.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("expected %s but actually we got %s for path %s", t, actual, path)
-		}
-		for key, value := range t {
-			err := checkDiff(path+"."+key, value, actualMap[key])
-			if err != nil {
-				return err
-			}
-		}
-	case []interface{}:
-		actualList, ok := actual.([]interface{})
-		if !ok {
-			return fmt.Errorf("expected %s but actually we got %s for path %s", t, actual, path)
-		}
-		if len(t) != len(actualList) {
-			return fmt.Errorf("expected %s but actually we got %s for path %s", t, actual, path)
-		}
-		for index, value := range t {
-			err := checkDiff(path+"."+strconv.Itoa(index), value, actualList[index])
-			if err != nil {
-				return err
-			}
-		}
-	case int:
-		if float64(t) != actual {
-			return fmt.Errorf("expected %d but actually we got %f for path %s", t, actual, path)
-		}
-	default:
-		if t != actual {
-			return fmt.Errorf("expected %s but actually we got %s for path %s", t, actual, path)
-		}
-	}
-	return nil
 }
