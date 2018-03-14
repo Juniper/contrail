@@ -12,18 +12,27 @@ log_level: debug
 server:
     read_timeout: 10
     write_timeout: 5
+    proxy:
+        # True for skip backend certificate check
+        insecure: false
 
 # Bind addresss
 address: ":9091"
 
+# ETCD notifier configuration
+etcd_notifier:
+    enabled: false 
+    servers: http://127.0.0.1:2379
+    path: contrail
+
 # TLS Configuration
 tls:
-    enabled: true
-    key_file: test_data/server.key
-    cert_file: test_data/server.crt
+    enabled: false 
+    key_file: tools/server.key
+    cert_file: tools/server.crt
 
 # Enable GRPC or not
-enable_grpc: true
+enable_grpc: false
 
 # Static file config
 # key: URL path
@@ -43,9 +52,12 @@ keystone:
     local: true # Enable local keystone v3. This is only for testing now.
     assignment:
         type: static
-        file: ./test_data/keystone.yml
+        file: sample/keystone.yml
     store:
         type: memory
         expire: 3600
-    insecure: true
-    authurl: https://localhost:9091/v3
+    authurl: http://localhost:9091/v3
+
+# disable authentication with no_auth true and comment out keystone configuraion.
+
+# no_auth: true 

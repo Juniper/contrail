@@ -6,11 +6,11 @@ import (
 
 //InitConfig initializes Viper config.
 func InitConfig() error {
-	viper.SetConfigName("test_config")
+	viper.SetConfigName("server")
 	viper.AddConfigPath(".")
-	viper.AddConfigPath("../../../tools")
-	viper.AddConfigPath("../../tools")
-	viper.AddConfigPath("../tools")
-	viper.AddConfigPath("./tools")
+	viper.AddConfigPath("../../../sample")
+	viper.AddConfigPath("../../sample")
+	viper.AddConfigPath("../sample")
+	viper.AddConfigPath("./sample")
 	return viper.ReadInConfig()
 }
