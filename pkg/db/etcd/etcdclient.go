@@ -10,15 +10,19 @@ package etcdclient
 
 import (
 	"context"
+	"time"
+
+	"github.com/DavidCai1993/etcd-lock"
+	"github.com/pkg/errors"
 
 	client "github.com/coreos/etcd/clientv3"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	grpc "google.golang.org/grpc"
 )
 
 // Callback from Watch functions
-type Callback func(cl *IntentEtcdClient, index int64, oper int32, key,
-	newValue string)
+type Callback func(ctx context.Context, cl *IntentEtcdClient, index int64,
+	oper int32, key, newValue string)
 
 // EtcdClient represent client interface
 type EtcdClient interface {
@@ -39,11 +43,21 @@ type EtcdClient interface {
 		keyPattern string, callback Callback) error
 
 	// Recursively Watches a key pattern for changes
-	WatchRecursive(ctx context.Context, keyPattern string, callback Callback) error
+	WatchRecursive(ctx context.Context, keyPattern string, callback Callback)
 
 	// Recursively Watches a key pattern for changes after an index
 	WatchRecursiveAfterIndex(ctx context.Context, afterIndex int64,
-		keyPattern string, callback Callback) error
+		keyPattern string, callback Callback)
+
+	// CreateLock creates a lock for a key
+	CreateLock(server string) (*etcdlock.Locker, error)
+
+	// AcquireLock acquires a lock
+	AcquireLock(ctx context.Context, locker *etcdlock.Locker, key string,
+		ttl int) (*etcdlock.Lock, error)
+
+	// ReleaseLock releases the acquired lock
+	ReleaseLock(ctx context.Context) error
 }
 
 // IntentEtcdClient implements EtcdClient
@@ -124,7 +138,7 @@ func (etcdClient *IntentEtcdClient) WatchAfterIndex(ctx context.Context,
 			if callback == nil {
 				continue
 			}
-			callback(etcdClient, wresp.Header.Revision, int32(ev.Type),
+			callback(ctx, etcdClient, wresp.Header.Revision, int32(ev.Type),
 				string(ev.Kv.Key[:]), string(ev.Kv.Value[:]))
 		}
 	}
@@ -146,4 +160,35 @@ func (etcdClient *IntentEtcdClient) WatchRecursiveAfterIndex(ctx context.Context
 	for {
 		etcdClient.WatchAfterIndex(ctx, afterIndex, keyPattern, callback)
 	}
+}
+
+// CreateLock creates a lock for a key
+func (etcdClient *IntentEtcdClient) CreateLock(server string) (*etcdlock.Locker, error) {
+	return etcdlock.NewLocker(etcdlock.LockerOptions{
+		Address:     server,
+		DialOptions: []grpc.DialOption{grpc.WithInsecure()},
+	})
+}
+
+// AcquireLock acquires a lock on a key
+// The Context will define if the Lock has a timeout or Blocking
+func (etcdClient *IntentEtcdClient) AcquireLock(ctx context.Context,
+	locker *etcdlock.Locker, key string, ttl int) (*etcdlock.Lock, error) {
+	lock, err := locker.Lock(ctx, key,
+		time.Duration(ttl)*time.Second)
+	if err != nil {
+		log.Error("Cannot acquire Lock", err)
+		return nil, err
+	}
+	return lock, nil
+}
+
+// ReleaseLock releases the acquired lock
+func (etcdClient *IntentEtcdClient) ReleaseLock(ctx context.Context,
+	locker *etcdlock.Lock) error {
+	if err := locker.Unlock(ctx); err != nil {
+		log.Error("Cannot Release lock", err)
+		return err
+	}
+	return nil
 }
