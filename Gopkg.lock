@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/DavidCai1993/etcd-lock"
+  packages = ["."]
+  revision = "32f65b8d019ac3b77f9a893b7443aa3cc001d9da"
+
+[[projects]]
   name = "github.com/PuerkitoBio/purell"
   packages = ["."]
   revision = "0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4"
@@ -15,7 +21,7 @@
 
 [[projects]]
   name = "github.com/coreos/etcd"
-  packages = ["auth/authpb","clientv3","etcdserver/api/v3rpc/rpctypes","etcdserver/etcdserverpb","mvcc/mvccpb","pkg/types"]
+  packages = ["auth/authpb","clientv3","etcdserver/api/v3lock/v3lockpb","etcdserver/api/v3rpc/rpctypes","etcdserver/etcdserverpb","mvcc/mvccpb","pkg/types"]
   revision = "c9d46ab3799b7f2174268e75f72d01e6d6aac953"
   version = "v3.3.2"
 
@@ -304,6 +310,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2a32aa418bbb6771dd0a88f614bc7386cc92d819bd29e64767ff73d67c68a276"
+  inputs-digest = "88ca779e9e597d08e8e4be2ce144ae50839aee6513e17ee25b8afca3cec93eaa"
   solver-name = "gps-cdcl"
   solver-version = 1
