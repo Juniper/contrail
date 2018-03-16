@@ -16,11 +16,11 @@ schema:
     driver_info:
       presence: "optional"
       description: "Details of the driver for power management"
-      $ref: "openstack_types.json#/definitions/DriverInfo"
+      $ref: "fabric_types.json#/definitions/DriverInfo"
     bm_properties:
       presence: "optional"
       description: "Details of baremetal hardware for scheduler"
-      $ref: "openstack_types.json#/definitions/BaremetalProperties"
+      $ref: "fabric_types.json#/definitions/BaremetalProperties"
     instance_uuid:
       description: UUID of the Nova instance associated with this Node
       type: string

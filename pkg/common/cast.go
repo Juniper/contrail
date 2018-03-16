@@ -1,5 +1,9 @@
 package common
 
+import (
+	"strconv"
+)
+
 //InterfaceToInt makes an int from interface
 func InterfaceToInt(i interface{}) int {
 	if i == nil {
@@ -7,7 +11,8 @@ func InterfaceToInt(i interface{}) int {
 	}
 	switch t := i.(type) {
 	case []byte:
-		return int(t[0])
+		i, _ := strconv.Atoi(string(t))
+		return i
 	case int:
 		return t
 	case int64:
@@ -25,7 +30,8 @@ func InterfaceToInt64(i interface{}) int64 {
 	}
 	switch t := i.(type) {
 	case []byte:
-		return int64(t[0])
+		i, _ := strconv.ParseInt(string(t), 10, 64)
+		return i
 	case int:
 		return int64(t)
 	case int64:
