@@ -13,7 +13,7 @@ schema:
       nullable: false
       permission:
       - create
-    public_key:
+    ssh_public_key:
       description: SSH Public Key
       nullable: false
       permission:

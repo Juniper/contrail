@@ -1,0 +1,72 @@
+description: Endpoints of node
+extends:
+- base
+id: endpoint
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent cluster to which this endpoint object belongs"
+    presence: "optional"
+plural: proxies
+prefix: /
+schema:
+  properties:
+    name:
+      description: endpoint name of a service in the cluster
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Endpoint Name
+      type: string
+      view:
+      - create
+      - detail
+    private_url:
+      default: ""
+      description: Private endpoint URL
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Private Endpoint URL
+      type: string
+      view:
+      - create
+      - detail
+    public_url:
+      default: ""
+      description: Public endpoint URL
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Public Endpoint URL
+      type: string
+      view:
+      - create
+      - detail
+    enable_proxy:
+      description: Configure proxy for the endpoint
+      default: yes
+      nullable: false
+      enum:
+      - yes
+      - no
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Endpoint proxy
+      type: string
+      view:
+      - create
+      - detail
+  required: []
+  type: object
+singular: endpoint
+title: Service Endpoint
+type: "object"
