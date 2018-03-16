@@ -4,9 +4,9 @@ extends:
 id: node
 parent: ""
 references:
-    keypair:
+    credential:
       operations: "CRUD"
-      description: "Reference to keypair object to import."
+      description: "Reference to SSH credential object."
       presence: "optional"
 plural: nodes
 prefix: /
