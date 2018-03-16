@@ -1,0 +1,43 @@
+description: Proxies of node
+extends:
+- base
+id: proxy
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this proxy object."
+    presence: "optional"
+plural: proxies
+prefix: /
+schema:
+  properties:
+    prefix:
+      description: proxy prefix
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Proxy Prefix
+      type: string
+      view:
+      - create
+      - detail
+    endpoint:
+      default: ""
+      description: Proxy Endpoint
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: IP Address
+      type: string
+      view:
+      - create
+      - detail
+  required: []
+  type: object
+singular: proxy
+title: Node Port
+type: "object" 

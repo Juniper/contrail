@@ -197,19 +197,6 @@ schema:
       view:
       - create
       - detail
-    openstack_enable_haproxy:
-      description: Configure haproxy in openstack control node
-      default: "yes"
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Openstack Enable Haproxy
-      type: string
-      view:
-      - create
-      - detail
     ntp_server:
       description: NTP server ip address
       nullable: false
