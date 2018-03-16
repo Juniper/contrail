@@ -29,7 +29,7 @@ schema:
     local_link_connection:
       presence: "true"
       description: "The Port binding profile"
-      $ref: "openstack_types.json#/definitions/LocalLinkConnection"
+      $ref: "fabric_types.json#/definitions/LocalLinkConnection"
   required: []
   type: object
 singular: baremetal_port
