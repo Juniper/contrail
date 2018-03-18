@@ -44,4 +44,13 @@ const (
 	defaultClusterProvPlay  = "playbooks/install_contrail.yml"
 	defaultInstanceProvPlay = "playbooks/provision_instances.yml"
 	defaultInstanceConfPlay = "playbooks/configure_instances.yml"
+
+	// TODO (ijohnson): Fix LP#1756958 and remove the status constants
+	status_created         = "CREATED"
+	status_create_progress = "CREATE_IN_PROGRESS"
+	status_create_failed   = "CREATE_FAILED"
+
+	status_updated         = "UPDATED"
+	status_update_progress = "UPDATE_IN_PROGRESS"
+	status_update_failed   = "UPDATE_FAILED"
 )
