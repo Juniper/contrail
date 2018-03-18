@@ -16,8 +16,14 @@ type Reporter struct {
 	log      *logrus.Entry
 }
 
-func (r *Reporter) reportStatus(status string) {
-	//TODO(ijohnson) Implement status update
+func (r *Reporter) reportStatus(status map[string]interface{}) {
+	data := map[string]map[string]interface{}{defaultResource: status}
+	var response interface{}
+	_, err := r.api.Update(r.resource, data, &response)
+	if err != nil {
+		r.log.Infof("update cluster status failed: %s", err)
+	}
+	r.log.Infof("cluster status updated: %s", status)
 }
 
 func (r *Reporter) reportLog(stdio io.Reader) {
