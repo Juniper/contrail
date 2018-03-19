@@ -3,12 +3,31 @@
   api_style: "contrail"
   extends: 
     - "base"
-  references: {}
-  parents: {}
+  references: 
+    bgp_router: 
+      operations: "CRUD"
+      $ref: "types.json#definitions/BgpPeeringAttributes"
+      description: "References to peer BGP router, property of the reference has BGP peering attributes."
+      presence: "optional"
+    sub_cluster: 
+      operations: "CRUD"
+      description: "Reference of bgp-router to sub-cluster ."
+      presence: "optional"
+  parents: 
+    routing_instance: 
+      operations: "BGP router object represent configuration of BGP peers. All the BGP peers involved in contrail system are under default routing instance of the default virtual network."
+      description: ""
+      presence: "optionalCRUD"
   plural: "bgp_routers"
   id: "bgp_router"
   schema: 
-    required: []
+    required: 
+      - "bgp_router_parameters"
     type: "object"
-    properties: {}
+    properties: 
+      bgp_router_parameters: 
+        operations: "CRUD"
+        presence: "required"
+        description: "BGP router configuration parameters like ip address, AS number, hold time etc."
+        $ref: "types.json#/definitions/BgpRouterParams"
 

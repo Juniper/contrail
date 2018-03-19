@@ -22,7 +22,8 @@
       presence: "optional"
     virtual_network: 
       operations: "CRUD"
-      description: "Reference to virtual network used as external gateway for this logical network. This link will cause a SNAT being spawned between all networks connected to logical router and external network."
+      $ref: "types.json#definitions/LogicalRouterVirtualNetworkType"
+      description: "Reference to a virtual network. Please refer to link attribute for additional details"
       presence: "optional"
     physical_router: 
       operations: "CRUD"

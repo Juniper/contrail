@@ -6,7 +6,7 @@
   references: 
     firewall_policy: 
       operations: "CRUD"
-      $ref: "types.json#/definitions/FirewallSequence"
+      $ref: "types.json#definitions/FirewallSequence"
       description: "Reference to firewall-policy attached to this application-policy"
       presence: "required"
     global_vrouter_config: 
@@ -33,5 +33,11 @@
         operations: "R"
         type: "boolean"
         description: "If set, indicates application policy set to be applied to all application tags"
+        presence: "optional"
+      pending_delete: 
+        default: false
+        operations: "R"
+        type: "boolean"
+        description: ""
         presence: "optional"
 

@@ -24,4 +24,14 @@
         type: "string"
         description: "Ethernet Segment Id configured for the Physical Interface. In a multihomed environment, user should configure the peer Physical interface with the same ESI."
         presence: "optional"
+      physical_interface_type: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Physical interface type that can be either regular physical interface or LAG interface."
+        $ref: "types.json#/definitions/PhysicalInterfaceType"
+      physical_interface_mac_addresses: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "MAC addresses on this physical interface."
+        $ref: "types.json#/definitions/MacAddressesType"
 

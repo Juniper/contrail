@@ -30,21 +30,31 @@
         presence: "optional"
         description: "BGP As A Service Parameters configuration"
         $ref: "types.json#/definitions/BGPaaServiceParametersType"
-      alarm_enable: 
+      supported_device_families: 
         operations: "CRUD"
-        type: "boolean"
-        description: "Flag to enable/disable alarms configured under global-system-config. True, if not set."
         presence: "optional"
+        description: "List of all supported physical router device family names. Used by UI to show pick list."
+        $ref: "types.json#/definitions/DeviceFamilyListType"
       mac_move_control: 
         operations: "CRUD"
         presence: "optional"
         description: "MAC move control on the network"
         $ref: "types.json#/definitions/MACMoveLimitControlType"
+      igmp_config: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Global IGMP parameters"
+        $ref: "types.json#/definitions/IgmpConfigType"
       plugin_tuning: 
         operations: "CRUD"
         presence: "optional"
         description: "Various Orchestration system plugin(interface) parameters, like Openstack Neutron plugin."
         $ref: "types.json#/definitions/PluginProperties"
+      alarm_enable: 
+        operations: "CRUD"
+        type: "boolean"
+        description: "Flag to enable/disable alarms configured under global-system-config. True, if not set."
+        presence: "optional"
       ibgp_auto_mesh: 
         operations: "CRUD"
         type: "boolean"
@@ -71,6 +81,16 @@
         presence: "optional"
         description: "Graceful Restart parameters"
         $ref: "types.json#/definitions/GracefulRestartParametersType"
+      rd_cluster_seed: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Used to create collision-free route distinguishers."
+        $ref: "types.json#/definitions/RdClusterSeedType"
+      supported_fabric_annotations: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "List of supported annotations that can be used to annotate a Contrail Fabric. These annoations are used as directives, or hints to assign resources defined in namespaces to the network devices. For example, `igp-protocol: ospf` attribute could be used by the underlay provisioning playbook to choose which IGP protocol to use for the IP fabric."
+        $ref: "types.json#/definitions/KeyValuePairs"
       ip_fabric_subnets: 
         operations: "CRUD"
         presence: "optional"

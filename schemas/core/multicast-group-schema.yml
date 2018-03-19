@@ -1,0 +1,18 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    multicast_group_address: 
+      operations: "CRUD"
+      description: "Reference to multicast group. Multicast group has a list of <S,G>          supported."
+      presence: "optional"
+  parents: {}
+  plural: "multicast_groups"
+  id: "multicast_group"
+  schema: 
+    required: []
+    type: "object"
+    properties: {}
+
