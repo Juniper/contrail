@@ -37,22 +37,18 @@ func TestCLIHelpMessagesWhenGivenEmptySchemaID(t *testing.T) {
 	setupClient("TestCLIHelpMessagesWhenGivenEmptySchemaID")
 	o, err := showResource("", "")
 	assert.NoError(t, err)
-	assert.Contains(t, o, "contrail show user $UUID")
 	assert.Contains(t, o, "contrail show virtual_network $UUID")
 
 	o, err = listResources("")
 	assert.NoError(t, err)
-	assert.Contains(t, o, "contrail list user")
 	assert.Contains(t, o, "contrail list virtual_network")
 
 	o, err = setResourceParameter("", "", "")
 	assert.NoError(t, err)
-	assert.Contains(t, o, "contrail set user $UUID $YAML")
 	assert.Contains(t, o, "contrail set virtual_network $UUID $YAML")
 
 	o, err = deleteResource("", "")
 	assert.NoError(t, err)
-	assert.Contains(t, o, "contrail rm user $UUID")
 	assert.Contains(t, o, "contrail rm virtual_network $UUID")
 }
 

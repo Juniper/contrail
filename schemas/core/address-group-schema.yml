@@ -19,6 +19,12 @@
     required: []
     type: "object"
     properties: 
+      pending_delete: 
+        default: false
+        operations: "R"
+        type: "boolean"
+        description: ""
+        presence: "optional"
       address_group_prefix: 
         operations: "CRUD"
         collectionType: "list"

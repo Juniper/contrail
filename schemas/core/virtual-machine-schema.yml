@@ -15,5 +15,10 @@
   schema: 
     required: []
     type: "object"
-    properties: {}
+    properties: 
+      server_type: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "An enumeration value specifying the server type."
+        $ref: "types.json#/definitions/ServerType"
 

@@ -1,0 +1,22 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    project: 
+      operations: "CRUD"
+      description: "List of structured-syslog-config that are          applicable to objects anchored under project."
+      presence: "optional"
+    global_analytics_config: 
+      operations: "CRUD"
+      description: "List of structured-syslog-config that are          applicable to objects anchored under global-analytics-config."
+      presence: "optional"
+  plural: "structured_syslog_configs"
+  id: "structured_syslog_config"
+  schema: 
+    required: []
+    type: "object"
+    properties: {}
+

@@ -14,6 +14,7 @@
       presence: "optional"
     security_logging_object: 
       operations: "CRUD"
+      $ref: "types.json#definitions/SloRateType"
       description: "Reference to security-logging-object attached to this firewall-rule"
       presence: "optional"
     virtual_network: 
@@ -51,6 +52,12 @@
         presence: "required"
         description: "match condition for traffic destination"
         $ref: "types.json#/definitions/FirewallRuleEndpointType"
+      pending_delete: 
+        default: false
+        operations: "R"
+        type: "boolean"
+        description: ""
+        presence: "optional"
       action_list: 
         operations: "CRUD"
         presence: "required"
