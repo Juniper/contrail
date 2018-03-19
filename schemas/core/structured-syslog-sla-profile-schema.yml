@@ -1,0 +1,24 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    structured_syslog_config: 
+      operations: "CRUD"
+      description: "List of         structured-syslog-sla-profile that are applicable to objects         anchored under structured-syslog-config."
+      presence: "optional"
+  plural: "structured_syslog_sla_profiles"
+  id: "structured_syslog_sla_profile"
+  schema: 
+    required: 
+      - "structured_syslog_sla_params"
+    type: "object"
+    properties: 
+      structured_syslog_sla_params: 
+        operations: "CRUD"
+        type: "string"
+        description: "The sla                                   params like sampling %age and                                   traffic type"
+        presence: "required"
+

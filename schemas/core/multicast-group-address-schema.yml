@@ -1,0 +1,24 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: {}
+  plural: "multicast_group_addresss"
+  id: "multicast_group_address"
+  schema: 
+    required: []
+    type: "object"
+    properties: 
+      multicast_group_address_source_address: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Multicast Source Address"
+        $ref: "types.json#/definitions/IpAddressType"
+      multicast_group_address_group_address: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Multicast Group Address"
+        $ref: "types.json#/definitions/IpAddressType"
+
