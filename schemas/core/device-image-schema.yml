@@ -1,0 +1,61 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    global_system_config: 
+      operations: "CRUD"
+      description: "list of device image info for the images that get uploaded to the system."
+      presence: "optional"
+  plural: "device_images"
+  id: "device_image"
+  schema: 
+    required: 
+      - "device_image_vendor_name"
+      - "device_image_device_family"
+      - "device_image_os_version"
+    type: "object"
+    properties: 
+      device_image_size: 
+        operations: "CRUD"
+        type: "integer"
+        description: "file size of the device image that was uploaded to the image server."
+        presence: "optional"
+      device_image_md5: 
+        operations: "CRUD"
+        type: "string"
+        description: "md5 checksum of the image file that was uploaded to the image server."
+        presence: "optional"
+      device_image_sha1: 
+        operations: "CRUD"
+        type: "string"
+        description: "sha1 checksum of the image file that was uploaded to the image server."
+        presence: "optional"
+      device_image_vendor_name: 
+        operations: "CRUD"
+        type: "string"
+        description: "Vendor name for device image. It is used by device manager during device image upgrade to match the PRouters vendor name"
+        presence: "required"
+      device_image_file_uri: 
+        operations: "CRUD"
+        type: "string"
+        description: "file uri for the device image uploaded to the image server."
+        presence: "optional"
+      device_image_os_version: 
+        operations: "CRUD"
+        type: "string"
+        description: "OS version string on the device where this image is installed. This version string should match the PRouters operational state PRouterUVE.os_version attribute if the image is successfully installed on the PRouter"
+        presence: "required"
+      device_image_device_family: 
+        operations: "CRUD"
+        type: "string"
+        description: "Device family name for device image. It is used by device manager during device image upgrade to match the family name of the PRouter"
+        presence: "required"
+      device_image_supported_platforms: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "List of device platforms that this image can be installed on. It is used by device manager during device image upgrade validate the PRouters product_name property. If this property is not specified, then this image can be installed on all platforms of the device family"
+        $ref: "types.json#/definitions/DevicePlatformListType"
+

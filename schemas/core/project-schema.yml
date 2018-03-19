@@ -15,11 +15,11 @@
       presence: "optional"
     application_policy_set: 
       operations: "CRUD"
-      description: "Reference to default application-policy-set is automatically createdby system for default socped application policy sets. Needed by vrouter to identify default application-policy-set rules of a virtual machine interface"
+      description: "Reference to default application-policy-set is automatically created by system for default socped application policy sets. Needed by vrouter to identify default application-policy-set rules of a virtual machine interface"
       presence: "system-only"
     floating_ip_pool: 
       operations: "CRUD"
-      description: "Reference to floating ip pool in this project."
+      description: "Deprecated as it is not needed. Will be removed in future."
       presence: "optional"
   parents: 
     domain: 
@@ -48,4 +48,10 @@
         presence: "required"
         description: "Max instances limits for various objects under project."
         $ref: "types.json#/definitions/QuotaType"
+      enable_security_policy_draft: 
+        default: false
+        operations: "CRUD"
+        type: "boolean"
+        description: ""
+        presence: "optional"
 

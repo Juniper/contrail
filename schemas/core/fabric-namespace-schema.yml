@@ -1,0 +1,28 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    fabric: 
+      operations: "CRUD"
+      description: "list of fabric namespaces that define a set of resources that can be used to configure the network devices in the fabric."
+      presence: "optional"
+  plural: "fabric_namespaces"
+  id: "fabric_namespace"
+  schema: 
+    required: []
+    type: "object"
+    properties: 
+      fabric_namespace_type: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Supported namespace types"
+        $ref: "types.json#/definitions/NamespaceType"
+      fabric_namespace_value: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "namespace value of type defined by the namespace-type."
+        $ref: "types.json#/definitions/NamespaceValue"
+

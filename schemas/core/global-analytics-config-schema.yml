@@ -1,0 +1,18 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    global_system_config: 
+      operations: "CRUD"
+      description: "List of global-analytics-config that are          anchored under global-system-config."
+      presence: "optional"
+  plural: "global_analytics_configs"
+  id: "global_analytics_config"
+  schema: 
+    required: []
+    type: "object"
+    properties: {}
+
