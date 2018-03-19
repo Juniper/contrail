@@ -3,7 +3,17 @@
   api_style: "contrail"
   extends: 
     - "base"
-  references: {}
+  references: 
+    routing_instance: 
+      operations: "CRUD"
+      $ref: "types.json#definitions/ConnectionType"
+      description: ""
+      presence: "optional"
+    route_target: 
+      operations: "CRUD"
+      $ref: "types.json#definitions/InstanceTargetType"
+      description: ""
+      presence: "optional"
   parents: 
     virtual_network: 
       operations: "CRUD"
@@ -14,5 +24,43 @@
   schema: 
     required: []
     type: "object"
-    properties: {}
+    properties: 
+      routing_instance_has_pnf: 
+        default: false
+        operations: "CRUD"
+        type: "boolean"
+        description: "Internal service chaining information, should not be modified."
+        presence: "system-only"
+      routing_instance_is_default: 
+        default: false
+        operations: "CRUD"
+        type: "boolean"
+        description: "Internal service chaining information, should not be modified."
+        presence: "system-only"
+      service_chain_information: 
+        operations: "CRUD"
+        presence: "system-only"
+        description: "Internal service chaining information, should not be modified."
+        $ref: "types.json#/definitions/ServiceChainInfo"
+      ipv6_service_chain_information: 
+        operations: "CRUD"
+        presence: "system-only"
+        description: "Internal service chaining information, should not be modified."
+        $ref: "types.json#/definitions/ServiceChainInfo"
+      static_route_entries: 
+        operations: "CRUD"
+        presence: "system-only"
+        description: "Internal service chaining information, should not be modified."
+        $ref: "types.json#/definitions/StaticRouteEntriesType"
+      routing_instance_fabric_snat: 
+        default: false
+        operations: "CRUD"
+        type: "boolean"
+        description: "Provide connectivity to underlay network by port mapping trafficwith source IP of compute node"
+        presence: "system-only"
+      default_ce_protocol: 
+        operations: "CRUD"
+        presence: "optional"
+        description: ""
+        $ref: "types.json#/definitions/DefaultProtocolType"
 
