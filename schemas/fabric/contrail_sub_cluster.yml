@@ -1,0 +1,137 @@
+description: Contrail sub Cluster
+extends:
+- base
+- ownable
+- has_status
+id: contrail_sub_cluster
+metadata:
+  category: cluster
+parent: ""
+plural: contrail_sub_clusters
+prefix: /
+schema:
+  properties:
+    container_registry:
+      default: opencontrailnightly
+      description: Container registry to pull contrail containers
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Container Registry
+      type: string
+      view:
+      - create
+      - detail
+    contrail_version:
+      description: Version of contrail containers to be used.
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Contrail Version
+      type: string
+      view:
+      - create
+      - detail
+    provisioner_type:
+      default: ansible
+      description: Tool to be used to provision the sub cluster
+      nullable: false
+      enum:
+      - ansible
+      - helm
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Provisioning Tool
+      type: string
+      view:
+      - create
+      - detail
+    orchestrator:
+      default: ""
+      description: Orchestrator to use with contrrail
+      enum:
+      - openstack
+      - kubernetes
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Orchestrator
+      type: string
+      view:
+      - create
+      - detail
+    default_gateway:
+      default: ""
+      description: Default Gateway
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Default Gateway
+      type: string
+      view:
+      - detail
+    default_vrouter_interface:
+      default: bond0
+      description: Default vRouter vhost Interface
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Default vRouter Interface
+      type: string
+      view:
+      - create
+      - detail
+    flow_ttl:
+      default: "2160"
+      description: Flow Data Retention Time in hours
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Flow Data Retention Time
+      type: string
+      view:
+      - create
+      - detail
+    statistics_ttl:
+      default: "2160"
+      description: Statistics Data Retention Time in hours
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Statistics Data Retention Time
+      type: string
+      view:
+      - create
+      - detail
+    ntp_server:
+      description: NTP server ip address
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: NTPServer
+      type: string
+      view:
+      - create
+      - detail
+  required: []
+  type: object
+singular: contrail_sub_cluster
+title: Contrail sub Cluster
+type: ""
