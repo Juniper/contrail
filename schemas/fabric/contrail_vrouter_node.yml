@@ -15,6 +15,10 @@ parents:
     operations: "CRUD"
     description: "Parent of this vrouter node."
     presence: "optional"
+  contrail_sub_cluster:
+    operations: "CRUD"
+    description: "Parent of this vrouter node."
+    presence: "optional"
 plural: contrail_vrouter_nodes
 prefix: /
 schema:

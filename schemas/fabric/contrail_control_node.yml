@@ -15,6 +15,10 @@ parents:
     operations: "CRUD"
     description: "Parent of this control node."
     presence: "optional"
+  contrail_sub_cluster:
+    operations: "CRUD"
+    description: "Parent of this control node."
+    presence: "optional"
 plural: contrail_control_nodes
 prefix: /
 schema:
