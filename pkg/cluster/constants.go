@@ -19,6 +19,8 @@ const (
 	defaultAnalyticsDBNodeResPath         = "/" + defaultAnalyticsDBNodeRes
 	defaultVrouterNodeRes                 = "contrail-vrouter-node"
 	defaultVrouterNodeResPath             = "/" + defaultVrouterNodeRes
+	defaultServiceNodeRes                 = "contrail-service-node"
+	defaultServiceNodeResPath             = "/" + defaultServiceNodeRes
 	defaultKubernetesNodeRes              = "kubernetes-node"
 	defaultKubernetesNodeResPath          = "/" + defaultKubernetesNodeRes
 	defaultKubernetesMasterNodeRes        = "kubernetes-master-node"
