@@ -1,0 +1,81 @@
+description: Contrail Service Node
+extends:
+- base
+- has_status
+id: contrail_service_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this service node."
+      presence: "optional"
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this service node."
+    presence: "optional"
+plural: contrail_service_nodes
+prefix: /
+schema:
+  properties:
+    default_gateway:
+      default: ""
+      description: Default Gateway
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Default Gateway
+      type: string
+      view:
+      - detail
+    service_bond_interface:
+      default: bond0
+      description: vRouter Bond Interface
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: vRouter Bond Interface
+      type: string
+      view:
+      - create
+      - detail
+    service_bond_interface_members:
+      default: ens7f0,ens7f1
+      description: vRouter Bond Interface Members
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: vRouter Bond Interface Members
+      type: string
+      view:
+      - create
+      - detail
+    service_type:
+      default: kernel
+      description: ""
+      enum:
+      - kernel
+      - dpdk
+      - smartNiC
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: vRouter Type
+      type: string
+      view:
+      - create
+      - detail
+  required: []
+  type: object
+singular: contrail_service_node
+title: Contrail Service Node
+type: ""

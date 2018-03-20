@@ -308,6 +308,41 @@ func (c *Cluster) interfaceToVrouterNode(vrouterNodes interface{}) ([]*models.Co
 	}
 	return vrouterNodesData, nil
 }
+
+func (c *Cluster) interfaceToServiceNode(serviceNodes interface{}) ([]*models.ContrailServiceNode, error) {
+	var serviceNodesData []*models.ContrailServiceNode
+	for _, serviceNode := range serviceNodes.([]interface{}) {
+		serviceNodeInfo := models.InterfaceToContrailServiceNode(serviceNode.(map[string]interface{}))
+		// Read contrail role node to get the node refs information
+		serviceNodeData, err := c.getResource(defaultServiceNodeResPath, serviceNodeInfo.UUID)
+		if err != nil {
+			return nil, errors.New("unable to get information of service node")
+		}
+		serviceNodeInfo = models.InterfaceToContrailServiceNode(serviceNodeData)
+		// Expand node refs
+		if nodeRefs, ok := serviceNodeData["node_refs"]; ok {
+			var nodesData []*models.ContrailServiceNodeNodeRef
+			for _, nodeRef := range nodeRefs.([]interface{}) {
+				nodeRefMap, ok := nodeRef.(map[string]interface{})
+				if !ok {
+					return nil, errors.New("unable to get node refs")
+				}
+				nodeInfo := &models.ContrailServiceNodeNodeRef{}
+				if uuid, ok := nodeRefMap["uuid"]; ok {
+					nodeInfo.UUID = common.InterfaceToString(uuid)
+				}
+				if to, ok := nodeRefMap["to"]; ok {
+					nodeInfo.To = common.InterfaceToStringList(to)
+				}
+				nodesData = append(nodesData, nodeInfo)
+			}
+			serviceNodeInfo.NodeRefs = nodesData
+		}
+		serviceNodesData = append(serviceNodesData, serviceNodeInfo)
+	}
+	return serviceNodesData, nil
+}
+
 func (c *Cluster) interfaceToAnalyticsDBNode(
 	analyticsDBNodes interface{}) ([]*models.ContrailAnalyticsDatabaseNode, error) {
 	var analyticsDBNodesData []*models.ContrailAnalyticsDatabaseNode
@@ -605,6 +640,17 @@ func (c *Cluster) getNodeDetails(clusterInfo *models.ContrailCluster) ([]*models
 			}
 		}
 	}
+	for _, node := range clusterInfo.ContrailServiceNodes {
+		for _, nodeRef := range node.NodeRefs {
+			n, err := c.getNode(nodeRef.UUID, m)
+			if err != nil {
+				return nil, err
+			}
+			if n != nil {
+				nodesInfo = append(nodesInfo, n)
+			}
+		}
+	}
 	for _, node := range clusterInfo.KubernetesMasterNodes {
 		for _, nodeRef := range node.NodeRefs {
 			n, err := c.getNode(nodeRef.UUID, m)
@@ -747,6 +793,14 @@ func (c *Cluster) getClusterDetails(clusterID string) (*Data, error) {
 			return nil, err
 		}
 		clusterInfo.ContrailVrouterNodes = vrouterNodesInfo
+	}
+	// Expand csn node back ref
+	if csnNodes, ok := rData["contrail_service_nodes"]; ok {
+		csnNodesInfo, err := c.interfaceToServiceNode(csnNodes)
+		if err != nil {
+			return nil, err
+		}
+		clusterInfo.ContrailServiceNodes = csnNodesInfo
 	}
 
 	// Expand openstack_compute back ref

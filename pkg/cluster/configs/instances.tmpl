@@ -23,6 +23,8 @@ instances:
     {% for analytics_node in cluster.ContrailAnalyticsNodes %}{% for node_ref in analytics_node.NodeRefs %} {%if node_ref.UUID == node.UUID %}analytics:{% endif %} {% endfor %} {% endfor %}
     {% for analyticsdb_node in cluster.ContrailAnalyticsDatabaseNodes %}{% for node_ref in analyticsdb_node.NodeRefs %} {%if node_ref.UUID == node.UUID %}analytics_database:{% endif %} {% endfor %} {% endfor %}
     {% for vrouter_node in cluster.ContrailVrouterNodes %}{% for node_ref in vrouter_node.NodeRefs %} {%if node_ref.UUID == node.UUID %}vrouter:{% endif %} {% endfor %} {% endfor %}
+    {% for csn_node in cluster.ContrailServiceNodes %}{% for node_ref in csn_node.NodeRefs %} {%if node_ref.UUID == node.UUID %}vrouter:
+       TSN_EVPN_MODE: true{% endif %} {% endfor %} {% endfor %}
     {% for k8s_master_node in cluster.KubernetesMasterNodes %}{% for node_ref in k8s_master_node.NodeRefs %} {%if node_ref.UUID == node.UUID %}k8s_master:{% endif %} {% endfor %} {% endfor %}
     {% for k8s_node in cluster.KubernetesNodes %}{% for node_ref in k8s_node.NodeRefs %} {%if node_ref.UUID == node.UUID %}k8s_node:{% endif %} {% endfor %} {% endfor %}
     {% for openstack_control_node in cluster.OpenstackControlNodes %}{% for node_ref in openstack_control_node.NodeRefs %} {%if node_ref.UUID == node.UUID %}openstack_control:{% endif %} {% endfor %} {% endfor %}
@@ -38,6 +40,8 @@ contrail_configuration:
   RABBITMQ_NODE_PORT: {%if cluster.RabbitMQPort %}{{ cluster.RabbitMQPort }}{%else%}5673{%endif%}
   VROUTER_GATEWAY: {{ cluster.DefaultGateway }}
   PHYSICAL_INTERFACE: {%if cluster.DefaultVrouterInterface %}{{ cluster.DefaultVrouterInterface }}{%else%}enp1s0f0{%endif%}
+  ENCAP_PRIORITY: {%if cluster.encapPriority %}{{cluster.encapPriority}}{%else%}MPLSoGRE,MPLSoUDP,VXLAN{%endif%}
+  TSN_NODES:{% for node in nodes %}{% for csn_node in cluster.ContrailServiceNodes %}{% for node_ref in csn_node.NodeRefs %}{%if node_ref.UUID == node.UUID %} {{ node.IPAddress }}{% endif %} {% endfor %} {% endfor %} {% endfor %}
 
 {% if cluster.Orchestrator == "openstack" %}
 kolla_config:
