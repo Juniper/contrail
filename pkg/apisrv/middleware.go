@@ -3,6 +3,7 @@ package apisrv
 import (
 	"context"
 	"crypto/tls"
+	"database/sql"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -66,6 +67,15 @@ func proxyMiddleware(target string, insecure bool) func(next echo.HandlerFunc) e
 			return nil
 		}
 	}
+}
+
+func serveDynamicProxy(e *echo.Echo, endpointStore *common.EndpointStore, dbConn *sql.DB) {
+	p := proxyServer{
+		dbConn:        dbConn,
+		echoServer:    e,
+		endpointStore: endpointStore,
+	}
+	go p.serve()
 }
 
 func noAuthInterceptor() grpc.UnaryServerInterceptor {
