@@ -23,9 +23,11 @@ import (
 
 //Server represents Intent API Server.
 type Server struct {
-	Echo     *echo.Echo
-	DB       *sql.DB
-	Keystone *keystone.Keystone
+	Echo      *echo.Echo
+	DB        *sql.DB
+	Keystone  *keystone.Keystone
+	dbService serviceif.Service
+	Proxy     *ProxyServer
 }
 
 // NewServer makes a server
@@ -60,12 +62,17 @@ func (s *Server) SetupService() serviceif.Service {
 	}
 
 	// Put DB Service at the end
-	dbService := db.NewService(s.DB, viper.GetString("database.dialect"))
-	serviceChain = append(serviceChain, dbService)
+	serviceChain = append(serviceChain, s.dbService)
 
 	serviceif.Chain(serviceChain)
 
 	return service
+}
+
+func (s *Server) serveDynamicProxy() {
+	proxyEndpointStore := common.MakeEndpointStore() // sync map to store proxy endpoints
+	s.Proxy = NewProxyServer(s.Echo, proxyEndpointStore, s.dbService)
+	s.Proxy.serve()
 }
 
 //Init setup the server.
@@ -81,6 +88,7 @@ func (s *Server) Init() error {
 	//e.Use(middleware.Recover())
 	//e.Use(middleware.BodyLimit("10M"))
 
+	s.dbService = db.NewService(s.DB, viper.GetString("database.dialect"))
 	service := s.SetupService()
 
 	readTimeout := viper.GetInt("server.read_timeout")
@@ -118,13 +126,19 @@ func (s *Server) Init() error {
 			g.Use(proxyMiddleware(target[0], viper.GetBool("server.proxy.insecure")))
 		}
 	}
+	// serve dynamic proxy based on configured endpoints
+	s.serveDynamicProxy()
+
 	keystoneAuthURL := viper.GetString("keystone.authurl")
+	endpointStore := common.MakeEndpointStore() // sync map to store auth endpoints
 	if keystoneAuthURL != "" {
 		e.Use(keystone.AuthMiddleware(keystoneAuthURL,
 			viper.GetBool("keystone.insecure"),
 			[]string{
 				"/v3/auth/tokens",
-				"/public"}))
+				"/public"},
+			endpointStore,
+			s.dbService))
 	} else if viper.GetBool("no_auth") {
 		e.Use(noAuthMiddleware())
 	}
@@ -146,7 +160,11 @@ func (s *Server) Init() error {
 		if keystoneAuthURL != "" {
 			grpcServer = grpc.NewServer(
 				grpc.UnaryInterceptor(
-					keystone.AuthInterceptor(keystoneAuthURL, viper.GetBool("keystone.insecure"))))
+					keystone.AuthInterceptor(
+						keystoneAuthURL,
+						viper.GetBool("keystone.insecure"),
+						endpointStore,
+						s.dbService)))
 		} else if viper.GetBool("no_auth") {
 			grpcServer = grpc.NewServer(
 				grpc.UnaryInterceptor(
@@ -183,5 +201,6 @@ func (s *Server) Run() error {
 
 //Close closes server resources
 func (s *Server) Close() error {
+	s.Proxy.stop()
 	return s.DB.Close()
 }

@@ -1,0 +1,79 @@
+name: Endpoint Test
+description:  multi cluster/dynamic proxy endpoint test
+cleanup:
+    - path: /endpoint/endpoint_{{ cluster_name }}_neutron_uuid
+    - path: /contrail-cluster/{{ cluster_name }}_uuid
+{%if extra_tasks %}
+    - path: /project/admin_project_uuid
+    - path: /endpoint/endpoint_clusterB_neutron_uuid
+{%endif%}
+test_data:
+  admin_project: &admin_project
+    fq_name: ["default", "admin"]
+    uuid: admin_project_uuid
+  {{ cluster_name }}: &{{ cluster_name }}
+    fq_name: ["default", "admin", "{{ cluster_name }}"]
+    uuid: {{ cluster_name }}_uuid
+    parent_type: project
+    parent_uuid: admin_project_uuid
+  endpoint_{{ cluster_name }}_neutron: &endpoint_{{ cluster_name }}_neutron
+    uuid: endpoint_{{ cluster_name }}_neutron_uuid
+    fq_name: ["default", "admin", "endpoint_{{ cluster_name }}_neutron"]
+    parent_type: contrail-cluster
+    parent_uuid: {{ cluster_name }}_uuid
+    name: neutron
+    private_url: {{neutron_private_url}}
+    public_url: {{neutron_public_url}}
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        id: admin
+workflow:
+{%if extra_tasks %}
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 201
+    data:
+      project: *admin_project
+  expect:
+    project: *admin_project
+{%endif%}
+- name: create contrail cluster
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+    - 201
+    data:
+      contrail-cluster: *{{ cluster_name }}
+  expect:
+    contrail-cluster:
+      uuid: {{ cluster_name }}_uuid
+      fq_name: ["default", "admin", "{{ cluster_name }}"]
+      parent_type: project
+      parent_uuid: admin_project_uuid
+      perms2:
+        owner: admin
+- name: create a neutron endpoint for {{ cluster_name }}
+  request:
+    path: /endpoints
+    method: POST
+    expected:
+    - 201
+    data:
+      endpoint: *endpoint_{{ cluster_name }}_neutron
+  expect:
+    endpoint:
+      uuid: endpoint_{{ cluster_name }}_neutron_uuid
+      fq_name: ["default", "admin", "endpoint_{{ cluster_name }}_neutron"]
+      parent_type: contrail-cluster
+      parent_uuid: {{ cluster_name }}_uuid
+      perms2:
+        owner: admin
