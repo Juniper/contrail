@@ -66,3 +66,12 @@ func GetAuthCTX(ctx context.Context) *AuthContext {
 	auth, _ := iAuth.(*AuthContext)
 	return auth
 }
+
+// NoAuth is used to create new no auth context
+func NoAuth(ctx context.Context) context.Context {
+	authContext := NewAuthContext(
+		"default-domain", "default-project", "admin", []string{"admin"})
+	var authKey interface{}
+	authKey = "auth"
+	return context.WithValue(ctx, authKey, authContext)
+}

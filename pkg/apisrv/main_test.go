@@ -3,10 +3,13 @@ package apisrv
 import (
 	"crypto/tls"
 	"fmt"
+	"io/ioutil"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 
@@ -57,11 +60,15 @@ func RunTestForDB(m *testing.M) {
 }
 
 func RunTest(t *testing.T, file string) {
-	testData, err := LoadTest(file)
+	testScenario, err := LoadTest(file)
 	assert.NoError(t, err, "failed to load test data")
+	RunTestScenario(t, testScenario)
+}
+
+func RunTestScenario(t *testing.T, testScenario *TestScenario) {
 	clients := map[string]*Client{}
 
-	for key, client := range testData.Clients {
+	for key, client := range testScenario.Clients {
 		//Rewrite endpoint for test server
 		client.Endpoint = testServer.URL
 		client.AuthURL = testServer.URL + "/v3"
@@ -73,7 +80,7 @@ func RunTest(t *testing.T, file string) {
 		err := clients[key].Login()
 		assert.NoError(t, err, "client failed to login")
 	}
-	for _, cleanTask := range testData.Cleanup {
+	for _, cleanTask := range testScenario.Cleanup {
 		fmt.Println(cleanTask)
 		clientID := cleanTask["client"]
 		if clientID == "" {
@@ -87,7 +94,7 @@ func RunTest(t *testing.T, file string) {
 			log.Debug(err)
 		}
 	}
-	for _, task := range testData.Workflow {
+	for _, task := range testScenario.Workflow {
 		log.Debug("[Step] ", task.Name)
 		task.Request.Data = common.YAMLtoJSONCompat(task.Request.Data)
 		clientID := "default"
@@ -105,10 +112,41 @@ func RunTest(t *testing.T, file string) {
 	}
 }
 
+func GetTestFromTemplate(t *testing.T, templateFile string, ctx map[string]interface{}) string {
+	// create test data yaml from the template
+	template, err := pongo2.FromFile(templateFile)
+	assert.NoError(t, err, "failed to read test data template")
+
+	content, err := template.ExecuteBytes(ctx)
+	assert.NoError(t, err, "failed to apply test data template")
+
+	fileName := filepath.Base(templateFile)
+	var extension = filepath.Ext(fileName)
+	var prefix = fileName[0 : len(fileName)-len(extension)]
+	tmpfile, err := ioutil.TempFile("", prefix)
+	assert.NoError(t, err, "failed to create test data tempfile")
+
+	_, err = tmpfile.Write(content)
+	assert.NoError(t, err, "failed to write test data to tempfile")
+
+	err = tmpfile.Close()
+	assert.NoError(t, err, "failed to close tempfile")
+	testFile := tmpfile.Name() + ".yml"
+	err = os.Rename(tmpfile.Name(), testFile)
+	assert.NoError(t, err, "failed to rename test data file to yml file")
+	return testFile
+}
+
 func LoadTest(file string) (*TestScenario, error) {
 	var testScenario TestScenario
-	err := common.LoadFile(file, &testScenario)
+	err := LoadTestScenario(&testScenario, file)
 	return &testScenario, err
+
+}
+
+func LoadTestScenario(testScenario *TestScenario, file string) error {
+	err := common.LoadFile(file, &testScenario)
+	return err
 }
 
 type Task struct {
