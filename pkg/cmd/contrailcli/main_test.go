@@ -48,7 +48,7 @@ func setupClient(testID string) {
 	apisrv.CreateTestProject(server, testID)
 	viper.SetDefault("id", testID)
 	viper.SetDefault("password", testID)
-	viper.SetDefault("project", testID)
+	viper.SetDefault("project_id", testID)
 	viper.SetDefault("endpoint", testServer.URL)
 	viper.SetDefault("auth_url", testServer.URL+"/v3")
 	viper.SetDefault("insecure", true)
