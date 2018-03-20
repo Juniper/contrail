@@ -241,7 +241,7 @@ func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 		_, err = query.WriteString(" where ")
 		_, err = query.WriteString(strings.Join(ctx.where, " and "))
 	}
-	if spec.Detail && (len(qb.RefFields) > 0 || len(qb.BackRefFields) > 0) {
+	if spec.Shared || len(spec.BackRefUUIDs) > 0 {
 		_, err = query.WriteString(" group by ")
 		_, err = query.WriteString(qb.quote(qb.Table, "uuid"))
 	}
@@ -262,32 +262,48 @@ func (qb *QueryBuilder) buildRefQuery(ctx *queryContext) {
 		refTable := "ref_" + qb.Table + "_" + linkTo
 		refFields = append(refFields, "from")
 		refFields = append(refFields, "to")
+		subQuery := "(select " +
+			qb.as(qb.jsonAgg(refTable, refFields...), qb.quote(refTable+"_ref")) +
+			" from " + qb.quote(refTable) + " where " + qb.quote(qb.Table, "uuid") + " = " + qb.quote(refTable, "from") +
+			" group by " + qb.quote(refTable, "from") + " )"
 		ctx.columnParts = append(
 			ctx.columnParts,
-			qb.as(qb.jsonAgg(refTable, refFields...), qb.quote(refTable+"_ref")),
-		)
+			subQuery)
 		ctx.columns["ref_"+linkTo] = len(ctx.columns)
-		ctx.joins = append(ctx.joins,
-			qb.join(refTable, "from", qb.Table))
 	}
 }
 
 func (qb *QueryBuilder) buildBackRefQuery(ctx *queryContext) {
 	spec := ctx.spec
-	for refTable, refFields := range qb.BackRefFields {
-		if spec.Detail {
-			ctx.columnParts = append(
-				ctx.columnParts,
-				qb.as(qb.jsonAgg(refTable, refFields...), qb.quote(refTable+"_ref")),
-			)
-			ctx.columns["backref_"+refTable] = len(ctx.columns)
-		}
-		if spec.Detail || len(spec.BackRefUUIDs) > 0 {
+	// use join if backrefuuids
+	if len(spec.BackRefUUIDs) > 0 {
+		for refTable, refFields := range qb.BackRefFields {
+			if spec.Detail {
+				ctx.columnParts = append(
+					ctx.columnParts,
+					qb.as(qb.jsonAgg(refTable, refFields...), qb.quote(refTable+"_ref")),
+				)
+				ctx.columns["backref_"+refTable] = len(ctx.columns)
+			}
 			ctx.joins = append(ctx.joins,
 				qb.join(refTable, "parent_uuid", qb.Table))
 		}
+		return
 	}
-
+	if !spec.Detail {
+		return
+	}
+	// use sub query if no backrefuuids
+	for refTable, refFields := range qb.BackRefFields {
+		subQuery := "(select " +
+			qb.as(qb.jsonAgg(refTable, refFields...), qb.quote(refTable+"_ref")) +
+			" from " + qb.quote(refTable) + " where " + qb.quote(qb.Table, "uuid") + " = " + qb.quote(refTable, "parent_uuid") +
+			" group by " + qb.quote(refTable, "parent_uuid") + " )"
+		ctx.columnParts = append(
+			ctx.columnParts,
+			subQuery)
+		ctx.columns["backref_"+refTable] = len(ctx.columns)
+	}
 }
 
 func (qb *QueryBuilder) isValidField(requestedField string) bool {
@@ -317,7 +333,7 @@ func (qb *QueryBuilder) buildColumns(ctx *queryContext) {
 		fields = spec.Fields
 	}
 
-	if spec.Detail || len(spec.BackRefUUIDs) > 0 || spec.Shared {
+	if spec.Shared || len(spec.BackRefUUIDs) > 0 {
 		for _, column := range fields {
 			ctx.columns[column] = len(ctx.columns)
 			ctx.columnParts = append(ctx.columnParts, qb.anyValue(qb.Table, column))
@@ -341,6 +357,7 @@ func (qb *QueryBuilder) ListQuery(auth *common.AuthContext, spec *models.ListSpe
 	qb.buildRefQuery(ctx)
 	qb.buildBackRefQuery(ctx)
 	qb.buildQuery(ctx)
+	log.Debug(ctx.query.String())
 	return ctx.query.String(), ctx.columns, ctx.values
 }
 
