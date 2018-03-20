@@ -68,6 +68,39 @@ func proxyMiddleware(target string, insecure bool) func(next echo.HandlerFunc) e
 	}
 }
 
+func dynamicProxyMiddleware(e *echo.Echo, endpointStore *EndpointStore, dbConn *sql.DB) error {
+	p := proxyServer{
+		dbConn:        dbConn,
+		echoServer:    e,
+		endpointStore: endpointStore,
+	}
+	go p.serve()
+}
+
+func noAuthInterceptor() grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{},
+		info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		newCtx := noAuth(ctx)
+		return handler(newCtx, req)
+	}
+}
+
+func gRPCMiddleware(grpcServer http.Handler) func(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			r := c.Request()
+			w := c.Response()
+			if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+				grpcServer.ServeHTTP(w, r)
+				return nil
+			}
+			if err := next(c); err != nil {
+				c.Error(err)
+			}
+			return nil
+		}
+	}
+}
 func noAuthInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{},
 		info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {

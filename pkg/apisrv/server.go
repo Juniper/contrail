@@ -118,13 +118,20 @@ func (s *Server) Init() error {
 			g.Use(proxyMiddleware(target[0], viper.GetBool("server.proxy.insecure")))
 		}
 	}
+	// enable dynamic proxy based on configured endpoints
+	proxyEndpointStore := MakeEndpointStore() // sync map to store proxy endpoints
+	dynamicProxyMiddleware(e, proxyEndpointStore, s.DB)
+
 	keystoneAuthURL := viper.GetString("keystone.authurl")
+	endpointStore := MakeEndpointStore() // sync map to store auth endpoints
 	if keystoneAuthURL != "" {
 		e.Use(keystone.AuthMiddleware(keystoneAuthURL,
 			viper.GetBool("keystone.insecure"),
 			[]string{
 				"/v3/auth/tokens",
-				"/public"}))
+				"/public"}),
+			endpointStore,
+			s.DB)
 	} else if viper.GetBool("no_auth") {
 		e.Use(noAuthMiddleware())
 	}
@@ -146,7 +153,11 @@ func (s *Server) Init() error {
 		if keystoneAuthURL != "" {
 			grpcServer = grpc.NewServer(
 				grpc.UnaryInterceptor(
-					keystone.AuthInterceptor(keystoneAuthURL, viper.GetBool("keystone.insecure"))))
+					keystone.AuthInterceptor(
+						keystoneAuthURL,
+						viper.GetBool("keystone.insecure"),
+						endpointStore,
+						s.DB)))
 		} else if viper.GetBool("no_auth") {
 			grpcServer = grpc.NewServer(
 				grpc.UnaryInterceptor(
