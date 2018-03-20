@@ -1,0 +1,74 @@
+name: Endpoint Test
+description:  multi cluster/dynamic proxy endpoint test
+test_data:
+  admin_project: &admin_project
+    fq_name: ["default", "admin"]
+    uuid: admin_project_uuid
+  cluster_a: &cluster_a
+    fq_name: ["default", "admin", "cluster_a"]
+    uuid: cluster_a
+    parent_type: project
+    parent_uuid: admin_project_uuid
+  endpoint_cluster_a_keystone: &endpoint_cluster_a_keystone
+    uuid: endpoint_cluster_a_keystone
+    fq_name: ["default", "admin", "endpoint_cluster_a_keystone"]
+    parent_type: contrail-cluster
+    parent_uuid: cluster_a
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        id: admin
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 201
+    data:
+      project: *admin_project
+  expect:
+    project: *admin_project
+- name: create contrail cluster
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+    - 201
+    data:
+      contrail-cluster: *cluster_a
+  expect:
+    contrail-cluster:
+      uuid: cluster_a
+      fq_name: ["default", "admin", "cluster_a"]
+      parent_type: project
+      parent_uuid: admin_project_uuid
+      perms2:
+        owner: admin
+- name: create a keystone endpoint for cluster_a
+  request:
+    path: /endpoints
+    method: POST
+    expected:
+    - 201
+    data:
+      endpoint: *endpoint_cluster_a_keystone
+  expect:
+    endpoint:
+      uuid: endpoint_cluster_a_keystone
+      fq_name: ["default", "admin", "endpoint_cluster_a_keystone"]
+      parent_type: project
+      parent_uuid: demo_project_uuid
+      perms2:
+        owner: admin
+- name: delete cluster_a's keystone endpoint
+  request:
+    path: /endpoint_cluster_a_keystone
+    method: DELETE
+    expected:
+    - 204
+  expect: null
