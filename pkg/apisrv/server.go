@@ -1,6 +1,7 @@
 package apisrv
 
 import (
+	"context"
 	"database/sql"
 	"strings"
 	"time"
@@ -26,6 +27,8 @@ type Server struct {
 	Echo     *echo.Echo
 	DB       *sql.DB
 	Keystone *keystone.Keystone
+	// all goroutines should declare context and append to TaskCtxs
+	TaskCtxs []context.Context
 }
 
 // NewServer makes a server
@@ -39,7 +42,7 @@ func NewServer() (*Server, error) {
 //SetupService setup service.
 //Application with custom logics can embed server struct, and overwrite
 //this method.
-func (s *Server) SetupService() serviceif.Service {
+func (s *Server) SetupService(dbService serviceif.Service) serviceif.Service {
 	var serviceChain []serviceif.Service
 	service := &services.ContrailService{
 		BaseService: serviceif.BaseService{},
@@ -60,7 +63,6 @@ func (s *Server) SetupService() serviceif.Service {
 	}
 
 	// Put DB Service at the end
-	dbService := db.NewService(s.DB, viper.GetString("database.dialect"))
 	serviceChain = append(serviceChain, dbService)
 
 	serviceif.Chain(serviceChain)
@@ -81,7 +83,8 @@ func (s *Server) Init() error {
 	//e.Use(middleware.Recover())
 	//e.Use(middleware.BodyLimit("10M"))
 
-	service := s.SetupService()
+	dbService := db.NewService(s.DB, viper.GetString("database.dialect"))
+	service := s.SetupService(dbService)
 
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
@@ -118,13 +121,20 @@ func (s *Server) Init() error {
 			g.Use(proxyMiddleware(target[0], viper.GetBool("server.proxy.insecure")))
 		}
 	}
+	// enable dynamic proxy based on configured endpoints
+	proxyEndpointStore := common.MakeEndpointStore() // sync map to store proxy endpoints
+	serveDynamicProxy(e, proxyEndpointStore, dbService)
+
 	keystoneAuthURL := viper.GetString("keystone.authurl")
+	endpointStore := common.MakeEndpointStore() // sync map to store auth endpoints
 	if keystoneAuthURL != "" {
 		e.Use(keystone.AuthMiddleware(keystoneAuthURL,
 			viper.GetBool("keystone.insecure"),
 			[]string{
 				"/v3/auth/tokens",
-				"/public"}))
+				"/public"},
+			endpointStore,
+			dbService))
 	} else if viper.GetBool("no_auth") {
 		e.Use(noAuthMiddleware())
 	}
@@ -146,7 +156,11 @@ func (s *Server) Init() error {
 		if keystoneAuthURL != "" {
 			grpcServer = grpc.NewServer(
 				grpc.UnaryInterceptor(
-					keystone.AuthInterceptor(keystoneAuthURL, viper.GetBool("keystone.insecure"))))
+					keystone.AuthInterceptor(
+						keystoneAuthURL,
+						viper.GetBool("keystone.insecure"),
+						endpointStore,
+						dbService)))
 		} else if viper.GetBool("no_auth") {
 			grpcServer = grpc.NewServer(
 				grpc.UnaryInterceptor(
@@ -183,5 +197,9 @@ func (s *Server) Run() error {
 
 //Close closes server resources
 func (s *Server) Close() error {
+	// stop all goroutines if any
+	for _, taskCtx := range s.TaskCtxs {
+		taskCtx.Done()
+	}
 	return s.DB.Close()
 }
